@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmosregistry/chain-minimal/app"
 	"github.com/cosmosregistry/chain-minimal/app/params"
-	"github.com/cosmosregistry/chain-minimal/cmd/minid/cmd"
+	"github.com/cosmosregistry/chain-minimal/cmd/uptd/cmd"
 )
 
 func main() {

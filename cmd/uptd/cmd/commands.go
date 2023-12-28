@@ -101,7 +101,7 @@ func txCommand() *cobra.Command {
 // newApp is an appCreator
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
-	app, err := app.NewMiniApp(logger, db, traceStore, true, appOpts, baseappOptions...)
+	app, err := app.NewUpshotApp(logger, db, traceStore, true, appOpts, baseappOptions...)
 	if err != nil {
 		panic(err)
 	}
@@ -121,7 +121,7 @@ func appExport(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	var (
-		miniApp *app.MiniApp
+		uptApp *app.UpshotApp
 		err     error
 	)
 
@@ -142,20 +142,20 @@ func appExport(
 	appOpts = viperAppOpts
 
 	if height != -1 {
-		miniApp, err = app.NewMiniApp(logger, db, traceStore, false, appOpts)
+		uptApp, err = app.NewUpshotApp(logger, db, traceStore, false, appOpts)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 
-		if err := miniApp.LoadHeight(height); err != nil {
+		if err := uptApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		miniApp, err = app.NewMiniApp(logger, db, traceStore, true, appOpts)
+		uptApp, err = app.NewUpshotApp(logger, db, traceStore, true, appOpts)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return miniApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+	return uptApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

@@ -2,10 +2,13 @@ package app
 
 import (
 	_ "embed"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 
+	"cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
 
 	"cosmossdk.io/core/appconfig"
@@ -21,6 +24,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -28,10 +32,12 @@ import (
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"github.com/cosmosregistry/chain-minimal/inflation"
 	yumakeeper "github.com/upshot-tech/protocol-state-machine-module/keeper"
 
-	_ "github.com/upshot-tech/protocol-state-machine-module/module"  
 	_ "cosmossdk.io/api/cosmos/tx/config/v1"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
@@ -40,6 +46,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"   // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
+	_ "github.com/upshot-tech/protocol-state-machine-module/module"
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -49,14 +56,14 @@ var DefaultNodeHome string
 var AppConfigYAML []byte
 
 var (
-	_ runtime.AppI            = (*MiniApp)(nil)
-	_ servertypes.Application = (*MiniApp)(nil)
+	_ runtime.AppI            = (*UpshotApp)(nil)
+	_ servertypes.Application = (*UpshotApp)(nil)
 )
 
-// MiniApp extends an ABCI application, but with most of its parameters exported.
+// UpshotApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
-type MiniApp struct {
+type UpshotApp struct {
 	*runtime.App
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -69,6 +76,7 @@ type MiniApp struct {
 	StakingKeeper         *stakingkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
+	MintKeeper            mintkeeper.Keeper
 	YumaKeeper            yumakeeper.Keeper
 
 	// simulation manager
@@ -81,7 +89,7 @@ func init() {
 		panic(err)
 	}
 
-	DefaultNodeHome = filepath.Join(userHomeDir, ".minid")
+	DefaultNodeHome = filepath.Join(userHomeDir, ".uptd")
 }
 
 // AppConfig returns the default app config.
@@ -97,17 +105,17 @@ func AppConfig() depinject.Config {
 	)
 }
 
-// NewMiniApp returns a reference to an initialized MiniApp.
-func NewMiniApp(
+// NewUpshotApp returns a reference to an initialized UpshotApp.
+func NewUpshotApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) (*MiniApp, error) {
+) (*UpshotApp, error) {
 	var (
-		app        = &MiniApp{}
+		app        = &UpshotApp{}
 		appBuilder *runtime.AppBuilder
 	)
 
@@ -117,6 +125,7 @@ func NewMiniApp(
 			depinject.Supply(
 				logger,
 				appOpts,
+				minttypes.InflationCalculationFn(inflation.CustomInflationCalculation),
 			),
 		),
 		&appBuilder,
@@ -129,6 +138,7 @@ func NewMiniApp(
 		&app.StakingKeeper,
 		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
+		&app.MintKeeper,
 		&app.YumaKeeper,
 	); err != nil {
 		return nil, err
@@ -148,6 +158,8 @@ func NewMiniApp(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
 
+	app.SetInitChainer(app.InitChainer)
+
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
 	}
@@ -155,13 +167,13 @@ func NewMiniApp(
 	return app, nil
 }
 
-// LegacyAmino returns MiniApp's amino codec.
-func (app *MiniApp) LegacyAmino() *codec.LegacyAmino {
+// LegacyAmino returns UpshotApp's amino codec.
+func (app *UpshotApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
-func (app *MiniApp) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *UpshotApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	sk := app.UnsafeFindStoreKey(storeKey)
 	kvStoreKey, ok := sk.(*storetypes.KVStoreKey)
 	if !ok {
@@ -170,7 +182,7 @@ func (app *MiniApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	return kvStoreKey
 }
 
-func (app *MiniApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
+func (app *UpshotApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 	keys := make(map[string]*storetypes.KVStoreKey)
 	for _, k := range app.GetStoreKeys() {
 		if kv, ok := k.(*storetypes.KVStoreKey); ok {
@@ -182,13 +194,36 @@ func (app *MiniApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *MiniApp) SimulationManager() *module.SimulationManager {
+func (app *UpshotApp) SimulationManager() *module.SimulationManager {
 	return app.sm
+}
+
+// InitChainer updates at chain initialization
+func (app *UpshotApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+	var genesisState map[string]json.RawMessage
+	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
+		panic(err)
+	}
+
+	var (
+		initialBlockRewardBTC = 50
+		blocksPerYear         = 6311520 //TODO: Check Block Time --> BTC is actually 52560 (10min)
+		totalUPT              = 21000000
+		initialProvisions     = math.LegacyNewDec(int64(initialBlockRewardBTC * blocksPerYear))
+		initialInflation      = initialProvisions.QuoInt64(int64(totalUPT))
+	)
+
+	app.MintKeeper.Minter.Set(ctx, minttypes.Minter{
+		Inflation:        initialInflation,
+		AnnualProvisions: initialProvisions,
+	})
+
+	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *MiniApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *UpshotApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	app.App.RegisterAPIRoutes(apiSvr, apiConfig)
 	// register swagger API in app.go so that other applications can override easily
 	if err := server.RegisterSwaggerAPI(apiSvr.ClientCtx, apiSvr.Router, apiConfig.Swagger); err != nil {

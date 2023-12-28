@@ -26,6 +26,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
+	github.com/upshot-tech/protocol-state-machine-module v0.0.0-20231222030409-d1d43fdecd95
 )
 
 require github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
@@ -146,7 +147,6 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
-	github.com/upshot-tech/protocol-state-machine-module v0.0.0-20231222030409-d1d43fdecd95 // indirect
 	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect

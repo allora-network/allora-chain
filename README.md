@@ -1,24 +1,24 @@
-# Mini - A minimal Cosmos SDK chain
+# UpShot Appchain
 
 This repository contains an example of a tiny, but working Cosmos SDK chain.
 It uses the least modules possible and is intended to be used as a starting point for building your own chain, without all the boilerplate that other tools generate. It is a simpler version of Cosmos SDK's [simapp](https://github.com/cosmos/cosmos-sdk/tree/main/simapp).
 
-`Minid` uses the **latest** version of the [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk).
+`Uptd` uses the **latest** version of the [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk).
 
 ## How to use
 
-In addition to learn how to build a chain thanks to `minid`, you can as well directly run `minid`.
+In addition to learn how to build a chain thanks to `uptd`, you can as well directly run `uptd`.
 
 ### Installation
 
-Install and run `minid`:
+Install and run `uptd`:
 
 ```sh
 git clone git@github.com:cosmosregistry/chain-minimal.git
 cd chain-minimal
-make install # install the minid binary
+make install # install the uptd binary
 make init # initialize the chain
-minid start # start the chain
+uptd start # start the chain
 ```
 
 ## Useful links

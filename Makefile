@@ -11,8 +11,8 @@ ifeq (,$(VERSION))
 endif
 
 # Update the ldflags with the app, client & server names
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=mini \
-	-X github.com/cosmos/cosmos-sdk/version.AppName=minid \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=upt \
+	-X github.com/cosmos/cosmos-sdk/version.AppName=uptd \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
@@ -27,8 +27,8 @@ all: install
 install:
 	@echo "--> ensure dependencies have not been modified"
 	@go mod verify
-	@echo "--> installing minid"
-	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/minid
+	@echo "--> installing uptd"
+	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/uptd
 
 init:
 	./scripts/init.sh
