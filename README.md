@@ -14,11 +14,12 @@ In addition to learn how to build a chain thanks to `uptd`, you can as well dire
 Install and run `uptd`:
 
 ```sh
-git clone git@github.com:cosmosregistry/chain-minimal.git
-cd chain-minimal
-make install # install the uptd binary
-make init # initialize the chain
-uptd start # start the chain
+git clone github.com/upshot-tech/protocol-state-machine-module
+git clone github.com/upshot-tech/upshot-appchain
+cd upshot-appchain
+make install
+make init
+uptd start
 ```
 
 Note: Depending on your `go` setup you may need to add `$GOPATH/bin` to your `$PATH`.
@@ -29,18 +30,8 @@ export PATH=${PATH}:`go env GOPATH`/bin
 
 ## Contributing to Upshot State
 
-After cloning both repos, you need to link this repository to the Cosmos Module repository.
-
-Add this like to the replace section of `go.mod`
-
-```
-replace (
-	github.com/upshot-tech/protocol-state-machine-module => ../protocol-state-machine-module
-)
-```
-
-Run `go mod tidy`. (you may need to delete go.sum)
-
+* For convenance `.vscode` folder provides a launch settings for debugging. 
+* Open upshot-appchain.code-workspace to debug  `protocol-state-machine-module`
 
 ## Useful links
 

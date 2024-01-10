@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../protocol-state-machine-module"
+		}
+	],
+	"settings": {}
+}
