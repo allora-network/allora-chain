@@ -1,10 +1,19 @@
-module github.com/cosmosregistry/chain-minimal
+module github.com/upshot-tech/upshot-appchain
 
 go 1.21
 
 toolchain go1.21.0
 
 replace (
+	cosmossdk.io/depinject => ../cosmos-sdk/depinject
+	cosmossdk.io/x/auth => ../cosmos-sdk/x/auth
+	cosmossdk.io/x/bank => ../cosmos-sdk/x/bank
+	cosmossdk.io/x/distribution => ../cosmos-sdk/x/distribution
+	cosmossdk.io/x/mint => ../cosmos-sdk/x/mint
+	cosmossdk.io/x/protocolpool => ../cosmos-sdk/x/protocolpool
+	cosmossdk.io/x/slashing => ../cosmos-sdk/x/slashing
+	cosmossdk.io/x/staking => ../cosmos-sdk/x/staking
+	github.com/cosmos/cosmos-sdk => ../cosmos-sdk
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.

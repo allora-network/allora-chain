@@ -26,7 +26,7 @@ import (
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/cosmosregistry/chain-minimal/app"
+	"github.com/upshot-tech/upshot-appchain/app"
 )
 
 // NewRootCmd creates a new root command for uptd. It is called once in the

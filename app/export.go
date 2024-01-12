@@ -70,102 +70,8 @@ func (app *UpshotApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		allowedAddrsMap[addr] = true
 	}
 
-	/* Handle fee distribution state. */
-
-	// withdraw all validator commission
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
-		if err != nil {
-			panic(err)
-		}
-
-		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, valBz)
-		return false
-	})
-
-	// withdraw all delegator rewards
-	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, delegation := range dels {
-		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		delAddr, err := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr)
-	}
-
-	// clear validator slash events
-	app.DistrKeeper.DeleteAllValidatorSlashEvents(ctx)
-
-	// clear validator historical rewards
-	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
-
-	// set context height to zero
-	height := ctx.BlockHeight()
-	ctx = ctx.WithBlockHeight(0)
-
-	// reinitialize all validators
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
-		if err != nil {
-			panic(err)
-		}
-
-		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valBz)
-		if err != nil {
-			panic(err)
-		}
-
-		feePool, err := app.DistrKeeper.FeePool.Get(ctx)
-		if err != nil {
-			panic(err)
-		}
-
-		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		if err := app.DistrKeeper.FeePool.Set(ctx, feePool); err != nil {
-			panic(err)
-		}
-
-		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, valBz); err != nil {
-			panic(err)
-		}
-		return false
-	})
-
-	// reinitialize all delegations
-	for _, del := range dels {
-		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		delAddr, err := sdk.AccAddressFromBech32(del.DelegatorAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
-			// never called as BeforeDelegationCreated always returns nil
-			panic(fmt.Errorf("error while incrementing period: %w", err))
-		}
-
-		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
-			// never called as AfterDelegationModified always returns nil
-			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
-		}
-	}
-
 	// reset context height
+	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(height)
 
 	/* Handle staking state. */
@@ -217,7 +123,7 @@ func (app *UpshotApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		return
 	}
 
-	_, err = app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	_, err := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

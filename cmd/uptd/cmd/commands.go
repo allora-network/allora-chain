@@ -25,7 +25,7 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	"github.com/cosmosregistry/chain-minimal/app"
+	"github.com/upshot-tech/upshot-appchain/app"
 )
 
 func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
@@ -122,7 +122,7 @@ func appExport(
 ) (servertypes.ExportedApp, error) {
 	var (
 		uptApp *app.UpshotApp
-		err     error
+		err    error
 	)
 
 	// this check is necessary as we use the flag in x/upgrade.

@@ -29,21 +29,20 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	"github.com/cosmosregistry/chain-minimal/inflation"
-	yumakeeper "github.com/upshot-tech/protocol-state-machine-module/keeper"
+
+	upshotkeeper "github.com/upshot-tech/protocol-state-machine-module/keeper"
+	"github.com/upshot-tech/upshot-appchain/inflation"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/distribution"   // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
 	_ "github.com/upshot-tech/protocol-state-machine-module/module"
@@ -74,10 +73,9 @@ type UpshotApp struct {
 	AccountKeeper         authkeeper.AccountKeeper
 	BankKeeper            bankkeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
-	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
-	YumaKeeper            yumakeeper.Keeper
+	UpshotKeeper          upshotkeeper.Keeper
 
 	// simulation manager
 	sm *module.SimulationManager
@@ -136,10 +134,9 @@ func NewUpshotApp(
 		&app.AccountKeeper,
 		&app.BankKeeper,
 		&app.StakingKeeper,
-		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
-		&app.YumaKeeper,
+		&app.UpshotKeeper,
 	); err != nil {
 		return nil, err
 	}

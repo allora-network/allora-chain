@@ -5,10 +5,9 @@ import (
 	"os"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-
-	"github.com/cosmosregistry/chain-minimal/app"
-	"github.com/cosmosregistry/chain-minimal/app/params"
-	"github.com/cosmosregistry/chain-minimal/cmd/uptd/cmd"
+	"github.com/upshot-tech/upshot-appchain/app"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	"github.com/upshot-tech/upshot-appchain/cmd/uptd/cmd"
 )
 
 func main() {
