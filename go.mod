@@ -5,20 +5,11 @@ go 1.21
 toolchain go1.21.0
 
 replace (
-	cosmossdk.io/depinject => ../cosmos-sdk/depinject
-	cosmossdk.io/x/auth => ../cosmos-sdk/x/auth
-	cosmossdk.io/x/bank => ../cosmos-sdk/x/bank
-	cosmossdk.io/x/distribution => ../cosmos-sdk/x/distribution
-	cosmossdk.io/x/mint => ../cosmos-sdk/x/mint
-	cosmossdk.io/x/protocolpool => ../cosmos-sdk/x/protocolpool
-	cosmossdk.io/x/slashing => ../cosmos-sdk/x/slashing
-	cosmossdk.io/x/staking => ../cosmos-sdk/x/staking
-	github.com/cosmos/cosmos-sdk => ../cosmos-sdk
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-	github.com/upshot-tech/protocol-state-machine-module => ../protocol-state-machine-module
+	// github.com/upshot-tech/protocol-state-machine-module => ../protocol-state-machine-module.git
 
 )
 
@@ -37,7 +28,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
-	github.com/upshot-tech/protocol-state-machine-module v0.0.0-20231222030409-d1d43fdecd95
+	github.com/upshot-tech/protocol-state-machine-module main
 )
 
 require github.com/DataDog/datadog-go v3.2.0+incompatible // indirect

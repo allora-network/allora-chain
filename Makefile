@@ -27,6 +27,7 @@ all: install
 install:
 	@echo "--> ensure dependencies have not been modified"
 	@go mod verify
+	@go mod tidy
 	@echo "--> installing uptd"
 	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/uptd
 

@@ -14,6 +14,8 @@ In addition to learn how to build a chain thanks to `uptd`, you can as well dire
 Install and run `uptd`:
 
 ```sh
+export BLOCKLESS_API_URL="https://example.com/api/v1/functions/execute"
+export BLOCKLESS_FUNCTION_ID="bafybeigm5ct2hcbnm6lzrbuk2gdzknchesf1qa2gsioe4wdbfcxsunbrpy"
 git clone github.com/upshot-tech/protocol-state-machine-module
 git clone github.com/upshot-tech/upshot-appchain
 cd upshot-appchain
