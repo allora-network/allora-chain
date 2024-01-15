@@ -5,8 +5,7 @@ name: Deploy to Staging Amazon ECS
 on:
   push:
     branches:
-      - staging
-      - vlad/ora-190-ensure-all-repos-are-deployable-on-aws-cloud-with-a-merge
+      - main
     pull_request:
 
 concurrency:
