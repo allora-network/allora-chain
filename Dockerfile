@@ -9,7 +9,6 @@ WORKDIR /src
 RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
 ENV GOPRIVATE="github.com/upshot-tech/"
 RUN make install
-
 #==============================================================
 
 FROM debian:bookworm-slim as execution
