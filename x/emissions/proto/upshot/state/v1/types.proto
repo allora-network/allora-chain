@@ -1,0 +1,89 @@
+syntax = "proto3";
+package upshot.state.v1;
+
+option go_package = "github.com/upshot-tech/protocol-state-machine-module";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+// import "google/protobuf/timestamp.proto";
+
+// Params defines the parameters of the module.
+message Params {
+  string version = 1;
+}
+
+// GenesisState is the state that must be provided at genesis.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+message Topic {
+  uint64 id = 1;
+  string metadata = 2;
+  string weight_logic = 3;
+  uint64 weight_cadence = 4;
+  uint64 weight_last_ran = 5;
+  uint64 inference_cadence = 6;
+  uint64 inference_last_ran = 7;
+  bool active = 8;
+  uint64 num_validation_steps = 9;
+  map<uint64, string> validation_steps = 10;
+  // map<uint64, google.protobuf.Timestamp> validation_last_attempt = 7;
+  map<uint64, uint64> validation_last_attempt = 11;
+  map<uint64, uint64> validation_retries = 12;
+}
+
+
+message Weight {
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string worker = 3;  
+  string weight = 4 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message Weights {
+  repeated Weight weights = 1;
+}
+
+message Inference {
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  string worker = 2;
+  string value = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+  bytes extraData = 4;
+}
+
+message Inferences {
+  repeated Inference inferences = 1;
+}
+
+message InferenceNode {
+  uint64 topic_id = 1;          // What topic the node belongs to
+  string lib_p2p_key = 2;       // LibP2P key of the node
+  string network_address = 3;   // Network address for accessing the node
+}
+
+message InferenceNodes {
+  repeated Inference InferenceNodes = 1;
+}
+
+message InferenceSetForScoring {
+  uint64 topic_id = 1;
+  uint64 timestamp = 2;
+  Inferences inferences = 3;
+}

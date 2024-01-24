@@ -1,0 +1,186 @@
+syntax = "proto3";
+package upshot.state.v1;
+
+option go_package = "github.com/upshot-tech/protocol-state-machine-module";
+
+import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+import "upshot/state/v1/types.proto";
+import "cosmos_proto/cosmos.proto";
+
+// Msg defines the module Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc SetInferences(MsgSetInferences) returns (MsgSetInferencesResponse);
+
+  rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
+
+  rpc SetLatestInferencesTimestamp(MsgSetLatestInferencesTimestamp) returns (MsgSetLatestInferencesTimestampResponse);
+
+  rpc SetWeights(MsgSetWeights) returns (MsgSetWeightsResponse);
+
+  rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
+
+  rpc RegisterReputer(MsgRegisterReputer) returns (MsgRegisterReputerResponse);
+
+  rpc RegisterWorker(MsgRegisterWorker) returns (MsgRegisterWorkerResponse);
+
+  rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
+
+  rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
+
+  rpc RemoveAllStake(MsgRemoveAllStake) returns (MsgRemoveAllStakeResponse);
+
+}
+
+message MsgCreateNewTopic {
+  option (cosmos.msg.v1.signer) = "creator";
+
+  // creator is the message sender.
+  string creator = 1;
+
+  string metadata = 2;
+  string weight_logic = 3;
+  uint64 weight_cadence = 4;
+  uint64 weight_last_ran = 5;
+  uint64 inference_cadence = 6;
+  uint64 inference_last_ran = 7;
+  bool active = 8;
+
+  repeated string validation_steps = 9;
+}
+
+message MsgCreateNewTopicResponse {}
+
+// MsgSetWeights sets the weights for a given validator.
+message MsgSetWeights {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+
+  repeated Weight weights = 2;
+}
+
+message MsgSetWeightsResponse {}
+
+// MsgSetInferences sets the inferences for a given validator.
+message MsgSetInferences {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+
+  repeated Inference inferences = 2;
+}
+
+message MsgSetInferencesResponse {}
+
+message MsgSetLatestInferencesTimestamp {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  
+  uint64 topicId = 2;
+  uint64 inferenceTimestamp = 3;
+}
+
+message MsgSetLatestInferencesTimestampResponse {}
+
+
+message MsgProcessInferences {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated Inference inferences = 2;
+}
+
+message MsgProcessInferencesResponse {}
+
+///
+///  Inference Node Registration
+///
+
+// Message for registering an Inference compute node
+message MsgRegisterReputer {
+  option (cosmos.msg.v1.signer) = "creator";
+
+  string creator = 1;                      // Message sender.
+  string lib_p2p_key = 2;                  // LibP2P key of the node.
+  string network_address = 3;              // Network address for connectivity.
+  uint64 topicId = 4;                     // Topic ID the node is signing up to participate in.
+  string initial_stake = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // Initial stake for the node.
+
+}
+
+// Response for registering an Inference compute node
+message MsgRegisterReputerResponse {
+  bool success = 1;                     // Indicates if registration was successful.
+  string message = 2;                   // Additional message or details.
+}
+
+
+// Message for registering an Inference compute node
+message MsgRegisterWorker {
+  option (cosmos.msg.v1.signer) = "creator";
+
+  string creator = 1;                      // Message sender.
+  string lib_p2p_key = 2;                  // LibP2P key of the node.
+  string network_address = 3;              // Network address for connectivity.
+  uint64 topicId = 4;                     // Topic ID the node is signing up to participate in.
+  string initial_stake = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // Initial stake for the node.
+}
+
+// Response for registering an Inference compute node
+message MsgRegisterWorkerResponse {
+  bool success = 1;                     // Indicates if registration was successful.
+  string message = 2;                   // Additional message or details.
+}
+
+
+message MsgAddStake {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+  string stakeTarget = 3;
+}
+
+message MsgAddStakeResponse {}
+
+message MsgRemoveStake {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+  string stakeTarget = 3;
+}
+
+message MsgRemoveStakeResponse {}
+
+message MsgRemoveAllStake {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+}
+
+message MsgRemoveAllStakeResponse {}
