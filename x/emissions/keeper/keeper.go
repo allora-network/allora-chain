@@ -372,6 +372,20 @@ func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.
 	return k.reputers.Get(ctx, reputer)
 }
 
+// GetActiveTopics returns a slice of all active topics.
+func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
+	var activeTopics []state.Topic
+	if err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic state.Topic) (bool, error) {
+		if topic.Active { // Check if the topic is marked as active
+			activeTopics = append(activeTopics, topic)
+		}
+		return false, nil // Continue the iteration
+	}); err != nil {
+		return nil, err
+	}
+	return activeTopics, nil
+}
+
 // for a given topic, returns every worker node registered to it
 func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TOPIC_ID) ([]sdk.AccAddress, error) {
 	var workers []sdk.AccAddress
@@ -794,6 +808,26 @@ func (k *Keeper) GetAllWeights(ctx context.Context) (map[TOPIC_ID]map[REPUTERS]m
 		}
 	}
 	return weights, nil
+}
+
+// UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
+func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.InferenceLastRan = lastRanTime
+	return k.topics.Set(ctx, topicId, topic)
+}
+
+// UpdateTopicWeightLastRan updates the WeightLastRan timestamp for a given topic.
+func (k *Keeper) UpdateTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.WeightLastRan = lastRanTime
+	return k.topics.Set(ctx, topicId, topic)
 }
 
 // check a reputer node is registered

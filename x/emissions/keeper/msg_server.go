@@ -48,20 +48,24 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 
-	if msg.InferenceCadence < 60 {
-		return nil, fmt.Errorf("inference cadence must be at least 60 seconds (1 minute)")
-	}
+	// TODO: Add after demo
+	// if msg.InferenceCadence < 60 {
+	// 	return nil, fmt.Errorf("inference cadence must be at least 60 seconds (1 minute)")
+	// }
 
-	if msg.WeightCadence < 10800 {
-		return nil, fmt.Errorf("weight cadence must be at least 10800 seconds (3 hours)")
-	}
+	// if msg.WeightCadence < 10800 {
+	// 	return nil, fmt.Errorf("weight cadence must be at least 10800 seconds (3 hours)")
+	// }
 
 	topic := state.Topic{
 		Id:                 id,
 		Metadata:           msg.Metadata,
 		WeightLogic:        msg.WeightLogic,
+		WeightMethod:       msg.WeightMethod,
 		WeightCadence:      msg.WeightCadence,
 		WeightLastRan:      0,
+		InferenceLogic:     msg.InferenceLogic,
+		InferenceMethod:    msg.InferenceMethod,
 		InferenceCadence:   msg.InferenceCadence,
 		InferenceLastRan:   0,
 		Active:             msg.Active,
@@ -75,11 +79,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	if err != nil {
 		return nil, err
 	}
+
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
-		return nil, err
-	}
-	// Set latest weight-adjustment timestamp of a topic to 0
-	if err := ms.k.SetLatestInferenceTimestamp(ctx, id, 0); err != nil {
 		return nil, err
 	}
 

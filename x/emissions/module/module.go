@@ -4,10 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"os"
-	"strings"
-
 	"cosmossdk.io/core/appmodule"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -150,49 +146,55 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		}
 	}
 
-	go makeAPICall()
+	// Execute the inference and weight cadence checks
+	topics, err := am.keeper.GetActiveTopics(sdkCtx)
+	if err != nil {
+		fmt.Println("Error getting active topics: ", err)
+		return err
+	}
+
+	fmt.Println("Active topics: ", len(topics))
+
+	currentTime := uint64(sdkCtx.BlockTime().Unix())
+	for _, topic := range topics {
+		// Parallelize the inference and weight cadence checks
+		go func(topic state.Topic) {
+			// Check the cadence of inferences
+			if currentTime - topic.InferenceLastRan >= topic.InferenceCadence {
+				fmt.Println("Inference cadence met for topic: ", topic.Metadata)
+
+				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata)
+				
+				// Update the last inference ran
+				am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
+			}
+
+			// Check the cadence of weight calculations
+			if currentTime - topic.WeightLastRan >= topic.WeightCadence {
+				fmt.Println("Weight cadence met for topic: ", topic.Metadata)
+
+				// Get Latest Weights
+				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)
+				if err != nil {
+					fmt.Println("Error getting latest weights: ", err)
+					return
+				}
+
+				// Get Lastest Inference
+				// TODO: Get Inference related to the cadence -- Diego's work
+				inferences, err := am.keeper.GetLatestInferencesFromTopic(sdkCtx, topic.Id)
+				if err != nil {
+					fmt.Println("Error getting latest inferences: ", err)
+					return
+				}
+
+				go generateWeights(weights, inferences, topic.WeightLogic, topic.WeightMethod)
+
+				// Update the last weight ran
+				am.keeper.UpdateTopicWeightLastRan(sdkCtx, topic.Id, currentTime)
+			}
+		}(topic)
+	}
 
 	return nil
-
-}
-
-func makeAPICall() {
-	url := os.Getenv("BLOCKLESS_API_URL")
-	functionId := os.Getenv("BLOCKLESS_FUNCTION_ID")
-
-	method := "POST"
-
-	payload := strings.NewReader(`{
-		"function_id": "` + functionId + `",
-		"method": "upshot-function-example.wasm",
-		"config": {
-			"env_vars": [
-				{
-					"name": "BLS_REQUEST_PATH",
-					"value": "/api"
-				},
-				{
-					"name": "UPSHOT_ARG_PARAMS",
-					"value": "ETH"
-				}
-			],
-			"number_of_nodes": 1
-		}
-	}`)
-
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	req.Header.Add("Accept", "application/json, text/plain, */*")
-	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer res.Body.Close()
 }

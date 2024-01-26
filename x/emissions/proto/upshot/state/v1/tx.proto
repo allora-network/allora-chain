@@ -43,13 +43,14 @@ message MsgCreateNewTopic {
 
   string metadata = 2;
   string weight_logic = 3;
-  uint64 weight_cadence = 4;
-  uint64 weight_last_ran = 5;
-  uint64 inference_cadence = 6;
-  uint64 inference_last_ran = 7;
-  bool active = 8;
+  string weight_method = 4;
+  uint64 weight_cadence = 5;
+  string inference_logic = 6;
+  string inference_method = 7;
+  uint64 inference_cadence = 8;
+  bool active = 9;
 
-  repeated string validation_steps = 9;
+  repeated string validation_steps = 10;
 }
 
 message MsgCreateNewTopicResponse {}
@@ -80,7 +81,6 @@ message MsgSetLatestInferencesTimestamp {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  
   uint64 topicId = 2;
   uint64 inferenceTimestamp = 3;
 }
@@ -90,7 +90,9 @@ message MsgSetLatestInferencesTimestampResponse {}
 
 message MsgProcessInferences {
   option (cosmos.msg.v1.signer) = "sender";
+
   string sender = 1;
+
   repeated Inference inferences = 2;
 }
 

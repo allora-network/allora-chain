@@ -67,11 +67,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// },
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic metadata cadence active validation_steps",
+					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [active] [validation_steps]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
+						{ProtoField: "weight_logic"},
+						{ProtoField: "weight_method"},
 						{ProtoField: "weight_cadence"},
+						{ProtoField: "inference_logic"},
+						{ProtoField: "inference_method"},
+						{ProtoField: "inference_cadence"},
 						{ProtoField: "active"},
 						{ProtoField: "validation_steps"},
 					},
