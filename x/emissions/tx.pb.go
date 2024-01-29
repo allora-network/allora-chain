@@ -33,16 +33,17 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgCreateNewTopic struct {
-	Creator          string   `json:"creator,omitempty"`
-	Metadata         string   `json:"metadata,omitempty"`
-	WeightLogic      string   `json:"weight_logic,omitempty"`
-	WeightMethod     string   `json:"weight_method,omitempty"`
-	WeightCadence    uint64   `json:"weight_cadence,omitempty"`
-	InferenceLogic   string   `json:"inference_logic,omitempty"`
-	InferenceMethod  string   `json:"inference_method,omitempty"`
-	InferenceCadence uint64   `json:"inference_cadence,omitempty"`
-	Active           bool     `json:"active,omitempty"`
-	ValidationSteps  []string `json:"validation_steps,omitempty"`
+	// creator is the message sender.
+	Creator          string   `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Metadata         string   `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	WeightLogic      string   `protobuf:"bytes,3,opt,name=weight_logic,json=weightLogic,proto3" json:"weight_logic,omitempty"`
+	WeightMethod     string   `protobuf:"bytes,4,opt,name=weight_method,json=weightMethod,proto3" json:"weight_method,omitempty"`
+	WeightCadence    uint64   `protobuf:"varint,5,opt,name=weight_cadence,json=weightCadence,proto3" json:"weight_cadence,omitempty"`
+	InferenceLogic   string   `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
+	InferenceMethod  string   `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
+	InferenceCadence uint64   `protobuf:"varint,8,opt,name=inference_cadence,json=inferenceCadence,proto3" json:"inference_cadence,omitempty"`
+	Active           bool     `protobuf:"varint,9,opt,name=active,proto3" json:"active,omitempty"`
+	ValidationSteps  []string `protobuf:"bytes,10,rep,name=validation_steps,json=validationSteps,proto3" json:"validation_steps,omitempty"`
 }
 
 func (m *MsgCreateNewTopic) Reset()         { *m = MsgCreateNewTopic{} }
@@ -186,8 +187,8 @@ var xxx_messageInfo_MsgCreateNewTopicResponse proto.InternalMessageInfo
 
 // MsgSetWeights sets the weights for a given validator.
 type MsgSetWeights struct {
-	Sender  string    `json:"sender,omitempty"`
-	Weights []*Weight `json:"weights,omitempty"`
+	Sender  string    `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Weights []*Weight `protobuf:"bytes,2,rep,name=weights,proto3" json:"weights,omitempty"`
 }
 
 func (m *MsgSetWeights) Reset()         { *m = MsgSetWeights{} }
@@ -275,8 +276,8 @@ var xxx_messageInfo_MsgSetWeightsResponse proto.InternalMessageInfo
 
 // MsgSetInferences sets the inferences for a given validator.
 type MsgSetInferences struct {
-	Sender     string       `json:"sender,omitempty"`
-	Inferences []*Inference `json:"inferences,omitempty"`
+	Sender     string       `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Inferences []*Inference `protobuf:"bytes,2,rep,name=inferences,proto3" json:"inferences,omitempty"`
 }
 
 func (m *MsgSetInferences) Reset()         { *m = MsgSetInferences{} }
@@ -363,9 +364,9 @@ func (m *MsgSetInferencesResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgSetInferencesResponse proto.InternalMessageInfo
 
 type MsgSetLatestInferencesTimestamp struct {
-	Sender             string `json:"sender,omitempty"`
-	TopicId            uint64 `json:"topicId,omitempty"`
-	InferenceTimestamp uint64 `nceTimestamp,omitempty"`
+	Sender             string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	TopicId            uint64 `protobuf:"varint,2,opt,name=topicId,proto3" json:"topicId,omitempty"`
+	InferenceTimestamp uint64 `protobuf:"varint,3,opt,name=inferenceTimestamp,proto3" json:"inferenceTimestamp,omitempty"`
 }
 
 func (m *MsgSetLatestInferencesTimestamp) Reset()         { *m = MsgSetLatestInferencesTimestamp{} }
@@ -461,8 +462,8 @@ func (m *MsgSetLatestInferencesTimestampResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgSetLatestInferencesTimestampResponse proto.InternalMessageInfo
 
 type MsgProcessInferences struct {
-	Sender     string       `json:"sender,omitempty"`
-	Inferences []*Inference `json:"inferences,omitempty"`
+	Sender     string       `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Inferences []*Inference `protobuf:"bytes,2,rep,name=inferences,proto3" json:"inferences,omitempty"`
 }
 
 func (m *MsgProcessInferences) Reset()         { *m = MsgProcessInferences{} }
@@ -550,11 +551,11 @@ var xxx_messageInfo_MsgProcessInferencesResponse proto.InternalMessageInfo
 
 // Message for registering an Inference compute node
 type MsgRegisterReputer struct {
-	Creator        string                 `json:"creator,omitempty"`
-	LibP2PKey      string                 `:"lib_p2p_key,omitempty"`
-	NetworkAddress string                 `json:"network_address,omitempty"`
-	TopicId        uint64                 `json:"topicId,omitempty"`
-	InitialStake   cosmossdk_io_math.Uint `initial_stake,json=initialStake,json:"initial_stake"`
+	Creator        string                 `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	LibP2PKey      string                 `protobuf:"bytes,2,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`
+	NetworkAddress string                 `protobuf:"bytes,3,opt,name=network_address,json=networkAddress,proto3" json:"network_address,omitempty"`
+	TopicId        uint64                 `protobuf:"varint,4,opt,name=topicId,proto3" json:"topicId,omitempty"`
+	InitialStake   cosmossdk_io_math.Uint `protobuf:"bytes,5,opt,name=initial_stake,json=initialStake,proto3,customtype=cosmossdk.io/math.Uint" json:"initial_stake"`
 }
 
 func (m *MsgRegisterReputer) Reset()         { *m = MsgRegisterReputer{} }
@@ -620,8 +621,8 @@ func (m *MsgRegisterReputer) GetTopicId() uint64 {
 
 // Response for registering an Inference compute node
 type MsgRegisterReputerResponse struct {
-	Success bool   `json:"success,omitempty"`
-	Message string `json:"message,omitempty"`
+	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 }
 
 func (m *MsgRegisterReputerResponse) Reset()         { *m = MsgRegisterReputerResponse{} }
@@ -673,11 +674,11 @@ func (m *MsgRegisterReputerResponse) GetMessage() string {
 
 // Message for registering an Inference compute node
 type MsgRegisterWorker struct {
-	Creator        string                 `json:"creator,omitempty"`
-	LibP2PKey      string                 `:"lib_p2p_key,omitempty"`
-	NetworkAddress string                 `json:"network_address,omitempty"`
-	TopicId        uint64                 `json:"topicId,omitempty"`
-	InitialStake   cosmossdk_io_math.Uint `initial_stake,json=initialStake,json:"initial_stake"`
+	Creator        string                 `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	LibP2PKey      string                 `protobuf:"bytes,2,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`
+	NetworkAddress string                 `protobuf:"bytes,3,opt,name=network_address,json=networkAddress,proto3" json:"network_address,omitempty"`
+	TopicId        uint64                 `protobuf:"varint,4,opt,name=topicId,proto3" json:"topicId,omitempty"`
+	InitialStake   cosmossdk_io_math.Uint `protobuf:"bytes,5,opt,name=initial_stake,json=initialStake,proto3,customtype=cosmossdk.io/math.Uint" json:"initial_stake"`
 }
 
 func (m *MsgRegisterWorker) Reset()         { *m = MsgRegisterWorker{} }
@@ -743,8 +744,8 @@ func (m *MsgRegisterWorker) GetTopicId() uint64 {
 
 // Response for registering an Inference compute node
 type MsgRegisterWorkerResponse struct {
-	Success bool   `json:"success,omitempty"`
-	Message string `json:"message,omitempty"`
+	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 }
 
 func (m *MsgRegisterWorkerResponse) Reset()         { *m = MsgRegisterWorkerResponse{} }
@@ -795,9 +796,9 @@ func (m *MsgRegisterWorkerResponse) GetMessage() string {
 }
 
 type MsgAddStake struct {
-	Sender      string                 `json:"sender,omitempty"`
-	Amount      cosmossdk_io_math.Uint `amount,json:"amount"`
-	StakeTarget string                 `json:"stakeTarget,omitempty"`
+	Sender      string                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Amount      cosmossdk_io_math.Uint `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+	StakeTarget string                 `protobuf:"bytes,3,opt,name=stakeTarget,proto3" json:"stakeTarget,omitempty"`
 }
 
 func (m *MsgAddStake) Reset()         { *m = MsgAddStake{} }
@@ -884,9 +885,9 @@ func (m *MsgAddStakeResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgAddStakeResponse proto.InternalMessageInfo
 
 type MsgRemoveStake struct {
-	Sender      string                 `json:"sender,omitempty"`
-	Amount      cosmossdk_io_math.Uint `amount,json:"amount"`
-	StakeTarget string                 `json:"stakeTarget,omitempty"`
+	Sender      string                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Amount      cosmossdk_io_math.Uint `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+	StakeTarget string                 `protobuf:"bytes,3,opt,name=stakeTarget,proto3" json:"stakeTarget,omitempty"`
 }
 
 func (m *MsgRemoveStake) Reset()         { *m = MsgRemoveStake{} }
@@ -973,7 +974,7 @@ func (m *MsgRemoveStakeResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgRemoveStakeResponse proto.InternalMessageInfo
 
 type MsgRemoveAllStake struct {
-	Sender string `json:"sender,omitempty"`
+	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
 func (m *MsgRemoveAllStake) Reset()         { *m = MsgRemoveAllStake{} }
