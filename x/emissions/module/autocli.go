@@ -26,7 +26,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "get-topic topicId",
 					Short:     "Get topic by topicId",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -34,7 +34,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "get-weight [topicId] [reputer] [worker]",
 					Short:     "Get Weight From a Reputer to a Worker for a Topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "reputer"},
 						{ProtoField: "worker"},
 					},
@@ -44,7 +44,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "get-inference [topicId] [worker]",
 					Short:     "Get Latest Inference From Worker for a Topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "worker"},
 					},
 				},
@@ -53,7 +53,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "get-inferences-to-score [topicId]",
 					Short:     "Get Latest Inferences for a Topic to be scored",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 					},
 				},
 			},
@@ -89,7 +89,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "network_address"},
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "initial_stake"},
 					},
 				},
@@ -100,7 +100,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "network_address"},
-						{ProtoField: "topicId"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "initial_stake"},
 					},
 				},
@@ -110,7 +110,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Add stake [amount] from a sender [reputer or worker] to a stakeTarget [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "stakeTarget"},
+						{ProtoField: "stake_target"},
 						{ProtoField: "amount"},
 					},
 				},
@@ -120,7 +120,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Remove stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "stakeTarget"},
+						{ProtoField: "stake_target"},
 						{ProtoField: "amount"},
 					},
 				},

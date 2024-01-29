@@ -81,8 +81,8 @@ message MsgSetLatestInferencesTimestamp {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  uint64 topicId = 2;
-  uint64 inferenceTimestamp = 3;
+  uint64 topic_id = 2;
+  uint64 inference_timestamp = 3;
 }
 
 message MsgSetLatestInferencesTimestampResponse {}

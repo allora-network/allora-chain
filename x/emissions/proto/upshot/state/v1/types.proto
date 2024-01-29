@@ -67,7 +67,7 @@ message Inference {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
-  bytes extraData = 4;
+  bytes extra_data = 4;
 }
 
 message Inferences {
@@ -81,7 +81,7 @@ message InferenceNode {
 }
 
 message InferenceNodes {
-  repeated Inference InferenceNodes = 1;
+  repeated Inference inference_nodes = 1;
 }
 
 message InferenceSetForScoring {

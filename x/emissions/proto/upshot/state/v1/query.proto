@@ -39,25 +39,25 @@ service Query {
   rpc GetTopic(QueryTopicRequest) returns (QueryTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/topic/{topicId}";
+      "/upshot/state/v1/topic/{topic_id}";
   }
 
   rpc GetWeight(QueryWeightRequest) returns (QueryWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/weights/{topicId}/{reputer}/{worker}";
+      "/upshot/state/v1/weights/{topic_id}/{reputer}/{worker}";
   }
 
   rpc GetInference(QueryInferenceRequest) returns (QueryInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/inferences/{topicId}/{worker}";
+      "/upshot/state/v1/inferences/{topic_id}/{worker}";
   }
 
   rpc GetInferencesToScore(QueryInferencesToScoreRequest) returns (QueryInferencesToScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/inferences/{topicId}";
+      "/upshot/state/v1/inferences/{topic_id}";
   }
 
   rpc GetTotalStake(QueryTotalStakeRequest) returns (QueryTotalStakeResponse) {
@@ -115,11 +115,11 @@ message QueryNextTopicIdRequest {
 }
 
 message QueryNextTopicIdResponse {
-  uint64 nextTopicId = 1;
+  uint64 next_topic_id = 1;
 }
 
 message QueryTopicRequest {
-  uint64 topicId = 1;
+  uint64 topic_id = 1;
 }
 
 message QueryTopicResponse {
@@ -128,7 +128,7 @@ message QueryTopicResponse {
 
 // Returns the weight assigned by a reputer onto a worker for a given topic
 message QueryWeightRequest {
-  uint64 topicId = 1;
+  uint64 topic_id = 1;
   string reputer = 2;
   string worker = 3;
 }
@@ -149,7 +149,7 @@ message QueryWeightResponse {
 
 // Returns the latest inference on a topic from a worker
 message QueryInferenceRequest {
-  uint64 topicId = 1;
+  uint64 topic_id = 1;
   string worker = 2;
 }
 
@@ -168,7 +168,7 @@ message QueryInferenceResponse {
 }
 
 message QueryInferencesToScoreRequest {
-  uint64 topicId = 1;
+  uint64 topic_id = 1;
 }
 
 message QueryInferencesToScoreResponse {

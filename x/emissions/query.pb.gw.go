@@ -116,15 +116,15 @@ func request_Query_GetTopic_0(ctx context.Context, marshaler runtime.Marshaler, 
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	msg, err := client.GetTopic(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -143,15 +143,15 @@ func local_request_Query_GetTopic_0(ctx context.Context, marshaler runtime.Marsh
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	msg, err := server.GetTopic(ctx, &protoReq)
@@ -170,15 +170,15 @@ func request_Query_GetWeight_0(ctx context.Context, marshaler runtime.Marshaler,
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	val, ok = pathParams["reputer"]
@@ -219,15 +219,15 @@ func local_request_Query_GetWeight_0(ctx context.Context, marshaler runtime.Mars
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	val, ok = pathParams["reputer"]
@@ -268,15 +268,15 @@ func request_Query_GetInference_0(ctx context.Context, marshaler runtime.Marshal
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	val, ok = pathParams["worker"]
@@ -306,15 +306,15 @@ func local_request_Query_GetInference_0(ctx context.Context, marshaler runtime.M
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	val, ok = pathParams["worker"]
@@ -344,15 +344,15 @@ func request_Query_GetInferencesToScore_0(ctx context.Context, marshaler runtime
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	msg, err := client.GetInferencesToScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -371,15 +371,15 @@ func local_request_Query_GetInferencesToScore_0(ctx context.Context, marshaler r
 		_   = err
 	)
 
-	val, ok = pathParams["topicId"]
+	val, ok = pathParams["topic_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topicId")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
 	}
 
 	protoReq.TopicId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topicId", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
 	msg, err := server.GetInferencesToScore(ctx, &protoReq)
@@ -851,13 +851,13 @@ var (
 
 	pattern_Query_GetNextTopicId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"upshot", "state", "v1", "next_topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"upshot", "state", "v1", "topic", "topicId"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"upshot", "state", "v1", "topic", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetWeight_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"upshot", "state", "v1", "weights", "topicId", "reputer", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetWeight_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"upshot", "state", "v1", "weights", "topic_id", "reputer", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"upshot", "state", "v1", "inferences", "topicId", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"upshot", "state", "v1", "inferences", "topic_id", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetInferencesToScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"upshot", "state", "v1", "inferences", "topicId"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetInferencesToScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"upshot", "state", "v1", "inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetTotalStake_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"upshot", "state", "v1", "total_stake"}, "", runtime.AssumeColonVerbOpt(false)))
 )
