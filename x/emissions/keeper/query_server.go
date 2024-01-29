@@ -105,15 +105,8 @@ func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightReque
 
 // GetInference retrieves the inference value for a given topic ID and worker address.
 func (qs queryServer) GetInference(ctx context.Context, req *state.QueryInferenceRequest) (*state.QueryInferenceResponse, error) {
-	workerAddr := sdk.AccAddress(req.Worker)
-
-	key := collections.Join(req.TopicId, workerAddr)
-	inference, err := qs.k.inferences.Get(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &state.QueryInferenceResponse{Amount: inference.Value}, nil
+	// TODO: Implement
+	return &state.QueryInferenceResponse{}, nil
 }
 
 func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.QueryInferencesToScoreRequest) (*state.QueryInferencesToScoreResponse, error) {
@@ -126,4 +119,16 @@ func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.Query
 
 	response := &state.QueryInferencesToScoreResponse{Inferences: inferences}
 	return response, nil
+}
+
+func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryInferenceRequest) (*state.QueryInferenceResponse, error) {
+	// Defers implementation to the function in the Keeper
+	topicId := req.TopicId
+	timestamp := req.Timestamp
+	inferences, err := qs.k.GetAllInferences(ctx, topicId, timestamp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &state.QueryInferenceResponse{Inferences: inferences}, nil
 }

@@ -23,15 +23,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetTopic",
-					Use:       "get-topic topicId",
-					Short:     "Get topic by topicId",
+					Use:       "get-topic topic_id",
+					Short:     "Get topic by topic id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
 				},
 				{
 					RpcMethod: "GetWeight",
-					Use:       "get-weight [topicId] [reputer] [worker]",
+					Use:       "get-weight [topic_id] [reputer] [worker]",
 					Short:     "Get Weight From a Reputer to a Worker for a Topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -40,17 +40,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetInference",
-					Use:       "get-inference [topicId] [worker]",
-					Short:     "Get Latest Inference From Worker for a Topic",
+					RpcMethod: "GetAllInferences",
+					Use:       "get-inference [topic_id] [timestamp]",
+					Short:     "Get Latest Inference for a Topic in a timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
-						{ProtoField: "worker"},
+						{ProtoField: "timestamp"},
 					},
 				},
 				{
 					RpcMethod: "GetInferencesToScore",
-					Use:       "get-inferences-to-score [topicId]",
+					Use:       "get-inferences-to-score [topic_id]",
 					Short:     "Get Latest Inferences for a Topic to be scored",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -67,7 +67,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// },
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [active] [validation_steps]",
+					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [active]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -79,12 +79,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "inference_method"},
 						{ProtoField: "inference_cadence"},
 						{ProtoField: "active"},
-						{ProtoField: "validation_steps"},
 					},
 				},
 				{
 					RpcMethod: "RegisterReputer",
-					Use:       "register-reputer lib_p2p_key network_address topicId initial_stake",
+					Use:       "register-reputer lib_p2p_key network_address topic_id initial_stake",
 					Short:     "Register a new reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
@@ -95,7 +94,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RegisterWorker",
-					Use:       "register-worker lib_p2p_key network_address topicId initial_stake",
+					Use:       "register-worker lib_p2p_key network_address topic_id initial_stake",
 					Short:     "Register a new worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},

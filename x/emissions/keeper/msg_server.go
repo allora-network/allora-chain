@@ -69,11 +69,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceCadence:   msg.InferenceCadence,
 		InferenceLastRan:   0,
 		Active:             msg.Active,
-		NumValidationSteps: uint64(len(msg.ValidationSteps)),
-		ValidationSteps:    make(map[uint64]string),
-		// ValidationLastAttempt: make(map[uint64]*timestamppb.Timestamp),
-		ValidationLastAttempt: make(map[uint64]uint64),
-		ValidationRetries:     make(map[uint64]uint64),
 	}
 	_, err = ms.k.GetNextTopicId(ctx)
 	if err != nil {

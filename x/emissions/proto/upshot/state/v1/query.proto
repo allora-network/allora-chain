@@ -48,10 +48,10 @@ service Query {
       "/upshot/state/v1/weights/{topic_id}/{reputer}/{worker}";
   }
 
-  rpc GetInference(QueryInferenceRequest) returns (QueryInferenceResponse) {
+  rpc GetAllInferences(QueryInferenceRequest) returns (QueryInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/inferences/{topic_id}/{worker}";
+      "/upshot/state/v1/inferences/{topic_id}/{timestamp}";
   }
 
   rpc GetInferencesToScore(QueryInferencesToScoreRequest) returns (QueryInferencesToScoreResponse) {
@@ -150,7 +150,7 @@ message QueryWeightResponse {
 // Returns the latest inference on a topic from a worker
 message QueryInferenceRequest {
   uint64 topic_id = 1;
-  string worker = 2;
+  uint64 timestamp = 2;
 }
 
 // Returns the latest inference on a topic from a worker
@@ -158,13 +158,7 @@ message QueryInferenceRequest {
 // NOTE: The amount field is a Uint which implements the custom method
 // signatures required by gogoproto.
 message QueryInferenceResponse {
-  option (gogoproto.equal) = true;
-  string amount = 1 [
-    (cosmos_proto.scalar)  = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true
-  ];
+  Inferences inferences = 1;
 }
 
 message QueryInferencesToScoreRequest {

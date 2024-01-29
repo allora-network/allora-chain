@@ -31,10 +31,6 @@ message Topic {
   uint64 inference_cadence = 9;
   uint64 inference_last_ran = 10;
   bool active = 11;
-  uint64 num_validation_steps = 12;
-  map<uint64, string> validation_steps = 13;
-  map<uint64, uint64> validation_last_attempt = 14;
-  map<uint64, uint64> validation_retries = 15;
 }
 
 

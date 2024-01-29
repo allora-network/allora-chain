@@ -25,7 +25,7 @@ const (
 	Query_GetNextTopicId_FullMethodName             = "/upshot.state.v1.Query/GetNextTopicId"
 	Query_GetTopic_FullMethodName                   = "/upshot.state.v1.Query/GetTopic"
 	Query_GetWeight_FullMethodName                  = "/upshot.state.v1.Query/GetWeight"
-	Query_GetInference_FullMethodName               = "/upshot.state.v1.Query/GetInference"
+	Query_GetAllInferences_FullMethodName           = "/upshot.state.v1.Query/GetAllInferences"
 	Query_GetInferencesToScore_FullMethodName       = "/upshot.state.v1.Query/GetInferencesToScore"
 	Query_GetTotalStake_FullMethodName              = "/upshot.state.v1.Query/GetTotalStake"
 )
@@ -41,7 +41,7 @@ type QueryClient interface {
 	GetNextTopicId(ctx context.Context, in *QueryNextTopicIdRequest, opts ...grpc.CallOption) (*QueryNextTopicIdResponse, error)
 	GetTopic(ctx context.Context, in *QueryTopicRequest, opts ...grpc.CallOption) (*QueryTopicResponse, error)
 	GetWeight(ctx context.Context, in *QueryWeightRequest, opts ...grpc.CallOption) (*QueryWeightResponse, error)
-	GetInference(ctx context.Context, in *QueryInferenceRequest, opts ...grpc.CallOption) (*QueryInferenceResponse, error)
+	GetAllInferences(ctx context.Context, in *QueryInferenceRequest, opts ...grpc.CallOption) (*QueryInferenceResponse, error)
 	GetInferencesToScore(ctx context.Context, in *QueryInferencesToScoreRequest, opts ...grpc.CallOption) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
 }
@@ -108,9 +108,9 @@ func (c *queryClient) GetWeight(ctx context.Context, in *QueryWeightRequest, opt
 	return out, nil
 }
 
-func (c *queryClient) GetInference(ctx context.Context, in *QueryInferenceRequest, opts ...grpc.CallOption) (*QueryInferenceResponse, error) {
+func (c *queryClient) GetAllInferences(ctx context.Context, in *QueryInferenceRequest, opts ...grpc.CallOption) (*QueryInferenceResponse, error) {
 	out := new(QueryInferenceResponse)
-	err := c.cc.Invoke(ctx, Query_GetInference_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Query_GetAllInferences_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ type QueryServer interface {
 	GetNextTopicId(context.Context, *QueryNextTopicIdRequest) (*QueryNextTopicIdResponse, error)
 	GetTopic(context.Context, *QueryTopicRequest) (*QueryTopicResponse, error)
 	GetWeight(context.Context, *QueryWeightRequest) (*QueryWeightResponse, error)
-	GetInference(context.Context, *QueryInferenceRequest) (*QueryInferenceResponse, error)
+	GetAllInferences(context.Context, *QueryInferenceRequest) (*QueryInferenceResponse, error)
 	GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -174,8 +174,8 @@ func (UnimplementedQueryServer) GetTopic(context.Context, *QueryTopicRequest) (*
 func (UnimplementedQueryServer) GetWeight(context.Context, *QueryWeightRequest) (*QueryWeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWeight not implemented")
 }
-func (UnimplementedQueryServer) GetInference(context.Context, *QueryInferenceRequest) (*QueryInferenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetInference not implemented")
+func (UnimplementedQueryServer) GetAllInferences(context.Context, *QueryInferenceRequest) (*QueryInferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllInferences not implemented")
 }
 func (UnimplementedQueryServer) GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesToScore not implemented")
@@ -304,20 +304,20 @@ func _Query_GetWeight_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_GetAllInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryInferenceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetInference(ctx, in)
+		return srv.(QueryServer).GetAllInferences(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetInference_FullMethodName,
+		FullMethod: Query_GetAllInferences_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetInference(ctx, req.(*QueryInferenceRequest))
+		return srv.(QueryServer).GetAllInferences(ctx, req.(*QueryInferenceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -390,8 +390,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetWeight_Handler,
 		},
 		{
-			MethodName: "GetInference",
-			Handler:    _Query_GetInference_Handler,
+			MethodName: "GetAllInferences",
+			Handler:    _Query_GetAllInferences_Handler,
 		},
 		{
 			MethodName: "GetInferencesToScore",

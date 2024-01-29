@@ -22,7 +22,7 @@ type WeightInferencePayload struct {
 	LatestWeights map[string]string         `json:"latest_weights"`
 }
 
-func generateWeights(weights map[string]map[string]*math.Uint, inferences []*state.InferenceSetForScoring, functionId string, functionMethod string) {
+func generateWeights(weights map[string]map[string]*math.Uint, inferences []*state.InferenceSetForScoring, functionId string, functionMethod string, topicId uint64) {
 	inferencesByTimestamp := make(map[string][]InferenceItem)
 	for _, infSet := range inferences {
 		timestamp := fmt.Sprintf("%d", infSet.Timestamp)
@@ -59,14 +59,20 @@ func generateWeights(weights map[string]map[string]*math.Uint, inferences []*sta
 		"method": "%s",
 		"config": {
 			"stdin": %s,
+			"env_vars": [
+				{
+					"name": "TOPIC_ID",
+					"value": %v
+				}
+			],
 			"number_of_nodes": 1
 		}
-	}`, functionId, functionMethod, params)
+	}`, functionId, functionMethod, params, topicId)
 
 	makeApiCall(payload)
 }
 
-func generateInferences(functionId string, functionMethod string, param string) {
+func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
 	payload := fmt.Sprintf(`{
 		"function_id": "%s",
 		"method": "%s",
@@ -79,11 +85,15 @@ func generateInferences(functionId string, functionMethod string, param string) 
 				{
 					"name": "UPSHOT_ARG_PARAMS",
 					"value": %s
+				},
+				{
+					"name": "TOPIC_ID",
+					"value": %v
 				}
 			],
 			"number_of_nodes": 1
 		}
-	}`, functionId, functionMethod, param)
+	}`, functionId, functionMethod, param, topicId)
 
 	makeApiCall(payload)
 }

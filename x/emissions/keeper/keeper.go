@@ -224,7 +224,9 @@ func (k *Keeper) InsertInference(ctx context.Context, topicId TOPIC_ID, timestam
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences state.Inferences) error {
 	key := collections.Join(topicId, timestamp)
-	return k.allInferences.Set(ctx, key, inferences)
+	err := k.allInferences.Set(ctx, key, inferences)
+
+	return err
 }
 
 // A function that accepts a topicId and returns list of Inferences or error
