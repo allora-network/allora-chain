@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"cosmossdk.io/core/appmodule"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -38,10 +39,6 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 		cdc:    cdc,
 		keeper: keeper,
 	}
-}
-
-func NewAppModuleBasic(m AppModule) module.AppModuleBasic {
-	return module.CoreAppModuleBasicAdaptor(m.Name(), m)
 }
 
 // Name returns the state module's name.
@@ -160,17 +157,17 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		// Parallelize the inference and weight cadence checks
 		go func(topic state.Topic) {
 			// Check the cadence of inferences
-			if currentTime - topic.InferenceLastRan >= topic.InferenceCadence {
+			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
 				fmt.Println("Inference cadence met for topic: ", topic.Metadata)
 
 				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata, topic.Id)
-				
+
 				// Update the last inference ran
 				am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
 			}
 
 			// Check the cadence of weight calculations
-			if currentTime - topic.WeightLastRan >= topic.WeightCadence {
+			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
 				fmt.Println("Weight cadence met for topic: ", topic.Metadata)
 
 				// Get Latest Weights

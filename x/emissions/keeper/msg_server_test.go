@@ -145,7 +145,6 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
-	validationSteps := []string{"step1", "step2"}
 	// Create a MsgSetInferences message
 	newTopicMsg := &state.MsgCreateNewTopic{
 		Metadata:         metadata,
@@ -153,7 +152,6 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		WeightCadence:    10800,
 		InferenceCadence: 60,
 		Active:           true,
-		ValidationSteps:  validationSteps,
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)

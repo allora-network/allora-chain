@@ -330,44 +330,8 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Top
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// Returns every worker node registered with the network
-func (k *Keeper) GetAllWorkers(ctx context.Context) ([]sdk.AccAddress, error) {
-	var workers []sdk.AccAddress
-	iter, err := k.topicWorkers.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		workers = append(workers, kv.K2())
-	}
-	return workers, nil
-}
-
 func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.InferenceNode, error) {
 	return k.workers.Get(ctx, worker)
-}
-
-// returns every reputer node registered with the network
-func (k *Keeper) GetAllReputers(ctx context.Context) ([]sdk.AccAddress, error) {
-	var reputers []sdk.AccAddress
-	iter, err := k.topicWorkers.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		reputers = append(reputers, kv.K2())
-	}
-	return reputers, nil
 }
 
 func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.InferenceNode, error) {
@@ -386,25 +350,6 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
 		return nil, err
 	}
 	return activeTopics, nil
-}
-
-// for a given topic, returns every worker node registered to it
-func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TOPIC_ID) ([]sdk.AccAddress, error) {
-	var workers []sdk.AccAddress
-	rng := collections.NewPrefixedPairRange[TOPIC_ID, sdk.AccAddress](topicId)
-	iter, err := k.topicWorkers.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		workers = append(workers, kv.K2())
-	}
-	return workers, nil
 }
 
 // for a given topic, returns every reputer node registered to it
@@ -623,19 +568,6 @@ func (k *Keeper) GetDelegatorStake(ctx context.Context, delegator sdk.AccAddress
 	return k.stakeOwnedByDelegator.Get(ctx, delegator)
 }
 
-// return all addresses, and how much stake they've put into the system
-func (k *Keeper) GetAllDelegatorStakes(ctx context.Context) (map[DELEGATOR_STR]Uint, error) {
-	delegatorStake := make(map[ACC_ADDRESS]Uint)
-	if err := k.stakeOwnedByDelegator.Walk(ctx, nil, func(delegatorId sdk.AccAddress, stake Uint) (bool, error) {
-		delegatorStake[delegatorId.String()] = stake
-		return false, nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return delegatorStake, nil
-}
-
 // For a given delegator and target, find out how much stake the delegator has placed upon the target
 func (k *Keeper) GetBond(ctx context.Context, delegator sdk.AccAddress, target sdk.AccAddress) (Uint, error) {
 	return k.stakePlacement.Get(ctx, collections.Join(delegator, target))
@@ -680,50 +612,9 @@ func (k *Keeper) GetAllBondsForDelegator(ctx context.Context, delegator sdk.AccA
 	return targets, amounts, nil
 }
 
-// Return a double map of every bond in the system
-func (k *Keeper) GetAllBonds(ctx context.Context) (map[TARGET_STR]map[DELEGATOR_STR]Uint, error) {
-	bonds := make(map[TARGET_STR]map[DELEGATOR_STR]Uint)
-	iter, err := k.stakePlacement.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		target := kv.K1().String()
-		delegator := kv.K2().String()
-		targetBonds := bonds[target]
-		if targetBonds == nil {
-			targetBonds = make(map[DELEGATOR_STR]Uint)
-			bonds[target] = targetBonds
-		}
-		bonds[target][delegator], err = k.stakePlacement.Get(ctx, kv)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return bonds, nil
-}
-
 // For a given target, find out how much stake has been placed upon them
 func (k *Keeper) GetTargetStake(ctx context.Context, target sdk.AccAddress) (Uint, error) {
 	return k.stakePlacedUponTarget.Get(ctx, target)
-}
-
-// For all targets, report how much stake each target has had placed upon them
-func (k *Keeper) GetAllTargetStakes(ctx context.Context) (map[TARGET_STR]Uint, error) {
-	targetStake := make(map[ACC_ADDRESS]Uint)
-	if err := k.stakePlacedUponTarget.Walk(ctx, nil, func(targetId sdk.AccAddress, stake Uint) (bool, error) {
-		targetStake[targetId.String()] = stake
-		return false, nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return targetStake, nil
 }
 
 // For a given topic return the matrix (double map) of all (reputers, workers) -> weight of reputer upon worker
@@ -752,62 +643,6 @@ func (k *Keeper) GetWeightsFromTopic(ctx context.Context, topicId TOPIC_ID) (map
 			return nil, err
 		}
 		weights[reputer.String()][worker.String()] = &weight
-	}
-	return weights, nil
-}
-
-// For a given reputer and topic, create the list (map) of all workers theyve weighed, and their weights
-func (k *Keeper) GetWeightsFromReputer(ctx context.Context, topicId TOPIC_ID, reputer sdk.AccAddress) (map[WORKERS]Uint, error) {
-	weights := make(map[ACC_ADDRESS]Uint)
-	rng := collections.NewSuperPrefixedTripleRange[TOPIC_ID, sdk.AccAddress, sdk.AccAddress](topicId, reputer)
-	iter, err := k.weights.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		weights[kv.K2().String()], err = k.weights.Get(ctx, kv)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return weights, nil
-}
-
-// Get all recorded weights in the system for every topic, every reputer and every worker they've weighed
-func (k *Keeper) GetAllWeights(ctx context.Context) (map[TOPIC_ID]map[REPUTERS]map[WORKERS]Uint, error) {
-	weights := make(map[TOPIC_ID]map[ACC_ADDRESS]map[ACC_ADDRESS]Uint)
-	iter, err := k.weights.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		topicId := kv.K1()
-		reputer := kv.K2()
-		worker := kv.K3()
-		topic := weights[topicId]
-		if topic == nil {
-			topic = make(map[ACC_ADDRESS]map[ACC_ADDRESS]Uint)
-		}
-		weights[topicId] = topic
-		reputerWeights := weights[topicId][reputer.String()]
-		if reputerWeights == nil {
-			reputerWeights = make(map[ACC_ADDRESS]Uint)
-			weights[topicId][reputer.String()] = reputerWeights
-		}
-		weights[topicId][reputer.String()][worker.String()], err = k.weights.Get(ctx, kv)
-		if err != nil {
-			return nil, err
-		}
 	}
 	return weights, nil
 }

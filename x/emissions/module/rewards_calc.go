@@ -299,30 +299,6 @@ func normalizeBondDeltas(bondDeltas map[keeper.REPUTERS]map[keeper.WORKERS]*Floa
 	return result
 }
 
-func getDividends(
-	normalizedBondDeltas map[keeper.REPUTERS]map[keeper.WORKERS]*Float,
-	incentive map[keeper.ACC_ADDRESS]*Float) map[keeper.ACC_ADDRESS]*Float {
-	ret := make(map[keeper.ACC_ADDRESS]*Float)
-	for reputer, reputerWeightsMap := range normalizedBondDeltas {
-		reputerIncentive := incentive[reputer]
-		if reputerIncentive == nil {
-			continue
-		}
-		for workerOrReputer, weight := range reputerWeightsMap {
-			priorDividend := new(Float).SetInt64(0)
-			if ret[workerOrReputer] != nil {
-				priorDividend = ret[workerOrReputer]
-			}
-			marginalDividend := new(Float).SetUint64(0)
-			marginalDividend.Mul(weight, reputerIncentive)
-			marginalDividend.Add(marginalDividend, priorDividend)
-			ret[workerOrReputer] = marginalDividend
-		}
-	}
-
-	return ret
-}
-
 func sum(a map[keeper.ACC_ADDRESS]*Float) Float {
 	ret := new(Float).SetInt64(0)
 	for _, val := range a {
