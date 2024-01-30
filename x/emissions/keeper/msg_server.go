@@ -74,8 +74,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	if err != nil {
 		return nil, err
 	}
-
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
+		return nil, err
+	}
+	// Set latest weight-adjustment timestamp of a topic to 0
+	if err := ms.k.SetLatestInferenceTimestamp(ctx, id, 0); err != nil {
 		return nil, err
 	}
 
@@ -139,14 +142,14 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 		groupedInferences[inference.TopicId] = append(groupedInferences[inference.TopicId], inference)
 	}
 
-	now_ts := uint64(time.Now().UTC().Unix())
+	actualTimestamp := uint64(time.Now().UTC().Unix())
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
 		inferences := &state.Inferences{
 			Inferences: inferences,
 		}
-		err := ms.k.InsertInferences(ctx, topicId, now_ts, *inferences)
+		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
 		if err != nil {
 			return nil, err
 		}
