@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
 
@@ -283,17 +284,9 @@ func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint
 	return k.topicStake.Set(ctx, topicId, stake)
 }
 
-// Gets a map of each topic in the network and how much stake it has
-func (k *Keeper) GetAllTopicStake(ctx context.Context) (map[TOPIC_ID]Uint, error) {
-	topicStake := make(map[TOPIC_ID]Uint)
-	if err := k.topicStake.Walk(ctx, nil, func(topicId TOPIC_ID, stake Uint) (bool, error) {
-		topicStake[topicId] = stake
-		return false, nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return topicStake, nil
+// Runs an arbitrary function for every topic in the network
+func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TOPIC_ID, stake Uint) (stop bool, err error)) error {
+	return k.topicStake.Walk(ctx, nil, walkFunc)
 }
 
 // Returns the last block height at which rewards emissions were updated
@@ -318,6 +311,31 @@ func (k *Keeper) GetAccumulatedEpochRewards(ctx context.Context) sdk.Coin {
 // Returns the number of topics that are active in the network
 func (k *Keeper) GetNumTopics(ctx context.Context) (TOPIC_ID, error) {
 	return k.nextTopicId.Peek(ctx)
+}
+
+// for a given topic, returns every reputer node registered to it and their normalized stake
+func (k *Keeper) GetReputerNormalizedStake(
+	ctx sdk.Context,
+	topicId TOPIC_ID,
+	topicStake *big.Float) (reputerNormalizedStakeMap map[ACC_ADDRESS]*big.Float, retErr error) {
+	reputerNormalizedStakeMap = make(map[ACC_ADDRESS]*big.Float)
+	rng := collections.NewPrefixedPairRange[TOPIC_ID, sdk.AccAddress](topicId)
+	retErr = nil
+	retErr = k.topicReputers.Walk(ctx, rng, func(key collections.Pair[TOPIC_ID, sdk.AccAddress]) (stop bool, err error) {
+		reputer := key.K2()
+		// Get Stake in each reputer
+		reputerTargetStake, err := k.stakePlacedUponTarget.Get(ctx, reputer)
+		if err != nil {
+			return true, err
+		}
+		reputerTotalStake := big.NewFloat(0).SetInt(reputerTargetStake.BigInt())
+
+		// How much stake does each reputer have as a percentage of the total stake in the topic?
+		reputerNormalizedStake := big.NewFloat(0).Quo(reputerTotalStake, topicStake)
+		reputerNormalizedStakeMap[reputer.String()] = reputerNormalizedStake
+		return false, nil
+	})
+	return reputerNormalizedStakeMap, retErr
 }
 
 // Gets next topic id
@@ -350,25 +368,6 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
 		return nil, err
 	}
 	return activeTopics, nil
-}
-
-// for a given topic, returns every reputer node registered to it
-func (k *Keeper) GetTopicReputers(ctx context.Context, topicId TOPIC_ID) ([]sdk.AccAddress, error) {
-	var reputers []sdk.AccAddress
-	rng := collections.NewPrefixedPairRange[TOPIC_ID, sdk.AccAddress](topicId)
-	iter, err := k.topicReputers.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		reputers = append(reputers, kv.K2())
-	}
-	return reputers, nil
 }
 
 // Add stake adds stake to the system for a given delegator and target
@@ -610,11 +609,6 @@ func (k *Keeper) GetAllBondsForDelegator(ctx context.Context, delegator sdk.AccA
 	}
 
 	return targets, amounts, nil
-}
-
-// For a given target, find out how much stake has been placed upon them
-func (k *Keeper) GetTargetStake(ctx context.Context, target sdk.AccAddress) (Uint, error) {
-	return k.stakePlacedUponTarget.Get(ctx, target)
 }
 
 // For a given topic return the matrix (double map) of all (reputers, workers) -> weight of reputer upon worker
