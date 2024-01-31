@@ -108,7 +108,13 @@ message QueryTotalStakeResponse {
 message QueryAccumulatedEpochRewardsRequest {}
 
 message QueryAccumulatedEpochRewardsResponse {
-  uint64 amount = 1;
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar)  = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message QueryNextTopicIdRequest {

@@ -18,7 +18,6 @@ import (
 
 type Uint = cosmosMath.Uint
 type Int = cosmosMath.Int
-type Coin = sdk.Coin
 
 type TOPIC_ID = uint64
 type ACC_ADDRESS = string
@@ -37,6 +36,12 @@ var ErrIntegerUnderflowTarget = errors.New("integer underflow subtracting from t
 var ErrIntegerUnderflowTopicStake = errors.New("integer underflow subtracting from topic stake")
 var ErrIntegerUnderflowTotalStake = errors.New("integer underflow subtracting from total system stake")
 var ErrIterationLengthDoesNotMatch = errors.New("iteration length does not match")
+
+// Emissions rate Constants
+// TODO make these not constants and figure out how they should
+// be changeable by governance or some algorithm or whatever
+const EPOCH_LENGTH = 5
+const EMISSIONS_PER_EPOCH = 1000
 
 type Keeper struct {
 	cdc          codec.BinaryCodec
@@ -299,13 +304,31 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
 
-// Get the amount of tokens that will be paid as rewards to network participants
-// the next time the rewards calculation function runs
-func (k *Keeper) GetAccumulatedEpochRewards(ctx context.Context) sdk.Coin {
-	// the coin denom should match upshot-appchain config.go, i.e. upt
-	moduleAccount := k.authKeeper.GetModuleAccount(ctx, state.ModuleName)
-	moduleAccountAddress := moduleAccount.GetAddress()
-	return k.bankKeeper.GetBalance(ctx, moduleAccountAddress, "upt")
+// return epoch length
+func (k *Keeper) EpochLength() int64 {
+	return EPOCH_LENGTH
+}
+
+// return how many new coins should be minted for the next emission
+func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.Int, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	blockNumber := sdkCtx.BlockHeight()
+	lastRewardsUpdate, err := k.GetLastRewardsUpdate(sdkCtx)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
+	// number of epochs that have passed (if more than 1)
+	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / EPOCH_LENGTH)
+	// get emission amount
+	return epochsPassed.Mul(cosmosMath.NewInt(EMISSIONS_PER_EPOCH)), nil
+}
+
+// mint new rewards coins to this module account
+func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
+	coins := sdk.NewCoins(sdk.NewCoin("upt", amount))
+	return k.bankKeeper.MintCoins(ctx, state.ModuleName, coins)
 }
 
 // Returns the number of topics that are active in the network

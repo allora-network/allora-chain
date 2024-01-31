@@ -112,12 +112,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-// BeginBlock returns the begin blocker for the upshot module.
-func (am AppModule) BeginBlock(ctx context.Context) error {
-	c := sdk.UnwrapSDKContext(ctx)
-	return am.keeper.BeginBlocker(c)
-}
-
 // EndBlock returns the end blocker for the upshot module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	fmt.Printf("\n ---------------- EndBlock called ------------------- \n")
@@ -134,10 +128,10 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	if blocksSinceLastUpdate < EPOCH_LENGTH {
+	if blocksSinceLastUpdate < am.keeper.EpochLength() {
 		return nil
 	}
-	err = emitRewards(sdkCtx, am, uint64(blocksSinceLastUpdate))
+	err = emitRewards(sdkCtx, am)
 	// the following code does NOT halt the chain in case of an error in rewards payments
 	// if an error occurs and rewards payments are not made, globally they will still accumulate
 	// and we can retroactively pay them out

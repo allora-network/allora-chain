@@ -17,9 +17,6 @@ type Number interface {
 	*Float | *cosmosMath.Uint
 }
 
-// constants
-const EPOCH_LENGTH = 5
-
 // errors defined in this file
 var ErrInvalidLastUpdate = errors.New("invalid last update")
 var ErrEpochNotReached = errors.New("not enough blocks have passed to hit an epoch")
@@ -29,17 +26,6 @@ var ErrDivideMapValuesByZero = errors.New("cannot divide map values by zero")
 // ********************************************************
 // *        PUBLIC EXPORTED READ-ONLY FUNCTIONS           *
 // ********************************************************
-
-// Given the current block number, how many new tokens are going to be emitted globally?
-func GetCumulativeEmission(ctx sdk.Context, am AppModule, blocksSinceLastUpdate uint64) Uint {
-	// number of epochs that have passed (if more than 1)
-	epochsPassed := cosmosMath.NewUint(blocksSinceLastUpdate / uint64(EPOCH_LENGTH))
-
-	// get emission amount
-	perEpochEmission := cosmosMath.NewUintFromBigInt(am.keeper.GetAccumulatedEpochRewards(ctx).Amount.BigInt())
-	cumulativeEmission := epochsPassed.Mul(perEpochEmission)
-	return cumulativeEmission
-}
 
 // For a given topic:
 // given the sum total of all stake in that topic,
@@ -152,7 +138,7 @@ func GetParticipantEmissionsForTopic(
 // ********************************************************
 
 // The function that performs the emission of new tokens
-func emitRewards(ctx sdk.Context, am AppModule, blocksSinceLastUpdate uint64) error {
+func emitRewards(ctx sdk.Context, am AppModule) error {
 	// get total stake in network
 	totalStake, err := am.keeper.GetTotalStake(ctx)
 	if err != nil {
@@ -169,8 +155,16 @@ func emitRewards(ctx sdk.Context, am AppModule, blocksSinceLastUpdate uint64) er
 		return nil
 	}
 
-	// how many new tokens are going to be emitted globally?
-	cumulativeEmission := GetCumulativeEmission(ctx, am, blocksSinceLastUpdate)
+	cumulativeEmissionInt, err := am.keeper.CalculateAccumulatedEmissions(ctx)
+	if err != nil {
+		return err
+	}
+	// mint that many tokens to the module
+	err = am.keeper.MintRewardsCoins(ctx, cumulativeEmissionInt)
+	if err != nil {
+		return err
+	}
+	cumulativeEmission := cosmosMath.NewUintFromBigInt(cumulativeEmissionInt.BigInt())
 
 	// Save/set the above emissions to actually pay participants.
 	// Do this by increasing the stake of each worker by their due ServerEmission + ValidatorEmission
