@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"google.golang.org/grpc/codes"
@@ -129,4 +130,18 @@ func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryInfe
 	}
 
 	return &state.QueryInferenceResponse{Inferences: inferences}, nil
+}
+
+func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *state.QueryRegisteredWorkerNodesRequest) (*state.QueryRegisteredWorkerNodesResponse, error) {
+    if req == nil {
+        return nil, fmt.Errorf("received nil request")
+    }
+
+    nodes, err := qs.k.FindWorkerNodesByOwner(ctx.(sdk.Context), req.NodeId)
+    if err != nil {
+        return nil, err
+    }
+
+    // Prepare and return the response
+    return &state.QueryRegisteredWorkerNodesResponse{Nodes: nodes}, nil
 }

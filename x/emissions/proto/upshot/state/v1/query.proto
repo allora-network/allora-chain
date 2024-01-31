@@ -65,6 +65,12 @@ service Query {
     option (google.api.http).get =
       "/upshot/state/v1/total_stake";
   }
+
+  rpc GetWorkerNodeRegistration(QueryRegisteredWorkerNodesRequest) returns (QueryRegisteredWorkerNodesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+    "/upshot/state/v1/worker_nodes/{node_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -173,4 +179,12 @@ message QueryInferencesToScoreRequest {
 
 message QueryInferencesToScoreResponse {
   repeated InferenceSetForScoring inferences = 1;
+}
+
+message QueryRegisteredWorkerNodesRequest {
+  string node_id = 2;
+}
+
+message QueryRegisteredWorkerNodesResponse {
+  repeated InferenceNode nodes = 1;
 }

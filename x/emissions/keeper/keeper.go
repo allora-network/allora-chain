@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"math/big"
+	"strings"
 
 	cosmosMath "cosmossdk.io/math"
 
@@ -29,13 +29,6 @@ type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
 type UNIX_TIMESTAMP = uint64
-
-var ErrIntegerUnderflowDelegator = errors.New("integer underflow subtracting from delegator stake")
-var ErrIntegerUnderflowBonds = errors.New("integer underflow subtracting from bonds stake")
-var ErrIntegerUnderflowTarget = errors.New("integer underflow subtracting from target stake")
-var ErrIntegerUnderflowTopicStake = errors.New("integer underflow subtracting from topic stake")
-var ErrIntegerUnderflowTotalStake = errors.New("integer underflow subtracting from total system stake")
-var ErrIterationLengthDoesNotMatch = errors.New("iteration length does not match")
 
 // Emissions rate Constants
 // TODO make these not constants and figure out how they should
@@ -720,4 +713,29 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.Ac
 		return err
 	}
 	return nil
+}
+
+func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*state.InferenceNode, error) {
+    var nodes []*state.InferenceNode
+    var nodeIdParts = strings.Split(nodeId, "|")
+
+	if(len(nodeIdParts) < 2) {
+		nodeIdParts = append(nodeIdParts, "")
+	}
+
+    owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
+
+    iterator, err := k.workers.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for ; iterator.Valid(); iterator.Next() {
+		node, _ := iterator.Value()
+		if(node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey) {
+			nodes = append(nodes, &node)
+		}
+    }
+
+    return nodes, nil
 }

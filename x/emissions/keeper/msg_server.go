@@ -11,16 +11,6 @@ import (
 	state "github.com/upshot-tech/protocol-state-machine-module"
 )
 
-var ErrInvalidTopicId = fmt.Errorf("invalid topic id")
-var ErrReputerAlreadyRegistered = fmt.Errorf("reputer already registered")
-var ErrWorkerAlreadyRegistered = fmt.Errorf("worker already registered")
-var ErrInsufficientStakeToRegister = fmt.Errorf("nodes must stake sufficient funds to register")
-var ErrLibP2PKeyRequired = fmt.Errorf("LibP2P key is required")
-var ErrSenderNotRegistered = fmt.Errorf("transaction sender not registered")
-var ErrStakeTargetNotRegistered = fmt.Errorf("stake target not registered")
-var ErrTopicIdOfStakerAndTargetDoNotMatch = fmt.Errorf("Staker and intended target of stake do not participate in the same topic")
-var ErrInsufficientStakeToRemove = fmt.Errorf("insufficient stake to remove")
-
 const REQUIRED_MINIMUM_STAKE = 1
 
 type NodeExists int8
@@ -86,8 +76,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
+	fmt.Println("\n")
+	fmt.Println("Processing updated weights")
+
 	for _, weightEntry := range msg.Weights {
 
+		fmt.Println("\n")
+	    fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
+		
 		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
 		workerAddr := sdk.AccAddress(weightEntry.Worker)
 
@@ -143,6 +139,8 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 	}
 
 	actualTimestamp := uint64(time.Now().UTC().Unix())
+	fmt.Println("\n")
+	fmt.Println("Processing inferences for timestamp: ", actualTimestamp)
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
@@ -152,6 +150,10 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
 		if err != nil {
 			return nil, err
+		}
+		for _, inference := range inferences.Inferences {
+			fmt.Println("\n")
+			fmt.Println("Topic: ", topicId, "| Inference: ", inference.Value.String(), "| Worker: ", inference.Worker)
 		}
 	}
 
@@ -192,7 +194,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 	reputerInfo := state.InferenceNode{
 		TopicId:        msg.TopicId,
 		LibP2PKey:      msg.LibP2PKey,
-		NetworkAddress: msg.NetworkAddress,
+		MultiAddress: 	msg.MultiAddress,
 	}
 
 	err = ms.k.InsertReputer(ctx, msg.TopicId, reputerAddr, reputerInfo)
@@ -235,9 +237,12 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 	// add node to topicReputers
 	// add node to reputers
 	workerInfo := state.InferenceNode{
+		NodeAddress:    msg.Creator,
 		TopicId:        msg.TopicId,
 		LibP2PKey:      msg.LibP2PKey,
-		NetworkAddress: msg.NetworkAddress,
+		MultiAddress:   msg.MultiAddress,
+		Owner: 			msg.Owner,
+		NodeId: 		msg.Owner + "|" + msg.LibP2PKey,
 	}
 
 	err = ms.k.InsertWorker(ctx, msg.TopicId, workerAddr, workerInfo)

@@ -106,7 +106,7 @@ message MsgRegisterReputer {
 
   string creator = 1;                      // Message sender.
   string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string network_address = 3;              // Network address for connectivity.
+  string multi_address = 3;              // Network address for connectivity.
   uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
@@ -130,7 +130,7 @@ message MsgRegisterWorker {
 
   string creator = 1;                      // Message sender.
   string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string network_address = 3;              // Network address for connectivity.
+  string multi_address = 3;                // Network address for connectivity.
   uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
@@ -138,6 +138,7 @@ message MsgRegisterWorker {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // Initial stake for the node.
+  string owner = 6;
 }
 
 // Response for registering an Inference compute node

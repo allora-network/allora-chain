@@ -56,6 +56,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetWorkerNodeRegistration",
+					Use:       "inference-nodes [owner|libp2p-pub-key]",
+					Short:     "Get Latest Inference From Worker for a Topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "node_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
@@ -87,7 +95,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Register a new reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "network_address"},
+						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "initial_stake"},
 					},
@@ -98,7 +106,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Register a new worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "network_address"},
+						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "initial_stake"},
 					},

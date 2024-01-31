@@ -4023,10 +4023,13 @@ func (x *fastReflection_Inferences) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_InferenceNode                 protoreflect.MessageDescriptor
-	fd_InferenceNode_topic_id        protoreflect.FieldDescriptor
-	fd_InferenceNode_lib_p2p_key     protoreflect.FieldDescriptor
-	fd_InferenceNode_network_address protoreflect.FieldDescriptor
+	md_InferenceNode               protoreflect.MessageDescriptor
+	fd_InferenceNode_topic_id      protoreflect.FieldDescriptor
+	fd_InferenceNode_lib_p2p_key   protoreflect.FieldDescriptor
+	fd_InferenceNode_multi_address protoreflect.FieldDescriptor
+	fd_InferenceNode_owner         protoreflect.FieldDescriptor
+	fd_InferenceNode_node_address  protoreflect.FieldDescriptor
+	fd_InferenceNode_node_id       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -4034,7 +4037,10 @@ func init() {
 	md_InferenceNode = File_upshot_state_v1_types_proto.Messages().ByName("InferenceNode")
 	fd_InferenceNode_topic_id = md_InferenceNode.Fields().ByName("topic_id")
 	fd_InferenceNode_lib_p2p_key = md_InferenceNode.Fields().ByName("lib_p2p_key")
-	fd_InferenceNode_network_address = md_InferenceNode.Fields().ByName("network_address")
+	fd_InferenceNode_multi_address = md_InferenceNode.Fields().ByName("multi_address")
+	fd_InferenceNode_owner = md_InferenceNode.Fields().ByName("owner")
+	fd_InferenceNode_node_address = md_InferenceNode.Fields().ByName("node_address")
+	fd_InferenceNode_node_id = md_InferenceNode.Fields().ByName("node_id")
 }
 
 var _ protoreflect.Message = (*fastReflection_InferenceNode)(nil)
@@ -4114,9 +4120,27 @@ func (x *fastReflection_InferenceNode) Range(f func(protoreflect.FieldDescriptor
 			return
 		}
 	}
-	if x.NetworkAddress != "" {
-		value := protoreflect.ValueOfString(x.NetworkAddress)
-		if !f(fd_InferenceNode_network_address, value) {
+	if x.MultiAddress != "" {
+		value := protoreflect.ValueOfString(x.MultiAddress)
+		if !f(fd_InferenceNode_multi_address, value) {
+			return
+		}
+	}
+	if x.Owner != "" {
+		value := protoreflect.ValueOfString(x.Owner)
+		if !f(fd_InferenceNode_owner, value) {
+			return
+		}
+	}
+	if x.NodeAddress != "" {
+		value := protoreflect.ValueOfString(x.NodeAddress)
+		if !f(fd_InferenceNode_node_address, value) {
+			return
+		}
+	}
+	if x.NodeId != "" {
+		value := protoreflect.ValueOfString(x.NodeId)
+		if !f(fd_InferenceNode_node_id, value) {
 			return
 		}
 	}
@@ -4139,8 +4163,14 @@ func (x *fastReflection_InferenceNode) Has(fd protoreflect.FieldDescriptor) bool
 		return x.TopicId != uint64(0)
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		return x.LibP2PKey != ""
-	case "upshot.state.v1.InferenceNode.network_address":
-		return x.NetworkAddress != ""
+	case "upshot.state.v1.InferenceNode.multi_address":
+		return x.MultiAddress != ""
+	case "upshot.state.v1.InferenceNode.owner":
+		return x.Owner != ""
+	case "upshot.state.v1.InferenceNode.node_address":
+		return x.NodeAddress != ""
+	case "upshot.state.v1.InferenceNode.node_id":
+		return x.NodeId != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
@@ -4161,8 +4191,14 @@ func (x *fastReflection_InferenceNode) Clear(fd protoreflect.FieldDescriptor) {
 		x.TopicId = uint64(0)
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		x.LibP2PKey = ""
-	case "upshot.state.v1.InferenceNode.network_address":
-		x.NetworkAddress = ""
+	case "upshot.state.v1.InferenceNode.multi_address":
+		x.MultiAddress = ""
+	case "upshot.state.v1.InferenceNode.owner":
+		x.Owner = ""
+	case "upshot.state.v1.InferenceNode.node_address":
+		x.NodeAddress = ""
+	case "upshot.state.v1.InferenceNode.node_id":
+		x.NodeId = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
@@ -4185,8 +4221,17 @@ func (x *fastReflection_InferenceNode) Get(descriptor protoreflect.FieldDescript
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.InferenceNode.network_address":
-		value := x.NetworkAddress
+	case "upshot.state.v1.InferenceNode.multi_address":
+		value := x.MultiAddress
+		return protoreflect.ValueOfString(value)
+	case "upshot.state.v1.InferenceNode.owner":
+		value := x.Owner
+		return protoreflect.ValueOfString(value)
+	case "upshot.state.v1.InferenceNode.node_address":
+		value := x.NodeAddress
+		return protoreflect.ValueOfString(value)
+	case "upshot.state.v1.InferenceNode.node_id":
+		value := x.NodeId
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -4212,8 +4257,14 @@ func (x *fastReflection_InferenceNode) Set(fd protoreflect.FieldDescriptor, valu
 		x.TopicId = value.Uint()
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
-	case "upshot.state.v1.InferenceNode.network_address":
-		x.NetworkAddress = value.Interface().(string)
+	case "upshot.state.v1.InferenceNode.multi_address":
+		x.MultiAddress = value.Interface().(string)
+	case "upshot.state.v1.InferenceNode.owner":
+		x.Owner = value.Interface().(string)
+	case "upshot.state.v1.InferenceNode.node_address":
+		x.NodeAddress = value.Interface().(string)
+	case "upshot.state.v1.InferenceNode.node_id":
+		x.NodeId = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
@@ -4238,8 +4289,14 @@ func (x *fastReflection_InferenceNode) Mutable(fd protoreflect.FieldDescriptor) 
 		panic(fmt.Errorf("field topic_id of message upshot.state.v1.InferenceNode is not mutable"))
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.network_address":
-		panic(fmt.Errorf("field network_address of message upshot.state.v1.InferenceNode is not mutable"))
+	case "upshot.state.v1.InferenceNode.multi_address":
+		panic(fmt.Errorf("field multi_address of message upshot.state.v1.InferenceNode is not mutable"))
+	case "upshot.state.v1.InferenceNode.owner":
+		panic(fmt.Errorf("field owner of message upshot.state.v1.InferenceNode is not mutable"))
+	case "upshot.state.v1.InferenceNode.node_address":
+		panic(fmt.Errorf("field node_address of message upshot.state.v1.InferenceNode is not mutable"))
+	case "upshot.state.v1.InferenceNode.node_id":
+		panic(fmt.Errorf("field node_id of message upshot.state.v1.InferenceNode is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
@@ -4257,7 +4314,13 @@ func (x *fastReflection_InferenceNode) NewField(fd protoreflect.FieldDescriptor)
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "upshot.state.v1.InferenceNode.lib_p2p_key":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.InferenceNode.network_address":
+	case "upshot.state.v1.InferenceNode.multi_address":
+		return protoreflect.ValueOfString("")
+	case "upshot.state.v1.InferenceNode.owner":
+		return protoreflect.ValueOfString("")
+	case "upshot.state.v1.InferenceNode.node_address":
+		return protoreflect.ValueOfString("")
+	case "upshot.state.v1.InferenceNode.node_id":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -4335,7 +4398,19 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.NetworkAddress)
+		l = len(x.MultiAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Owner)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.NodeAddress)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.NodeId)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -4368,10 +4443,31 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.NetworkAddress) > 0 {
-			i -= len(x.NetworkAddress)
-			copy(dAtA[i:], x.NetworkAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NetworkAddress)))
+		if len(x.NodeId) > 0 {
+			i -= len(x.NodeId)
+			copy(dAtA[i:], x.NodeId)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NodeId)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if len(x.NodeAddress) > 0 {
+			i -= len(x.NodeAddress)
+			copy(dAtA[i:], x.NodeAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NodeAddress)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if len(x.Owner) > 0 {
+			i -= len(x.Owner)
+			copy(dAtA[i:], x.Owner)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Owner)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.MultiAddress) > 0 {
+			i -= len(x.MultiAddress)
+			copy(dAtA[i:], x.MultiAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MultiAddress)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -4489,7 +4585,7 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NetworkAddress", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MultiAddress", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -4517,7 +4613,103 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.NetworkAddress = string(dAtA[iNdEx:postIndex])
+				x.MultiAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Owner = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NodeAddress = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeId", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NodeId = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -5592,6 +5784,91 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Err int32
+
+const (
+	Err_ErrInvalidTopicId                     Err = 0
+	Err_ErrReputerAlreadyRegistered           Err = 1
+	Err_ErrWorkerAlreadyRegistered            Err = 2
+	Err_ErrInsufficientStakeToRegister        Err = 3
+	Err_ErrLibP2PKeyRequired                  Err = 4
+	Err_ErrSenderNotRegistered                Err = 5
+	Err_ErrStakeTargetNotRegistered           Err = 6
+	Err_ErrTopicIdOfStakerAndTargetDoNotMatch Err = 7
+	Err_ErrInsufficientStakeToRemove          Err = 8
+	Err_ErrIntegerUnderflowDelegator          Err = 9
+	Err_ErrIntegerUnderflowBonds              Err = 10
+	Err_ErrIntegerUnderflowTarget             Err = 11
+	Err_ErrIntegerUnderflowTopicStake         Err = 12
+	Err_ErrIntegerUnderflowTotalStake         Err = 13
+	Err_ErrIterationLengthDoesNotMatch        Err = 14
+)
+
+// Enum value maps for Err.
+var (
+	Err_name = map[int32]string{
+		0:  "ErrInvalidTopicId",
+		1:  "ErrReputerAlreadyRegistered",
+		2:  "ErrWorkerAlreadyRegistered",
+		3:  "ErrInsufficientStakeToRegister",
+		4:  "ErrLibP2PKeyRequired",
+		5:  "ErrSenderNotRegistered",
+		6:  "ErrStakeTargetNotRegistered",
+		7:  "ErrTopicIdOfStakerAndTargetDoNotMatch",
+		8:  "ErrInsufficientStakeToRemove",
+		9:  "ErrIntegerUnderflowDelegator",
+		10: "ErrIntegerUnderflowBonds",
+		11: "ErrIntegerUnderflowTarget",
+		12: "ErrIntegerUnderflowTopicStake",
+		13: "ErrIntegerUnderflowTotalStake",
+		14: "ErrIterationLengthDoesNotMatch",
+	}
+	Err_value = map[string]int32{
+		"ErrInvalidTopicId":                     0,
+		"ErrReputerAlreadyRegistered":           1,
+		"ErrWorkerAlreadyRegistered":            2,
+		"ErrInsufficientStakeToRegister":        3,
+		"ErrLibP2PKeyRequired":                  4,
+		"ErrSenderNotRegistered":                5,
+		"ErrStakeTargetNotRegistered":           6,
+		"ErrTopicIdOfStakerAndTargetDoNotMatch": 7,
+		"ErrInsufficientStakeToRemove":          8,
+		"ErrIntegerUnderflowDelegator":          9,
+		"ErrIntegerUnderflowBonds":              10,
+		"ErrIntegerUnderflowTarget":             11,
+		"ErrIntegerUnderflowTopicStake":         12,
+		"ErrIntegerUnderflowTotalStake":         13,
+		"ErrIterationLengthDoesNotMatch":        14,
+	}
+)
+
+func (x Err) Enum() *Err {
+	p := new(Err)
+	*p = x
+	return p
+}
+
+func (x Err) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Err) Descriptor() protoreflect.EnumDescriptor {
+	return file_upshot_state_v1_types_proto_enumTypes[0].Descriptor()
+}
+
+func (Err) Type() protoreflect.EnumType {
+	return &file_upshot_state_v1_types_proto_enumTypes[0]
+}
+
+func (x Err) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Err.Descriptor instead.
+func (Err) EnumDescriptor() ([]byte, []int) {
+	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{0}
+}
+
 // Params defines the parameters of the module.
 type Params struct {
 	state         protoimpl.MessageState
@@ -5973,9 +6250,12 @@ type InferenceNode struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId        uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`                     // What topic the node belongs to
-	LibP2PKey      string `protobuf:"bytes,2,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`              // LibP2P key of the node
-	NetworkAddress string `protobuf:"bytes,3,opt,name=network_address,json=networkAddress,proto3" json:"network_address,omitempty"` // Network address for accessing the node
+	TopicId      uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`               // What topic the node belongs to
+	LibP2PKey    string `protobuf:"bytes,2,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`        // LibP2P key of the node
+	MultiAddress string `protobuf:"bytes,3,opt,name=multi_address,json=multiAddress,proto3" json:"multi_address,omitempty"` // Network address for accessing the node
+	Owner        string `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
+	NodeAddress  string `protobuf:"bytes,5,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
+	NodeId       string `protobuf:"bytes,6,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 }
 
 func (x *InferenceNode) Reset() {
@@ -6012,9 +6292,30 @@ func (x *InferenceNode) GetLibP2PKey() string {
 	return ""
 }
 
-func (x *InferenceNode) GetNetworkAddress() string {
+func (x *InferenceNode) GetMultiAddress() string {
 	if x != nil {
-		return x.NetworkAddress
+		return x.MultiAddress
+	}
+	return ""
+}
+
+func (x *InferenceNode) GetOwner() string {
+	if x != nil {
+		return x.Owner
+	}
+	return ""
+}
+
+func (x *InferenceNode) GetNodeAddress() string {
+	if x != nil {
+		return x.NodeAddress
+	}
+	return ""
+}
+
+func (x *InferenceNode) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
 	}
 	return ""
 }
@@ -6177,28 +6478,64 @@ var file_upshot_state_v1_types_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70,
 	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
 	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x22, 0x73, 0x0a, 0x0d, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
-	0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12,
-	0x27, 0x0a, 0x0f, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
-	0x6b, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x55, 0x0a, 0x0e, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x43, 0x0a, 0x0f, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52,
-	0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x22,
-	0x8e, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74,
-	0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
-	0x61, 0x6d, 0x70, 0x12, 0x3b, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x63, 0x65, 0x73, 0x22, 0xc1, 0x01, 0x0a, 0x0d, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79,
+	0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e,
+	0x6f, 0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17,
+	0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x55, 0x0a, 0x0e, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x43, 0x0a, 0x0f, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0e,
+	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x8e,
+	0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46,
+	0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+	0x6d, 0x70, 0x12, 0x3b, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
+	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2a,
+	0xee, 0x03, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x72, 0x72, 0x49, 0x6e,
+	0x76, 0x61, 0x6c, 0x69, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x10, 0x00, 0x12, 0x1f,
+	0x0a, 0x1b, 0x45, 0x72, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65,
+	0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x01, 0x12,
+	0x1e, 0x0a, 0x1a, 0x45, 0x72, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65,
+	0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x02, 0x12,
+	0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65,
+	0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
+	0x72, 0x10, 0x03, 0x12, 0x18, 0x0a, 0x14, 0x45, 0x72, 0x72, 0x4c, 0x69, 0x62, 0x50, 0x32, 0x50,
+	0x4b, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x10, 0x04, 0x12, 0x1a, 0x0a,
+	0x16, 0x45, 0x72, 0x72, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x05, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72,
+	0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x06, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72,
+	0x72, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x4f, 0x66, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72,
+	0x41, 0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61,
+	0x74, 0x63, 0x68, 0x10, 0x07, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75,
+	0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52,
+	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10, 0x08, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e,
+	0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65,
+	0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x10, 0x09, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72,
+	0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77,
+	0x42, 0x6f, 0x6e, 0x64, 0x73, 0x10, 0x0a, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x49, 0x6e,
+	0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61,
+	0x72, 0x67, 0x65, 0x74, 0x10, 0x0b, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74,
+	0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0c, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72,
+	0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77,
+	0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e,
+	0x45, 0x72, 0x72, 0x49, 0x74, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67,
+	0x74, 0x68, 0x44, 0x6f, 0x65, 0x73, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x0e,
 	0x42, 0xd1, 0x01, 0x0a, 0x13, 0x63, 0x6f, 0x6d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
 	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50,
 	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
@@ -6227,25 +6564,27 @@ func file_upshot_state_v1_types_proto_rawDescGZIP() []byte {
 	return file_upshot_state_v1_types_proto_rawDescData
 }
 
+var file_upshot_state_v1_types_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_upshot_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_upshot_state_v1_types_proto_goTypes = []interface{}{
-	(*Params)(nil),                 // 0: upshot.state.v1.Params
-	(*GenesisState)(nil),           // 1: upshot.state.v1.GenesisState
-	(*Topic)(nil),                  // 2: upshot.state.v1.Topic
-	(*Weight)(nil),                 // 3: upshot.state.v1.Weight
-	(*Weights)(nil),                // 4: upshot.state.v1.Weights
-	(*Inference)(nil),              // 5: upshot.state.v1.Inference
-	(*Inferences)(nil),             // 6: upshot.state.v1.Inferences
-	(*InferenceNode)(nil),          // 7: upshot.state.v1.InferenceNode
-	(*InferenceNodes)(nil),         // 8: upshot.state.v1.InferenceNodes
-	(*InferenceSetForScoring)(nil), // 9: upshot.state.v1.InferenceSetForScoring
+	(Err)(0),                       // 0: upshot.state.v1.Err
+	(*Params)(nil),                 // 1: upshot.state.v1.Params
+	(*GenesisState)(nil),           // 2: upshot.state.v1.GenesisState
+	(*Topic)(nil),                  // 3: upshot.state.v1.Topic
+	(*Weight)(nil),                 // 4: upshot.state.v1.Weight
+	(*Weights)(nil),                // 5: upshot.state.v1.Weights
+	(*Inference)(nil),              // 6: upshot.state.v1.Inference
+	(*Inferences)(nil),             // 7: upshot.state.v1.Inferences
+	(*InferenceNode)(nil),          // 8: upshot.state.v1.InferenceNode
+	(*InferenceNodes)(nil),         // 9: upshot.state.v1.InferenceNodes
+	(*InferenceSetForScoring)(nil), // 10: upshot.state.v1.InferenceSetForScoring
 }
 var file_upshot_state_v1_types_proto_depIdxs = []int32{
-	0, // 0: upshot.state.v1.GenesisState.params:type_name -> upshot.state.v1.Params
-	3, // 1: upshot.state.v1.Weights.weights:type_name -> upshot.state.v1.Weight
-	5, // 2: upshot.state.v1.Inferences.inferences:type_name -> upshot.state.v1.Inference
-	5, // 3: upshot.state.v1.InferenceNodes.inference_nodes:type_name -> upshot.state.v1.Inference
-	6, // 4: upshot.state.v1.InferenceSetForScoring.inferences:type_name -> upshot.state.v1.Inferences
+	1, // 0: upshot.state.v1.GenesisState.params:type_name -> upshot.state.v1.Params
+	4, // 1: upshot.state.v1.Weights.weights:type_name -> upshot.state.v1.Weight
+	6, // 2: upshot.state.v1.Inferences.inferences:type_name -> upshot.state.v1.Inference
+	6, // 3: upshot.state.v1.InferenceNodes.inference_nodes:type_name -> upshot.state.v1.Inference
+	7, // 4: upshot.state.v1.InferenceSetForScoring.inferences:type_name -> upshot.state.v1.Inferences
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -6385,13 +6724,14 @@ func file_upshot_state_v1_types_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_upshot_state_v1_types_proto_rawDesc,
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_upshot_state_v1_types_proto_goTypes,
 		DependencyIndexes: file_upshot_state_v1_types_proto_depIdxs,
+		EnumInfos:         file_upshot_state_v1_types_proto_enumTypes,
 		MessageInfos:      file_upshot_state_v1_types_proto_msgTypes,
 	}.Build()
 	File_upshot_state_v1_types_proto = out.File

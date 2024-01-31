@@ -114,7 +114,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // EndBlock returns the end blocker for the upshot module.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	fmt.Printf("\n ---------------- EndBlock called ------------------- \n")
+	fmt.Printf("\n ---------------- EndBlock ------------------- \n")
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Ensure that enough blocks have passed to hit an epoch.
@@ -147,6 +147,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	}
 
 	fmt.Println("Active topics: ", len(topics))
+	fmt.Println("\n")
 
 	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	for _, topic := range topics {
@@ -154,7 +155,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic state.Topic) {
 			// Check the cadence of inferences
 			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
-				fmt.Println("Inference cadence met for topic: ", topic.Metadata)
+				fmt.Printf("Inference cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Println("\n")
 
 				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata, topic.Id)
 
@@ -164,7 +166,8 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 
 			// Check the cadence of weight calculations
 			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-				fmt.Println("Weight cadence met for topic: ", topic.Metadata)
+				fmt.Printf("Weight cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Println("\n")
 
 				// Get Latest Weights
 				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)
@@ -174,7 +177,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 				}
 
 				// Get Lastest Inference
-				// TODO: Get Inference related to the cadence -- Diego's work
 				inferences, err := am.keeper.GetLatestInferencesFromTopic(sdkCtx, topic.Id)
 				if err != nil {
 					fmt.Println("Error getting latest inferences: ", err)
