@@ -9,6 +9,7 @@ WORKDIR /src
 RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
 ENV GOPRIVATE="github.com/upshot-tech/"
 RUN make install
+
 #==============================================================
 
 FROM debian:bookworm-slim as execution
@@ -32,7 +33,7 @@ RUN groupadd -g 1001 ${USERNAME} \
 
 EXPOSE 26657 1317
 VOLUME ${APP_PATH}
-# WORKDIR ${APP_PATH}
+WORKDIR ${APP_PATH}
 
 USER ${USERNAME}
 
