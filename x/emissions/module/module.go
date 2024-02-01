@@ -147,7 +147,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	}
 
 	fmt.Println("Active topics: ", len(topics))
-	fmt.Println("\n")
 
 	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	for _, topic := range topics {
@@ -156,7 +155,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 			// Check the cadence of inferences
 			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
-				fmt.Println("\n")
 
 				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata, topic.Id)
 
@@ -167,7 +165,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 			// Check the cadence of weight calculations
 			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
 				fmt.Printf("Weight cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
-				fmt.Println("\n")
 
 				// Get Latest Weights
 				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)

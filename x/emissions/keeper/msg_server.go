@@ -48,17 +48,17 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	// }
 
 	topic := state.Topic{
-		Id:                 id,
-		Metadata:           msg.Metadata,
-		WeightLogic:        msg.WeightLogic,
-		WeightMethod:       msg.WeightMethod,
-		WeightCadence:      msg.WeightCadence,
-		WeightLastRan:      0,
-		InferenceLogic:     msg.InferenceLogic,
-		InferenceMethod:    msg.InferenceMethod,
-		InferenceCadence:   msg.InferenceCadence,
-		InferenceLastRan:   0,
-		Active:             msg.Active,
+		Id:               id,
+		Metadata:         msg.Metadata,
+		WeightLogic:      msg.WeightLogic,
+		WeightMethod:     msg.WeightMethod,
+		WeightCadence:    msg.WeightCadence,
+		WeightLastRan:    0,
+		InferenceLogic:   msg.InferenceLogic,
+		InferenceMethod:  msg.InferenceMethod,
+		InferenceCadence: msg.InferenceCadence,
+		InferenceLastRan: 0,
+		Active:           msg.Active,
 	}
 	_, err = ms.k.GetNextTopicId(ctx)
 	if err != nil {
@@ -76,14 +76,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
-	fmt.Println("\n")
 	fmt.Println("Processing updated weights")
 
 	for _, weightEntry := range msg.Weights {
 
-		fmt.Println("\n")
-	    fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
-		
+		fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
+
 		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
 		workerAddr := sdk.AccAddress(weightEntry.Worker)
 
@@ -139,7 +137,6 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 	}
 
 	actualTimestamp := uint64(time.Now().UTC().Unix())
-	fmt.Println("\n")
 	fmt.Println("Processing inferences for timestamp: ", actualTimestamp)
 
 	// Update all_inferences
@@ -152,7 +149,6 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 			return nil, err
 		}
 		for _, inference := range inferences.Inferences {
-			fmt.Println("\n")
 			fmt.Println("Topic: ", topicId, "| Inference: ", inference.Value.String(), "| Worker: ", inference.Worker)
 		}
 	}
@@ -192,9 +188,9 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 	// add node to topicReputers
 	// add node to reputers
 	reputerInfo := state.InferenceNode{
-		TopicId:        msg.TopicId,
-		LibP2PKey:      msg.LibP2PKey,
-		MultiAddress: 	msg.MultiAddress,
+		TopicId:      msg.TopicId,
+		LibP2PKey:    msg.LibP2PKey,
+		MultiAddress: msg.MultiAddress,
 	}
 
 	err = ms.k.InsertReputer(ctx, msg.TopicId, reputerAddr, reputerInfo)
@@ -237,12 +233,12 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 	// add node to topicReputers
 	// add node to reputers
 	workerInfo := state.InferenceNode{
-		NodeAddress:    msg.Creator,
-		TopicId:        msg.TopicId,
-		LibP2PKey:      msg.LibP2PKey,
-		MultiAddress:   msg.MultiAddress,
-		Owner: 			msg.Owner,
-		NodeId: 		msg.Owner + "|" + msg.LibP2PKey,
+		NodeAddress:  msg.Creator,
+		TopicId:      msg.TopicId,
+		LibP2PKey:    msg.LibP2PKey,
+		MultiAddress: msg.MultiAddress,
+		Owner:        msg.Owner,
+		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
 	}
 
 	err = ms.k.InsertWorker(ctx, msg.TopicId, workerAddr, workerInfo)
