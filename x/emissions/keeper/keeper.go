@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"math/big"
 	"strings"
 
@@ -282,6 +283,14 @@ func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint
 	return k.topicStake.Set(ctx, topicId, stake)
 }
 
+func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress) (Uint, error) {
+	return k.stakePlacedUponTarget.Get(ctx, target)
+}
+
+func (k *Keeper) SetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress, stake Uint) error {
+	return k.stakePlacedUponTarget.Set(ctx, target, stake)
+}
+
 // Runs an arbitrary function for every topic in the network
 func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TOPIC_ID, stake Uint) (stop bool, err error)) error {
 	return k.topicStake.Walk(ctx, nil, walkFunc)
@@ -355,7 +364,7 @@ func (k *Keeper) GetReputerNormalizedStake(
 }
 
 // Gets next topic id
-func (k *Keeper) GetNextTopicId(ctx context.Context) (TOPIC_ID, error) {
+func (k *Keeper) IncrementTopicId(ctx context.Context) (TOPIC_ID, error) {
 	return k.nextTopicId.Next(ctx)
 }
 
@@ -392,6 +401,11 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
 // it also updates the total stake for the subnet in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string, target string, stake Uint) error {
+
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
+
 	// update the stake array that tracks how much each delegator has invested in the system total
 	delegatorAcc, err := sdk.AccAddressFromBech32(delegator)
 	if err != nil {
@@ -399,8 +413,13 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	}
 	delegatorStake, err := k.stakeOwnedByDelegator.Get(ctx, delegatorAcc)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			delegatorStake = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
 	}
+
 	delegatorStakeNew := delegatorStake.Add(stake)
 	if err := k.stakeOwnedByDelegator.Set(ctx, delegatorAcc, delegatorStakeNew); err != nil {
 		return err
@@ -418,7 +437,11 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	bondIndex := collections.Join(delegatorAcc, targetAcc)
 	bond, err := k.stakePlacement.Get(ctx, bondIndex)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			bond = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
 	}
 	bondNew := bond.Add(stake)
 	if err := k.stakePlacement.Set(ctx, bondIndex, bondNew); err != nil {
@@ -430,7 +453,11 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	// from all different people who have placed stake upon this target
 	targetStake, err := k.stakePlacedUponTarget.Get(ctx, targetAcc)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			targetStake = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
 	}
 	targetStakeNew := targetStake.Add(stake)
 	if err := k.stakePlacedUponTarget.Set(ctx, targetAcc, targetStakeNew); err != nil {
@@ -440,7 +467,11 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	// Update the sum topic stake for this topic
 	topicStake, err := k.topicStake.Get(ctx, topic)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			topicStake = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
 	}
 	topicStakeNew := topicStake.Add(stake)
 	if err := k.topicStake.Set(ctx, topic, topicStakeNew); err != nil {
@@ -450,7 +481,11 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	// Update the total stake across the entire system
 	totalStake, err := k.totalStake.Get(ctx)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			totalStake = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
 	}
 	totalStakeNew := totalStake.Add(stake)
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
@@ -463,7 +498,7 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 // Remove stake from bond updates the various data structures associated
 // with removing stake from the system for a given delegator and target
 // it removes the stake upon target, from delegator, in amount.
-// it also updates the total stake for the subnet in question and the total global stake.
+// it also updates the total stake for the topic in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) RemoveStakeFromBond(
 	ctx context.Context,
@@ -471,6 +506,10 @@ func (k *Keeper) RemoveStakeFromBond(
 	delegator sdk.AccAddress,
 	target sdk.AccAddress,
 	stake Uint) error {
+
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
 
 	// 1. 2. and 3. make checks and update state for
 	// delegatorStake, bonds, and targetStake
@@ -608,7 +647,7 @@ func (k *Keeper) GetAllBondsForDelegator(ctx context.Context, delegator sdk.AccA
 		return nil, nil, err
 	}
 	for _, kv := range kvs {
-		d := kv.K2()
+		d := kv.K1()
 		// if the delegator key matches the delegator we're looking for
 		if d.Equals(delegator) {
 			target := kv.K1()
@@ -705,7 +744,7 @@ func (k *Keeper) IsWorkerRegistered(ctx context.Context, worker sdk.AccAddress) 
 func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.AccAddress, workerInfo state.InferenceNode) error {
 	topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
 	err := k.topicWorkers.Set(ctx, topickey)
-	if err != nil {                                   
+	if err != nil {
 		return err
 	}
 	err = k.workers.Set(ctx, worker, workerInfo)
@@ -716,47 +755,47 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.Ac
 }
 
 func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*state.InferenceNode, error) {
-    var nodes []*state.InferenceNode
-    var nodeIdParts = strings.Split(nodeId, "|")
+	var nodes []*state.InferenceNode
+	var nodeIdParts = strings.Split(nodeId, "|")
 
-	if(len(nodeIdParts) < 2) {
+	if len(nodeIdParts) < 2 {
 		nodeIdParts = append(nodeIdParts, "")
 	}
 
-    owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
+	owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
 
-    iterator, err := k.workers.Iterate(ctx, nil)
+	iterator, err := k.workers.Iterate(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	for ; iterator.Valid(); iterator.Next() {
 		node, _ := iterator.Value()
-		if(node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey) {
+		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
 			nodes = append(nodes, &node)
 		}
-    }
+	}
 
-    return nodes, nil
+	return nodes, nil
 }
 
 func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-    iterator, err := k.workers.Iterate(ctx, nil)
-    if err != nil {
-        return nil, err
-    }
+	iterator, err := k.workers.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
 
-    for ; iterator.Valid(); iterator.Next() {
-        node, _ := iterator.Value()
-        if node.LibP2PKey == p2pKey {
+	for ; iterator.Valid(); iterator.Next() {
+		node, _ := iterator.Value()
+		if node.LibP2PKey == p2pKey {
 			address, err := sdk.AccAddressFromBech32(node.NodeAddress)
 			if err != nil {
 				return nil, err
 			}
 
-            return address, nil
-        }
-    }
+			return address, nil
+		}
+	}
 
-    return nil, collections.ErrNotFound
+	return nil, collections.ErrNotFound
 }

@@ -26,7 +26,6 @@ var ErrDivideMapValuesByZero = errors.New("cannot divide map values by zero")
 // ********************************************************
 // *        PUBLIC EXPORTED READ-ONLY FUNCTIONS           *
 // ********************************************************
-
 // For a given topic:
 // given the sum total of all stake in that topic,
 // given the amount of new tokens scheduled to be emitted this epoch,

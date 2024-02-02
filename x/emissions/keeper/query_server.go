@@ -133,27 +133,27 @@ func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryInfe
 }
 
 func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *state.QueryRegisteredWorkerNodesRequest) (*state.QueryRegisteredWorkerNodesResponse, error) {
-    if req == nil {
-        return nil, fmt.Errorf("received nil request")
-    }
+	if req == nil {
+		return nil, fmt.Errorf("received nil request")
+	}
 
-    nodes, err := qs.k.FindWorkerNodesByOwner(ctx.(sdk.Context), req.NodeId)
-    if err != nil {
-        return nil, err
-    }
+	nodes, err := qs.k.FindWorkerNodesByOwner(ctx.(sdk.Context), req.NodeId)
+	if err != nil {
+		return nil, err
+	}
 
-    return &state.QueryRegisteredWorkerNodesResponse{Nodes: nodes}, nil
+	return &state.QueryRegisteredWorkerNodesResponse{Nodes: nodes}, nil
 }
 
 func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *state.QueryWorkerAddressByP2PKeyRequest) (*state.QueryWorkerAddressByP2PKeyResponse, error) {
-    if req == nil {
-        return nil, fmt.Errorf("received nil request")
-    }
+	if req == nil {
+		return nil, fmt.Errorf("received nil request")
+	}
 
-    workerAddr, err := qs.k.GetWorkerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
-    if err != nil {
-        return nil, err
-    }
+	workerAddr, err := qs.k.GetWorkerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
+	if err != nil {
+		return nil, err
+	}
 
-    return &state.QueryWorkerAddressByP2PKeyResponse{Address: workerAddr.String()}, nil
+	return &state.QueryWorkerAddressByP2PKeyResponse{Address: workerAddr.String()}, nil
 }

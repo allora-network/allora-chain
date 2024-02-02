@@ -60,7 +60,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceLastRan: 0,
 		Active:           msg.Active,
 	}
-	_, err = ms.k.GetNextTopicId(ctx)
+	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 
-	return nil, nil
+	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {

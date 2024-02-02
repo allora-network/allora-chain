@@ -18,6 +18,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 	k.authKeeper.SetModuleAccount(ctx, moduleAccount)
 	k.SetLastRewardsUpdate(ctx, 0)
 	k.SetTotalStake(ctx, cosmosMath.NewUint(0))
+	k.IncrementTopicId(ctx) // reserve topic ID 0 for future use
 
 	return nil
 }

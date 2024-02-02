@@ -20,6 +20,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
+	state "github.com/upshot-tech/protocol-state-machine-module"
 	"github.com/upshot-tech/protocol-state-machine-module/keeper"
 	"github.com/upshot-tech/protocol-state-machine-module/module"
 )
@@ -47,6 +48,7 @@ type ModuleTestSuite struct {
 	bankKeeper    keeper.BankKeeper
 	upshotKeeper  keeper.Keeper
 	appModule     module.AppModule
+	msgServer     state.MsgServer
 	key           *storetypes.KVStoreKey
 }
 
@@ -95,6 +97,7 @@ func (s *ModuleTestSuite) SetupTest() {
 	appModule := module.NewAppModule(encCfg.Codec, s.upshotKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	s.msgServer = keeper.NewMsgServerImpl(s.upshotKeeper)
 	s.appModule = appModule
 }
 

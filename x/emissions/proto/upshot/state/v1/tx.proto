@@ -51,7 +51,9 @@ message MsgCreateNewTopic {
   bool active = 9;
 }
 
-message MsgCreateNewTopicResponse {}
+message MsgCreateNewTopicResponse {
+  uint64 topic_id = 1;
+}
 
 // MsgSetWeights sets the weights for a given validator.
 message MsgSetWeights {
