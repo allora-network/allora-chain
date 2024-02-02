@@ -705,7 +705,7 @@ func (k *Keeper) IsWorkerRegistered(ctx context.Context, worker sdk.AccAddress) 
 func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.AccAddress, workerInfo state.InferenceNode) error {
 	topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
 	err := k.topicWorkers.Set(ctx, topickey)
-	if err != nil {
+	if err != nil {                                   
 		return err
 	}
 	err = k.workers.Set(ctx, worker, workerInfo)
@@ -738,4 +738,25 @@ func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*stat
     }
 
     return nodes, nil
+}
+
+func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+    iterator, err := k.workers.Iterate(ctx, nil)
+    if err != nil {
+        return nil, err
+    }
+
+    for ; iterator.Valid(); iterator.Next() {
+        node, _ := iterator.Value()
+        if node.LibP2PKey == p2pKey {
+			address, err := sdk.AccAddressFromBech32(node.NodeAddress)
+			if err != nil {
+				return nil, err
+			}
+
+            return address, nil
+        }
+    }
+
+    return nil, collections.ErrNotFound
 }

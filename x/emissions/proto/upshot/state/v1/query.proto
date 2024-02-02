@@ -71,6 +71,12 @@ service Query {
     option (google.api.http).get =
     "/upshot/state/v1/worker_nodes/{node_id}";
   }
+
+  rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+    "/upshot/state/v1/worker_nodes/{libp2p_key}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -187,4 +193,12 @@ message QueryRegisteredWorkerNodesRequest {
 
 message QueryRegisteredWorkerNodesResponse {
   repeated InferenceNode nodes = 1;
+}
+
+message QueryWorkerAddressByP2PKeyRequest {
+  string libp2p_key = 1;
+}
+
+message QueryWorkerAddressByP2PKeyResponse {
+  string address = 1;
 }

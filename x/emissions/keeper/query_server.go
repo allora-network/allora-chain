@@ -142,6 +142,18 @@ func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *state.
         return nil, err
     }
 
-    // Prepare and return the response
     return &state.QueryRegisteredWorkerNodesResponse{Nodes: nodes}, nil
+}
+
+func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *state.QueryWorkerAddressByP2PKeyRequest) (*state.QueryWorkerAddressByP2PKeyResponse, error) {
+    if req == nil {
+        return nil, fmt.Errorf("received nil request")
+    }
+
+    workerAddr, err := qs.k.GetWorkerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
+    if err != nil {
+        return nil, err
+    }
+
+    return &state.QueryWorkerAddressByP2PKeyResponse{Address: workerAddr.String()}, nil
 }

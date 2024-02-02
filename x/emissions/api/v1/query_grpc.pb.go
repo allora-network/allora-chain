@@ -29,6 +29,7 @@ const (
 	Query_GetInferencesToScore_FullMethodName       = "/upshot.state.v1.Query/GetInferencesToScore"
 	Query_GetTotalStake_FullMethodName              = "/upshot.state.v1.Query/GetTotalStake"
 	Query_GetWorkerNodeRegistration_FullMethodName  = "/upshot.state.v1.Query/GetWorkerNodeRegistration"
+	Query_GetWorkerAddressByP2PKey_FullMethodName   = "/upshot.state.v1.Query/GetWorkerAddressByP2PKey"
 )
 
 // QueryClient is the client API for Query service.
@@ -46,6 +47,7 @@ type QueryClient interface {
 	GetInferencesToScore(ctx context.Context, in *QueryInferencesToScoreRequest, opts ...grpc.CallOption) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
 	GetWorkerNodeRegistration(ctx context.Context, in *QueryRegisteredWorkerNodesRequest, opts ...grpc.CallOption) (*QueryRegisteredWorkerNodesResponse, error)
+	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
 }
 
 type queryClient struct {
@@ -146,6 +148,15 @@ func (c *queryClient) GetWorkerNodeRegistration(ctx context.Context, in *QueryRe
 	return out, nil
 }
 
+func (c *queryClient) GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error) {
+	out := new(QueryWorkerAddressByP2PKeyResponse)
+	err := c.cc.Invoke(ctx, Query_GetWorkerAddressByP2PKey_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -161,6 +172,7 @@ type QueryServer interface {
 	GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
 	GetWorkerNodeRegistration(context.Context, *QueryRegisteredWorkerNodesRequest) (*QueryRegisteredWorkerNodesResponse, error)
+	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -197,6 +209,9 @@ func (UnimplementedQueryServer) GetTotalStake(context.Context, *QueryTotalStakeR
 }
 func (UnimplementedQueryServer) GetWorkerNodeRegistration(context.Context, *QueryRegisteredWorkerNodesRequest) (*QueryRegisteredWorkerNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerNodeRegistration not implemented")
+}
+func (UnimplementedQueryServer) GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerAddressByP2PKey not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -391,6 +406,24 @@ func _Query_GetWorkerNodeRegistration_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetWorkerAddressByP2PKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkerAddressByP2PKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetWorkerAddressByP2PKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, req.(*QueryWorkerAddressByP2PKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -437,6 +470,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWorkerNodeRegistration",
 			Handler:    _Query_GetWorkerNodeRegistration_Handler,
+		},
+		{
+			MethodName: "GetWorkerAddressByP2PKey",
+			Handler:    _Query_GetWorkerAddressByP2PKey_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -64,6 +64,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "node_id"},
 					},
 				},
+				{
+					RpcMethod: "GetWorkerAddressByP2PKey",
+					Use:       "get-inference-node [libp2p_key]",
+					Short:     "Get Worker Address by libp2p key",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "libp2p_key"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
