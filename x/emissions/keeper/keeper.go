@@ -124,10 +124,10 @@ type Keeper struct {
 	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[sdk.AccAddress, state.InferenceNode]
+	workers collections.Map[sdk.AccAddress, state.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[sdk.AccAddress, state.InferenceNode]
+	reputers collections.Map[sdk.AccAddress, state.OffchainNode]
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
@@ -165,8 +165,8 @@ func NewKeeper(
 		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
 		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.InferenceNode](cdc)),
-		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.InferenceNode](cdc)),
+		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
+		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
 		latestInferencesTimestamps: collections.NewMap(sb, state.LatestInferencesTsKey, "inferences_latest_ts", collections.Uint64Key, collections.Uint64Value),
 		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 	}
@@ -373,11 +373,11 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Top
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.InferenceNode, error) {
+func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
 	return k.workers.Get(ctx, worker)
 }
 
-func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.InferenceNode, error) {
+func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
 	return k.reputers.Get(ctx, reputer)
 }
 
@@ -722,7 +722,7 @@ func (k *Keeper) IsReputerRegistered(ctx context.Context, reputer sdk.AccAddress
 }
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicId uint64, reputer sdk.AccAddress, reputerInfo state.InferenceNode) error {
+func (k *Keeper) InsertReputer(ctx context.Context, topicId uint64, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
 	topickey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
 	err := k.topicReputers.Set(ctx, topickey)
 	if err != nil {
@@ -741,7 +741,7 @@ func (k *Keeper) IsWorkerRegistered(ctx context.Context, worker sdk.AccAddress) 
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.AccAddress, workerInfo state.InferenceNode) error {
+func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
 	topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
 	err := k.topicWorkers.Set(ctx, topickey)
 	if err != nil {
@@ -754,8 +754,8 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.Ac
 	return nil
 }
 
-func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*state.InferenceNode, error) {
-	var nodes []*state.InferenceNode
+func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*state.OffchainNode, error) {
+	var nodes []*state.OffchainNode
 	var nodeIdParts = strings.Split(nodeId, "|")
 
 	if len(nodeIdParts) < 2 {

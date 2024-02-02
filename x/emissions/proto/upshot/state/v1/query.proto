@@ -192,7 +192,7 @@ message QueryRegisteredWorkerNodesRequest {
 }
 
 message QueryRegisteredWorkerNodesResponse {
-  repeated InferenceNode nodes = 1;
+  repeated OffchainNode nodes = 1;
 }
 
 message QueryWorkerAddressByP2PKeyRequest {

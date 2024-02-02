@@ -4023,35 +4023,35 @@ func (x *fastReflection_Inferences) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_InferenceNode               protoreflect.MessageDescriptor
-	fd_InferenceNode_topic_id      protoreflect.FieldDescriptor
-	fd_InferenceNode_lib_p2p_key   protoreflect.FieldDescriptor
-	fd_InferenceNode_multi_address protoreflect.FieldDescriptor
-	fd_InferenceNode_owner         protoreflect.FieldDescriptor
-	fd_InferenceNode_node_address  protoreflect.FieldDescriptor
-	fd_InferenceNode_node_id       protoreflect.FieldDescriptor
+	md_OffchainNode               protoreflect.MessageDescriptor
+	fd_OffchainNode_topic_id      protoreflect.FieldDescriptor
+	fd_OffchainNode_lib_p2p_key   protoreflect.FieldDescriptor
+	fd_OffchainNode_multi_address protoreflect.FieldDescriptor
+	fd_OffchainNode_owner         protoreflect.FieldDescriptor
+	fd_OffchainNode_node_address  protoreflect.FieldDescriptor
+	fd_OffchainNode_node_id       protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_upshot_state_v1_types_proto_init()
-	md_InferenceNode = File_upshot_state_v1_types_proto.Messages().ByName("InferenceNode")
-	fd_InferenceNode_topic_id = md_InferenceNode.Fields().ByName("topic_id")
-	fd_InferenceNode_lib_p2p_key = md_InferenceNode.Fields().ByName("lib_p2p_key")
-	fd_InferenceNode_multi_address = md_InferenceNode.Fields().ByName("multi_address")
-	fd_InferenceNode_owner = md_InferenceNode.Fields().ByName("owner")
-	fd_InferenceNode_node_address = md_InferenceNode.Fields().ByName("node_address")
-	fd_InferenceNode_node_id = md_InferenceNode.Fields().ByName("node_id")
+	md_OffchainNode = File_upshot_state_v1_types_proto.Messages().ByName("OffchainNode")
+	fd_OffchainNode_topic_id = md_OffchainNode.Fields().ByName("topic_id")
+	fd_OffchainNode_lib_p2p_key = md_OffchainNode.Fields().ByName("lib_p2p_key")
+	fd_OffchainNode_multi_address = md_OffchainNode.Fields().ByName("multi_address")
+	fd_OffchainNode_owner = md_OffchainNode.Fields().ByName("owner")
+	fd_OffchainNode_node_address = md_OffchainNode.Fields().ByName("node_address")
+	fd_OffchainNode_node_id = md_OffchainNode.Fields().ByName("node_id")
 }
 
-var _ protoreflect.Message = (*fastReflection_InferenceNode)(nil)
+var _ protoreflect.Message = (*fastReflection_OffchainNode)(nil)
 
-type fastReflection_InferenceNode InferenceNode
+type fastReflection_OffchainNode OffchainNode
 
-func (x *InferenceNode) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_InferenceNode)(x)
+func (x *OffchainNode) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_OffchainNode)(x)
 }
 
-func (x *InferenceNode) slowProtoReflect() protoreflect.Message {
+func (x *OffchainNode) slowProtoReflect() protoreflect.Message {
 	mi := &file_upshot_state_v1_types_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4063,43 +4063,43 @@ func (x *InferenceNode) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_InferenceNode_messageType fastReflection_InferenceNode_messageType
-var _ protoreflect.MessageType = fastReflection_InferenceNode_messageType{}
+var _fastReflection_OffchainNode_messageType fastReflection_OffchainNode_messageType
+var _ protoreflect.MessageType = fastReflection_OffchainNode_messageType{}
 
-type fastReflection_InferenceNode_messageType struct{}
+type fastReflection_OffchainNode_messageType struct{}
 
-func (x fastReflection_InferenceNode_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_InferenceNode)(nil)
+func (x fastReflection_OffchainNode_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_OffchainNode)(nil)
 }
-func (x fastReflection_InferenceNode_messageType) New() protoreflect.Message {
-	return new(fastReflection_InferenceNode)
+func (x fastReflection_OffchainNode_messageType) New() protoreflect.Message {
+	return new(fastReflection_OffchainNode)
 }
-func (x fastReflection_InferenceNode_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_InferenceNode
+func (x fastReflection_OffchainNode_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_OffchainNode
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_InferenceNode) Descriptor() protoreflect.MessageDescriptor {
-	return md_InferenceNode
+func (x *fastReflection_OffchainNode) Descriptor() protoreflect.MessageDescriptor {
+	return md_OffchainNode
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_InferenceNode) Type() protoreflect.MessageType {
-	return _fastReflection_InferenceNode_messageType
+func (x *fastReflection_OffchainNode) Type() protoreflect.MessageType {
+	return _fastReflection_OffchainNode_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_InferenceNode) New() protoreflect.Message {
-	return new(fastReflection_InferenceNode)
+func (x *fastReflection_OffchainNode) New() protoreflect.Message {
+	return new(fastReflection_OffchainNode)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_InferenceNode) Interface() protoreflect.ProtoMessage {
-	return (*InferenceNode)(x)
+func (x *fastReflection_OffchainNode) Interface() protoreflect.ProtoMessage {
+	return (*OffchainNode)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -4107,40 +4107,40 @@ func (x *fastReflection_InferenceNode) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_InferenceNode) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_InferenceNode_topic_id, value) {
+		if !f(fd_OffchainNode_topic_id, value) {
 			return
 		}
 	}
 	if x.LibP2PKey != "" {
 		value := protoreflect.ValueOfString(x.LibP2PKey)
-		if !f(fd_InferenceNode_lib_p2p_key, value) {
+		if !f(fd_OffchainNode_lib_p2p_key, value) {
 			return
 		}
 	}
 	if x.MultiAddress != "" {
 		value := protoreflect.ValueOfString(x.MultiAddress)
-		if !f(fd_InferenceNode_multi_address, value) {
+		if !f(fd_OffchainNode_multi_address, value) {
 			return
 		}
 	}
 	if x.Owner != "" {
 		value := protoreflect.ValueOfString(x.Owner)
-		if !f(fd_InferenceNode_owner, value) {
+		if !f(fd_OffchainNode_owner, value) {
 			return
 		}
 	}
 	if x.NodeAddress != "" {
 		value := protoreflect.ValueOfString(x.NodeAddress)
-		if !f(fd_InferenceNode_node_address, value) {
+		if !f(fd_OffchainNode_node_address, value) {
 			return
 		}
 	}
 	if x.NodeId != "" {
 		value := protoreflect.ValueOfString(x.NodeId)
-		if !f(fd_InferenceNode_node_id, value) {
+		if !f(fd_OffchainNode_node_id, value) {
 			return
 		}
 	}
@@ -4157,25 +4157,25 @@ func (x *fastReflection_InferenceNode) Range(f func(protoreflect.FieldDescriptor
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_InferenceNode) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
+	case "upshot.state.v1.OffchainNode.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
 		return x.LibP2PKey != ""
-	case "upshot.state.v1.InferenceNode.multi_address":
+	case "upshot.state.v1.OffchainNode.multi_address":
 		return x.MultiAddress != ""
-	case "upshot.state.v1.InferenceNode.owner":
+	case "upshot.state.v1.OffchainNode.owner":
 		return x.Owner != ""
-	case "upshot.state.v1.InferenceNode.node_address":
+	case "upshot.state.v1.OffchainNode.node_address":
 		return x.NodeAddress != ""
-	case "upshot.state.v1.InferenceNode.node_id":
+	case "upshot.state.v1.OffchainNode.node_id":
 		return x.NodeId != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4185,25 +4185,25 @@ func (x *fastReflection_InferenceNode) Has(fd protoreflect.FieldDescriptor) bool
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNode) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
+	case "upshot.state.v1.OffchainNode.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = ""
-	case "upshot.state.v1.InferenceNode.multi_address":
+	case "upshot.state.v1.OffchainNode.multi_address":
 		x.MultiAddress = ""
-	case "upshot.state.v1.InferenceNode.owner":
+	case "upshot.state.v1.OffchainNode.owner":
 		x.Owner = ""
-	case "upshot.state.v1.InferenceNode.node_address":
+	case "upshot.state.v1.OffchainNode.node_address":
 		x.NodeAddress = ""
-	case "upshot.state.v1.InferenceNode.node_id":
+	case "upshot.state.v1.OffchainNode.node_id":
 		x.NodeId = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4213,31 +4213,31 @@ func (x *fastReflection_InferenceNode) Clear(fd protoreflect.FieldDescriptor) {
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_InferenceNode) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
+	case "upshot.state.v1.OffchainNode.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.InferenceNode.multi_address":
+	case "upshot.state.v1.OffchainNode.multi_address":
 		value := x.MultiAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.InferenceNode.owner":
+	case "upshot.state.v1.OffchainNode.owner":
 		value := x.Owner
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.InferenceNode.node_address":
+	case "upshot.state.v1.OffchainNode.node_address":
 		value := x.NodeAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.InferenceNode.node_id":
+	case "upshot.state.v1.OffchainNode.node_id":
 		value := x.NodeId
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4251,25 +4251,25 @@ func (x *fastReflection_InferenceNode) Get(descriptor protoreflect.FieldDescript
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNode) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
+	case "upshot.state.v1.OffchainNode.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
-	case "upshot.state.v1.InferenceNode.multi_address":
+	case "upshot.state.v1.OffchainNode.multi_address":
 		x.MultiAddress = value.Interface().(string)
-	case "upshot.state.v1.InferenceNode.owner":
+	case "upshot.state.v1.OffchainNode.owner":
 		x.Owner = value.Interface().(string)
-	case "upshot.state.v1.InferenceNode.node_address":
+	case "upshot.state.v1.OffchainNode.node_address":
 		x.NodeAddress = value.Interface().(string)
-	case "upshot.state.v1.InferenceNode.node_id":
+	case "upshot.state.v1.OffchainNode.node_id":
 		x.NodeId = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4283,60 +4283,60 @@ func (x *fastReflection_InferenceNode) Set(fd protoreflect.FieldDescriptor, valu
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNode) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
-		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.multi_address":
-		panic(fmt.Errorf("field multi_address of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.owner":
-		panic(fmt.Errorf("field owner of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.node_address":
-		panic(fmt.Errorf("field node_address of message upshot.state.v1.InferenceNode is not mutable"))
-	case "upshot.state.v1.InferenceNode.node_id":
-		panic(fmt.Errorf("field node_id of message upshot.state.v1.InferenceNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.topic_id":
+		panic(fmt.Errorf("field topic_id of message upshot.state.v1.OffchainNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.OffchainNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.multi_address":
+		panic(fmt.Errorf("field multi_address of message upshot.state.v1.OffchainNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.owner":
+		panic(fmt.Errorf("field owner of message upshot.state.v1.OffchainNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.node_address":
+		panic(fmt.Errorf("field node_address of message upshot.state.v1.OffchainNode is not mutable"))
+	case "upshot.state.v1.OffchainNode.node_id":
+		panic(fmt.Errorf("field node_id of message upshot.state.v1.OffchainNode is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_InferenceNode) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNode) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNode.topic_id":
+	case "upshot.state.v1.OffchainNode.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.InferenceNode.lib_p2p_key":
+	case "upshot.state.v1.OffchainNode.lib_p2p_key":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.InferenceNode.multi_address":
+	case "upshot.state.v1.OffchainNode.multi_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.InferenceNode.owner":
+	case "upshot.state.v1.OffchainNode.owner":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.InferenceNode.node_address":
+	case "upshot.state.v1.OffchainNode.node_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.InferenceNode.node_id":
+	case "upshot.state.v1.OffchainNode.node_id":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_InferenceNode) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_OffchainNode) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.InferenceNode", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.OffchainNode", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4344,7 +4344,7 @@ func (x *fastReflection_InferenceNode) WhichOneof(d protoreflect.OneofDescriptor
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_InferenceNode) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_OffchainNode) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -4355,7 +4355,7 @@ func (x *fastReflection_InferenceNode) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNode) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_OffchainNode) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -4367,7 +4367,7 @@ func (x *fastReflection_InferenceNode) SetUnknown(fields protoreflect.RawFields)
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_InferenceNode) IsValid() bool {
+func (x *fastReflection_OffchainNode) IsValid() bool {
 	return x != nil
 }
 
@@ -4377,9 +4377,9 @@ func (x *fastReflection_InferenceNode) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*InferenceNode)
+		x := input.Message.Interface().(*OffchainNode)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4424,7 +4424,7 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*InferenceNode)
+		x := input.Message.Interface().(*OffchainNode)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4494,7 +4494,7 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*InferenceNode)
+		x := input.Message.Interface().(*OffchainNode)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -4526,10 +4526,10 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceNode: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: OffchainNode: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceNode: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: OffchainNode: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -4746,77 +4746,77 @@ func (x *fastReflection_InferenceNode) ProtoMethods() *protoiface.Methods {
 	}
 }
 
-var _ protoreflect.List = (*_InferenceNodes_1_list)(nil)
+var _ protoreflect.List = (*_OffchainNodes_1_list)(nil)
 
-type _InferenceNodes_1_list struct {
+type _OffchainNodes_1_list struct {
 	list *[]*Inference
 }
 
-func (x *_InferenceNodes_1_list) Len() int {
+func (x *_OffchainNodes_1_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_InferenceNodes_1_list) Get(i int) protoreflect.Value {
+func (x *_OffchainNodes_1_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_InferenceNodes_1_list) Set(i int, value protoreflect.Value) {
+func (x *_OffchainNodes_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
 	concreteValue := valueUnwrapped.Interface().(*Inference)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_InferenceNodes_1_list) Append(value protoreflect.Value) {
+func (x *_OffchainNodes_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
 	concreteValue := valueUnwrapped.Interface().(*Inference)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_InferenceNodes_1_list) AppendMutable() protoreflect.Value {
+func (x *_OffchainNodes_1_list) AppendMutable() protoreflect.Value {
 	v := new(Inference)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_InferenceNodes_1_list) Truncate(n int) {
+func (x *_OffchainNodes_1_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_InferenceNodes_1_list) NewElement() protoreflect.Value {
+func (x *_OffchainNodes_1_list) NewElement() protoreflect.Value {
 	v := new(Inference)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_InferenceNodes_1_list) IsValid() bool {
+func (x *_OffchainNodes_1_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_InferenceNodes                 protoreflect.MessageDescriptor
-	fd_InferenceNodes_inference_nodes protoreflect.FieldDescriptor
+	md_OffchainNodes               protoreflect.MessageDescriptor
+	fd_OffchainNodes_offchain_node protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_upshot_state_v1_types_proto_init()
-	md_InferenceNodes = File_upshot_state_v1_types_proto.Messages().ByName("InferenceNodes")
-	fd_InferenceNodes_inference_nodes = md_InferenceNodes.Fields().ByName("inference_nodes")
+	md_OffchainNodes = File_upshot_state_v1_types_proto.Messages().ByName("OffchainNodes")
+	fd_OffchainNodes_offchain_node = md_OffchainNodes.Fields().ByName("offchain_node")
 }
 
-var _ protoreflect.Message = (*fastReflection_InferenceNodes)(nil)
+var _ protoreflect.Message = (*fastReflection_OffchainNodes)(nil)
 
-type fastReflection_InferenceNodes InferenceNodes
+type fastReflection_OffchainNodes OffchainNodes
 
-func (x *InferenceNodes) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_InferenceNodes)(x)
+func (x *OffchainNodes) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_OffchainNodes)(x)
 }
 
-func (x *InferenceNodes) slowProtoReflect() protoreflect.Message {
+func (x *OffchainNodes) slowProtoReflect() protoreflect.Message {
 	mi := &file_upshot_state_v1_types_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -4828,43 +4828,43 @@ func (x *InferenceNodes) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_InferenceNodes_messageType fastReflection_InferenceNodes_messageType
-var _ protoreflect.MessageType = fastReflection_InferenceNodes_messageType{}
+var _fastReflection_OffchainNodes_messageType fastReflection_OffchainNodes_messageType
+var _ protoreflect.MessageType = fastReflection_OffchainNodes_messageType{}
 
-type fastReflection_InferenceNodes_messageType struct{}
+type fastReflection_OffchainNodes_messageType struct{}
 
-func (x fastReflection_InferenceNodes_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_InferenceNodes)(nil)
+func (x fastReflection_OffchainNodes_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_OffchainNodes)(nil)
 }
-func (x fastReflection_InferenceNodes_messageType) New() protoreflect.Message {
-	return new(fastReflection_InferenceNodes)
+func (x fastReflection_OffchainNodes_messageType) New() protoreflect.Message {
+	return new(fastReflection_OffchainNodes)
 }
-func (x fastReflection_InferenceNodes_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_InferenceNodes
+func (x fastReflection_OffchainNodes_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_OffchainNodes
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_InferenceNodes) Descriptor() protoreflect.MessageDescriptor {
-	return md_InferenceNodes
+func (x *fastReflection_OffchainNodes) Descriptor() protoreflect.MessageDescriptor {
+	return md_OffchainNodes
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_InferenceNodes) Type() protoreflect.MessageType {
-	return _fastReflection_InferenceNodes_messageType
+func (x *fastReflection_OffchainNodes) Type() protoreflect.MessageType {
+	return _fastReflection_OffchainNodes_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_InferenceNodes) New() protoreflect.Message {
-	return new(fastReflection_InferenceNodes)
+func (x *fastReflection_OffchainNodes) New() protoreflect.Message {
+	return new(fastReflection_OffchainNodes)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_InferenceNodes) Interface() protoreflect.ProtoMessage {
-	return (*InferenceNodes)(x)
+func (x *fastReflection_OffchainNodes) Interface() protoreflect.ProtoMessage {
+	return (*OffchainNodes)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -4872,10 +4872,10 @@ func (x *fastReflection_InferenceNodes) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_InferenceNodes) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if len(x.InferenceNodes) != 0 {
-		value := protoreflect.ValueOfList(&_InferenceNodes_1_list{list: &x.InferenceNodes})
-		if !f(fd_InferenceNodes_inference_nodes, value) {
+func (x *fastReflection_OffchainNodes) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if len(x.OffchainNode) != 0 {
+		value := protoreflect.ValueOfList(&_OffchainNodes_1_list{list: &x.OffchainNode})
+		if !f(fd_OffchainNodes_offchain_node, value) {
 			return
 		}
 	}
@@ -4892,15 +4892,15 @@ func (x *fastReflection_InferenceNodes) Range(f func(protoreflect.FieldDescripto
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_InferenceNodes) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_OffchainNodes) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
-		return len(x.InferenceNodes) != 0
+	case "upshot.state.v1.OffchainNodes.offchain_node":
+		return len(x.OffchainNode) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4910,15 +4910,15 @@ func (x *fastReflection_InferenceNodes) Has(fd protoreflect.FieldDescriptor) boo
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNodes) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_OffchainNodes) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
-		x.InferenceNodes = nil
+	case "upshot.state.v1.OffchainNodes.offchain_node":
+		x.OffchainNode = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4928,19 +4928,19 @@ func (x *fastReflection_InferenceNodes) Clear(fd protoreflect.FieldDescriptor) {
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_InferenceNodes) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNodes) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
-		if len(x.InferenceNodes) == 0 {
-			return protoreflect.ValueOfList(&_InferenceNodes_1_list{})
+	case "upshot.state.v1.OffchainNodes.offchain_node":
+		if len(x.OffchainNode) == 0 {
+			return protoreflect.ValueOfList(&_OffchainNodes_1_list{})
 		}
-		listValue := &_InferenceNodes_1_list{list: &x.InferenceNodes}
+		listValue := &_OffchainNodes_1_list{list: &x.OffchainNode}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4954,17 +4954,17 @@ func (x *fastReflection_InferenceNodes) Get(descriptor protoreflect.FieldDescrip
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNodes) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_OffchainNodes) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
+	case "upshot.state.v1.OffchainNodes.offchain_node":
 		lv := value.List()
-		clv := lv.(*_InferenceNodes_1_list)
-		x.InferenceNodes = *clv.list
+		clv := lv.(*_OffchainNodes_1_list)
+		x.OffchainNode = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4978,45 +4978,45 @@ func (x *fastReflection_InferenceNodes) Set(fd protoreflect.FieldDescriptor, val
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNodes) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNodes) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
-		if x.InferenceNodes == nil {
-			x.InferenceNodes = []*Inference{}
+	case "upshot.state.v1.OffchainNodes.offchain_node":
+		if x.OffchainNode == nil {
+			x.OffchainNode = []*Inference{}
 		}
-		value := &_InferenceNodes_1_list{list: &x.InferenceNodes}
+		value := &_OffchainNodes_1_list{list: &x.OffchainNode}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_InferenceNodes) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_OffchainNodes) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceNodes.inference_nodes":
+	case "upshot.state.v1.OffchainNodes.offchain_node":
 		list := []*Inference{}
-		return protoreflect.ValueOfList(&_InferenceNodes_1_list{list: &list})
+		return protoreflect.ValueOfList(&_OffchainNodes_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_InferenceNodes) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_OffchainNodes) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.InferenceNodes", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.OffchainNodes", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5024,7 +5024,7 @@ func (x *fastReflection_InferenceNodes) WhichOneof(d protoreflect.OneofDescripto
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_InferenceNodes) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_OffchainNodes) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -5035,7 +5035,7 @@ func (x *fastReflection_InferenceNodes) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_InferenceNodes) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_OffchainNodes) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -5047,7 +5047,7 @@ func (x *fastReflection_InferenceNodes) SetUnknown(fields protoreflect.RawFields
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_InferenceNodes) IsValid() bool {
+func (x *fastReflection_OffchainNodes) IsValid() bool {
 	return x != nil
 }
 
@@ -5057,9 +5057,9 @@ func (x *fastReflection_InferenceNodes) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_OffchainNodes) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*InferenceNodes)
+		x := input.Message.Interface().(*OffchainNodes)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5071,8 +5071,8 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if len(x.InferenceNodes) > 0 {
-			for _, e := range x.InferenceNodes {
+		if len(x.OffchainNode) > 0 {
+			for _, e := range x.OffchainNode {
 				l = options.Size(e)
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
@@ -5087,7 +5087,7 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*InferenceNodes)
+		x := input.Message.Interface().(*OffchainNodes)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5106,9 +5106,9 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.InferenceNodes) > 0 {
-			for iNdEx := len(x.InferenceNodes) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.InferenceNodes[iNdEx])
+		if len(x.OffchainNode) > 0 {
+			for iNdEx := len(x.OffchainNode) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.OffchainNode[iNdEx])
 				if err != nil {
 					return protoiface.MarshalOutput{
 						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5133,7 +5133,7 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*InferenceNodes)
+		x := input.Message.Interface().(*OffchainNodes)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -5165,15 +5165,15 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceNodes: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: OffchainNodes: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceNodes: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: OffchainNodes: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InferenceNodes", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OffchainNode", wireType)
 				}
 				var msglen int
 				for shift := uint(0); ; shift += 7 {
@@ -5200,8 +5200,8 @@ func (x *fastReflection_InferenceNodes) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.InferenceNodes = append(x.InferenceNodes, &Inference{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.InferenceNodes[len(x.InferenceNodes)-1]); err != nil {
+				x.OffchainNode = append(x.OffchainNode, &Inference{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.OffchainNode[len(x.OffchainNode)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
@@ -6245,7 +6245,7 @@ func (x *Inferences) GetInferences() []*Inference {
 	return nil
 }
 
-type InferenceNode struct {
+type OffchainNode struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -6258,8 +6258,8 @@ type InferenceNode struct {
 	NodeId       string `protobuf:"bytes,6,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 }
 
-func (x *InferenceNode) Reset() {
-	*x = InferenceNode{}
+func (x *OffchainNode) Reset() {
+	*x = OffchainNode{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_upshot_state_v1_types_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -6267,69 +6267,69 @@ func (x *InferenceNode) Reset() {
 	}
 }
 
-func (x *InferenceNode) String() string {
+func (x *OffchainNode) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InferenceNode) ProtoMessage() {}
+func (*OffchainNode) ProtoMessage() {}
 
-// Deprecated: Use InferenceNode.ProtoReflect.Descriptor instead.
-func (*InferenceNode) Descriptor() ([]byte, []int) {
+// Deprecated: Use OffchainNode.ProtoReflect.Descriptor instead.
+func (*OffchainNode) Descriptor() ([]byte, []int) {
 	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *InferenceNode) GetTopicId() uint64 {
+func (x *OffchainNode) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-func (x *InferenceNode) GetLibP2PKey() string {
+func (x *OffchainNode) GetLibP2PKey() string {
 	if x != nil {
 		return x.LibP2PKey
 	}
 	return ""
 }
 
-func (x *InferenceNode) GetMultiAddress() string {
+func (x *OffchainNode) GetMultiAddress() string {
 	if x != nil {
 		return x.MultiAddress
 	}
 	return ""
 }
 
-func (x *InferenceNode) GetOwner() string {
+func (x *OffchainNode) GetOwner() string {
 	if x != nil {
 		return x.Owner
 	}
 	return ""
 }
 
-func (x *InferenceNode) GetNodeAddress() string {
+func (x *OffchainNode) GetNodeAddress() string {
 	if x != nil {
 		return x.NodeAddress
 	}
 	return ""
 }
 
-func (x *InferenceNode) GetNodeId() string {
+func (x *OffchainNode) GetNodeId() string {
 	if x != nil {
 		return x.NodeId
 	}
 	return ""
 }
 
-type InferenceNodes struct {
+type OffchainNodes struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	InferenceNodes []*Inference `protobuf:"bytes,1,rep,name=inference_nodes,json=inferenceNodes,proto3" json:"inference_nodes,omitempty"`
+	OffchainNode []*Inference `protobuf:"bytes,1,rep,name=offchain_node,json=offchainNode,proto3" json:"offchain_node,omitempty"`
 }
 
-func (x *InferenceNodes) Reset() {
-	*x = InferenceNodes{}
+func (x *OffchainNodes) Reset() {
+	*x = OffchainNodes{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_upshot_state_v1_types_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -6337,20 +6337,20 @@ func (x *InferenceNodes) Reset() {
 	}
 }
 
-func (x *InferenceNodes) String() string {
+func (x *OffchainNodes) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InferenceNodes) ProtoMessage() {}
+func (*OffchainNodes) ProtoMessage() {}
 
-// Deprecated: Use InferenceNodes.ProtoReflect.Descriptor instead.
-func (*InferenceNodes) Descriptor() ([]byte, []int) {
+// Deprecated: Use OffchainNodes.ProtoReflect.Descriptor instead.
+func (*OffchainNodes) Descriptor() ([]byte, []int) {
 	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *InferenceNodes) GetInferenceNodes() []*Inference {
+func (x *OffchainNodes) GetOffchainNode() []*Inference {
 	if x != nil {
-		return x.InferenceNodes
+		return x.OffchainNode
 	}
 	return nil
 }
@@ -6478,78 +6478,78 @@ var file_upshot_state_v1_types_proto_rawDesc = []byte{
 	0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70,
 	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
 	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x22, 0xc1, 0x01, 0x0a, 0x0d, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
-	0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79,
-	0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e,
-	0x6f, 0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17,
-	0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x55, 0x0a, 0x0e, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x43, 0x0a, 0x0f, 0x69, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0e,
-	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x8e,
-	0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46,
-	0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x12, 0x3b, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2a,
-	0xee, 0x03, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x72, 0x72, 0x49, 0x6e,
-	0x76, 0x61, 0x6c, 0x69, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x10, 0x00, 0x12, 0x1f,
-	0x0a, 0x1b, 0x45, 0x72, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65,
-	0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x01, 0x12,
-	0x1e, 0x0a, 0x1a, 0x45, 0x72, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65,
-	0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x02, 0x12,
-	0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65,
-	0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x10, 0x03, 0x12, 0x18, 0x0a, 0x14, 0x45, 0x72, 0x72, 0x4c, 0x69, 0x62, 0x50, 0x32, 0x50,
-	0x4b, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x10, 0x04, 0x12, 0x1a, 0x0a,
-	0x16, 0x45, 0x72, 0x72, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x05, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x06, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72,
-	0x72, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x4f, 0x66, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72,
-	0x41, 0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61,
-	0x74, 0x63, 0x68, 0x10, 0x07, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75,
-	0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10, 0x08, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e,
-	0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65,
-	0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x10, 0x09, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72,
-	0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77,
-	0x42, 0x6f, 0x6e, 0x64, 0x73, 0x10, 0x0a, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x49, 0x6e,
-	0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61,
-	0x72, 0x67, 0x65, 0x74, 0x10, 0x0b, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74,
-	0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70,
-	0x69, 0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0c, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72,
-	0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77,
-	0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e,
-	0x45, 0x72, 0x72, 0x49, 0x74, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67,
-	0x74, 0x68, 0x44, 0x6f, 0x65, 0x73, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x0e,
-	0x42, 0xd1, 0x01, 0x0a, 0x13, 0x63, 0x6f, 0x6d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50,
-	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2d, 0x6d, 0x61,
-	0x63, 0x68, 0x69, 0x6e, 0x65, 0x2d, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31,
-	0x3b, 0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x55, 0x53, 0x58, 0xaa, 0x02,
-	0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31,
-	0xca, 0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c,
-	0x56, 0x31, 0xe2, 0x02, 0x1b, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74,
-	0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x11, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65,
-	0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x65, 0x73, 0x22, 0xc0, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
+	0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12,
+	0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f,
+	0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17, 0x0a,
+	0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x50, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x3f, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63, 0x68,
+	0x61, 0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a,
+	0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22, 0x8e, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72,
+	0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c,
+	0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x3b, 0x0a, 0x0a,
+	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2a, 0xee, 0x03, 0x0a, 0x03, 0x45, 0x72,
+	0x72, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x10, 0x00, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x52,
+	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x01, 0x12, 0x1e, 0x0a, 0x1a, 0x45, 0x72, 0x72,
+	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x02, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72,
+	0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x54, 0x6f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x10, 0x03, 0x12, 0x18, 0x0a,
+	0x14, 0x45, 0x72, 0x72, 0x4c, 0x69, 0x62, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71,
+	0x75, 0x69, 0x72, 0x65, 0x64, 0x10, 0x04, 0x12, 0x1a, 0x0a, 0x16, 0x45, 0x72, 0x72, 0x53, 0x65,
+	0x6e, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
+	0x64, 0x10, 0x05, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54,
+	0x61, 0x72, 0x67, 0x65, 0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x65, 0x64, 0x10, 0x06, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72, 0x72, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x49, 0x64, 0x4f, 0x66, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x41, 0x6e, 0x64, 0x54, 0x61, 0x72,
+	0x67, 0x65, 0x74, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x07, 0x12,
+	0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65,
+	0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10,
+	0x08, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55,
+	0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f,
+	0x72, 0x10, 0x09, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65,
+	0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x42, 0x6f, 0x6e, 0x64, 0x73, 0x10,
+	0x0a, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55,
+	0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x10, 0x0b,
+	0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e,
+	0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x10, 0x0c, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65,
+	0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53,
+	0x74, 0x61, 0x6b, 0x65, 0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x74, 0x65,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x44, 0x6f, 0x65, 0x73,
+	0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x0e, 0x42, 0xd1, 0x01, 0x0a, 0x13, 0x63,
+	0x6f, 0x6d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
+	0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73,
+	0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2d, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x2d,
+	0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f,
+	0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x76, 0x31, 0xa2, 0x02, 0x03, 0x55, 0x53, 0x58, 0xaa, 0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f,
+	0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0f, 0x55, 0x70, 0x73,
+	0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1b, 0x55,
+	0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47,
+	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x11, 0x55, 0x70, 0x73,
+	0x68, 0x6f, 0x74, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -6575,15 +6575,15 @@ var file_upshot_state_v1_types_proto_goTypes = []interface{}{
 	(*Weights)(nil),                // 5: upshot.state.v1.Weights
 	(*Inference)(nil),              // 6: upshot.state.v1.Inference
 	(*Inferences)(nil),             // 7: upshot.state.v1.Inferences
-	(*InferenceNode)(nil),          // 8: upshot.state.v1.InferenceNode
-	(*InferenceNodes)(nil),         // 9: upshot.state.v1.InferenceNodes
+	(*OffchainNode)(nil),           // 8: upshot.state.v1.OffchainNode
+	(*OffchainNodes)(nil),          // 9: upshot.state.v1.OffchainNodes
 	(*InferenceSetForScoring)(nil), // 10: upshot.state.v1.InferenceSetForScoring
 }
 var file_upshot_state_v1_types_proto_depIdxs = []int32{
 	1, // 0: upshot.state.v1.GenesisState.params:type_name -> upshot.state.v1.Params
 	4, // 1: upshot.state.v1.Weights.weights:type_name -> upshot.state.v1.Weight
 	6, // 2: upshot.state.v1.Inferences.inferences:type_name -> upshot.state.v1.Inference
-	6, // 3: upshot.state.v1.InferenceNodes.inference_nodes:type_name -> upshot.state.v1.Inference
+	6, // 3: upshot.state.v1.OffchainNodes.offchain_node:type_name -> upshot.state.v1.Inference
 	7, // 4: upshot.state.v1.InferenceSetForScoring.inferences:type_name -> upshot.state.v1.Inferences
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
@@ -6683,7 +6683,7 @@ func file_upshot_state_v1_types_proto_init() {
 			}
 		}
 		file_upshot_state_v1_types_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InferenceNode); i {
+			switch v := v.(*OffchainNode); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6695,7 +6695,7 @@ func file_upshot_state_v1_types_proto_init() {
 			}
 		}
 		file_upshot_state_v1_types_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InferenceNodes); i {
+			switch v := v.(*OffchainNodes); i {
 			case 0:
 				return &v.state
 			case 1:

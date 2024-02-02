@@ -187,7 +187,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 	// add node to the data structures that track the nodes:
 	// add node to topicReputers
 	// add node to reputers
-	reputerInfo := state.InferenceNode{
+	reputerInfo := state.OffchainNode{
 		TopicId:      msg.TopicId,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
@@ -232,7 +232,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 	// add node to the data structures that track the nodes:
 	// add node to topicReputers
 	// add node to reputers
-	workerInfo := state.InferenceNode{
+	workerInfo := state.OffchainNode{
 		NodeAddress:  msg.Creator,
 		TopicId:      msg.TopicId,
 		LibP2PKey:    msg.LibP2PKey,

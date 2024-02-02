@@ -70,7 +70,7 @@ message Inferences {
   repeated Inference inferences = 1;
 }
 
-message InferenceNode {
+message OffchainNode {
   uint64 topic_id = 1;          // What topic the node belongs to
   string lib_p2p_key = 2;       // LibP2P key of the node
   string multi_address = 3;   // Network address for accessing the node
@@ -79,8 +79,8 @@ message InferenceNode {
   string node_id = 6;
 }
 
-message InferenceNodes {
-  repeated Inference inference_nodes = 1;
+message OffchainNodes {
+  repeated Inference offchain_node = 1;
 }
 
 message InferenceSetForScoring {
