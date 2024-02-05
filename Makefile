@@ -17,6 +17,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=upt \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
 BUILD_FLAGS := -ldflags '$(ldflags)'
+BUILDDIR ?= $(CURDIR)/build
 
 ###########
 # Install #
@@ -33,3 +34,7 @@ install:
 
 init:
 	./scripts/init.sh
+
+build:
+	mkdir -p $(BUILDDIR)/
+	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/upshot-tech/upshot-appchain/cmd/uptd
