@@ -181,11 +181,18 @@ func NewKeeper(
 	return k
 }
 
+func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
+	return k.params.Set(ctx, params)
+}
+
 func (k *Keeper) GetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
 	return k.latestInferencesTimestamps.Get(ctx, topicId)
 }
 
 func (k *Keeper) SetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) error {
+	if timestamp == 0 {
+		return ErrDoNotSetMapValueToZero
+	}
 	return k.latestInferencesTimestamps.Set(ctx, topicId, timestamp)
 }
 
@@ -271,6 +278,8 @@ func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
 
 // Sets the total sum of all stake in the network across all topics
 func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
+	// total stake does not have a zero guard because totalStake is allowed to be zero
+	// it is initialized to zero at genesis anyways.
 	return k.totalStake.Set(ctx, totalStake)
 }
 
@@ -280,6 +289,9 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TOPIC_ID) (Uint, err
 }
 
 func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint) error {
+	if stake.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	return k.topicStake.Set(ctx, topicId, stake)
 }
 
@@ -288,6 +300,9 @@ func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 }
 
 func (k *Keeper) SetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress, stake Uint) error {
+	if stake.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	return k.stakePlacedUponTarget.Set(ctx, target, stake)
 }
 
@@ -303,6 +318,12 @@ func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 
 // Set the last block height at which rewards emissions were updated
 func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) error {
+	if blockHeight < 0 {
+		return ErrBlockHeightNegative
+	}
+	if blockHeight == 0 {
+		return ErrDoNotSetMapValueToZero
+	}
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
 
@@ -421,6 +442,9 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	}
 
 	delegatorStakeNew := delegatorStake.Add(stake)
+	if delegatorStakeNew.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	if err := k.stakeOwnedByDelegator.Set(ctx, delegatorAcc, delegatorStakeNew); err != nil {
 		return err
 	}
@@ -444,6 +468,9 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	bondNew := bond.Add(stake)
+	if bondNew.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	if err := k.stakePlacement.Set(ctx, bondIndex, bondNew); err != nil {
 		return err
 	}
@@ -460,6 +487,9 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	targetStakeNew := targetStake.Add(stake)
+	if targetStakeNew.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	if err := k.stakePlacedUponTarget.Set(ctx, targetAcc, targetStakeNew); err != nil {
 		return err
 	}
@@ -474,6 +504,9 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	topicStakeNew := topicStake.Add(stake)
+	if topicStakeNew.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	if err := k.topicStake.Set(ctx, topic, topicStakeNew); err != nil {
 		return err
 	}
@@ -488,6 +521,9 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	totalStakeNew := totalStake.Add(stake)
+	if totalStakeNew.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
 		return err
 	}
@@ -541,12 +577,18 @@ func (k *Keeper) RemoveStakeFromBond(
 	// not necessary as long as callers are responsible, but it would be nice to have
 
 	// topicStake(topic) = topicStake(topic) - stake
-	err = k.topicStake.Set(ctx, topic, topicStake.Sub(stake))
+	topicStakeNew := topicStake.Sub(stake)
+	if topicStakeNew.IsZero() {
+		err = k.topicStake.Remove(ctx, topic)
+	} else {
+		err = k.topicStake.Set(ctx, topic, topicStakeNew)
+	}
 	if err != nil {
 		return err
 	}
 
 	// totalStake = totalStake - stake
+	// we do write zero here, because totalStake is allowed to be zero
 	err = k.totalStake.Set(ctx, totalStake.Sub(stake))
 	if err != nil {
 		return err
@@ -598,18 +640,33 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 	// not necessary as long as callers are responsible, but it would be nice to have
 
 	// delegatorStake(delegator) = delegatorStake(delegator) - stake
-	err = k.stakeOwnedByDelegator.Set(ctx, delegator, delegatorStake.Sub(stake))
+	delegatorStakeNew := delegatorStake.Sub(stake)
+	if delegatorStakeNew.IsZero() {
+		err = k.stakeOwnedByDelegator.Remove(ctx, delegator)
+	} else {
+		err = k.stakeOwnedByDelegator.Set(ctx, delegator, delegatorStakeNew)
+	}
 	if err != nil {
 		return err
 	}
 	// bonds(target, delegator) = bonds(target, delegator) - stake
-	err = k.stakePlacement.Set(ctx, collections.Join(delegator, target), bond.Sub(stake))
+	bondNew := bond.Sub(stake)
+	if bondNew.IsZero() {
+		err = k.stakePlacement.Remove(ctx, collections.Join(delegator, target))
+	} else {
+		err = k.stakePlacement.Set(ctx, collections.Join(delegator, target), bondNew)
+	}
 	if err != nil {
 		return err
 	}
 
 	// targetStake(target) = targetStake(target) - stake
-	err = k.stakePlacedUponTarget.Set(ctx, target, targetStake.Sub(stake))
+	targetStakeNew := targetStake.Sub(stake)
+	if targetStakeNew.IsZero() {
+		err = k.stakePlacedUponTarget.Remove(ctx, target)
+	} else {
+		err = k.stakePlacedUponTarget.Set(ctx, target, targetStakeNew)
+	}
 	if err != nil {
 		return err
 	}
@@ -798,4 +855,26 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	}
 
 	return nil, collections.ErrNotFound
+}
+
+func (k *Keeper) SetWeight(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	reputer sdk.AccAddress,
+	worker sdk.AccAddress,
+	weight Uint) error {
+	if weight.IsZero() {
+		return ErrDoNotSetMapValueToZero
+	}
+	key := collections.Join3(topicId, reputer, worker)
+	return k.weights.Set(ctx, key, weight)
+}
+
+func (k *Keeper) SetInference(
+	ctx context.Context,
+	topicID TOPIC_ID,
+	worker sdk.AccAddress,
+	inference state.Inference) error {
+	key := collections.Join(topicID, worker)
+	return k.inferences.Set(ctx, key, inference)
 }

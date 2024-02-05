@@ -105,4 +105,6 @@ enum Err {
   ErrIntegerUnderflowTopicStake = 12;
   ErrIntegerUnderflowTotalStake = 13;
   ErrIterationLengthDoesNotMatch = 14;
+  ErrDoNotSetMapValueToZero = 15;
+  ErrBlockHeightNegative = 16;
 }

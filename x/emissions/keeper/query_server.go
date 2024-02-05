@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	state "github.com/upshot-tech/protocol-state-machine-module"
 )
@@ -96,6 +97,9 @@ func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightReque
 	key := collections.Join3(req.TopicId, reputerAddr, workerAddr)
 	weight, err := qs.k.weights.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &state.QueryWeightResponse{Amount: cosmosMath.ZeroUint()}, nil
+		}
 		return nil, err
 	}
 

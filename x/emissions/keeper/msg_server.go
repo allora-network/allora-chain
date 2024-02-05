@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	collections "cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	state "github.com/upshot-tech/protocol-state-machine-module"
@@ -67,10 +66,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
 		return nil, err
 	}
-	// Set latest weight-adjustment timestamp of a topic to 0
-	if err := ms.k.SetLatestInferenceTimestamp(ctx, id, 0); err != nil {
-		return nil, err
-	}
+	// Rather than set latest weight-adjustment timestamp of a topic to 0
+	// we do nothing, since no value in the map means zero
 
 	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
@@ -85,9 +82,7 @@ func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*
 		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
 		workerAddr := sdk.AccAddress(weightEntry.Worker)
 
-		key := collections.Join3(weightEntry.TopicId, reputerAddr, workerAddr)
-
-		err := ms.k.weights.Set(ctx, key, weightEntry.Weight)
+		err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
 		if err != nil {
 			return nil, err
 		}
@@ -100,9 +95,7 @@ func (ms msgServer) SetInferences(ctx context.Context, msg *state.MsgSetInferenc
 	for _, inferenceEntry := range msg.Inferences {
 		workerAddr := sdk.AccAddress(inferenceEntry.Worker)
 
-		key := collections.Join(inferenceEntry.TopicId, workerAddr)
-
-		err := ms.k.inferences.Set(ctx, key, *inferenceEntry)
+		err := ms.k.SetInference(ctx, inferenceEntry.TopicId, workerAddr, *inferenceEntry)
 		if err != nil {
 			return nil, err
 		}

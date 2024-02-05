@@ -22,3 +22,5 @@ var ErrSenderNotRegistered = fmt.Errorf(state.Err_ErrSenderNotRegistered.String(
 var ErrStakeTargetNotRegistered = fmt.Errorf(state.Err_ErrStakeTargetNotRegistered.String())
 var ErrTopicIdOfStakerAndTargetDoNotMatch = fmt.Errorf(state.Err_ErrInvalidTopicId.String())
 var ErrInsufficientStakeToRemove = fmt.Errorf(state.Err_ErrInsufficientStakeToRemove.String())
+var ErrDoNotSetMapValueToZero = fmt.Errorf(state.Err_ErrDoNotSetMapValueToZero.String())
+var ErrBlockHeightNegative = fmt.Errorf(state.Err_ErrBlockHeightNegative.String())
