@@ -2,13 +2,12 @@ package testutil
 
 import (
 	context "context"
-	reflect "reflect"
-	gomock "github.com/golang/mock/gomock"
+	address "cosmossdk.io/core/address"
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/x/auth/types"
-	address "cosmossdk.io/core/address"
+	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
-
 
 type MockBankKeeper struct {
 	ctrl     *gomock.Controller
@@ -19,7 +18,6 @@ type MockBankKeeper struct {
 type MockBankKeeperMockRecorder struct {
 	mock *MockBankKeeper
 }
-
 
 // MockUpshotKeeper is a mock of UpshotKeeper interface.
 func NewMockBankKeeper(ctrl *gomock.Controller) *MockBankKeeper {
