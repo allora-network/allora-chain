@@ -108,8 +108,8 @@ type Keeper struct {
 	//
 	// map of (delegator) -> total amount staked by delegator on everyone they've staked upon (including potentially themselves)
 	stakeOwnedByDelegator collections.Map[DELEGATOR, Uint]
-	// map of (target, delegator) -> amount staked by delegator upon target
-	stakePlacement collections.Map[collections.Pair[TARGET, DELEGATOR], Uint]
+	// map of (delegator, target) -> amount staked by delegator upon target
+	stakePlacement collections.Map[collections.Pair[DELEGATOR, TARGET], Uint]
 	// map of (target) -> total amount staked upon target by themselves and all other delegators
 	stakePlacedUponTarget collections.Map[TARGET, Uint]
 
@@ -422,9 +422,8 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
 // it also updates the total stake for the subnet in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string, target string, stake Uint) error {
-
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return ErrDoNotSetMapValueToZero
 	}
 
 	// update the stake array that tracks how much each delegator has invested in the system total
@@ -707,7 +706,7 @@ func (k *Keeper) GetAllBondsForDelegator(ctx context.Context, delegator sdk.AccA
 		d := kv.K1()
 		// if the delegator key matches the delegator we're looking for
 		if d.Equals(delegator) {
-			target := kv.K1()
+			target := kv.K2()
 			amount, err := k.stakePlacement.Get(ctx, kv)
 			if err != nil {
 				return nil, nil, err

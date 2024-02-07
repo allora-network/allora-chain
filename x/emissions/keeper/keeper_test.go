@@ -26,8 +26,8 @@ type KeeperTestSuite struct {
 	suite.Suite
 
 	ctx          sdk.Context
-	authKeeper   keeper.AccountKeeper
-	bankKeeper   keeper.BankKeeper
+	bankKeeper   *emissionstestutil.MockBankKeeper
+	authKeeper   *emissionstestutil.MockAccountKeeper
 	upshotKeeper keeper.Keeper
 	msgServer    state.MsgServer
 	mockCtrl     *gomock.Controller
@@ -56,6 +56,10 @@ func (s *KeeperTestSuite) SetupTest() {
 func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
+
+// ########################################
+// #           Staking tests              #
+// ########################################
 
 func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	ctx := s.ctx

@@ -48,7 +48,7 @@ func (s *ModuleTestSuite) mockMintRewardCoins(amount []cosmosMath.Int, target []
 		return fmt.Errorf("amount and target must be the same length")
 	}
 	for i, addr := range target {
-		coins := sdk.NewCoins(sdk.NewCoin("upshot", amount[i]))
+		coins := sdk.NewCoins(sdk.NewCoin("upt", amount[i]))
 		s.bankKeeper.MintCoins(s.ctx, s.appModule.Name(), coins)
 		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, s.appModule.Name(), addr, coins)
 	}

@@ -273,11 +273,15 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// 5. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upshot", amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin("upt", amountInt))
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.ModuleName, coins)
 
 	// 6. update the stake data structures
-	ms.k.AddStake(ctx, topicId, msg.Sender, msg.StakeTarget, msg.Amount)
+	err = ms.k.AddStake(ctx, topicId, msg.Sender, msg.StakeTarget, msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+
 	return &state.MsgAddStakeResponse{}, nil
 }
 
@@ -318,7 +322,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// 6. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upshot", amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin("upt", amountInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
 	// 7. update the stake data structures
@@ -367,11 +371,15 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	if err != nil {
 		return nil, err
 	}
-	// 5. Send the funds to the sender
+	// 5. Check the sender has enough stake to remove
+	if senderStake.IsZero() {
+		return nil, ErrNoStakeToRemove
+	}
+	// 6. Send the funds to the sender
 	senderStakeInt := cosmosMath.NewIntFromBigInt(senderStake.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upshot", senderStakeInt))
+	coins := sdk.NewCoins(sdk.NewCoin("upt", senderStakeInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
-	// 6. Update the topicStake data structure (no underflow checks since data comes from chain)
+	// 7. Update the topicStake data structure (no underflow checks since data comes from chain)
 	topicStake, err := ms.k.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return nil, err
@@ -380,7 +388,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	if err != nil {
 		return nil, err
 	}
-	// 7. Update the totalStake data structure (no underflow checks since data comes from chain)
+	// 8. Update the totalStake data structure (no underflow checks since data comes from chain)
 	totalStake, err := ms.k.GetTotalStake(ctx)
 	if err != nil {
 		return nil, err
@@ -389,7 +397,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	if err != nil {
 		return nil, err
 	}
-	// 8. For every stake position, update the stake data structures
+	// 9. For every stake position, update the stake data structures
 	for i := 0; i < len(targets); i++ {
 		target := targets[i]
 		amount := amounts[i]
@@ -437,7 +445,7 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
 	// move funds
 	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
-	amount := sdk.NewCoins(sdk.NewCoin("upshot", initialStakeInt))
+	amount := sdk.NewCoins(sdk.NewCoin("upt", initialStakeInt))
 	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.ModuleName, amount)
 	if err != nil {
 		return err

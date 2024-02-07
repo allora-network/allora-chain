@@ -5,17 +5,23 @@ import (
 	"math"
 	"time"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
 	state "github.com/upshot-tech/protocol-state-machine-module"
 )
 
 var (
-	PKS     = simtestutil.CreateTestPubKeys(3)
+	PKS     = simtestutil.CreateTestPubKeys(4)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = sdk.ValAddress(Addr)
 )
+
+// ########################################
+// #           Topics tests              #
+// ########################################
 
 func (s *KeeperTestSuite) TestMsgSetWeights() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -170,4 +176,371 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, uint64(2), "Topic count after second topic insertion is not 2")
+}
+
+// ########################################
+// #           Staking tests              #
+// ########################################
+
+func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.AccAddress, workerAddr sdk.AccAddress, registrationInitialStake cosmosMath.Uint) {
+	msgServer := s.msgServer
+	require := s.Require()
+	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
+
+	// Create Topic
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Metadata:         "Some metadata for the new topic",
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceCadence: 60,
+		Active:           true,
+	}
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on creation")
+
+	// Register Reputer
+	reputerRegMsg := &state.MsgRegisterReputer{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      0,
+		InitialStake: registrationInitialStake,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, registrationInitialStakeCoins)
+	_, err = msgServer.RegisterReputer(ctx, reputerRegMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+
+	// Register Worker
+	workerRegMsg := &state.MsgRegisterWorker{
+		Creator:      workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      0,
+		InitialStake: registrationInitialStake,
+		Owner:        workerAddr.String(),
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.ModuleName, registrationInitialStakeCoins)
+	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
+	require.NoError(err, "Registering worker should not return an error")
+}
+
+func (s *KeeperTestSuite) TestMsgAddStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake from reputer (sender) to worker (target)
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	// Check updated stake for delegator
+	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.NoError(err)
+	// Registration Stake: 100
+	// Stake placed upon target: 1000
+	// Total: 1100
+	require.Equal(stakeAmount.Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch")
+
+	// Check updated stake for target
+	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	require.NoError(err)
+	// Registration Stake: 100
+	// Stake placed upon target: 1000
+	// Total: 1100
+	require.Equal(stakeAmount.Add(registrationInitialStake), targetStake, "Target stake amount mismatch")
+
+	// Check updated total stake
+	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	require.NoError(err)
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Stake placed upon target: 1000
+	// Total: 1200
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStake, "Total stake amount mismatch")
+
+	// Check updated total stake for topic
+	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	require.NoError(err)
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Stake placed upon target: 1000
+	// Total: 1200
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic, "Total stake amount for topic mismatch")
+
+	// Check bond
+	bond, err := s.upshotKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	require.NoError(err)
+	// Stake placed upon target: 1000
+	require.Equal(stakeAmount, bond, "Bond amount mismatch")
+}
+
+func (s *KeeperTestSuite) TestAddStakeInvalid() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Common setup for staking
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Scenario 1: Edge Case - Stake Amount Zero
+	stakeAmountZero := cosmosMath.NewUint(0)
+	stakeAmountZeroCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmountZero.BigInt())))
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountZeroCoins)
+	_, err := msgServer.AddStake(ctx, &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmountZero,
+	})
+	require.Error(err, "Adding stake of zero should return an error")
+
+	// Scenario 3: Incorrect Registrations - Unregistered Reputer
+	stakeAmount := cosmosMath.NewUint(500)
+	unregisteredReputerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered delegator
+	_, err = msgServer.AddStake(ctx, &state.MsgAddStake{
+		Sender:      unregisteredReputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	})
+	require.Error(err, "Adding stake from an unregistered reputer should return an error")
+
+	// Scenario 4: Incorrect Registrations - Unregistered Reputer
+	unregisteredWorkerAddr := sdk.AccAddress(PKS[3].Address()) // unregistered worker
+	_, err = msgServer.AddStake(ctx, &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: unregisteredWorkerAddr.String(),
+		Amount:      stakeAmount,
+	})
+	require.Error(err, "Adding stake from an unregistered reputer should return an error")
+}
+
+func (s *KeeperTestSuite) TestMsgRemoveStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	removalAmount := cosmosMath.NewUint(500)
+	removalAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(removalAmount.BigInt())))
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake first to ensure there is something to remove
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	// Remove stake from reputer (sender) to worker (target)
+	removeStakeMsg := &state.MsgRemoveStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      removalAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, removalAmountCoins)
+	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
+	require.NoError(err, "RemoveStake should not return an error")
+
+	// Check updated stake for delegator after removal
+	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.NoError(err)
+	// Initial Stake: 100
+	// Stake added: 1000
+	// Stake removed: 500
+	// Total: 600
+	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch after removal")
+
+	// Check updated stake for target after removal
+	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	require.NoError(err)
+	// Initial Stake: 100
+	// Stake added: 1000
+	// Stake removed: 500
+	// Total: 600
+	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake), targetStake, "Target stake amount mismatch after removal")
+
+	// Check updated total stake after removal
+	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	require.NoError(err)
+	// Initial Stake: 200 (100 for reputer, 100 for worker)
+	// Stake added: 1000
+	// Stake removed: 500
+	// Total: 700
+	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStake, "Total stake amount mismatch after removal")
+
+	// Check updated total stake for topic after removal
+	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	require.NoError(err)
+	// Initial Stake: 200 (100 for reputer, 100 for worker)
+	// Stake added: 1000
+	// Stake removed: 500
+	// Total: 700
+	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic, "Total stake amount for topic mismatch after removal")
+
+	// Check bond after removal
+	bond, err := s.upshotKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	require.NoError(err)
+	// Stake placed upon target: 1000
+	// Stake removed: 500
+	// Total: 500
+	require.Equal(stakeAmount.Sub(removalAmount), bond, "Bond amount mismatch after removal")
+}
+
+func (s *KeeperTestSuite) TestRemoveStakeInvalid() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Scenario 1: Attempt to remove more stake than exists
+	removeStakeMsg := &state.MsgRemoveStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	_, err := msgServer.RemoveStake(ctx, removeStakeMsg)
+	require.Error(err, "RemoveStake should return an error when attempting to remove more stake than exists")
+
+	// Scenario 2: Attempt to remove stake from unregistered target
+	unregisteredWorkerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered target
+	removeStakeMsg = &state.MsgRemoveStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: unregisteredWorkerAddr.String(),
+		Amount:      registrationInitialStake,
+	}
+	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
+	require.Error(err, "RemoveStake should return an error when attempting to remove stake from a unregistered target")
+
+	// Scenario 3: Attempt to remove stake as a unregistered sender
+	unregisteredReputerAddr := sdk.AccAddress(PKS[3].Address()) // unregistered sender
+	removeStakeMsg = &state.MsgRemoveStake{
+		Sender:      unregisteredReputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      registrationInitialStake,
+	}
+	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
+	require.Error(err, "RemoveStake should return an error when attempting to remove stake as a unregistered sender")
+
+	// Scenario 4: Attempt to remove stake when sender does not have enough stake placed on the target
+	removeStakeMsg = &state.MsgRemoveStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
+	require.Error(err, "RemoveStake should return an error when sender does not have enough stake placed on the target")
+}
+
+func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	registrationInitialStake := cosmosMath.NewUint(100)
+	senderTotalStake := stakeAmount.Add(registrationInitialStake) // Total stake including registration stake
+	senderTotalStakeCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(senderTotalStake.BigInt())))
+
+	// Common setup for staking
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake first to ensure there is an initial stake
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	fmt.Println(addStakeMsg)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	// Remove all stake
+	removeAllStakeMsg := &state.MsgRemoveAllStake{
+		Sender: reputerAddr.String(),
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, senderTotalStakeCoins)
+	_, err = msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
+	require.NoError(err, "RemoveAllStake should not return an error")
+
+	// Check that the sender's total stake is zero after removal
+	_, err = s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.Error(err, collections.ErrNotFound)
+
+	// Check that the target's stake is reduced by the stake amount
+	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	require.NoError(err)
+	require.Equal(registrationInitialStake, targetStake, "Target's stake should be equal to the registration stake after removing all stake")
+
+	// Check updated total stake after removal
+	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	require.NoError(err)
+	require.Equal(registrationInitialStake, totalStake, "Total stake should be equal to the registration stakes after removing all stake")
+
+	// Check updated total stake for topic after removal
+	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	require.NoError(err)
+	require.Equal(registrationInitialStake, totalStakeForTopic, "Total stake for the topic should be equal to the registration stakes after removing all stake")
+}
+
+func (s *KeeperTestSuite) TestRemoveAllStakeInvalid() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Scenario 1: Attempt to remove all stake as an unregistered sender
+	unregisteredReputerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered sender
+	removeAllStakeMsg := &state.MsgRemoveAllStake{
+		Sender: unregisteredReputerAddr.String(),
+	}
+	_, err := msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
+	require.Error(err, "Scenario 1: RemoveAllStake should return an error when attempting to remove all stake as an unregistered sender")
+
+	// Scenario 2: Attempt to remove all stake when sender has no stake
+	noStakeSenderAddr := sdk.AccAddress(PKS[3].Address()) // target
+	removeAllStakeMsg = &state.MsgRemoveAllStake{
+		Sender: noStakeSenderAddr.String(),
+	}
+	_, err = msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
+	require.Error(err, "Scenario 2: RemoveAllStake should return an error when sender has no stake")
 }
