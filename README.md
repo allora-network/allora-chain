@@ -1,40 +1,30 @@
-# UpShot Appchain
+# Allora Network
 
-This repository contains an example of a tiny, but working Cosmos SDK chain.
-It uses the least modules possible and is intended to be used as a starting point for building your own chain, without all the boilerplate that other tools generate. It is a simpler version of Cosmos SDK's [simapp](https://github.com/cosmos/cosmos-sdk/tree/main/simapp).
+![Banner!](assets/AlloraLogo.png)
 
-`Uptd` uses the **latest** version of the [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk).
+The Allora Network is a state-of-the-art protocol that uses decentralized AI and machine learning (ML) to build, extract, and deploy predictions among its participants. It offers actors who wish to use AI predictions a formalized way to obtain the output of state-of-the-art ML models on-chain and to pay the operators of AI/ML nodes who create these predictions. That way, Allora bridges the information gap between data owners, data processors, AI/ML predictors, market analysts, and the end-users or consumers who have the means to execute on these insights.
 
-## How to use
+The AI/ML agents within the Allora Network use their data and algorithms to broadcast their predictions across a peer-to-peer network, and they ingest these predictions to assess the predictions from all other agents. The network consensus mechanism combines these predictions and assessments, and distributes rewards to the agents according to the quality of their predictions and assessments. This carefully designed incentive mechanism enables Allora to continually learn and improve, adjusting to the market as it evolves.
 
-In addition to learn how to build a chain thanks to `uptd`, you can as well directly run `uptd`.
+## Documentation
+For the latest documentation, please go to https://docs.allora.network/
 
-### Installation
-
-Install and run `uptd`:
+## Uptd Install
 
 ```sh
-export BLOCKLESS_API_URL="https://example.com/api/v1/functions/execute"
-export BLOCKLESS_FUNCTION_ID="bafybeigm5ct2hcbnm6lzrbuk2gdzknchesf1qa2gsioe4wdbfcxsunbrpy"
-git clone github.com/upshot-tech/protocol-state-machine-module
-git clone github.com/upshot-tech/upshot-appchain
-cd upshot-appchain
-make install
-make init
-uptd start
+git clone -b <latest-release-tag> https://github.com/upshot-tech/upshot-appchain.git
+cd upshot-appchain && make install
 ```
 
 Note: Depending on your `go` setup you may need to add `$GOPATH/bin` to your `$PATH`.
 
 ```
-export PATH=${PATH}:`go env GOPATH`/bin
+export PATH=$PATH:$(go env GOPATH)/bin
 ```
 
-## Contributing to Upshot State
-
-* For convenance `.vscode` folder provides a launch settings for debugging. 
-* Open upshot-appchain.code-workspace to debug  `protocol-state-machine-module`
-
-## Useful links
-
-* [Cosmos-SDK Documentation](https://docs.cosmos.network/)
+## Run a Local Network
+To run a local node for testing purposes, execute the following commands:
+```
+make init
+uptd start
+```
