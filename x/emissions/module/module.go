@@ -137,6 +137,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	// and we can retroactively pay them out
 	if err != nil {
 		fmt.Println("Error calculating global emission per topic: ", err)
+		panic(err)
 	}
 
 	// Execute the inference and weight cadence checks

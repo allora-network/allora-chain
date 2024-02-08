@@ -176,20 +176,24 @@ func (s *KeeperTestSuite) TestRemoveStakeFromBond() {
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
-	_, err = keeper.GetDelegatorStake(ctx, delegatorAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
 
 	// Check updated bond stake for delegator and target after removal
-	_, err = keeper.GetBond(ctx, delegatorAddr, targetAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Bond stake should be zero after removal")
 
 	// Check updated stake placed upon target after removal
-	_, err = keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	stakePlacedUponTarget, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), stakePlacedUponTarget, "Stake placed upon target should be zero after removal")
 
 	// Check updated topic stake after removal
-	_, err = keeper.GetTopicStake(ctx, topicID)
-	s.Require().Error(err, collections.ErrNotFound)
+	topicStake, err := keeper.GetTopicStake(ctx, topicID)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), topicStake, "Topic stake should be zero after removal")
 
 	// Check updated total stake after removal
 	finalTotalStake, err := keeper.GetTotalStake(ctx)
@@ -308,11 +312,16 @@ func (s *KeeperTestSuite) TestWalkAllTopicStake() {
 	ctx := s.ctx
 	keeper := s.upshotKeeper
 
+	//rather than calling keeper.InitGenesis, we just increment the topic id for 0 manually
+	topic0, err := keeper.IncrementTopicId(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), topic0)
 	// Mock setup for multiple topics and stakes
 	for i := 1; i <= 3; i++ {
 		topicID := uint64(i)
 		stakeAmount := cosmosMath.NewUint(uint64(100 * i))
 		keeper.SetTopicStake(ctx, topicID, stakeAmount)
+		keeper.IncrementTopicId(ctx)
 	}
 
 	// Define a walk function to collect stakes
@@ -323,7 +332,7 @@ func (s *KeeperTestSuite) TestWalkAllTopicStake() {
 	}
 
 	// Walk all topic stakes
-	err := keeper.WalkAllTopicStake(ctx, walkFunc)
+	err = keeper.WalkAllTopicStake(ctx, walkFunc)
 
 	s.Require().NoError(err, "Walking all topic stakes should not return an error")
 	s.Require().Equal(3, len(collectedStakes), "The number of collected stakes should match the number of topics")
@@ -352,16 +361,18 @@ func (s *KeeperTestSuite) TestRemoveStakeFromBondMissingTotalOrTopicStake() {
 	s.Require().NoError(err)
 
 	// Check stakeOwnedByDelegator after removal
-	_, err = keeper.GetDelegatorStake(ctx, delegatorAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
 
 	// Check stakePlacement after removal
-	_, err = keeper.GetBond(ctx, delegatorAddr, targetAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err, "Stake placement should be removed")
+	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Stake placement should be removed")
 
-	// Check stakePlacedUponTarget after removal
-	_, err = keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-	s.Require().Error(err, collections.ErrNotFound)
+	targetStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err, "Stake placed upon target should be removed")
+	s.Require().Equal(cosmosMath.ZeroUint(), targetStake, "Stake placed upon target should be removed")
 
 	// Check totalStake did not change
 	finalTotalStake, err := keeper.GetTotalStake(ctx)
@@ -372,4 +383,17 @@ func (s *KeeperTestSuite) TestRemoveStakeFromBondMissingTotalOrTopicStake() {
 	finalTopicStake, err := keeper.GetTopicStake(ctx, topicID)
 	s.Require().NoError(err)
 	s.Require().Equal(initialTopicStake, finalTopicStake, "Topic stake should not change")
+}
+
+func (s *KeeperTestSuite) TestRewardsUpdate() {
+	noInitLastRewardsUpdate, err := s.upshotKeeper.GetLastRewardsUpdate(s.ctx)
+	s.NoError(err, "error getting un-initialized")
+	s.Require().Equal(int64(0), noInitLastRewardsUpdate, "Last rewards update should be zero")
+
+	err = s.upshotKeeper.SetLastRewardsUpdate(s.ctx, 100)
+	s.NoError(err, "error setting")
+
+	lastRewardsUpdate, err := s.upshotKeeper.GetLastRewardsUpdate(s.ctx)
+	s.NoError(err, "error getting")
+	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
 }

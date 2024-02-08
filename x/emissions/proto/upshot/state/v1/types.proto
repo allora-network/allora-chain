@@ -107,5 +107,6 @@ enum Err {
   ErrIterationLengthDoesNotMatch = 14;
   ErrDoNotSetMapValueToZero = 15;
   ErrBlockHeightNegative = 16;
-  ErrNoStakeToRemove = 17;
+  ErrBlockHeightLessThanPrevious = 17;
+  ErrNoStakeToRemove = 18;
 }

@@ -186,12 +186,19 @@ func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
 }
 
 func (k *Keeper) GetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
-	return k.latestInferencesTimestamps.Get(ctx, topicId)
+	ret, err := k.latestInferencesTimestamps.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return ret, nil
 }
 
 func (k *Keeper) SetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) error {
 	if timestamp == 0 {
-		return ErrDoNotSetMapValueToZero
+		return k.latestInferencesTimestamps.Remove(ctx, topicId)
 	}
 	return k.latestInferencesTimestamps.Set(ctx, topicId, timestamp)
 }
@@ -240,7 +247,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
 	var inferences []*state.InferenceSetForScoring
 
-	latest_timestamp, err := k.latestInferencesTimestamps.Get(ctx, topicId)
+	latest_timestamp, err := k.GetLatestInferenceTimestamp(ctx, topicId)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +280,14 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 
 // Gets the total sum of all stake in the network across all topics
 func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
-	return k.totalStake.Get(ctx)
+	ret, err := k.totalStake.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
 }
 
 // Sets the total sum of all stake in the network across all topics
@@ -285,35 +299,76 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 
 // Gets the stake in the network for a given topic
 func (k *Keeper) GetTopicStake(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
-	return k.topicStake.Get(ctx, topicId)
+	ret, err := k.topicStake.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
 }
 
 func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint) error {
 	if stake.IsZero() {
-		return ErrDoNotSetMapValueToZero
+		return k.topicStake.Remove(ctx, topicId)
 	}
 	return k.topicStake.Set(ctx, topicId, stake)
 }
 
 func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress) (Uint, error) {
-	return k.stakePlacedUponTarget.Get(ctx, target)
+	ret, err := k.stakePlacedUponTarget.Get(ctx, target)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
 }
 
 func (k *Keeper) SetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress, stake Uint) error {
 	if stake.IsZero() {
-		return ErrDoNotSetMapValueToZero
+		return k.stakePlacedUponTarget.Remove(ctx, target)
 	}
 	return k.stakePlacedUponTarget.Set(ctx, target, stake)
 }
 
+func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
+	rng := collections.Range[uint64]{}
+	rng.StartInclusive(0)
+	end, err := k.nextTopicId.Peek(ctx)
+	if err != nil {
+		return collections.Iterator[uint64, cosmosMath.Uint]{}, err
+	}
+	rng.EndExclusive(end)
+	return k.topicStake.Iterate(ctx, &rng)
+}
+
 // Runs an arbitrary function for every topic in the network
 func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TOPIC_ID, stake Uint) (stop bool, err error)) error {
-	return k.topicStake.Walk(ctx, nil, walkFunc)
+	rng := collections.Range[uint64]{}
+	rng.StartInclusive(0)
+	end, err := k.nextTopicId.Peek(ctx)
+	if err != nil {
+		return err
+	}
+	rng.EndExclusive(end)
+	err = k.topicStake.Walk(ctx, &rng, walkFunc)
+	return err
 }
 
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
-	return k.lastRewardsUpdate.Get(ctx)
+	ret, err := k.lastRewardsUpdate.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		} else {
+			return 0, err
+		}
+	}
+	return ret, nil
 }
 
 // Set the last block height at which rewards emissions were updated
@@ -321,8 +376,16 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 	if blockHeight < 0 {
 		return ErrBlockHeightNegative
 	}
-	if blockHeight == 0 {
-		return ErrDoNotSetMapValueToZero
+	previousBlockHeight, err := k.lastRewardsUpdate.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			previousBlockHeight = 0
+		} else {
+			return err
+		}
+	}
+	if blockHeight < previousBlockHeight {
+		return ErrBlockHeightLessThanPrevious
 	}
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
@@ -422,6 +485,8 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
 // it also updates the total stake for the subnet in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string, target string, stake Uint) error {
+
+	// if stake is zero this function is a no-op
 	if stake.IsZero() {
 		return ErrDoNotSetMapValueToZero
 	}
@@ -441,9 +506,6 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 	}
 
 	delegatorStakeNew := delegatorStake.Add(stake)
-	if delegatorStakeNew.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	if err := k.stakeOwnedByDelegator.Set(ctx, delegatorAcc, delegatorStakeNew); err != nil {
 		return err
 	}
@@ -467,9 +529,6 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	bondNew := bond.Add(stake)
-	if bondNew.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	if err := k.stakePlacement.Set(ctx, bondIndex, bondNew); err != nil {
 		return err
 	}
@@ -486,9 +545,6 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	targetStakeNew := targetStake.Add(stake)
-	if targetStakeNew.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	if err := k.stakePlacedUponTarget.Set(ctx, targetAcc, targetStakeNew); err != nil {
 		return err
 	}
@@ -503,9 +559,6 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	topicStakeNew := topicStake.Add(stake)
-	if topicStakeNew.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	if err := k.topicStake.Set(ctx, topic, topicStakeNew); err != nil {
 		return err
 	}
@@ -520,9 +573,6 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		}
 	}
 	totalStakeNew := totalStake.Add(stake)
-	if totalStakeNew.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
 		return err
 	}
@@ -675,12 +725,27 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 
 // for a given address, find out how much stake they've put into the system
 func (k *Keeper) GetDelegatorStake(ctx context.Context, delegator sdk.AccAddress) (Uint, error) {
-	return k.stakeOwnedByDelegator.Get(ctx, delegator)
+	ret, err := k.stakeOwnedByDelegator.Get(ctx, delegator)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
 }
 
 // For a given delegator and target, find out how much stake the delegator has placed upon the target
 func (k *Keeper) GetBond(ctx context.Context, delegator sdk.AccAddress, target sdk.AccAddress) (Uint, error) {
-	return k.stakePlacement.Get(ctx, collections.Join(delegator, target))
+	ret, err := k.stakePlacement.Get(ctx, collections.Join(delegator, target))
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+
+	}
+	return ret, nil
 }
 
 // For a given delegator, return a map of every target they've placed stake upon, and how much stake they've placed upon them
@@ -862,10 +927,10 @@ func (k *Keeper) SetWeight(
 	reputer sdk.AccAddress,
 	worker sdk.AccAddress,
 	weight Uint) error {
-	if weight.IsZero() {
-		return ErrDoNotSetMapValueToZero
-	}
 	key := collections.Join3(topicId, reputer, worker)
+	if weight.IsZero() {
+		return k.weights.Remove(ctx, key)
+	}
 	return k.weights.Set(ctx, key, weight)
 }
 

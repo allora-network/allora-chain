@@ -469,6 +469,84 @@ func (s *RewardsCalcTestSuite) TestMatMulUintSimple() {
 	s.Require().Equal(expected, result, "MatMul returned incorrect result")
 }
 
+func (s *RewardsCalcTestSuite) TestMapAddSimple() {
+	val1 := cosmosMath.NewUint(1)
+	val2 := cosmosMath.NewUint(2)
+	a := map[string]*Uint{
+		"a": &val1,
+		"b": &val1,
+		"c": &val1,
+	}
+	b := map[string]*Uint{
+		"a": &val1,
+		"b": &val2,
+		"d": &val2,
+	}
+
+	expec1 := cosmosMath.NewUint(2)
+	expec2 := cosmosMath.NewUint(3)
+	expec3 := cosmosMath.NewUint(1)
+	expected := map[string]*Uint{
+		"a": &expec1,
+		"b": &expec2,
+		"c": &expec3,
+		"d": &expec1,
+	}
+
+	result := mapAdd(a, b)
+
+	s.Require().Equal(expected, result, "MapAdd returned incorrect result")
+}
+
+func (s *RewardsCalcTestSuite) TestMapAddEmptyA() {
+	a := make(map[string]*Uint)
+	val1 := cosmosMath.NewUint(1)
+	val2 := cosmosMath.NewUint(2)
+	b := map[string]*Uint{
+		"a": &val1,
+		"b": &val2,
+		"d": &val2,
+	}
+
+	expected := map[string]*Uint{
+		"a": &val1,
+		"b": &val2,
+		"d": &val2,
+	}
+
+	result := mapAdd(a, b)
+
+	s.Require().Equal(expected, result, "MapAdd returned incorrect result")
+}
+
+func (s *RewardsCalcTestSuite) TestMapAddEmptyB() {
+	val1 := cosmosMath.NewUint(1)
+	a := map[string]*Uint{
+		"a": &val1,
+		"b": &val1,
+		"c": &val1,
+	}
+	b := make(map[string]*Uint)
+
+	expected := map[string]*Uint{
+		"a": &val1,
+		"b": &val1,
+		"c": &val1,
+	}
+
+	result := mapAdd(a, b)
+
+	s.Require().Equal(expected, result, "MapAdd returned incorrect result")
+}
+
+func (s *RewardsCalcTestSuite) TestMapAddEmptyBoth() {
+	a := make(map[string]*Uint)
+	b := make(map[string]*Uint)
+	expected := make(map[string]*Uint)
+	result := mapAdd(a, b)
+	s.Require().Equal(expected, result, "MapAdd returned incorrect result")
+}
+
 /*************************************************/
 /*      Helper functions for testing             */
 /*************************************************/

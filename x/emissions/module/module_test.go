@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -103,4 +104,108 @@ func (s *ModuleTestSuite) SetupTest() {
 
 func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(ModuleTestSuite))
+}
+
+func (s *ModuleTestSuite) TestRegisterReputer() {
+	topicId, addr, amount := registerCommonBefore(s)
+	response, err := s.msgServer.RegisterReputer(s.ctx, &state.MsgRegisterReputer{
+		Creator:      addr.String(),
+		LibP2PKey:    "libp2pkeyReputer1",
+		MultiAddress: "multiaddressReputer1",
+		TopicId:      topicId,
+		InitialStake: amount,
+	})
+	s.Require().NoError(err)
+	expected := state.MsgRegisterReputerResponse{
+		Success: true,
+		Message: "Reputer node successfully registered",
+	}
+	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
+
+	isReputerRegistered, err := s.upshotKeeper.IsReputerRegistered(s.ctx, addr)
+	s.Require().NoError(err)
+	s.Require().True(isReputerRegistered, "Expect reputer to be registered")
+
+	registerCommonAfter(s, topicId, addr, amount)
+}
+
+func (s *ModuleTestSuite) TestRegisterWorker() {
+	topicId, addr, amount := registerCommonBefore(s)
+	response, err := s.msgServer.RegisterWorker(s.ctx, &state.MsgRegisterWorker{
+		Creator:      addr.String(),
+		LibP2PKey:    "libp2pkeyReputer1",
+		MultiAddress: "multiaddressReputer1",
+		TopicId:      topicId,
+		InitialStake: amount,
+	})
+	s.Require().NoError(err)
+	expected := state.MsgRegisterWorkerResponse{
+		Success: true,
+		Message: "Worker node successfully registered",
+	}
+	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
+
+	isWorkerRegistered, err := s.upshotKeeper.IsWorkerRegistered(s.ctx, addr)
+	s.Require().NoError(err)
+	s.Require().True(isWorkerRegistered, "Expect reputer to be registered")
+	registerCommonAfter(s, topicId, addr, amount)
+}
+
+/********************************************
+*            Helper functions               *
+*********************************************/
+
+func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMath.Uint) {
+	topicId, err := mockCreateTopic(s)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, uint64(1))
+	reputerAddrs := []sdk.AccAddress{
+		sdk.AccAddress([]byte("actor________________")),
+	}
+	reputerAmounts := []cosmosMath.Int{
+		cosmosMath.NewInt(1000),
+	}
+	err = mockMintRewardCoins(
+		s,
+		reputerAmounts,
+		reputerAddrs,
+	)
+	s.Require().NoError(err)
+	return topicId, reputerAddrs[0], cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt())
+}
+
+func registerCommonAfter(s *ModuleTestSuite, topicId uint64, addr sdk.AccAddress, amount cosmosMath.Uint) {
+
+	stakeAmountAfter, err := s.upshotKeeper.GetDelegatorStake(s.ctx, addr)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		stakeAmountAfter,
+		amount,
+		"Expect stake amount to be equal to the initial stake amount after registration")
+	bondAmountAfter, err := s.upshotKeeper.GetBond(s.ctx, addr, addr)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		bondAmountAfter,
+		amount,
+		"Expect bond amount to be equal to the initial stake amount after registration")
+	targetStakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, addr)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		targetStakeAfter,
+		amount,
+		"Expect target stake amount to be equal to the initial stake amount after registration")
+
+	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		topicStake,
+		amount,
+		"Expect topic stake amount to be equal to the initial stake amount after registration")
+
+	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(
+		totalStake,
+		amount,
+		"Expect total stake amount to be equal to the initial stake amount after registration")
 }

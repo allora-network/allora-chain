@@ -25,3 +25,4 @@ var ErrInsufficientStakeToRemove = fmt.Errorf(state.Err_ErrInsufficientStakeToRe
 var ErrNoStakeToRemove = fmt.Errorf(state.Err_ErrNoStakeToRemove.String())
 var ErrDoNotSetMapValueToZero = fmt.Errorf(state.Err_ErrDoNotSetMapValueToZero.String())
 var ErrBlockHeightNegative = fmt.Errorf(state.Err_ErrBlockHeightNegative.String())
+var ErrBlockHeightLessThanPrevious = fmt.Errorf(state.Err_ErrBlockHeightLessThanPrevious.String())

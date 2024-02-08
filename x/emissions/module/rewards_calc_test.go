@@ -1,49 +1,234 @@
 package module_test
 
 import (
-	"context"
+	"errors"
 	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	state "github.com/upshot-tech/protocol-state-machine-module"
+	"github.com/upshot-tech/protocol-state-machine-module/keeper"
 	"github.com/upshot-tech/protocol-state-machine-module/module"
 )
 
-func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoError() {
-	topicId, err := s.mockTopic(s.ctx)
+const (
+	reputer1StartAmount = 1337
+	reputer2StartAmount = 6969
+	worker1StartAmount  = 4242
+	worker2StartAmount  = 1111
+)
+
+func getConstWeights() [2][4]uint64 {
+	return [2][4]uint64{{10, 20, 60, 100}, {30, 40, 50, 70}}
+}
+
+func getConstWeightsOnlyWorkers() [2][4]uint64 {
+	return [2][4]uint64{{10, 20, 0, 0}, {30, 40, 0, 0}}
+}
+
+func getConstZeroWeights() [2][4]uint64 {
+	return [2][4]uint64{{0, 0, 0, 0}, {0, 0, 0, 0}}
+}
+
+func (s *ModuleTestSuite) TestRegistrationTotalStakeAmountSet() {
+	topicId, err := mockCreateTopic(s)
 	s.NoError(err, "Error creating topic")
-	_, err = s.mockTopic(s.ctx)
+	_, err = mockCreateTopic(s)
 	s.NoError(err, "Error creating topic 2")
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
-	err = s.mockSomeReputers(topicId)
+	_, err = mockSomeReputers(s, topicId)
 	s.NoError(err, "Error creating reputers")
-	err = s.mockSomeWorkers(topicId)
+	_, err = mockSomeWorkers(s, topicId)
 	s.NoError(err, "Error creating workers")
-	topicEmissions := cosmosMath.NewUint(2000)
+	totalStakeExpected := cosmosMath.NewUint(
+		reputer1StartAmount + reputer2StartAmount + worker1StartAmount + worker2StartAmount)
+	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	s.NoError(err, "Error getting total stake")
+	s.Equal(totalStakeExpected, totalStake, "Total stake should be the sum of all participants stakes")
+}
+
+func (s *ModuleTestSuite) TestRegistrationTopicStakeAmountSet() {
+	topicId, err := mockCreateTopic(s)
+	s.NoError(err, "Error creating topic")
+	_, err = mockCreateTopic(s)
+	s.NoError(err, "Error creating topic 2")
+	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
+	_, err = mockSomeReputers(s, topicId)
+	s.NoError(err, "Error creating reputers")
+	_, err = mockSomeWorkers(s, topicId)
+	s.NoError(err, "Error creating workers")
+	topicStakeExpected := cosmosMath.NewUint(
+		reputer1StartAmount + reputer2StartAmount + worker1StartAmount + worker2StartAmount)
+	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	s.NoError(err, "Error getting topic stake")
+	s.Equal(topicStakeExpected, topicStake, "Topic stake should be the sum of all participants stakes")
+}
+
+func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
+	topicId, err := mockCreateTopic(s)
+	s.NoError(err, "Error creating topic")
+	_, err = mockCreateTopic(s)
+	s.NoError(err, "Error creating topic 2")
+	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
+	reputers, err := mockSomeReputers(s, topicId)
+	s.NoError(err, "Error creating reputers")
+	workers, err := mockSomeWorkers(s, topicId)
+	s.NoError(err, "Error creating workers")
+	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
+	s.NoError(err, "Error setting weights")
+	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	s.NoError(err, "Error getting topic stake")
+	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
-	totalStake := cosmosMath.NewUint(10000)
-	_, _, err = module.GetParticipantEmissionsForTopic(
+	rewards, err := module.GetParticipantEmissionsForTopic(
 		s.ctx,
 		s.appModule,
 		topicId,
-		&topicEmissions,
+		&topicStake,
 		&cumulativeEmissions,
 		&totalStake,
 	)
-	//s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
+	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
+	s.Require().Equal(4, len(rewards), "every worker should get some emissions")
+	for _, emission := range rewards {
+		s.Require().Equal(
+			cosmosMath.ZeroUint().LT(*emission),
+			true,
+			"Rewards emissions for every actor should not be 0")
+	}
+}
+
+func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions() {
+	topicId, err := mockCreateTopic(s)
+	s.NoError(err, "Error creating topic")
+	_, err = mockCreateTopic(s)
+	s.NoError(err, "Error creating topic 2")
+	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
+	reputers, err := mockSomeReputers(s, topicId)
+	s.NoError(err, "Error creating reputers")
+	workers, err := mockSomeWorkers(s, topicId)
+	s.NoError(err, "Error creating workers")
+	err = mockSetWeights(s, topicId, reputers, workers, getConstWeightsOnlyWorkers())
+	s.NoError(err, "Error setting weights")
+	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	s.NoError(err, "Error getting topic stake")
+	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	s.NoError(err, "Error getting total stake")
+	cumulativeEmissions := cosmosMath.NewUint(5000)
+	rewards, err := module.GetParticipantEmissionsForTopic(
+		s.ctx,
+		s.appModule,
+		topicId,
+		&topicStake,
+		&cumulativeEmissions,
+		&totalStake,
+	)
+	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
+	s.Require().Equal(2, len(rewards), "every worker should get some emissions")
+	for _, emission := range rewards {
+		s.Require().Equal(
+			cosmosMath.ZeroUint().LT(*emission),
+			true,
+			"Worker emissions should not be 0")
+	}
+}
+
+func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
+	topicId, err := mockCreateTopic(s)
+	s.NoError(err, "Error creating topic")
+	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
+	reputers, err := mockSomeReputers(s, topicId)
+	s.NoError(err, "Error creating reputers")
+	workers, err := mockSomeWorkers(s, topicId)
+	s.NoError(err, "Error creating workers")
+	err = mockSetWeights(s, topicId, reputers, workers, getConstZeroWeights())
+	s.NoError(err, "Error setting weights")
+	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	s.NoError(err, "Error getting topic stake")
+	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	s.NoError(err, "Error getting total stake")
+	cumulativeEmissions := cosmosMath.NewUint(5000)
+	rewards, err := module.GetParticipantEmissionsForTopic(
+		s.ctx,
+		s.appModule,
+		topicId,
+		&topicStake,
+		&cumulativeEmissions,
+		&totalStake,
+	)
+	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
+	s.Require().Equal(2, len(rewards), "every worker should get some emissions")
+	reputersAsString := make(map[string]struct{})
+	for _, reputer := range reputers {
+		reputersAsString[reputer.String()] = struct{}{}
+	}
+	for participant, reward := range rewards {
+		s.Require().Equal(
+			cosmosMath.ZeroUint().LT(*reward),
+			true,
+			"Rewards emissions for every actor should not be 0")
+		_, isReputer := reputersAsString[participant]
+		s.Require().True(isReputer, "Only reputers get paid when all weights are zero")
+	}
 }
 
 func (s *ModuleTestSuite) TestEmitRewardsSimple() {
-	// mock mint the coins to reputers
-	// mock mint the coins to workers
-	// have the reputers upload some weights
-	// increment the block number
-	// call endblock on the module somehow
+	topicId, err := mockCreateTopic(s)
+	s.NoError(err, "Error creating topic")
+	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
+	reputers, err := mockSomeReputers(s, topicId)
+	s.NoError(err, "Error creating reputers")
+	workers, err := mockSomeWorkers(s, topicId)
+	s.NoError(err, "Error creating workers")
+	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
+	s.NoError(err, "Error setting weights")
+
+	s.ctx = s.ctx.WithBlockHeight(s.upshotKeeper.EpochLength() + 1)
+
+	reputer1Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
+	s.NoError(err, "Error getting reputer 1 stake")
+	expectedReputer1Stake := cosmosMath.NewUint(reputer1StartAmount)
+	s.Require().Equal(expectedReputer1Stake, reputer1Stake, "Reputer 1 stake should be the same as the initial amount")
+	reputer2Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
+	s.NoError(err, "Error getting reputer 2 stake")
+	expectedReputer2Stake := cosmosMath.NewUint(reputer2StartAmount)
+	s.Require().Equal(expectedReputer2Stake, reputer2Stake, "Reputer 2 stake should be the same as the initial amount")
+	worker1Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
+	s.NoError(err, "Error getting worker 1 stake")
+	expectedWorker1Stake := cosmosMath.NewUint(worker1StartAmount)
+	s.Require().Equal(expectedWorker1Stake, worker1Stake, "Worker 1 stake should be the same as the initial amount")
+	worker2Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
+	s.NoError(err, "Error getting worker 2 stake")
+	expectedWorker2Stake := cosmosMath.NewUint(worker2StartAmount)
+	s.Require().Equal(expectedWorker2Stake, worker2Stake, "Worker 2 stake should be the same as the initial amount")
+
+	err = s.appModule.EndBlock(s.ctx)
+	s.NoError(err, "EndBlock error")
+
+	reputer1StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
+	s.NoError(err, "Error getting reputer 1 stake")
+	reputer2StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
+	s.NoError(err, "Error getting reputer 2 stake")
+	worker1StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
+	s.NoError(err, "Error getting worker 1 stake")
+	worker2StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
+	s.NoError(err, "Error getting worker 2 stake")
+
+	s.Require().False(expectedReputer1Stake.Equal(reputer1StakeAfter), "Reputer 1 stake should have increased")
+	s.Require().True(expectedReputer1Stake.LT(reputer1StakeAfter), "Reputer 1 stake should have increased")
+	s.Require().True(expectedReputer2Stake.LT(reputer2StakeAfter), "Reputer 2 stake should have increased")
+	s.Require().True(expectedWorker1Stake.LT(worker1StakeAfter), "Worker 1 stake should have increased")
+	s.Require().True(expectedWorker2Stake.LT(worker2StakeAfter), "Worker 2 stake should have increased")
 }
 
+/*************************************************
+ *               HELPER FUNCTIONS				 *
+ *												 *
+ *************************************************/
+
 // mock mint coins to participants
-func (s *ModuleTestSuite) mockMintRewardCoins(amount []cosmosMath.Int, target []sdk.AccAddress) error {
+func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []sdk.AccAddress) error {
 	if len(amount) != len(target) {
 		return fmt.Errorf("amount and target must be the same length")
 	}
@@ -56,21 +241,22 @@ func (s *ModuleTestSuite) mockMintRewardCoins(amount []cosmosMath.Int, target []
 }
 
 // give some reputers coins, have them stake those coins
-func (s *ModuleTestSuite) mockSomeReputers(topicId uint64) error {
+func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
 	reputerAddrs := []sdk.AccAddress{
 		sdk.AccAddress([]byte("reputer1_______________")),
 		sdk.AccAddress([]byte("reputer2_______________")),
 	}
 	reputerAmounts := []cosmosMath.Int{
-		cosmosMath.NewInt(1337),
-		cosmosMath.NewInt(6969),
+		cosmosMath.NewInt(reputer1StartAmount),
+		cosmosMath.NewInt(reputer2StartAmount),
 	}
-	err := s.mockMintRewardCoins(
+	err := mockMintRewardCoins(
+		s,
 		reputerAmounts,
 		reputerAddrs,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = s.msgServer.RegisterReputer(s.ctx, &state.MsgRegisterReputer{
 		Creator:      reputerAddrs[0].String(),
@@ -80,7 +266,7 @@ func (s *ModuleTestSuite) mockSomeReputers(topicId uint64) error {
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt()),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = s.msgServer.RegisterReputer(s.ctx, &state.MsgRegisterReputer{
 		Creator:      reputerAddrs[1].String(),
@@ -90,20 +276,87 @@ func (s *ModuleTestSuite) mockSomeReputers(topicId uint64) error {
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[1].BigInt()),
 	})
 	if err != nil {
-		return err
+		return nil, err
+	}
+	return reputerAddrs, nil
+}
+
+// give some workers coins, have them stake those coins
+func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
+	workerAddrs := []sdk.AccAddress{
+		sdk.AccAddress([]byte("worker1_______________")),
+		sdk.AccAddress([]byte("worker2_______________")),
+	}
+	workerAmounts := []cosmosMath.Int{
+		cosmosMath.NewInt(worker1StartAmount),
+		cosmosMath.NewInt(worker2StartAmount),
+	}
+	err := mockMintRewardCoins(
+		s,
+		workerAmounts,
+		workerAddrs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.msgServer.RegisterWorker(s.ctx, &state.MsgRegisterWorker{
+		Creator:      workerAddrs[0].String(),
+		LibP2PKey:    "libp2pkeyWorker1",
+		MultiAddress: "multiaddressWorker1",
+		TopicId:      topicId,
+		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[0].BigInt()),
+	})
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.msgServer.RegisterWorker(s.ctx, &state.MsgRegisterWorker{
+		Creator:      workerAddrs[1].String(),
+		LibP2PKey:    "libp2pkeyWorker2",
+		MultiAddress: "multiaddressWorker2",
+		TopicId:      topicId,
+		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[1].BigInt()),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return workerAddrs, nil
+}
+
+func mockSetWeights(
+	s *ModuleTestSuite,
+	topicId uint64,
+	reputers []sdk.AccAddress,
+	workers []sdk.AccAddress,
+	weights [2][4]uint64) error {
+	var target sdk.AccAddress
+	for i := 0; i < 2; i++ {
+		reputer := reputers[i]
+		for j := 0; j < 4; j++ {
+			weight := weights[i][j]
+			if j > 1 {
+				target = reputers[j-2]
+			} else {
+				target = workers[j]
+			}
+			err := s.upshotKeeper.SetWeight(
+				s.ctx,
+				topicId,
+				reputer,
+				target,
+				cosmosMath.NewUint(weight),
+			)
+			if err != nil {
+				if !(errors.Is(err, keeper.ErrDoNotSetMapValueToZero)) {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }
 
-// give some workers coins, have them stake those coins
-func (s *ModuleTestSuite) mockSomeWorkers(topicId uint64) error {
-	// copy reputer code
-	// then get total stake from keeper and put it into function above
-	return nil
-}
-
 // create a topic
-func (s *ModuleTestSuite) mockTopic(ctx context.Context) (uint64, error) {
+func mockCreateTopic(s *ModuleTestSuite) (uint64, error) {
 	topicMessage := state.MsgCreateNewTopic{
 		Creator:          "",
 		Metadata:         "",
@@ -115,7 +368,7 @@ func (s *ModuleTestSuite) mockTopic(ctx context.Context) (uint64, error) {
 		InferenceCadence: 0,
 		Active:           true,
 	}
-	response, err := s.msgServer.CreateNewTopic(ctx, &topicMessage)
+	response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
 	if err != nil {
 		return 0, err
 	}

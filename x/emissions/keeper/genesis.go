@@ -9,16 +9,23 @@ import (
 
 // InitGenesis initializes the module state from a genesis state.
 func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) error {
-	if err := k.params.Set(ctx, data.Params); err != nil {
+	if err := k.SetParams(ctx, data.Params); err != nil {
 		return err
 	}
 
 	// ensure the module account exists
 	moduleAccount := k.authKeeper.GetModuleAccount(ctx, state.ModuleName)
 	k.authKeeper.SetModuleAccount(ctx, moduleAccount)
-	k.SetLastRewardsUpdate(ctx, 0)
-	k.SetTotalStake(ctx, cosmosMath.NewUint(0))
-	k.IncrementTopicId(ctx) // reserve topic ID 0 for future use
+	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
+		return err
+	}
+	if err := k.SetTotalStake(ctx, cosmosMath.NewUint(0)); err != nil {
+		return err
+	}
+	// reserve topic ID 0 for future use
+	if _, err := k.IncrementTopicId(ctx); err != nil {
+		return err
+	}
 
 	return nil
 }

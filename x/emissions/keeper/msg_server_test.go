@@ -1,11 +1,11 @@
 package keeper_test
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"time"
 
-	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -483,7 +483,6 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 		StakeTarget: workerAddr.String(),
 		Amount:      stakeAmount,
 	}
-	fmt.Println(addStakeMsg)
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
@@ -497,8 +496,9 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	require.NoError(err, "RemoveAllStake should not return an error")
 
 	// Check that the sender's total stake is zero after removal
-	_, err = s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
-	require.Error(err, collections.ErrNotFound)
+	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), delegatorStake, "delegator has zero stake after withdrawal")
 
 	// Check that the target's stake is reduced by the stake amount
 	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
@@ -543,4 +543,42 @@ func (s *KeeperTestSuite) TestRemoveAllStakeInvalid() {
 	}
 	_, err = msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
 	require.Error(err, "Scenario 2: RemoveAllStake should return an error when sender has no stake")
+}
+
+/***************************************************
+ *                                                 *
+ *               Helper Functions                  *
+ ***************************************************/
+
+// mock mint coins to participants
+func (s *KeeperTestSuite) mockMintRewardCoins(amount []cosmosMath.Int, target []sdk.AccAddress) error {
+	if len(amount) != len(target) {
+		return fmt.Errorf("amount and target must be the same length")
+	}
+	for i, addr := range target {
+		coins := sdk.NewCoins(sdk.NewCoin("upt", amount[i]))
+		s.bankKeeper.MintCoins(s.ctx, "upshot", coins)
+		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, "upshot", addr, coins)
+	}
+	return nil
+}
+
+// create a topic
+func (s *KeeperTestSuite) mockCreateTopic(ctx context.Context) (uint64, error) {
+	topicMessage := state.MsgCreateNewTopic{
+		Creator:          "",
+		Metadata:         "",
+		WeightLogic:      "",
+		WeightMethod:     "",
+		WeightCadence:    0,
+		InferenceLogic:   "",
+		InferenceMethod:  "",
+		InferenceCadence: 0,
+		Active:           true,
+	}
+	response, err := s.msgServer.CreateNewTopic(ctx, &topicMessage)
+	if err != nil {
+		return 0, err
+	}
+	return response.TopicId, nil
 }
