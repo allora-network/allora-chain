@@ -28,3 +28,4 @@ To run a local node for testing purposes, execute the following commands:
 make init
 allorad start
 ```
+
