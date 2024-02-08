@@ -13,7 +13,7 @@ For the latest documentation, please go to https://docs.allora.network/
 
 ```sh
 git clone -b <latest-release-tag> https://github.com/allora-network/allora-chain.git
-cd upshot-appchain && make install
+cd allora-chain && make install
 ```
 
 Note: Depending on your `go` setup you may need to add `$GOPATH/bin` to your `$PATH`.
