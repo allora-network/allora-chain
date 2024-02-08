@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"os"
 	"strings"
@@ -15,6 +16,7 @@ import (
 type BlocklessRequest struct {
 	FunctionID string `json:"function_id"`
 	Method     string `json:"method"`
+	TopicID    string `json:"topic,omitempty"`
 	Config     Config `json:"config"`
 }
 
@@ -22,6 +24,7 @@ type Config struct {
 	Environment []EnvVar `json:"env_vars,omitempty"`
 	Stdin       *string  `json:"stdin,omitempty"`
 	NodeCount   int      `json:"number_of_nodes,omitempty"`
+	Timeout   	int      `json:"timeout,omitempty"`
 }
 
 type EnvVar struct {
@@ -120,8 +123,9 @@ func generateWeights(weights map[string]map[string]*math.Uint, inferences []*sta
 func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
 
 	payloadJson := BlocklessRequest{
-		FunctionID: functionId,
-		Method:     functionMethod,
+		FunctionID:	functionId,
+		Method:		functionMethod,
+		TopicID:	strconv.FormatUint(topicId, 10),
 		Config: Config{
 			Environment: []EnvVar{
 				{
@@ -137,7 +141,8 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Value: fmt.Sprintf("%v", topicId),
 				},
 			},
-			NodeCount: 1,
+			NodeCount: -1, // use all nodes that reported, no minimum / max
+			Timeout:	2, // seconds to time out before rollcall complete
 		},
 	}
 
