@@ -27,6 +27,7 @@ const (
 	Msg_RegisterReputer_FullMethodName              = "/emissions.state.v1.Msg/RegisterReputer"
 	Msg_RegisterWorker_FullMethodName               = "/emissions.state.v1.Msg/RegisterWorker"
 	Msg_AddStake_FullMethodName                     = "/emissions.state.v1.Msg/AddStake"
+	Msg_ModifyStake_FullMethodName                  = "/emissions.state.v1.Msg/ModifyStake"
 	Msg_RemoveStake_FullMethodName                  = "/emissions.state.v1.Msg/RemoveStake"
 	Msg_RemoveAllStake_FullMethodName               = "/emissions.state.v1.Msg/RemoveAllStake"
 )
@@ -43,6 +44,7 @@ type MsgClient interface {
 	RegisterReputer(ctx context.Context, in *MsgRegisterReputer, opts ...grpc.CallOption) (*MsgRegisterReputerResponse, error)
 	RegisterWorker(ctx context.Context, in *MsgRegisterWorker, opts ...grpc.CallOption) (*MsgRegisterWorkerResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
+	ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error)
 	RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error)
 	RemoveAllStake(ctx context.Context, in *MsgRemoveAllStake, opts ...grpc.CallOption) (*MsgRemoveAllStakeResponse, error)
 }
@@ -127,6 +129,15 @@ func (c *msgClient) AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.
 	return out, nil
 }
 
+func (c *msgClient) ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error) {
+	out := new(MsgModifyStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_ModifyStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error) {
 	out := new(MsgRemoveStakeResponse)
 	err := c.cc.Invoke(ctx, Msg_RemoveStake_FullMethodName, in, out, opts...)
@@ -157,6 +168,7 @@ type MsgServer interface {
 	RegisterReputer(context.Context, *MsgRegisterReputer) (*MsgRegisterReputerResponse, error)
 	RegisterWorker(context.Context, *MsgRegisterWorker) (*MsgRegisterWorkerResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
+	ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error)
 	RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error)
 	RemoveAllStake(context.Context, *MsgRemoveAllStake) (*MsgRemoveAllStakeResponse, error)
 	mustEmbedUnimplementedMsgServer()
@@ -189,6 +201,9 @@ func (UnimplementedMsgServer) RegisterWorker(context.Context, *MsgRegisterWorker
 }
 func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
+}
+func (UnimplementedMsgServer) ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModifyStake not implemented")
 }
 func (UnimplementedMsgServer) RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveStake not implemented")
@@ -353,6 +368,24 @@ func _Msg_AddStake_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_ModifyStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgModifyStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ModifyStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ModifyStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ModifyStake(ctx, req.(*MsgModifyStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_RemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgRemoveStake)
 	if err := dec(in); err != nil {
@@ -427,6 +460,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddStake",
 			Handler:    _Msg_AddStake_Handler,
+		},
+		{
+			MethodName: "ModifyStake",
+			Handler:    _Msg_ModifyStake_Handler,
 		},
 		{
 			MethodName: "RemoveStake",

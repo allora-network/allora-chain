@@ -89,6 +89,16 @@ message InferenceSetForScoring {
   Inferences inferences = 3;
 }
 
+message StakePlacement {
+  string target = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
 enum Err {
   ErrInvalidTopicId = 0;
   ErrReputerAlreadyRegistered = 1;
@@ -109,4 +119,8 @@ enum Err {
   ErrBlockHeightNegative = 16;
   ErrBlockHeightLessThanPrevious = 17;
   ErrNoStakeToRemove = 18;
+  ErrModifyStakeBeforeBondLessThanAmountModified = 19;
+  ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
+  ErrModifyStakeAfterTargetNotRegistered = 21;
+  ErrModifyStakeSumBeforeNotEqualToSumAfter = 22;
 }

@@ -286,6 +286,64 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	return &state.MsgAddStakeResponse{}, nil
 }
 
+func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) (*state.MsgModifyStakeResponse, error) {
+	// 1. check the sender is registered
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	// 2. For all stake befores, check the sum is less than or equal to this sender's existing stake
+	// 3. For all stake befores, check that the bond is greater than or equal to the amount being removed
+	senderTotalStake, err := ms.k.GetDelegatorStake(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	beforeSum := cosmosMath.NewUint(0)
+	for _, stakeBefore := range msg.PlacementsRemove {
+		beforeSum = beforeSum.Add(stakeBefore.Amount)
+		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
+		if err != nil {
+			return nil, err
+		}
+		bond, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+		if bond.LT(stakeBefore.Amount) {
+			return nil, ErrModifyStakeBeforeBondLessThanAmountModified
+		}
+	}
+	if senderTotalStake.LT(beforeSum) {
+		return nil, ErrModifyStakeBeforeSumGreaterThanSenderStake
+	}
+	// 4. For all stake afters, check that the target is a valid signed up participant
+	// 5. For all stake afters, check that the sum is equal to the sum of stake befores
+	afterSum := cosmosMath.NewUint(0)
+	for _, stakeAfter := range msg.PlacementsAdd {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
+		if err != nil {
+			return nil, err
+		}
+		afterSum = afterSum.Add(stakeAfter.Amount)
+		isTargetRegistered, err := checkNodeRegistered(ctx, ms, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+		if isTargetRegistered == isNotFound {
+			return nil, ErrModifyStakeAfterTargetNotRegistered
+		}
+	}
+	if !afterSum.Equal(beforeSum) {
+		return nil, ErrModifyStakeSumBeforeNotEqualToSumAfter
+	}
+
+	// Update the stake data structures
+	// 6. For all stake befores, remove the stake
+	// 7. For all stake afters, add the stake to the existing stake position
+
+	return &state.MsgModifyStakeResponse{}, nil
+}
+
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) (*state.MsgRemoveStakeResponse, error) {
 	// 1. check the sender is registered
