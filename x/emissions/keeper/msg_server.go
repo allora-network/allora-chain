@@ -340,6 +340,34 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 	// Update the stake data structures
 	// 6. For all stake befores, remove the stake
 	// 7. For all stake afters, add the stake to the existing stake position
+	for _, stakeBefore := range msg.PlacementsRemove {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.SubStakePlacement(ctx, senderAddr, targetAddr, stakeBefore.Amount)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.SubStakePlacedUponTarget(ctx, targetAddr, stakeBefore.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, stakeAfter := range msg.PlacementsAdd {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.AddStakePlacement(ctx, senderAddr, targetAddr, stakeAfter.Amount)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.AddStakePlacedUponTarget(ctx, targetAddr, stakeAfter.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &state.MsgModifyStakeResponse{}, nil
 }
