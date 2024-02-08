@@ -445,6 +445,30 @@ func (s *KeeperTestSuite) TestSubStakePlacementErr() {
 	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be same after error")
 }
 
+func (s *KeeperTestSuite) TestAddStakePlacement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Add stake
+	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	additionalStakeAmount := cosmosMath.NewUint(300)
+
+	// Add additional stake
+	err = keeper.AddStakePlacement(ctx, delegatorAddr, targetAddr, additionalStakeAmount)
+	s.Require().NoError(err)
+
+	// Check updated stake for delegator
+	finalStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
+}
+
 func (s *KeeperTestSuite) TestSubStakePlacedUponTarget() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -489,4 +513,26 @@ func (s *KeeperTestSuite) TestSubStakePlacedUponTargetErr() {
 	remainingStake, err := k.GetStakePlacedUponTarget(ctx, targetAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be the same after error")
+}
+
+func (s *KeeperTestSuite) TestAddStakePlacedUponTarget() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Add stake
+	err := keeper.AddStakePlacedUponTarget(ctx, targetAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	additionalStakeAmount := cosmosMath.NewUint(300)
+
+	// Add additional stake
+	err = keeper.AddStakePlacedUponTarget(ctx, targetAddr, additionalStakeAmount)
+	s.Require().NoError(err)
+
+	// Check updated stake for target
+	finalStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
 }
