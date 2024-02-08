@@ -6,8 +6,8 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 type Uint = cosmosMath.Uint

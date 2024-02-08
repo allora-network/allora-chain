@@ -1,4 +1,4 @@
-module github.com/upshot-tech/upshot-appchain
+module github.com/allora-network/allora-chain
 
 go 1.21
 

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/allora-network/allora-chain/app"
+	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/cmd/allorad/cmd"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/upshot-tech/upshot-appchain/app"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	"github.com/upshot-tech/upshot-appchain/cmd/allorad/cmd"
 )
 
 func main() {

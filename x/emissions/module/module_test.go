@@ -8,6 +8,10 @@ import (
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -21,10 +25,6 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 const (

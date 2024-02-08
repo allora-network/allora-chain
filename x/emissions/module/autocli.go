@@ -2,7 +2,7 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev1 "github.com/upshot-tech/upshot-appchain/x/emissions/api/v1"
+	statev1 "github.com/allora-network/allora-chain/x/emissions/api/v1"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package emissions.state.v1;
 
-option go_package = "github.com/upshot-tech/upshot-appchain/x/emissions";
+option go_package = "github.com/allora-network/allora-chain/x/emissions";
 
 import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";

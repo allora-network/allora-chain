@@ -8,14 +8,14 @@ import (
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/stretchr/testify/suite"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 type RewardsCalcTestSuite struct {

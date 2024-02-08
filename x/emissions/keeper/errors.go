@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	state "github.com/allora-network/allora-chain/x/emissions"
 )
 
 var ErrIntegerUnderflowDelegator = errors.New(state.Err_ErrIntegerUnderflowDelegator.String())

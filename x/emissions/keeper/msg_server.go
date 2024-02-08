@@ -6,9 +6,9 @@ import (
 	"time"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 const REQUIRED_MINIMUM_STAKE = 1

@@ -12,7 +12,7 @@ For the latest documentation, please go to https://docs.allora.network/
 ## Allorad Install
 
 ```sh
-git clone -b <latest-release-tag> https://github.com/upshot-tech/upshot-appchain.git
+git clone -b <latest-release-tag> https://github.com/allora-network/allora-chain.git
 cd upshot-appchain && make install
 ```
 

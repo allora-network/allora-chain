@@ -35,17 +35,17 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	"github.com/upshot-tech/upshot-appchain/inflation"
-	emissionsKeeper "github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/inflation"
+	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 
-	_ "cosmossdk.io/api/cosmos/tx/config/v1"          // import for side-effects
+	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
+	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
-	_ "github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 // DefaultNodeHome default home directories for the application daemon

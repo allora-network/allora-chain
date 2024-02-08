@@ -13,9 +13,9 @@ import (
 	storetypes "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 type Uint = cosmosMath.Uint

@@ -12,14 +12,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
-	emissionstestutil "github.com/upshot-tech/upshot-appchain/x/emissions/testutil"
 )
 
 type KeeperTestSuite struct {

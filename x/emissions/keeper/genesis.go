@@ -4,7 +4,7 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	state "github.com/allora-network/allora-chain/x/emissions"
 )
 
 // InitGenesis initializes the module state from a genesis state.

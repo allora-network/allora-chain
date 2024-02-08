@@ -7,11 +7,11 @@ import (
 	"time"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 var (

@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	cosmosMath "cosmossdk.io/math"
+	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 var _ state.QueryServer = queryServer{}

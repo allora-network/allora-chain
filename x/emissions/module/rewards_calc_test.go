@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/upshot-tech/upshot-appchain/app/params"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
-	"github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 const (

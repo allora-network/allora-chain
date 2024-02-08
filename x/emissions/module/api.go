@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	state "github.com/allora-network/allora-chain/x/emissions"
 )
 
 type BlocklessRequest struct {
