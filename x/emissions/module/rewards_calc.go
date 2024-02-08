@@ -7,7 +7,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 type Uint = cosmosMath.Uint

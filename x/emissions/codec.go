@@ -1,4 +1,4 @@
-package protocol_state_machine_module
+package emissions
 
 import (
 	types "github.com/cosmos/cosmos-sdk/codec/types"

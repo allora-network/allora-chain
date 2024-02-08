@@ -2,22 +2,22 @@ modules:
   - name: runtime
     config:
       "@type": cosmos.app.runtime.v1alpha1.Module
-      app_name: UpshotApp
+      app_name: AlloraApp
       # During begin block slashing happens after distr.BeginBlocker so that
       # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
       # NOTE: staking module is required if HistoricalEntries param > 0
       begin_blockers: [staking, mint]
-      end_blockers: [staking, upshot]
+      end_blockers: [staking, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [auth, bank, staking, genutil, mint, upshot]
+      init_genesis: [auth, bank, staking, genutil, mint, emissions]
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
   - name: auth
     config:
       "@type": cosmos.auth.module.v1.Module
-      bech32_prefix: upt
+      bech32_prefix: allo
       module_account_permissions:
         - account: fee_collector
         - account: mint
@@ -26,12 +26,12 @@ modules:
           permissions: [burner, staking]
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
-        - account: upshot
+        - account: emissions
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
       blocked_module_accounts_override:
-        [auth, bonded_tokens_pool, not_bonded_tokens_pool, upshot]
+        [auth, bonded_tokens_pool, not_bonded_tokens_pool, emissions]
   - name: staking
     config:
       "@type": cosmos.staking.module.v1.Module
@@ -47,7 +47,7 @@ modules:
   - name: mint
     config:
       "@type": cosmos.mint.module.v1.Module
-  - name: upshot
+  - name: emissions
     config:
-      "@type": upshot.state.module.v1.Module
+      "@type": emissions.state.module.v1.Module
   

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: upshot/state/v1/tx.proto
+// source: emissions/state/v1/tx.proto
 
 package statev1
 
@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_SetInferences_FullMethodName                = "/upshot.state.v1.Msg/SetInferences"
-	Msg_ProcessInferences_FullMethodName            = "/upshot.state.v1.Msg/ProcessInferences"
-	Msg_SetLatestInferencesTimestamp_FullMethodName = "/upshot.state.v1.Msg/SetLatestInferencesTimestamp"
-	Msg_SetWeights_FullMethodName                   = "/upshot.state.v1.Msg/SetWeights"
-	Msg_CreateNewTopic_FullMethodName               = "/upshot.state.v1.Msg/CreateNewTopic"
-	Msg_RegisterReputer_FullMethodName              = "/upshot.state.v1.Msg/RegisterReputer"
-	Msg_RegisterWorker_FullMethodName               = "/upshot.state.v1.Msg/RegisterWorker"
-	Msg_AddStake_FullMethodName                     = "/upshot.state.v1.Msg/AddStake"
-	Msg_RemoveStake_FullMethodName                  = "/upshot.state.v1.Msg/RemoveStake"
-	Msg_RemoveAllStake_FullMethodName               = "/upshot.state.v1.Msg/RemoveAllStake"
+	Msg_SetInferences_FullMethodName                = "/emissions.state.v1.Msg/SetInferences"
+	Msg_ProcessInferences_FullMethodName            = "/emissions.state.v1.Msg/ProcessInferences"
+	Msg_SetLatestInferencesTimestamp_FullMethodName = "/emissions.state.v1.Msg/SetLatestInferencesTimestamp"
+	Msg_SetWeights_FullMethodName                   = "/emissions.state.v1.Msg/SetWeights"
+	Msg_CreateNewTopic_FullMethodName               = "/emissions.state.v1.Msg/CreateNewTopic"
+	Msg_RegisterReputer_FullMethodName              = "/emissions.state.v1.Msg/RegisterReputer"
+	Msg_RegisterWorker_FullMethodName               = "/emissions.state.v1.Msg/RegisterWorker"
+	Msg_AddStake_FullMethodName                     = "/emissions.state.v1.Msg/AddStake"
+	Msg_RemoveStake_FullMethodName                  = "/emissions.state.v1.Msg/RemoveStake"
+	Msg_RemoveAllStake_FullMethodName               = "/emissions.state.v1.Msg/RemoveAllStake"
 )
 
 // MsgClient is the client API for Msg service.
@@ -393,7 +393,7 @@ func _Msg_RemoveAllStake_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "upshot.state.v1.Msg",
+	ServiceName: "emissions.state.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -438,5 +438,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "upshot/state/v1/tx.proto",
+	Metadata: "emissions/state/v1/tx.proto",
 }

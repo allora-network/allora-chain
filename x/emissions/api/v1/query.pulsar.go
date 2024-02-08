@@ -23,8 +23,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryParamsRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryParamsRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryParamsRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryParamsRequest")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryParamsRequest)(nil)
@@ -36,7 +36,7 @@ func (x *QueryParamsRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryParamsRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[0]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,9 +109,9 @@ func (x *fastReflection_QueryParamsRequest) Has(fd protoreflect.FieldDescriptor)
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -125,9 +125,9 @@ func (x *fastReflection_QueryParamsRequest) Clear(fd protoreflect.FieldDescripto
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -141,9 +141,9 @@ func (x *fastReflection_QueryParamsRequest) Get(descriptor protoreflect.FieldDes
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -161,9 +161,9 @@ func (x *fastReflection_QueryParamsRequest) Set(fd protoreflect.FieldDescriptor,
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -181,9 +181,9 @@ func (x *fastReflection_QueryParamsRequest) Mutable(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -194,9 +194,9 @@ func (x *fastReflection_QueryParamsRequest) NewField(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -206,7 +206,7 @@ func (x *fastReflection_QueryParamsRequest) NewField(fd protoreflect.FieldDescri
 func (x *fastReflection_QueryParamsRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryParamsRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryParamsRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -380,8 +380,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryParamsResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryParamsResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryParamsResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryParamsResponse")
 	fd_QueryParamsResponse_params = md_QueryParamsResponse.Fields().ByName("params")
 }
 
@@ -394,7 +394,7 @@ func (x *QueryParamsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryParamsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[1]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -471,13 +471,13 @@ func (x *fastReflection_QueryParamsResponse) Range(f func(protoreflect.FieldDesc
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryParamsResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		return x.Params != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -489,13 +489,13 @@ func (x *fastReflection_QueryParamsResponse) Has(fd protoreflect.FieldDescriptor
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryParamsResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		x.Params = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -507,14 +507,14 @@ func (x *fastReflection_QueryParamsResponse) Clear(fd protoreflect.FieldDescript
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryParamsResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		value := x.Params
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -530,13 +530,13 @@ func (x *fastReflection_QueryParamsResponse) Get(descriptor protoreflect.FieldDe
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryParamsResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		x.Params = value.Message().Interface().(*Params)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -552,16 +552,16 @@ func (x *fastReflection_QueryParamsResponse) Set(fd protoreflect.FieldDescriptor
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryParamsResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		if x.Params == nil {
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -570,14 +570,14 @@ func (x *fastReflection_QueryParamsResponse) Mutable(fd protoreflect.FieldDescri
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryParamsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryParamsResponse.params":
+	case "emissions.state.v1.QueryParamsResponse.params":
 		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryParamsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryParamsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryParamsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -587,7 +587,7 @@ func (x *fastReflection_QueryParamsResponse) NewField(fd protoreflect.FieldDescr
 func (x *fastReflection_QueryParamsResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryParamsResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryParamsResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -814,8 +814,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryLastRewardsUpdateRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryLastRewardsUpdateRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryLastRewardsUpdateRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryLastRewardsUpdateRequest")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryLastRewardsUpdateRequest)(nil)
@@ -827,7 +827,7 @@ func (x *QueryLastRewardsUpdateRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryLastRewardsUpdateRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[2]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -900,9 +900,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) Has(fd protoreflect.Field
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -916,9 +916,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) Clear(fd protoreflect.Fie
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -932,9 +932,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) Get(descriptor protorefle
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -952,9 +952,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) Set(fd protoreflect.Field
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -972,9 +972,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) Mutable(fd protoreflect.F
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -985,9 +985,9 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) NewField(fd protoreflect.
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -997,7 +997,7 @@ func (x *fastReflection_QueryLastRewardsUpdateRequest) NewField(fd protoreflect.
 func (x *fastReflection_QueryLastRewardsUpdateRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryLastRewardsUpdateRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryLastRewardsUpdateRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1171,8 +1171,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryLastRewardsUpdateResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryLastRewardsUpdateResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryLastRewardsUpdateResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryLastRewardsUpdateResponse")
 	fd_QueryLastRewardsUpdateResponse_last_rewards_update = md_QueryLastRewardsUpdateResponse.Fields().ByName("last_rewards_update")
 }
 
@@ -1185,7 +1185,7 @@ func (x *QueryLastRewardsUpdateResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryLastRewardsUpdateResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[3]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1262,13 +1262,13 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Range(f func(protoreflec
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
 		return x.LastRewardsUpdate != int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1280,13 +1280,13 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Has(fd protoreflect.Fiel
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
 		x.LastRewardsUpdate = int64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1298,14 +1298,14 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Clear(fd protoreflect.Fi
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
 		value := x.LastRewardsUpdate
 		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1321,13 +1321,13 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Get(descriptor protorefl
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
 		x.LastRewardsUpdate = value.Int()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1343,13 +1343,13 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Set(fd protoreflect.Fiel
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
-		panic(fmt.Errorf("field last_rewards_update of message upshot.state.v1.QueryLastRewardsUpdateResponse is not mutable"))
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+		panic(fmt.Errorf("field last_rewards_update of message emissions.state.v1.QueryLastRewardsUpdateResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1358,13 +1358,13 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) Mutable(fd protoreflect.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryLastRewardsUpdateResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
+	case "emissions.state.v1.QueryLastRewardsUpdateResponse.last_rewards_update":
 		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryLastRewardsUpdateResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryLastRewardsUpdateResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryLastRewardsUpdateResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1374,7 +1374,7 @@ func (x *fastReflection_QueryLastRewardsUpdateResponse) NewField(fd protoreflect
 func (x *fastReflection_QueryLastRewardsUpdateResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryLastRewardsUpdateResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryLastRewardsUpdateResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1574,8 +1574,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryTotalStakeRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryTotalStakeRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryTotalStakeRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryTotalStakeRequest")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryTotalStakeRequest)(nil)
@@ -1587,7 +1587,7 @@ func (x *QueryTotalStakeRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryTotalStakeRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[4]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1660,9 +1660,9 @@ func (x *fastReflection_QueryTotalStakeRequest) Has(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1676,9 +1676,9 @@ func (x *fastReflection_QueryTotalStakeRequest) Clear(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1692,9 +1692,9 @@ func (x *fastReflection_QueryTotalStakeRequest) Get(descriptor protoreflect.Fiel
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1712,9 +1712,9 @@ func (x *fastReflection_QueryTotalStakeRequest) Set(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1732,9 +1732,9 @@ func (x *fastReflection_QueryTotalStakeRequest) Mutable(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1745,9 +1745,9 @@ func (x *fastReflection_QueryTotalStakeRequest) NewField(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1757,7 +1757,7 @@ func (x *fastReflection_QueryTotalStakeRequest) NewField(fd protoreflect.FieldDe
 func (x *fastReflection_QueryTotalStakeRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryTotalStakeRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryTotalStakeRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1931,8 +1931,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryTotalStakeResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryTotalStakeResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryTotalStakeResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryTotalStakeResponse")
 	fd_QueryTotalStakeResponse_amount = md_QueryTotalStakeResponse.Fields().ByName("amount")
 }
 
@@ -1945,7 +1945,7 @@ func (x *QueryTotalStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryTotalStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[5]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2022,13 +2022,13 @@ func (x *fastReflection_QueryTotalStakeResponse) Range(f func(protoreflect.Field
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryTotalStakeResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
 		return x.Amount != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2040,13 +2040,13 @@ func (x *fastReflection_QueryTotalStakeResponse) Has(fd protoreflect.FieldDescri
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTotalStakeResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
 		x.Amount = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2058,14 +2058,14 @@ func (x *fastReflection_QueryTotalStakeResponse) Clear(fd protoreflect.FieldDesc
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryTotalStakeResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2081,13 +2081,13 @@ func (x *fastReflection_QueryTotalStakeResponse) Get(descriptor protoreflect.Fie
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTotalStakeResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
 		x.Amount = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2103,13 +2103,13 @@ func (x *fastReflection_QueryTotalStakeResponse) Set(fd protoreflect.FieldDescri
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTotalStakeResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
-		panic(fmt.Errorf("field amount of message upshot.state.v1.QueryTotalStakeResponse is not mutable"))
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
+		panic(fmt.Errorf("field amount of message emissions.state.v1.QueryTotalStakeResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2118,13 +2118,13 @@ func (x *fastReflection_QueryTotalStakeResponse) Mutable(fd protoreflect.FieldDe
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryTotalStakeResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTotalStakeResponse.amount":
+	case "emissions.state.v1.QueryTotalStakeResponse.amount":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTotalStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTotalStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTotalStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2134,7 +2134,7 @@ func (x *fastReflection_QueryTotalStakeResponse) NewField(fd protoreflect.FieldD
 func (x *fastReflection_QueryTotalStakeResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryTotalStakeResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryTotalStakeResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2350,8 +2350,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryAccumulatedEpochRewardsRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryAccumulatedEpochRewardsRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryAccumulatedEpochRewardsRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryAccumulatedEpochRewardsRequest")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryAccumulatedEpochRewardsRequest)(nil)
@@ -2363,7 +2363,7 @@ func (x *QueryAccumulatedEpochRewardsRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *QueryAccumulatedEpochRewardsRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[6]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2436,9 +2436,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) Has(fd protoreflect
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2452,9 +2452,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) Clear(fd protorefle
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2468,9 +2468,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) Get(descriptor prot
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2488,9 +2488,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) Set(fd protoreflect
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2508,9 +2508,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) Mutable(fd protoref
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2521,9 +2521,9 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) NewField(fd protore
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2533,7 +2533,7 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) NewField(fd protore
 func (x *fastReflection_QueryAccumulatedEpochRewardsRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryAccumulatedEpochRewardsRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryAccumulatedEpochRewardsRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2707,8 +2707,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryAccumulatedEpochRewardsResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryAccumulatedEpochRewardsResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryAccumulatedEpochRewardsResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryAccumulatedEpochRewardsResponse")
 	fd_QueryAccumulatedEpochRewardsResponse_amount = md_QueryAccumulatedEpochRewardsResponse.Fields().ByName("amount")
 }
 
@@ -2721,7 +2721,7 @@ func (x *QueryAccumulatedEpochRewardsResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *QueryAccumulatedEpochRewardsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[7]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2798,13 +2798,13 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Range(f func(proto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
 		return x.Amount != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2816,13 +2816,13 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Has(fd protoreflec
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
 		x.Amount = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2834,14 +2834,14 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Clear(fd protorefl
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2857,13 +2857,13 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Get(descriptor pro
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
 		x.Amount = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2879,13 +2879,13 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Set(fd protoreflec
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
-		panic(fmt.Errorf("field amount of message upshot.state.v1.QueryAccumulatedEpochRewardsResponse is not mutable"))
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+		panic(fmt.Errorf("field amount of message emissions.state.v1.QueryAccumulatedEpochRewardsResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2894,13 +2894,13 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) Mutable(fd protore
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
+	case "emissions.state.v1.QueryAccumulatedEpochRewardsResponse.amount":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryAccumulatedEpochRewardsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryAccumulatedEpochRewardsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryAccumulatedEpochRewardsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2910,7 +2910,7 @@ func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) NewField(fd protor
 func (x *fastReflection_QueryAccumulatedEpochRewardsResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryAccumulatedEpochRewardsResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryAccumulatedEpochRewardsResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3126,8 +3126,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryNextTopicIdRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryNextTopicIdRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryNextTopicIdRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryNextTopicIdRequest")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryNextTopicIdRequest)(nil)
@@ -3139,7 +3139,7 @@ func (x *QueryNextTopicIdRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryNextTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[8]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3212,9 +3212,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) Has(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3228,9 +3228,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) Clear(fd protoreflect.FieldDesc
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3244,9 +3244,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) Get(descriptor protoreflect.Fie
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3264,9 +3264,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) Set(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3284,9 +3284,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) Mutable(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3297,9 +3297,9 @@ func (x *fastReflection_QueryNextTopicIdRequest) NewField(fd protoreflect.FieldD
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3309,7 +3309,7 @@ func (x *fastReflection_QueryNextTopicIdRequest) NewField(fd protoreflect.FieldD
 func (x *fastReflection_QueryNextTopicIdRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryNextTopicIdRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryNextTopicIdRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3483,8 +3483,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryNextTopicIdResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryNextTopicIdResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryNextTopicIdResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryNextTopicIdResponse")
 	fd_QueryNextTopicIdResponse_next_topic_id = md_QueryNextTopicIdResponse.Fields().ByName("next_topic_id")
 }
 
@@ -3497,7 +3497,7 @@ func (x *QueryNextTopicIdResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryNextTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[9]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3574,13 +3574,13 @@ func (x *fastReflection_QueryNextTopicIdResponse) Range(f func(protoreflect.Fiel
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryNextTopicIdResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
 		return x.NextTopicId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3592,13 +3592,13 @@ func (x *fastReflection_QueryNextTopicIdResponse) Has(fd protoreflect.FieldDescr
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNextTopicIdResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
 		x.NextTopicId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3610,14 +3610,14 @@ func (x *fastReflection_QueryNextTopicIdResponse) Clear(fd protoreflect.FieldDes
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryNextTopicIdResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
 		value := x.NextTopicId
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3633,13 +3633,13 @@ func (x *fastReflection_QueryNextTopicIdResponse) Get(descriptor protoreflect.Fi
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNextTopicIdResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
 		x.NextTopicId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3655,13 +3655,13 @@ func (x *fastReflection_QueryNextTopicIdResponse) Set(fd protoreflect.FieldDescr
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNextTopicIdResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
-		panic(fmt.Errorf("field next_topic_id of message upshot.state.v1.QueryNextTopicIdResponse is not mutable"))
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
+		panic(fmt.Errorf("field next_topic_id of message emissions.state.v1.QueryNextTopicIdResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3670,13 +3670,13 @@ func (x *fastReflection_QueryNextTopicIdResponse) Mutable(fd protoreflect.FieldD
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryNextTopicIdResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryNextTopicIdResponse.next_topic_id":
+	case "emissions.state.v1.QueryNextTopicIdResponse.next_topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryNextTopicIdResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryNextTopicIdResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryNextTopicIdResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3686,7 +3686,7 @@ func (x *fastReflection_QueryNextTopicIdResponse) NewField(fd protoreflect.Field
 func (x *fastReflection_QueryNextTopicIdResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryNextTopicIdResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryNextTopicIdResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3887,8 +3887,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryTopicRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryTopicRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryTopicRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryTopicRequest")
 	fd_QueryTopicRequest_topic_id = md_QueryTopicRequest.Fields().ByName("topic_id")
 }
 
@@ -3901,7 +3901,7 @@ func (x *QueryTopicRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryTopicRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[10]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3978,13 +3978,13 @@ func (x *fastReflection_QueryTopicRequest) Range(f func(protoreflect.FieldDescri
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryTopicRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
 		return x.TopicId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3996,13 +3996,13 @@ func (x *fastReflection_QueryTopicRequest) Has(fd protoreflect.FieldDescriptor) 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
 		x.TopicId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4014,14 +4014,14 @@ func (x *fastReflection_QueryTopicRequest) Clear(fd protoreflect.FieldDescriptor
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryTopicRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4037,13 +4037,13 @@ func (x *fastReflection_QueryTopicRequest) Get(descriptor protoreflect.FieldDesc
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
 		x.TopicId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4059,13 +4059,13 @@ func (x *fastReflection_QueryTopicRequest) Set(fd protoreflect.FieldDescriptor, 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.QueryTopicRequest is not mutable"))
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.QueryTopicRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4074,13 +4074,13 @@ func (x *fastReflection_QueryTopicRequest) Mutable(fd protoreflect.FieldDescript
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryTopicRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicRequest.topic_id":
+	case "emissions.state.v1.QueryTopicRequest.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4090,7 +4090,7 @@ func (x *fastReflection_QueryTopicRequest) NewField(fd protoreflect.FieldDescrip
 func (x *fastReflection_QueryTopicRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryTopicRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryTopicRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4291,8 +4291,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryTopicResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryTopicResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryTopicResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryTopicResponse")
 	fd_QueryTopicResponse_topic = md_QueryTopicResponse.Fields().ByName("topic")
 }
 
@@ -4305,7 +4305,7 @@ func (x *QueryTopicResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[11]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4382,13 +4382,13 @@ func (x *fastReflection_QueryTopicResponse) Range(f func(protoreflect.FieldDescr
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryTopicResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		return x.Topic != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4400,13 +4400,13 @@ func (x *fastReflection_QueryTopicResponse) Has(fd protoreflect.FieldDescriptor)
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		x.Topic = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4418,14 +4418,14 @@ func (x *fastReflection_QueryTopicResponse) Clear(fd protoreflect.FieldDescripto
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryTopicResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		value := x.Topic
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4441,13 +4441,13 @@ func (x *fastReflection_QueryTopicResponse) Get(descriptor protoreflect.FieldDes
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		x.Topic = value.Message().Interface().(*Topic)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4463,16 +4463,16 @@ func (x *fastReflection_QueryTopicResponse) Set(fd protoreflect.FieldDescriptor,
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryTopicResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		if x.Topic == nil {
 			x.Topic = new(Topic)
 		}
 		return protoreflect.ValueOfMessage(x.Topic.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4481,14 +4481,14 @@ func (x *fastReflection_QueryTopicResponse) Mutable(fd protoreflect.FieldDescrip
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryTopicResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryTopicResponse.topic":
+	case "emissions.state.v1.QueryTopicResponse.topic":
 		m := new(Topic)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4498,7 +4498,7 @@ func (x *fastReflection_QueryTopicResponse) NewField(fd protoreflect.FieldDescri
 func (x *fastReflection_QueryTopicResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryTopicResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryTopicResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4728,8 +4728,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryWeightRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryWeightRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryWeightRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryWeightRequest")
 	fd_QueryWeightRequest_topic_id = md_QueryWeightRequest.Fields().ByName("topic_id")
 	fd_QueryWeightRequest_reputer = md_QueryWeightRequest.Fields().ByName("reputer")
 	fd_QueryWeightRequest_worker = md_QueryWeightRequest.Fields().ByName("worker")
@@ -4744,7 +4744,7 @@ func (x *QueryWeightRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryWeightRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[12]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4833,17 +4833,17 @@ func (x *fastReflection_QueryWeightRequest) Range(f func(protoreflect.FieldDescr
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryWeightRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.QueryWeightRequest.reputer":
+	case "emissions.state.v1.QueryWeightRequest.reputer":
 		return x.Reputer != ""
-	case "upshot.state.v1.QueryWeightRequest.worker":
+	case "emissions.state.v1.QueryWeightRequest.worker":
 		return x.Worker != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4855,17 +4855,17 @@ func (x *fastReflection_QueryWeightRequest) Has(fd protoreflect.FieldDescriptor)
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.QueryWeightRequest.reputer":
+	case "emissions.state.v1.QueryWeightRequest.reputer":
 		x.Reputer = ""
-	case "upshot.state.v1.QueryWeightRequest.worker":
+	case "emissions.state.v1.QueryWeightRequest.worker":
 		x.Worker = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4877,20 +4877,20 @@ func (x *fastReflection_QueryWeightRequest) Clear(fd protoreflect.FieldDescripto
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryWeightRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.QueryWeightRequest.reputer":
+	case "emissions.state.v1.QueryWeightRequest.reputer":
 		value := x.Reputer
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.QueryWeightRequest.worker":
+	case "emissions.state.v1.QueryWeightRequest.worker":
 		value := x.Worker
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4906,17 +4906,17 @@ func (x *fastReflection_QueryWeightRequest) Get(descriptor protoreflect.FieldDes
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.QueryWeightRequest.reputer":
+	case "emissions.state.v1.QueryWeightRequest.reputer":
 		x.Reputer = value.Interface().(string)
-	case "upshot.state.v1.QueryWeightRequest.worker":
+	case "emissions.state.v1.QueryWeightRequest.worker":
 		x.Worker = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4932,17 +4932,17 @@ func (x *fastReflection_QueryWeightRequest) Set(fd protoreflect.FieldDescriptor,
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.QueryWeightRequest is not mutable"))
-	case "upshot.state.v1.QueryWeightRequest.reputer":
-		panic(fmt.Errorf("field reputer of message upshot.state.v1.QueryWeightRequest is not mutable"))
-	case "upshot.state.v1.QueryWeightRequest.worker":
-		panic(fmt.Errorf("field worker of message upshot.state.v1.QueryWeightRequest is not mutable"))
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.QueryWeightRequest is not mutable"))
+	case "emissions.state.v1.QueryWeightRequest.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.state.v1.QueryWeightRequest is not mutable"))
+	case "emissions.state.v1.QueryWeightRequest.worker":
+		panic(fmt.Errorf("field worker of message emissions.state.v1.QueryWeightRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4951,17 +4951,17 @@ func (x *fastReflection_QueryWeightRequest) Mutable(fd protoreflect.FieldDescrip
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryWeightRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightRequest.topic_id":
+	case "emissions.state.v1.QueryWeightRequest.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.QueryWeightRequest.reputer":
+	case "emissions.state.v1.QueryWeightRequest.reputer":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.QueryWeightRequest.worker":
+	case "emissions.state.v1.QueryWeightRequest.worker":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4971,7 +4971,7 @@ func (x *fastReflection_QueryWeightRequest) NewField(fd protoreflect.FieldDescri
 func (x *fastReflection_QueryWeightRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryWeightRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryWeightRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5258,8 +5258,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryWeightResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryWeightResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryWeightResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryWeightResponse")
 	fd_QueryWeightResponse_amount = md_QueryWeightResponse.Fields().ByName("amount")
 }
 
@@ -5272,7 +5272,7 @@ func (x *QueryWeightResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryWeightResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[13]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5349,13 +5349,13 @@ func (x *fastReflection_QueryWeightResponse) Range(f func(protoreflect.FieldDesc
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryWeightResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
+	case "emissions.state.v1.QueryWeightResponse.amount":
 		return x.Amount != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5367,13 +5367,13 @@ func (x *fastReflection_QueryWeightResponse) Has(fd protoreflect.FieldDescriptor
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
+	case "emissions.state.v1.QueryWeightResponse.amount":
 		x.Amount = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5385,14 +5385,14 @@ func (x *fastReflection_QueryWeightResponse) Clear(fd protoreflect.FieldDescript
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryWeightResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
+	case "emissions.state.v1.QueryWeightResponse.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5408,13 +5408,13 @@ func (x *fastReflection_QueryWeightResponse) Get(descriptor protoreflect.FieldDe
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
+	case "emissions.state.v1.QueryWeightResponse.amount":
 		x.Amount = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5430,13 +5430,13 @@ func (x *fastReflection_QueryWeightResponse) Set(fd protoreflect.FieldDescriptor
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWeightResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
-		panic(fmt.Errorf("field amount of message upshot.state.v1.QueryWeightResponse is not mutable"))
+	case "emissions.state.v1.QueryWeightResponse.amount":
+		panic(fmt.Errorf("field amount of message emissions.state.v1.QueryWeightResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5445,13 +5445,13 @@ func (x *fastReflection_QueryWeightResponse) Mutable(fd protoreflect.FieldDescri
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryWeightResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWeightResponse.amount":
+	case "emissions.state.v1.QueryWeightResponse.amount":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWeightResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWeightResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWeightResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5461,7 +5461,7 @@ func (x *fastReflection_QueryWeightResponse) NewField(fd protoreflect.FieldDescr
 func (x *fastReflection_QueryWeightResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryWeightResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryWeightResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5679,8 +5679,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryInferenceRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryInferenceRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryInferenceRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryInferenceRequest")
 	fd_QueryInferenceRequest_topic_id = md_QueryInferenceRequest.Fields().ByName("topic_id")
 	fd_QueryInferenceRequest_timestamp = md_QueryInferenceRequest.Fields().ByName("timestamp")
 }
@@ -5694,7 +5694,7 @@ func (x *QueryInferenceRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryInferenceRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[14]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5777,15 +5777,15 @@ func (x *fastReflection_QueryInferenceRequest) Range(f func(protoreflect.FieldDe
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryInferenceRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
 		return x.Timestamp != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5797,15 +5797,15 @@ func (x *fastReflection_QueryInferenceRequest) Has(fd protoreflect.FieldDescript
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
 		x.Timestamp = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5817,17 +5817,17 @@ func (x *fastReflection_QueryInferenceRequest) Clear(fd protoreflect.FieldDescri
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryInferenceRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
 		value := x.Timestamp
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5843,15 +5843,15 @@ func (x *fastReflection_QueryInferenceRequest) Get(descriptor protoreflect.Field
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
 		x.Timestamp = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5867,15 +5867,15 @@ func (x *fastReflection_QueryInferenceRequest) Set(fd protoreflect.FieldDescript
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.QueryInferenceRequest is not mutable"))
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
-		panic(fmt.Errorf("field timestamp of message upshot.state.v1.QueryInferenceRequest is not mutable"))
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.QueryInferenceRequest is not mutable"))
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
+		panic(fmt.Errorf("field timestamp of message emissions.state.v1.QueryInferenceRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5884,15 +5884,15 @@ func (x *fastReflection_QueryInferenceRequest) Mutable(fd protoreflect.FieldDesc
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryInferenceRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceRequest.topic_id":
+	case "emissions.state.v1.QueryInferenceRequest.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.QueryInferenceRequest.timestamp":
+	case "emissions.state.v1.QueryInferenceRequest.timestamp":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5902,7 +5902,7 @@ func (x *fastReflection_QueryInferenceRequest) NewField(fd protoreflect.FieldDes
 func (x *fastReflection_QueryInferenceRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryInferenceRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryInferenceRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -6130,8 +6130,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryInferenceResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryInferenceResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryInferenceResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryInferenceResponse")
 	fd_QueryInferenceResponse_inferences = md_QueryInferenceResponse.Fields().ByName("inferences")
 }
 
@@ -6144,7 +6144,7 @@ func (x *QueryInferenceResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryInferenceResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[15]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6221,13 +6221,13 @@ func (x *fastReflection_QueryInferenceResponse) Range(f func(protoreflect.FieldD
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryInferenceResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		return x.Inferences != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6239,13 +6239,13 @@ func (x *fastReflection_QueryInferenceResponse) Has(fd protoreflect.FieldDescrip
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6257,14 +6257,14 @@ func (x *fastReflection_QueryInferenceResponse) Clear(fd protoreflect.FieldDescr
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryInferenceResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		value := x.Inferences
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -6280,13 +6280,13 @@ func (x *fastReflection_QueryInferenceResponse) Get(descriptor protoreflect.Fiel
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		x.Inferences = value.Message().Interface().(*Inferences)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6302,16 +6302,16 @@ func (x *fastReflection_QueryInferenceResponse) Set(fd protoreflect.FieldDescrip
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferenceResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		if x.Inferences == nil {
 			x.Inferences = new(Inferences)
 		}
 		return protoreflect.ValueOfMessage(x.Inferences.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6320,14 +6320,14 @@ func (x *fastReflection_QueryInferenceResponse) Mutable(fd protoreflect.FieldDes
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryInferenceResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferenceResponse.inferences":
+	case "emissions.state.v1.QueryInferenceResponse.inferences":
 		m := new(Inferences)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferenceResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferenceResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferenceResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6337,7 +6337,7 @@ func (x *fastReflection_QueryInferenceResponse) NewField(fd protoreflect.FieldDe
 func (x *fastReflection_QueryInferenceResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryInferenceResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryInferenceResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -6565,8 +6565,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryInferencesToScoreRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryInferencesToScoreRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryInferencesToScoreRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryInferencesToScoreRequest")
 	fd_QueryInferencesToScoreRequest_topic_id = md_QueryInferencesToScoreRequest.Fields().ByName("topic_id")
 }
 
@@ -6579,7 +6579,7 @@ func (x *QueryInferencesToScoreRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryInferencesToScoreRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[16]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6656,13 +6656,13 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Range(f func(protoreflect
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryInferencesToScoreRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
 		return x.TopicId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6674,13 +6674,13 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Has(fd protoreflect.Field
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
 		x.TopicId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6692,14 +6692,14 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Clear(fd protoreflect.Fie
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryInferencesToScoreRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -6715,13 +6715,13 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Get(descriptor protorefle
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
 		x.TopicId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6737,13 +6737,13 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Set(fd protoreflect.Field
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.QueryInferencesToScoreRequest is not mutable"))
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.QueryInferencesToScoreRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6752,13 +6752,13 @@ func (x *fastReflection_QueryInferencesToScoreRequest) Mutable(fd protoreflect.F
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryInferencesToScoreRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreRequest.topic_id":
+	case "emissions.state.v1.QueryInferencesToScoreRequest.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6768,7 +6768,7 @@ func (x *fastReflection_QueryInferencesToScoreRequest) NewField(fd protoreflect.
 func (x *fastReflection_QueryInferencesToScoreRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryInferencesToScoreRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryInferencesToScoreRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -7020,8 +7020,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryInferencesToScoreResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryInferencesToScoreResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryInferencesToScoreResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryInferencesToScoreResponse")
 	fd_QueryInferencesToScoreResponse_inferences = md_QueryInferencesToScoreResponse.Fields().ByName("inferences")
 }
 
@@ -7034,7 +7034,7 @@ func (x *QueryInferencesToScoreResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *QueryInferencesToScoreResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[17]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7111,13 +7111,13 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Range(f func(protoreflec
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryInferencesToScoreResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		return len(x.Inferences) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7129,13 +7129,13 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Has(fd protoreflect.Fiel
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7147,7 +7147,7 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Clear(fd protoreflect.Fi
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryInferencesToScoreResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		if len(x.Inferences) == 0 {
 			return protoreflect.ValueOfList(&_QueryInferencesToScoreResponse_1_list{})
 		}
@@ -7155,9 +7155,9 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Get(descriptor protorefl
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -7173,15 +7173,15 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Get(descriptor protorefl
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		lv := value.List()
 		clv := lv.(*_QueryInferencesToScoreResponse_1_list)
 		x.Inferences = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7197,7 +7197,7 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Set(fd protoreflect.Fiel
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryInferencesToScoreResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		if x.Inferences == nil {
 			x.Inferences = []*InferenceSetForScoring{}
 		}
@@ -7205,9 +7205,9 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Mutable(fd protoreflect.
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7216,14 +7216,14 @@ func (x *fastReflection_QueryInferencesToScoreResponse) Mutable(fd protoreflect.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryInferencesToScoreResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryInferencesToScoreResponse.inferences":
+	case "emissions.state.v1.QueryInferencesToScoreResponse.inferences":
 		list := []*InferenceSetForScoring{}
 		return protoreflect.ValueOfList(&_QueryInferencesToScoreResponse_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryInferencesToScoreResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryInferencesToScoreResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryInferencesToScoreResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7233,7 +7233,7 @@ func (x *fastReflection_QueryInferencesToScoreResponse) NewField(fd protoreflect
 func (x *fastReflection_QueryInferencesToScoreResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryInferencesToScoreResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryInferencesToScoreResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -7463,8 +7463,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryRegisteredWorkerNodesRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryRegisteredWorkerNodesRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryRegisteredWorkerNodesRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryRegisteredWorkerNodesRequest")
 	fd_QueryRegisteredWorkerNodesRequest_node_id = md_QueryRegisteredWorkerNodesRequest.Fields().ByName("node_id")
 }
 
@@ -7477,7 +7477,7 @@ func (x *QueryRegisteredWorkerNodesRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *QueryRegisteredWorkerNodesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[18]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7554,13 +7554,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Range(f func(protoref
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
 		return x.NodeId != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7572,13 +7572,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Has(fd protoreflect.F
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
 		x.NodeId = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7590,14 +7590,14 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Clear(fd protoreflect
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
 		value := x.NodeId
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -7613,13 +7613,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Get(descriptor protor
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
 		x.NodeId = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7635,13 +7635,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Set(fd protoreflect.F
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
-		panic(fmt.Errorf("field node_id of message upshot.state.v1.QueryRegisteredWorkerNodesRequest is not mutable"))
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+		panic(fmt.Errorf("field node_id of message emissions.state.v1.QueryRegisteredWorkerNodesRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7650,13 +7650,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) Mutable(fd protorefle
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesRequest.node_id":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7666,7 +7666,7 @@ func (x *fastReflection_QueryRegisteredWorkerNodesRequest) NewField(fd protorefl
 func (x *fastReflection_QueryRegisteredWorkerNodesRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryRegisteredWorkerNodesRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryRegisteredWorkerNodesRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -7934,8 +7934,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryRegisteredWorkerNodesResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryRegisteredWorkerNodesResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryRegisteredWorkerNodesResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryRegisteredWorkerNodesResponse")
 	fd_QueryRegisteredWorkerNodesResponse_nodes = md_QueryRegisteredWorkerNodesResponse.Fields().ByName("nodes")
 }
 
@@ -7948,7 +7948,7 @@ func (x *QueryRegisteredWorkerNodesResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *QueryRegisteredWorkerNodesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[19]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8025,13 +8025,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Range(f func(protore
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		return len(x.Nodes) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8043,13 +8043,13 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Has(fd protoreflect.
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		x.Nodes = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8061,7 +8061,7 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Clear(fd protoreflec
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		if len(x.Nodes) == 0 {
 			return protoreflect.ValueOfList(&_QueryRegisteredWorkerNodesResponse_1_list{})
 		}
@@ -8069,9 +8069,9 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Get(descriptor proto
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -8087,15 +8087,15 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Get(descriptor proto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		lv := value.List()
 		clv := lv.(*_QueryRegisteredWorkerNodesResponse_1_list)
 		x.Nodes = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8111,7 +8111,7 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Set(fd protoreflect.
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		if x.Nodes == nil {
 			x.Nodes = []*OffchainNode{}
 		}
@@ -8119,9 +8119,9 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Mutable(fd protorefl
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8130,14 +8130,14 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) Mutable(fd protorefl
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
+	case "emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes":
 		list := []*OffchainNode{}
 		return protoreflect.ValueOfList(&_QueryRegisteredWorkerNodesResponse_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryRegisteredWorkerNodesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryRegisteredWorkerNodesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryRegisteredWorkerNodesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8147,7 +8147,7 @@ func (x *fastReflection_QueryRegisteredWorkerNodesResponse) NewField(fd protoref
 func (x *fastReflection_QueryRegisteredWorkerNodesResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryRegisteredWorkerNodesResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryRegisteredWorkerNodesResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -8377,8 +8377,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryWorkerAddressByP2PKeyRequest = File_upshot_state_v1_query_proto.Messages().ByName("QueryWorkerAddressByP2PKeyRequest")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryWorkerAddressByP2PKeyRequest = File_emissions_state_v1_query_proto.Messages().ByName("QueryWorkerAddressByP2PKeyRequest")
 	fd_QueryWorkerAddressByP2PKeyRequest_libp2p_key = md_QueryWorkerAddressByP2PKeyRequest.Fields().ByName("libp2p_key")
 }
 
@@ -8391,7 +8391,7 @@ func (x *QueryWorkerAddressByP2PKeyRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *QueryWorkerAddressByP2PKeyRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[20]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8468,13 +8468,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Range(f func(protoref
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
 		return x.Libp2PKey != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8486,13 +8486,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Has(fd protoreflect.F
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
 		x.Libp2PKey = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8504,14 +8504,14 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Clear(fd protoreflect
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
 		value := x.Libp2PKey
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -8527,13 +8527,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Get(descriptor protor
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
 		x.Libp2PKey = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8549,13 +8549,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Set(fd protoreflect.F
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
-		panic(fmt.Errorf("field libp2p_key of message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest is not mutable"))
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+		panic(fmt.Errorf("field libp2p_key of message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8564,13 +8564,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) Mutable(fd protorefle
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyRequest.libp2p_key":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8580,7 +8580,7 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) NewField(fd protorefl
 func (x *fastReflection_QueryWorkerAddressByP2PKeyRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryWorkerAddressByP2PKeyRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryWorkerAddressByP2PKeyRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -8797,8 +8797,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_query_proto_init()
-	md_QueryWorkerAddressByP2PKeyResponse = File_upshot_state_v1_query_proto.Messages().ByName("QueryWorkerAddressByP2PKeyResponse")
+	file_emissions_state_v1_query_proto_init()
+	md_QueryWorkerAddressByP2PKeyResponse = File_emissions_state_v1_query_proto.Messages().ByName("QueryWorkerAddressByP2PKeyResponse")
 	fd_QueryWorkerAddressByP2PKeyResponse_address = md_QueryWorkerAddressByP2PKeyResponse.Fields().ByName("address")
 }
 
@@ -8811,7 +8811,7 @@ func (x *QueryWorkerAddressByP2PKeyResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *QueryWorkerAddressByP2PKeyResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_query_proto_msgTypes[21]
+	mi := &file_emissions_state_v1_query_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8888,13 +8888,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Range(f func(protore
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
 		return x.Address != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8906,13 +8906,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Has(fd protoreflect.
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
 		x.Address = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8924,14 +8924,14 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Clear(fd protoreflec
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
 		value := x.Address
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -8947,13 +8947,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Get(descriptor proto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
 		x.Address = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8969,13 +8969,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Set(fd protoreflect.
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
-		panic(fmt.Errorf("field address of message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse is not mutable"))
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+		panic(fmt.Errorf("field address of message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8984,13 +8984,13 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) Mutable(fd protorefl
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
+	case "emissions.state.v1.QueryWorkerAddressByP2PKeyResponse.address":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.QueryWorkerAddressByP2PKeyResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9000,7 +9000,7 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) NewField(fd protoref
 func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.QueryWorkerAddressByP2PKeyResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.QueryWorkerAddressByP2PKeyResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -9215,7 +9215,7 @@ func (x *fastReflection_QueryWorkerAddressByP2PKeyResponse) ProtoMethods() *prot
 // versions:
 // 	protoc-gen-go v1.27.0
 // 	protoc        (unknown)
-// source: upshot/state/v1/query.proto
+// source: emissions/state/v1/query.proto
 
 const (
 	// Verify that this generated code is sufficiently up-to-date.
@@ -9234,7 +9234,7 @@ type QueryParamsRequest struct {
 func (x *QueryParamsRequest) Reset() {
 	*x = QueryParamsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[0]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9248,7 +9248,7 @@ func (*QueryParamsRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryParamsRequest.ProtoReflect.Descriptor instead.
 func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{0}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{0}
 }
 
 // QueryParamsResponse is the response type for the Query/Params RPC method.
@@ -9264,7 +9264,7 @@ type QueryParamsResponse struct {
 func (x *QueryParamsResponse) Reset() {
 	*x = QueryParamsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[1]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9278,7 +9278,7 @@ func (*QueryParamsResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryParamsResponse.ProtoReflect.Descriptor instead.
 func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{1}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *QueryParamsResponse) GetParams() *Params {
@@ -9298,7 +9298,7 @@ type QueryLastRewardsUpdateRequest struct {
 func (x *QueryLastRewardsUpdateRequest) Reset() {
 	*x = QueryLastRewardsUpdateRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[2]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9312,7 +9312,7 @@ func (*QueryLastRewardsUpdateRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryLastRewardsUpdateRequest.ProtoReflect.Descriptor instead.
 func (*QueryLastRewardsUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{2}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{2}
 }
 
 // returns the last time the rewards inflation calculation ran
@@ -9328,7 +9328,7 @@ type QueryLastRewardsUpdateResponse struct {
 func (x *QueryLastRewardsUpdateResponse) Reset() {
 	*x = QueryLastRewardsUpdateResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[3]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9342,7 +9342,7 @@ func (*QueryLastRewardsUpdateResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryLastRewardsUpdateResponse.ProtoReflect.Descriptor instead.
 func (*QueryLastRewardsUpdateResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{3}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *QueryLastRewardsUpdateResponse) GetLastRewardsUpdate() int64 {
@@ -9362,7 +9362,7 @@ type QueryTotalStakeRequest struct {
 func (x *QueryTotalStakeRequest) Reset() {
 	*x = QueryTotalStakeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[4]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9376,7 +9376,7 @@ func (*QueryTotalStakeRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryTotalStakeRequest.ProtoReflect.Descriptor instead.
 func (*QueryTotalStakeRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{4}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{4}
 }
 
 // Total Stake returns the total amount of stake in the system
@@ -9394,7 +9394,7 @@ type QueryTotalStakeResponse struct {
 func (x *QueryTotalStakeResponse) Reset() {
 	*x = QueryTotalStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[5]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9408,7 +9408,7 @@ func (*QueryTotalStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryTotalStakeResponse.ProtoReflect.Descriptor instead.
 func (*QueryTotalStakeResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{5}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *QueryTotalStakeResponse) GetAmount() string {
@@ -9428,7 +9428,7 @@ type QueryAccumulatedEpochRewardsRequest struct {
 func (x *QueryAccumulatedEpochRewardsRequest) Reset() {
 	*x = QueryAccumulatedEpochRewardsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[6]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9442,7 +9442,7 @@ func (*QueryAccumulatedEpochRewardsRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryAccumulatedEpochRewardsRequest.ProtoReflect.Descriptor instead.
 func (*QueryAccumulatedEpochRewardsRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{6}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{6}
 }
 
 type QueryAccumulatedEpochRewardsResponse struct {
@@ -9456,7 +9456,7 @@ type QueryAccumulatedEpochRewardsResponse struct {
 func (x *QueryAccumulatedEpochRewardsResponse) Reset() {
 	*x = QueryAccumulatedEpochRewardsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[7]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9470,7 +9470,7 @@ func (*QueryAccumulatedEpochRewardsResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryAccumulatedEpochRewardsResponse.ProtoReflect.Descriptor instead.
 func (*QueryAccumulatedEpochRewardsResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{7}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *QueryAccumulatedEpochRewardsResponse) GetAmount() string {
@@ -9489,7 +9489,7 @@ type QueryNextTopicIdRequest struct {
 func (x *QueryNextTopicIdRequest) Reset() {
 	*x = QueryNextTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[8]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9503,7 +9503,7 @@ func (*QueryNextTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryNextTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*QueryNextTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{8}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{8}
 }
 
 type QueryNextTopicIdResponse struct {
@@ -9517,7 +9517,7 @@ type QueryNextTopicIdResponse struct {
 func (x *QueryNextTopicIdResponse) Reset() {
 	*x = QueryNextTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[9]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9531,7 +9531,7 @@ func (*QueryNextTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryNextTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*QueryNextTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{9}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *QueryNextTopicIdResponse) GetNextTopicId() uint64 {
@@ -9552,7 +9552,7 @@ type QueryTopicRequest struct {
 func (x *QueryTopicRequest) Reset() {
 	*x = QueryTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[10]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9566,7 +9566,7 @@ func (*QueryTopicRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryTopicRequest.ProtoReflect.Descriptor instead.
 func (*QueryTopicRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{10}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *QueryTopicRequest) GetTopicId() uint64 {
@@ -9587,7 +9587,7 @@ type QueryTopicResponse struct {
 func (x *QueryTopicResponse) Reset() {
 	*x = QueryTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[11]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9601,7 +9601,7 @@ func (*QueryTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryTopicResponse.ProtoReflect.Descriptor instead.
 func (*QueryTopicResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{11}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *QueryTopicResponse) GetTopic() *Topic {
@@ -9625,7 +9625,7 @@ type QueryWeightRequest struct {
 func (x *QueryWeightRequest) Reset() {
 	*x = QueryWeightRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[12]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9639,7 +9639,7 @@ func (*QueryWeightRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryWeightRequest.ProtoReflect.Descriptor instead.
 func (*QueryWeightRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{12}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *QueryWeightRequest) GetTopicId() uint64 {
@@ -9678,7 +9678,7 @@ type QueryWeightResponse struct {
 func (x *QueryWeightResponse) Reset() {
 	*x = QueryWeightResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[13]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9692,7 +9692,7 @@ func (*QueryWeightResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryWeightResponse.ProtoReflect.Descriptor instead.
 func (*QueryWeightResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{13}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *QueryWeightResponse) GetAmount() string {
@@ -9715,7 +9715,7 @@ type QueryInferenceRequest struct {
 func (x *QueryInferenceRequest) Reset() {
 	*x = QueryInferenceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[14]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9729,7 +9729,7 @@ func (*QueryInferenceRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryInferenceRequest.ProtoReflect.Descriptor instead.
 func (*QueryInferenceRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{14}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *QueryInferenceRequest) GetTopicId() uint64 {
@@ -9761,7 +9761,7 @@ type QueryInferenceResponse struct {
 func (x *QueryInferenceResponse) Reset() {
 	*x = QueryInferenceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[15]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9775,7 +9775,7 @@ func (*QueryInferenceResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryInferenceResponse.ProtoReflect.Descriptor instead.
 func (*QueryInferenceResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{15}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *QueryInferenceResponse) GetInferences() *Inferences {
@@ -9796,7 +9796,7 @@ type QueryInferencesToScoreRequest struct {
 func (x *QueryInferencesToScoreRequest) Reset() {
 	*x = QueryInferencesToScoreRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[16]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9810,7 +9810,7 @@ func (*QueryInferencesToScoreRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryInferencesToScoreRequest.ProtoReflect.Descriptor instead.
 func (*QueryInferencesToScoreRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{16}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *QueryInferencesToScoreRequest) GetTopicId() uint64 {
@@ -9831,7 +9831,7 @@ type QueryInferencesToScoreResponse struct {
 func (x *QueryInferencesToScoreResponse) Reset() {
 	*x = QueryInferencesToScoreResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[17]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9845,7 +9845,7 @@ func (*QueryInferencesToScoreResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryInferencesToScoreResponse.ProtoReflect.Descriptor instead.
 func (*QueryInferencesToScoreResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{17}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *QueryInferencesToScoreResponse) GetInferences() []*InferenceSetForScoring {
@@ -9866,7 +9866,7 @@ type QueryRegisteredWorkerNodesRequest struct {
 func (x *QueryRegisteredWorkerNodesRequest) Reset() {
 	*x = QueryRegisteredWorkerNodesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[18]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9880,7 +9880,7 @@ func (*QueryRegisteredWorkerNodesRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryRegisteredWorkerNodesRequest.ProtoReflect.Descriptor instead.
 func (*QueryRegisteredWorkerNodesRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{18}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *QueryRegisteredWorkerNodesRequest) GetNodeId() string {
@@ -9901,7 +9901,7 @@ type QueryRegisteredWorkerNodesResponse struct {
 func (x *QueryRegisteredWorkerNodesResponse) Reset() {
 	*x = QueryRegisteredWorkerNodesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[19]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9915,7 +9915,7 @@ func (*QueryRegisteredWorkerNodesResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryRegisteredWorkerNodesResponse.ProtoReflect.Descriptor instead.
 func (*QueryRegisteredWorkerNodesResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{19}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *QueryRegisteredWorkerNodesResponse) GetNodes() []*OffchainNode {
@@ -9936,7 +9936,7 @@ type QueryWorkerAddressByP2PKeyRequest struct {
 func (x *QueryWorkerAddressByP2PKeyRequest) Reset() {
 	*x = QueryWorkerAddressByP2PKeyRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[20]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9950,7 +9950,7 @@ func (*QueryWorkerAddressByP2PKeyRequest) ProtoMessage() {}
 
 // Deprecated: Use QueryWorkerAddressByP2PKeyRequest.ProtoReflect.Descriptor instead.
 func (*QueryWorkerAddressByP2PKeyRequest) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{20}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *QueryWorkerAddressByP2PKeyRequest) GetLibp2PKey() string {
@@ -9971,7 +9971,7 @@ type QueryWorkerAddressByP2PKeyResponse struct {
 func (x *QueryWorkerAddressByP2PKeyResponse) Reset() {
 	*x = QueryWorkerAddressByP2PKeyResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_query_proto_msgTypes[21]
+		mi := &file_emissions_state_v1_query_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9985,7 +9985,7 @@ func (*QueryWorkerAddressByP2PKeyResponse) ProtoMessage() {}
 
 // Deprecated: Use QueryWorkerAddressByP2PKeyResponse.ProtoReflect.Descriptor instead.
 func (*QueryWorkerAddressByP2PKeyResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_query_proto_rawDescGZIP(), []int{21}
+	return file_emissions_state_v1_query_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *QueryWorkerAddressByP2PKeyResponse) GetAddress() string {
@@ -9995,320 +9995,329 @@ func (x *QueryWorkerAddressByP2PKeyResponse) GetAddress() string {
 	return ""
 }
 
-var File_upshot_state_v1_query_proto protoreflect.FileDescriptor
+var File_emissions_state_v1_query_proto protoreflect.FileDescriptor
 
-var file_upshot_state_v1_query_proto_rawDesc = []byte{
-	0x0a, 0x1b, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76,
-	0x31, 0x2f, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0f, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x1a, 0x2a,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62, 0x61, 0x73, 0x65, 0x2f, 0x71, 0x75, 0x65, 0x72,
-	0x79, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1b, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65,
-	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f,
-	0x61, 0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x71, 0x75,
-	0x65, 0x72, 0x79, 0x2f, 0x76, 0x31, 0x2f, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x14, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50,
-	0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x51, 0x0a, 0x13,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x3a, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09, 0xc8, 0xde,
-	0x1f, 0x00, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22,
-	0x1f, 0x0a, 0x1d, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61,
-	0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x22, 0x50, 0x0a, 0x1e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77,
-	0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x2e, 0x0a, 0x13, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72,
-	0x64, 0x73, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
-	0x11, 0x6c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x22, 0x18, 0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x6b, 0x0a, 0x17,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
-	0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61,
-	0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x25, 0x0a, 0x23, 0x51, 0x75, 0x65,
-	0x72, 0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f,
-	0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x22, 0x76, 0x0a, 0x24, 0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c,
-	0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
-	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
-	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x19, 0x0a, 0x17, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x22, 0x3e, 0x0a, 0x18, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x78, 0x74,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x22, 0x0a, 0x0d, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x22, 0x2e, 0x0a, 0x11, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x22, 0x42, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2c, 0x0a, 0x05, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f,
-	0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x52, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x61, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a,
-	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75,
-	0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74,
-	0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x22, 0x67, 0x0a, 0x13, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e,
-	0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x04, 0xe8,
-	0xa0, 0x1f, 0x01, 0x22, 0x50, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08,
+var file_emissions_state_v1_query_proto_rawDesc = []byte{
+	0x0a, 0x1e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2f, 0x76, 0x31, 0x2f, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x12, 0x12, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x1a, 0x2a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x62, 0x61, 0x73,
+	0x65, 0x2f, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f,
+	0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x1e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e,
+	0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1b,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2f, 0x76, 0x31, 0x2f,
+	0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69,
+	0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14,
+	0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22,
+	0x14, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x54, 0x0a, 0x13, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61,
+	0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3d, 0x0a, 0x06,
+	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09, 0xc8, 0xde, 0x1f, 0x00, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x1f, 0x0a, 0x1d, 0x51,
+	0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x50, 0x0a, 0x1e,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e,
+	0x0a, 0x13, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x75,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x11, 0x6c, 0x61, 0x73,
+	0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x22, 0x18,
+	0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x6b, 0x0a, 0x17, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55,
+	0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a,
+	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x25, 0x0a, 0x23, 0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x63,
+	0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x52, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x76, 0x0a, 0x24,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64,
+	0x45, 0x70, 0x6f, 0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x04,
+	0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x19, 0x0a, 0x17, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x78,
+	0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22,
+	0x3e, 0x0a, 0x18, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x22, 0x0a, 0x0d, 0x6e,
+	0x65, 0x78, 0x74, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x0b, 0x6e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22,
+	0x2e, 0x0a, 0x11, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22,
+	0x45, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2f, 0x0a, 0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52,
+	0x05, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x22, 0x61, 0x0a, 0x12, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08,
 	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73,
-	0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65,
-	0x73, 0x74, 0x61, 0x6d, 0x70, 0x22, 0x55, 0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x3b, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x3a, 0x0a, 0x1d,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54,
-	0x6f, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a,
-	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0x69, 0x0a, 0x1e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f,
-	0x72, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x47, 0x0a, 0x0a, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27,
-	0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
-	0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72,
-	0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x22, 0x3c, 0x0a, 0x21, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65,
-	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65,
-	0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49,
-	0x64, 0x22, 0x59, 0x0a, 0x22, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69,
-	0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x42, 0x0a, 0x21,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x6c, 0x69, 0x62, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x70, 0x32, 0x70, 0x4b, 0x65, 0x79,
-	0x22, 0x3e, 0x0a, 0x22, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x32, 0x8a, 0x0e, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x74, 0x0a, 0x06, 0x50, 0x61,
-	0x72, 0x61, 0x6d, 0x73, 0x12, 0x23, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61,
-	0x6d, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x24, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x1f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x19, 0x12, 0x17, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x12, 0xaa, 0x01, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61,
-	0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x2e, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2f, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x31, 0x88, 0xe7, 0xb0, 0x2a,
-	0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x26, 0x12, 0x24, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72,
-	0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0xc2, 0x01,
-	0x0a, 0x1a, 0x47, 0x65, 0x74, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64,
-	0x45, 0x70, 0x6f, 0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x12, 0x34, 0x2e, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x45,
-	0x70, 0x6f, 0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x35, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74,
+	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65,
+	0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x22, 0x67, 0x0a, 0x13, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x04, 0xe8, 0xa0,
+	0x1f, 0x01, 0x22, 0x50, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x22, 0x58, 0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3e,
+	0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x3a,
+	0x0a, 0x1d, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0x6c, 0x0a, 0x1e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53,
+	0x63, 0x6f, 0x72, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4a, 0x0a, 0x0a,
+	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53,
+	0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x0a, 0x69, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x3c, 0x0a, 0x21, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a,
+	0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x5c, 0x0a, 0x22, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e,
+	0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x36, 0x0a, 0x05,
+	0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x6e,
+	0x6f, 0x64, 0x65, 0x73, 0x22, 0x42, 0x0a, 0x21, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x6f, 0x72,
+	0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b,
+	0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x6c, 0x69, 0x62,
+	0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c,
+	0x69, 0x62, 0x70, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x22, 0x3e, 0x0a, 0x22, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79,
+	0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18,
+	0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x32, 0xed, 0x0e, 0x0a, 0x05, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x12, 0x7d, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x26, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50,
+	0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x22, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x1c, 0x12, 0x1a, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d,
+	0x73, 0x12, 0xb3, 0x01, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77,
+	0x61, 0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x31, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73,
+	0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x32, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x77, 0x61,
+	0x72, 0x64, 0x73, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x34, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x29, 0x12, 0x27,
+	0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2f, 0x76, 0x31, 0x2f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73,
+	0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0xcb, 0x01, 0x0a, 0x1a, 0x47, 0x65, 0x74, 0x41,
+	0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x52,
+	0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x12, 0x37, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f, 0x63,
+	0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x38, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
 	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x41, 0x63, 0x63, 0x75, 0x6d, 0x75,
 	0x6c, 0x61, 0x74, 0x65, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64,
-	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x37, 0x88, 0xe7, 0xb0, 0x2a, 0x01,
-	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2c, 0x12, 0x2a, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x61, 0x63, 0x63, 0x75, 0x6d, 0x75, 0x6c,
-	0x61, 0x74, 0x65, 0x64, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72,
-	0x64, 0x73, 0x12, 0x92, 0x01, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f,
-	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x28, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x78,
-	0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x29, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2b, 0x88, 0xe7, 0xb0, 0x2a,
-	0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x20, 0x12, 0x1e, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x12, 0x83, 0x01, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x54,
-	0x6f, 0x70, 0x69, 0x63, 0x12, 0x22, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x23, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f,
-	0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2e, 0x88,
-	0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x23, 0x12, 0x21, 0x2f, 0x75, 0x70, 0x73,
-	0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x12, 0x9b, 0x01,
-	0x0a, 0x09, 0x47, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x23, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x24, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x43, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4,
-	0x93, 0x02, 0x38, 0x12, 0x36, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2f, 0x7b, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x7d, 0x2f, 0x7b, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x7d, 0x12, 0xa4, 0x01, 0x0a, 0x10,
-	0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x12, 0x26, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f,
-	0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x3f, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x34, 0x12, 0x32,
-	0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31,
-	0x2f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2f, 0x7b, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x7d, 0x12, 0xac, 0x01, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x12, 0x2e, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53,
-	0x63, 0x6f, 0x72, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2f, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53,
-	0x63, 0x6f, 0x72, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x33, 0x88, 0xe7,
-	0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x28, 0x12, 0x26, 0x2f, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x69, 0x6e, 0x66, 0x65,
+	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3a, 0x88, 0xe7, 0xb0, 0x2a, 0x01,
+	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x12, 0x2d, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x61, 0x63, 0x63, 0x75,
+	0x6d, 0x75, 0x6c, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x72, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x73, 0x12, 0x9b, 0x01, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x4e, 0x65, 0x78,
+	0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x4e, 0x65, 0x78, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0x2e, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x23,
+	0x12, 0x21, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x6e, 0x65, 0x78, 0x74, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x5f, 0x69, 0x64, 0x12, 0x8c, 0x01, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x12, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x26, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x31, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x26, 0x12, 0x24, 0x2f, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76,
+	0x31, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x7d, 0x12, 0xa4, 0x01, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x12, 0x26, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x46, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x3b, 0x12, 0x39,
+	0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2f, 0x76, 0x31, 0x2f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x2f, 0x7b, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x7d,
+	0x2f, 0x7b, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x7d, 0x12, 0xad, 0x01, 0x0a, 0x10, 0x47, 0x65,
+	0x74, 0x41, 0x6c, 0x6c, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x29,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51,
+	0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x42, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x37, 0x12, 0x35, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x74,
+	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x7d, 0x12, 0xb5, 0x01, 0x0a, 0x14, 0x47, 0x65,
+	0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f,
+	0x72, 0x65, 0x12, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x6f, 0x53, 0x63, 0x6f, 0x72,
+	0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x36, 0x88, 0xe7, 0xb0, 0x2a, 0x01,
+	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2b, 0x12, 0x29, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x69, 0x6e, 0x66, 0x65,
 	0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x7d, 0x12, 0x8d, 0x01, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x12, 0x27, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x28, 0x2e, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x29, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4,
-	0x93, 0x02, 0x1e, 0x12, 0x1c, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b,
-	0x65, 0x12, 0xba, 0x01, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e,
-	0x6f, 0x64, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
-	0x32, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
-	0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x33, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x34, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82,
-	0xd3, 0xe4, 0x93, 0x02, 0x29, 0x12, 0x27, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x6e,
-	0x6f, 0x64, 0x65, 0x73, 0x2f, 0x7b, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x12, 0xbc,
-	0x01, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x12, 0x32, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x33, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x37, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02,
-	0x2c, 0x12, 0x2a, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2f, 0x76, 0x31, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73,
-	0x2f, 0x7b, 0x6c, 0x69, 0x62, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x7d, 0x42, 0xd1, 0x01,
-	0x0a, 0x13, 0x63, 0x6f, 0x6d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2d, 0x6d, 0x61, 0x63, 0x68, 0x69,
-	0x6e, 0x65, 0x2d, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x55, 0x53, 0x58, 0xaa, 0x02, 0x0f, 0x55, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0f,
-	0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2,
-	0x02, 0x1b, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56,
-	0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x11,
-	0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x7d, 0x12, 0x96, 0x01, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74,
+	0x61, 0x6b, 0x65, 0x12, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f,
+	0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53,
+	0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2c, 0x88, 0xe7,
+	0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x21, 0x12, 0x1f, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x12, 0xc3, 0x01, 0x0a, 0x19, 0x47,
+	0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x35, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72,
+	0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x36, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x37, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3,
+	0xe4, 0x93, 0x02, 0x2c, 0x12, 0x2a, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x2f, 0x7b, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x7d,
+	0x12, 0xc5, 0x01, 0x0a, 0x18, 0x47, 0x65, 0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x12, 0x35, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64,
+	0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x57,
+	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x42, 0x79, 0x50, 0x32,
+	0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3a, 0x88, 0xe7,
+	0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x12, 0x2d, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x77,
+	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x2f, 0x7b, 0x6c, 0x69, 0x62,
+	0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x7d, 0x42, 0xe1, 0x01, 0x0a, 0x16, 0x63, 0x6f, 0x6d,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
+	0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70,
+	0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
+	0x2d, 0x61, 0x70, 0x70, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74,
+	0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
+	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_upshot_state_v1_query_proto_rawDescOnce sync.Once
-	file_upshot_state_v1_query_proto_rawDescData = file_upshot_state_v1_query_proto_rawDesc
+	file_emissions_state_v1_query_proto_rawDescOnce sync.Once
+	file_emissions_state_v1_query_proto_rawDescData = file_emissions_state_v1_query_proto_rawDesc
 )
 
-func file_upshot_state_v1_query_proto_rawDescGZIP() []byte {
-	file_upshot_state_v1_query_proto_rawDescOnce.Do(func() {
-		file_upshot_state_v1_query_proto_rawDescData = protoimpl.X.CompressGZIP(file_upshot_state_v1_query_proto_rawDescData)
+func file_emissions_state_v1_query_proto_rawDescGZIP() []byte {
+	file_emissions_state_v1_query_proto_rawDescOnce.Do(func() {
+		file_emissions_state_v1_query_proto_rawDescData = protoimpl.X.CompressGZIP(file_emissions_state_v1_query_proto_rawDescData)
 	})
-	return file_upshot_state_v1_query_proto_rawDescData
+	return file_emissions_state_v1_query_proto_rawDescData
 }
 
-var file_upshot_state_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
-var file_upshot_state_v1_query_proto_goTypes = []interface{}{
-	(*QueryParamsRequest)(nil),                   // 0: upshot.state.v1.QueryParamsRequest
-	(*QueryParamsResponse)(nil),                  // 1: upshot.state.v1.QueryParamsResponse
-	(*QueryLastRewardsUpdateRequest)(nil),        // 2: upshot.state.v1.QueryLastRewardsUpdateRequest
-	(*QueryLastRewardsUpdateResponse)(nil),       // 3: upshot.state.v1.QueryLastRewardsUpdateResponse
-	(*QueryTotalStakeRequest)(nil),               // 4: upshot.state.v1.QueryTotalStakeRequest
-	(*QueryTotalStakeResponse)(nil),              // 5: upshot.state.v1.QueryTotalStakeResponse
-	(*QueryAccumulatedEpochRewardsRequest)(nil),  // 6: upshot.state.v1.QueryAccumulatedEpochRewardsRequest
-	(*QueryAccumulatedEpochRewardsResponse)(nil), // 7: upshot.state.v1.QueryAccumulatedEpochRewardsResponse
-	(*QueryNextTopicIdRequest)(nil),              // 8: upshot.state.v1.QueryNextTopicIdRequest
-	(*QueryNextTopicIdResponse)(nil),             // 9: upshot.state.v1.QueryNextTopicIdResponse
-	(*QueryTopicRequest)(nil),                    // 10: upshot.state.v1.QueryTopicRequest
-	(*QueryTopicResponse)(nil),                   // 11: upshot.state.v1.QueryTopicResponse
-	(*QueryWeightRequest)(nil),                   // 12: upshot.state.v1.QueryWeightRequest
-	(*QueryWeightResponse)(nil),                  // 13: upshot.state.v1.QueryWeightResponse
-	(*QueryInferenceRequest)(nil),                // 14: upshot.state.v1.QueryInferenceRequest
-	(*QueryInferenceResponse)(nil),               // 15: upshot.state.v1.QueryInferenceResponse
-	(*QueryInferencesToScoreRequest)(nil),        // 16: upshot.state.v1.QueryInferencesToScoreRequest
-	(*QueryInferencesToScoreResponse)(nil),       // 17: upshot.state.v1.QueryInferencesToScoreResponse
-	(*QueryRegisteredWorkerNodesRequest)(nil),    // 18: upshot.state.v1.QueryRegisteredWorkerNodesRequest
-	(*QueryRegisteredWorkerNodesResponse)(nil),   // 19: upshot.state.v1.QueryRegisteredWorkerNodesResponse
-	(*QueryWorkerAddressByP2PKeyRequest)(nil),    // 20: upshot.state.v1.QueryWorkerAddressByP2PKeyRequest
-	(*QueryWorkerAddressByP2PKeyResponse)(nil),   // 21: upshot.state.v1.QueryWorkerAddressByP2PKeyResponse
-	(*Params)(nil),                               // 22: upshot.state.v1.Params
-	(*Topic)(nil),                                // 23: upshot.state.v1.Topic
-	(*Inferences)(nil),                           // 24: upshot.state.v1.Inferences
-	(*InferenceSetForScoring)(nil),               // 25: upshot.state.v1.InferenceSetForScoring
-	(*OffchainNode)(nil),                         // 26: upshot.state.v1.OffchainNode
+var file_emissions_state_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_emissions_state_v1_query_proto_goTypes = []interface{}{
+	(*QueryParamsRequest)(nil),                   // 0: emissions.state.v1.QueryParamsRequest
+	(*QueryParamsResponse)(nil),                  // 1: emissions.state.v1.QueryParamsResponse
+	(*QueryLastRewardsUpdateRequest)(nil),        // 2: emissions.state.v1.QueryLastRewardsUpdateRequest
+	(*QueryLastRewardsUpdateResponse)(nil),       // 3: emissions.state.v1.QueryLastRewardsUpdateResponse
+	(*QueryTotalStakeRequest)(nil),               // 4: emissions.state.v1.QueryTotalStakeRequest
+	(*QueryTotalStakeResponse)(nil),              // 5: emissions.state.v1.QueryTotalStakeResponse
+	(*QueryAccumulatedEpochRewardsRequest)(nil),  // 6: emissions.state.v1.QueryAccumulatedEpochRewardsRequest
+	(*QueryAccumulatedEpochRewardsResponse)(nil), // 7: emissions.state.v1.QueryAccumulatedEpochRewardsResponse
+	(*QueryNextTopicIdRequest)(nil),              // 8: emissions.state.v1.QueryNextTopicIdRequest
+	(*QueryNextTopicIdResponse)(nil),             // 9: emissions.state.v1.QueryNextTopicIdResponse
+	(*QueryTopicRequest)(nil),                    // 10: emissions.state.v1.QueryTopicRequest
+	(*QueryTopicResponse)(nil),                   // 11: emissions.state.v1.QueryTopicResponse
+	(*QueryWeightRequest)(nil),                   // 12: emissions.state.v1.QueryWeightRequest
+	(*QueryWeightResponse)(nil),                  // 13: emissions.state.v1.QueryWeightResponse
+	(*QueryInferenceRequest)(nil),                // 14: emissions.state.v1.QueryInferenceRequest
+	(*QueryInferenceResponse)(nil),               // 15: emissions.state.v1.QueryInferenceResponse
+	(*QueryInferencesToScoreRequest)(nil),        // 16: emissions.state.v1.QueryInferencesToScoreRequest
+	(*QueryInferencesToScoreResponse)(nil),       // 17: emissions.state.v1.QueryInferencesToScoreResponse
+	(*QueryRegisteredWorkerNodesRequest)(nil),    // 18: emissions.state.v1.QueryRegisteredWorkerNodesRequest
+	(*QueryRegisteredWorkerNodesResponse)(nil),   // 19: emissions.state.v1.QueryRegisteredWorkerNodesResponse
+	(*QueryWorkerAddressByP2PKeyRequest)(nil),    // 20: emissions.state.v1.QueryWorkerAddressByP2PKeyRequest
+	(*QueryWorkerAddressByP2PKeyResponse)(nil),   // 21: emissions.state.v1.QueryWorkerAddressByP2PKeyResponse
+	(*Params)(nil),                               // 22: emissions.state.v1.Params
+	(*Topic)(nil),                                // 23: emissions.state.v1.Topic
+	(*Inferences)(nil),                           // 24: emissions.state.v1.Inferences
+	(*InferenceSetForScoring)(nil),               // 25: emissions.state.v1.InferenceSetForScoring
+	(*OffchainNode)(nil),                         // 26: emissions.state.v1.OffchainNode
 }
-var file_upshot_state_v1_query_proto_depIdxs = []int32{
-	22, // 0: upshot.state.v1.QueryParamsResponse.params:type_name -> upshot.state.v1.Params
-	23, // 1: upshot.state.v1.QueryTopicResponse.topic:type_name -> upshot.state.v1.Topic
-	24, // 2: upshot.state.v1.QueryInferenceResponse.inferences:type_name -> upshot.state.v1.Inferences
-	25, // 3: upshot.state.v1.QueryInferencesToScoreResponse.inferences:type_name -> upshot.state.v1.InferenceSetForScoring
-	26, // 4: upshot.state.v1.QueryRegisteredWorkerNodesResponse.nodes:type_name -> upshot.state.v1.OffchainNode
-	0,  // 5: upshot.state.v1.Query.Params:input_type -> upshot.state.v1.QueryParamsRequest
-	2,  // 6: upshot.state.v1.Query.GetLastRewardsUpdate:input_type -> upshot.state.v1.QueryLastRewardsUpdateRequest
-	6,  // 7: upshot.state.v1.Query.GetAccumulatedEpochRewards:input_type -> upshot.state.v1.QueryAccumulatedEpochRewardsRequest
-	8,  // 8: upshot.state.v1.Query.GetNextTopicId:input_type -> upshot.state.v1.QueryNextTopicIdRequest
-	10, // 9: upshot.state.v1.Query.GetTopic:input_type -> upshot.state.v1.QueryTopicRequest
-	12, // 10: upshot.state.v1.Query.GetWeight:input_type -> upshot.state.v1.QueryWeightRequest
-	14, // 11: upshot.state.v1.Query.GetAllInferences:input_type -> upshot.state.v1.QueryInferenceRequest
-	16, // 12: upshot.state.v1.Query.GetInferencesToScore:input_type -> upshot.state.v1.QueryInferencesToScoreRequest
-	4,  // 13: upshot.state.v1.Query.GetTotalStake:input_type -> upshot.state.v1.QueryTotalStakeRequest
-	18, // 14: upshot.state.v1.Query.GetWorkerNodeRegistration:input_type -> upshot.state.v1.QueryRegisteredWorkerNodesRequest
-	20, // 15: upshot.state.v1.Query.GetWorkerAddressByP2PKey:input_type -> upshot.state.v1.QueryWorkerAddressByP2PKeyRequest
-	1,  // 16: upshot.state.v1.Query.Params:output_type -> upshot.state.v1.QueryParamsResponse
-	3,  // 17: upshot.state.v1.Query.GetLastRewardsUpdate:output_type -> upshot.state.v1.QueryLastRewardsUpdateResponse
-	7,  // 18: upshot.state.v1.Query.GetAccumulatedEpochRewards:output_type -> upshot.state.v1.QueryAccumulatedEpochRewardsResponse
-	9,  // 19: upshot.state.v1.Query.GetNextTopicId:output_type -> upshot.state.v1.QueryNextTopicIdResponse
-	11, // 20: upshot.state.v1.Query.GetTopic:output_type -> upshot.state.v1.QueryTopicResponse
-	13, // 21: upshot.state.v1.Query.GetWeight:output_type -> upshot.state.v1.QueryWeightResponse
-	15, // 22: upshot.state.v1.Query.GetAllInferences:output_type -> upshot.state.v1.QueryInferenceResponse
-	17, // 23: upshot.state.v1.Query.GetInferencesToScore:output_type -> upshot.state.v1.QueryInferencesToScoreResponse
-	5,  // 24: upshot.state.v1.Query.GetTotalStake:output_type -> upshot.state.v1.QueryTotalStakeResponse
-	19, // 25: upshot.state.v1.Query.GetWorkerNodeRegistration:output_type -> upshot.state.v1.QueryRegisteredWorkerNodesResponse
-	21, // 26: upshot.state.v1.Query.GetWorkerAddressByP2PKey:output_type -> upshot.state.v1.QueryWorkerAddressByP2PKeyResponse
+var file_emissions_state_v1_query_proto_depIdxs = []int32{
+	22, // 0: emissions.state.v1.QueryParamsResponse.params:type_name -> emissions.state.v1.Params
+	23, // 1: emissions.state.v1.QueryTopicResponse.topic:type_name -> emissions.state.v1.Topic
+	24, // 2: emissions.state.v1.QueryInferenceResponse.inferences:type_name -> emissions.state.v1.Inferences
+	25, // 3: emissions.state.v1.QueryInferencesToScoreResponse.inferences:type_name -> emissions.state.v1.InferenceSetForScoring
+	26, // 4: emissions.state.v1.QueryRegisteredWorkerNodesResponse.nodes:type_name -> emissions.state.v1.OffchainNode
+	0,  // 5: emissions.state.v1.Query.Params:input_type -> emissions.state.v1.QueryParamsRequest
+	2,  // 6: emissions.state.v1.Query.GetLastRewardsUpdate:input_type -> emissions.state.v1.QueryLastRewardsUpdateRequest
+	6,  // 7: emissions.state.v1.Query.GetAccumulatedEpochRewards:input_type -> emissions.state.v1.QueryAccumulatedEpochRewardsRequest
+	8,  // 8: emissions.state.v1.Query.GetNextTopicId:input_type -> emissions.state.v1.QueryNextTopicIdRequest
+	10, // 9: emissions.state.v1.Query.GetTopic:input_type -> emissions.state.v1.QueryTopicRequest
+	12, // 10: emissions.state.v1.Query.GetWeight:input_type -> emissions.state.v1.QueryWeightRequest
+	14, // 11: emissions.state.v1.Query.GetAllInferences:input_type -> emissions.state.v1.QueryInferenceRequest
+	16, // 12: emissions.state.v1.Query.GetInferencesToScore:input_type -> emissions.state.v1.QueryInferencesToScoreRequest
+	4,  // 13: emissions.state.v1.Query.GetTotalStake:input_type -> emissions.state.v1.QueryTotalStakeRequest
+	18, // 14: emissions.state.v1.Query.GetWorkerNodeRegistration:input_type -> emissions.state.v1.QueryRegisteredWorkerNodesRequest
+	20, // 15: emissions.state.v1.Query.GetWorkerAddressByP2PKey:input_type -> emissions.state.v1.QueryWorkerAddressByP2PKeyRequest
+	1,  // 16: emissions.state.v1.Query.Params:output_type -> emissions.state.v1.QueryParamsResponse
+	3,  // 17: emissions.state.v1.Query.GetLastRewardsUpdate:output_type -> emissions.state.v1.QueryLastRewardsUpdateResponse
+	7,  // 18: emissions.state.v1.Query.GetAccumulatedEpochRewards:output_type -> emissions.state.v1.QueryAccumulatedEpochRewardsResponse
+	9,  // 19: emissions.state.v1.Query.GetNextTopicId:output_type -> emissions.state.v1.QueryNextTopicIdResponse
+	11, // 20: emissions.state.v1.Query.GetTopic:output_type -> emissions.state.v1.QueryTopicResponse
+	13, // 21: emissions.state.v1.Query.GetWeight:output_type -> emissions.state.v1.QueryWeightResponse
+	15, // 22: emissions.state.v1.Query.GetAllInferences:output_type -> emissions.state.v1.QueryInferenceResponse
+	17, // 23: emissions.state.v1.Query.GetInferencesToScore:output_type -> emissions.state.v1.QueryInferencesToScoreResponse
+	5,  // 24: emissions.state.v1.Query.GetTotalStake:output_type -> emissions.state.v1.QueryTotalStakeResponse
+	19, // 25: emissions.state.v1.Query.GetWorkerNodeRegistration:output_type -> emissions.state.v1.QueryRegisteredWorkerNodesResponse
+	21, // 26: emissions.state.v1.Query.GetWorkerAddressByP2PKey:output_type -> emissions.state.v1.QueryWorkerAddressByP2PKeyResponse
 	16, // [16:27] is the sub-list for method output_type
 	5,  // [5:16] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
@@ -10316,14 +10325,14 @@ var file_upshot_state_v1_query_proto_depIdxs = []int32{
 	0,  // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_upshot_state_v1_query_proto_init() }
-func file_upshot_state_v1_query_proto_init() {
-	if File_upshot_state_v1_query_proto != nil {
+func init() { file_emissions_state_v1_query_proto_init() }
+func file_emissions_state_v1_query_proto_init() {
+	if File_emissions_state_v1_query_proto != nil {
 		return
 	}
-	file_upshot_state_v1_types_proto_init()
+	file_emissions_state_v1_types_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_upshot_state_v1_query_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryParamsRequest); i {
 			case 0:
 				return &v.state
@@ -10335,7 +10344,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryParamsResponse); i {
 			case 0:
 				return &v.state
@@ -10347,7 +10356,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryLastRewardsUpdateRequest); i {
 			case 0:
 				return &v.state
@@ -10359,7 +10368,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryLastRewardsUpdateResponse); i {
 			case 0:
 				return &v.state
@@ -10371,7 +10380,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryTotalStakeRequest); i {
 			case 0:
 				return &v.state
@@ -10383,7 +10392,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryTotalStakeResponse); i {
 			case 0:
 				return &v.state
@@ -10395,7 +10404,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryAccumulatedEpochRewardsRequest); i {
 			case 0:
 				return &v.state
@@ -10407,7 +10416,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryAccumulatedEpochRewardsResponse); i {
 			case 0:
 				return &v.state
@@ -10419,7 +10428,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryNextTopicIdRequest); i {
 			case 0:
 				return &v.state
@@ -10431,7 +10440,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryNextTopicIdResponse); i {
 			case 0:
 				return &v.state
@@ -10443,7 +10452,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryTopicRequest); i {
 			case 0:
 				return &v.state
@@ -10455,7 +10464,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryTopicResponse); i {
 			case 0:
 				return &v.state
@@ -10467,7 +10476,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryWeightRequest); i {
 			case 0:
 				return &v.state
@@ -10479,7 +10488,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryWeightResponse); i {
 			case 0:
 				return &v.state
@@ -10491,7 +10500,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryInferenceRequest); i {
 			case 0:
 				return &v.state
@@ -10503,7 +10512,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryInferenceResponse); i {
 			case 0:
 				return &v.state
@@ -10515,7 +10524,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryInferencesToScoreRequest); i {
 			case 0:
 				return &v.state
@@ -10527,7 +10536,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryInferencesToScoreResponse); i {
 			case 0:
 				return &v.state
@@ -10539,7 +10548,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryRegisteredWorkerNodesRequest); i {
 			case 0:
 				return &v.state
@@ -10551,7 +10560,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryRegisteredWorkerNodesResponse); i {
 			case 0:
 				return &v.state
@@ -10563,7 +10572,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryWorkerAddressByP2PKeyRequest); i {
 			case 0:
 				return &v.state
@@ -10575,7 +10584,7 @@ func file_upshot_state_v1_query_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_query_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_query_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*QueryWorkerAddressByP2PKeyResponse); i {
 			case 0:
 				return &v.state
@@ -10592,18 +10601,18 @@ func file_upshot_state_v1_query_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_upshot_state_v1_query_proto_rawDesc,
+			RawDescriptor: file_emissions_state_v1_query_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_upshot_state_v1_query_proto_goTypes,
-		DependencyIndexes: file_upshot_state_v1_query_proto_depIdxs,
-		MessageInfos:      file_upshot_state_v1_query_proto_msgTypes,
+		GoTypes:           file_emissions_state_v1_query_proto_goTypes,
+		DependencyIndexes: file_emissions_state_v1_query_proto_depIdxs,
+		MessageInfos:      file_emissions_state_v1_query_proto_msgTypes,
 	}.Build()
-	File_upshot_state_v1_query_proto = out.File
-	file_upshot_state_v1_query_proto_rawDesc = nil
-	file_upshot_state_v1_query_proto_goTypes = nil
-	file_upshot_state_v1_query_proto_depIdxs = nil
+	File_emissions_state_v1_query_proto = out.File
+	file_emissions_state_v1_query_proto_rawDesc = nil
+	file_emissions_state_v1_query_proto_goTypes = nil
+	file_emissions_state_v1_query_proto_depIdxs = nil
 }

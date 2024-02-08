@@ -35,8 +35,8 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	upshotkeeper "github.com/upshot-tech/protocol-state-machine-module/keeper"
 	"github.com/upshot-tech/upshot-appchain/inflation"
+	emissionsKeeper "github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
@@ -45,7 +45,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
-	_ "github.com/upshot-tech/protocol-state-machine-module/module"
+	_ "github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -55,14 +55,14 @@ var DefaultNodeHome string
 var AppConfigYAML []byte
 
 var (
-	_ runtime.AppI            = (*UpshotApp)(nil)
-	_ servertypes.Application = (*UpshotApp)(nil)
+	_ runtime.AppI            = (*AlloraApp)(nil)
+	_ servertypes.Application = (*AlloraApp)(nil)
 )
 
-// UpshotApp extends an ABCI application, but with most of its parameters exported.
+// AlloraApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
-type UpshotApp struct {
+type AlloraApp struct {
 	*runtime.App
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -75,7 +75,7 @@ type UpshotApp struct {
 	StakingKeeper         *stakingkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
-	UpshotKeeper          upshotkeeper.Keeper
+	emissionsKeeper       emissionsKeeper.Keeper
 
 	// simulation manager
 	sm *module.SimulationManager
@@ -87,7 +87,7 @@ func init() {
 		panic(err)
 	}
 
-	DefaultNodeHome = filepath.Join(userHomeDir, ".uptd")
+	DefaultNodeHome = filepath.Join(userHomeDir, ".allorad")
 }
 
 // AppConfig returns the default app config.
@@ -103,17 +103,17 @@ func AppConfig() depinject.Config {
 	)
 }
 
-// NewUpshotApp returns a reference to an initialized UpshotApp.
-func NewUpshotApp(
+// NewAlloraApp returns a reference to an initialized AlloraApp.
+func NewAlloraApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) (*UpshotApp, error) {
+) (*AlloraApp, error) {
 	var (
-		app        = &UpshotApp{}
+		app        = &AlloraApp{}
 		appBuilder *runtime.AppBuilder
 	)
 
@@ -136,7 +136,7 @@ func NewUpshotApp(
 		&app.StakingKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
-		&app.UpshotKeeper,
+		&app.emissionsKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -164,13 +164,13 @@ func NewUpshotApp(
 	return app, nil
 }
 
-// LegacyAmino returns UpshotApp's amino codec.
-func (app *UpshotApp) LegacyAmino() *codec.LegacyAmino {
+// LegacyAmino returns AlloraApp's amino codec.
+func (app *AlloraApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
-func (app *UpshotApp) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *AlloraApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	sk := app.UnsafeFindStoreKey(storeKey)
 	kvStoreKey, ok := sk.(*storetypes.KVStoreKey)
 	if !ok {
@@ -179,7 +179,7 @@ func (app *UpshotApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	return kvStoreKey
 }
 
-func (app *UpshotApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
+func (app *AlloraApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 	keys := make(map[string]*storetypes.KVStoreKey)
 	for _, k := range app.GetStoreKeys() {
 		if kv, ok := k.(*storetypes.KVStoreKey); ok {
@@ -191,12 +191,12 @@ func (app *UpshotApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *UpshotApp) SimulationManager() *module.SimulationManager {
+func (app *AlloraApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // InitChainer updates at chain initialization
-func (app *UpshotApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+func (app *AlloraApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState map[string]json.RawMessage
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
@@ -205,9 +205,9 @@ func (app *UpshotApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (
 	var (
 		initialBlockRewardBTC = 50
 		blocksPerYear         = 6311520 //TODO: Check Block Time --> BTC is actually 52560 (10min)
-		totalUPT              = 21000000
+		totalALLORA           = 21000000
 		initialProvisions     = math.LegacyNewDec(int64(initialBlockRewardBTC * blocksPerYear))
-		initialInflation      = initialProvisions.QuoInt64(int64(totalUPT))
+		initialInflation      = initialProvisions.QuoInt64(int64(totalALLORA))
 	)
 
 	app.MintKeeper.Minter.Set(ctx, minttypes.Minter{
@@ -220,7 +220,7 @@ func (app *UpshotApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *UpshotApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *AlloraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	app.App.RegisterAPIRoutes(apiSvr, apiConfig)
 	// register swagger API in app.go so that other applications can override easily
 	if err := server.RegisterSwaggerAPI(apiSvr.ClientCtx, apiSvr.Router, apiConfig.Swagger); err != nil {

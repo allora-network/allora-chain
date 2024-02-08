@@ -4,7 +4,7 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 // InitGenesis initializes the module state from a genesis state.

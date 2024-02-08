@@ -101,7 +101,7 @@ func txCommand() *cobra.Command {
 // newApp is an appCreator
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
-	app, err := app.NewUpshotApp(logger, db, traceStore, true, appOpts, baseappOptions...)
+	app, err := app.NewAlloraApp(logger, db, traceStore, true, appOpts, baseappOptions...)
 	if err != nil {
 		panic(err)
 	}
@@ -121,8 +121,8 @@ func appExport(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	var (
-		uptApp *app.UpshotApp
-		err    error
+		alloraApp *app.AlloraApp
+		err       error
 	)
 
 	// this check is necessary as we use the flag in x/upgrade.
@@ -142,20 +142,20 @@ func appExport(
 	appOpts = viperAppOpts
 
 	if height != -1 {
-		uptApp, err = app.NewUpshotApp(logger, db, traceStore, false, appOpts)
+		alloraApp, err = app.NewAlloraApp(logger, db, traceStore, false, appOpts)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 
-		if err := uptApp.LoadHeight(height); err != nil {
+		if err := alloraApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		uptApp, err = app.NewUpshotApp(logger, db, traceStore, true, appOpts)
+		alloraApp, err = app.NewAlloraApp(logger, db, traceStore, true, appOpts)
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return uptApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+	return alloraApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }

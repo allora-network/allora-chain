@@ -19,7 +19,6 @@ type MockBankKeeperMockRecorder struct {
 	mock *MockBankKeeper
 }
 
-// MockUpshotKeeper is a mock of UpshotKeeper interface.
 func NewMockBankKeeper(ctrl *gomock.Controller) *MockBankKeeper {
 	mock := &MockBankKeeper{ctrl: ctrl}
 	mock.recorder = &MockBankKeeperMockRecorder{mock}

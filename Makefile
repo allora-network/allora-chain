@@ -11,8 +11,8 @@ ifeq (,$(VERSION))
 endif
 
 # Update the ldflags with the app, client & server names
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=upt \
-	-X github.com/cosmos/cosmos-sdk/version.AppName=uptd \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=allora \
+	-X github.com/cosmos/cosmos-sdk/version.AppName=allorad \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT)
 
@@ -26,15 +26,15 @@ BUILDDIR ?= $(CURDIR)/build
 all: install
 
 install:
-	@echo "--> ensure dependencies have not been modified"
-	@go mod verify
-	@go mod tidy
-	@echo "--> installing uptd"
-	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/uptd
+	# @echo "--> ensure dependencies have not been modified"
+	# @go mod verify
+	# @go mod tidy
+	# @echo "--> installing allorad"
+	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/allorad
 
 init:
 	./scripts/init.sh
 
 build:
 	mkdir -p $(BUILDDIR)/
-	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/upshot-tech/upshot-appchain/cmd/uptd
+	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/upshot-tech/upshot-appchain/cmd/allorad

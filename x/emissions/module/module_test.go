@@ -21,9 +21,10 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
-	state "github.com/upshot-tech/protocol-state-machine-module"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
-	"github.com/upshot-tech/protocol-state-machine-module/module"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 const (
@@ -44,27 +45,27 @@ var (
 type ModuleTestSuite struct {
 	suite.Suite
 
-	ctx           sdk.Context
-	accountKeeper keeper.AccountKeeper
-	bankKeeper    keeper.BankKeeper
-	upshotKeeper  keeper.Keeper
-	appModule     module.AppModule
-	msgServer     state.MsgServer
-	key           *storetypes.KVStoreKey
+	ctx             sdk.Context
+	accountKeeper   keeper.AccountKeeper
+	bankKeeper      keeper.BankKeeper
+	emissionsKeeper keeper.Keeper
+	appModule       module.AppModule
+	msgServer       state.MsgServer
+	key             *storetypes.KVStoreKey
 }
 
 func (s *ModuleTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("upshot")
+	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := address.NewBech32Codec("cosmos")
+	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
 		"fee_collector":          nil,
 		"mint":                   {"minter"},
-		"upshot":                 {"burner", "minter", "staking"},
+		"emissions":              {"burner", "minter", "staking"},
 		"bonded_tokens_pool":     {"burner", "staking"},
 		"not_bonded_tokens_pool": {"burner", "staking"},
 		multiPerm:                {"burner", "minter", "staking"},
@@ -76,8 +77,8 @@ func (s *ModuleTestSuite) SetupTest() {
 		storeService,
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		authcodec.NewBech32Codec("cosmos"),
-		"cosmos",
+		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
+		params.Bech32PrefixAccAddr,
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
@@ -93,12 +94,12 @@ func (s *ModuleTestSuite) SetupTest() {
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
-	s.upshotKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, accountKeeper, bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, accountKeeper, bankKeeper)
 	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.upshotKeeper)
+	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = keeper.NewMsgServerImpl(s.upshotKeeper)
+	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.appModule = appModule
 }
 
@@ -122,7 +123,7 @@ func (s *ModuleTestSuite) TestRegisterReputer() {
 	}
 	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
 
-	isReputerRegistered, err := s.upshotKeeper.IsReputerRegistered(s.ctx, addr)
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegistered(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().True(isReputerRegistered, "Expect reputer to be registered")
 
@@ -145,7 +146,7 @@ func (s *ModuleTestSuite) TestRegisterWorker() {
 	}
 	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
 
-	isWorkerRegistered, err := s.upshotKeeper.IsWorkerRegistered(s.ctx, addr)
+	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegistered(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().True(isWorkerRegistered, "Expect reputer to be registered")
 	registerCommonAfter(s, topicId, addr, amount)
@@ -176,33 +177,33 @@ func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMat
 
 func registerCommonAfter(s *ModuleTestSuite, topicId uint64, addr sdk.AccAddress, amount cosmosMath.Uint) {
 
-	stakeAmountAfter, err := s.upshotKeeper.GetDelegatorStake(s.ctx, addr)
+	stakeAmountAfter, err := s.emissionsKeeper.GetDelegatorStake(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().Equal(
 		stakeAmountAfter,
 		amount,
 		"Expect stake amount to be equal to the initial stake amount after registration")
-	bondAmountAfter, err := s.upshotKeeper.GetBond(s.ctx, addr, addr)
+	bondAmountAfter, err := s.emissionsKeeper.GetBond(s.ctx, addr, addr)
 	s.Require().NoError(err)
 	s.Require().Equal(
 		bondAmountAfter,
 		amount,
 		"Expect bond amount to be equal to the initial stake amount after registration")
-	targetStakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, addr)
+	targetStakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().Equal(
 		targetStakeAfter,
 		amount,
 		"Expect target stake amount to be equal to the initial stake amount after registration")
 
-	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(
 		topicStake,
 		amount,
 		"Expect topic stake amount to be equal to the initial stake amount after registration")
 
-	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(
 		totalStake,

@@ -1,7 +1,7 @@
 syntax = "proto3";
-package upshot.state.v1;
+package emissions.state.v1;
 
-option go_package = "github.com/upshot-tech/protocol-state-machine-module";
+option go_package = "github.com/upshot-tech/upshot-appchain/x/emissions";
 
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";

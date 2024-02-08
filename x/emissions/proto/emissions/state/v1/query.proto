@@ -1,10 +1,10 @@
 syntax = "proto3";
-package upshot.state.v1;
+package emissions.state.v1;
 
-option go_package = "github.com/upshot-tech/protocol-state-machine-module";
+option go_package = "github.com/upshot-tech/upshot-appchain/x/emissions";
 
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "upshot/state/v1/types.proto";
+import "emissions/state/v1/types.proto";
 import "google/api/annotations.proto";
 import "cosmos/query/v1/query.proto";
 import "amino/amino.proto";
@@ -15,67 +15,67 @@ import "cosmos_proto/cosmos.proto";
 service Query {
   // Params returns the module parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/upshot/state/v1/params";
+    option (google.api.http).get = "/emissions/state/v1/params";
   }
 
   rpc GetLastRewardsUpdate(QueryLastRewardsUpdateRequest) returns (QueryLastRewardsUpdateResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/last_rewards_update";
+      "/emissions/state/v1/last_rewards_update";
   }
 
   rpc GetAccumulatedEpochRewards(QueryAccumulatedEpochRewardsRequest) returns (QueryAccumulatedEpochRewardsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/accumulated_epoch_rewards";
+      "/emissions/state/v1/accumulated_epoch_rewards";
   }
 
   rpc GetNextTopicId(QueryNextTopicIdRequest) returns (QueryNextTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/next_topic_id";
+      "/emissions/state/v1/next_topic_id";
   }
 
   rpc GetTopic(QueryTopicRequest) returns (QueryTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/topic/{topic_id}";
+      "/emissions/state/v1/topic/{topic_id}";
   }
 
   rpc GetWeight(QueryWeightRequest) returns (QueryWeightResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/weights/{topic_id}/{reputer}/{worker}";
+      "/emissions/state/v1/weights/{topic_id}/{reputer}/{worker}";
   }
 
   rpc GetAllInferences(QueryInferenceRequest) returns (QueryInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/inferences/{topic_id}/{timestamp}";
+      "/emissions/state/v1/inferences/{topic_id}/{timestamp}";
   }
 
   rpc GetInferencesToScore(QueryInferencesToScoreRequest) returns (QueryInferencesToScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/inferences/{topic_id}";
+      "/emissions/state/v1/inferences/{topic_id}";
   }
 
   rpc GetTotalStake(QueryTotalStakeRequest) returns (QueryTotalStakeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-      "/upshot/state/v1/total_stake";
+      "/emissions/state/v1/total_stake";
   }
 
   rpc GetWorkerNodeRegistration(QueryRegisteredWorkerNodesRequest) returns (QueryRegisteredWorkerNodesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-    "/upshot/state/v1/worker_nodes/{node_id}";
+    "/emissions/state/v1/worker_nodes/{node_id}";
   }
 
   rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-    "/upshot/state/v1/worker_nodes/{libp2p_key}";
+    "/emissions/state/v1/worker_nodes/{libp2p_key}";
   }
 }
 

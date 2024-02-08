@@ -29,7 +29,7 @@ import (
 	"github.com/upshot-tech/upshot-appchain/app"
 )
 
-// NewRootCmd creates a new root command for uptd. It is called once in the
+// NewRootCmd creates a new root command for allorad. It is called once in the
 // main function.
 func NewRootCmd() *cobra.Command {
 	var (
@@ -58,8 +58,8 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:   "uptd",
-		Short: "uptd - the upshot app chain",
+		Use:   "allorad",
+		Short: "allorad - the upshot app chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -99,7 +99,7 @@ func NewRootCmd() *cobra.Command {
 
 			// overwrite the minimum gas price from the app configuration
 			srvCfg := serverconfig.DefaultConfig()
-			srvCfg.MinGasPrices = "0upt"
+			srvCfg.MinGasPrices = "0allora"
 
 			// overwrite the block timeout
 			cmtCfg := cmtcfg.DefaultConfig()
@@ -133,7 +133,7 @@ func ProvideClientContext(
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(app.DefaultNodeHome).
-		WithViper("UPT") // env variable prefix
+		WithViper("ALLORA") // env variable prefix
 
 	// Read the config again to overwrite the default values with the values from the config file
 	clientCtx, _ = config.ReadFromClientConfig(clientCtx)

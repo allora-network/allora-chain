@@ -10,7 +10,8 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 var (
@@ -87,7 +88,7 @@ func (s *KeeperTestSuite) TestMsgSetLatestTimestampsInference() {
 	_, err := msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
 	require.NoError(err, "SetLatestTimestampInferences should not return an error")
 
-	result, err := s.upshotKeeper.GetLatestInferenceTimestamp(s.ctx, topicId)
+	result, err := s.emissionsKeeper.GetLatestInferenceTimestamp(s.ctx, topicId)
 	fmt.Printf("The timestamp value is %d.\n", result)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
@@ -122,7 +123,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	}
 	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
 
-	allInferences, err := s.upshotKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
+	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
 	require.Equal(len(allInferences), 1)
 	for _, inference := range allInferences {
 		require.Equal(len(inference.Inferences.Inferences), 2)
@@ -139,7 +140,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	}
 	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
 
-	allInferences, err = s.upshotKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
+	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
 	require.Equal(len(allInferences), 0)
 	require.NoError(err, "Inferences under ts threshold should not be returned")
 
@@ -163,7 +164,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
-	result, err := s.upshotKeeper.GetNumTopics(s.ctx)
+	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
@@ -172,7 +173,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on second topic")
 
-	result, err = s.upshotKeeper.GetNumTopics(s.ctx)
+	result, err = s.emissionsKeeper.GetNumTopics(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, uint64(2), "Topic count after second topic insertion is not 2")
@@ -185,7 +186,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.AccAddress, workerAddr sdk.AccAddress, registrationInitialStake cosmosMath.Uint) {
 	msgServer := s.msgServer
 	require := s.Require()
-	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
+	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
 
 	// Create Topic
 	newTopicMsg := &state.MsgCreateNewTopic{
@@ -232,7 +233,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(1000)
-	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 
 	// Common setup for staking
 	registrationInitialStake := cosmosMath.NewUint(100)
@@ -249,7 +250,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.NoError(err, "AddStake should not return an error")
 
 	// Check updated stake for delegator
-	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 	// Registration Stake: 100
 	// Stake placed upon target: 1000
@@ -257,7 +258,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount.Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch")
 
 	// Check updated stake for target
-	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	targetStake, err := s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
 	require.NoError(err)
 	// Registration Stake: 100
 	// Stake placed upon target: 1000
@@ -265,7 +266,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount.Add(registrationInitialStake), targetStake, "Target stake amount mismatch")
 
 	// Check updated total stake
-	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
 	require.NoError(err)
 	// Registration Stake: 200 (100 for reputer, 100 for worker)
 	// Stake placed upon target: 1000
@@ -273,7 +274,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStake, "Total stake amount mismatch")
 
 	// Check updated total stake for topic
-	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	totalStakeForTopic, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
 	require.NoError(err)
 	// Registration Stake: 200 (100 for reputer, 100 for worker)
 	// Stake placed upon target: 1000
@@ -281,7 +282,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic, "Total stake amount for topic mismatch")
 
 	// Check bond
-	bond, err := s.upshotKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	bond, err := s.emissionsKeeper.GetBond(ctx, reputerAddr, workerAddr)
 	require.NoError(err)
 	// Stake placed upon target: 1000
 	require.Equal(stakeAmount, bond, "Bond amount mismatch")
@@ -299,7 +300,7 @@ func (s *KeeperTestSuite) TestAddStakeInvalid() {
 
 	// Scenario 1: Edge Case - Stake Amount Zero
 	stakeAmountZero := cosmosMath.NewUint(0)
-	stakeAmountZeroCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmountZero.BigInt())))
+	stakeAmountZeroCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmountZero.BigInt())))
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountZeroCoins)
 	_, err := msgServer.AddStake(ctx, &state.MsgAddStake{
 		Sender:      reputerAddr.String(),
@@ -336,9 +337,9 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(1000)
-	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 	removalAmount := cosmosMath.NewUint(500)
-	removalAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(removalAmount.BigInt())))
+	removalAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(removalAmount.BigInt())))
 
 	// Common setup for staking
 	registrationInitialStake := cosmosMath.NewUint(100)
@@ -365,7 +366,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.NoError(err, "RemoveStake should not return an error")
 
 	// Check updated stake for delegator after removal
-	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 	// Initial Stake: 100
 	// Stake added: 1000
@@ -374,7 +375,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch after removal")
 
 	// Check updated stake for target after removal
-	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	targetStake, err := s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
 	require.NoError(err)
 	// Initial Stake: 100
 	// Stake added: 1000
@@ -383,7 +384,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake), targetStake, "Target stake amount mismatch after removal")
 
 	// Check updated total stake after removal
-	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
 	require.NoError(err)
 	// Initial Stake: 200 (100 for reputer, 100 for worker)
 	// Stake added: 1000
@@ -392,7 +393,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStake, "Total stake amount mismatch after removal")
 
 	// Check updated total stake for topic after removal
-	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	totalStakeForTopic, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
 	require.NoError(err)
 	// Initial Stake: 200 (100 for reputer, 100 for worker)
 	// Stake added: 1000
@@ -401,7 +402,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.Equal(stakeAmount.Sub(removalAmount).Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic, "Total stake amount for topic mismatch after removal")
 
 	// Check bond after removal
-	bond, err := s.upshotKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	bond, err := s.emissionsKeeper.GetBond(ctx, reputerAddr, workerAddr)
 	require.NoError(err)
 	// Stake placed upon target: 1000
 	// Stake removed: 500
@@ -469,10 +470,10 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(1000)
-	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 	registrationInitialStake := cosmosMath.NewUint(100)
 	senderTotalStake := stakeAmount.Add(registrationInitialStake) // Total stake including registration stake
-	senderTotalStakeCoins := sdk.NewCoins(sdk.NewCoin("upt", cosmosMath.NewIntFromBigInt(senderTotalStake.BigInt())))
+	senderTotalStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(senderTotalStake.BigInt())))
 
 	// Common setup for staking
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -496,22 +497,22 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	require.NoError(err, "RemoveAllStake should not return an error")
 
 	// Check that the sender's total stake is zero after removal
-	delegatorStake, err := s.upshotKeeper.GetDelegatorStake(ctx, reputerAddr)
+	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroUint(), delegatorStake, "delegator has zero stake after withdrawal")
 
 	// Check that the target's stake is reduced by the stake amount
-	targetStake, err := s.upshotKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	targetStake, err := s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
 	require.NoError(err)
 	require.Equal(registrationInitialStake, targetStake, "Target's stake should be equal to the registration stake after removing all stake")
 
 	// Check updated total stake after removal
-	totalStake, err := s.upshotKeeper.GetTotalStake(ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
 	require.NoError(err)
 	require.Equal(registrationInitialStake, totalStake, "Total stake should be equal to the registration stakes after removing all stake")
 
 	// Check updated total stake for topic after removal
-	totalStakeForTopic, err := s.upshotKeeper.GetTopicStake(ctx, uint64(0))
+	totalStakeForTopic, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
 	require.NoError(err)
 	require.Equal(registrationInitialStake, totalStakeForTopic, "Total stake for the topic should be equal to the registration stakes after removing all stake")
 }

@@ -21,8 +21,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Params = File_upshot_state_v1_types_proto.Messages().ByName("Params")
+	file_emissions_state_v1_types_proto_init()
+	md_Params = File_emissions_state_v1_types_proto.Messages().ByName("Params")
 	fd_Params_version = md_Params.Fields().ByName("version")
 }
 
@@ -35,7 +35,7 @@ func (x *Params) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Params) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[0]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,13 +112,13 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Params.version":
+	case "emissions.state.v1.Params.version":
 		return x.Version != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -130,13 +130,13 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Params.version":
+	case "emissions.state.v1.Params.version":
 		x.Version = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -148,14 +148,14 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Params.version":
+	case "emissions.state.v1.Params.version":
 		value := x.Version
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -171,13 +171,13 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Params.version":
+	case "emissions.state.v1.Params.version":
 		x.Version = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -193,13 +193,13 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Params.version":
-		panic(fmt.Errorf("field version of message upshot.state.v1.Params is not mutable"))
+	case "emissions.state.v1.Params.version":
+		panic(fmt.Errorf("field version of message emissions.state.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -208,13 +208,13 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Params.version":
+	case "emissions.state.v1.Params.version":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Params"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Params does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Params does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -224,7 +224,7 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 func (x *fastReflection_Params) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Params", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Params", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -441,8 +441,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_GenesisState = File_upshot_state_v1_types_proto.Messages().ByName("GenesisState")
+	file_emissions_state_v1_types_proto_init()
+	md_GenesisState = File_emissions_state_v1_types_proto.Messages().ByName("GenesisState")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
 }
 
@@ -455,7 +455,7 @@ func (x *GenesisState) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GenesisState) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[1]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -532,13 +532,13 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		return x.Params != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -550,13 +550,13 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		x.Params = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -568,14 +568,14 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		value := x.Params
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -591,13 +591,13 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		x.Params = value.Message().Interface().(*Params)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -613,16 +613,16 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		if x.Params == nil {
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -631,14 +631,14 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.GenesisState.params":
+	case "emissions.state.v1.GenesisState.params":
 		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.GenesisState"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.GenesisState"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.GenesisState does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.GenesisState does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -648,7 +648,7 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 func (x *fastReflection_GenesisState) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.GenesisState", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.GenesisState", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -886,8 +886,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Topic = File_upshot_state_v1_types_proto.Messages().ByName("Topic")
+	file_emissions_state_v1_types_proto_init()
+	md_Topic = File_emissions_state_v1_types_proto.Messages().ByName("Topic")
 	fd_Topic_id = md_Topic.Fields().ByName("id")
 	fd_Topic_metadata = md_Topic.Fields().ByName("metadata")
 	fd_Topic_weight_logic = md_Topic.Fields().ByName("weight_logic")
@@ -910,7 +910,7 @@ func (x *Topic) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Topic) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[2]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1047,33 +1047,33 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Topic.id":
+	case "emissions.state.v1.Topic.id":
 		return x.Id != uint64(0)
-	case "upshot.state.v1.Topic.metadata":
+	case "emissions.state.v1.Topic.metadata":
 		return x.Metadata != ""
-	case "upshot.state.v1.Topic.weight_logic":
+	case "emissions.state.v1.Topic.weight_logic":
 		return x.WeightLogic != ""
-	case "upshot.state.v1.Topic.weight_method":
+	case "emissions.state.v1.Topic.weight_method":
 		return x.WeightMethod != ""
-	case "upshot.state.v1.Topic.weight_cadence":
+	case "emissions.state.v1.Topic.weight_cadence":
 		return x.WeightCadence != uint64(0)
-	case "upshot.state.v1.Topic.weight_last_ran":
+	case "emissions.state.v1.Topic.weight_last_ran":
 		return x.WeightLastRan != uint64(0)
-	case "upshot.state.v1.Topic.inference_logic":
+	case "emissions.state.v1.Topic.inference_logic":
 		return x.InferenceLogic != ""
-	case "upshot.state.v1.Topic.inference_method":
+	case "emissions.state.v1.Topic.inference_method":
 		return x.InferenceMethod != ""
-	case "upshot.state.v1.Topic.inference_cadence":
+	case "emissions.state.v1.Topic.inference_cadence":
 		return x.InferenceCadence != uint64(0)
-	case "upshot.state.v1.Topic.inference_last_ran":
+	case "emissions.state.v1.Topic.inference_last_ran":
 		return x.InferenceLastRan != uint64(0)
-	case "upshot.state.v1.Topic.active":
+	case "emissions.state.v1.Topic.active":
 		return x.Active != false
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1085,33 +1085,33 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Topic.id":
+	case "emissions.state.v1.Topic.id":
 		x.Id = uint64(0)
-	case "upshot.state.v1.Topic.metadata":
+	case "emissions.state.v1.Topic.metadata":
 		x.Metadata = ""
-	case "upshot.state.v1.Topic.weight_logic":
+	case "emissions.state.v1.Topic.weight_logic":
 		x.WeightLogic = ""
-	case "upshot.state.v1.Topic.weight_method":
+	case "emissions.state.v1.Topic.weight_method":
 		x.WeightMethod = ""
-	case "upshot.state.v1.Topic.weight_cadence":
+	case "emissions.state.v1.Topic.weight_cadence":
 		x.WeightCadence = uint64(0)
-	case "upshot.state.v1.Topic.weight_last_ran":
+	case "emissions.state.v1.Topic.weight_last_ran":
 		x.WeightLastRan = uint64(0)
-	case "upshot.state.v1.Topic.inference_logic":
+	case "emissions.state.v1.Topic.inference_logic":
 		x.InferenceLogic = ""
-	case "upshot.state.v1.Topic.inference_method":
+	case "emissions.state.v1.Topic.inference_method":
 		x.InferenceMethod = ""
-	case "upshot.state.v1.Topic.inference_cadence":
+	case "emissions.state.v1.Topic.inference_cadence":
 		x.InferenceCadence = uint64(0)
-	case "upshot.state.v1.Topic.inference_last_ran":
+	case "emissions.state.v1.Topic.inference_last_ran":
 		x.InferenceLastRan = uint64(0)
-	case "upshot.state.v1.Topic.active":
+	case "emissions.state.v1.Topic.active":
 		x.Active = false
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1123,44 +1123,44 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Topic.id":
+	case "emissions.state.v1.Topic.id":
 		value := x.Id
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Topic.metadata":
+	case "emissions.state.v1.Topic.metadata":
 		value := x.Metadata
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Topic.weight_logic":
+	case "emissions.state.v1.Topic.weight_logic":
 		value := x.WeightLogic
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Topic.weight_method":
+	case "emissions.state.v1.Topic.weight_method":
 		value := x.WeightMethod
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Topic.weight_cadence":
+	case "emissions.state.v1.Topic.weight_cadence":
 		value := x.WeightCadence
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Topic.weight_last_ran":
+	case "emissions.state.v1.Topic.weight_last_ran":
 		value := x.WeightLastRan
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Topic.inference_logic":
+	case "emissions.state.v1.Topic.inference_logic":
 		value := x.InferenceLogic
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Topic.inference_method":
+	case "emissions.state.v1.Topic.inference_method":
 		value := x.InferenceMethod
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Topic.inference_cadence":
+	case "emissions.state.v1.Topic.inference_cadence":
 		value := x.InferenceCadence
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Topic.inference_last_ran":
+	case "emissions.state.v1.Topic.inference_last_ran":
 		value := x.InferenceLastRan
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Topic.active":
+	case "emissions.state.v1.Topic.active":
 		value := x.Active
 		return protoreflect.ValueOfBool(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1176,33 +1176,33 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Topic.id":
+	case "emissions.state.v1.Topic.id":
 		x.Id = value.Uint()
-	case "upshot.state.v1.Topic.metadata":
+	case "emissions.state.v1.Topic.metadata":
 		x.Metadata = value.Interface().(string)
-	case "upshot.state.v1.Topic.weight_logic":
+	case "emissions.state.v1.Topic.weight_logic":
 		x.WeightLogic = value.Interface().(string)
-	case "upshot.state.v1.Topic.weight_method":
+	case "emissions.state.v1.Topic.weight_method":
 		x.WeightMethod = value.Interface().(string)
-	case "upshot.state.v1.Topic.weight_cadence":
+	case "emissions.state.v1.Topic.weight_cadence":
 		x.WeightCadence = value.Uint()
-	case "upshot.state.v1.Topic.weight_last_ran":
+	case "emissions.state.v1.Topic.weight_last_ran":
 		x.WeightLastRan = value.Uint()
-	case "upshot.state.v1.Topic.inference_logic":
+	case "emissions.state.v1.Topic.inference_logic":
 		x.InferenceLogic = value.Interface().(string)
-	case "upshot.state.v1.Topic.inference_method":
+	case "emissions.state.v1.Topic.inference_method":
 		x.InferenceMethod = value.Interface().(string)
-	case "upshot.state.v1.Topic.inference_cadence":
+	case "emissions.state.v1.Topic.inference_cadence":
 		x.InferenceCadence = value.Uint()
-	case "upshot.state.v1.Topic.inference_last_ran":
+	case "emissions.state.v1.Topic.inference_last_ran":
 		x.InferenceLastRan = value.Uint()
-	case "upshot.state.v1.Topic.active":
+	case "emissions.state.v1.Topic.active":
 		x.Active = value.Bool()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1218,33 +1218,33 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Topic.id":
-		panic(fmt.Errorf("field id of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.metadata":
-		panic(fmt.Errorf("field metadata of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.weight_logic":
-		panic(fmt.Errorf("field weight_logic of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.weight_method":
-		panic(fmt.Errorf("field weight_method of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.weight_cadence":
-		panic(fmt.Errorf("field weight_cadence of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.weight_last_ran":
-		panic(fmt.Errorf("field weight_last_ran of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.inference_logic":
-		panic(fmt.Errorf("field inference_logic of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.inference_method":
-		panic(fmt.Errorf("field inference_method of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.inference_cadence":
-		panic(fmt.Errorf("field inference_cadence of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.inference_last_ran":
-		panic(fmt.Errorf("field inference_last_ran of message upshot.state.v1.Topic is not mutable"))
-	case "upshot.state.v1.Topic.active":
-		panic(fmt.Errorf("field active of message upshot.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.id":
+		panic(fmt.Errorf("field id of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.metadata":
+		panic(fmt.Errorf("field metadata of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.weight_logic":
+		panic(fmt.Errorf("field weight_logic of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.weight_method":
+		panic(fmt.Errorf("field weight_method of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.weight_cadence":
+		panic(fmt.Errorf("field weight_cadence of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.weight_last_ran":
+		panic(fmt.Errorf("field weight_last_ran of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.inference_logic":
+		panic(fmt.Errorf("field inference_logic of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.inference_method":
+		panic(fmt.Errorf("field inference_method of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.inference_cadence":
+		panic(fmt.Errorf("field inference_cadence of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.inference_last_ran":
+		panic(fmt.Errorf("field inference_last_ran of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.active":
+		panic(fmt.Errorf("field active of message emissions.state.v1.Topic is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1253,33 +1253,33 @@ func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoref
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Topic.id":
+	case "emissions.state.v1.Topic.id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Topic.metadata":
+	case "emissions.state.v1.Topic.metadata":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Topic.weight_logic":
+	case "emissions.state.v1.Topic.weight_logic":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Topic.weight_method":
+	case "emissions.state.v1.Topic.weight_method":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Topic.weight_cadence":
+	case "emissions.state.v1.Topic.weight_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Topic.weight_last_ran":
+	case "emissions.state.v1.Topic.weight_last_ran":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Topic.inference_logic":
+	case "emissions.state.v1.Topic.inference_logic":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Topic.inference_method":
+	case "emissions.state.v1.Topic.inference_method":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Topic.inference_cadence":
+	case "emissions.state.v1.Topic.inference_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Topic.inference_last_ran":
+	case "emissions.state.v1.Topic.inference_last_ran":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Topic.active":
+	case "emissions.state.v1.Topic.active":
 		return protoreflect.ValueOfBool(false)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Topic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Topic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Topic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1289,7 +1289,7 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 func (x *fastReflection_Topic) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Topic", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Topic", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1849,8 +1849,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Weight = File_upshot_state_v1_types_proto.Messages().ByName("Weight")
+	file_emissions_state_v1_types_proto_init()
+	md_Weight = File_emissions_state_v1_types_proto.Messages().ByName("Weight")
 	fd_Weight_topic_id = md_Weight.Fields().ByName("topic_id")
 	fd_Weight_reputer = md_Weight.Fields().ByName("reputer")
 	fd_Weight_worker = md_Weight.Fields().ByName("worker")
@@ -1866,7 +1866,7 @@ func (x *Weight) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Weight) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[3]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1961,19 +1961,19 @@ func (x *fastReflection_Weight) Range(f func(protoreflect.FieldDescriptor, proto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Weight) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
+	case "emissions.state.v1.Weight.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.Weight.reputer":
+	case "emissions.state.v1.Weight.reputer":
 		return x.Reputer != ""
-	case "upshot.state.v1.Weight.worker":
+	case "emissions.state.v1.Weight.worker":
 		return x.Worker != ""
-	case "upshot.state.v1.Weight.weight":
+	case "emissions.state.v1.Weight.weight":
 		return x.Weight != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1985,19 +1985,19 @@ func (x *fastReflection_Weight) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weight) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
+	case "emissions.state.v1.Weight.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.Weight.reputer":
+	case "emissions.state.v1.Weight.reputer":
 		x.Reputer = ""
-	case "upshot.state.v1.Weight.worker":
+	case "emissions.state.v1.Weight.worker":
 		x.Worker = ""
-	case "upshot.state.v1.Weight.weight":
+	case "emissions.state.v1.Weight.weight":
 		x.Weight = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2009,23 +2009,23 @@ func (x *fastReflection_Weight) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Weight) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
+	case "emissions.state.v1.Weight.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Weight.reputer":
+	case "emissions.state.v1.Weight.reputer":
 		value := x.Reputer
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Weight.worker":
+	case "emissions.state.v1.Weight.worker":
 		value := x.Worker
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Weight.weight":
+	case "emissions.state.v1.Weight.weight":
 		value := x.Weight
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2041,19 +2041,19 @@ func (x *fastReflection_Weight) Get(descriptor protoreflect.FieldDescriptor) pro
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weight) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
+	case "emissions.state.v1.Weight.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.Weight.reputer":
+	case "emissions.state.v1.Weight.reputer":
 		x.Reputer = value.Interface().(string)
-	case "upshot.state.v1.Weight.worker":
+	case "emissions.state.v1.Weight.worker":
 		x.Worker = value.Interface().(string)
-	case "upshot.state.v1.Weight.weight":
+	case "emissions.state.v1.Weight.weight":
 		x.Weight = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2069,19 +2069,19 @@ func (x *fastReflection_Weight) Set(fd protoreflect.FieldDescriptor, value proto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weight) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.Weight is not mutable"))
-	case "upshot.state.v1.Weight.reputer":
-		panic(fmt.Errorf("field reputer of message upshot.state.v1.Weight is not mutable"))
-	case "upshot.state.v1.Weight.worker":
-		panic(fmt.Errorf("field worker of message upshot.state.v1.Weight is not mutable"))
-	case "upshot.state.v1.Weight.weight":
-		panic(fmt.Errorf("field weight of message upshot.state.v1.Weight is not mutable"))
+	case "emissions.state.v1.Weight.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.Weight is not mutable"))
+	case "emissions.state.v1.Weight.reputer":
+		panic(fmt.Errorf("field reputer of message emissions.state.v1.Weight is not mutable"))
+	case "emissions.state.v1.Weight.worker":
+		panic(fmt.Errorf("field worker of message emissions.state.v1.Weight is not mutable"))
+	case "emissions.state.v1.Weight.weight":
+		panic(fmt.Errorf("field weight of message emissions.state.v1.Weight is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2090,19 +2090,19 @@ func (x *fastReflection_Weight) Mutable(fd protoreflect.FieldDescriptor) protore
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Weight) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weight.topic_id":
+	case "emissions.state.v1.Weight.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Weight.reputer":
+	case "emissions.state.v1.Weight.reputer":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Weight.worker":
+	case "emissions.state.v1.Weight.worker":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Weight.weight":
+	case "emissions.state.v1.Weight.weight":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weight"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weight"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weight does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weight does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2112,7 +2112,7 @@ func (x *fastReflection_Weight) NewField(fd protoreflect.FieldDescriptor) protor
 func (x *fastReflection_Weight) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Weight", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Weight", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2493,8 +2493,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Weights = File_upshot_state_v1_types_proto.Messages().ByName("Weights")
+	file_emissions_state_v1_types_proto_init()
+	md_Weights = File_emissions_state_v1_types_proto.Messages().ByName("Weights")
 	fd_Weights_weights = md_Weights.Fields().ByName("weights")
 }
 
@@ -2507,7 +2507,7 @@ func (x *Weights) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Weights) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[4]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2584,13 +2584,13 @@ func (x *fastReflection_Weights) Range(f func(protoreflect.FieldDescriptor, prot
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Weights) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		return len(x.Weights) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2602,13 +2602,13 @@ func (x *fastReflection_Weights) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weights) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		x.Weights = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2620,7 +2620,7 @@ func (x *fastReflection_Weights) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Weights) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		if len(x.Weights) == 0 {
 			return protoreflect.ValueOfList(&_Weights_1_list{})
 		}
@@ -2628,9 +2628,9 @@ func (x *fastReflection_Weights) Get(descriptor protoreflect.FieldDescriptor) pr
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2646,15 +2646,15 @@ func (x *fastReflection_Weights) Get(descriptor protoreflect.FieldDescriptor) pr
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weights) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		lv := value.List()
 		clv := lv.(*_Weights_1_list)
 		x.Weights = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2670,7 +2670,7 @@ func (x *fastReflection_Weights) Set(fd protoreflect.FieldDescriptor, value prot
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Weights) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		if x.Weights == nil {
 			x.Weights = []*Weight{}
 		}
@@ -2678,9 +2678,9 @@ func (x *fastReflection_Weights) Mutable(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2689,14 +2689,14 @@ func (x *fastReflection_Weights) Mutable(fd protoreflect.FieldDescriptor) protor
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Weights) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Weights.weights":
+	case "emissions.state.v1.Weights.weights":
 		list := []*Weight{}
 		return protoreflect.ValueOfList(&_Weights_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Weights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Weights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Weights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Weights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2706,7 +2706,7 @@ func (x *fastReflection_Weights) NewField(fd protoreflect.FieldDescriptor) proto
 func (x *fastReflection_Weights) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Weights", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Weights", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2939,8 +2939,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Inference = File_upshot_state_v1_types_proto.Messages().ByName("Inference")
+	file_emissions_state_v1_types_proto_init()
+	md_Inference = File_emissions_state_v1_types_proto.Messages().ByName("Inference")
 	fd_Inference_topic_id = md_Inference.Fields().ByName("topic_id")
 	fd_Inference_worker = md_Inference.Fields().ByName("worker")
 	fd_Inference_value = md_Inference.Fields().ByName("value")
@@ -2956,7 +2956,7 @@ func (x *Inference) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Inference) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[5]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3051,19 +3051,19 @@ func (x *fastReflection_Inference) Range(f func(protoreflect.FieldDescriptor, pr
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Inference) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
+	case "emissions.state.v1.Inference.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.Inference.worker":
+	case "emissions.state.v1.Inference.worker":
 		return x.Worker != ""
-	case "upshot.state.v1.Inference.value":
+	case "emissions.state.v1.Inference.value":
 		return x.Value != ""
-	case "upshot.state.v1.Inference.extra_data":
+	case "emissions.state.v1.Inference.extra_data":
 		return len(x.ExtraData) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3075,19 +3075,19 @@ func (x *fastReflection_Inference) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inference) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
+	case "emissions.state.v1.Inference.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.Inference.worker":
+	case "emissions.state.v1.Inference.worker":
 		x.Worker = ""
-	case "upshot.state.v1.Inference.value":
+	case "emissions.state.v1.Inference.value":
 		x.Value = ""
-	case "upshot.state.v1.Inference.extra_data":
+	case "emissions.state.v1.Inference.extra_data":
 		x.ExtraData = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3099,23 +3099,23 @@ func (x *fastReflection_Inference) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Inference) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
+	case "emissions.state.v1.Inference.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.Inference.worker":
+	case "emissions.state.v1.Inference.worker":
 		value := x.Worker
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Inference.value":
+	case "emissions.state.v1.Inference.value":
 		value := x.Value
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.Inference.extra_data":
+	case "emissions.state.v1.Inference.extra_data":
 		value := x.ExtraData
 		return protoreflect.ValueOfBytes(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3131,19 +3131,19 @@ func (x *fastReflection_Inference) Get(descriptor protoreflect.FieldDescriptor) 
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inference) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
+	case "emissions.state.v1.Inference.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.Inference.worker":
+	case "emissions.state.v1.Inference.worker":
 		x.Worker = value.Interface().(string)
-	case "upshot.state.v1.Inference.value":
+	case "emissions.state.v1.Inference.value":
 		x.Value = value.Interface().(string)
-	case "upshot.state.v1.Inference.extra_data":
+	case "emissions.state.v1.Inference.extra_data":
 		x.ExtraData = value.Bytes()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3159,19 +3159,19 @@ func (x *fastReflection_Inference) Set(fd protoreflect.FieldDescriptor, value pr
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inference) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.Inference is not mutable"))
-	case "upshot.state.v1.Inference.worker":
-		panic(fmt.Errorf("field worker of message upshot.state.v1.Inference is not mutable"))
-	case "upshot.state.v1.Inference.value":
-		panic(fmt.Errorf("field value of message upshot.state.v1.Inference is not mutable"))
-	case "upshot.state.v1.Inference.extra_data":
-		panic(fmt.Errorf("field extra_data of message upshot.state.v1.Inference is not mutable"))
+	case "emissions.state.v1.Inference.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.Inference is not mutable"))
+	case "emissions.state.v1.Inference.worker":
+		panic(fmt.Errorf("field worker of message emissions.state.v1.Inference is not mutable"))
+	case "emissions.state.v1.Inference.value":
+		panic(fmt.Errorf("field value of message emissions.state.v1.Inference is not mutable"))
+	case "emissions.state.v1.Inference.extra_data":
+		panic(fmt.Errorf("field extra_data of message emissions.state.v1.Inference is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3180,19 +3180,19 @@ func (x *fastReflection_Inference) Mutable(fd protoreflect.FieldDescriptor) prot
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Inference) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inference.topic_id":
+	case "emissions.state.v1.Inference.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.Inference.worker":
+	case "emissions.state.v1.Inference.worker":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Inference.value":
+	case "emissions.state.v1.Inference.value":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.Inference.extra_data":
+	case "emissions.state.v1.Inference.extra_data":
 		return protoreflect.ValueOfBytes(nil)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inference"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inference"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inference does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inference does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3202,7 +3202,7 @@ func (x *fastReflection_Inference) NewField(fd protoreflect.FieldDescriptor) pro
 func (x *fastReflection_Inference) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Inference", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Inference", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3585,8 +3585,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_Inferences = File_upshot_state_v1_types_proto.Messages().ByName("Inferences")
+	file_emissions_state_v1_types_proto_init()
+	md_Inferences = File_emissions_state_v1_types_proto.Messages().ByName("Inferences")
 	fd_Inferences_inferences = md_Inferences.Fields().ByName("inferences")
 }
 
@@ -3599,7 +3599,7 @@ func (x *Inferences) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Inferences) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[6]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3676,13 +3676,13 @@ func (x *fastReflection_Inferences) Range(f func(protoreflect.FieldDescriptor, p
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Inferences) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		return len(x.Inferences) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3694,13 +3694,13 @@ func (x *fastReflection_Inferences) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inferences) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3712,7 +3712,7 @@ func (x *fastReflection_Inferences) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Inferences) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		if len(x.Inferences) == 0 {
 			return protoreflect.ValueOfList(&_Inferences_1_list{})
 		}
@@ -3720,9 +3720,9 @@ func (x *fastReflection_Inferences) Get(descriptor protoreflect.FieldDescriptor)
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3738,15 +3738,15 @@ func (x *fastReflection_Inferences) Get(descriptor protoreflect.FieldDescriptor)
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inferences) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		lv := value.List()
 		clv := lv.(*_Inferences_1_list)
 		x.Inferences = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3762,7 +3762,7 @@ func (x *fastReflection_Inferences) Set(fd protoreflect.FieldDescriptor, value p
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Inferences) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		if x.Inferences == nil {
 			x.Inferences = []*Inference{}
 		}
@@ -3770,9 +3770,9 @@ func (x *fastReflection_Inferences) Mutable(fd protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3781,14 +3781,14 @@ func (x *fastReflection_Inferences) Mutable(fd protoreflect.FieldDescriptor) pro
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Inferences) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.Inferences.inferences":
+	case "emissions.state.v1.Inferences.inferences":
 		list := []*Inference{}
 		return protoreflect.ValueOfList(&_Inferences_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.Inferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Inferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.Inferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.Inferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3798,7 +3798,7 @@ func (x *fastReflection_Inferences) NewField(fd protoreflect.FieldDescriptor) pr
 func (x *fastReflection_Inferences) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.Inferences", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.Inferences", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4033,8 +4033,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_OffchainNode = File_upshot_state_v1_types_proto.Messages().ByName("OffchainNode")
+	file_emissions_state_v1_types_proto_init()
+	md_OffchainNode = File_emissions_state_v1_types_proto.Messages().ByName("OffchainNode")
 	fd_OffchainNode_topic_id = md_OffchainNode.Fields().ByName("topic_id")
 	fd_OffchainNode_lib_p2p_key = md_OffchainNode.Fields().ByName("lib_p2p_key")
 	fd_OffchainNode_multi_address = md_OffchainNode.Fields().ByName("multi_address")
@@ -4052,7 +4052,7 @@ func (x *OffchainNode) ProtoReflect() protoreflect.Message {
 }
 
 func (x *OffchainNode) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[7]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4159,23 +4159,23 @@ func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
+	case "emissions.state.v1.OffchainNode.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		return x.LibP2PKey != ""
-	case "upshot.state.v1.OffchainNode.multi_address":
+	case "emissions.state.v1.OffchainNode.multi_address":
 		return x.MultiAddress != ""
-	case "upshot.state.v1.OffchainNode.owner":
+	case "emissions.state.v1.OffchainNode.owner":
 		return x.Owner != ""
-	case "upshot.state.v1.OffchainNode.node_address":
+	case "emissions.state.v1.OffchainNode.node_address":
 		return x.NodeAddress != ""
-	case "upshot.state.v1.OffchainNode.node_id":
+	case "emissions.state.v1.OffchainNode.node_id":
 		return x.NodeId != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4187,23 +4187,23 @@ func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
+	case "emissions.state.v1.OffchainNode.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = ""
-	case "upshot.state.v1.OffchainNode.multi_address":
+	case "emissions.state.v1.OffchainNode.multi_address":
 		x.MultiAddress = ""
-	case "upshot.state.v1.OffchainNode.owner":
+	case "emissions.state.v1.OffchainNode.owner":
 		x.Owner = ""
-	case "upshot.state.v1.OffchainNode.node_address":
+	case "emissions.state.v1.OffchainNode.node_address":
 		x.NodeAddress = ""
-	case "upshot.state.v1.OffchainNode.node_id":
+	case "emissions.state.v1.OffchainNode.node_id":
 		x.NodeId = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4215,29 +4215,29 @@ func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
+	case "emissions.state.v1.OffchainNode.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.OffchainNode.multi_address":
+	case "emissions.state.v1.OffchainNode.multi_address":
 		value := x.MultiAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.OffchainNode.owner":
+	case "emissions.state.v1.OffchainNode.owner":
 		value := x.Owner
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.OffchainNode.node_address":
+	case "emissions.state.v1.OffchainNode.node_address":
 		value := x.NodeAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.OffchainNode.node_id":
+	case "emissions.state.v1.OffchainNode.node_id":
 		value := x.NodeId
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4253,23 +4253,23 @@ func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
+	case "emissions.state.v1.OffchainNode.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
-	case "upshot.state.v1.OffchainNode.multi_address":
+	case "emissions.state.v1.OffchainNode.multi_address":
 		x.MultiAddress = value.Interface().(string)
-	case "upshot.state.v1.OffchainNode.owner":
+	case "emissions.state.v1.OffchainNode.owner":
 		x.Owner = value.Interface().(string)
-	case "upshot.state.v1.OffchainNode.node_address":
+	case "emissions.state.v1.OffchainNode.node_address":
 		x.NodeAddress = value.Interface().(string)
-	case "upshot.state.v1.OffchainNode.node_id":
+	case "emissions.state.v1.OffchainNode.node_id":
 		x.NodeId = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4285,23 +4285,23 @@ func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.OffchainNode is not mutable"))
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
-		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.OffchainNode is not mutable"))
-	case "upshot.state.v1.OffchainNode.multi_address":
-		panic(fmt.Errorf("field multi_address of message upshot.state.v1.OffchainNode is not mutable"))
-	case "upshot.state.v1.OffchainNode.owner":
-		panic(fmt.Errorf("field owner of message upshot.state.v1.OffchainNode is not mutable"))
-	case "upshot.state.v1.OffchainNode.node_address":
-		panic(fmt.Errorf("field node_address of message upshot.state.v1.OffchainNode is not mutable"))
-	case "upshot.state.v1.OffchainNode.node_id":
-		panic(fmt.Errorf("field node_id of message upshot.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
+		panic(fmt.Errorf("field lib_p2p_key of message emissions.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.multi_address":
+		panic(fmt.Errorf("field multi_address of message emissions.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.owner":
+		panic(fmt.Errorf("field owner of message emissions.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.node_address":
+		panic(fmt.Errorf("field node_address of message emissions.state.v1.OffchainNode is not mutable"))
+	case "emissions.state.v1.OffchainNode.node_id":
+		panic(fmt.Errorf("field node_id of message emissions.state.v1.OffchainNode is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4310,23 +4310,23 @@ func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_OffchainNode) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNode.topic_id":
+	case "emissions.state.v1.OffchainNode.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.OffchainNode.lib_p2p_key":
+	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.OffchainNode.multi_address":
+	case "emissions.state.v1.OffchainNode.multi_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.OffchainNode.owner":
+	case "emissions.state.v1.OffchainNode.owner":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.OffchainNode.node_address":
+	case "emissions.state.v1.OffchainNode.node_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.OffchainNode.node_id":
+	case "emissions.state.v1.OffchainNode.node_id":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNode"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNode"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNode does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNode does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4336,7 +4336,7 @@ func (x *fastReflection_OffchainNode) NewField(fd protoreflect.FieldDescriptor) 
 func (x *fastReflection_OffchainNode) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.OffchainNode", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.OffchainNode", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4803,8 +4803,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_OffchainNodes = File_upshot_state_v1_types_proto.Messages().ByName("OffchainNodes")
+	file_emissions_state_v1_types_proto_init()
+	md_OffchainNodes = File_emissions_state_v1_types_proto.Messages().ByName("OffchainNodes")
 	fd_OffchainNodes_offchain_node = md_OffchainNodes.Fields().ByName("offchain_node")
 }
 
@@ -4817,7 +4817,7 @@ func (x *OffchainNodes) ProtoReflect() protoreflect.Message {
 }
 
 func (x *OffchainNodes) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[8]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4894,13 +4894,13 @@ func (x *fastReflection_OffchainNodes) Range(f func(protoreflect.FieldDescriptor
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_OffchainNodes) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		return len(x.OffchainNode) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4912,13 +4912,13 @@ func (x *fastReflection_OffchainNodes) Has(fd protoreflect.FieldDescriptor) bool
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNodes) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		x.OffchainNode = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4930,7 +4930,7 @@ func (x *fastReflection_OffchainNodes) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_OffchainNodes) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		if len(x.OffchainNode) == 0 {
 			return protoreflect.ValueOfList(&_OffchainNodes_1_list{})
 		}
@@ -4938,9 +4938,9 @@ func (x *fastReflection_OffchainNodes) Get(descriptor protoreflect.FieldDescript
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4956,15 +4956,15 @@ func (x *fastReflection_OffchainNodes) Get(descriptor protoreflect.FieldDescript
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNodes) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		lv := value.List()
 		clv := lv.(*_OffchainNodes_1_list)
 		x.OffchainNode = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4980,7 +4980,7 @@ func (x *fastReflection_OffchainNodes) Set(fd protoreflect.FieldDescriptor, valu
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNodes) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		if x.OffchainNode == nil {
 			x.OffchainNode = []*Inference{}
 		}
@@ -4988,9 +4988,9 @@ func (x *fastReflection_OffchainNodes) Mutable(fd protoreflect.FieldDescriptor) 
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4999,14 +4999,14 @@ func (x *fastReflection_OffchainNodes) Mutable(fd protoreflect.FieldDescriptor) 
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_OffchainNodes) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.OffchainNodes.offchain_node":
+	case "emissions.state.v1.OffchainNodes.offchain_node":
 		list := []*Inference{}
 		return protoreflect.ValueOfList(&_OffchainNodes_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.OffchainNodes"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.OffchainNodes"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.OffchainNodes does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5016,7 +5016,7 @@ func (x *fastReflection_OffchainNodes) NewField(fd protoreflect.FieldDescriptor)
 func (x *fastReflection_OffchainNodes) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.OffchainNodes", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.OffchainNodes", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5248,8 +5248,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_types_proto_init()
-	md_InferenceSetForScoring = File_upshot_state_v1_types_proto.Messages().ByName("InferenceSetForScoring")
+	file_emissions_state_v1_types_proto_init()
+	md_InferenceSetForScoring = File_emissions_state_v1_types_proto.Messages().ByName("InferenceSetForScoring")
 	fd_InferenceSetForScoring_topic_id = md_InferenceSetForScoring.Fields().ByName("topic_id")
 	fd_InferenceSetForScoring_timestamp = md_InferenceSetForScoring.Fields().ByName("timestamp")
 	fd_InferenceSetForScoring_inferences = md_InferenceSetForScoring.Fields().ByName("inferences")
@@ -5264,7 +5264,7 @@ func (x *InferenceSetForScoring) ProtoReflect() protoreflect.Message {
 }
 
 func (x *InferenceSetForScoring) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_types_proto_msgTypes[9]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5353,17 +5353,17 @@ func (x *fastReflection_InferenceSetForScoring) Range(f func(protoreflect.FieldD
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_InferenceSetForScoring) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
 		return x.Timestamp != uint64(0)
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		return x.Inferences != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5375,17 +5375,17 @@ func (x *fastReflection_InferenceSetForScoring) Has(fd protoreflect.FieldDescrip
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_InferenceSetForScoring) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
 		x.Timestamp = uint64(0)
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5397,20 +5397,20 @@ func (x *fastReflection_InferenceSetForScoring) Clear(fd protoreflect.FieldDescr
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_InferenceSetForScoring) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
 		value := x.Timestamp
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		value := x.Inferences
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5426,17 +5426,17 @@ func (x *fastReflection_InferenceSetForScoring) Get(descriptor protoreflect.Fiel
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_InferenceSetForScoring) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
 		x.Timestamp = value.Uint()
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		x.Inferences = value.Message().Interface().(*Inferences)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5452,20 +5452,20 @@ func (x *fastReflection_InferenceSetForScoring) Set(fd protoreflect.FieldDescrip
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_InferenceSetForScoring) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		if x.Inferences == nil {
 			x.Inferences = new(Inferences)
 		}
 		return protoreflect.ValueOfMessage(x.Inferences.ProtoReflect())
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.InferenceSetForScoring is not mutable"))
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
-		panic(fmt.Errorf("field timestamp of message upshot.state.v1.InferenceSetForScoring is not mutable"))
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.InferenceSetForScoring is not mutable"))
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
+		panic(fmt.Errorf("field timestamp of message emissions.state.v1.InferenceSetForScoring is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5474,18 +5474,18 @@ func (x *fastReflection_InferenceSetForScoring) Mutable(fd protoreflect.FieldDes
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_InferenceSetForScoring) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.InferenceSetForScoring.topic_id":
+	case "emissions.state.v1.InferenceSetForScoring.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.InferenceSetForScoring.timestamp":
+	case "emissions.state.v1.InferenceSetForScoring.timestamp":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.InferenceSetForScoring.inferences":
+	case "emissions.state.v1.InferenceSetForScoring.inferences":
 		m := new(Inferences)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.InferenceSetForScoring"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceSetForScoring"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.InferenceSetForScoring does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5495,7 +5495,7 @@ func (x *fastReflection_InferenceSetForScoring) NewField(fd protoreflect.FieldDe
 func (x *fastReflection_InferenceSetForScoring) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.InferenceSetForScoring", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.InferenceSetForScoring", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5775,7 +5775,7 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 // versions:
 // 	protoc-gen-go v1.27.0
 // 	protoc        (unknown)
-// source: upshot/state/v1/types.proto
+// source: emissions/state/v1/types.proto
 
 const (
 	// Verify that this generated code is sufficiently up-to-date.
@@ -5865,11 +5865,11 @@ func (x Err) String() string {
 }
 
 func (Err) Descriptor() protoreflect.EnumDescriptor {
-	return file_upshot_state_v1_types_proto_enumTypes[0].Descriptor()
+	return file_emissions_state_v1_types_proto_enumTypes[0].Descriptor()
 }
 
 func (Err) Type() protoreflect.EnumType {
-	return &file_upshot_state_v1_types_proto_enumTypes[0]
+	return &file_emissions_state_v1_types_proto_enumTypes[0]
 }
 
 func (x Err) Number() protoreflect.EnumNumber {
@@ -5878,7 +5878,7 @@ func (x Err) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Err.Descriptor instead.
 func (Err) EnumDescriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{0}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{0}
 }
 
 // Params defines the parameters of the module.
@@ -5893,7 +5893,7 @@ type Params struct {
 func (x *Params) Reset() {
 	*x = Params{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[0]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5907,7 +5907,7 @@ func (*Params) ProtoMessage() {}
 
 // Deprecated: Use Params.ProtoReflect.Descriptor instead.
 func (*Params) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{0}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Params) GetVersion() string {
@@ -5930,7 +5930,7 @@ type GenesisState struct {
 func (x *GenesisState) Reset() {
 	*x = GenesisState{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[1]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5944,7 +5944,7 @@ func (*GenesisState) ProtoMessage() {}
 
 // Deprecated: Use GenesisState.ProtoReflect.Descriptor instead.
 func (*GenesisState) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{1}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GenesisState) GetParams() *Params {
@@ -5975,7 +5975,7 @@ type Topic struct {
 func (x *Topic) Reset() {
 	*x = Topic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[2]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5989,7 +5989,7 @@ func (*Topic) ProtoMessage() {}
 
 // Deprecated: Use Topic.ProtoReflect.Descriptor instead.
 func (*Topic) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{2}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Topic) GetId() uint64 {
@@ -6083,7 +6083,7 @@ type Weight struct {
 func (x *Weight) Reset() {
 	*x = Weight{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[3]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6097,7 +6097,7 @@ func (*Weight) ProtoMessage() {}
 
 // Deprecated: Use Weight.ProtoReflect.Descriptor instead.
 func (*Weight) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{3}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Weight) GetTopicId() uint64 {
@@ -6139,7 +6139,7 @@ type Weights struct {
 func (x *Weights) Reset() {
 	*x = Weights{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[4]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6153,7 +6153,7 @@ func (*Weights) ProtoMessage() {}
 
 // Deprecated: Use Weights.ProtoReflect.Descriptor instead.
 func (*Weights) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{4}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Weights) GetWeights() []*Weight {
@@ -6177,7 +6177,7 @@ type Inference struct {
 func (x *Inference) Reset() {
 	*x = Inference{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[5]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6191,7 +6191,7 @@ func (*Inference) ProtoMessage() {}
 
 // Deprecated: Use Inference.ProtoReflect.Descriptor instead.
 func (*Inference) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{5}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Inference) GetTopicId() uint64 {
@@ -6233,7 +6233,7 @@ type Inferences struct {
 func (x *Inferences) Reset() {
 	*x = Inferences{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[6]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6247,7 +6247,7 @@ func (*Inferences) ProtoMessage() {}
 
 // Deprecated: Use Inferences.ProtoReflect.Descriptor instead.
 func (*Inferences) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{6}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Inferences) GetInferences() []*Inference {
@@ -6273,7 +6273,7 @@ type OffchainNode struct {
 func (x *OffchainNode) Reset() {
 	*x = OffchainNode{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[7]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6287,7 +6287,7 @@ func (*OffchainNode) ProtoMessage() {}
 
 // Deprecated: Use OffchainNode.ProtoReflect.Descriptor instead.
 func (*OffchainNode) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{7}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *OffchainNode) GetTopicId() uint64 {
@@ -6343,7 +6343,7 @@ type OffchainNodes struct {
 func (x *OffchainNodes) Reset() {
 	*x = OffchainNodes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[8]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6357,7 +6357,7 @@ func (*OffchainNodes) ProtoMessage() {}
 
 // Deprecated: Use OffchainNodes.ProtoReflect.Descriptor instead.
 func (*OffchainNodes) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{8}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *OffchainNodes) GetOffchainNode() []*Inference {
@@ -6380,7 +6380,7 @@ type InferenceSetForScoring struct {
 func (x *InferenceSetForScoring) Reset() {
 	*x = InferenceSetForScoring{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_types_proto_msgTypes[9]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6394,7 +6394,7 @@ func (*InferenceSetForScoring) ProtoMessage() {}
 
 // Deprecated: Use InferenceSetForScoring.ProtoReflect.Descriptor instead.
 func (*InferenceSetForScoring) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_types_proto_rawDescGZIP(), []int{9}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *InferenceSetForScoring) GetTopicId() uint64 {
@@ -6418,192 +6418,192 @@ func (x *InferenceSetForScoring) GetInferences() *Inferences {
 	return nil
 }
 
-var File_upshot_state_v1_types_proto protoreflect.FileDescriptor
+var File_emissions_state_v1_types_proto protoreflect.FileDescriptor
 
-var file_upshot_state_v1_types_proto_rawDesc = []byte{
-	0x0a, 0x1b, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76,
-	0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0f, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x1a, 0x19,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f,
-	0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x22, 0x22, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x45, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69,
-	0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x35, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42,
-	0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x91, 0x03,
-	0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x6f,
-	0x67, 0x69, 0x63, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x77, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x23, 0x0a, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x77,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x77,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e,
-	0x63, 0x65, 0x12, 0x26, 0x0a, 0x0f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x61, 0x73,
-	0x74, 0x5f, 0x72, 0x61, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x61, 0x6e, 0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x07, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4c, 0x6f,
-	0x67, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x2b,
-	0x0a, 0x11, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x63, 0x61, 0x64, 0x65,
-	0x6e, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x12, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x61,
-	0x6e, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x61, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74,
-	0x69, 0x76, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76,
-	0x65, 0x22, 0xa7, 0x01, 0x0a, 0x06, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19, 0x0a, 0x08,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74,
-	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
-	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x77,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x3c, 0x0a, 0x07, 0x57,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x31, 0x0a, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x52, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x22, 0xad, 0x01, 0x0a, 0x09, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
-	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61,
-	0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44,
-	0x61, 0x74, 0x61, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x48, 0x0a, 0x0a, 0x49, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x3a, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x22, 0xc0, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e,
-	0x4e, 0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
-	0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12,
-	0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64,
-	0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f,
-	0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17, 0x0a,
-	0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
-	0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x50, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61,
-	0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x3f, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63, 0x68,
-	0x61, 0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a,
-	0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
-	0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22, 0x8e, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72,
-	0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c,
-	0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x3b, 0x0a, 0x0a,
-	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x1b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2a, 0xe5, 0x04, 0x0a, 0x03, 0x45, 0x72,
-	0x72, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x54,
-	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x10, 0x00, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x52,
-	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x01, 0x12, 0x1e, 0x0a, 0x1a, 0x45, 0x72, 0x72,
-	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x02, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72,
-	0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b,
-	0x65, 0x54, 0x6f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x10, 0x03, 0x12, 0x18, 0x0a,
-	0x14, 0x45, 0x72, 0x72, 0x4c, 0x69, 0x62, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71,
-	0x75, 0x69, 0x72, 0x65, 0x64, 0x10, 0x04, 0x12, 0x1a, 0x0a, 0x16, 0x45, 0x72, 0x72, 0x53, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
-	0x64, 0x10, 0x05, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54,
-	0x61, 0x72, 0x67, 0x65, 0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x65, 0x64, 0x10, 0x06, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72, 0x72, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x4f, 0x66, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x41, 0x6e, 0x64, 0x54, 0x61, 0x72,
-	0x67, 0x65, 0x74, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x07, 0x12,
-	0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65,
-	0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10,
-	0x08, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55,
-	0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f,
-	0x72, 0x10, 0x09, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65,
-	0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x42, 0x6f, 0x6e, 0x64, 0x73, 0x10,
-	0x0a, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55,
-	0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x10, 0x0b,
-	0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e,
-	0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74, 0x61, 0x6b,
-	0x65, 0x10, 0x0c, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65,
-	0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x74, 0x65,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x44, 0x6f, 0x65, 0x73,
-	0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x0e, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72,
-	0x72, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x53, 0x65, 0x74, 0x4d, 0x61, 0x70, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x54, 0x6f, 0x5a, 0x65, 0x72, 0x6f, 0x10, 0x0f, 0x12, 0x1a, 0x0a, 0x16, 0x45, 0x72, 0x72,
-	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4e, 0x65, 0x67, 0x61, 0x74,
-	0x69, 0x76, 0x65, 0x10, 0x10, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x42, 0x6c, 0x6f, 0x63,
-	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4c, 0x65, 0x73, 0x73, 0x54, 0x68, 0x61, 0x6e, 0x50,
-	0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73, 0x10, 0x11, 0x12, 0x16, 0x0a, 0x12, 0x45, 0x72, 0x72,
-	0x4e, 0x6f, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10,
-	0x12, 0x42, 0xd1, 0x01, 0x0a, 0x13, 0x63, 0x6f, 0x6d, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73,
-	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2d, 0x6d,
-	0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x2d, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f, 0x61, 0x70,
-	0x69, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76,
-	0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x55, 0x53, 0x58, 0xaa,
-	0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56,
-	0x31, 0xca, 0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65,
-	0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1b, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61,
-	0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0xea, 0x02, 0x11, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74,
-	0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+var file_emissions_state_v1_types_proto_rawDesc = []byte{
+	0x0a, 0x1e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x12, 0x12, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
+	0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x22, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x22, 0x48, 0x0a, 0x0c,
+	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x38, 0x0a, 0x06,
+	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06,
+	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x91, 0x03, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
+	0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x21, 0x0a, 0x0c,
+	0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x0b, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12,
+	0x23, 0x0a, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4d, 0x65,
+	0x74, 0x68, 0x6f, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63,
+	0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x77, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x26, 0x0a, 0x0f, 0x77,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x61, 0x6e, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4c, 0x61, 0x73, 0x74,
+	0x52, 0x61, 0x6e, 0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10,
+	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x2b, 0x0a, 0x11, 0x69, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x43, 0x61, 0x64,
+	0x65, 0x6e, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x12, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x61, 0x6e, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4c, 0x61, 0x73, 0x74, 0x52,
+	0x61, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x0b, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x22, 0xa7, 0x01, 0x0a, 0x06, 0x57,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f,
+	0x72, 0x6b, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b,
+	0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x3a, 0x04,
+	0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x3f, 0x0a, 0x07, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12,
+	0x34, 0x0a, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x1a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07, 0x77, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x73, 0x22, 0xad, 0x01, 0x0a, 0x09, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16,
+	0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
+	0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x3a,
+	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4b, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x22, 0xc0, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e,
+	0x6f, 0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1e,
+	0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23,
+	0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f, 0x64,
+	0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17, 0x0a, 0x07,
+	0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6e,
+	0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x53, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x42, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66,
+	0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22, 0x91, 0x01, 0x0a, 0x16, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63,
+	0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x3e,
+	0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x2a, 0xc1,
+	0x04, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x12, 0x15, 0x0a, 0x11, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x76,
+	0x61, 0x6c, 0x69, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x10, 0x00, 0x12, 0x1f, 0x0a,
+	0x1b, 0x45, 0x72, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61,
+	0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x01, 0x12, 0x1e,
+	0x0a, 0x1a, 0x45, 0x72, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x6c, 0x72, 0x65, 0x61,
+	0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x02, 0x12, 0x22,
+	0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e,
+	0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
+	0x10, 0x03, 0x12, 0x18, 0x0a, 0x14, 0x45, 0x72, 0x72, 0x4c, 0x69, 0x62, 0x50, 0x32, 0x50, 0x4b,
+	0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x10, 0x04, 0x12, 0x1a, 0x0a, 0x16,
+	0x45, 0x72, 0x72, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x05, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x53,
+	0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x06, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72, 0x72,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x4f, 0x66, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x41,
+	0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74,
+	0x63, 0x68, 0x10, 0x07, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66,
+	0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x10, 0x08, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74,
+	0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65, 0x6c,
+	0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x10, 0x09, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72, 0x49,
+	0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x42,
+	0x6f, 0x6e, 0x64, 0x73, 0x10, 0x0a, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74,
+	0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61, 0x72,
+	0x67, 0x65, 0x74, 0x10, 0x0b, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65,
+	0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70, 0x69,
+	0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0c, 0x12, 0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49,
+	0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54,
+	0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e, 0x45,
+	0x72, 0x72, 0x49, 0x74, 0x65, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67, 0x74,
+	0x68, 0x44, 0x6f, 0x65, 0x73, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x0e, 0x12,
+	0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x44, 0x6f, 0x4e, 0x6f, 0x74, 0x53, 0x65, 0x74, 0x4d, 0x61,
+	0x70, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x54, 0x6f, 0x5a, 0x65, 0x72, 0x6f, 0x10, 0x0f, 0x12, 0x1a,
+	0x0a, 0x16, 0x45, 0x72, 0x72, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74,
+	0x4e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65, 0x10, 0x10, 0x12, 0x16, 0x0a, 0x12, 0x45, 0x72,
+	0x72, 0x4e, 0x6f, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
+	0x10, 0x11, 0x42, 0xe1, 0x01, 0x0a, 0x16, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54,
+	0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74,
+	0x65, 0x63, 0x68, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x61, 0x70, 0x70, 0x63, 0x68,
+	0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74,
+	0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02,
+	0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02,
+	0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65,
+	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
+	0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61,
+	0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_upshot_state_v1_types_proto_rawDescOnce sync.Once
-	file_upshot_state_v1_types_proto_rawDescData = file_upshot_state_v1_types_proto_rawDesc
+	file_emissions_state_v1_types_proto_rawDescOnce sync.Once
+	file_emissions_state_v1_types_proto_rawDescData = file_emissions_state_v1_types_proto_rawDesc
 )
 
-func file_upshot_state_v1_types_proto_rawDescGZIP() []byte {
-	file_upshot_state_v1_types_proto_rawDescOnce.Do(func() {
-		file_upshot_state_v1_types_proto_rawDescData = protoimpl.X.CompressGZIP(file_upshot_state_v1_types_proto_rawDescData)
+func file_emissions_state_v1_types_proto_rawDescGZIP() []byte {
+	file_emissions_state_v1_types_proto_rawDescOnce.Do(func() {
+		file_emissions_state_v1_types_proto_rawDescData = protoimpl.X.CompressGZIP(file_emissions_state_v1_types_proto_rawDescData)
 	})
-	return file_upshot_state_v1_types_proto_rawDescData
+	return file_emissions_state_v1_types_proto_rawDescData
 }
 
-var file_upshot_state_v1_types_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_upshot_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
-var file_upshot_state_v1_types_proto_goTypes = []interface{}{
-	(Err)(0),                       // 0: upshot.state.v1.Err
-	(*Params)(nil),                 // 1: upshot.state.v1.Params
-	(*GenesisState)(nil),           // 2: upshot.state.v1.GenesisState
-	(*Topic)(nil),                  // 3: upshot.state.v1.Topic
-	(*Weight)(nil),                 // 4: upshot.state.v1.Weight
-	(*Weights)(nil),                // 5: upshot.state.v1.Weights
-	(*Inference)(nil),              // 6: upshot.state.v1.Inference
-	(*Inferences)(nil),             // 7: upshot.state.v1.Inferences
-	(*OffchainNode)(nil),           // 8: upshot.state.v1.OffchainNode
-	(*OffchainNodes)(nil),          // 9: upshot.state.v1.OffchainNodes
-	(*InferenceSetForScoring)(nil), // 10: upshot.state.v1.InferenceSetForScoring
+var file_emissions_state_v1_types_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_emissions_state_v1_types_proto_goTypes = []interface{}{
+	(Err)(0),                       // 0: emissions.state.v1.Err
+	(*Params)(nil),                 // 1: emissions.state.v1.Params
+	(*GenesisState)(nil),           // 2: emissions.state.v1.GenesisState
+	(*Topic)(nil),                  // 3: emissions.state.v1.Topic
+	(*Weight)(nil),                 // 4: emissions.state.v1.Weight
+	(*Weights)(nil),                // 5: emissions.state.v1.Weights
+	(*Inference)(nil),              // 6: emissions.state.v1.Inference
+	(*Inferences)(nil),             // 7: emissions.state.v1.Inferences
+	(*OffchainNode)(nil),           // 8: emissions.state.v1.OffchainNode
+	(*OffchainNodes)(nil),          // 9: emissions.state.v1.OffchainNodes
+	(*InferenceSetForScoring)(nil), // 10: emissions.state.v1.InferenceSetForScoring
 }
-var file_upshot_state_v1_types_proto_depIdxs = []int32{
-	1, // 0: upshot.state.v1.GenesisState.params:type_name -> upshot.state.v1.Params
-	4, // 1: upshot.state.v1.Weights.weights:type_name -> upshot.state.v1.Weight
-	6, // 2: upshot.state.v1.Inferences.inferences:type_name -> upshot.state.v1.Inference
-	6, // 3: upshot.state.v1.OffchainNodes.offchain_node:type_name -> upshot.state.v1.Inference
-	7, // 4: upshot.state.v1.InferenceSetForScoring.inferences:type_name -> upshot.state.v1.Inferences
+var file_emissions_state_v1_types_proto_depIdxs = []int32{
+	1, // 0: emissions.state.v1.GenesisState.params:type_name -> emissions.state.v1.Params
+	4, // 1: emissions.state.v1.Weights.weights:type_name -> emissions.state.v1.Weight
+	6, // 2: emissions.state.v1.Inferences.inferences:type_name -> emissions.state.v1.Inference
+	6, // 3: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
+	7, // 4: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
@@ -6611,13 +6611,13 @@ var file_upshot_state_v1_types_proto_depIdxs = []int32{
 	0, // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_upshot_state_v1_types_proto_init() }
-func file_upshot_state_v1_types_proto_init() {
-	if File_upshot_state_v1_types_proto != nil {
+func init() { file_emissions_state_v1_types_proto_init() }
+func file_emissions_state_v1_types_proto_init() {
+	if File_emissions_state_v1_types_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_upshot_state_v1_types_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Params); i {
 			case 0:
 				return &v.state
@@ -6629,7 +6629,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GenesisState); i {
 			case 0:
 				return &v.state
@@ -6641,7 +6641,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Topic); i {
 			case 0:
 				return &v.state
@@ -6653,7 +6653,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Weight); i {
 			case 0:
 				return &v.state
@@ -6665,7 +6665,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Weights); i {
 			case 0:
 				return &v.state
@@ -6677,7 +6677,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Inference); i {
 			case 0:
 				return &v.state
@@ -6689,7 +6689,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Inferences); i {
 			case 0:
 				return &v.state
@@ -6701,7 +6701,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*OffchainNode); i {
 			case 0:
 				return &v.state
@@ -6713,7 +6713,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*OffchainNodes); i {
 			case 0:
 				return &v.state
@@ -6725,7 +6725,7 @@ func file_upshot_state_v1_types_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_types_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_types_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InferenceSetForScoring); i {
 			case 0:
 				return &v.state
@@ -6742,19 +6742,19 @@ func file_upshot_state_v1_types_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_upshot_state_v1_types_proto_rawDesc,
+			RawDescriptor: file_emissions_state_v1_types_proto_rawDesc,
 			NumEnums:      1,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_upshot_state_v1_types_proto_goTypes,
-		DependencyIndexes: file_upshot_state_v1_types_proto_depIdxs,
-		EnumInfos:         file_upshot_state_v1_types_proto_enumTypes,
-		MessageInfos:      file_upshot_state_v1_types_proto_msgTypes,
+		GoTypes:           file_emissions_state_v1_types_proto_goTypes,
+		DependencyIndexes: file_emissions_state_v1_types_proto_depIdxs,
+		EnumInfos:         file_emissions_state_v1_types_proto_enumTypes,
+		MessageInfos:      file_emissions_state_v1_types_proto_msgTypes,
 	}.Build()
-	File_upshot_state_v1_types_proto = out.File
-	file_upshot_state_v1_types_proto_rawDesc = nil
-	file_upshot_state_v1_types_proto_goTypes = nil
-	file_upshot_state_v1_types_proto_depIdxs = nil
+	File_emissions_state_v1_types_proto = out.File
+	file_emissions_state_v1_types_proto_rawDesc = nil
+	file_emissions_state_v1_types_proto_goTypes = nil
+	file_emissions_state_v1_types_proto_depIdxs = nil
 }

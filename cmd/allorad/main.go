@@ -7,7 +7,7 @@ import (
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/upshot-tech/upshot-appchain/app"
 	"github.com/upshot-tech/upshot-appchain/app/params"
-	"github.com/upshot-tech/upshot-appchain/cmd/uptd/cmd"
+	"github.com/upshot-tech/upshot-appchain/cmd/allorad/cmd"
 )
 
 func main() {

@@ -37,4 +37,4 @@ WORKDIR ${APP_PATH}
 
 USER ${USERNAME}
 
-ENTRYPOINT ["uptd"]
+ENTRYPOINT ["allorad"]

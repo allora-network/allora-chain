@@ -8,8 +8,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	modulev1 "github.com/upshot-tech/protocol-state-machine-module/api/module/v1"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
+	modulev1 "github.com/upshot-tech/upshot-appchain/x/emissions/api/module/v1"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 var _ appmodule.AppModule = AppModule{}

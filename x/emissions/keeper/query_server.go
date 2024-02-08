@@ -11,7 +11,7 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 var _ state.QueryServer = queryServer{}

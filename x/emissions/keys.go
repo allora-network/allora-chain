@@ -1,8 +1,8 @@
-package protocol_state_machine_module
+package emissions
 
 import "cosmossdk.io/collections"
 
-const ModuleName = "upshot"
+const ModuleName = "emissions"
 
 var (
 	ParamsKey             = collections.NewPrefix(0)

@@ -12,43 +12,43 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 
-	// simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	state "github.com/upshot-tech/protocol-state-machine-module"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
-	emissionstestutil "github.com/upshot-tech/protocol-state-machine-module/testutil"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
+	emissionstestutil "github.com/upshot-tech/upshot-appchain/x/emissions/testutil"
 )
 
 type KeeperTestSuite struct {
 	suite.Suite
 
-	ctx          sdk.Context
-	bankKeeper   *emissionstestutil.MockBankKeeper
-	authKeeper   *emissionstestutil.MockAccountKeeper
-	upshotKeeper keeper.Keeper
-	msgServer    state.MsgServer
-	mockCtrl     *gomock.Controller
-	key          *storetypes.KVStoreKey
+	ctx             sdk.Context
+	bankKeeper      *emissionstestutil.MockBankKeeper
+	authKeeper      *emissionstestutil.MockAccountKeeper
+	emissionsKeeper keeper.Keeper
+	msgServer       state.MsgServer
+	mockCtrl        *gomock.Controller
+	key             *storetypes.KVStoreKey
 }
 
 func (s *KeeperTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("upshot")
+	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig()
-	addressCodec := address.NewBech32Codec("upt")
+	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 	ctrl := gomock.NewController(s.T())
 
 	s.bankKeeper = emissionstestutil.NewMockBankKeeper(ctrl)
 	s.authKeeper = emissionstestutil.NewMockAccountKeeper(ctrl)
 
 	s.ctx = ctx
-	s.upshotKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
-	s.msgServer = keeper.NewMsgServerImpl(s.upshotKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
+	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key
 }
@@ -63,7 +63,7 @@ func TestKeeperTestSuite(t *testing.T) {
 
 func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 
 	// Set total stake
 	newTotalStake := cosmosMath.NewUint(1000)
@@ -78,7 +78,7 @@ func (s *KeeperTestSuite) TestGetSetTotalStake() {
 
 func (s *KeeperTestSuite) TestAddStake() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -121,7 +121,7 @@ func (s *KeeperTestSuite) TestAddStake() {
 
 func (s *KeeperTestSuite) TestAddStakeExistingDelegatorAndTarget() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -144,7 +144,7 @@ func (s *KeeperTestSuite) TestAddStakeExistingDelegatorAndTarget() {
 
 func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -157,7 +157,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 
 func (s *KeeperTestSuite) TestRemoveStakeFromBond() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -203,7 +203,7 @@ func (s *KeeperTestSuite) TestRemoveStakeFromBond() {
 
 func (s *KeeperTestSuite) TestRemoveStakePartialFromDelegatorAndTarget() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -231,7 +231,7 @@ func (s *KeeperTestSuite) TestRemoveStakePartialFromDelegatorAndTarget() {
 
 func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegatorAndTarget() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -256,7 +256,7 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegatorAndTarget() {
 
 func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -274,7 +274,7 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 
 func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	nonExistingDelegatorAddr := sdk.AccAddress(PKS[0].Address())
 	nonExistingTargetAddr := sdk.AccAddress(PKS[1].Address())
@@ -287,7 +287,7 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 
 func (s *KeeperTestSuite) TestGetAllBondsForDelegator() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	delegatorAddr := sdk.AccAddress(PKS[2].Address())
 
 	// Mock setup
@@ -310,7 +310,7 @@ func (s *KeeperTestSuite) TestGetAllBondsForDelegator() {
 
 func (s *KeeperTestSuite) TestWalkAllTopicStake() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 
 	//rather than calling keeper.InitGenesis, we just increment the topic id for 0 manually
 	topic0, err := keeper.IncrementTopicId(ctx)
@@ -340,7 +340,7 @@ func (s *KeeperTestSuite) TestWalkAllTopicStake() {
 
 func (s *KeeperTestSuite) TestRemoveStakeFromBondMissingTotalOrTopicStake() {
 	ctx := s.ctx
-	keeper := s.upshotKeeper
+	keeper := s.emissionsKeeper
 	topicID := uint64(1)
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
@@ -386,14 +386,14 @@ func (s *KeeperTestSuite) TestRemoveStakeFromBondMissingTotalOrTopicStake() {
 }
 
 func (s *KeeperTestSuite) TestRewardsUpdate() {
-	noInitLastRewardsUpdate, err := s.upshotKeeper.GetLastRewardsUpdate(s.ctx)
+	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
 	s.NoError(err, "error getting un-initialized")
 	s.Require().Equal(int64(0), noInitLastRewardsUpdate, "Last rewards update should be zero")
 
-	err = s.upshotKeeper.SetLastRewardsUpdate(s.ctx, 100)
+	err = s.emissionsKeeper.SetLastRewardsUpdate(s.ctx, 100)
 	s.NoError(err, "error setting")
 
-	lastRewardsUpdate, err := s.upshotKeeper.GetLastRewardsUpdate(s.ctx)
+	lastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
 	s.NoError(err, "error getting")
 	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
 }

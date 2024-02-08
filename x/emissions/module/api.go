@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 type BlocklessRequest struct {
@@ -24,7 +24,7 @@ type Config struct {
 	Environment []EnvVar `json:"env_vars,omitempty"`
 	Stdin       *string  `json:"stdin,omitempty"`
 	NodeCount   int      `json:"number_of_nodes,omitempty"`
-	Timeout   	int      `json:"timeout,omitempty"`
+	Timeout     int      `json:"timeout,omitempty"`
 }
 
 type EnvVar struct {
@@ -123,9 +123,9 @@ func generateWeights(weights map[string]map[string]*math.Uint, inferences []*sta
 func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
 
 	payloadJson := BlocklessRequest{
-		FunctionID:	functionId,
-		Method:		functionMethod,
-		TopicID:	strconv.FormatUint(topicId, 10),
+		FunctionID: functionId,
+		Method:     functionMethod,
+		TopicID:    strconv.FormatUint(topicId, 10),
 		Config: Config{
 			Environment: []EnvVar{
 				{
@@ -142,7 +142,7 @@ func generateInferences(functionId string, functionMethod string, param string, 
 				},
 			},
 			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:	2, // seconds to time out before rollcall complete
+			Timeout:   2,  // seconds to time out before rollcall complete
 		},
 	}
 

@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/upshot-tech/protocol-state-machine-module/api
+    default: github.com/upshot-tech/upshot-appchain/x/emissions/api
     except:
       - buf.build/googleapis/googleapis
       - buf.build/cosmos/gogo-proto

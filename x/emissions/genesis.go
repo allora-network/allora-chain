@@ -1,4 +1,4 @@
-package protocol_state_machine_module
+package emissions
 
 // NewGenesisState creates a new genesis state with default values.
 func NewGenesisState() *GenesisState {

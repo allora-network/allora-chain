@@ -6,9 +6,10 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	state "github.com/upshot-tech/protocol-state-machine-module"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
-	"github.com/upshot-tech/protocol-state-machine-module/module"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/module"
 )
 
 const (
@@ -42,7 +43,7 @@ func (s *ModuleTestSuite) TestRegistrationTotalStakeAmountSet() {
 	s.NoError(err, "Error creating workers")
 	totalStakeExpected := cosmosMath.NewUint(
 		reputer1StartAmount + reputer2StartAmount + worker1StartAmount + worker2StartAmount)
-	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	s.Equal(totalStakeExpected, totalStake, "Total stake should be the sum of all participants stakes")
 }
@@ -59,7 +60,7 @@ func (s *ModuleTestSuite) TestRegistrationTopicStakeAmountSet() {
 	s.NoError(err, "Error creating workers")
 	topicStakeExpected := cosmosMath.NewUint(
 		reputer1StartAmount + reputer2StartAmount + worker1StartAmount + worker2StartAmount)
-	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
 	s.NoError(err, "Error getting topic stake")
 	s.Equal(topicStakeExpected, topicStake, "Topic stake should be the sum of all participants stakes")
 }
@@ -76,9 +77,9 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
 	s.NoError(err, "Error creating workers")
 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
-	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
 	s.NoError(err, "Error getting topic stake")
-	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
 	rewards, err := module.GetParticipantEmissionsForTopic(
@@ -111,9 +112,9 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions(
 	s.NoError(err, "Error creating workers")
 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeightsOnlyWorkers())
 	s.NoError(err, "Error setting weights")
-	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
 	s.NoError(err, "Error getting topic stake")
-	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
 	rewards, err := module.GetParticipantEmissionsForTopic(
@@ -144,9 +145,9 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
 	s.NoError(err, "Error creating workers")
 	err = mockSetWeights(s, topicId, reputers, workers, getConstZeroWeights())
 	s.NoError(err, "Error setting weights")
-	topicStake, err := s.upshotKeeper.GetTopicStake(s.ctx, topicId)
+	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
 	s.NoError(err, "Error getting topic stake")
-	totalStake, err := s.upshotKeeper.GetTotalStake(s.ctx)
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
 	rewards, err := module.GetParticipantEmissionsForTopic(
@@ -184,21 +185,21 @@ func (s *ModuleTestSuite) TestEmitRewardsSimple() {
 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
 
-	s.ctx = s.ctx.WithBlockHeight(s.upshotKeeper.EpochLength() + 1)
+	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
 
-	reputer1Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
+	reputer1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
 	s.NoError(err, "Error getting reputer 1 stake")
 	expectedReputer1Stake := cosmosMath.NewUint(reputer1StartAmount)
 	s.Require().Equal(expectedReputer1Stake, reputer1Stake, "Reputer 1 stake should be the same as the initial amount")
-	reputer2Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
+	reputer2Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
 	s.NoError(err, "Error getting reputer 2 stake")
 	expectedReputer2Stake := cosmosMath.NewUint(reputer2StartAmount)
 	s.Require().Equal(expectedReputer2Stake, reputer2Stake, "Reputer 2 stake should be the same as the initial amount")
-	worker1Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
+	worker1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
 	s.NoError(err, "Error getting worker 1 stake")
 	expectedWorker1Stake := cosmosMath.NewUint(worker1StartAmount)
 	s.Require().Equal(expectedWorker1Stake, worker1Stake, "Worker 1 stake should be the same as the initial amount")
-	worker2Stake, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
+	worker2Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
 	s.NoError(err, "Error getting worker 2 stake")
 	expectedWorker2Stake := cosmosMath.NewUint(worker2StartAmount)
 	s.Require().Equal(expectedWorker2Stake, worker2Stake, "Worker 2 stake should be the same as the initial amount")
@@ -206,13 +207,13 @@ func (s *ModuleTestSuite) TestEmitRewardsSimple() {
 	err = s.appModule.EndBlock(s.ctx)
 	s.NoError(err, "EndBlock error")
 
-	reputer1StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
+	reputer1StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
 	s.NoError(err, "Error getting reputer 1 stake")
-	reputer2StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
+	reputer2StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
 	s.NoError(err, "Error getting reputer 2 stake")
-	worker1StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
+	worker1StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
 	s.NoError(err, "Error getting worker 1 stake")
-	worker2StakeAfter, err := s.upshotKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
+	worker2StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
 	s.NoError(err, "Error getting worker 2 stake")
 
 	s.Require().False(expectedReputer1Stake.Equal(reputer1StakeAfter), "Reputer 1 stake should have increased")
@@ -233,7 +234,7 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 		return fmt.Errorf("amount and target must be the same length")
 	}
 	for i, addr := range target {
-		coins := sdk.NewCoins(sdk.NewCoin("upt", amount[i]))
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount[i]))
 		s.bankKeeper.MintCoins(s.ctx, s.appModule.Name(), coins)
 		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, s.appModule.Name(), addr, coins)
 	}
@@ -338,7 +339,7 @@ func mockSetWeights(
 			} else {
 				target = workers[j]
 			}
-			err := s.upshotKeeper.SetWeight(
+			err := s.emissionsKeeper.SetWeight(
 				s.ctx,
 				topicId,
 				reputer,

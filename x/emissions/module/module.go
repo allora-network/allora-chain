@@ -14,8 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	state "github.com/upshot-tech/protocol-state-machine-module"
-	keeper "github.com/upshot-tech/protocol-state-machine-module/keeper"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
+	keeper "github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 var (
@@ -112,7 +112,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
-// EndBlock returns the end blocker for the upshot module.
+// EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	fmt.Printf("\n ---------------- EndBlock ------------------- \n")
 

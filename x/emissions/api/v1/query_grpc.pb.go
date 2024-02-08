@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: upshot/state/v1/query.proto
+// source: emissions/state/v1/query.proto
 
 package statev1
 
@@ -19,17 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                     = "/upshot.state.v1.Query/Params"
-	Query_GetLastRewardsUpdate_FullMethodName       = "/upshot.state.v1.Query/GetLastRewardsUpdate"
-	Query_GetAccumulatedEpochRewards_FullMethodName = "/upshot.state.v1.Query/GetAccumulatedEpochRewards"
-	Query_GetNextTopicId_FullMethodName             = "/upshot.state.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                   = "/upshot.state.v1.Query/GetTopic"
-	Query_GetWeight_FullMethodName                  = "/upshot.state.v1.Query/GetWeight"
-	Query_GetAllInferences_FullMethodName           = "/upshot.state.v1.Query/GetAllInferences"
-	Query_GetInferencesToScore_FullMethodName       = "/upshot.state.v1.Query/GetInferencesToScore"
-	Query_GetTotalStake_FullMethodName              = "/upshot.state.v1.Query/GetTotalStake"
-	Query_GetWorkerNodeRegistration_FullMethodName  = "/upshot.state.v1.Query/GetWorkerNodeRegistration"
-	Query_GetWorkerAddressByP2PKey_FullMethodName   = "/upshot.state.v1.Query/GetWorkerAddressByP2PKey"
+	Query_Params_FullMethodName                     = "/emissions.state.v1.Query/Params"
+	Query_GetLastRewardsUpdate_FullMethodName       = "/emissions.state.v1.Query/GetLastRewardsUpdate"
+	Query_GetAccumulatedEpochRewards_FullMethodName = "/emissions.state.v1.Query/GetAccumulatedEpochRewards"
+	Query_GetNextTopicId_FullMethodName             = "/emissions.state.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                   = "/emissions.state.v1.Query/GetTopic"
+	Query_GetWeight_FullMethodName                  = "/emissions.state.v1.Query/GetWeight"
+	Query_GetAllInferences_FullMethodName           = "/emissions.state.v1.Query/GetAllInferences"
+	Query_GetInferencesToScore_FullMethodName       = "/emissions.state.v1.Query/GetInferencesToScore"
+	Query_GetTotalStake_FullMethodName              = "/emissions.state.v1.Query/GetTotalStake"
+	Query_GetWorkerNodeRegistration_FullMethodName  = "/emissions.state.v1.Query/GetWorkerNodeRegistration"
+	Query_GetWorkerAddressByP2PKey_FullMethodName   = "/emissions.state.v1.Query/GetWorkerAddressByP2PKey"
 )
 
 // QueryClient is the client API for Query service.
@@ -428,7 +428,7 @@ func _Query_GetWorkerAddressByP2PKey_Handler(srv interface{}, ctx context.Contex
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Query_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "upshot.state.v1.Query",
+	ServiceName: "emissions.state.v1.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -477,5 +477,5 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "upshot/state/v1/query.proto",
+	Metadata: "emissions/state/v1/query.proto",
 }

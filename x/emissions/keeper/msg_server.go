@@ -7,7 +7,8 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 const REQUIRED_MINIMUM_STAKE = 1
@@ -273,7 +274,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// 5. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upt", amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.ModuleName, coins)
 
 	// 6. update the stake data structures
@@ -322,7 +323,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// 6. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upt", amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
 	// 7. update the stake data structures
@@ -377,7 +378,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	}
 	// 6. Send the funds to the sender
 	senderStakeInt := cosmosMath.NewIntFromBigInt(senderStake.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin("upt", senderStakeInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, senderStakeInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 	// 7. Update the topicStake data structure (no underflow checks since data comes from chain)
 	topicStake, err := ms.k.GetTopicStake(ctx, topicId)
@@ -445,7 +446,7 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
 	// move funds
 	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
-	amount := sdk.NewCoins(sdk.NewCoin("upt", initialStakeInt))
+	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
 	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.ModuleName, amount)
 	if err != nil {
 		return err

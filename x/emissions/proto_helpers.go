@@ -1,4 +1,4 @@
-package protocol_state_machine_module
+package emissions
 
 import (
 	cosmosMath "cosmossdk.io/math"

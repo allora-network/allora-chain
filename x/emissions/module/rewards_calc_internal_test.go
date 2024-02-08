@@ -14,29 +14,30 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/stretchr/testify/suite"
-	"github.com/upshot-tech/protocol-state-machine-module/keeper"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	"github.com/upshot-tech/upshot-appchain/x/emissions/keeper"
 )
 
 type RewardsCalcTestSuite struct {
 	suite.Suite
 
-	ctx          sdk.Context
-	authKeeper   keeper.AccountKeeper
-	bankKeeper   keeper.BankKeeper
-	upshotKeeper keeper.Keeper
-	key          *storetypes.KVStoreKey
+	ctx             sdk.Context
+	authKeeper      keeper.AccountKeeper
+	bankKeeper      keeper.BankKeeper
+	emissionsKeeper keeper.Keeper
+	key             *storetypes.KVStoreKey
 }
 
 func (s *RewardsCalcTestSuite) SetupTest() {
-	key := storetypes.NewKVStoreKey("upshot")
+	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig()
-	addressCodec := address.NewBech32Codec("cosmos")
+	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	s.ctx = ctx
-	s.upshotKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
 	s.key = key
 }
 

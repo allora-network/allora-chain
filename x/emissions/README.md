@@ -1,4 +1,4 @@
-Upshot Protocol State Machine Cosmos Module
+Emissions Module
 =============================================
 
 ## Dependencies

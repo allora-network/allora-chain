@@ -30,8 +30,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgCreateNewTopic = File_upshot_state_v1_tx_proto.Messages().ByName("MsgCreateNewTopic")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgCreateNewTopic = File_emissions_state_v1_tx_proto.Messages().ByName("MsgCreateNewTopic")
 	fd_MsgCreateNewTopic_creator = md_MsgCreateNewTopic.Fields().ByName("creator")
 	fd_MsgCreateNewTopic_metadata = md_MsgCreateNewTopic.Fields().ByName("metadata")
 	fd_MsgCreateNewTopic_weight_logic = md_MsgCreateNewTopic.Fields().ByName("weight_logic")
@@ -52,7 +52,7 @@ func (x *MsgCreateNewTopic) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgCreateNewTopic) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[0]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -177,29 +177,29 @@ func (x *fastReflection_MsgCreateNewTopic) Range(f func(protoreflect.FieldDescri
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgCreateNewTopic) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
 		return x.Creator != ""
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
 		return x.Metadata != ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
 		return x.WeightLogic != ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
 		return x.WeightMethod != ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
 		return x.WeightCadence != uint64(0)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
 		return x.InferenceLogic != ""
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
 		return x.InferenceMethod != ""
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
 		return x.InferenceCadence != uint64(0)
-	case "upshot.state.v1.MsgCreateNewTopic.active":
+	case "emissions.state.v1.MsgCreateNewTopic.active":
 		return x.Active != false
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -211,29 +211,29 @@ func (x *fastReflection_MsgCreateNewTopic) Has(fd protoreflect.FieldDescriptor) 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopic) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
 		x.Creator = ""
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
 		x.Metadata = ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
 		x.WeightLogic = ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
 		x.WeightMethod = ""
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
 		x.WeightCadence = uint64(0)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
 		x.InferenceLogic = ""
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
 		x.InferenceMethod = ""
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
 		x.InferenceCadence = uint64(0)
-	case "upshot.state.v1.MsgCreateNewTopic.active":
+	case "emissions.state.v1.MsgCreateNewTopic.active":
 		x.Active = false
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -245,38 +245,38 @@ func (x *fastReflection_MsgCreateNewTopic) Clear(fd protoreflect.FieldDescriptor
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgCreateNewTopic) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
 		value := x.Creator
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
 		value := x.Metadata
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
 		value := x.WeightLogic
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
 		value := x.WeightMethod
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
 		value := x.WeightCadence
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
 		value := x.InferenceLogic
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
 		value := x.InferenceMethod
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
 		value := x.InferenceCadence
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.MsgCreateNewTopic.active":
+	case "emissions.state.v1.MsgCreateNewTopic.active":
 		value := x.Active
 		return protoreflect.ValueOfBool(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -292,29 +292,29 @@ func (x *fastReflection_MsgCreateNewTopic) Get(descriptor protoreflect.FieldDesc
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopic) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
 		x.Creator = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
 		x.Metadata = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
 		x.WeightLogic = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
 		x.WeightMethod = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
 		x.WeightCadence = value.Uint()
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
 		x.InferenceLogic = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
 		x.InferenceMethod = value.Interface().(string)
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
 		x.InferenceCadence = value.Uint()
-	case "upshot.state.v1.MsgCreateNewTopic.active":
+	case "emissions.state.v1.MsgCreateNewTopic.active":
 		x.Active = value.Bool()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -330,29 +330,29 @@ func (x *fastReflection_MsgCreateNewTopic) Set(fd protoreflect.FieldDescriptor, 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopic) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
-		panic(fmt.Errorf("field creator of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
-		panic(fmt.Errorf("field metadata of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
-		panic(fmt.Errorf("field weight_logic of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
-		panic(fmt.Errorf("field weight_method of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
-		panic(fmt.Errorf("field weight_cadence of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
-		panic(fmt.Errorf("field inference_logic of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
-		panic(fmt.Errorf("field inference_method of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
-		panic(fmt.Errorf("field inference_cadence of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
-	case "upshot.state.v1.MsgCreateNewTopic.active":
-		panic(fmt.Errorf("field active of message upshot.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
+		panic(fmt.Errorf("field creator of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
+		panic(fmt.Errorf("field metadata of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
+		panic(fmt.Errorf("field weight_logic of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
+		panic(fmt.Errorf("field weight_method of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
+		panic(fmt.Errorf("field weight_cadence of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
+		panic(fmt.Errorf("field inference_logic of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
+		panic(fmt.Errorf("field inference_method of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
+		panic(fmt.Errorf("field inference_cadence of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopic.active":
+		panic(fmt.Errorf("field active of message emissions.state.v1.MsgCreateNewTopic is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -361,29 +361,29 @@ func (x *fastReflection_MsgCreateNewTopic) Mutable(fd protoreflect.FieldDescript
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgCreateNewTopic) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopic.creator":
+	case "emissions.state.v1.MsgCreateNewTopic.creator":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.metadata":
+	case "emissions.state.v1.MsgCreateNewTopic.metadata":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.weight_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_logic":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.weight_method":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_method":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.weight_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.weight_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.MsgCreateNewTopic.inference_logic":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_logic":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.inference_method":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_method":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgCreateNewTopic.inference_cadence":
+	case "emissions.state.v1.MsgCreateNewTopic.inference_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.MsgCreateNewTopic.active":
+	case "emissions.state.v1.MsgCreateNewTopic.active":
 		return protoreflect.ValueOfBool(false)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopic"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopic"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopic does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -393,7 +393,7 @@ func (x *fastReflection_MsgCreateNewTopic) NewField(fd protoreflect.FieldDescrip
 func (x *fastReflection_MsgCreateNewTopic) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgCreateNewTopic", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgCreateNewTopic", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -912,8 +912,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgCreateNewTopicResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgCreateNewTopicResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgCreateNewTopicResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgCreateNewTopicResponse")
 	fd_MsgCreateNewTopicResponse_topic_id = md_MsgCreateNewTopicResponse.Fields().ByName("topic_id")
 }
 
@@ -926,7 +926,7 @@ func (x *MsgCreateNewTopicResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgCreateNewTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[1]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1003,13 +1003,13 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Range(f func(protoreflect.Fie
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgCreateNewTopicResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
 		return x.TopicId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1021,13 +1021,13 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Has(fd protoreflect.FieldDesc
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopicResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
 		x.TopicId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1039,14 +1039,14 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Clear(fd protoreflect.FieldDe
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgCreateNewTopicResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1062,13 +1062,13 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Get(descriptor protoreflect.F
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopicResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
 		x.TopicId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1084,13 +1084,13 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Set(fd protoreflect.FieldDesc
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgCreateNewTopicResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.MsgCreateNewTopicResponse is not mutable"))
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.MsgCreateNewTopicResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1099,13 +1099,13 @@ func (x *fastReflection_MsgCreateNewTopicResponse) Mutable(fd protoreflect.Field
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgCreateNewTopicResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgCreateNewTopicResponse.topic_id":
+	case "emissions.state.v1.MsgCreateNewTopicResponse.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgCreateNewTopicResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgCreateNewTopicResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgCreateNewTopicResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1115,7 +1115,7 @@ func (x *fastReflection_MsgCreateNewTopicResponse) NewField(fd protoreflect.Fiel
 func (x *fastReflection_MsgCreateNewTopicResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgCreateNewTopicResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgCreateNewTopicResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1368,8 +1368,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetWeights = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetWeights")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetWeights = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetWeights")
 	fd_MsgSetWeights_sender = md_MsgSetWeights.Fields().ByName("sender")
 	fd_MsgSetWeights_weights = md_MsgSetWeights.Fields().ByName("weights")
 }
@@ -1383,7 +1383,7 @@ func (x *MsgSetWeights) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgSetWeights) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[2]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1466,15 +1466,15 @@ func (x *fastReflection_MsgSetWeights) Range(f func(protoreflect.FieldDescriptor
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgSetWeights) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetWeights.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		return len(x.Weights) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1486,15 +1486,15 @@ func (x *fastReflection_MsgSetWeights) Has(fd protoreflect.FieldDescriptor) bool
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetWeights) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetWeights.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		x.Weights = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1506,10 +1506,10 @@ func (x *fastReflection_MsgSetWeights) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgSetWeights) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetWeights.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		if len(x.Weights) == 0 {
 			return protoreflect.ValueOfList(&_MsgSetWeights_2_list{})
 		}
@@ -1517,9 +1517,9 @@ func (x *fastReflection_MsgSetWeights) Get(descriptor protoreflect.FieldDescript
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1535,17 +1535,17 @@ func (x *fastReflection_MsgSetWeights) Get(descriptor protoreflect.FieldDescript
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetWeights) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetWeights.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		lv := value.List()
 		clv := lv.(*_MsgSetWeights_2_list)
 		x.Weights = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1561,19 +1561,19 @@ func (x *fastReflection_MsgSetWeights) Set(fd protoreflect.FieldDescriptor, valu
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetWeights) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		if x.Weights == nil {
 			x.Weights = []*Weight{}
 		}
 		value := &_MsgSetWeights_2_list{list: &x.Weights}
 		return protoreflect.ValueOfList(value)
-	case "upshot.state.v1.MsgSetWeights.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgSetWeights is not mutable"))
+	case "emissions.state.v1.MsgSetWeights.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgSetWeights is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1582,16 +1582,16 @@ func (x *fastReflection_MsgSetWeights) Mutable(fd protoreflect.FieldDescriptor) 
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgSetWeights) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetWeights.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetWeights.weights":
 		list := []*Weight{}
 		return protoreflect.ValueOfList(&_MsgSetWeights_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1601,7 +1601,7 @@ func (x *fastReflection_MsgSetWeights) NewField(fd protoreflect.FieldDescriptor)
 func (x *fastReflection_MsgSetWeights) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetWeights", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetWeights", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1873,8 +1873,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetWeightsResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetWeightsResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetWeightsResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetWeightsResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgSetWeightsResponse)(nil)
@@ -1886,7 +1886,7 @@ func (x *MsgSetWeightsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgSetWeightsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[3]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1959,9 +1959,9 @@ func (x *fastReflection_MsgSetWeightsResponse) Has(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1975,9 +1975,9 @@ func (x *fastReflection_MsgSetWeightsResponse) Clear(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1991,9 +1991,9 @@ func (x *fastReflection_MsgSetWeightsResponse) Get(descriptor protoreflect.Field
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2011,9 +2011,9 @@ func (x *fastReflection_MsgSetWeightsResponse) Set(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2031,9 +2031,9 @@ func (x *fastReflection_MsgSetWeightsResponse) Mutable(fd protoreflect.FieldDesc
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2044,9 +2044,9 @@ func (x *fastReflection_MsgSetWeightsResponse) NewField(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2056,7 +2056,7 @@ func (x *fastReflection_MsgSetWeightsResponse) NewField(fd protoreflect.FieldDes
 func (x *fastReflection_MsgSetWeightsResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetWeightsResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetWeightsResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2282,8 +2282,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetInferences = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetInferences")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetInferences = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetInferences")
 	fd_MsgSetInferences_sender = md_MsgSetInferences.Fields().ByName("sender")
 	fd_MsgSetInferences_inferences = md_MsgSetInferences.Fields().ByName("inferences")
 }
@@ -2297,7 +2297,7 @@ func (x *MsgSetInferences) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgSetInferences) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[4]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2380,15 +2380,15 @@ func (x *fastReflection_MsgSetInferences) Range(f func(protoreflect.FieldDescrip
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgSetInferences) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetInferences.sender":
+	case "emissions.state.v1.MsgSetInferences.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		return len(x.Inferences) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2400,15 +2400,15 @@ func (x *fastReflection_MsgSetInferences) Has(fd protoreflect.FieldDescriptor) b
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetInferences) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetInferences.sender":
+	case "emissions.state.v1.MsgSetInferences.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2420,10 +2420,10 @@ func (x *fastReflection_MsgSetInferences) Clear(fd protoreflect.FieldDescriptor)
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgSetInferences) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgSetInferences.sender":
+	case "emissions.state.v1.MsgSetInferences.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		if len(x.Inferences) == 0 {
 			return protoreflect.ValueOfList(&_MsgSetInferences_2_list{})
 		}
@@ -2431,9 +2431,9 @@ func (x *fastReflection_MsgSetInferences) Get(descriptor protoreflect.FieldDescr
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2449,17 +2449,17 @@ func (x *fastReflection_MsgSetInferences) Get(descriptor protoreflect.FieldDescr
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetInferences) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetInferences.sender":
+	case "emissions.state.v1.MsgSetInferences.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		lv := value.List()
 		clv := lv.(*_MsgSetInferences_2_list)
 		x.Inferences = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2475,19 +2475,19 @@ func (x *fastReflection_MsgSetInferences) Set(fd protoreflect.FieldDescriptor, v
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetInferences) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		if x.Inferences == nil {
 			x.Inferences = []*Inference{}
 		}
 		value := &_MsgSetInferences_2_list{list: &x.Inferences}
 		return protoreflect.ValueOfList(value)
-	case "upshot.state.v1.MsgSetInferences.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgSetInferences is not mutable"))
+	case "emissions.state.v1.MsgSetInferences.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgSetInferences is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2496,16 +2496,16 @@ func (x *fastReflection_MsgSetInferences) Mutable(fd protoreflect.FieldDescripto
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgSetInferences) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetInferences.sender":
+	case "emissions.state.v1.MsgSetInferences.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgSetInferences.inferences":
+	case "emissions.state.v1.MsgSetInferences.inferences":
 		list := []*Inference{}
 		return protoreflect.ValueOfList(&_MsgSetInferences_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2515,7 +2515,7 @@ func (x *fastReflection_MsgSetInferences) NewField(fd protoreflect.FieldDescript
 func (x *fastReflection_MsgSetInferences) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetInferences", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetInferences", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2787,8 +2787,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetInferencesResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetInferencesResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetInferencesResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetInferencesResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgSetInferencesResponse)(nil)
@@ -2800,7 +2800,7 @@ func (x *MsgSetInferencesResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgSetInferencesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[5]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2873,9 +2873,9 @@ func (x *fastReflection_MsgSetInferencesResponse) Has(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2889,9 +2889,9 @@ func (x *fastReflection_MsgSetInferencesResponse) Clear(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2905,9 +2905,9 @@ func (x *fastReflection_MsgSetInferencesResponse) Get(descriptor protoreflect.Fi
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2925,9 +2925,9 @@ func (x *fastReflection_MsgSetInferencesResponse) Set(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2945,9 +2945,9 @@ func (x *fastReflection_MsgSetInferencesResponse) Mutable(fd protoreflect.FieldD
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2958,9 +2958,9 @@ func (x *fastReflection_MsgSetInferencesResponse) NewField(fd protoreflect.Field
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2970,7 +2970,7 @@ func (x *fastReflection_MsgSetInferencesResponse) NewField(fd protoreflect.Field
 func (x *fastReflection_MsgSetInferencesResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetInferencesResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetInferencesResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3146,8 +3146,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetLatestInferencesTimestamp = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetLatestInferencesTimestamp")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetLatestInferencesTimestamp = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetLatestInferencesTimestamp")
 	fd_MsgSetLatestInferencesTimestamp_sender = md_MsgSetLatestInferencesTimestamp.Fields().ByName("sender")
 	fd_MsgSetLatestInferencesTimestamp_topic_id = md_MsgSetLatestInferencesTimestamp.Fields().ByName("topic_id")
 	fd_MsgSetLatestInferencesTimestamp_inference_timestamp = md_MsgSetLatestInferencesTimestamp.Fields().ByName("inference_timestamp")
@@ -3162,7 +3162,7 @@ func (x *MsgSetLatestInferencesTimestamp) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgSetLatestInferencesTimestamp) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[6]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3251,17 +3251,17 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Range(f func(protorefle
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
 		return x.InferenceTimestamp != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3273,17 +3273,17 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Has(fd protoreflect.Fie
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
 		x.InferenceTimestamp = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3295,20 +3295,20 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Clear(fd protoreflect.F
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
 		value := x.InferenceTimestamp
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3324,17 +3324,17 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Get(descriptor protoref
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
 		x.InferenceTimestamp = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3350,17 +3350,17 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Set(fd protoreflect.Fie
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
-		panic(fmt.Errorf("field inference_timestamp of message upshot.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+		panic(fmt.Errorf("field inference_timestamp of message emissions.state.v1.MsgSetLatestInferencesTimestamp is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3369,17 +3369,17 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) Mutable(fd protoreflect
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.sender":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
+	case "emissions.state.v1.MsgSetLatestInferencesTimestamp.inference_timestamp":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestamp"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestamp"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestamp does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3389,7 +3389,7 @@ func (x *fastReflection_MsgSetLatestInferencesTimestamp) NewField(fd protoreflec
 func (x *fastReflection_MsgSetLatestInferencesTimestamp) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetLatestInferencesTimestamp", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetLatestInferencesTimestamp", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -3659,8 +3659,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgSetLatestInferencesTimestampResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgSetLatestInferencesTimestampResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgSetLatestInferencesTimestampResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetLatestInferencesTimestampResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgSetLatestInferencesTimestampResponse)(nil)
@@ -3672,7 +3672,7 @@ func (x *MsgSetLatestInferencesTimestampResponse) ProtoReflect() protoreflect.Me
 }
 
 func (x *MsgSetLatestInferencesTimestampResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[7]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3745,9 +3745,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) Has(fd protoref
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3761,9 +3761,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) Clear(fd protor
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3777,9 +3777,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) Get(descriptor 
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -3797,9 +3797,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) Set(fd protoref
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3817,9 +3817,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) Mutable(fd prot
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3830,9 +3830,9 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) NewField(fd pro
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgSetLatestInferencesTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLatestInferencesTimestampResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLatestInferencesTimestampResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -3842,7 +3842,7 @@ func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) NewField(fd pro
 func (x *fastReflection_MsgSetLatestInferencesTimestampResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgSetLatestInferencesTimestampResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetLatestInferencesTimestampResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4068,8 +4068,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgProcessInferences = File_upshot_state_v1_tx_proto.Messages().ByName("MsgProcessInferences")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgProcessInferences = File_emissions_state_v1_tx_proto.Messages().ByName("MsgProcessInferences")
 	fd_MsgProcessInferences_sender = md_MsgProcessInferences.Fields().ByName("sender")
 	fd_MsgProcessInferences_inferences = md_MsgProcessInferences.Fields().ByName("inferences")
 }
@@ -4083,7 +4083,7 @@ func (x *MsgProcessInferences) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgProcessInferences) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[8]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4166,15 +4166,15 @@ func (x *fastReflection_MsgProcessInferences) Range(f func(protoreflect.FieldDes
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgProcessInferences) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.sender":
+	case "emissions.state.v1.MsgProcessInferences.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		return len(x.Inferences) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4186,15 +4186,15 @@ func (x *fastReflection_MsgProcessInferences) Has(fd protoreflect.FieldDescripto
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgProcessInferences) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.sender":
+	case "emissions.state.v1.MsgProcessInferences.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		x.Inferences = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4206,10 +4206,10 @@ func (x *fastReflection_MsgProcessInferences) Clear(fd protoreflect.FieldDescrip
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgProcessInferences) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.sender":
+	case "emissions.state.v1.MsgProcessInferences.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		if len(x.Inferences) == 0 {
 			return protoreflect.ValueOfList(&_MsgProcessInferences_2_list{})
 		}
@@ -4217,9 +4217,9 @@ func (x *fastReflection_MsgProcessInferences) Get(descriptor protoreflect.FieldD
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4235,17 +4235,17 @@ func (x *fastReflection_MsgProcessInferences) Get(descriptor protoreflect.FieldD
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgProcessInferences) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.sender":
+	case "emissions.state.v1.MsgProcessInferences.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		lv := value.List()
 		clv := lv.(*_MsgProcessInferences_2_list)
 		x.Inferences = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4261,19 +4261,19 @@ func (x *fastReflection_MsgProcessInferences) Set(fd protoreflect.FieldDescripto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgProcessInferences) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		if x.Inferences == nil {
 			x.Inferences = []*Inference{}
 		}
 		value := &_MsgProcessInferences_2_list{list: &x.Inferences}
 		return protoreflect.ValueOfList(value)
-	case "upshot.state.v1.MsgProcessInferences.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgProcessInferences is not mutable"))
+	case "emissions.state.v1.MsgProcessInferences.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgProcessInferences is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4282,16 +4282,16 @@ func (x *fastReflection_MsgProcessInferences) Mutable(fd protoreflect.FieldDescr
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgProcessInferences) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgProcessInferences.sender":
+	case "emissions.state.v1.MsgProcessInferences.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgProcessInferences.inferences":
+	case "emissions.state.v1.MsgProcessInferences.inferences":
 		list := []*Inference{}
 		return protoreflect.ValueOfList(&_MsgProcessInferences_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferences"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferences"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferences does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4301,7 +4301,7 @@ func (x *fastReflection_MsgProcessInferences) NewField(fd protoreflect.FieldDesc
 func (x *fastReflection_MsgProcessInferences) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgProcessInferences", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgProcessInferences", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4573,8 +4573,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgProcessInferencesResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgProcessInferencesResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgProcessInferencesResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgProcessInferencesResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgProcessInferencesResponse)(nil)
@@ -4586,7 +4586,7 @@ func (x *MsgProcessInferencesResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgProcessInferencesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[9]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4659,9 +4659,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) Has(fd protoreflect.FieldD
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4675,9 +4675,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) Clear(fd protoreflect.Fiel
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4691,9 +4691,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) Get(descriptor protoreflec
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -4711,9 +4711,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) Set(fd protoreflect.FieldD
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4731,9 +4731,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) Mutable(fd protoreflect.Fi
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4744,9 +4744,9 @@ func (x *fastReflection_MsgProcessInferencesResponse) NewField(fd protoreflect.F
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgProcessInferencesResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgProcessInferencesResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgProcessInferencesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -4756,7 +4756,7 @@ func (x *fastReflection_MsgProcessInferencesResponse) NewField(fd protoreflect.F
 func (x *fastReflection_MsgProcessInferencesResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgProcessInferencesResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgProcessInferencesResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -4934,8 +4934,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRegisterReputer = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRegisterReputer")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRegisterReputer = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRegisterReputer")
 	fd_MsgRegisterReputer_creator = md_MsgRegisterReputer.Fields().ByName("creator")
 	fd_MsgRegisterReputer_lib_p2p_key = md_MsgRegisterReputer.Fields().ByName("lib_p2p_key")
 	fd_MsgRegisterReputer_multi_address = md_MsgRegisterReputer.Fields().ByName("multi_address")
@@ -4952,7 +4952,7 @@ func (x *MsgRegisterReputer) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRegisterReputer) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[10]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5053,21 +5053,21 @@ func (x *fastReflection_MsgRegisterReputer) Range(f func(protoreflect.FieldDescr
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRegisterReputer) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
+	case "emissions.state.v1.MsgRegisterReputer.creator":
 		return x.Creator != ""
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
 		return x.LibP2PKey != ""
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
 		return x.MultiAddress != ""
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
 		return x.InitialStake != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5079,21 +5079,21 @@ func (x *fastReflection_MsgRegisterReputer) Has(fd protoreflect.FieldDescriptor)
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputer) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
+	case "emissions.state.v1.MsgRegisterReputer.creator":
 		x.Creator = ""
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
 		x.LibP2PKey = ""
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
 		x.MultiAddress = ""
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
 		x.InitialStake = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5105,26 +5105,26 @@ func (x *fastReflection_MsgRegisterReputer) Clear(fd protoreflect.FieldDescripto
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRegisterReputer) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
+	case "emissions.state.v1.MsgRegisterReputer.creator":
 		value := x.Creator
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
 		value := x.MultiAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
 		value := x.InitialStake
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5140,21 +5140,21 @@ func (x *fastReflection_MsgRegisterReputer) Get(descriptor protoreflect.FieldDes
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputer) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
+	case "emissions.state.v1.MsgRegisterReputer.creator":
 		x.Creator = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
 		x.MultiAddress = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
 		x.InitialStake = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5170,21 +5170,21 @@ func (x *fastReflection_MsgRegisterReputer) Set(fd protoreflect.FieldDescriptor,
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputer) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
-		panic(fmt.Errorf("field creator of message upshot.state.v1.MsgRegisterReputer is not mutable"))
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
-		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.MsgRegisterReputer is not mutable"))
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
-		panic(fmt.Errorf("field multi_address of message upshot.state.v1.MsgRegisterReputer is not mutable"))
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.MsgRegisterReputer is not mutable"))
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
-		panic(fmt.Errorf("field initial_stake of message upshot.state.v1.MsgRegisterReputer is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputer.creator":
+		panic(fmt.Errorf("field creator of message emissions.state.v1.MsgRegisterReputer is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
+		panic(fmt.Errorf("field lib_p2p_key of message emissions.state.v1.MsgRegisterReputer is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
+		panic(fmt.Errorf("field multi_address of message emissions.state.v1.MsgRegisterReputer is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.MsgRegisterReputer is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
+		panic(fmt.Errorf("field initial_stake of message emissions.state.v1.MsgRegisterReputer is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5193,21 +5193,21 @@ func (x *fastReflection_MsgRegisterReputer) Mutable(fd protoreflect.FieldDescrip
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRegisterReputer) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputer.creator":
+	case "emissions.state.v1.MsgRegisterReputer.creator":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterReputer.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterReputer.lib_p2p_key":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterReputer.multi_address":
+	case "emissions.state.v1.MsgRegisterReputer.multi_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterReputer.topic_id":
+	case "emissions.state.v1.MsgRegisterReputer.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.MsgRegisterReputer.initial_stake":
+	case "emissions.state.v1.MsgRegisterReputer.initial_stake":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputer"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputer does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5217,7 +5217,7 @@ func (x *fastReflection_MsgRegisterReputer) NewField(fd protoreflect.FieldDescri
 func (x *fastReflection_MsgRegisterReputer) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRegisterReputer", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRegisterReputer", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5591,8 +5591,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRegisterReputerResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRegisterReputerResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRegisterReputerResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRegisterReputerResponse")
 	fd_MsgRegisterReputerResponse_success = md_MsgRegisterReputerResponse.Fields().ByName("success")
 	fd_MsgRegisterReputerResponse_message = md_MsgRegisterReputerResponse.Fields().ByName("message")
 }
@@ -5606,7 +5606,7 @@ func (x *MsgRegisterReputerResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRegisterReputerResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[11]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5689,15 +5689,15 @@ func (x *fastReflection_MsgRegisterReputerResponse) Range(f func(protoreflect.Fi
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRegisterReputerResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
 		return x.Success != false
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
 		return x.Message != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5709,15 +5709,15 @@ func (x *fastReflection_MsgRegisterReputerResponse) Has(fd protoreflect.FieldDes
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputerResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
 		x.Success = false
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
 		x.Message = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5729,17 +5729,17 @@ func (x *fastReflection_MsgRegisterReputerResponse) Clear(fd protoreflect.FieldD
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRegisterReputerResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
 		value := x.Success
 		return protoreflect.ValueOfBool(value)
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
 		value := x.Message
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5755,15 +5755,15 @@ func (x *fastReflection_MsgRegisterReputerResponse) Get(descriptor protoreflect.
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputerResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
 		x.Success = value.Bool()
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
 		x.Message = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5779,15 +5779,15 @@ func (x *fastReflection_MsgRegisterReputerResponse) Set(fd protoreflect.FieldDes
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterReputerResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
-		panic(fmt.Errorf("field success of message upshot.state.v1.MsgRegisterReputerResponse is not mutable"))
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
-		panic(fmt.Errorf("field message of message upshot.state.v1.MsgRegisterReputerResponse is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
+		panic(fmt.Errorf("field success of message emissions.state.v1.MsgRegisterReputerResponse is not mutable"))
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
+		panic(fmt.Errorf("field message of message emissions.state.v1.MsgRegisterReputerResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5796,15 +5796,15 @@ func (x *fastReflection_MsgRegisterReputerResponse) Mutable(fd protoreflect.Fiel
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRegisterReputerResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterReputerResponse.success":
+	case "emissions.state.v1.MsgRegisterReputerResponse.success":
 		return protoreflect.ValueOfBool(false)
-	case "upshot.state.v1.MsgRegisterReputerResponse.message":
+	case "emissions.state.v1.MsgRegisterReputerResponse.message":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterReputerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterReputerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterReputerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5814,7 +5814,7 @@ func (x *fastReflection_MsgRegisterReputerResponse) NewField(fd protoreflect.Fie
 func (x *fastReflection_MsgRegisterReputerResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRegisterReputerResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRegisterReputerResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -6069,8 +6069,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRegisterWorker = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRegisterWorker")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRegisterWorker = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRegisterWorker")
 	fd_MsgRegisterWorker_creator = md_MsgRegisterWorker.Fields().ByName("creator")
 	fd_MsgRegisterWorker_lib_p2p_key = md_MsgRegisterWorker.Fields().ByName("lib_p2p_key")
 	fd_MsgRegisterWorker_multi_address = md_MsgRegisterWorker.Fields().ByName("multi_address")
@@ -6088,7 +6088,7 @@ func (x *MsgRegisterWorker) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRegisterWorker) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[12]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6195,23 +6195,23 @@ func (x *fastReflection_MsgRegisterWorker) Range(f func(protoreflect.FieldDescri
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRegisterWorker) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
+	case "emissions.state.v1.MsgRegisterWorker.creator":
 		return x.Creator != ""
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
 		return x.LibP2PKey != ""
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
 		return x.MultiAddress != ""
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
 		return x.TopicId != uint64(0)
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
 		return x.InitialStake != ""
-	case "upshot.state.v1.MsgRegisterWorker.owner":
+	case "emissions.state.v1.MsgRegisterWorker.owner":
 		return x.Owner != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6223,23 +6223,23 @@ func (x *fastReflection_MsgRegisterWorker) Has(fd protoreflect.FieldDescriptor) 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorker) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
+	case "emissions.state.v1.MsgRegisterWorker.creator":
 		x.Creator = ""
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
 		x.LibP2PKey = ""
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
 		x.MultiAddress = ""
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
 		x.TopicId = uint64(0)
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
 		x.InitialStake = ""
-	case "upshot.state.v1.MsgRegisterWorker.owner":
+	case "emissions.state.v1.MsgRegisterWorker.owner":
 		x.Owner = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6251,29 +6251,29 @@ func (x *fastReflection_MsgRegisterWorker) Clear(fd protoreflect.FieldDescriptor
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRegisterWorker) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
+	case "emissions.state.v1.MsgRegisterWorker.creator":
 		value := x.Creator
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
 		value := x.MultiAddress
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
 		value := x.InitialStake
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRegisterWorker.owner":
+	case "emissions.state.v1.MsgRegisterWorker.owner":
 		value := x.Owner
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -6289,23 +6289,23 @@ func (x *fastReflection_MsgRegisterWorker) Get(descriptor protoreflect.FieldDesc
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorker) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
+	case "emissions.state.v1.MsgRegisterWorker.creator":
 		x.Creator = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
 		x.MultiAddress = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
 		x.TopicId = value.Uint()
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
 		x.InitialStake = value.Interface().(string)
-	case "upshot.state.v1.MsgRegisterWorker.owner":
+	case "emissions.state.v1.MsgRegisterWorker.owner":
 		x.Owner = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6321,23 +6321,23 @@ func (x *fastReflection_MsgRegisterWorker) Set(fd protoreflect.FieldDescriptor, 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorker) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
-		panic(fmt.Errorf("field creator of message upshot.state.v1.MsgRegisterWorker is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
-		panic(fmt.Errorf("field lib_p2p_key of message upshot.state.v1.MsgRegisterWorker is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
-		panic(fmt.Errorf("field multi_address of message upshot.state.v1.MsgRegisterWorker is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
-		panic(fmt.Errorf("field topic_id of message upshot.state.v1.MsgRegisterWorker is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
-		panic(fmt.Errorf("field initial_stake of message upshot.state.v1.MsgRegisterWorker is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorker.owner":
-		panic(fmt.Errorf("field owner of message upshot.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.creator":
+		panic(fmt.Errorf("field creator of message emissions.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
+		panic(fmt.Errorf("field lib_p2p_key of message emissions.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
+		panic(fmt.Errorf("field multi_address of message emissions.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
+		panic(fmt.Errorf("field initial_stake of message emissions.state.v1.MsgRegisterWorker is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorker.owner":
+		panic(fmt.Errorf("field owner of message emissions.state.v1.MsgRegisterWorker is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6346,23 +6346,23 @@ func (x *fastReflection_MsgRegisterWorker) Mutable(fd protoreflect.FieldDescript
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRegisterWorker) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorker.creator":
+	case "emissions.state.v1.MsgRegisterWorker.creator":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterWorker.lib_p2p_key":
+	case "emissions.state.v1.MsgRegisterWorker.lib_p2p_key":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterWorker.multi_address":
+	case "emissions.state.v1.MsgRegisterWorker.multi_address":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterWorker.topic_id":
+	case "emissions.state.v1.MsgRegisterWorker.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "upshot.state.v1.MsgRegisterWorker.initial_stake":
+	case "emissions.state.v1.MsgRegisterWorker.initial_stake":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRegisterWorker.owner":
+	case "emissions.state.v1.MsgRegisterWorker.owner":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorker"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorker"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorker does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6372,7 +6372,7 @@ func (x *fastReflection_MsgRegisterWorker) NewField(fd protoreflect.FieldDescrip
 func (x *fastReflection_MsgRegisterWorker) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRegisterWorker", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRegisterWorker", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -6789,8 +6789,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRegisterWorkerResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRegisterWorkerResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRegisterWorkerResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRegisterWorkerResponse")
 	fd_MsgRegisterWorkerResponse_success = md_MsgRegisterWorkerResponse.Fields().ByName("success")
 	fd_MsgRegisterWorkerResponse_message = md_MsgRegisterWorkerResponse.Fields().ByName("message")
 }
@@ -6804,7 +6804,7 @@ func (x *MsgRegisterWorkerResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRegisterWorkerResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[13]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6887,15 +6887,15 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Range(f func(protoreflect.Fie
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRegisterWorkerResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
 		return x.Success != false
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
 		return x.Message != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6907,15 +6907,15 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Has(fd protoreflect.FieldDesc
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorkerResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
 		x.Success = false
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
 		x.Message = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6927,17 +6927,17 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Clear(fd protoreflect.FieldDe
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRegisterWorkerResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
 		value := x.Success
 		return protoreflect.ValueOfBool(value)
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
 		value := x.Message
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -6953,15 +6953,15 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Get(descriptor protoreflect.F
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorkerResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
 		x.Success = value.Bool()
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
 		x.Message = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6977,15 +6977,15 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Set(fd protoreflect.FieldDesc
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRegisterWorkerResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
-		panic(fmt.Errorf("field success of message upshot.state.v1.MsgRegisterWorkerResponse is not mutable"))
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
-		panic(fmt.Errorf("field message of message upshot.state.v1.MsgRegisterWorkerResponse is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
+		panic(fmt.Errorf("field success of message emissions.state.v1.MsgRegisterWorkerResponse is not mutable"))
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
+		panic(fmt.Errorf("field message of message emissions.state.v1.MsgRegisterWorkerResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6994,15 +6994,15 @@ func (x *fastReflection_MsgRegisterWorkerResponse) Mutable(fd protoreflect.Field
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRegisterWorkerResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRegisterWorkerResponse.success":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.success":
 		return protoreflect.ValueOfBool(false)
-	case "upshot.state.v1.MsgRegisterWorkerResponse.message":
+	case "emissions.state.v1.MsgRegisterWorkerResponse.message":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRegisterWorkerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRegisterWorkerResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRegisterWorkerResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7012,7 +7012,7 @@ func (x *fastReflection_MsgRegisterWorkerResponse) NewField(fd protoreflect.Fiel
 func (x *fastReflection_MsgRegisterWorkerResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRegisterWorkerResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRegisterWorkerResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -7264,8 +7264,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgAddStake = File_upshot_state_v1_tx_proto.Messages().ByName("MsgAddStake")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgAddStake = File_emissions_state_v1_tx_proto.Messages().ByName("MsgAddStake")
 	fd_MsgAddStake_sender = md_MsgAddStake.Fields().ByName("sender")
 	fd_MsgAddStake_amount = md_MsgAddStake.Fields().ByName("amount")
 	fd_MsgAddStake_stake_target = md_MsgAddStake.Fields().ByName("stake_target")
@@ -7280,7 +7280,7 @@ func (x *MsgAddStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[14]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7369,17 +7369,17 @@ func (x *fastReflection_MsgAddStake) Range(f func(protoreflect.FieldDescriptor, 
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgAddStake) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
+	case "emissions.state.v1.MsgAddStake.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgAddStake.amount":
+	case "emissions.state.v1.MsgAddStake.amount":
 		return x.Amount != ""
-	case "upshot.state.v1.MsgAddStake.stake_target":
+	case "emissions.state.v1.MsgAddStake.stake_target":
 		return x.StakeTarget != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7391,17 +7391,17 @@ func (x *fastReflection_MsgAddStake) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgAddStake) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
+	case "emissions.state.v1.MsgAddStake.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgAddStake.amount":
+	case "emissions.state.v1.MsgAddStake.amount":
 		x.Amount = ""
-	case "upshot.state.v1.MsgAddStake.stake_target":
+	case "emissions.state.v1.MsgAddStake.stake_target":
 		x.StakeTarget = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7413,20 +7413,20 @@ func (x *fastReflection_MsgAddStake) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgAddStake) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
+	case "emissions.state.v1.MsgAddStake.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgAddStake.amount":
+	case "emissions.state.v1.MsgAddStake.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgAddStake.stake_target":
+	case "emissions.state.v1.MsgAddStake.stake_target":
 		value := x.StakeTarget
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -7442,17 +7442,17 @@ func (x *fastReflection_MsgAddStake) Get(descriptor protoreflect.FieldDescriptor
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgAddStake) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
+	case "emissions.state.v1.MsgAddStake.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgAddStake.amount":
+	case "emissions.state.v1.MsgAddStake.amount":
 		x.Amount = value.Interface().(string)
-	case "upshot.state.v1.MsgAddStake.stake_target":
+	case "emissions.state.v1.MsgAddStake.stake_target":
 		x.StakeTarget = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7468,17 +7468,17 @@ func (x *fastReflection_MsgAddStake) Set(fd protoreflect.FieldDescriptor, value 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgAddStake) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgAddStake is not mutable"))
-	case "upshot.state.v1.MsgAddStake.amount":
-		panic(fmt.Errorf("field amount of message upshot.state.v1.MsgAddStake is not mutable"))
-	case "upshot.state.v1.MsgAddStake.stake_target":
-		panic(fmt.Errorf("field stake_target of message upshot.state.v1.MsgAddStake is not mutable"))
+	case "emissions.state.v1.MsgAddStake.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgAddStake is not mutable"))
+	case "emissions.state.v1.MsgAddStake.amount":
+		panic(fmt.Errorf("field amount of message emissions.state.v1.MsgAddStake is not mutable"))
+	case "emissions.state.v1.MsgAddStake.stake_target":
+		panic(fmt.Errorf("field stake_target of message emissions.state.v1.MsgAddStake is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7487,17 +7487,17 @@ func (x *fastReflection_MsgAddStake) Mutable(fd protoreflect.FieldDescriptor) pr
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgAddStake) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgAddStake.sender":
+	case "emissions.state.v1.MsgAddStake.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgAddStake.amount":
+	case "emissions.state.v1.MsgAddStake.amount":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgAddStake.stake_target":
+	case "emissions.state.v1.MsgAddStake.stake_target":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7507,7 +7507,7 @@ func (x *fastReflection_MsgAddStake) NewField(fd protoreflect.FieldDescriptor) p
 func (x *fastReflection_MsgAddStake) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgAddStake", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgAddStake", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -7809,8 +7809,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgAddStakeResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgAddStakeResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgAddStakeResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgAddStakeResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgAddStakeResponse)(nil)
@@ -7822,7 +7822,7 @@ func (x *MsgAddStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[15]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7895,9 +7895,9 @@ func (x *fastReflection_MsgAddStakeResponse) Has(fd protoreflect.FieldDescriptor
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7911,9 +7911,9 @@ func (x *fastReflection_MsgAddStakeResponse) Clear(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7927,9 +7927,9 @@ func (x *fastReflection_MsgAddStakeResponse) Get(descriptor protoreflect.FieldDe
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -7947,9 +7947,9 @@ func (x *fastReflection_MsgAddStakeResponse) Set(fd protoreflect.FieldDescriptor
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7967,9 +7967,9 @@ func (x *fastReflection_MsgAddStakeResponse) Mutable(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7980,9 +7980,9 @@ func (x *fastReflection_MsgAddStakeResponse) NewField(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgAddStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgAddStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgAddStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -7992,7 +7992,7 @@ func (x *fastReflection_MsgAddStakeResponse) NewField(fd protoreflect.FieldDescr
 func (x *fastReflection_MsgAddStakeResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgAddStakeResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgAddStakeResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -8168,8 +8168,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRemoveStake = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRemoveStake")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRemoveStake = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRemoveStake")
 	fd_MsgRemoveStake_sender = md_MsgRemoveStake.Fields().ByName("sender")
 	fd_MsgRemoveStake_amount = md_MsgRemoveStake.Fields().ByName("amount")
 	fd_MsgRemoveStake_stake_target = md_MsgRemoveStake.Fields().ByName("stake_target")
@@ -8184,7 +8184,7 @@ func (x *MsgRemoveStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[16]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8273,17 +8273,17 @@ func (x *fastReflection_MsgRemoveStake) Range(f func(protoreflect.FieldDescripto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRemoveStake) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
+	case "emissions.state.v1.MsgRemoveStake.sender":
 		return x.Sender != ""
-	case "upshot.state.v1.MsgRemoveStake.amount":
+	case "emissions.state.v1.MsgRemoveStake.amount":
 		return x.Amount != ""
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
 		return x.StakeTarget != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8295,17 +8295,17 @@ func (x *fastReflection_MsgRemoveStake) Has(fd protoreflect.FieldDescriptor) boo
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveStake) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
+	case "emissions.state.v1.MsgRemoveStake.sender":
 		x.Sender = ""
-	case "upshot.state.v1.MsgRemoveStake.amount":
+	case "emissions.state.v1.MsgRemoveStake.amount":
 		x.Amount = ""
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
 		x.StakeTarget = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8317,20 +8317,20 @@ func (x *fastReflection_MsgRemoveStake) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRemoveStake) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
+	case "emissions.state.v1.MsgRemoveStake.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRemoveStake.amount":
+	case "emissions.state.v1.MsgRemoveStake.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
 		value := x.StakeTarget
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -8346,17 +8346,17 @@ func (x *fastReflection_MsgRemoveStake) Get(descriptor protoreflect.FieldDescrip
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveStake) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
+	case "emissions.state.v1.MsgRemoveStake.sender":
 		x.Sender = value.Interface().(string)
-	case "upshot.state.v1.MsgRemoveStake.amount":
+	case "emissions.state.v1.MsgRemoveStake.amount":
 		x.Amount = value.Interface().(string)
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
 		x.StakeTarget = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8372,17 +8372,17 @@ func (x *fastReflection_MsgRemoveStake) Set(fd protoreflect.FieldDescriptor, val
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveStake) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgRemoveStake is not mutable"))
-	case "upshot.state.v1.MsgRemoveStake.amount":
-		panic(fmt.Errorf("field amount of message upshot.state.v1.MsgRemoveStake is not mutable"))
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
-		panic(fmt.Errorf("field stake_target of message upshot.state.v1.MsgRemoveStake is not mutable"))
+	case "emissions.state.v1.MsgRemoveStake.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgRemoveStake is not mutable"))
+	case "emissions.state.v1.MsgRemoveStake.amount":
+		panic(fmt.Errorf("field amount of message emissions.state.v1.MsgRemoveStake is not mutable"))
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
+		panic(fmt.Errorf("field stake_target of message emissions.state.v1.MsgRemoveStake is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8391,17 +8391,17 @@ func (x *fastReflection_MsgRemoveStake) Mutable(fd protoreflect.FieldDescriptor)
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRemoveStake) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveStake.sender":
+	case "emissions.state.v1.MsgRemoveStake.sender":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRemoveStake.amount":
+	case "emissions.state.v1.MsgRemoveStake.amount":
 		return protoreflect.ValueOfString("")
-	case "upshot.state.v1.MsgRemoveStake.stake_target":
+	case "emissions.state.v1.MsgRemoveStake.stake_target":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8411,7 +8411,7 @@ func (x *fastReflection_MsgRemoveStake) NewField(fd protoreflect.FieldDescriptor
 func (x *fastReflection_MsgRemoveStake) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRemoveStake", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRemoveStake", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -8713,8 +8713,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRemoveStakeResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRemoveStakeResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRemoveStakeResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRemoveStakeResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgRemoveStakeResponse)(nil)
@@ -8726,7 +8726,7 @@ func (x *MsgRemoveStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[17]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8799,9 +8799,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) Has(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8815,9 +8815,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) Clear(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8831,9 +8831,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) Get(descriptor protoreflect.Fiel
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -8851,9 +8851,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) Set(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8871,9 +8871,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) Mutable(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8884,9 +8884,9 @@ func (x *fastReflection_MsgRemoveStakeResponse) NewField(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -8896,7 +8896,7 @@ func (x *fastReflection_MsgRemoveStakeResponse) NewField(fd protoreflect.FieldDe
 func (x *fastReflection_MsgRemoveStakeResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRemoveStakeResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRemoveStakeResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -9070,8 +9070,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRemoveAllStake = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRemoveAllStake")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRemoveAllStake = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRemoveAllStake")
 	fd_MsgRemoveAllStake_sender = md_MsgRemoveAllStake.Fields().ByName("sender")
 }
 
@@ -9084,7 +9084,7 @@ func (x *MsgRemoveAllStake) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveAllStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[18]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9161,13 +9161,13 @@ func (x *fastReflection_MsgRemoveAllStake) Range(f func(protoreflect.FieldDescri
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_MsgRemoveAllStake) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
 		return x.Sender != ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9179,13 +9179,13 @@ func (x *fastReflection_MsgRemoveAllStake) Has(fd protoreflect.FieldDescriptor) 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveAllStake) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
 		x.Sender = ""
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9197,14 +9197,14 @@ func (x *fastReflection_MsgRemoveAllStake) Clear(fd protoreflect.FieldDescriptor
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_MsgRemoveAllStake) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -9220,13 +9220,13 @@ func (x *fastReflection_MsgRemoveAllStake) Get(descriptor protoreflect.FieldDesc
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveAllStake) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
 		x.Sender = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9242,13 +9242,13 @@ func (x *fastReflection_MsgRemoveAllStake) Set(fd protoreflect.FieldDescriptor, 
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_MsgRemoveAllStake) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
-		panic(fmt.Errorf("field sender of message upshot.state.v1.MsgRemoveAllStake is not mutable"))
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgRemoveAllStake is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9257,13 +9257,13 @@ func (x *fastReflection_MsgRemoveAllStake) Mutable(fd protoreflect.FieldDescript
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_MsgRemoveAllStake) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "upshot.state.v1.MsgRemoveAllStake.sender":
+	case "emissions.state.v1.MsgRemoveAllStake.sender":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStake"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStake"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStake does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9273,7 +9273,7 @@ func (x *fastReflection_MsgRemoveAllStake) NewField(fd protoreflect.FieldDescrip
 func (x *fastReflection_MsgRemoveAllStake) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRemoveAllStake", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRemoveAllStake", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -9489,8 +9489,8 @@ var (
 )
 
 func init() {
-	file_upshot_state_v1_tx_proto_init()
-	md_MsgRemoveAllStakeResponse = File_upshot_state_v1_tx_proto.Messages().ByName("MsgRemoveAllStakeResponse")
+	file_emissions_state_v1_tx_proto_init()
+	md_MsgRemoveAllStakeResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgRemoveAllStakeResponse")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgRemoveAllStakeResponse)(nil)
@@ -9502,7 +9502,7 @@ func (x *MsgRemoveAllStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveAllStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_upshot_state_v1_tx_proto_msgTypes[19]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9575,9 +9575,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) Has(fd protoreflect.FieldDesc
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9591,9 +9591,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) Clear(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9607,9 +9607,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) Get(descriptor protoreflect.F
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -9627,9 +9627,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) Set(fd protoreflect.FieldDesc
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9647,9 +9647,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) Mutable(fd protoreflect.Field
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9660,9 +9660,9 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) NewField(fd protoreflect.Fiel
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: upshot.state.v1.MsgRemoveAllStakeResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgRemoveAllStakeResponse"))
 		}
-		panic(fmt.Errorf("message upshot.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgRemoveAllStakeResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -9672,7 +9672,7 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) NewField(fd protoreflect.Fiel
 func (x *fastReflection_MsgRemoveAllStakeResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in upshot.state.v1.MsgRemoveAllStakeResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgRemoveAllStakeResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -9844,7 +9844,7 @@ func (x *fastReflection_MsgRemoveAllStakeResponse) ProtoMethods() *protoiface.Me
 // versions:
 // 	protoc-gen-go v1.27.0
 // 	protoc        (unknown)
-// source: upshot/state/v1/tx.proto
+// source: emissions/state/v1/tx.proto
 
 const (
 	// Verify that this generated code is sufficiently up-to-date.
@@ -9873,7 +9873,7 @@ type MsgCreateNewTopic struct {
 func (x *MsgCreateNewTopic) Reset() {
 	*x = MsgCreateNewTopic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[0]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9887,7 +9887,7 @@ func (*MsgCreateNewTopic) ProtoMessage() {}
 
 // Deprecated: Use MsgCreateNewTopic.ProtoReflect.Descriptor instead.
 func (*MsgCreateNewTopic) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{0}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *MsgCreateNewTopic) GetCreator() string {
@@ -9964,7 +9964,7 @@ type MsgCreateNewTopicResponse struct {
 func (x *MsgCreateNewTopicResponse) Reset() {
 	*x = MsgCreateNewTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[1]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -9978,7 +9978,7 @@ func (*MsgCreateNewTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgCreateNewTopicResponse.ProtoReflect.Descriptor instead.
 func (*MsgCreateNewTopicResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{1}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *MsgCreateNewTopicResponse) GetTopicId() uint64 {
@@ -10001,7 +10001,7 @@ type MsgSetWeights struct {
 func (x *MsgSetWeights) Reset() {
 	*x = MsgSetWeights{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[2]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10015,7 +10015,7 @@ func (*MsgSetWeights) ProtoMessage() {}
 
 // Deprecated: Use MsgSetWeights.ProtoReflect.Descriptor instead.
 func (*MsgSetWeights) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{2}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *MsgSetWeights) GetSender() string {
@@ -10041,7 +10041,7 @@ type MsgSetWeightsResponse struct {
 func (x *MsgSetWeightsResponse) Reset() {
 	*x = MsgSetWeightsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[3]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10055,7 +10055,7 @@ func (*MsgSetWeightsResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgSetWeightsResponse.ProtoReflect.Descriptor instead.
 func (*MsgSetWeightsResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{3}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{3}
 }
 
 // MsgSetInferences sets the inferences for a given validator.
@@ -10071,7 +10071,7 @@ type MsgSetInferences struct {
 func (x *MsgSetInferences) Reset() {
 	*x = MsgSetInferences{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[4]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10085,7 +10085,7 @@ func (*MsgSetInferences) ProtoMessage() {}
 
 // Deprecated: Use MsgSetInferences.ProtoReflect.Descriptor instead.
 func (*MsgSetInferences) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{4}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *MsgSetInferences) GetSender() string {
@@ -10111,7 +10111,7 @@ type MsgSetInferencesResponse struct {
 func (x *MsgSetInferencesResponse) Reset() {
 	*x = MsgSetInferencesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[5]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10125,7 +10125,7 @@ func (*MsgSetInferencesResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgSetInferencesResponse.ProtoReflect.Descriptor instead.
 func (*MsgSetInferencesResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{5}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{5}
 }
 
 type MsgSetLatestInferencesTimestamp struct {
@@ -10141,7 +10141,7 @@ type MsgSetLatestInferencesTimestamp struct {
 func (x *MsgSetLatestInferencesTimestamp) Reset() {
 	*x = MsgSetLatestInferencesTimestamp{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[6]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10155,7 +10155,7 @@ func (*MsgSetLatestInferencesTimestamp) ProtoMessage() {}
 
 // Deprecated: Use MsgSetLatestInferencesTimestamp.ProtoReflect.Descriptor instead.
 func (*MsgSetLatestInferencesTimestamp) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{6}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MsgSetLatestInferencesTimestamp) GetSender() string {
@@ -10188,7 +10188,7 @@ type MsgSetLatestInferencesTimestampResponse struct {
 func (x *MsgSetLatestInferencesTimestampResponse) Reset() {
 	*x = MsgSetLatestInferencesTimestampResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[7]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10202,7 +10202,7 @@ func (*MsgSetLatestInferencesTimestampResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgSetLatestInferencesTimestampResponse.ProtoReflect.Descriptor instead.
 func (*MsgSetLatestInferencesTimestampResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{7}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{7}
 }
 
 type MsgProcessInferences struct {
@@ -10217,7 +10217,7 @@ type MsgProcessInferences struct {
 func (x *MsgProcessInferences) Reset() {
 	*x = MsgProcessInferences{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[8]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10231,7 +10231,7 @@ func (*MsgProcessInferences) ProtoMessage() {}
 
 // Deprecated: Use MsgProcessInferences.ProtoReflect.Descriptor instead.
 func (*MsgProcessInferences) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{8}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *MsgProcessInferences) GetSender() string {
@@ -10257,7 +10257,7 @@ type MsgProcessInferencesResponse struct {
 func (x *MsgProcessInferencesResponse) Reset() {
 	*x = MsgProcessInferencesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[9]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10271,7 +10271,7 @@ func (*MsgProcessInferencesResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgProcessInferencesResponse.ProtoReflect.Descriptor instead.
 func (*MsgProcessInferencesResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{9}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{9}
 }
 
 // Message for registering an Inference compute node
@@ -10290,7 +10290,7 @@ type MsgRegisterReputer struct {
 func (x *MsgRegisterReputer) Reset() {
 	*x = MsgRegisterReputer{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[10]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10304,7 +10304,7 @@ func (*MsgRegisterReputer) ProtoMessage() {}
 
 // Deprecated: Use MsgRegisterReputer.ProtoReflect.Descriptor instead.
 func (*MsgRegisterReputer) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{10}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MsgRegisterReputer) GetCreator() string {
@@ -10355,7 +10355,7 @@ type MsgRegisterReputerResponse struct {
 func (x *MsgRegisterReputerResponse) Reset() {
 	*x = MsgRegisterReputerResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[11]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10369,7 +10369,7 @@ func (*MsgRegisterReputerResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRegisterReputerResponse.ProtoReflect.Descriptor instead.
 func (*MsgRegisterReputerResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{11}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *MsgRegisterReputerResponse) GetSuccess() bool {
@@ -10403,7 +10403,7 @@ type MsgRegisterWorker struct {
 func (x *MsgRegisterWorker) Reset() {
 	*x = MsgRegisterWorker{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[12]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10417,7 +10417,7 @@ func (*MsgRegisterWorker) ProtoMessage() {}
 
 // Deprecated: Use MsgRegisterWorker.ProtoReflect.Descriptor instead.
 func (*MsgRegisterWorker) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{12}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *MsgRegisterWorker) GetCreator() string {
@@ -10475,7 +10475,7 @@ type MsgRegisterWorkerResponse struct {
 func (x *MsgRegisterWorkerResponse) Reset() {
 	*x = MsgRegisterWorkerResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[13]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10489,7 +10489,7 @@ func (*MsgRegisterWorkerResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRegisterWorkerResponse.ProtoReflect.Descriptor instead.
 func (*MsgRegisterWorkerResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{13}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *MsgRegisterWorkerResponse) GetSuccess() bool {
@@ -10519,7 +10519,7 @@ type MsgAddStake struct {
 func (x *MsgAddStake) Reset() {
 	*x = MsgAddStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[14]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10533,7 +10533,7 @@ func (*MsgAddStake) ProtoMessage() {}
 
 // Deprecated: Use MsgAddStake.ProtoReflect.Descriptor instead.
 func (*MsgAddStake) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{14}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MsgAddStake) GetSender() string {
@@ -10566,7 +10566,7 @@ type MsgAddStakeResponse struct {
 func (x *MsgAddStakeResponse) Reset() {
 	*x = MsgAddStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[15]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10580,7 +10580,7 @@ func (*MsgAddStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgAddStakeResponse.ProtoReflect.Descriptor instead.
 func (*MsgAddStakeResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{15}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{15}
 }
 
 type MsgRemoveStake struct {
@@ -10596,7 +10596,7 @@ type MsgRemoveStake struct {
 func (x *MsgRemoveStake) Reset() {
 	*x = MsgRemoveStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[16]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10610,7 +10610,7 @@ func (*MsgRemoveStake) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveStake.ProtoReflect.Descriptor instead.
 func (*MsgRemoveStake) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{16}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *MsgRemoveStake) GetSender() string {
@@ -10643,7 +10643,7 @@ type MsgRemoveStakeResponse struct {
 func (x *MsgRemoveStakeResponse) Reset() {
 	*x = MsgRemoveStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[17]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10657,7 +10657,7 @@ func (*MsgRemoveStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveStakeResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveStakeResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{17}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{17}
 }
 
 type MsgRemoveAllStake struct {
@@ -10671,7 +10671,7 @@ type MsgRemoveAllStake struct {
 func (x *MsgRemoveAllStake) Reset() {
 	*x = MsgRemoveAllStake{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[18]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10685,7 +10685,7 @@ func (*MsgRemoveAllStake) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveAllStake.ProtoReflect.Descriptor instead.
 func (*MsgRemoveAllStake) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{18}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *MsgRemoveAllStake) GetSender() string {
@@ -10704,7 +10704,7 @@ type MsgRemoveAllStakeResponse struct {
 func (x *MsgRemoveAllStakeResponse) Reset() {
 	*x = MsgRemoveAllStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_upshot_state_v1_tx_proto_msgTypes[19]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10718,130 +10718,143 @@ func (*MsgRemoveAllStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveAllStakeResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveAllStakeResponse) Descriptor() ([]byte, []int) {
-	return file_upshot_state_v1_tx_proto_rawDescGZIP(), []int{19}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{19}
 }
 
-var File_upshot_state_v1_tx_proto protoreflect.FileDescriptor
+var File_emissions_state_v1_tx_proto protoreflect.FileDescriptor
 
-var file_upshot_state_v1_tx_proto_rawDesc = []byte{
-	0x0a, 0x18, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76,
-	0x31, 0x2f, 0x74, 0x78, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0f, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x1a, 0x17, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x73, 0x67, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e,
-	0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1b, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xdf, 0x02, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65,
-	0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x18, 0x0a, 0x07, 0x63,
-	0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72,
-	0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74,
-	0x61, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x69,
-	0x63, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4c,
-	0x6f, 0x67, 0x69, 0x63, 0x12, 0x23, 0x0a, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6d,
-	0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65,
-	0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x6f,
-	0x67, 0x69, 0x63, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x69, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x07, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4d, 0x65,
-	0x74, 0x68, 0x6f, 0x64, 0x12, 0x2b, 0x0a, 0x11, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63,
-	0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x36, 0x0a, 0x19, 0x4d, 0x73, 0x67, 0x43, 0x72,
-	0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22,
-	0x67, 0x0a, 0x0d, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73,
-	0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x31, 0x0a, 0x07, 0x77, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x52, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0,
-	0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x17, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x53,
-	0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x73, 0x0a, 0x10, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x3a, 0x0a,
-	0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06,
-	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1a, 0x0a, 0x18, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74,
-	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x92, 0x01, 0x0a, 0x1f, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x61, 0x74,
-	0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2f, 0x0a, 0x13, 0x69, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x12, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a,
-	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x29, 0x0a, 0x27, 0x4d, 0x73, 0x67, 0x53, 0x65,
-	0x74, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x73, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x77, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73,
-	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64,
-	0x65, 0x72, 0x12, 0x3a, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x3a, 0x0b,
-	0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1e, 0x0a, 0x1c, 0x4d,
-	0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xf5, 0x01, 0x0a, 0x12,
-	0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74,
-	0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b,
-	0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d,
-	0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x57, 0x0a, 0x0d,
-	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55,
-	0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69,
-	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65, 0x61,
-	0x74, 0x6f, 0x72, 0x22, 0x50, 0x0a, 0x1a, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+var file_emissions_state_v1_tx_proto_rawDesc = []byte{
+	0x0a, 0x1b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x78, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x12, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x1a, 0x17, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x6d, 0x73, 0x67, 0x2f, 0x76, 0x31,
+	0x2f, 0x6d, 0x73, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x1a, 0x1e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xdf,
+	0x02, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a,
+	0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x0b, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x23, 0x0a,
+	0x0d, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4d, 0x65, 0x74, 0x68,
+	0x6f, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63, 0x61, 0x64,
+	0x65, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x77, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4c, 0x6f, 0x67,
+	0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f,
+	0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x69, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x2b, 0x0a,
+	0x11, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e,
+	0x63, 0x65, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63,
+	0x74, 0x69, 0x76, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69,
+	0x76, 0x65, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72,
+	0x22, 0x36, 0x0a, 0x19, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x22, 0x6a, 0x0a, 0x0d, 0x4d, 0x73, 0x67, 0x53,
+	0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65,
+	0x72, 0x12, 0x34, 0x0a, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07,
+	0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65,
+	0x6e, 0x64, 0x65, 0x72, 0x22, 0x17, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x76, 0x0a,
+	0x10, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1a, 0x0a, 0x18, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x92, 0x01, 0x0a, 0x1f, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x61, 0x74, 0x65,
+	0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x69, 0x6d, 0x65,
+	0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x2f, 0x0a, 0x13, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x12, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06,
+	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x29, 0x0a, 0x27, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74,
+	0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x7a, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65,
+	0x72, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18,
+	0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1e, 0x0a,
+	0x1c, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xf5, 0x01,
+	0x0a, 0x12, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70,
+	0x75, 0x74, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e,
+	0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23,
+	0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x57,
+	0x0a, 0x0d, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18,
+	0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x50, 0x0a, 0x1a, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a,
+	0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x8a, 0x02, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x52,
+	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x18, 0x0a,
+	0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
+	0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70,
+	0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69,
+	0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69,
+	0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c,
+	0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x57, 0x0a, 0x0d, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
+	0x2a, 0x01, 0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65,
+	0x61, 0x74, 0x6f, 0x72, 0x22, 0x4f, 0x0a, 0x19, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d,
 	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65,
-	0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x8a, 0x02, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x63,
-	0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72,
-	0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70,
-	0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50,
-	0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75,
-	0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x57, 0x0a, 0x0d, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c,
-	0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
-	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
-	0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x14,
-	0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f,
-	0x77, 0x6e, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74,
-	0x6f, 0x72, 0x22, 0x4f, 0x0a, 0x19, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73,
-	0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73,
-	0x61, 0x67, 0x65, 0x22, 0xa1, 0x01, 0x0a, 0x0b, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0xa1, 0x01, 0x0a, 0x0b, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64,
+	0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4a, 0x0a,
+	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x74, 0x61,
+	0x6b, 0x65, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0b, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x3a, 0x0b, 0x82, 0xe7,
+	0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x15, 0x0a, 0x13, 0x4d, 0x73, 0x67,
+	0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0xa4, 0x01, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74,
 	0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61,
 	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f,
@@ -10851,165 +10864,158 @@ var file_upshot_state_v1_tx_proto_rawDesc = []byte{
 	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x74, 0x61, 0x6b, 0x65,
 	0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73,
 	0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a,
-	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x15, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x41, 0x64,
-	0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xa4,
-	0x01, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b,
-	0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda,
-	0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f,
-	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73,
-	0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x74,
-	0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x74, 0x61,
-	0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x18, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x38, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x3a, 0x0b, 0x82, 0xe7,
-	0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1b, 0x0a, 0x19, 0x4d, 0x73, 0x67,
-	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xed, 0x07, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x5d,
-	0x0a, 0x0d, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12,
-	0x21, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x1a, 0x29, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x69, 0x0a,
-	0x11, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x12, 0x25, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x1a, 0x2d, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50,
-	0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8a, 0x01, 0x0a, 0x1c, 0x53, 0x65, 0x74,
-	0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x30, 0x2e, 0x75, 0x70, 0x73, 0x68,
-	0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53,
-	0x65, 0x74, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x1a, 0x38, 0x2e, 0x75, 0x70,
-	0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x53, 0x65, 0x74, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x54, 0x0a, 0x0a, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x12, 0x1e, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x1a, 0x26, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x60, 0x0a, 0x0e, 0x43,
-	0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x22, 0x2e,
-	0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x1a, 0x2a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x18, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x38, 0x0a, 0x11, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c,
+	0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x3a, 0x0b,
+	0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1b, 0x0a, 0x19, 0x4d,
+	0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xa9, 0x08, 0x0a, 0x03, 0x4d, 0x73, 0x67,
+	0x12, 0x63, 0x0a, 0x0d, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x12, 0x24, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
+	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x1a, 0x2c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x53, 0x65, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6f, 0x0a, 0x11, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73,
+	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x28, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x73, 0x1a, 0x30, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f,
+	0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x90, 0x01, 0x0a, 0x1c, 0x53, 0x65, 0x74, 0x4c, 0x61,
+	0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x69,
+	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x33, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x53, 0x65, 0x74, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x1a, 0x3b, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5a, 0x0a, 0x0a, 0x53, 0x65, 0x74,
+	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x21, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x1a, 0x29, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x66, 0x0a, 0x0e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e,
+	0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x1a, 0x2d,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
 	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x63, 0x0a,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x69, 0x0a,
 	0x0f, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72,
-	0x12, 0x23, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65,
-	0x70, 0x75, 0x74, 0x65, 0x72, 0x1a, 0x2b, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x60, 0x0a, 0x0e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x57, 0x6f,
-	0x72, 0x6b, 0x65, 0x72, 0x12, 0x22, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74,
+	0x12, 0x26, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
+	0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x1a, 0x2e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
+	0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x66, 0x0a, 0x0e, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x25, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x1a, 0x2d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
 	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x1a, 0x2a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f,
-	0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4e, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65,
-	0x12, 0x1c, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x24,
-	0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
-	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x57, 0x0a, 0x0b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x12, 0x1f, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x1a, 0x27, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x60, 0x0a,
-	0x0e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12,
-	0x22, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x1a, 0x2a, 0x2e, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41,
-	0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a,
-	0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xce, 0x01, 0x0a, 0x13, 0x63, 0x6f, 0x6d, 0x2e, 0x75,
-	0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x07,
-	0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x50, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65, 0x63,
-	0x68, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2d, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2d, 0x6d, 0x61, 0x63, 0x68, 0x69, 0x6e, 0x65, 0x2d, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x2f,
-	0x61, 0x70, 0x69, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x55, 0x53,
-	0x58, 0xaa, 0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x56, 0x31, 0xca, 0x02, 0x0f, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53, 0x74, 0x61,
-	0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1b, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x5c, 0x53,
-	0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x11, 0x55, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x3a, 0x3a, 0x53, 0x74,
-	0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x54, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x1f, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x27, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5d, 0x0a, 0x0b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
+	0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x66, 0x0a, 0x0e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41,
+	0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x2d,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c,
+	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80,
+	0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xde, 0x01, 0x0a, 0x16, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42,
+	0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x74, 0x65,
+	0x63, 0x68, 0x2f, 0x75, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x2d, 0x61, 0x70, 0x70, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03,
+	0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c,
+	0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
+	0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74,
+	0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_upshot_state_v1_tx_proto_rawDescOnce sync.Once
-	file_upshot_state_v1_tx_proto_rawDescData = file_upshot_state_v1_tx_proto_rawDesc
+	file_emissions_state_v1_tx_proto_rawDescOnce sync.Once
+	file_emissions_state_v1_tx_proto_rawDescData = file_emissions_state_v1_tx_proto_rawDesc
 )
 
-func file_upshot_state_v1_tx_proto_rawDescGZIP() []byte {
-	file_upshot_state_v1_tx_proto_rawDescOnce.Do(func() {
-		file_upshot_state_v1_tx_proto_rawDescData = protoimpl.X.CompressGZIP(file_upshot_state_v1_tx_proto_rawDescData)
+func file_emissions_state_v1_tx_proto_rawDescGZIP() []byte {
+	file_emissions_state_v1_tx_proto_rawDescOnce.Do(func() {
+		file_emissions_state_v1_tx_proto_rawDescData = protoimpl.X.CompressGZIP(file_emissions_state_v1_tx_proto_rawDescData)
 	})
-	return file_upshot_state_v1_tx_proto_rawDescData
+	return file_emissions_state_v1_tx_proto_rawDescData
 }
 
-var file_upshot_state_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
-var file_upshot_state_v1_tx_proto_goTypes = []interface{}{
-	(*MsgCreateNewTopic)(nil),                       // 0: upshot.state.v1.MsgCreateNewTopic
-	(*MsgCreateNewTopicResponse)(nil),               // 1: upshot.state.v1.MsgCreateNewTopicResponse
-	(*MsgSetWeights)(nil),                           // 2: upshot.state.v1.MsgSetWeights
-	(*MsgSetWeightsResponse)(nil),                   // 3: upshot.state.v1.MsgSetWeightsResponse
-	(*MsgSetInferences)(nil),                        // 4: upshot.state.v1.MsgSetInferences
-	(*MsgSetInferencesResponse)(nil),                // 5: upshot.state.v1.MsgSetInferencesResponse
-	(*MsgSetLatestInferencesTimestamp)(nil),         // 6: upshot.state.v1.MsgSetLatestInferencesTimestamp
-	(*MsgSetLatestInferencesTimestampResponse)(nil), // 7: upshot.state.v1.MsgSetLatestInferencesTimestampResponse
-	(*MsgProcessInferences)(nil),                    // 8: upshot.state.v1.MsgProcessInferences
-	(*MsgProcessInferencesResponse)(nil),            // 9: upshot.state.v1.MsgProcessInferencesResponse
-	(*MsgRegisterReputer)(nil),                      // 10: upshot.state.v1.MsgRegisterReputer
-	(*MsgRegisterReputerResponse)(nil),              // 11: upshot.state.v1.MsgRegisterReputerResponse
-	(*MsgRegisterWorker)(nil),                       // 12: upshot.state.v1.MsgRegisterWorker
-	(*MsgRegisterWorkerResponse)(nil),               // 13: upshot.state.v1.MsgRegisterWorkerResponse
-	(*MsgAddStake)(nil),                             // 14: upshot.state.v1.MsgAddStake
-	(*MsgAddStakeResponse)(nil),                     // 15: upshot.state.v1.MsgAddStakeResponse
-	(*MsgRemoveStake)(nil),                          // 16: upshot.state.v1.MsgRemoveStake
-	(*MsgRemoveStakeResponse)(nil),                  // 17: upshot.state.v1.MsgRemoveStakeResponse
-	(*MsgRemoveAllStake)(nil),                       // 18: upshot.state.v1.MsgRemoveAllStake
-	(*MsgRemoveAllStakeResponse)(nil),               // 19: upshot.state.v1.MsgRemoveAllStakeResponse
-	(*Weight)(nil),                                  // 20: upshot.state.v1.Weight
-	(*Inference)(nil),                               // 21: upshot.state.v1.Inference
+var file_emissions_state_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_emissions_state_v1_tx_proto_goTypes = []interface{}{
+	(*MsgCreateNewTopic)(nil),                       // 0: emissions.state.v1.MsgCreateNewTopic
+	(*MsgCreateNewTopicResponse)(nil),               // 1: emissions.state.v1.MsgCreateNewTopicResponse
+	(*MsgSetWeights)(nil),                           // 2: emissions.state.v1.MsgSetWeights
+	(*MsgSetWeightsResponse)(nil),                   // 3: emissions.state.v1.MsgSetWeightsResponse
+	(*MsgSetInferences)(nil),                        // 4: emissions.state.v1.MsgSetInferences
+	(*MsgSetInferencesResponse)(nil),                // 5: emissions.state.v1.MsgSetInferencesResponse
+	(*MsgSetLatestInferencesTimestamp)(nil),         // 6: emissions.state.v1.MsgSetLatestInferencesTimestamp
+	(*MsgSetLatestInferencesTimestampResponse)(nil), // 7: emissions.state.v1.MsgSetLatestInferencesTimestampResponse
+	(*MsgProcessInferences)(nil),                    // 8: emissions.state.v1.MsgProcessInferences
+	(*MsgProcessInferencesResponse)(nil),            // 9: emissions.state.v1.MsgProcessInferencesResponse
+	(*MsgRegisterReputer)(nil),                      // 10: emissions.state.v1.MsgRegisterReputer
+	(*MsgRegisterReputerResponse)(nil),              // 11: emissions.state.v1.MsgRegisterReputerResponse
+	(*MsgRegisterWorker)(nil),                       // 12: emissions.state.v1.MsgRegisterWorker
+	(*MsgRegisterWorkerResponse)(nil),               // 13: emissions.state.v1.MsgRegisterWorkerResponse
+	(*MsgAddStake)(nil),                             // 14: emissions.state.v1.MsgAddStake
+	(*MsgAddStakeResponse)(nil),                     // 15: emissions.state.v1.MsgAddStakeResponse
+	(*MsgRemoveStake)(nil),                          // 16: emissions.state.v1.MsgRemoveStake
+	(*MsgRemoveStakeResponse)(nil),                  // 17: emissions.state.v1.MsgRemoveStakeResponse
+	(*MsgRemoveAllStake)(nil),                       // 18: emissions.state.v1.MsgRemoveAllStake
+	(*MsgRemoveAllStakeResponse)(nil),               // 19: emissions.state.v1.MsgRemoveAllStakeResponse
+	(*Weight)(nil),                                  // 20: emissions.state.v1.Weight
+	(*Inference)(nil),                               // 21: emissions.state.v1.Inference
 }
-var file_upshot_state_v1_tx_proto_depIdxs = []int32{
-	20, // 0: upshot.state.v1.MsgSetWeights.weights:type_name -> upshot.state.v1.Weight
-	21, // 1: upshot.state.v1.MsgSetInferences.inferences:type_name -> upshot.state.v1.Inference
-	21, // 2: upshot.state.v1.MsgProcessInferences.inferences:type_name -> upshot.state.v1.Inference
-	4,  // 3: upshot.state.v1.Msg.SetInferences:input_type -> upshot.state.v1.MsgSetInferences
-	8,  // 4: upshot.state.v1.Msg.ProcessInferences:input_type -> upshot.state.v1.MsgProcessInferences
-	6,  // 5: upshot.state.v1.Msg.SetLatestInferencesTimestamp:input_type -> upshot.state.v1.MsgSetLatestInferencesTimestamp
-	2,  // 6: upshot.state.v1.Msg.SetWeights:input_type -> upshot.state.v1.MsgSetWeights
-	0,  // 7: upshot.state.v1.Msg.CreateNewTopic:input_type -> upshot.state.v1.MsgCreateNewTopic
-	10, // 8: upshot.state.v1.Msg.RegisterReputer:input_type -> upshot.state.v1.MsgRegisterReputer
-	12, // 9: upshot.state.v1.Msg.RegisterWorker:input_type -> upshot.state.v1.MsgRegisterWorker
-	14, // 10: upshot.state.v1.Msg.AddStake:input_type -> upshot.state.v1.MsgAddStake
-	16, // 11: upshot.state.v1.Msg.RemoveStake:input_type -> upshot.state.v1.MsgRemoveStake
-	18, // 12: upshot.state.v1.Msg.RemoveAllStake:input_type -> upshot.state.v1.MsgRemoveAllStake
-	5,  // 13: upshot.state.v1.Msg.SetInferences:output_type -> upshot.state.v1.MsgSetInferencesResponse
-	9,  // 14: upshot.state.v1.Msg.ProcessInferences:output_type -> upshot.state.v1.MsgProcessInferencesResponse
-	7,  // 15: upshot.state.v1.Msg.SetLatestInferencesTimestamp:output_type -> upshot.state.v1.MsgSetLatestInferencesTimestampResponse
-	3,  // 16: upshot.state.v1.Msg.SetWeights:output_type -> upshot.state.v1.MsgSetWeightsResponse
-	1,  // 17: upshot.state.v1.Msg.CreateNewTopic:output_type -> upshot.state.v1.MsgCreateNewTopicResponse
-	11, // 18: upshot.state.v1.Msg.RegisterReputer:output_type -> upshot.state.v1.MsgRegisterReputerResponse
-	13, // 19: upshot.state.v1.Msg.RegisterWorker:output_type -> upshot.state.v1.MsgRegisterWorkerResponse
-	15, // 20: upshot.state.v1.Msg.AddStake:output_type -> upshot.state.v1.MsgAddStakeResponse
-	17, // 21: upshot.state.v1.Msg.RemoveStake:output_type -> upshot.state.v1.MsgRemoveStakeResponse
-	19, // 22: upshot.state.v1.Msg.RemoveAllStake:output_type -> upshot.state.v1.MsgRemoveAllStakeResponse
+var file_emissions_state_v1_tx_proto_depIdxs = []int32{
+	20, // 0: emissions.state.v1.MsgSetWeights.weights:type_name -> emissions.state.v1.Weight
+	21, // 1: emissions.state.v1.MsgSetInferences.inferences:type_name -> emissions.state.v1.Inference
+	21, // 2: emissions.state.v1.MsgProcessInferences.inferences:type_name -> emissions.state.v1.Inference
+	4,  // 3: emissions.state.v1.Msg.SetInferences:input_type -> emissions.state.v1.MsgSetInferences
+	8,  // 4: emissions.state.v1.Msg.ProcessInferences:input_type -> emissions.state.v1.MsgProcessInferences
+	6,  // 5: emissions.state.v1.Msg.SetLatestInferencesTimestamp:input_type -> emissions.state.v1.MsgSetLatestInferencesTimestamp
+	2,  // 6: emissions.state.v1.Msg.SetWeights:input_type -> emissions.state.v1.MsgSetWeights
+	0,  // 7: emissions.state.v1.Msg.CreateNewTopic:input_type -> emissions.state.v1.MsgCreateNewTopic
+	10, // 8: emissions.state.v1.Msg.RegisterReputer:input_type -> emissions.state.v1.MsgRegisterReputer
+	12, // 9: emissions.state.v1.Msg.RegisterWorker:input_type -> emissions.state.v1.MsgRegisterWorker
+	14, // 10: emissions.state.v1.Msg.AddStake:input_type -> emissions.state.v1.MsgAddStake
+	16, // 11: emissions.state.v1.Msg.RemoveStake:input_type -> emissions.state.v1.MsgRemoveStake
+	18, // 12: emissions.state.v1.Msg.RemoveAllStake:input_type -> emissions.state.v1.MsgRemoveAllStake
+	5,  // 13: emissions.state.v1.Msg.SetInferences:output_type -> emissions.state.v1.MsgSetInferencesResponse
+	9,  // 14: emissions.state.v1.Msg.ProcessInferences:output_type -> emissions.state.v1.MsgProcessInferencesResponse
+	7,  // 15: emissions.state.v1.Msg.SetLatestInferencesTimestamp:output_type -> emissions.state.v1.MsgSetLatestInferencesTimestampResponse
+	3,  // 16: emissions.state.v1.Msg.SetWeights:output_type -> emissions.state.v1.MsgSetWeightsResponse
+	1,  // 17: emissions.state.v1.Msg.CreateNewTopic:output_type -> emissions.state.v1.MsgCreateNewTopicResponse
+	11, // 18: emissions.state.v1.Msg.RegisterReputer:output_type -> emissions.state.v1.MsgRegisterReputerResponse
+	13, // 19: emissions.state.v1.Msg.RegisterWorker:output_type -> emissions.state.v1.MsgRegisterWorkerResponse
+	15, // 20: emissions.state.v1.Msg.AddStake:output_type -> emissions.state.v1.MsgAddStakeResponse
+	17, // 21: emissions.state.v1.Msg.RemoveStake:output_type -> emissions.state.v1.MsgRemoveStakeResponse
+	19, // 22: emissions.state.v1.Msg.RemoveAllStake:output_type -> emissions.state.v1.MsgRemoveAllStakeResponse
 	13, // [13:23] is the sub-list for method output_type
 	3,  // [3:13] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
@@ -11017,14 +11023,14 @@ var file_upshot_state_v1_tx_proto_depIdxs = []int32{
 	0,  // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_upshot_state_v1_tx_proto_init() }
-func file_upshot_state_v1_tx_proto_init() {
-	if File_upshot_state_v1_tx_proto != nil {
+func init() { file_emissions_state_v1_tx_proto_init() }
+func file_emissions_state_v1_tx_proto_init() {
+	if File_emissions_state_v1_tx_proto != nil {
 		return
 	}
-	file_upshot_state_v1_types_proto_init()
+	file_emissions_state_v1_types_proto_init()
 	if !protoimpl.UnsafeEnabled {
-		file_upshot_state_v1_tx_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgCreateNewTopic); i {
 			case 0:
 				return &v.state
@@ -11036,7 +11042,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgCreateNewTopicResponse); i {
 			case 0:
 				return &v.state
@@ -11048,7 +11054,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetWeights); i {
 			case 0:
 				return &v.state
@@ -11060,7 +11066,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetWeightsResponse); i {
 			case 0:
 				return &v.state
@@ -11072,7 +11078,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetInferences); i {
 			case 0:
 				return &v.state
@@ -11084,7 +11090,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetInferencesResponse); i {
 			case 0:
 				return &v.state
@@ -11096,7 +11102,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetLatestInferencesTimestamp); i {
 			case 0:
 				return &v.state
@@ -11108,7 +11114,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgSetLatestInferencesTimestampResponse); i {
 			case 0:
 				return &v.state
@@ -11120,7 +11126,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgProcessInferences); i {
 			case 0:
 				return &v.state
@@ -11132,7 +11138,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgProcessInferencesResponse); i {
 			case 0:
 				return &v.state
@@ -11144,7 +11150,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRegisterReputer); i {
 			case 0:
 				return &v.state
@@ -11156,7 +11162,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRegisterReputerResponse); i {
 			case 0:
 				return &v.state
@@ -11168,7 +11174,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRegisterWorker); i {
 			case 0:
 				return &v.state
@@ -11180,7 +11186,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRegisterWorkerResponse); i {
 			case 0:
 				return &v.state
@@ -11192,7 +11198,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddStake); i {
 			case 0:
 				return &v.state
@@ -11204,7 +11210,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddStakeResponse); i {
 			case 0:
 				return &v.state
@@ -11216,7 +11222,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveStake); i {
 			case 0:
 				return &v.state
@@ -11228,7 +11234,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveStakeResponse); i {
 			case 0:
 				return &v.state
@@ -11240,7 +11246,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveAllStake); i {
 			case 0:
 				return &v.state
@@ -11252,7 +11258,7 @@ func file_upshot_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_upshot_state_v1_tx_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveAllStakeResponse); i {
 			case 0:
 				return &v.state
@@ -11269,18 +11275,18 @@ func file_upshot_state_v1_tx_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_upshot_state_v1_tx_proto_rawDesc,
+			RawDescriptor: file_emissions_state_v1_tx_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_upshot_state_v1_tx_proto_goTypes,
-		DependencyIndexes: file_upshot_state_v1_tx_proto_depIdxs,
-		MessageInfos:      file_upshot_state_v1_tx_proto_msgTypes,
+		GoTypes:           file_emissions_state_v1_tx_proto_goTypes,
+		DependencyIndexes: file_emissions_state_v1_tx_proto_depIdxs,
+		MessageInfos:      file_emissions_state_v1_tx_proto_msgTypes,
 	}.Build()
-	File_upshot_state_v1_tx_proto = out.File
-	file_upshot_state_v1_tx_proto_rawDesc = nil
-	file_upshot_state_v1_tx_proto_goTypes = nil
-	file_upshot_state_v1_tx_proto_depIdxs = nil
+	File_emissions_state_v1_tx_proto = out.File
+	file_emissions_state_v1_tx_proto_rawDesc = nil
+	file_emissions_state_v1_tx_proto_goTypes = nil
+	file_emissions_state_v1_tx_proto_depIdxs = nil
 }

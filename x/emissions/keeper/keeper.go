@@ -14,7 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	state "github.com/upshot-tech/protocol-state-machine-module"
+	"github.com/upshot-tech/upshot-appchain/app/params"
+	state "github.com/upshot-tech/upshot-appchain/x/emissions"
 )
 
 type Uint = cosmosMath.Uint
@@ -360,7 +361,7 @@ func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TO
 
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
-	ret, err := k.lastRewardsUpdate.Get(ctx)
+	lastRewardsUpdate, err := k.lastRewardsUpdate.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return 0, nil
@@ -368,7 +369,7 @@ func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 			return 0, err
 		}
 	}
-	return ret, nil
+	return lastRewardsUpdate, nil
 }
 
 // Set the last block height at which rewards emissions were updated
@@ -413,7 +414,7 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 
 // mint new rewards coins to this module account
 func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
-	coins := sdk.NewCoins(sdk.NewCoin("upt", amount))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 	return k.bankKeeper.MintCoins(ctx, state.ModuleName, coins)
 }
 

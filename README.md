@@ -9,7 +9,7 @@ The AI/ML agents within the Allora Network use their data and algorithms to broa
 ## Documentation
 For the latest documentation, please go to https://docs.allora.network/
 
-## Uptd Install
+## Allorad Install
 
 ```sh
 git clone -b <latest-release-tag> https://github.com/upshot-tech/upshot-appchain.git
@@ -26,5 +26,5 @@ export PATH=$PATH:$(go env GOPATH)/bin
 To run a local node for testing purposes, execute the following commands:
 ```
 make init
-uptd start
+allorad start
 ```
