@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
@@ -32,16 +34,6 @@ const (
 	randomPerm = "random permission"
 )
 
-var (
-	accAddrs = []sdk.AccAddress{
-		sdk.AccAddress([]byte("addr1_______________")),
-		sdk.AccAddress([]byte("addr2_______________")),
-		sdk.AccAddress([]byte("addr3_______________")),
-		sdk.AccAddress([]byte("addr4_______________")),
-		sdk.AccAddress([]byte("addr5_______________")),
-	}
-)
-
 type ModuleTestSuite struct {
 	suite.Suite
 
@@ -52,6 +44,8 @@ type ModuleTestSuite struct {
 	appModule       module.AppModule
 	msgServer       state.MsgServer
 	key             *storetypes.KVStoreKey
+	addrs           []sdk.AccAddress
+	addrsStr        []string
 }
 
 func (s *ModuleTestSuite) SetupTest() {
@@ -82,11 +76,21 @@ func (s *ModuleTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
+	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
+	var addrsStr []string = make([]string, 0)
+	pubkeys := simtestutil.CreateTestPubKeys(5)
+	for i := 0; i < 5; i++ {
+		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
+		addrsStr = append(addrsStr, addrs[i].String())
+	}
+	s.addrs = addrs
+	s.addrsStr = addrsStr
+
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
 		storeService,
 		accountKeeper,
-		map[string]bool{accAddrs[4].String(): true},
+		map[string]bool{},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
@@ -161,7 +165,7 @@ func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMat
 	s.Require().NoError(err)
 	s.Require().Equal(topicId, uint64(1))
 	reputerAddrs := []sdk.AccAddress{
-		sdk.AccAddress([]byte("actor________________")),
+		s.addrs[0],
 	}
 	reputerAmounts := []cosmosMath.Int{
 		cosmosMath.NewInt(1000),
