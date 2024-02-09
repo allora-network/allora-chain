@@ -38,6 +38,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return nil, err
+	}
+
 	// TODO: Add after demo
 	// if msg.InferenceCadence < 60 {
 	// 	return nil, fmt.Errorf("inference cadence must be at least 60 seconds (1 minute)")
@@ -49,6 +54,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 
 	topic := state.Topic{
 		Id:               id,
+		Creator:          creator.String(),
 		Metadata:         msg.Metadata,
 		WeightLogic:      msg.WeightLogic,
 		WeightMethod:     msg.WeightMethod,

@@ -24,10 +24,13 @@ const (
 	Query_GetAccumulatedEpochRewards_FullMethodName = "/emissions.state.v1.Query/GetAccumulatedEpochRewards"
 	Query_GetNextTopicId_FullMethodName             = "/emissions.state.v1.Query/GetNextTopicId"
 	Query_GetTopic_FullMethodName                   = "/emissions.state.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName            = "/emissions.state.v1.Query/GetActiveTopics"
+	Query_GetTopicsByCreator_FullMethodName         = "/emissions.state.v1.Query/GetTopicsByCreator"
 	Query_GetWeight_FullMethodName                  = "/emissions.state.v1.Query/GetWeight"
 	Query_GetAllInferences_FullMethodName           = "/emissions.state.v1.Query/GetAllInferences"
 	Query_GetInferencesToScore_FullMethodName       = "/emissions.state.v1.Query/GetInferencesToScore"
 	Query_GetTotalStake_FullMethodName              = "/emissions.state.v1.Query/GetTotalStake"
+	Query_GetAccountStakeList_FullMethodName        = "/emissions.state.v1.Query/GetAccountStakeList"
 	Query_GetWorkerNodeRegistration_FullMethodName  = "/emissions.state.v1.Query/GetWorkerNodeRegistration"
 	Query_GetWorkerAddressByP2PKey_FullMethodName   = "/emissions.state.v1.Query/GetWorkerAddressByP2PKey"
 )
@@ -42,10 +45,13 @@ type QueryClient interface {
 	GetAccumulatedEpochRewards(ctx context.Context, in *QueryAccumulatedEpochRewardsRequest, opts ...grpc.CallOption) (*QueryAccumulatedEpochRewardsResponse, error)
 	GetNextTopicId(ctx context.Context, in *QueryNextTopicIdRequest, opts ...grpc.CallOption) (*QueryNextTopicIdResponse, error)
 	GetTopic(ctx context.Context, in *QueryTopicRequest, opts ...grpc.CallOption) (*QueryTopicResponse, error)
+	GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error)
+	GetTopicsByCreator(ctx context.Context, in *QueryGetTopicsByCreatorRequest, opts ...grpc.CallOption) (*QueryGetTopicsByCreatorResponse, error)
 	GetWeight(ctx context.Context, in *QueryWeightRequest, opts ...grpc.CallOption) (*QueryWeightResponse, error)
 	GetAllInferences(ctx context.Context, in *QueryInferenceRequest, opts ...grpc.CallOption) (*QueryInferenceResponse, error)
 	GetInferencesToScore(ctx context.Context, in *QueryInferencesToScoreRequest, opts ...grpc.CallOption) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
+	GetAccountStakeList(ctx context.Context, in *QueryAccountStakeListRequest, opts ...grpc.CallOption) (*QueryAccountStakeListResponse, error)
 	GetWorkerNodeRegistration(ctx context.Context, in *QueryRegisteredWorkerNodesRequest, opts ...grpc.CallOption) (*QueryRegisteredWorkerNodesResponse, error)
 	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
 }
@@ -103,6 +109,24 @@ func (c *queryClient) GetTopic(ctx context.Context, in *QueryTopicRequest, opts 
 	return out, nil
 }
 
+func (c *queryClient) GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error) {
+	out := new(QueryActiveTopicsResponse)
+	err := c.cc.Invoke(ctx, Query_GetActiveTopics_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicsByCreator(ctx context.Context, in *QueryGetTopicsByCreatorRequest, opts ...grpc.CallOption) (*QueryGetTopicsByCreatorResponse, error) {
+	out := new(QueryGetTopicsByCreatorResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicsByCreator_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetWeight(ctx context.Context, in *QueryWeightRequest, opts ...grpc.CallOption) (*QueryWeightResponse, error) {
 	out := new(QueryWeightResponse)
 	err := c.cc.Invoke(ctx, Query_GetWeight_FullMethodName, in, out, opts...)
@@ -139,6 +163,15 @@ func (c *queryClient) GetTotalStake(ctx context.Context, in *QueryTotalStakeRequ
 	return out, nil
 }
 
+func (c *queryClient) GetAccountStakeList(ctx context.Context, in *QueryAccountStakeListRequest, opts ...grpc.CallOption) (*QueryAccountStakeListResponse, error) {
+	out := new(QueryAccountStakeListResponse)
+	err := c.cc.Invoke(ctx, Query_GetAccountStakeList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetWorkerNodeRegistration(ctx context.Context, in *QueryRegisteredWorkerNodesRequest, opts ...grpc.CallOption) (*QueryRegisteredWorkerNodesResponse, error) {
 	out := new(QueryRegisteredWorkerNodesResponse)
 	err := c.cc.Invoke(ctx, Query_GetWorkerNodeRegistration_FullMethodName, in, out, opts...)
@@ -167,10 +200,13 @@ type QueryServer interface {
 	GetAccumulatedEpochRewards(context.Context, *QueryAccumulatedEpochRewardsRequest) (*QueryAccumulatedEpochRewardsResponse, error)
 	GetNextTopicId(context.Context, *QueryNextTopicIdRequest) (*QueryNextTopicIdResponse, error)
 	GetTopic(context.Context, *QueryTopicRequest) (*QueryTopicResponse, error)
+	GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error)
+	GetTopicsByCreator(context.Context, *QueryGetTopicsByCreatorRequest) (*QueryGetTopicsByCreatorResponse, error)
 	GetWeight(context.Context, *QueryWeightRequest) (*QueryWeightResponse, error)
 	GetAllInferences(context.Context, *QueryInferenceRequest) (*QueryInferenceResponse, error)
 	GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
+	GetAccountStakeList(context.Context, *QueryAccountStakeListRequest) (*QueryAccountStakeListResponse, error)
 	GetWorkerNodeRegistration(context.Context, *QueryRegisteredWorkerNodesRequest) (*QueryRegisteredWorkerNodesResponse, error)
 	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -195,6 +231,12 @@ func (UnimplementedQueryServer) GetNextTopicId(context.Context, *QueryNextTopicI
 func (UnimplementedQueryServer) GetTopic(context.Context, *QueryTopicRequest) (*QueryTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopic not implemented")
 }
+func (UnimplementedQueryServer) GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTopics not implemented")
+}
+func (UnimplementedQueryServer) GetTopicsByCreator(context.Context, *QueryGetTopicsByCreatorRequest) (*QueryGetTopicsByCreatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicsByCreator not implemented")
+}
 func (UnimplementedQueryServer) GetWeight(context.Context, *QueryWeightRequest) (*QueryWeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWeight not implemented")
 }
@@ -206,6 +248,9 @@ func (UnimplementedQueryServer) GetInferencesToScore(context.Context, *QueryInfe
 }
 func (UnimplementedQueryServer) GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalStake not implemented")
+}
+func (UnimplementedQueryServer) GetAccountStakeList(context.Context, *QueryAccountStakeListRequest) (*QueryAccountStakeListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAccountStakeList not implemented")
 }
 func (UnimplementedQueryServer) GetWorkerNodeRegistration(context.Context, *QueryRegisteredWorkerNodesRequest) (*QueryRegisteredWorkerNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerNodeRegistration not implemented")
@@ -316,6 +361,42 @@ func _Query_GetTopic_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetActiveTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryActiveTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetActiveTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetActiveTopics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetActiveTopics(ctx, req.(*QueryActiveTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicsByCreator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGetTopicsByCreatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicsByCreator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicsByCreator_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicsByCreator(ctx, req.(*QueryGetTopicsByCreatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryWeightRequest)
 	if err := dec(in); err != nil {
@@ -388,6 +469,24 @@ func _Query_GetTotalStake_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetAccountStakeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAccountStakeListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetAccountStakeList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetAccountStakeList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetAccountStakeList(ctx, req.(*QueryAccountStakeListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetWorkerNodeRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryRegisteredWorkerNodesRequest)
 	if err := dec(in); err != nil {
@@ -452,6 +551,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetTopic_Handler,
 		},
 		{
+			MethodName: "GetActiveTopics",
+			Handler:    _Query_GetActiveTopics_Handler,
+		},
+		{
+			MethodName: "GetTopicsByCreator",
+			Handler:    _Query_GetTopicsByCreator_Handler,
+		},
+		{
 			MethodName: "GetWeight",
 			Handler:    _Query_GetWeight_Handler,
 		},
@@ -466,6 +573,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTotalStake",
 			Handler:    _Query_GetTotalStake_Handler,
+		},
+		{
+			MethodName: "GetAccountStakeList",
+			Handler:    _Query_GetAccountStakeList_Handler,
 		},
 		{
 			MethodName: "GetWorkerNodeRegistration",

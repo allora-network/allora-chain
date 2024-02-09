@@ -89,6 +89,49 @@ func (qs queryServer) GetTopic(ctx context.Context, req *state.QueryTopicRequest
 	return &state.QueryTopicResponse{Topic: &topic}, nil
 }
 
+// GetActiveTopics retrieves a list of active topics.
+func (qs queryServer) GetActiveTopics(ctx context.Context, req *state.QueryActiveTopicsRequest) (*state.QueryActiveTopicsResponse, error) {
+	activeTopics, err := qs.k.GetActiveTopics(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &state.QueryActiveTopicsResponse{Topics: activeTopics}, nil
+}
+
+// GetTopicsByCreator retrieves a list of topics created by a given address.
+func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *state.QueryGetTopicsByCreatorRequest) (*state.QueryGetTopicsByCreatorResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
+
+	topics, err := qs.k.GetTopicsByCreator(ctx, req.Creator)
+	if err != nil {
+		return nil, err
+	}
+
+	return &state.QueryGetTopicsByCreatorResponse{Topics: topics}, nil
+}
+
+// GetAccountStakeList retrieves a list of stakes for a given account address.
+func (qs queryServer) GetAccountStakeList(ctx context.Context, req *state.QueryAccountStakeListRequest) (*state.QueryAccountStakeListResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
+	}
+
+	address, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	stakes, err := qs.k.GetStakesForAccount(ctx, address)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &state.QueryAccountStakeListResponse{Stakes: stakes}, nil
+}
+
 // GetWeight find out how much weight the reputer has placed upon the worker for a given topid ID, reputer and worker.
 func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightRequest) (*state.QueryWeightResponse, error) {
 	reputerAddr := sdk.AccAddress(req.Reputer)
