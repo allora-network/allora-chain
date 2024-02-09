@@ -31,10 +31,13 @@ service Msg {
 
   rpc ModifyStake(MsgModifyStake) returns (MsgModifyStakeResponse);
 
-  rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
+  rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
 
-  rpc RemoveAllStake(MsgRemoveAllStake) returns (MsgRemoveAllStakeResponse);
+  rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
 
+  rpc StartRemoveAllStake(MsgStartRemoveAllStake) returns (MsgStartRemoveAllStakeResponse);
+
+  rpc ConfirmRemoveAllStake(MsgConfirmRemoveAllStake) returns (MsgConfirmRemoveAllStakeResponse);
 }
 
 message MsgCreateNewTopic {
@@ -167,7 +170,7 @@ message MsgAddStake {
 
 message MsgAddStakeResponse {}
 
-message MsgRemoveStake {
+message MsgStartRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -180,15 +183,28 @@ message MsgRemoveStake {
   string stake_target = 3;
 }
 
-message MsgRemoveStakeResponse {}
+message MsgStartRemoveStakeResponse {}
 
-message MsgRemoveAllStake {
+message MsgConfirmRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
-
   string sender = 1;
 }
 
-message MsgRemoveAllStakeResponse {}
+message MsgConfirmRemoveStakeResponse {}
+
+message MsgStartRemoveAllStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+}
+
+message MsgStartRemoveAllStakeResponse {}
+
+message MsgConfirmRemoveAllStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+}
+
+message MsgConfirmRemoveAllStakeResponse {}
 
 message MsgModifyStake{
   option (cosmos.msg.v1.signer) = "sender";

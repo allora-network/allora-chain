@@ -375,8 +375,15 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 	return &state.MsgModifyStakeResponse{}, nil
 }
 
+// StartRemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
+// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
+// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
+// and one must start the stake removal process again and wait the delay again.
+func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRemoveStake) (*state.MsgStartRemoveStakeResponse, error) {
+}
+
 // Function for reputers or workers to call to remove stake from an existing stake position.
-func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) (*state.MsgRemoveStakeResponse, error) {
+func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
 	// 1. check the sender is registered
 	senderAddr, targetAddr, err := unMarshalSenderAndTargetAddrs(msg.Sender, msg.StakeTarget)
 	if err != nil {
@@ -420,7 +427,15 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveStakeResponse{}, nil
+	return &state.MsgConfirmRemoveStakeResponse{}, nil
+}
+
+// StartRemoveAllStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
+// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
+// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
+// and one must start the stake removal process again and wait the delay again.
+// RemoveAllStake is just a convenience wrapper around StartRemoveStake.
+func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStartRemoveAllStake) (*state.MsgStartRemoveAllStakeResponse, error) {
 }
 
 // Function for a reputer or a worker to pull out all stake from a topic entirely
@@ -497,7 +512,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 			return nil, err
 		}
 	}
-	return &state.MsgRemoveAllStakeResponse{}, nil
+	return &state.MsgConfirmRemoveAllStakeResponse{}, nil
 }
 
 // ########################################
