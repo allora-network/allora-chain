@@ -151,6 +151,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "ModifyStake",
+					Use:       "modify-stake sender placements_remove placements_add",
+					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "placements_remove"},
+						{ProtoField: "placements_add"},
+					},
+				},
+				{
 					RpcMethod: "RemoveStake",
 					Use:       "remove-stake sender target amount",
 					Short:     "Remove stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",

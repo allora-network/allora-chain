@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -246,12 +245,14 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegatorAndTarget() {
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator should be zero
-	_, err = keeper.GetDelegatorStake(ctx, delegatorAddr)
-	s.Require().Error(collections.ErrNotFound)
+	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
 
 	// Check remaining bond stake for delegator and target should be zero
-	_, err = keeper.GetBond(ctx, delegatorAddr, targetAddr)
-	s.Require().Error(collections.ErrNotFound)
+	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Bond stake should be zero after removal")
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
@@ -396,4 +397,142 @@ func (s *KeeperTestSuite) TestRewardsUpdate() {
 	lastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
 	s.NoError(err, "error getting")
 	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
+}
+
+func (s *KeeperTestSuite) TestSubStakePlacement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Setup initial stake
+	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	// Sub stake
+	subAmount := cosmosMath.NewUint(400)
+	err = keeper.SubStakePlacement(ctx, delegatorAddr, targetAddr, subAmount)
+	s.Require().NoError(err)
+
+	// Check remaining stake for delegator
+	remainingStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(subAmount), remainingStake, "Remaining bond stake should be initial minus sub amount")
+}
+
+func (s *KeeperTestSuite) TestSubStakePlacementErr() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Setup initial stake
+	err := k.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	// Sub stake
+	subAmount := cosmosMath.NewUint(600)
+	err = k.SubStakePlacement(ctx, delegatorAddr, targetAddr, subAmount)
+	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowBonds)
+
+	// Check remaining stake for delegator
+	remainingStake, err := k.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be same after error")
+}
+
+func (s *KeeperTestSuite) TestAddStakePlacement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Add stake
+	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	additionalStakeAmount := cosmosMath.NewUint(300)
+
+	// Add additional stake
+	err = keeper.AddStakePlacement(ctx, delegatorAddr, targetAddr, additionalStakeAmount)
+	s.Require().NoError(err)
+
+	// Check updated stake for delegator
+	finalStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
+}
+
+func (s *KeeperTestSuite) TestSubStakePlacedUponTarget() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Setup initial stake
+	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	// Sub stake
+	subAmount := cosmosMath.NewUint(400)
+	err = keeper.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
+	s.Require().NoError(err)
+
+	// Check remaining stake for delegator
+	remainingStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(subAmount), remainingStake, "Remaining bond stake should be initial minus sub amount")
+}
+
+func (s *KeeperTestSuite) TestSubStakePlacedUponTargetErr() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicID := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Setup initial stake
+	err := k.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	// Sub stake
+	subAmount := cosmosMath.NewUint(600)
+	err = k.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
+	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowTarget)
+
+	// Check remaining stake for delegator
+	remainingStake, err := k.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be the same after error")
+}
+
+func (s *KeeperTestSuite) TestAddStakePlacedUponTarget() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+
+	// Add stake
+	err := keeper.AddStakePlacedUponTarget(ctx, targetAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	additionalStakeAmount := cosmosMath.NewUint(300)
+
+	// Add additional stake
+	err = keeper.AddStakePlacedUponTarget(ctx, targetAddr, additionalStakeAmount)
+	s.Require().NoError(err)
+
+	// Check updated stake for target
+	finalStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
 }

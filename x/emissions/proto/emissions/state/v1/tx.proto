@@ -29,6 +29,8 @@ service Msg {
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
+  rpc ModifyStake(MsgModifyStake) returns (MsgModifyStakeResponse);
+
   rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
 
   rpc RemoveAllStake(MsgRemoveAllStake) returns (MsgRemoveAllStakeResponse);
@@ -187,3 +189,13 @@ message MsgRemoveAllStake {
 }
 
 message MsgRemoveAllStakeResponse {}
+
+message MsgModifyStake{
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  repeated StakePlacement placements_remove = 2;
+  repeated StakePlacement placements_add = 3;
+}
+
+message MsgModifyStakeResponse{}

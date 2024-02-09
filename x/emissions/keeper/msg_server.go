@@ -292,6 +292,89 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	return &state.MsgAddStakeResponse{}, nil
 }
 
+func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) (*state.MsgModifyStakeResponse, error) {
+	// 1. check the sender is registered
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	// 2. For all stake befores, check the sum is less than or equal to this sender's existing stake
+	// 3. For all stake befores, check that the bond is greater than or equal to the amount being removed
+	senderTotalStake, err := ms.k.GetDelegatorStake(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	beforeSum := cosmosMath.NewUint(0)
+	for _, stakeBefore := range msg.PlacementsRemove {
+		beforeSum = beforeSum.Add(stakeBefore.Amount)
+		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
+		if err != nil {
+			return nil, err
+		}
+		bond, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+		if bond.LT(stakeBefore.Amount) {
+			return nil, ErrModifyStakeBeforeBondLessThanAmountModified
+		}
+	}
+	if senderTotalStake.LT(beforeSum) {
+		return nil, ErrModifyStakeBeforeSumGreaterThanSenderStake
+	}
+	// 4. For all stake afters, check that the target is a valid signed up participant
+	// 5. For all stake afters, check that the sum is equal to the sum of stake befores
+	afterSum := cosmosMath.NewUint(0)
+	for _, stakeAfter := range msg.PlacementsAdd {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
+		if err != nil {
+			return nil, err
+		}
+		afterSum = afterSum.Add(stakeAfter.Amount)
+		_, err = checkNodeRegistered(ctx, ms, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if !afterSum.Equal(beforeSum) {
+		return nil, ErrModifyStakeSumBeforeNotEqualToSumAfter
+	}
+
+	// Update the stake data structures
+	// 6. For all stake befores, remove the stake
+	// 7. For all stake afters, add the stake to the existing stake position
+	for _, stakeBefore := range msg.PlacementsRemove {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.SubStakePlacement(ctx, senderAddr, targetAddr, stakeBefore.Amount)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.SubStakePlacedUponTarget(ctx, targetAddr, stakeBefore.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, stakeAfter := range msg.PlacementsAdd {
+		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.AddStakePlacement(ctx, senderAddr, targetAddr, stakeAfter.Amount)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.AddStakePlacedUponTarget(ctx, targetAddr, stakeAfter.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &state.MsgModifyStakeResponse{}, nil
+}
+
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) (*state.MsgRemoveStakeResponse, error) {
 	// 1. check the sender is registered
@@ -347,6 +430,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(senderAddr.String())
 	senderType, err := checkNodeRegistered(ctx, ms, senderAddr)
 	if err != nil {
 		return nil, err
@@ -502,7 +586,7 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 	if nodeIsWorker {
 		return isWorker, nil
 	}
-	return isNotFound, ErrSenderNotRegistered
+	return isNotFound, ErrAddressNotRegistered
 }
 
 // checks if the sender and target are signed up for the same topic

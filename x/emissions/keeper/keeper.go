@@ -761,6 +761,56 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 	return nil
 }
 
+// Used by Modify functions to change stake placements. This function subtracts from the stakePlacement mapping ONLY
+// and does not modify any of the other stake mappings e.g. delegatorStake totalStake or topicStake in a system.
+func (k *Keeper) SubStakePlacement(ctx context.Context, delegator sdk.AccAddress, target sdk.AccAddress, amount Uint) error {
+	bond, err := k.GetBond(ctx, delegator, target)
+	if err != nil {
+		return err
+	}
+	if amount.GT(bond) {
+		return ErrIntegerUnderflowBonds
+	}
+	bondNew := bond.Sub(amount)
+	return k.stakePlacement.Set(ctx, collections.Join(delegator, target), bondNew)
+}
+
+// Used by Modify functions to change stake placements. This function adds to the stakePlacement mapping ONLY
+// and does not modify any of the other stake mappings e.g. delegatorStake totalStake or topicStake in a system.
+func (k *Keeper) AddStakePlacement(ctx context.Context, delegator sdk.AccAddress, target sdk.AccAddress, amount Uint) error {
+	bond, err := k.GetBond(ctx, delegator, target)
+	if err != nil {
+		return err
+	}
+	bondNew := bond.Add(amount)
+	return k.stakePlacement.Set(ctx, collections.Join(delegator, target), bondNew)
+}
+
+// Used by Modify functions to change stake placements. This function subtracts from the stakePlacedUponTarget mapping ONLY
+// and does not modify any of the other stake mappings e.g. delegatorStake totalStake or topicStake in a system.
+func (k *Keeper) SubStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress, amount Uint) error {
+	targetStake, err := k.GetStakePlacedUponTarget(ctx, target)
+	if err != nil {
+		return err
+	}
+	if amount.GT(targetStake) {
+		return ErrIntegerUnderflowTarget
+	}
+	targetStakeNew := targetStake.Sub(amount)
+	return k.stakePlacedUponTarget.Set(ctx, target, targetStakeNew)
+}
+
+// Used by Modify functions to change stake placements. This function adds to the stakePlacedUponTarget mapping ONLY
+// and does not modify any of the other stake mappings e.g. delegatorStake totalStake or topicStake in a system.
+func (k *Keeper) AddStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress, amount Uint) error {
+	targetStake, err := k.GetStakePlacedUponTarget(ctx, target)
+	if err != nil {
+		return err
+	}
+	targetStakeNew := targetStake.Add(amount)
+	return k.stakePlacedUponTarget.Set(ctx, target, targetStakeNew)
+}
+
 // for a given address, find out how much stake they've put into the system
 func (k *Keeper) GetDelegatorStake(ctx context.Context, delegator sdk.AccAddress) (Uint, error) {
 	ret, err := k.stakeOwnedByDelegator.Get(ctx, delegator)
@@ -781,7 +831,6 @@ func (k *Keeper) GetBond(ctx context.Context, delegator sdk.AccAddress, target s
 			return cosmosMath.NewUint(0), nil
 		}
 		return cosmosMath.Uint{}, err
-
 	}
 	return ret, nil
 }
