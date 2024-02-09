@@ -9,6 +9,16 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
+
+  // Avoid protobuf v1.3.3 bug
+  // https://stackoverflow.com/questions/70628187/unknown-revision-error-when-implementing-protobuf-go
+  github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+
+  // fix bug around sdk packages being extracted after sdk v0.50.0
+  github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.0.2
+  github.com/cosmos/cosmos-sdk/x/evidence => cosmossdk.io/x/evidence v0.1.0
+  github.com/cosmos/cosmos-sdk/x/feegrant => cosmossdk.io/x/feegrant v0.1.0
+  github.com/cosmos/cosmos-sdk/x/upgrade => cosmossdk.io/x/upgrade v0.1.1
 )
 
 require (
@@ -169,12 +179,4 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 	pgregory.net/rapid v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-)
-
-replace (
-  github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-  github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.0.2
-  github.com/cosmos/cosmos-sdk/x/evidence => cosmossdk.io/x/evidence v0.1.0
-  github.com/cosmos/cosmos-sdk/x/feegrant => cosmossdk.io/x/feegrant v0.1.0
-  github.com/cosmos/cosmos-sdk/x/upgrade => cosmossdk.io/x/upgrade v0.1.1
 )
