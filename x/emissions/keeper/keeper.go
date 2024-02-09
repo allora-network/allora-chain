@@ -244,79 +244,6 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 	return err
 }
 
-// A function that accepts a topicId and returns list of Inferences or error
-func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
-	var inferences []*state.InferenceSetForScoring
-
-	latest_timestamp, err := k.GetLatestInferenceTimestamp(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-
-	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latest_timestamp).
-		Descending()
-
-	iter, err := k.allInferences.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		key := kv.Key
-		value := kv.Value
-		inferenceSet := &state.InferenceSetForScoring{
-			TopicId:    key.K1(),
-			Timestamp:  key.K2(),
-			Inferences: &value,
-		}
-		inferences = append(inferences, inferenceSet)
-	}
-	return inferences, nil
-}
-
-// Gets the total sum of all stake in the network across all topics
-func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
-	ret, err := k.totalStake.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return ret, nil
-}
-
-// Sets the total sum of all stake in the network across all topics
-func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
-	// total stake does not have a zero guard because totalStake is allowed to be zero
-	// it is initialized to zero at genesis anyways.
-	return k.totalStake.Set(ctx, totalStake)
-}
-
-// Gets the stake in the network for a given topic
-func (k *Keeper) GetTopicStake(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
-	ret, err := k.topicStake.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return ret, nil
-}
-
-func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint) error {
-	if stake.IsZero() {
-		return k.topicStake.Remove(ctx, topicId)
-	}
-	return k.topicStake.Set(ctx, topicId, stake)
-}
-
 func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress) (Uint, error) {
 	ret, err := k.stakePlacedUponTarget.Get(ctx, target)
 	if err != nil {
@@ -333,30 +260,6 @@ func (k *Keeper) SetStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 		return k.stakePlacedUponTarget.Remove(ctx, target)
 	}
 	return k.stakePlacedUponTarget.Set(ctx, target, stake)
-}
-
-func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
-	rng := collections.Range[uint64]{}
-	rng.StartInclusive(0)
-	end, err := k.nextTopicId.Peek(ctx)
-	if err != nil {
-		return collections.Iterator[uint64, cosmosMath.Uint]{}, err
-	}
-	rng.EndExclusive(end)
-	return k.topicStake.Iterate(ctx, &rng)
-}
-
-// Runs an arbitrary function for every topic in the network
-func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TOPIC_ID, stake Uint) (stop bool, err error)) error {
-	rng := collections.Range[uint64]{}
-	rng.StartInclusive(0)
-	end, err := k.nextTopicId.Peek(ctx)
-	if err != nil {
-		return err
-	}
-	rng.EndExclusive(end)
-	err = k.topicStake.Walk(ctx, &rng, walkFunc)
-	return err
 }
 
 // Returns the last block height at which rewards emissions were updated
@@ -418,11 +321,6 @@ func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) er
 	return k.bankKeeper.MintCoins(ctx, state.ModuleName, coins)
 }
 
-// Returns the number of topics that are active in the network
-func (k *Keeper) GetNumTopics(ctx context.Context) (TOPIC_ID, error) {
-	return k.nextTopicId.Peek(ctx)
-}
-
 // for a given topic, returns every reputer node registered to it and their normalized stake
 func (k *Keeper) GetReputerNormalizedStake(
 	ctx sdk.Context,
@@ -448,6 +346,148 @@ func (k *Keeper) GetReputerNormalizedStake(
 	return reputerNormalizedStakeMap, retErr
 }
 
+func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
+	return k.workers.Get(ctx, worker)
+}
+
+func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
+	return k.reputers.Get(ctx, reputer)
+}
+
+// Gets the total sum of all stake in the network across all topics
+func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
+	ret, err := k.totalStake.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
+}
+
+// Sets the total sum of all stake in the network across all topics
+func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
+	// total stake does not have a zero guard because totalStake is allowed to be zero
+	// it is initialized to zero at genesis anyways.
+	return k.totalStake.Set(ctx, totalStake)
+}
+
+// A function that accepts a topicId and returns list of Inferences or error
+func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
+	var inferences []*state.InferenceSetForScoring
+
+	latest_timestamp, err := k.GetLatestInferenceTimestamp(ctx, topicId)
+	if err != nil {
+		return nil, err
+	}
+
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		StartInclusive(latest_timestamp).
+		Descending()
+
+	iter, err := k.allInferences.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		key := kv.Key
+		value := kv.Value
+		inferenceSet := &state.InferenceSetForScoring{
+			TopicId:    key.K1(),
+			Timestamp:  key.K2(),
+			Inferences: &value,
+		}
+		inferences = append(inferences, inferenceSet)
+	}
+	return inferences, nil
+}
+
+// Gets the stake in the network for a given topic
+func (k *Keeper) GetTopicStake(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+	ret, err := k.topicStake.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
+}
+
+// Sets the stake in the network for a given topic
+func (k *Keeper) SetTopicStake(ctx context.Context, topicId TOPIC_ID, stake Uint) error {
+	if stake.IsZero() {
+		return k.topicStake.Remove(ctx, topicId)
+	}
+	return k.topicStake.Set(ctx, topicId, stake)
+}
+
+// GetTopicsByCreator returns a slice of all topics created by a given creator.
+func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*state.Topic, error) {
+	var topicsByCreator []*state.Topic
+
+	err := k.topics.Walk(ctx, nil, func(id TOPIC_ID, topic state.Topic) (bool, error) {
+		if topic.Creator == creator {
+			topicsByCreator = append(topicsByCreator, &topic)
+		}
+		return false, nil // Continue iterating
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByCreator, nil
+}
+
+func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
+	rng := collections.Range[uint64]{}
+	rng.StartInclusive(0)
+	end, err := k.nextTopicId.Peek(ctx)
+	if err != nil {
+		return collections.Iterator[uint64, cosmosMath.Uint]{}, err
+	}
+	rng.EndExclusive(end)
+	return k.topicStake.Iterate(ctx, &rng)
+}
+
+// Runs an arbitrary function for every topic in the network
+func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TOPIC_ID, stake Uint) (stop bool, err error)) error {
+	rng := collections.Range[uint64]{}
+	rng.StartInclusive(0)
+	end, err := k.nextTopicId.Peek(ctx)
+	if err != nil {
+		return err
+	}
+	rng.EndExclusive(end)
+	err = k.topicStake.Walk(ctx, &rng, walkFunc)
+	return err
+}
+
+// GetStakesForAccount returns the list of stakes for a given account address.
+func (k *Keeper) GetStakesForAccount(ctx context.Context, delegator sdk.AccAddress) ([]*state.StakeInfo, error) {
+	targets, amounts, err := k.GetAllBondsForDelegator(ctx, delegator)
+	if err != nil {
+		return nil, err
+	}
+
+	stakeInfos := make([]*state.StakeInfo, len(targets))
+	for i, target := range targets {
+		stakeInfos[i] = &state.StakeInfo{
+			Address: target.String(),
+			Amount:  amounts[i].String(),
+		}
+	}
+
+	return stakeInfos, nil
+}
+
 // Gets next topic id
 func (k *Keeper) IncrementTopicId(ctx context.Context) (TOPIC_ID, error) {
 	return k.nextTopicId.Next(ctx)
@@ -458,20 +498,17 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Top
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
-	return k.workers.Get(ctx, worker)
-}
-
-func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
-	return k.reputers.Get(ctx, reputer)
+// Returns the number of topics that are active in the network
+func (k *Keeper) GetNumTopics(ctx context.Context) (TOPIC_ID, error) {
+	return k.nextTopicId.Peek(ctx)
 }
 
 // GetActiveTopics returns a slice of all active topics.
-func (k *Keeper) GetActiveTopics(ctx context.Context) ([]state.Topic, error) {
-	var activeTopics []state.Topic
+func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*state.Topic, error) {
+	var activeTopics []*state.Topic
 	if err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic state.Topic) (bool, error) {
 		if topic.Active { // Check if the topic is marked as active
-			activeTopics = append(activeTopics, topic)
+			activeTopics = append(activeTopics, &topic)
 		}
 		return false, nil // Continue the iteration
 	}); err != nil {

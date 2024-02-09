@@ -30,6 +30,27 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetActiveTopics",
+					Use:       "get-active-topics",
+					Short:     "Get Active Topics",
+				},
+				{
+					RpcMethod: "GetTopicsByCreator",
+					Use:       "get-topics-by-creator [creator]",
+					Short:     "Get Topics by Creator",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "creator"},
+					},
+				},
+				{
+					RpcMethod: "GetAccountStakeList",
+					Use:       "get-account-stake-list [address]",
+					Short:     "Get Account Stake List",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
+					},
+				},
+				{
 					RpcMethod: "GetWeight",
 					Use:       "get-weight [topic_id] [reputer] [worker]",
 					Short:     "Get Weight From a Reputer to a Worker for a Topic",
