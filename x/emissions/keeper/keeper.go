@@ -794,7 +794,6 @@ func (k *Keeper) GetBond(ctx context.Context, delegator sdk.AccAddress, target s
 			return cosmosMath.NewUint(0), nil
 		}
 		return cosmosMath.Uint{}, err
-
 	}
 	return ret, nil
 }

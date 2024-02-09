@@ -698,6 +698,75 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughDelegatorStake() {
 func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
 	// do the normal setup, add more stake in a third party
 	// then modify the stake but with more bond than the first party has on them
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	reputer := reputerAddr.String()
+	workerAddr1 := sdk.AccAddress(PKS[1].Address()) // target
+	workerAddr2 := sdk.AccAddress(PKS[2].Address()) // target
+	worker2 := workerAddr2.String()
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr1, registrationInitialStake)
+
+	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.Int(registrationInitialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.ModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.ModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, registrationInitialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.ModuleName, reputerAddr, registrationInitialStakeCoins)
+	// Register Reputer
+	worker2RegMsg := &state.MsgRegisterWorker{
+		Creator:      worker2,
+		LibP2PKey:    "test2",
+		MultiAddress: "test2",
+		TopicId:      0,
+		InitialStake: registrationInitialStake,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr2, state.ModuleName, registrationInitialStakeCoins)
+	_, err := s.msgServer.RegisterWorker(s.ctx, worker2RegMsg)
+	s.Require().NoError(err, "Registering worker2 should not return an error")
+
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	// Add stake from reputer to worker2
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputer,
+		StakeTarget: worker2,
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err = s.msgServer.AddStake(s.ctx, addStakeMsg)
+	s.Require().NoError(err, "AddStake should not return an error")
+	bond, err := s.emissionsKeeper.GetBond(s.ctx, reputerAddr, workerAddr2)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount.BigInt(), bond.BigInt(), "Bond should have been added")
+
+	// modify stake
+	modifyStakeMsg := &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(300),
+			},
+			{
+				Target: worker2,
+				Amount: cosmosMath.NewUint(100),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(200),
+			},
+			{
+				Target: worker2,
+				Amount: cosmosMath.NewUint(200),
+			},
+		},
+	}
+	_, err = s.msgServer.ModifyStake(s.ctx, modifyStakeMsg)
+	s.Require().ErrorIs(err, keeper.ErrModifyStakeBeforeBondLessThanAmountModified, "ModifyStake Error not matching expected")
 }
 
 func (s *KeeperTestSuite) TestModifyStakeInvalidTarget() {

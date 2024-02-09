@@ -507,7 +507,7 @@ func (s *KeeperTestSuite) TestSubStakePlacedUponTargetErr() {
 	// Sub stake
 	subAmount := cosmosMath.NewUint(600)
 	err = k.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
-	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowBonds)
+	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowTarget)
 
 	// Check remaining stake for delegator
 	remainingStake, err := k.GetStakePlacedUponTarget(ctx, targetAddr)
