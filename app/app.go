@@ -12,8 +12,6 @@ import (
 	"cosmossdk.io/x/circuit/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
@@ -39,9 +37,9 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper" //nolint:staticcheck
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" // TODO move to new non-deprecated package
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
@@ -205,9 +203,9 @@ func NewMsgServerImpl(ibcTransferK ibctransferkeeper.Keeper) types.MsgServer {
 	}
 }
 
-func (k msgServer) BuildAndSendIBCMessage(
-	goCtx sdk.Context, // The Cosmos SDK context
-	msg struct { // Assuming this struct is a placeholder for your actual message structure
+func (k msgServer) BuildAndSendIBCPredictionMessage(
+	goCtx sdk.Context,
+	msg struct {
 		ReceiverAddresses  []string
 		DestinationChain   string
 		DestinationAddress string
@@ -241,12 +239,12 @@ func (k msgServer) BuildAndSendIBCMessage(
 		Type:               TypeGeneralMessageWithToken,
 	}
 
-	bz, err := message.Marshal()
+	bz, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 
-	msg = ibctransfertypes.NewMsgTransfer(
+	var transferMessage = ibctransfertypes.NewMsgTransfer(
 		ibctransfertypes.PortID,
 		"channel-17", // hard-coded channel id for demo
 		msg.Amount,
@@ -255,12 +253,13 @@ func (k msgServer) BuildAndSendIBCMessage(
 		ibcclienttypes.ZeroHeight(),
 		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
 	)
-	msg.Memo = string(payload)
+	transferMessage.Memo = string(payload)
 
-	res, err := k.ibcTransferK.Transfer(goCtx, msg)
-	if err != nil {
-		return err
+	_, transferError := k.ibcTransferK.Transfer(goCtx, transferMessage)
+	if transferError != nil {
+		return transferError
 	}
+	return nil
 }
 
 // LegacyAmino returns AlloraApp's amino codec.
