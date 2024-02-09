@@ -154,9 +154,12 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgSetInferences message
 	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
 		Metadata:         metadata,
 		WeightLogic:      "logic",
 		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
 		Active:           true,
 	}
@@ -190,9 +193,12 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 
 	// Create Topic
 	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          reputerAddr.String(),
 		Metadata:         "Some metadata for the new topic",
 		WeightLogic:      "logic",
 		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
 		Active:           true,
 	}
