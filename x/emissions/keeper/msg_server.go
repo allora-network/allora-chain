@@ -325,12 +325,9 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 		afterSum = afterSum.Add(stakeAfter.Amount)
-		isTargetRegistered, err := checkNodeRegistered(ctx, ms, targetAddr)
+		_, err = checkNodeRegistered(ctx, ms, targetAddr)
 		if err != nil {
 			return nil, err
-		}
-		if isTargetRegistered == isNotFound {
-			return nil, ErrModifyStakeAfterTargetNotRegistered
 		}
 	}
 	if !afterSum.Equal(beforeSum) {
@@ -427,6 +424,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(senderAddr.String())
 	senderType, err := checkNodeRegistered(ctx, ms, senderAddr)
 	if err != nil {
 		return nil, err
@@ -582,7 +580,7 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 	if nodeIsWorker {
 		return isWorker, nil
 	}
-	return isNotFound, ErrSenderNotRegistered
+	return isNotFound, ErrAddressNotRegistered
 }
 
 // checks if the sender and target are signed up for the same topic

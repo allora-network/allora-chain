@@ -105,7 +105,7 @@ enum Err {
   ErrWorkerAlreadyRegistered = 2;
   ErrInsufficientStakeToRegister = 3;
   ErrLibP2PKeyRequired = 4;
-  ErrSenderNotRegistered = 5;
+  ErrAddressNotRegistered = 5;
   ErrStakeTargetNotRegistered = 6; 
   ErrTopicIdOfStakerAndTargetDoNotMatch = 7; 
   ErrInsufficientStakeToRemove = 8;
@@ -121,6 +121,5 @@ enum Err {
   ErrNoStakeToRemove = 18;
   ErrModifyStakeBeforeBondLessThanAmountModified = 19;
   ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
-  ErrModifyStakeAfterTargetNotRegistered = 21;
-  ErrModifyStakeSumBeforeNotEqualToSumAfter = 22;
+  ErrModifyStakeSumBeforeNotEqualToSumAfter = 21;
 }

@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"context"
 	"fmt"
 	"math"
 	"time"
@@ -9,6 +8,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -122,6 +122,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 		InferenceTimestamp: 1500000000,
 	}
 	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
+	require.NoError(err, "Setting latest inference timestamp should not fail")
 
 	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
 	require.Equal(len(allInferences), 1)
@@ -139,6 +140,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 		InferenceTimestamp: math.MaxUint64,
 	}
 	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
+	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
 	require.Equal(len(allInferences), 0)
@@ -546,40 +548,188 @@ func (s *KeeperTestSuite) TestRemoveAllStakeInvalid() {
 	require.Error(err, "Scenario 2: RemoveAllStake should return an error when sender has no stake")
 }
 
-/***************************************************
- *                                                 *
- *               Helper Functions                  *
- ***************************************************/
+func (s *KeeperTestSuite) TestModifyStakeSimple() {
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	reputer := reputerAddr.String()
+	worker := workerAddr.String()
 
-// mock mint coins to participants
-func (s *KeeperTestSuite) mockMintRewardCoins(amount []cosmosMath.Int, target []sdk.AccAddress) error {
-	if len(amount) != len(target) {
-		return fmt.Errorf("amount and target must be the same length")
-	}
-	for i, addr := range target {
-		coins := sdk.NewCoins(sdk.NewCoin("upt", amount[i]))
-		s.bankKeeper.MintCoins(s.ctx, "upshot", coins)
-		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, "upshot", addr, coins)
-	}
-	return nil
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// modify stake for reputer to put half of their stake in the worker
+	response, err := s.msgServer.ModifyStake(s.ctx, &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: worker,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+	})
+	s.Require().NoError(err)
+	s.Require().Equal(&state.MsgModifyStakeResponse{}, response, "ModifyStake should return an empty response on success")
+
+	// Check updated stake for delegator
+	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(s.ctx, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewUint(100), delegatorStake, "Delegator stake should not change on modify stake")
+
+	bond, err := s.emissionsKeeper.GetBond(s.ctx, reputerAddr, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewUint(50), bond, "Reputer bond amount mismatch")
+
+	targetStake1, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewUint(50), targetStake1, "Reputer target stake amount mismatch")
+
+	targetStake2, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewUint(150), targetStake2, "Worker target stake amount mismatch")
+
 }
 
-// create a topic
-func (s *KeeperTestSuite) mockCreateTopic(ctx context.Context) (uint64, error) {
-	topicMessage := state.MsgCreateNewTopic{
-		Creator:          "",
-		Metadata:         "",
-		WeightLogic:      "",
-		WeightMethod:     "",
-		WeightCadence:    0,
-		InferenceLogic:   "",
-		InferenceMethod:  "",
-		InferenceCadence: 0,
-		Active:           true,
-	}
-	response, err := s.msgServer.CreateNewTopic(ctx, &topicMessage)
-	if err != nil {
-		return 0, err
-	}
-	return response.TopicId, nil
+func (s *KeeperTestSuite) TestModifyStakeInvalidSumChangesNotEqualRemoveMoreThanAdd() {
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	reputer := reputerAddr.String()
+	worker := workerAddr.String()
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// modify stake for reputer to put half of their stake in the worker
+	_, err := s.msgServer.ModifyStake(s.ctx, &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(60),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: worker,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+	})
+	s.Require().ErrorIs(err, keeper.ErrModifyStakeSumBeforeNotEqualToSumAfter)
+}
+
+func (s *KeeperTestSuite) TestModifyStakeInvalidSumChangesNotEqualAddMoreThanRemove() {
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	reputer := reputerAddr.String()
+	worker := workerAddr.String()
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// modify stake for reputer to put half of their stake in the worker
+	_, err := s.msgServer.ModifyStake(s.ctx, &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: worker,
+				Amount: cosmosMath.NewUint(60),
+			},
+		},
+	})
+	s.Require().ErrorIs(err, keeper.ErrModifyStakeSumBeforeNotEqualToSumAfter)
+}
+
+func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughDelegatorStake() {
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	reputer := reputerAddr.String()
+	worker := workerAddr.String()
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// modify stake for reputer to put half of their stake in the worker
+	_, err := s.msgServer.ModifyStake(s.ctx, &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: worker,
+				Amount: cosmosMath.NewUint(200),
+			},
+		},
+	})
+	s.Require().ErrorIs(err, keeper.ErrModifyStakeBeforeSumGreaterThanSenderStake)
+}
+
+func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
+	// do the normal setup, add more stake in a third party
+	// then modify the stake but with more bond than the first party has on them
+}
+
+func (s *KeeperTestSuite) TestModifyStakeInvalidTarget() {
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	reputer := reputerAddr.String()
+	fmt.Println("Reputer is ", reputer)
+	randoAddr := sdk.AccAddress(PKS[3].Address()) // delegator
+	rando := randoAddr.String()
+	fmt.Println("Rando is ", rando)
+	fmt.Println("Worker is ", workerAddr.String())
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// modify stake for reputer to put half of their stake in the worker
+	_, err := s.msgServer.ModifyStake(s.ctx, &state.MsgModifyStake{
+		Sender: reputer,
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputer,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+		PlacementsAdd: []*state.StakePlacement{
+			{
+				Target: rando,
+				Amount: cosmosMath.NewUint(50),
+			},
+		},
+	})
+	s.Require().ErrorIs(err, keeper.ErrAddressNotRegistered)
 }
