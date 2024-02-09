@@ -152,7 +152,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	for _, topic := range topics {
 		// Parallelize the inference and weight cadence checks
-		go func(topic state.Topic) {
+		go func(topic *state.Topic) {
 			// Check the cadence of inferences
 			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)

@@ -19,20 +19,25 @@ message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-message Topic {
-  uint64 id = 1;
-  string metadata = 2;
-  string weight_logic = 3;
-  string weight_method = 4;
-  uint64 weight_cadence = 5;
-  uint64 weight_last_ran = 6;
-  string inference_logic = 7;
-  string inference_method = 8;
-  uint64 inference_cadence = 9;
-  uint64 inference_last_ran = 10;
-  bool active = 11;
+message StakeInfo {
+  string address = 1;
+  string amount = 2;
 }
 
+message Topic {
+  uint64 id = 1;
+  string creator = 2;
+  string metadata = 3;
+  string weight_logic = 4;
+  string weight_method = 5;
+  uint64 weight_cadence = 6;
+  uint64 weight_last_ran = 7;
+  string inference_logic = 8;
+  string inference_method = 9;
+  uint64 inference_cadence = 10;
+  uint64 inference_last_ran = 11;
+  bool active = 12;
+}
 
 message Weight {
   option (gogoproto.equal) = true;
