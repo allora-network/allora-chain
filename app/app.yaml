@@ -27,6 +27,7 @@ modules:
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
         - account: emissions
+          permissions: [burner, minter, staking]
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
