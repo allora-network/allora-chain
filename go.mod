@@ -170,3 +170,11 @@ require (
 	pgregory.net/rapid v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace (
+  github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+  github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.0.2
+  github.com/cosmos/cosmos-sdk/x/evidence => cosmossdk.io/x/evidence v0.1.0
+  github.com/cosmos/cosmos-sdk/x/feegrant => cosmossdk.io/x/feegrant v0.1.0
+  github.com/cosmos/cosmos-sdk/x/upgrade => cosmossdk.io/x/upgrade v0.1.1
+)

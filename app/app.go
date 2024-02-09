@@ -6,10 +6,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"cosmossdk.io/math"
+	"cosmossdk.io/x/circuit/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
@@ -34,6 +38,12 @@ import (
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
+	ibctransfertypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper" //nolint:staticcheck
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/allora-network/allora-chain/inflation"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -162,6 +172,95 @@ func NewAlloraApp(
 	}
 
 	return app, nil
+}
+
+const (
+	// TypeUnrecognized means coin type is unrecognized
+	TypeUnrecognized = iota
+	// TypeGeneralMessage is a pure message
+	TypeGeneralMessage
+	// TypeGeneralMessageWithToken is a general message with token
+	TypeGeneralMessageWithToken
+	// TypeSendToken is a direct token transfer
+	TypeSendToken
+)
+
+// Message is attached in ICS20 packet memo field
+type Message struct {
+	DestinationChain   string `json:"destination_chain"`
+	DestinationAddress string `json:"destination_address"`
+	Payload            []byte `json:"payload"`
+	Type               int64  `json:"type"`
+}
+
+type msgServer struct {
+	ibcTransferK ibctransferkeeper.Keeper
+}
+
+const AxelarGMPAcc = "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
+
+func NewMsgServerImpl(ibcTransferK ibctransferkeeper.Keeper) types.MsgServer {
+	return &msgServer{
+		ibcTransferK: ibcTransferK,
+	}
+}
+
+func (k msgServer) BuildAndSendIBCMessage(
+	goCtx sdk.Context, // The Cosmos SDK context
+	msg struct { // Assuming this struct is a placeholder for your actual message structure
+		ReceiverAddresses  []string
+		DestinationChain   string
+		DestinationAddress string
+		Amount             sdk.Coin
+		Sender             sdk.AccAddress
+	},
+	channelID string, // Channel ID for IBC transfer
+) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// build payload that can be decoded by solidity
+	addressesType, err := abi.NewType("address[]", "address[]", nil)
+	if err != nil {
+		return err
+	}
+
+	var addresses []common.Address
+	for _, receiver := range msg.ReceiverAddresses {
+		addresses = append(addresses, common.HexToAddress(receiver))
+	}
+
+	payload, err := abi.Arguments{{Type: addressesType}}.Pack(addresses)
+	if err != nil {
+		return err
+	}
+
+	message := Message{
+		DestinationChain:   msg.DestinationChain,
+		DestinationAddress: msg.DestinationAddress,
+		Payload:            payload,
+		Type:               TypeGeneralMessageWithToken,
+	}
+
+	bz, err := message.Marshal()
+	if err != nil {
+		return err
+	}
+
+	msg = ibctransfertypes.NewMsgTransfer(
+		ibctransfertypes.PortID,
+		"channel-17", // hard-coded channel id for demo
+		msg.Amount,
+		msg.Sender,
+		AxelarGMPAcc,
+		ibcclienttypes.ZeroHeight(),
+		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
+	)
+	msg.Memo = string(payload)
+
+	res, err := k.ibcTransferK.Transfer(goCtx, msg)
+	if err != nil {
+		return err
+	}
 }
 
 // LegacyAmino returns AlloraApp's amino codec.
