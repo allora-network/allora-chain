@@ -239,7 +239,7 @@ func (k msgServer) BuildAndSendIBCPredictionMessage(
 		Type:               TypeGeneralMessageWithToken,
 	}
 
-	bz, err := json.Marshal(message)
+	jsonEncodedMessage, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func (k msgServer) BuildAndSendIBCPredictionMessage(
 		ibcclienttypes.ZeroHeight(),
 		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
 	)
-	transferMessage.Memo = string(payload)
+	transferMessage.Memo = string(jsonEncodedMessage)
 
 	_, transferError := k.ibcTransferK.Transfer(goCtx, transferMessage)
 	if transferError != nil {
