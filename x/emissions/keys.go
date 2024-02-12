@@ -22,6 +22,7 @@ var (
 	WorkerNodesKey        = collections.NewPrefix(14)
 	ReputerNodesKey       = collections.NewPrefix(15)
 	LatestInferencesTsKey = collections.NewPrefix(16)
-	AllInferencesKey      = collections.NewPrefix(18)
 	// LatestInferencesCountKey = collections.NewPrefix(17)
+	AllInferencesKey     = collections.NewPrefix(18)
+	StakeRemovalQueueKey = collections.NewPrefix(19)
 )

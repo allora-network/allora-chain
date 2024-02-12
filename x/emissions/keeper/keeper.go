@@ -113,6 +113,8 @@ type Keeper struct {
 	stakePlacement collections.Map[collections.Pair[DELEGATOR, TARGET], Uint]
 	// map of (target) -> total amount staked upon target by themselves and all other delegators
 	stakePlacedUponTarget collections.Map[TARGET, Uint]
+	// map of (delegator) -> removal information for that delegator
+	stakeRemovalQueue collections.Map[DELEGATOR, state.StakeRemoval]
 
 	// ############################################
 	// #            MISC GLOBAL STATE:            #
@@ -164,6 +166,7 @@ func NewKeeper(
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
 		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
+		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
 		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
@@ -1028,4 +1031,9 @@ func (k *Keeper) SetInference(
 	inference state.Inference) error {
 	key := collections.Join(topicID, worker)
 	return k.inferences.Set(ctx, key, inference)
+}
+
+// For a given delegator, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress, removalInfo state.StakeRemoval) error {
+	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
 }

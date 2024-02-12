@@ -105,6 +105,22 @@ message StakePlacement {
   ];
 }
 
+message StakeRemovalPlacement {
+  uint64 topic_id = 1;
+  string target = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemoval {
+  uint64 timestamp_valid_starting = 1;
+  repeated StakeRemovalPlacement placements = 3;
+}
+
 enum Err {
   ErrInvalidTopicId = 0;
   ErrReputerAlreadyRegistered = 1;

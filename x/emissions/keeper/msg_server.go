@@ -380,12 +380,8 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRemoveStake) (*state.MsgStartRemoveStakeResponse, error) {
-}
-
-// Function for reputers or workers to call to remove stake from an existing stake position.
-func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
 	// 1. check the sender is registered
-	senderAddr, targetAddr, err := unMarshalSenderAndTargetAddrs(msg.Sender, msg.StakeTarget)
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -393,37 +389,68 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	if err != nil {
 		return nil, err
 	}
+	stakeRemoval := state.StakeRemoval{
+		TimestampValidStarting: uint64(time.Now().UTC().Unix()) + 50,
+		Placements:             make([]*state.StakeRemovalPlacement, 0),
+	}
+	for _, stakePlacement := range msg.PlacementsRemove {
+		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
+		if err != nil {
+			return nil, err
+		}
 
-	// 2. check the target exists and is registered
-	targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
+		// 2. check the target exists and is registered
+		targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		// 3. check target and sender are signed up for the same topic. err == nil if they are
+		topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
+		if err != nil {
+			return nil, err
+		}
+
+		// 4. check the sender has enough stake already placed on the target to remove the stake
+		stakePlaced, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+		if stakePlaced.LT(stakePlacement.Amount) {
+			return nil, ErrInsufficientStakeToRemove
+		}
+
+		// 5. push to the stake removal object
+		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
+			TopicId: topicId,
+			Target:  stakePlacement.Target,
+			Amount:  stakePlacement.Amount,
+		})
+	}
+	// 6. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
+	err = ms.k.SetStakeRemovalQueueForDelegator(ctx, senderAddr, stakeRemoval)
 	if err != nil {
 		return nil, err
 	}
+	return &state.MsgStartRemoveStakeResponse{}, nil
+}
 
-	// 3. check target and sender are signed up for the same topic. err == nil if they are
-	topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
-	if err != nil {
-		return nil, err
-	}
-
-	// 4. check the sender has enough stake already placed on the target to remove the stake
-	stakePlaced, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
-	if err != nil {
-		return nil, err
-	}
-	if stakePlaced.LT(msg.Amount) {
-		return nil, ErrInsufficientStakeToRemove
-	}
+// Function for reputers or workers to call to remove stake from an existing stake position.
+func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
+	// pull the stake removal from the delayed queue
+	// check the timestamp is valid
+	// skip checking all the data is valid
+	// send the money
 
 	// 5. check the module has enough funds to send back to the sender
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// 6. send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
+	amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
 	// 7. update the stake data structures
-	err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, msg.Amount)
+	err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, stakePlacement.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -436,83 +463,31 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 // and one must start the stake removal process again and wait the delay again.
 // RemoveAllStake is just a convenience wrapper around StartRemoveStake.
 func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStartRemoveAllStake) (*state.MsgStartRemoveAllStakeResponse, error) {
-}
-
-// Function for a reputer or a worker to pull out all stake from a topic entirely
-func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllStake) (*state.MsgRemoveAllStakeResponse, error) {
 	// 1. check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
-	}
-	fmt.Println(senderAddr.String())
-	senderType, err := checkNodeRegistered(ctx, ms, senderAddr)
-	if err != nil {
-		return nil, err
-	}
-	// 2. Get the topic id this sender participates in
-	var topicId uint64
-	if senderType == isReputer {
-		nodeInfo, err := ms.k.GetReputer(ctx, senderAddr)
-		if err != nil {
-			return nil, err
-		}
-		topicId = nodeInfo.TopicId
-	} else {
-		nodeInfo, err := ms.k.GetWorker(ctx, senderAddr)
-		if err != nil {
-			return nil, err
-		}
-		topicId = nodeInfo.TopicId
 	}
 	// 2. Get all stake positions for this node
 	targets, amounts, err := ms.k.GetAllBondsForDelegator(ctx, senderAddr)
 	if err != nil {
 		return nil, err
 	}
-	// 3. Check the module has enough funds to send back to the sender
-	//    The bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 4. Get sender total stake
-	senderStake, err := ms.k.GetDelegatorStake(ctx, senderAddr)
+	msgRemoveStake := &state.MsgStartRemoveStake{
+		Sender:           msg.Sender,
+		PlacementsRemove: make([]*state.StakePlacement, 0),
+	}
+	for i, target := range targets {
+		msgRemoveStake.PlacementsRemove = append(msgRemoveStake.PlacementsRemove, &state.StakePlacement{
+			Target: target.String(),
+			Amount: amounts[i],
+		})
+	}
+	_, err = ms.StartRemoveStake(ctx, msgRemoveStake)
 	if err != nil {
 		return nil, err
 	}
-	// 5. Check the sender has enough stake to remove
-	if senderStake.IsZero() {
-		return nil, ErrNoStakeToRemove
-	}
-	// 6. Send the funds to the sender
-	senderStakeInt := cosmosMath.NewIntFromBigInt(senderStake.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, senderStakeInt))
-	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
-	// 7. Update the topicStake data structure (no underflow checks since data comes from chain)
-	topicStake, err := ms.k.GetTopicStake(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-	err = ms.k.SetTopicStake(ctx, topicId, topicStake.Sub(senderStake))
-	if err != nil {
-		return nil, err
-	}
-	// 8. Update the totalStake data structure (no underflow checks since data comes from chain)
-	totalStake, err := ms.k.GetTotalStake(ctx)
-	if err != nil {
-		return nil, err
-	}
-	err = ms.k.SetTotalStake(ctx, totalStake.Sub(senderStake))
-	if err != nil {
-		return nil, err
-	}
-	// 9. For every stake position, update the stake data structures
-	for i := 0; i < len(targets); i++ {
-		target := targets[i]
-		amount := amounts[i]
-		err = ms.k.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, topicId, senderAddr, target, amount)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return &state.MsgConfirmRemoveAllStakeResponse{}, nil
+	return &state.MsgStartRemoveAllStakeResponse{}, nil
 }
 
 // ########################################
