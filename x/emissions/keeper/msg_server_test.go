@@ -63,6 +63,7 @@ func (s *KeeperTestSuite) TestMsgSetInferences() {
 				Worker:    workerAddr,
 				Value:     cosmosMath.NewUint(12),
 				ExtraData: []byte("test"),
+				Proof:     "test",
 			},
 		},
 	}

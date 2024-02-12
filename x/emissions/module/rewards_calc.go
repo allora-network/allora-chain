@@ -2,6 +2,7 @@ package module
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
@@ -205,9 +206,12 @@ func emitRewardsToTopicParticipants(
 	topic keeper.TOPIC_ID,
 	rewards map[string]*Uint) {
 	// by default emissions are restaked, upon the person themselves.
+	fmt.Println("\n---------------- Rewards ----------------")
 	for participant, reward := range rewards {
+		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
 		am.keeper.AddStake(ctx, topic, participant, participant, *reward)
 	}
+	fmt.Println("\n-----------------------------------------")
 }
 
 // ********************************************************
