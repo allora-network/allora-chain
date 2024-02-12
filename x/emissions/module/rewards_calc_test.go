@@ -244,8 +244,8 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 // give some reputers coins, have them stake those coins
 func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
 	reputerAddrs := []sdk.AccAddress{
-		sdk.AccAddress([]byte("reputer1_______________")),
-		sdk.AccAddress([]byte("reputer2_______________")),
+		s.addrs[0],
+		s.addrs[1],
 	}
 	reputerAmounts := []cosmosMath.Int{
 		cosmosMath.NewInt(reputer1StartAmount),
@@ -285,8 +285,8 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 // give some workers coins, have them stake those coins
 func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
 	workerAddrs := []sdk.AccAddress{
-		sdk.AccAddress([]byte("worker1_______________")),
-		sdk.AccAddress([]byte("worker2_______________")),
+		s.addrs[2],
+		s.addrs[3],
 	}
 	workerAmounts := []cosmosMath.Int{
 		cosmosMath.NewInt(worker1StartAmount),
@@ -359,13 +359,13 @@ func mockSetWeights(
 // create a topic
 func mockCreateTopic(s *ModuleTestSuite) (uint64, error) {
 	topicMessage := state.MsgCreateNewTopic{
-		Creator:          "",
-		Metadata:         "",
-		WeightLogic:      "",
-		WeightMethod:     "",
+		Creator:          s.addrsStr[0],
+		Metadata:         "metadata",
+		WeightLogic:      "logic",
+		WeightMethod:     "whatever",
 		WeightCadence:    0,
-		InferenceLogic:   "",
-		InferenceMethod:  "",
+		InferenceLogic:   "morelogic",
+		InferenceMethod:  "whatever2",
 		InferenceCadence: 0,
 		Active:           true,
 	}
