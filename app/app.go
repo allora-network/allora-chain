@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"cosmossdk.io/x/circuit/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
 
@@ -41,7 +40,6 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" // TODO move to new non-deprecated package
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/allora-network/allora-chain/inflation"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -183,12 +181,17 @@ const (
 	TypeSendToken
 )
 
-// Message is attached in ICS20 packet memo field
-type Message struct {
-	DestinationChain   string `json:"destination_chain"`
-	DestinationAddress string `json:"destination_address"`
-	Payload            []byte `json:"payload"`
-	Type               int64  `json:"type"`
+type AxelarBody struct {
+	DestinationChain   string     `json:"destination_chain"`
+	DestinationAddress string     `json:"destination_address"`
+	Payload            []byte     `json:"payload"`
+	Type               int64      `json:"type"`
+	Fee                *AxelarFee `json:"fee"`
+}
+
+type AxelarFee struct {
+	Amount    string `json:"amount"`
+	Recipient string `json:"recipient"`
 }
 
 type msgServer struct {
@@ -197,68 +200,74 @@ type msgServer struct {
 
 const AxelarGMPAcc = "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
 
+/*
+// TODO. figure out why this doesn't compile
+// app/app.go:207:9: cannot use &msgServer{…} (value of type *msgServer) as
+// "cosmossdk.io/x/circuit/types".MsgServer value in return statement: *msgServer
+// does not implement "cosmossdk.io/x/circuit/types".MsgServer (missing method AuthorizeCircuitBreaker)
+
 func NewMsgServerImpl(ibcTransferK ibctransferkeeper.Keeper) types.MsgServer {
 	return &msgServer{
 		ibcTransferK: ibcTransferK,
 	}
 }
+*/
 
-func (k msgServer) BuildAndSendIBCPredictionMessage(
+func (k msgServer) BuildAndSendIBCDataMessage(
 	goCtx sdk.Context,
 	msg struct {
-		ReceiverAddresses  []string
 		DestinationChain   string
 		DestinationAddress string
-		Amount             sdk.Coin
+		IbcChannel         string
 		Sender             sdk.AccAddress
-	},
-	channelID string, // Channel ID for IBC transfer
-) error {
+		ExecutorAccount    string
+		FeeTokenAndAmount  sdk.Coin
+		bytesData          string
+	}) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// build payload that can be decoded by solidity
-	addressesType, err := abi.NewType("address[]", "address[]", nil)
+	bytesDataType, err := abi.NewType("bytes", "bytes", nil)
 	if err != nil {
 		return err
 	}
 
-	var addresses []common.Address
-	for _, receiver := range msg.ReceiverAddresses {
-		addresses = append(addresses, common.HexToAddress(receiver))
-	}
-
-	payload, err := abi.Arguments{{Type: addressesType}}.Pack(addresses)
+	payload, err := abi.Arguments{{Type: bytesDataType}}.Pack(msg.bytesData)
 	if err != nil {
 		return err
 	}
 
-	message := Message{
+	axelarMemo := AxelarBody{
 		DestinationChain:   msg.DestinationChain,
 		DestinationAddress: msg.DestinationAddress,
 		Payload:            payload,
-		Type:               TypeGeneralMessageWithToken,
+		Type:               TypeGeneralMessage,
+		Fee: &AxelarFee{
+			Amount:    msg.FeeTokenAndAmount.Amount.String(),
+			Recipient: msg.ExecutorAccount,
+		},
 	}
 
-	jsonEncodedMessage, err := json.Marshal(message)
+	axelarMemoJson, err := json.Marshal(axelarMemo)
 	if err != nil {
 		return err
 	}
 
-	var transferMessage = ibctransfertypes.NewMsgTransfer(
+	transferMsg := ibctransfertypes.NewMsgTransfer(
 		ibctransfertypes.PortID,
-		"channel-17", // hard-coded channel id for demo
-		msg.Amount,
-		msg.Sender,
+		msg.IbcChannel,
+		msg.FeeTokenAndAmount,
+		string(msg.Sender),
 		AxelarGMPAcc,
 		ibcclienttypes.ZeroHeight(),
 		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
+		string(axelarMemoJson),
 	)
-	transferMessage.Memo = string(jsonEncodedMessage)
-
-	_, transferError := k.ibcTransferK.Transfer(goCtx, transferMessage)
-	if transferError != nil {
-		return transferError
+	_, err = k.ibcTransferK.Transfer(goCtx, transferMsg)
+	if err != nil {
+		return err
 	}
+
 	return nil
 }
 
