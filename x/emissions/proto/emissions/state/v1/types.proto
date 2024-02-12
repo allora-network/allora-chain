@@ -69,6 +69,7 @@ message Inference {
     (amino.dont_omitempty) = true
   ];
   bytes extra_data = 4;
+  string proof = 5;
 }
 
 message Inferences {
