@@ -133,7 +133,7 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Value: "/api",
 				},
 				{
-					Name:  "UPSHOT_ARG_PARAMS",
+					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
 				},
 				{
