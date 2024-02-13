@@ -8,6 +8,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -336,8 +337,58 @@ func (s *KeeperTestSuite) TestAddStakeInvalid() {
 	require.Error(err, "Adding stake from an unregistered reputer should return an error")
 }
 
-/*
+func (s *KeeperTestSuite) TestMsgStartRemoveStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
 
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	removalAmount := cosmosMath.NewUint(500)
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake first to ensure there is something to remove
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	timeBefore := uint64(time.Now().UTC().Unix())
+
+	// start a stake removal
+	startRemoveMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: workerAddr.String(),
+				Amount: removalAmount,
+			},
+		},
+	}
+	_, err = msgServer.StartRemoveStake(ctx, startRemoveMsg)
+
+	// check the state has changed appropriately after the removal
+	require.NoError(err, "StartRemoveStake should not return an error")
+	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	require.NoError(err, "Stake removal queue should not be empty")
+	require.GreaterOrEqual(removalInfo.TimestampValidStarting, timeBefore, "Time should be valid starting")
+	timeNow := uint64(time.Now().UTC().Unix())
+	require.GreaterOrEqual(removalInfo.TimestampValidStarting+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	require.Equal(len(removalInfo.Placements), 1, "There should be one placement in the removal queue")
+	require.Equal(removalInfo.Placements[0].Amount, removalAmount, "The amount in the removal queue should be the same as the amount in the message")
+	require.Equal(removalInfo.Placements[0].Target, workerAddr.String(), "The target in the removal queue should be the same as the target in the message")
+}
+
+/*
 func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
