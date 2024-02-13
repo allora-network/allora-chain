@@ -1033,6 +1033,11 @@ func (k *Keeper) SetInference(
 	return k.inferences.Set(ctx, key, inference)
 }
 
+// for a given delegator, get their stake removal information
+func (k *Keeper) GetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress) (state.StakeRemoval, error) {
+	return k.stakeRemovalQueue.Get(ctx, delegator)
+}
+
 // For a given delegator, adds their stake removal information to the removal queue for delay waiting
 func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress, removalInfo state.StakeRemoval) error {
 	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)

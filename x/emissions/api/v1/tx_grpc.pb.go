@@ -31,7 +31,6 @@ const (
 	Msg_StartRemoveStake_FullMethodName             = "/emissions.state.v1.Msg/StartRemoveStake"
 	Msg_ConfirmRemoveStake_FullMethodName           = "/emissions.state.v1.Msg/ConfirmRemoveStake"
 	Msg_StartRemoveAllStake_FullMethodName          = "/emissions.state.v1.Msg/StartRemoveAllStake"
-	Msg_ConfirmRemoveAllStake_FullMethodName        = "/emissions.state.v1.Msg/ConfirmRemoveAllStake"
 )
 
 // MsgClient is the client API for Msg service.
@@ -50,7 +49,6 @@ type MsgClient interface {
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
-	ConfirmRemoveAllStake(ctx context.Context, in *MsgConfirmRemoveAllStake, opts ...grpc.CallOption) (*MsgConfirmRemoveAllStakeResponse, error)
 }
 
 type msgClient struct {
@@ -169,15 +167,6 @@ func (c *msgClient) StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveA
 	return out, nil
 }
 
-func (c *msgClient) ConfirmRemoveAllStake(ctx context.Context, in *MsgConfirmRemoveAllStake, opts ...grpc.CallOption) (*MsgConfirmRemoveAllStakeResponse, error) {
-	out := new(MsgConfirmRemoveAllStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_ConfirmRemoveAllStake_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -194,7 +183,6 @@ type MsgServer interface {
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
-	ConfirmRemoveAllStake(context.Context, *MsgConfirmRemoveAllStake) (*MsgConfirmRemoveAllStakeResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -237,9 +225,6 @@ func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRem
 }
 func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveAllStake not implemented")
-}
-func (UnimplementedMsgServer) ConfirmRemoveAllStake(context.Context, *MsgConfirmRemoveAllStake) (*MsgConfirmRemoveAllStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveAllStake not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -470,24 +455,6 @@ func _Msg_StartRemoveAllStake_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_ConfirmRemoveAllStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgConfirmRemoveAllStake)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ConfirmRemoveAllStake(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ConfirmRemoveAllStake_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ConfirmRemoveAllStake(ctx, req.(*MsgConfirmRemoveAllStake))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -542,10 +509,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartRemoveAllStake",
 			Handler:    _Msg_StartRemoveAllStake_Handler,
-		},
-		{
-			MethodName: "ConfirmRemoveAllStake",
-			Handler:    _Msg_ConfirmRemoveAllStake_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

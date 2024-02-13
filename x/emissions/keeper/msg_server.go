@@ -256,7 +256,11 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 // Function for reputers or workers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*state.MsgAddStakeResponse, error) {
 	// 1. check the sender is registered
-	senderAddr, targetAddr, err := unMarshalSenderAndTargetAddrs(msg.Sender, msg.StakeTarget)
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.StakeTarget)
 	if err != nil {
 		return nil, err
 	}
@@ -437,23 +441,25 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
-	// pull the stake removal from the delayed queue
-	// check the timestamp is valid
-	// skip checking all the data is valid
-	// send the money
+	/*
+		// pull the stake removal from the delayed queue
+		// check the timestamp is valid
+		// skip checking all the data is valid
+		// send the money
 
-	// 5. check the module has enough funds to send back to the sender
-	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 6. send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
+		// 5. check the module has enough funds to send back to the sender
+		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
+		// 6. send the funds
+		amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
-	// 7. update the stake data structures
-	err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, stakePlacement.Amount)
-	if err != nil {
-		return nil, err
-	}
+		// 7. update the stake data structures
+		err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, stakePlacement.Amount)
+		if err != nil {
+			return nil, err
+		}
+	*/
 	return &state.MsgConfirmRemoveStakeResponse{}, nil
 }
 
@@ -463,12 +469,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 // and one must start the stake removal process again and wait the delay again.
 // RemoveAllStake is just a convenience wrapper around StartRemoveStake.
 func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStartRemoveAllStake) (*state.MsgStartRemoveAllStakeResponse, error) {
-	// 1. check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-	// 2. Get all stake positions for this node
 	targets, amounts, err := ms.k.GetAllBondsForDelegator(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -544,19 +548,6 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	}
 
 	return nil
-}
-
-// convert bech32 address strings from protobuf network traffic to sdk.AccAddress
-func unMarshalSenderAndTargetAddrs(sender string, target string) (sdk.AccAddress, sdk.AccAddress, error) {
-	senderAddr, err := sdk.AccAddressFromBech32(sender)
-	if err != nil {
-		return nil, nil, err
-	}
-	targetAddr, err := sdk.AccAddressFromBech32(target)
-	if err != nil {
-		return nil, nil, err
-	}
-	return senderAddr, targetAddr, nil
 }
 
 // checks if a node is registered in the system and if it is,

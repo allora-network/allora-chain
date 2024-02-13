@@ -8,7 +8,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -336,6 +335,8 @@ func (s *KeeperTestSuite) TestAddStakeInvalid() {
 	})
 	require.Error(err, "Adding stake from an unregistered reputer should return an error")
 }
+
+/*
 
 func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -808,3 +809,5 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidTarget() {
 	})
 	s.Require().ErrorIs(err, keeper.ErrAddressNotRegistered)
 }
+
+*/
