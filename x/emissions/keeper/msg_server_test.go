@@ -631,7 +631,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidSumChangesNotEqualRemoveMoreThan
 			},
 		},
 	})
-	s.Require().ErrorIs(err, keeper.ErrModifyStakeSumBeforeNotEqualToSumAfter)
+	s.Require().ErrorIs(err, state.ErrModifyStakeSumBeforeNotEqualToSumAfter)
 }
 
 func (s *KeeperTestSuite) TestModifyStakeInvalidSumChangesNotEqualAddMoreThanRemove() {
@@ -661,7 +661,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidSumChangesNotEqualAddMoreThanRem
 			},
 		},
 	})
-	s.Require().ErrorIs(err, keeper.ErrModifyStakeSumBeforeNotEqualToSumAfter)
+	s.Require().ErrorIs(err, state.ErrModifyStakeSumBeforeNotEqualToSumAfter)
 }
 
 func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughDelegatorStake() {
@@ -699,7 +699,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughDelegatorStake() {
 			},
 		},
 	})
-	s.Require().ErrorIs(err, keeper.ErrModifyStakeBeforeSumGreaterThanSenderStake)
+	s.Require().ErrorIs(err, state.ErrModifyStakeBeforeSumGreaterThanSenderStake)
 }
 
 func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
@@ -773,7 +773,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
 		},
 	}
 	_, err = s.msgServer.ModifyStake(s.ctx, modifyStakeMsg)
-	s.Require().ErrorIs(err, keeper.ErrModifyStakeBeforeBondLessThanAmountModified, "ModifyStake Error not matching expected")
+	s.Require().ErrorIs(err, state.ErrModifyStakeBeforeBondLessThanAmountModified, "ModifyStake Error not matching expected")
 }
 
 func (s *KeeperTestSuite) TestModifyStakeInvalidTarget() {
@@ -807,7 +807,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidTarget() {
 			},
 		},
 	})
-	s.Require().ErrorIs(err, keeper.ErrAddressNotRegistered)
+	s.Require().ErrorIs(err, state.ErrAddressNotRegistered)
 }
 
 */

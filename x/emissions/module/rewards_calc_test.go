@@ -7,7 +7,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -347,7 +346,7 @@ func mockSetWeights(
 				cosmosMath.NewUint(weight),
 			)
 			if err != nil {
-				if !(errors.Is(err, keeper.ErrDoNotSetMapValueToZero)) {
+				if !(errors.Is(err, state.ErrDoNotSetMapValueToZero)) {
 					return err
 				}
 			}
