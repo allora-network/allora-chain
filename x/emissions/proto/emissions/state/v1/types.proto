@@ -144,4 +144,9 @@ enum Err {
   ErrModifyStakeBeforeBondLessThanAmountModified = 19;
   ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
   ErrModifyStakeSumBeforeNotEqualToSumAfter = 21;
+  ErrConfirmRemoveStakeNoRemovalStarted = 22;
+  ErrInvalidLastUpdate = 23;
+  ErrEpochNotReached = 24;
+  ErrScalarMultiplyNegative = 25;
+  ErrDivideMapValuesByZero = 26;
 }

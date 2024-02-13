@@ -12,6 +12,7 @@ import (
 )
 
 const REQUIRED_MINIMUM_STAKE = 1
+const DELAY_WINDOW = 172800 // 48 hours in seconds
 
 type NodeExists int8
 
@@ -177,7 +178,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		return nil, err
 	}
 	if reputerExists {
-		return nil, ErrReputerAlreadyRegistered
+		return nil, state.ErrReputerAlreadyRegistered
 	}
 
 	// move the tokens from the creator to the module account
@@ -222,7 +223,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		return nil, err
 	}
 	if workerExists {
-		return nil, ErrWorkerAlreadyRegistered
+		return nil, state.ErrWorkerAlreadyRegistered
 	}
 
 	// move the tokens from the creator to the module account
@@ -320,11 +321,11 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 		if bond.LT(stakeBefore.Amount) {
-			return nil, ErrModifyStakeBeforeBondLessThanAmountModified
+			return nil, state.ErrModifyStakeBeforeBondLessThanAmountModified
 		}
 	}
 	if senderTotalStake.LT(beforeSum) {
-		return nil, ErrModifyStakeBeforeSumGreaterThanSenderStake
+		return nil, state.ErrModifyStakeBeforeSumGreaterThanSenderStake
 	}
 	// 4. For all stake afters, check that the target is a valid signed up participant
 	// 5. For all stake afters, check that the sum is equal to the sum of stake befores
@@ -341,7 +342,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 		}
 	}
 	if !afterSum.Equal(beforeSum) {
-		return nil, ErrModifyStakeSumBeforeNotEqualToSumAfter
+		return nil, state.ErrModifyStakeSumBeforeNotEqualToSumAfter
 	}
 
 	// Update the stake data structures
@@ -421,7 +422,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 			return nil, err
 		}
 		if stakePlaced.LT(stakePlacement.Amount) {
-			return nil, ErrInsufficientStakeToRemove
+			return nil, state.ErrInsufficientStakeToRemove
 		}
 
 		// 5. push to the stake removal object
@@ -443,7 +444,20 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
 	/*
 		// pull the stake removal from the delayed queue
+		senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+		if err != nil {
+			return nil, err
+		}
+		stakeRemoval, err := ms.k.GetStakeRemovalQueueForDelegator(ctx, senderAddr)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				return nil, state.ErrConfirmRemoveStakeNoRemovalStarted
+			}
+			return nil, err
+		}
 		// check the timestamp is valid
+		timeNow := uint64(time.Now().UTC().Unix())
+
 		// skip checking all the data is valid
 		// send the money
 
@@ -509,7 +523,7 @@ type RegistrationMessage interface {
 func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms msgServer, msg M) error {
 	// Validate the message contents
 	if msg.GetLibP2PKey() == "" {
-		return ErrLibP2PKeyRequired
+		return state.ErrLibP2PKeyRequired
 	}
 	// check the topic specified is a valid topic
 	numTopics, err := ms.k.GetNumTopics(ctx)
@@ -517,12 +531,12 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 		return err
 	}
 	if msg.GetTopicId() >= numTopics { // topic id is 0 indexed
-		return ErrInvalidTopicId
+		return state.ErrInvalidTopicId
 	}
 
 	// require funds to be at least greater than the minimum stake
 	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
-		return ErrInsufficientStakeToRegister
+		return state.ErrInsufficientStakeToRegister
 	}
 	return nil
 }
@@ -567,7 +581,7 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 	if nodeIsWorker {
 		return isWorker, nil
 	}
-	return isNotFound, ErrAddressNotRegistered
+	return isNotFound, state.ErrAddressNotRegistered
 }
 
 // checks if the sender and target are signed up for the same topic
@@ -615,5 +629,5 @@ func checkSenderAndTargetSameTopic(
 		return senderTopicId, nil
 	}
 
-	return 0, ErrTopicIdOfStakerAndTargetDoNotMatch
+	return 0, state.ErrTopicIdOfStakerAndTargetDoNotMatch
 }
