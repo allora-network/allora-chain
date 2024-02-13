@@ -177,7 +177,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		return nil, err
 	}
 	if reputerExists {
-		return nil, ErrReputerAlreadyRegistered
+		return nil, state.ErrReputerAlreadyRegistered
 	}
 
 	// move the tokens from the creator to the module account
@@ -222,7 +222,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		return nil, err
 	}
 	if workerExists {
-		return nil, ErrWorkerAlreadyRegistered
+		return nil, state.ErrWorkerAlreadyRegistered
 	}
 
 	// move the tokens from the creator to the module account
@@ -316,11 +316,11 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 		if bond.LT(stakeBefore.Amount) {
-			return nil, ErrModifyStakeBeforeBondLessThanAmountModified
+			return nil, state.ErrModifyStakeBeforeBondLessThanAmountModified
 		}
 	}
 	if senderTotalStake.LT(beforeSum) {
-		return nil, ErrModifyStakeBeforeSumGreaterThanSenderStake
+		return nil, state.ErrModifyStakeBeforeSumGreaterThanSenderStake
 	}
 	// 4. For all stake afters, check that the target is a valid signed up participant
 	// 5. For all stake afters, check that the sum is equal to the sum of stake befores
@@ -337,7 +337,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 		}
 	}
 	if !afterSum.Equal(beforeSum) {
-		return nil, ErrModifyStakeSumBeforeNotEqualToSumAfter
+		return nil, state.ErrModifyStakeSumBeforeNotEqualToSumAfter
 	}
 
 	// Update the stake data structures
@@ -405,7 +405,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 		return nil, err
 	}
 	if stakePlaced.LT(msg.Amount) {
-		return nil, ErrInsufficientStakeToRemove
+		return nil, state.ErrInsufficientStakeToRemove
 	}
 
 	// 5. check the module has enough funds to send back to the sender
@@ -464,7 +464,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	}
 	// 5. Check the sender has enough stake to remove
 	if senderStake.IsZero() {
-		return nil, ErrNoStakeToRemove
+		return nil, state.ErrNoStakeToRemove
 	}
 	// 6. Send the funds to the sender
 	senderStakeInt := cosmosMath.NewIntFromBigInt(senderStake.BigInt())
@@ -515,7 +515,7 @@ type RegistrationMessage interface {
 func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms msgServer, msg M) error {
 	// Validate the message contents
 	if msg.GetLibP2PKey() == "" {
-		return ErrLibP2PKeyRequired
+		return state.ErrLibP2PKeyRequired
 	}
 	// check the topic specified is a valid topic
 	numTopics, err := ms.k.GetNumTopics(ctx)
@@ -523,12 +523,12 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 		return err
 	}
 	if msg.GetTopicId() >= numTopics { // topic id is 0 indexed
-		return ErrInvalidTopicId
+		return state.ErrInvalidTopicId
 	}
 
 	// require funds to be at least greater than the minimum stake
 	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
-		return ErrInsufficientStakeToRegister
+		return state.ErrInsufficientStakeToRegister
 	}
 	return nil
 }
@@ -586,7 +586,7 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 	if nodeIsWorker {
 		return isWorker, nil
 	}
-	return isNotFound, ErrAddressNotRegistered
+	return isNotFound, state.ErrAddressNotRegistered
 }
 
 // checks if the sender and target are signed up for the same topic
@@ -634,5 +634,5 @@ func checkSenderAndTargetSameTopic(
 		return senderTopicId, nil
 	}
 
-	return 0, ErrTopicIdOfStakerAndTargetDoNotMatch
+	return 0, state.ErrTopicIdOfStakerAndTargetDoNotMatch
 }

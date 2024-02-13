@@ -128,4 +128,6 @@ enum Err {
   ErrModifyStakeBeforeBondLessThanAmountModified = 19;
   ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
   ErrModifyStakeSumBeforeNotEqualToSumAfter = 21;
+  ErrScalarMultiplyNegative = 23;
+  ErrDivideMapValuesByZero = 24;
 }
