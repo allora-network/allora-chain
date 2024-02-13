@@ -28,7 +28,5 @@ var ErrModifyStakeBeforeBondLessThanAmountModified = fmt.Errorf(Err_ErrModifySta
 var ErrModifyStakeBeforeSumGreaterThanSenderStake = fmt.Errorf(Err_ErrModifyStakeBeforeSumGreaterThanSenderStake.String())
 var ErrModifyStakeSumBeforeNotEqualToSumAfter = fmt.Errorf(Err_ErrModifyStakeSumBeforeNotEqualToSumAfter.String())
 var ErrConfirmRemoveStakeNoRemovalStarted = fmt.Errorf(Err_ErrConfirmRemoveStakeNoRemovalStarted.String())
-var ErrInvalidLastUpdate = fmt.Errorf(Err_ErrInvalidLastUpdate.String())
-var ErrEpochNotReached = fmt.Errorf(Err_ErrEpochNotReached.String())
 var ErrScalarMultiplyNegative = fmt.Errorf(Err_ErrScalarMultiplyNegative.String())
 var ErrDivideMapValuesByZero = fmt.Errorf(Err_ErrDivideMapValuesByZero.String())
