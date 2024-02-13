@@ -2,9 +2,11 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
@@ -442,25 +444,34 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
-	/*
-		// pull the stake removal from the delayed queue
-		senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	// pull the stake removal from the delayed queue
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	stakeRemoval, err := ms.k.GetStakeRemovalQueueForDelegator(ctx, senderAddr)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, state.ErrConfirmRemoveStakeNoRemovalStarted
+		}
+		return nil, err
+	}
+	// check the timestamp is valid
+	timeNow := uint64(time.Now().UTC().Unix())
+	if stakeRemoval.TimestampValidStarting > timeNow {
+		return nil, state.ErrConfirmRemoveStakeTooEarly
+	}
+	if stakeRemoval.TimestampValidStarting+DELAY_WINDOW < timeNow {
+		return nil, state.ErrConfirmRemoveStakeTooLate
+	}
+	// skip checking all the data is valid
+	// the data should be valid because it was checked when the stake removal was started
+	// send the money
+	for _, stakePlacement := range stakeRemoval.Placements {
+		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
 		if err != nil {
 			return nil, err
 		}
-		stakeRemoval, err := ms.k.GetStakeRemovalQueueForDelegator(ctx, senderAddr)
-		if err != nil {
-			if errors.Is(err, collections.ErrNotFound) {
-				return nil, state.ErrConfirmRemoveStakeNoRemovalStarted
-			}
-			return nil, err
-		}
-		// check the timestamp is valid
-		timeNow := uint64(time.Now().UTC().Unix())
-
-		// skip checking all the data is valid
-		// send the money
-
 		// 5. check the module has enough funds to send back to the sender
 		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 		// 6. send the funds
@@ -469,11 +480,11 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
 		// 7. update the stake data structures
-		err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, stakePlacement.Amount)
+		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicId, senderAddr, targetAddr, stakePlacement.Amount)
 		if err != nil {
 			return nil, err
 		}
-	*/
+	}
 	return &state.MsgConfirmRemoveStakeResponse{}, nil
 }
 
