@@ -9,6 +9,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -122,7 +123,7 @@ func (s *RewardsCalcTestSuite) TestScalarMultiplyFailNegative() {
 	var expected map[string]*Uint = nil
 
 	result, err := scalarMultiply(matrix, scalar)
-	s.Require().Equal(ErrScalarMultiplyNegative, err, "ScalarMultiply returned incorrect error")
+	s.Require().Equal(state.ErrScalarMultiplyNegative, err, "ScalarMultiply returned incorrect error")
 	s.Require().Equal(expected, result, "ScalarMultiply returned incorrect result")
 }
 
@@ -158,7 +159,7 @@ func (s *RewardsCalcTestSuite) TestNormalizeSingleZero() {
 
 	result, err := normalize(matrix)
 	var expected map[string]*Float = nil
-	s.Require().Equal(err, ErrDivideMapValuesByZero)
+	s.Require().Equal(err, state.ErrDivideMapValuesByZero)
 	s.Require().Equal(expected, result, "Normalize returned incorrect result")
 }
 
@@ -172,7 +173,7 @@ func (s *RewardsCalcTestSuite) TestNormalizeMultipleZero() {
 
 	result, err := normalize(matrix)
 	var expected map[string]*Float = nil
-	s.Require().Equal(err, ErrDivideMapValuesByZero)
+	s.Require().Equal(err, state.ErrDivideMapValuesByZero)
 	s.Require().Equal(expected, result, "Normalize returned incorrect result")
 }
 
@@ -261,7 +262,7 @@ func (s *RewardsCalcTestSuite) TestNormalizeBondDeltasFailZero() {
 
 	result, err := normalizeBondDeltas(sampleBondDeltas)
 
-	s.Require().Equal(err, ErrDivideMapValuesByZero)
+	s.Require().Equal(err, state.ErrDivideMapValuesByZero)
 	s.Require().Equal(expected, result, "NormalizeBondDeltas returned incorrect result")
 }
 
