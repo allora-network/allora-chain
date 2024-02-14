@@ -397,7 +397,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		return nil, err
 	}
 	stakeRemoval := state.StakeRemoval{
-		TimeStampRemovalStarted: uint64(time.Now().UTC().Unix()),
+		TimestampRemovalStarted: uint64(time.Now().UTC().Unix()),
 		Placements:              make([]*state.StakeRemovalPlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
@@ -458,10 +458,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	}
 	// check the timestamp is valid
 	timeNow := uint64(time.Now().UTC().Unix())
-	if stakeRemoval.TimeStampRemovalStarted > timeNow {
+	if stakeRemoval.TimestampRemovalStarted > timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooEarly
 	}
-	if stakeRemoval.TimeStampRemovalStarted+DELAY_WINDOW < timeNow {
+	if stakeRemoval.TimestampRemovalStarted+DELAY_WINDOW < timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooLate
 	}
 	// skip checking all the data is valid

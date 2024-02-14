@@ -548,7 +548,7 @@ func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
 	}
 	placements := []*state.StakeRemovalPlacement{&placement}
 	removalInfo := state.StakeRemoval{
-		TimeStampRemovalStarted: uint64(time.Now().Unix()),
+		TimestampRemovalStarted: uint64(time.Now().Unix()),
 		Placements:              placements,
 	}
 
