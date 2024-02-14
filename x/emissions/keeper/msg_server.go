@@ -180,6 +180,16 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		return nil, state.ErrReputerAlreadyRegistered
 	}
 
+	// check if topics exists
+	for _, topicId := range msg.TopicsIds {
+		exist, err := ms.k.TopicExists(ctx, topicId)
+		if !exist {
+			return nil, fmt.Errorf("topic does not exist")
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
 	// move the tokens from the creator to the module account
 	// then add the stake to the total, topicTotal, and 3 staking tracking maps
 	moveFundsAddStake(ctx, ms, reputerAddr, msg)
@@ -188,12 +198,12 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 	// add node to topicReputers
 	// add node to reputers
 	reputerInfo := state.OffchainNode{
-		TopicId:      msg.TopicId,
+		TopicsIds:    msg.TopicsIds,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
 	}
 
-	err = ms.k.InsertReputer(ctx, msg.TopicId, reputerAddr, reputerInfo)
+	err = ms.k.InsertReputer(ctx, msg.TopicsIds, reputerAddr, reputerInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -225,6 +235,16 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		return nil, state.ErrWorkerAlreadyRegistered
 	}
 
+	// check if topics exists
+	for _, topicId := range msg.TopicsIds {
+		exist, err := ms.k.TopicExists(ctx, topicId)
+		if !exist {
+			return nil, fmt.Errorf("topic does not exist")
+		} else if err != nil {
+			return nil, err
+		}
+	}
+
 	// move the tokens from the creator to the module account
 	// then add the stake to the total, topicTotal, and 3 staking tracking maps
 	moveFundsAddStake(ctx, ms, workerAddr, msg)
@@ -234,14 +254,14 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 	// add node to reputers
 	workerInfo := state.OffchainNode{
 		NodeAddress:  msg.Creator,
-		TopicId:      msg.TopicId,
+		TopicsIds:    msg.TopicsIds,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
 		Owner:        msg.Owner,
 		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
 	}
 
-	err = ms.k.InsertWorker(ctx, msg.TopicId, workerAddr, workerInfo)
+	err = ms.k.InsertWorker(ctx, msg.TopicsIds, workerAddr, workerInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -260,31 +280,31 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	if err != nil {
 		return nil, err
 	}
-	senderNodeType, err := checkNodeRegistered(ctx, ms, senderAddr)
+	_, err = checkNodeRegistered(ctx, ms, senderAddr)
 	if err != nil {
 		return nil, err
 	}
 	// 2. check the target exists and is registered
-	targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
+	_, err = checkNodeRegistered(ctx, ms, targetAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3. check target and sender are signed up for the same topic. err == nil if they are
-	topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
-	if err != nil {
-		return nil, err
-	}
-
-	// 4. check the sender has enough funds to add the stake
+	// 3. check the sender has enough funds to add the stake
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 5. send the funds
+	// 4. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.ModuleName, coins)
 
+	// 5. get target topics registrated 
+	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+	if err != nil {
+		return nil, err
+	} 
+
 	// 6. update the stake data structures
-	err = ms.k.AddStake(ctx, topicId, msg.Sender, msg.StakeTarget, msg.Amount)
+	err = ms.k.AddStake(ctx, topicsIds, msg.Sender, msg.StakeTarget, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -382,24 +402,18 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 	if err != nil {
 		return nil, err
 	}
-	senderNodeType, err := checkNodeRegistered(ctx, ms, senderAddr)
+	_, err = checkNodeRegistered(ctx, ms, senderAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	// 2. check the target exists and is registered
-	targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
+	_, err = checkNodeRegistered(ctx, ms, targetAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3. check target and sender are signed up for the same topic. err == nil if they are
-	topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
-	if err != nil {
-		return nil, err
-	}
-
-	// 4. check the sender has enough stake already placed on the target to remove the stake
+	// 3. check the sender has enough stake already placed on the target to remove the stake
 	stakePlaced, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
 	if err != nil {
 		return nil, err
@@ -408,15 +422,21 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 		return nil, state.ErrInsufficientStakeToRemove
 	}
 
-	// 5. check the module has enough funds to send back to the sender
+	// 4. check the module has enough funds to send back to the sender
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 6. send the funds
+	// 5. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
+	// 6. get target topics registrated 
+	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+	if err != nil {
+		return nil, err
+	} 
+
 	// 7. update the stake data structures
-	err = ms.k.RemoveStakeFromBond(ctx, topicId, senderAddr, targetAddr, msg.Amount)
+	err = ms.k.RemoveStakeFromBond(ctx, topicsIds, senderAddr, targetAddr, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -492,7 +512,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	for i := 0; i < len(targets); i++ {
 		target := targets[i]
 		amount := amounts[i]
-		err = ms.k.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, topicId, senderAddr, target, amount)
+		err = ms.k.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, senderAddr, target, amount)
 		if err != nil {
 			return nil, err
 		}
@@ -506,7 +526,7 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 
 // Making common interfaces available to protobuf messages
 type RegistrationMessage interface {
-	GetTopicId() uint64
+	GetTopicsIds() []uint64
 	GetLibP2PKey() string
 	GetInitialStake() cosmosMath.Uint
 	GetCreator() string
@@ -548,7 +568,7 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakeOwnedByDelegator
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetTopicId(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	err = ms.k.AddStake(ctx, msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
 	if err != nil {
 		return err
 	}

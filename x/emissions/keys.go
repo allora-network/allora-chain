@@ -23,5 +23,7 @@ var (
 	ReputerNodesKey       = collections.NewPrefix(15)
 	LatestInferencesTsKey = collections.NewPrefix(16)
 	AllInferencesKey      = collections.NewPrefix(18)
+	AllTopicStakeSum      = collections.NewPrefix(19)
+	AddressTopicsKey	  = collections.NewPrefix(20)
 	// LatestInferencesCountKey = collections.NewPrefix(17)
 )

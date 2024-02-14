@@ -110,8 +110,8 @@ message MsgRegisterReputer {
 
   string creator = 1;                      // Message sender.
   string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;              // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
+  string multi_address = 3;                // Network address for connectivity.
+  repeated uint64 topics_ids = 4;           // Topics IDs the node is signing up to participate in.
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -127,15 +127,14 @@ message MsgRegisterReputerResponse {
   string message = 2;                   // Additional message or details.
 }
 
-
 // Message for registering an Inference compute node
 message MsgRegisterWorker {
   option (cosmos.msg.v1.signer) = "creator";
 
-  string creator = 1;                      // Message sender.
-  string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;                // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
+  string creator = 1;                               // Message sender.
+  string lib_p2p_key = 2;                           // LibP2P key of the node.
+  string multi_address = 3;                         // Network address for connectivity.
+  repeated uint64 topics_ids = 4;                   // Topics IDs the node is signing up to participate in.
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
