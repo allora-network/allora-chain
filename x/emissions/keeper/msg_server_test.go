@@ -599,7 +599,7 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveAllStake() {
 	require.Equal(registrationInitialStake, totalStakeForTopic, "Total stake for the topic should be equal to the registration stakes after removing all stake")
 }
 
-func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveMoreThanExists() {
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveMoreThanExists() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -629,7 +629,7 @@ func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveMoreThanExists() {
 	require.ErrorIs(err, state.ErrInsufficientStakeToRemove, "RemoveStake should return an error when attempting to remove more stake than exists")
 }
 
-func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveFromUnregisteredTarget() {
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredTarget() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -656,7 +656,7 @@ func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveFromUnregisteredTarget() {
 	require.ErrorIs(err, state.ErrAddressNotRegistered, "RemoveStake should return an error when attempting to remove stake from a unregistered target")
 }
 
-func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveFromUnregisteredSender() {
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredSender() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -685,7 +685,7 @@ func (s *KeeperTestSuite) TestRemoveStakeInvalidRemoveFromUnregisteredSender() {
 
 }
 
-func (s *KeeperTestSuite) TestRemoveStakeInvalidNotEnoughStake() {
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidNotEnoughStake() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -711,6 +711,93 @@ func (s *KeeperTestSuite) TestRemoveStakeInvalidNotEnoughStake() {
 	}
 	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
 	require.ErrorIs(err, state.ErrInsufficientStakeToRemove, "RemoveStake should return an error when sender does not have enough stake placed on the target")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidNoRemovalStarted() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	// workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// // Common setup for staking
+	// registrationInitialStake := cosmosMath.NewUint(100)
+	// s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	_, err := msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	})
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeNoRemovalStarted, "ConfirmRemoveStake should return an error when no stake removal has been started")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooEarly() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// if you try to call the geniune msgServer.StartStakeRemoval
+	// the unix time set there is going to be in the future,
+	// rather than having to monkey patch the unix time, or some complicated mocking setup,
+	// lets just directly manipulate the removalInfo in the keeper store
+	timeNow := uint64(time.Now().UTC().Unix())
+	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+		TimestampValidStarting: timeNow + 1000000,
+		Placements: []*state.StakeRemovalPlacement{
+			{
+				TopicId: 0,
+				Target:  reputerAddr.String(),
+				Amount:  registrationInitialStake,
+			},
+		},
+	})
+	require.NoError(err, "Set stake removal queue should work")
+	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	}
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeTooEarly, "ConfirmRemoveStake should return an error when stake removal is too early")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooLate() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// if you try to call the geniune msgServer.StartStakeRemoval
+	// the unix time set there is going to be in the future,
+	// rather than having to monkey patch the unix time, or some complicated mocking setup,
+	// lets just directly manipulate the removalInfo in the keeper store
+	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+		TimestampValidStarting: 0,
+		Placements: []*state.StakeRemovalPlacement{
+			{
+				TopicId: 0,
+				Target:  reputerAddr.String(),
+				Amount:  registrationInitialStake,
+			},
+		},
+	})
+	require.NoError(err, "Set stake removal queue should work")
+	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	}
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeTooLate, "ConfirmRemoveStake should return an error when stake removal is too early")
 }
 
 func (s *KeeperTestSuite) TestModifyStakeSimple() {
