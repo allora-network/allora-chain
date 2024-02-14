@@ -380,9 +380,9 @@ func (s *KeeperTestSuite) TestMsgStartRemoveStake() {
 	require.NoError(err, "StartRemoveStake should not return an error")
 	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
-	require.GreaterOrEqual(removalInfo.TimestampValidStarting, timeBefore, "Time should be valid starting")
+	require.GreaterOrEqual(removalInfo.TimeStampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
-	require.GreaterOrEqual(removalInfo.TimestampValidStarting+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	require.GreaterOrEqual(removalInfo.TimeStampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
 	require.Equal(1, len(removalInfo.Placements), "There should be one placement in the removal queue")
 	require.Equal(removalAmount, removalInfo.Placements[0].Amount, "The amount in the removal queue should be the same as the amount in the message")
 	require.Equal(workerAddr.String(), removalInfo.Placements[0].Target, "The target in the removal queue should be the same as the target in the message")
@@ -420,7 +420,7 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveStake() {
 	// lets just directly manipulate the removalInfo in the keeper store
 	timeNow := uint64(time.Now().UTC().Unix())
 	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
-		TimestampValidStarting: timeNow - 1000,
+		TimeStampRemovalStarted: timeNow - 1000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
 				TopicId: 0,
@@ -518,9 +518,9 @@ func (s *KeeperTestSuite) TestMsgStartRemoveAllStake() {
 	require.NoError(err, "StartRemoveAllStake should not return an error")
 	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
-	require.GreaterOrEqual(removalInfo.TimestampValidStarting, timeBefore, "Time should be valid starting")
+	require.GreaterOrEqual(removalInfo.TimeStampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
-	require.GreaterOrEqual(removalInfo.TimestampValidStarting+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	require.GreaterOrEqual(removalInfo.TimeStampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
 	require.Equal(2, len(removalInfo.Placements), "There should be two placements in the removal queue")
 	require.Equal(removalInfo.Placements[0].Target, workerAddr.String(), "The target in the removal queue should be the same as the target in the message")
 	require.Equal(removalInfo.Placements[0].Amount, stakeAmount, "The amount in the removal queue should be the same as the amount in the message")
@@ -566,7 +566,7 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveAllStake() {
 	// swap out the timestamp so it's valid for the confirmRemove
 	stakeRemoveInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
-	stakeRemoveInfo.TimestampValidStarting = uint64(time.Now().UTC().Unix()) - 1000
+	stakeRemoveInfo.TimeStampRemovalStarted = uint64(time.Now().UTC().Unix()) - 1000
 	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, stakeRemoveInfo)
 	require.NoError(err, "Set stake removal queue should work")
 
@@ -749,7 +749,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooEarly() {
 	// lets just directly manipulate the removalInfo in the keeper store
 	timeNow := uint64(time.Now().UTC().Unix())
 	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
-		TimestampValidStarting: timeNow + 1000000,
+		TimeStampRemovalStarted: timeNow + 1000000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
 				TopicId: 0,
@@ -783,7 +783,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooLate() {
 	// rather than having to monkey patch the unix time, or some complicated mocking setup,
 	// lets just directly manipulate the removalInfo in the keeper store
 	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
-		TimestampValidStarting: 0,
+		TimeStampRemovalStarted: 0,
 		Placements: []*state.StakeRemovalPlacement{
 			{
 				TopicId: 0,

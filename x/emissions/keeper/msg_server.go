@@ -397,8 +397,8 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		return nil, err
 	}
 	stakeRemoval := state.StakeRemoval{
-		TimestampValidStarting: uint64(time.Now().UTC().Unix()) + 50,
-		Placements:             make([]*state.StakeRemovalPlacement, 0),
+		TimeStampRemovalStarted: uint64(time.Now().UTC().Unix()),
+		Placements:              make([]*state.StakeRemovalPlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
 		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
@@ -458,10 +458,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	}
 	// check the timestamp is valid
 	timeNow := uint64(time.Now().UTC().Unix())
-	if stakeRemoval.TimestampValidStarting > timeNow {
+	if stakeRemoval.TimeStampRemovalStarted > timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooEarly
 	}
-	if stakeRemoval.TimestampValidStarting+DELAY_WINDOW < timeNow {
+	if stakeRemoval.TimeStampRemovalStarted+DELAY_WINDOW < timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooLate
 	}
 	// skip checking all the data is valid

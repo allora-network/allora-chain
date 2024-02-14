@@ -117,7 +117,7 @@ message StakeRemovalPlacement {
 }
 
 message StakeRemoval {
-  uint64 timestamp_valid_starting = 1;
+  uint64 timestamp_removal_started = 1;
   repeated StakeRemovalPlacement placements = 3;
 }
 
