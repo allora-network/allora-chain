@@ -698,7 +698,7 @@ func (k *Keeper) RemoveStakeFromBond(
 			return err
 		}
 		if stake.GT(topicStake) {
-			return ErrIntegerUnderflowTopicStake
+			return state.ErrIntegerUnderflowTopicStake
 		}
 
 		topicStakeNew := topicStake.Sub(stake)

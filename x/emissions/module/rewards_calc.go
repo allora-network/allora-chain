@@ -202,7 +202,7 @@ func emitRewardsToTopicParticipants(
 	fmt.Println("\n---------------- Rewards ----------------")
 	for participant, reward := range rewards {
 		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
-		am.keeper.AddStake(ctx, topic, participant, participant, *reward)
+		am.keeper.AddStake(ctx, []uint64{topic}, participant, participant, *reward)
 	}
 	fmt.Println("\n-----------------------------------------")
 }

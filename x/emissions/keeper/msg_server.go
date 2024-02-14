@@ -297,11 +297,11 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.ModuleName, coins)
 
-	// 5. get target topics registrated 
+	// 5. get target topics registrated
 	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
 	if err != nil {
 		return nil, err
-	} 
+	}
 
 	// 6. update the stake data structures
 	err = ms.k.AddStake(ctx, topicsIds, msg.Sender, msg.StakeTarget, msg.Amount)
@@ -429,11 +429,11 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *state.MsgRemoveStake) 
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 
-	// 6. get target topics registrated 
+	// 6. get target topics registrated
 	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
 	if err != nil {
 		return nil, err
-	} 
+	}
 
 	// 7. update the stake data structures
 	err = ms.k.RemoveStakeFromBond(ctx, topicsIds, senderAddr, targetAddr, msg.Amount)
@@ -456,19 +456,19 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 		return nil, err
 	}
 	// 2. Get the topic id this sender participates in
-	var topicId uint64
+	var topicsIds []uint64
 	if senderType == isReputer {
 		nodeInfo, err := ms.k.GetReputer(ctx, senderAddr)
 		if err != nil {
 			return nil, err
 		}
-		topicId = nodeInfo.TopicId
+		topicsIds = nodeInfo.TopicsIds
 	} else {
 		nodeInfo, err := ms.k.GetWorker(ctx, senderAddr)
 		if err != nil {
 			return nil, err
 		}
-		topicId = nodeInfo.TopicId
+		topicsIds = nodeInfo.TopicsIds
 	}
 	// 2. Get all stake positions for this node
 	targets, amounts, err := ms.k.GetAllBondsForDelegator(ctx, senderAddr)
@@ -491,13 +491,15 @@ func (ms msgServer) RemoveAllStake(ctx context.Context, msg *state.MsgRemoveAllS
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, senderStakeInt))
 	ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
 	// 7. Update the topicStake data structure (no underflow checks since data comes from chain)
-	topicStake, err := ms.k.GetTopicStake(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-	err = ms.k.SetTopicStake(ctx, topicId, topicStake.Sub(senderStake))
-	if err != nil {
-		return nil, err
+	for _, topicId := range topicsIds {
+		topicStake, err := ms.k.GetTopicStake(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
+		err = ms.k.SetTopicStake(ctx, topicId, topicStake.Sub(senderStake))
+		if err != nil {
+			return nil, err
+		}
 	}
 	// 8. Update the totalStake data structure (no underflow checks since data comes from chain)
 	totalStake, err := ms.k.GetTotalStake(ctx)
@@ -537,14 +539,6 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 	if msg.GetLibP2PKey() == "" {
 		return state.ErrLibP2PKeyRequired
 	}
-	// check the topic specified is a valid topic
-	numTopics, err := ms.k.GetNumTopics(ctx)
-	if err != nil {
-		return err
-	}
-	if msg.GetTopicId() >= numTopics { // topic id is 0 indexed
-		return state.ErrInvalidTopicId
-	}
 
 	// require funds to be at least greater than the minimum stake
 	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
@@ -568,7 +562,7 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakeOwnedByDelegator
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	err = ms.k.AddStake(ctx, msg.GetTopicsIds(),  msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
 	if err != nil {
 		return err
 	}
@@ -607,52 +601,4 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 		return isWorker, nil
 	}
 	return isNotFound, state.ErrAddressNotRegistered
-}
-
-// checks if the sender and target are signed up for the same topic
-// if they are, returns that topic id
-func checkSenderAndTargetSameTopic(
-	ctx context.Context,
-	ms msgServer,
-	senderAddr sdk.AccAddress,
-	senderType NodeExists,
-	targetAddr sdk.AccAddress,
-	targetType NodeExists) (TOPIC_ID, error) {
-
-	var senderTopicId uint64
-	if senderType == isReputer {
-		nodeInfo, err := ms.k.GetReputer(ctx, senderAddr)
-		if err != nil {
-			return 0, err
-		}
-		senderTopicId = nodeInfo.TopicId
-	} else {
-		nodeInfo, err := ms.k.GetWorker(ctx, senderAddr)
-		if err != nil {
-			return 0, err
-		}
-		senderTopicId = nodeInfo.TopicId
-	}
-
-	var targetTopicId uint64
-	if targetType == isReputer {
-		nodeInfo, err := ms.k.GetReputer(ctx, targetAddr)
-		if err != nil {
-			return 0, err
-		}
-		targetTopicId = nodeInfo.TopicId
-	} else {
-		nodeInfo, err := ms.k.GetWorker(ctx, targetAddr)
-		if err != nil {
-			return 0, err
-		}
-		targetTopicId = nodeInfo.TopicId
-	}
-
-	// only success case
-	if senderTopicId == targetTopicId {
-		return senderTopicId, nil
-	}
-
-	return 0, state.ErrTopicIdOfStakerAndTargetDoNotMatch
 }
