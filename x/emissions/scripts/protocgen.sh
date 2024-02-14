@@ -24,4 +24,4 @@ cd ..
 cp -r github.com/allora-network/allora-chain/x/emissions/* ./
 rm -rf api && mkdir api
 mv emissions/state/* ./api
-rm -rf github.com upshot-tech
+rm -rf github.com allora-network
