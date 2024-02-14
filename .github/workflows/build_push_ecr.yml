@@ -4,9 +4,9 @@ name: Build and Push docker image to ECR
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    tags:
+      - 'v*'
+      - dev-latest
 
 concurrency:
   group: ${{ github.ref }}
@@ -38,11 +38,14 @@ jobs:
           ECR_REPOSITORY: ${{github.event.repository.name}}       # Naming convention: ECR registry name == GITHUB repo name
           MAIN_BRANCH: main                                       # Images from this branch will be tagged as "latest"
         run: |
-          IMAGE_TAG="${GITHUB_SHA:0:8}"
-          EXTRA_IMAGE_TAGS="dev-latest"
+          #! Due to we trigger on push.tags GITHUB_REF - is the tag name
+          GIT_TAG="$(echo $GITHUB_REF| sed 's#refs/tags/##')"
 
-          #! Add latest tag only if on MAIN_BRANCH branch
-          if [[ ${GITHUB_REF} == "refs/heads/${MAIN_BRANCH}" ]]; then
+          IMAGE_TAG="${GITHUB_SHA:0:8}"
+          EXTRA_IMAGE_TAGS=$GIT_TAG
+
+          #! Add latest tag only if on named releases tag='v*'
+          if [[ ${GIT_TAG} == v* ]]; then
             EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS};latest"
           fi
 
