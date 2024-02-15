@@ -121,6 +121,10 @@ message StakeRemoval {
   repeated StakeRemovalPlacement placements = 3;
 }
 
+message TopicIdsList {
+  repeated uint64 ids = 1;
+}
+
 enum Err {
   ErrInvalidTopicId = 0;
   ErrReputerAlreadyRegistered = 1;

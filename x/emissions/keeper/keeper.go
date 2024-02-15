@@ -58,7 +58,8 @@ type Keeper struct {
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics collections.Map[TOPIC_ID, state.Topic]
 	// for a topic, what is every worker node that has registered to it?
-	topicWorkers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
+	topicWorkers    collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
+	newTopicWorkers collections.Map[sdk.AccAddress, state.TopicIdsList]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
 
@@ -165,6 +166,7 @@ func NewKeeper(
 		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
 		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		newTopicWorkers:            collections.NewMap(sb, state.NewTopicWorkersKey, "new_topic_workers", sdk.AccAddressKey, codec.CollValue[state.TopicIdsList](cdc)),
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSum, "all_topic_stake_sum", UintValue),
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
@@ -901,80 +903,80 @@ func (k *Keeper) AddStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 
 // Add stake into an array of topics
 func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
-    if stake.IsZero() {
-        return errors.New("stake cannot be zero")
-    }
+	if stake.IsZero() {
+		return errors.New("stake cannot be zero")
+	}
 
-    // Calculate the total stake to be added across all topics
-    totalStakeToAdd := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+	// Calculate the total stake to be added across all topics
+	totalStakeToAdd := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
 
-    for _, topicId := range topicsIds {
-        topicStake, err := k.topicStake.Get(ctx, topicId)
-        if err != nil {
-            if errors.Is(err, collections.ErrNotFound) {
-                topicStake = cosmosMath.NewUint(0)
-            } else {
-                return err
-            }
-        }
+	for _, topicId := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topicId)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				topicStake = cosmosMath.NewUint(0)
+			} else {
+				return err
+			}
+		}
 
-        topicStakeNew := topicStake.Add(stake)
-        if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
-            return err
-        }
-    }
+		topicStakeNew := topicStake.Add(stake)
+		if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
+			return err
+		}
+	}
 
-    // Update the allTopicStakeSum
-    allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
-    if err != nil {
-        return err
-    }
+	// Update the allTopicStakeSum
+	allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
+	if err != nil {
+		return err
+	}
 
-    newAllTopicStakeSum := allTopicStakeSum.Add(totalStakeToAdd)
-    if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
-        return err
-    }
+	newAllTopicStakeSum := allTopicStakeSum.Add(totalStakeToAdd)
+	if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 // Remove stake from an array of topics
 func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
-    if stake.IsZero() {
-        return errors.New("stake cannot be zero")
-    }
+	if stake.IsZero() {
+		return errors.New("stake cannot be zero")
+	}
 
-    // Calculate the total stake to be removed across all topics
-    totalStakeToRemove := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+	// Calculate the total stake to be removed across all topics
+	totalStakeToRemove := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
 
-    for _, topicId := range topicsIds {
-        topicStake, err := k.topicStake.Get(ctx, topicId)
-        if err != nil {
-            return err // If there's an error, it's not because the topic doesn't exist but some other reason
-        }
+	for _, topicId := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topicId)
+		if err != nil {
+			return err // If there's an error, it's not because the topic doesn't exist but some other reason
+		}
 
-        if topicStake.LT(stake) {
-            return fmt.Errorf("cannot remove more stake than is present for topic ID %d", topicId)
-        }
+		if topicStake.LT(stake) {
+			return fmt.Errorf("cannot remove more stake than is present for topic ID %d", topicId)
+		}
 
-        topicStakeNew := topicStake.Sub(stake)
-        if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
-            return err
-        }
-    }
+		topicStakeNew := topicStake.Sub(stake)
+		if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
+			return err
+		}
+	}
 
-    // Update the allTopicStakeSum
-    allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
-    if err != nil {
-        return err
-    }
+	// Update the allTopicStakeSum
+	allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
+	if err != nil {
+		return err
+	}
 
-    newAllTopicStakeSum := allTopicStakeSum.Sub(totalStakeToRemove)
-    if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
-        return err
-    }
+	newAllTopicStakeSum := allTopicStakeSum.Sub(totalStakeToRemove)
+	if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 // for a given address, find out how much stake they've put into the system
