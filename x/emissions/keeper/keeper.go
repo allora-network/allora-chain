@@ -59,7 +59,7 @@ type Keeper struct {
 	topics collections.Map[TOPIC_ID, state.Topic]
 	// for a topic, what is every worker node that has registered to it?
 	topicWorkers    collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
-	newTopicWorkers collections.Map[sdk.AccAddress, state.TopicIdsList]
+	newTopicWorkers collections.Map[sdk.AccAddress, []uint64]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
 
@@ -166,7 +166,7 @@ func NewKeeper(
 		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
 		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		newTopicWorkers:            collections.NewMap(sb, state.NewTopicWorkersKey, "new_topic_workers", sdk.AccAddressKey, codec.CollValue[state.TopicIdsList](cdc)),
+		newTopicWorkers:            collections.NewMap(sb, state.NewTopicWorkersKey, "new_topic_workers", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSum, "all_topic_stake_sum", UintValue),
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
