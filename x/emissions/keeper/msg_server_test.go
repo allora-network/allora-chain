@@ -296,7 +296,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount, bond, "Bond amount mismatch")
 }
 
-func (s *KeeperTestSuite) TestMsgAddStakeWithTargetWorkerRegisteredInMultipleTopics() {
+func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMultipleTopics() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -396,6 +396,78 @@ func (s *KeeperTestSuite) TestMsgAddStakeWithTargetWorkerRegisteredInMultipleTop
 	require.NoError(err)
 	// Stake placed upon target: 1000
 	require.Equal(stakeAmount, bond, "Bond amount mismatch")
+
+	// Remove stake from reputer (sender) to worker (target)
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender:      reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: workerAddr.String(),
+				Amount: stakeAmount,
+			},
+		},
+	}
+	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.NoError(err, "StartRemoveStake should not return an error")
+
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, stakeAmountCoins)
+	_, err = msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	})
+	require.NoError(err, "ConfirmRemoveStake should not return an error")
+
+	// Check updated stake for delegator
+	delegatorStake, err = s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.NoError(err)
+
+	// Registration Stake: 100
+	// Stake placed upon target: 0
+	// Total: 100
+	require.Equal(registrationInitialStake, delegatorStake, "Delegator stake amount mismatch")
+
+	// Check updated stake for target
+	targetStake, err = s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	require.NoError(err)
+
+	// Registration Stake: 100
+	// Registration Stake 2: 100
+	// Stake placed upon target: 0
+	// Total: 100
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), targetStake, "Target stake amount mismatch")
+
+	// Check updated total stake
+	totalStake, err = s.emissionsKeeper.GetTotalStake(ctx)
+	require.NoError(err)
+
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Registration Stake 2: 100 (100 worker in topic 1)
+	// Stake placed upon target: 0
+	// Total: 300
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(3)), totalStake, "Total stake amount mismatch")
+
+	// Check updated total stake for topic 0
+	totalStakeForTopic0, err = s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
+	require.NoError(err)
+
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Stake placed upon target: 0
+	// Total: 200
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), totalStakeForTopic0, "Total stake amount for topic mismatch")
+
+	// Check updated total stake for topic 0
+	totalStakeForTopic1, err = s.emissionsKeeper.GetTopicStake(ctx, uint64(1))
+	require.NoError(err)
+
+	// Registration Stake: 100 (worker)
+	// Stake placed upon target: 0
+	// Total: 100
+	require.Equal(registrationInitialStake, totalStakeForTopic1, "Total stake amount for topic mismatch")
+
+	// Check bond
+	bond, err = s.emissionsKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	require.NoError(err)
+	// Stake placed upon target: 0
+	require.Equal(cosmosMath.ZeroUint(), bond, "Bond amount mismatch")
 }
 
 func (s *KeeperTestSuite) TestAddStakeInvalid() {
