@@ -200,3 +200,28 @@ message MsgModifyStake{
 }
 
 message MsgModifyStakeResponse{}
+
+
+message InferenceRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 nonce = 2;
+  uint64 topic_id = 3;
+  uint64 cadence = 4; // time in seconds between inferences, zero means oneshot inference
+  string max_price_per_inference = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // number of inferences possible = bidAmount / (max_per_inference_price * cadence)
+  string bid_amount = 6 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // how many funds to send from alice with this Inference Request
+  uint64 timestamp_valid_until = 7;
+  bytes extra_data = 8;
+}
+
+
