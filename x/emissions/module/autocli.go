@@ -120,23 +120,23 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RegisterReputer",
-					Use:       "register-reputer lib_p2p_key network_address topic_id initial_stake",
+					Use:       "register-reputer [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
 					Short:     "Register a new reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
-						{ProtoField: "topic_id"},
+						{ProtoField: "topics_ids"},
 						{ProtoField: "initial_stake"},
 					},
 				},
 				{
 					RpcMethod: "RegisterWorker",
-					Use:       "register-worker lib_p2p_key network_address topic_id initial_stake",
+					Use:       "register-worker [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
 					Short:     "Register a new worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
-						{ProtoField: "topic_id"},
+						{ProtoField: "topics_ids"},
 						{ProtoField: "initial_stake"},
 					},
 				},
@@ -150,34 +150,43 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "amount"},
 					},
 				},
-				{
-					RpcMethod: "ModifyStake",
-					Use:       "modify-stake sender placements_remove placements_add",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
-						{ProtoField: "placements_add"},
-					},
-				},
-				{
-					RpcMethod: "RemoveStake",
-					Use:       "remove-stake sender target amount",
-					Short:     "Remove stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "stake_target"},
-						{ProtoField: "amount"},
-					},
-				},
-				{
-					RpcMethod: "RemoveAllStake",
-					Use:       "remove-all-stake sender",
-					Short:     "Remove all stake from a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
+				// TODO: Need to test it - breaking when initializing the chain
+				// {
+				// 	RpcMethod: "ModifyStake",
+				// 	Use:       "modify-stake sender placements_remove placements_add",
+				// 	Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 		{ProtoField: "placements_remove"},
+				// 		{ProtoField: "placements_add"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "StartRemoveStake",
+				// 	Use:       "start-remove-stake [sender] [target] [amount]",
+				// 	Short:     "Start remove stake process for [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 		{ProtoField: "target"},
+				// 		{ProtoField: "amount"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "ConfirmRemoveStake",
+				// 	Use:       "confirm-remove-stake sender target amount",
+				// 	Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "StartRemoveAllStake",
+				// 	Use:       "start-remove-all-stake sender",
+				// 	Short:     "Start the process to remove all stake from a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
 			},
 		},
 	}

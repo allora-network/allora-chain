@@ -117,7 +117,7 @@ func (s *ModuleTestSuite) TestRegisterReputer() {
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: amount,
 	})
 	s.Require().NoError(err)
@@ -140,7 +140,7 @@ func (s *ModuleTestSuite) TestRegisterWorker() {
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: amount,
 	})
 	s.Require().NoError(err)

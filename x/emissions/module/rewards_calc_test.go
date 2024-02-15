@@ -262,7 +262,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 		Creator:      reputerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt()),
 	})
 	if err != nil {
@@ -272,7 +272,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 		Creator:      reputerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyReputer2",
 		MultiAddress: "multiaddressReputer2",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[1].BigInt()),
 	})
 	if err != nil {
@@ -303,7 +303,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 		Creator:      workerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyWorker1",
 		MultiAddress: "multiaddressWorker1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[0].BigInt()),
 	})
 	if err != nil {
@@ -313,7 +313,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 		Creator:      workerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyWorker2",
 		MultiAddress: "multiaddressWorker2",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[1].BigInt()),
 	})
 	if err != nil {

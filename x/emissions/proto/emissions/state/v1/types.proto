@@ -105,6 +105,22 @@ message StakePlacement {
   ];
 }
 
+message StakeRemovalPlacement {
+  repeated uint64 topics_ids = 1;
+  string target = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemoval {
+  uint64 timestamp_removal_started = 1;
+  repeated StakeRemovalPlacement placements = 3;
+}
+
 enum Err {
   ErrInvalidTopicId = 0;
   ErrReputerAlreadyRegistered = 1;
@@ -128,6 +144,9 @@ enum Err {
   ErrModifyStakeBeforeBondLessThanAmountModified = 19;
   ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
   ErrModifyStakeSumBeforeNotEqualToSumAfter = 21;
-  ErrScalarMultiplyNegative = 23;
-  ErrDivideMapValuesByZero = 24;
+  ErrConfirmRemoveStakeNoRemovalStarted = 22;
+  ErrConfirmRemoveStakeTooEarly = 23;
+  ErrConfirmRemoveStakeTooLate = 24;
+  ErrScalarMultiplyNegative = 25;
+  ErrDivideMapValuesByZero = 26;
 }

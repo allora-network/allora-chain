@@ -8,6 +8,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -211,7 +212,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicId:      0,
+		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, registrationInitialStakeCoins)
@@ -223,7 +224,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicId:      0,
+		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
 		Owner:        workerAddr.String(),
 	}
@@ -295,6 +296,108 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount, bond, "Bond amount mismatch")
 }
 
+func (s *KeeperTestSuite) TestMsgAddStakeWithTargetWorkerRegisteredInMultipleTopics() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Create topic and register target (worker) in additional topic (topic 1)
+	// Create Topic 1
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          workerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		InferenceCadence: 60,
+		Active:           true,
+	}
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on creation")
+
+	// Register Worker in topic 1
+	workerRegMsg := &state.MsgRegisterWorker{
+		Creator:      workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicsIds:    []uint64{1},
+		InitialStake: registrationInitialStake,
+		Owner:        workerAddr.String(),
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.ModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt()))))
+	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
+	require.NoError(err, "Registering worker should not return an error")
+
+
+	// Add stake from reputer (sender) to worker (target)
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err = msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	// Check updated stake for delegator
+	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
+	require.NoError(err)
+	// Registration Stake: 100
+	// Stake placed upon target: 1000
+	// Total: 1100
+	require.Equal(stakeAmount.Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch")
+
+	// Check updated stake for target
+	targetStake, err := s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
+	require.NoError(err)
+	// Registration Stake: 100
+	// Registration Stake 2: 100
+	// Stake placed upon target: 1000
+	// Total: 1100
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), targetStake, "Target stake amount mismatch")
+
+	// Check updated total stake
+	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
+	require.NoError(err)
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Registration Stake 2: 100 (100 worker in topic 1)
+	// Stake placed upon target: 1000
+	// Total: 1200
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(3))), totalStake, "Total stake amount mismatch")
+
+	// Check updated total stake for topic 0
+	totalStakeForTopic0, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
+	require.NoError(err)
+	// Registration Stake: 200 (100 for reputer, 100 for worker)
+	// Stake placed upon target: 1000
+	// Total: 1200
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic0, "Total stake amount for topic mismatch")
+
+	// Check updated total stake for topic 0
+	totalStakeForTopic1, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(1))
+	require.NoError(err)
+	// Registration Stake: 100 (worker)
+	// Stake placed upon target: 1000
+	// Total: 1100
+	require.Equal(stakeAmount.Add(registrationInitialStake), totalStakeForTopic1, "Total stake amount for topic mismatch")
+
+	// Check bond
+	bond, err := s.emissionsKeeper.GetBond(ctx, reputerAddr, workerAddr)
+	require.NoError(err)
+	// Stake placed upon target: 1000
+	require.Equal(stakeAmount, bond, "Bond amount mismatch")
+}
+
 func (s *KeeperTestSuite) TestAddStakeInvalid() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -336,7 +439,58 @@ func (s *KeeperTestSuite) TestAddStakeInvalid() {
 	require.Error(err, "Adding stake from an unregistered reputer should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRemoveStake() {
+func (s *KeeperTestSuite) TestMsgStartRemoveStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	removalAmount := cosmosMath.NewUint(500)
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake first to ensure there is something to remove
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	timeBefore := uint64(time.Now().UTC().Unix())
+
+	// start a stake removal
+	startRemoveMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: workerAddr.String(),
+				Amount: removalAmount,
+			},
+		},
+	}
+	_, err = msgServer.StartRemoveStake(ctx, startRemoveMsg)
+
+	// check the state has changed appropriately after the removal
+	require.NoError(err, "StartRemoveStake should not return an error")
+	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	require.NoError(err, "Stake removal queue should not be empty")
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
+	timeNow := uint64(time.Now().UTC().Unix())
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	require.Equal(1, len(removalInfo.Placements), "There should be one placement in the removal queue")
+	require.Equal(removalAmount, removalInfo.Placements[0].Amount, "The amount in the removal queue should be the same as the amount in the message")
+	require.Equal(workerAddr.String(), removalInfo.Placements[0].Target, "The target in the removal queue should be the same as the target in the message")
+}
+
+func (s *KeeperTestSuite) TestMsgConfirmRemoveStake() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -362,15 +516,28 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
 
-	// Remove stake from reputer (sender) to worker (target)
-	removeStakeMsg := &state.MsgRemoveStake{
-		Sender:      reputerAddr.String(),
-		StakeTarget: workerAddr.String(),
-		Amount:      removalAmount,
+	// if you try to call the geniune msgServer.StartStakeRemoval
+	// the unix time set there is going to be in the future,
+	// rather than having to monkey patch the unix time, or some complicated mocking setup,
+	// lets just directly manipulate the removalInfo in the keeper store
+	timeNow := uint64(time.Now().UTC().Unix())
+	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+		TimestampRemovalStarted: timeNow - 1000,
+		Placements: []*state.StakeRemovalPlacement{
+			{
+				TopicsIds: []uint64{0},
+				Target:    workerAddr.String(),
+				Amount:    removalAmount,
+			},
+		},
+	})
+	require.NoError(err, "Set stake removal queue should work")
+	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, removalAmountCoins)
-	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
-	require.NoError(err, "RemoveStake should not return an error")
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
+	require.NoError(err, "ConfirmRemoveStake should not return an error")
 
 	// Check updated stake for delegator after removal
 	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
@@ -417,59 +584,7 @@ func (s *KeeperTestSuite) TestMsgRemoveStake() {
 	require.Equal(stakeAmount.Sub(removalAmount), bond, "Bond amount mismatch after removal")
 }
 
-func (s *KeeperTestSuite) TestRemoveStakeInvalid() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
-	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
-	stakeAmount := cosmosMath.NewUint(1000)
-
-	// Common setup for staking
-	registrationInitialStake := cosmosMath.NewUint(100)
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-
-	// Scenario 1: Attempt to remove more stake than exists
-	removeStakeMsg := &state.MsgRemoveStake{
-		Sender:      reputerAddr.String(),
-		StakeTarget: workerAddr.String(),
-		Amount:      stakeAmount,
-	}
-	_, err := msgServer.RemoveStake(ctx, removeStakeMsg)
-	require.Error(err, "RemoveStake should return an error when attempting to remove more stake than exists")
-
-	// Scenario 2: Attempt to remove stake from unregistered target
-	unregisteredWorkerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered target
-	removeStakeMsg = &state.MsgRemoveStake{
-		Sender:      reputerAddr.String(),
-		StakeTarget: unregisteredWorkerAddr.String(),
-		Amount:      registrationInitialStake,
-	}
-	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
-	require.Error(err, "RemoveStake should return an error when attempting to remove stake from a unregistered target")
-
-	// Scenario 3: Attempt to remove stake as a unregistered sender
-	unregisteredReputerAddr := sdk.AccAddress(PKS[3].Address()) // unregistered sender
-	removeStakeMsg = &state.MsgRemoveStake{
-		Sender:      unregisteredReputerAddr.String(),
-		StakeTarget: workerAddr.String(),
-		Amount:      registrationInitialStake,
-	}
-	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
-	require.Error(err, "RemoveStake should return an error when attempting to remove stake as a unregistered sender")
-
-	// Scenario 4: Attempt to remove stake when sender does not have enough stake placed on the target
-	removeStakeMsg = &state.MsgRemoveStake{
-		Sender:      reputerAddr.String(),
-		StakeTarget: workerAddr.String(),
-		Amount:      stakeAmount,
-	}
-	_, err = msgServer.RemoveStake(ctx, removeStakeMsg)
-	require.Error(err, "RemoveStake should return an error when sender does not have enough stake placed on the target")
-}
-
-func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
+func (s *KeeperTestSuite) TestMsgStartRemoveAllStake() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -479,8 +594,6 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	stakeAmount := cosmosMath.NewUint(1000)
 	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 	registrationInitialStake := cosmosMath.NewUint(100)
-	senderTotalStake := stakeAmount.Add(registrationInitialStake) // Total stake including registration stake
-	senderTotalStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(senderTotalStake.BigInt())))
 
 	// Common setup for staking
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -496,11 +609,75 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	require.NoError(err, "AddStake should not return an error")
 
 	// Remove all stake
-	removeAllStakeMsg := &state.MsgRemoveAllStake{
+	removeAllStakeMsg := &state.MsgStartRemoveAllStake{
 		Sender: reputerAddr.String(),
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, senderTotalStakeCoins)
-	_, err = msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
+
+	timeBefore := uint64(time.Now().UTC().Unix())
+	_, err = msgServer.StartRemoveAllStake(ctx, removeAllStakeMsg)
+
+	// check the state has changed appropriately after the removal
+	require.NoError(err, "StartRemoveAllStake should not return an error")
+	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	require.NoError(err, "Stake removal queue should not be empty")
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
+	timeNow := uint64(time.Now().UTC().Unix())
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	require.Equal(2, len(removalInfo.Placements), "There should be two placements in the removal queue")
+	require.Equal(removalInfo.Placements[0].Target, workerAddr.String(), "The target in the removal queue should be the same as the target in the message")
+	require.Equal(removalInfo.Placements[0].Amount, stakeAmount, "The amount in the removal queue should be the same as the amount in the message")
+	require.Equal(removalInfo.Placements[1].Target, reputerAddr.String(), "The target in the removal queue should be the same as the target in the message")
+	require.Equal(removalInfo.Placements[1].Amount, registrationInitialStake, "The amount in the removal queue should be the same as the amount in the message")
+}
+
+func (s *KeeperTestSuite) TestMsgConfirmRemoveAllStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
+
+	// Common setup for staking
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Add stake first to ensure there is an initial stake
+	addStakeMsg := &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: workerAddr.String(),
+		Amount:      stakeAmount,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.ModuleName, stakeAmountCoins)
+	_, err := msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+
+	// Remove all stake
+	removeAllStakeMsg := &state.MsgStartRemoveAllStake{
+		Sender: reputerAddr.String(),
+	}
+
+	_, err = msgServer.StartRemoveAllStake(ctx, removeAllStakeMsg)
+
+	// check the state has changed appropriately after the removal
+	require.NoError(err, "StartRemoveAllStake should not return an error")
+
+	// swap out the timestamp so it's valid for the confirmRemove
+	stakeRemoveInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	require.NoError(err, "Stake removal queue should not be empty")
+	stakeRemoveInfo.TimestampRemovalStarted = uint64(time.Now().UTC().Unix()) - 1000
+	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, stakeRemoveInfo)
+	require.NoError(err, "Set stake removal queue should work")
+
+	confirmRemoveMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.ModuleName, reputerAddr, stakeAmountCoins)
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveMsg)
 	require.NoError(err, "RemoveAllStake should not return an error")
 
 	// Check that the sender's total stake is zero after removal
@@ -524,7 +701,37 @@ func (s *KeeperTestSuite) TestMsgRemoveAllStake() {
 	require.Equal(registrationInitialStake, totalStakeForTopic, "Total stake for the topic should be equal to the registration stakes after removing all stake")
 }
 
-func (s *KeeperTestSuite) TestRemoveAllStakeInvalid() {
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveMoreThanExists() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
+	require.NoError(err, "Total stake should not be empty")
+
+	// Scenario 1: Attempt to remove more stake than exists in the system
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: workerAddr.String(),
+				Amount: stakeAmount.Add(totalStake),
+			},
+		},
+	}
+	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.ErrorIs(err, state.ErrInsufficientStakeToRemove, "RemoveStake should return an error when attempting to remove more stake than exists")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredTarget() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -536,21 +743,163 @@ func (s *KeeperTestSuite) TestRemoveAllStakeInvalid() {
 	registrationInitialStake := cosmosMath.NewUint(100)
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
-	// Scenario 1: Attempt to remove all stake as an unregistered sender
-	unregisteredReputerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered sender
-	removeAllStakeMsg := &state.MsgRemoveAllStake{
-		Sender: unregisteredReputerAddr.String(),
+	// Scenario 2: Attempt to remove stake from unregistered target
+	unregisteredWorkerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered target
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: unregisteredWorkerAddr.String(),
+				Amount: registrationInitialStake,
+			},
+		},
 	}
-	_, err := msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
-	require.Error(err, "Scenario 1: RemoveAllStake should return an error when attempting to remove all stake as an unregistered sender")
+	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.ErrorIs(err, state.ErrAddressNotRegistered, "RemoveStake should return an error when attempting to remove stake from a unregistered target")
+}
 
-	// Scenario 2: Attempt to remove all stake when sender has no stake
-	noStakeSenderAddr := sdk.AccAddress(PKS[3].Address()) // target
-	removeAllStakeMsg = &state.MsgRemoveAllStake{
-		Sender: noStakeSenderAddr.String(),
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredSender() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Scenario 3: Attempt to remove stake as a unregistered sender
+	unregisteredReputerAddr := sdk.AccAddress(PKS[3].Address()) // unregistered sender
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: unregisteredReputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+
+				Target: workerAddr.String(),
+				Amount: registrationInitialStake,
+			},
+		},
 	}
-	_, err = msgServer.RemoveAllStake(ctx, removeAllStakeMsg)
-	require.Error(err, "Scenario 2: RemoveAllStake should return an error when sender has no stake")
+	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.ErrorIs(err, state.ErrAddressNotRegistered, "RemoveStake should return an error when attempting to remove stake as a unregistered sender")
+
+}
+
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidNotEnoughStake() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+	stakeAmount := cosmosMath.NewUint(1000)
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Scenario 4: Attempt to remove stake when sender does not have enough stake placed on the target
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+
+				Target: workerAddr.String(),
+				Amount: stakeAmount,
+			},
+		},
+	}
+	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.ErrorIs(err, state.ErrInsufficientStakeToRemove, "RemoveStake should return an error when sender does not have enough stake placed on the target")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidNoRemovalStarted() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	// workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// // Common setup for staking
+	// registrationInitialStake := cosmosMath.NewUint(100)
+	// s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	_, err := msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	})
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeNoRemovalStarted, "ConfirmRemoveStake should return an error when no stake removal has been started")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooEarly() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// if you try to call the geniune msgServer.StartStakeRemoval
+	// the unix time set there is going to be in the future,
+	// rather than having to monkey patch the unix time, or some complicated mocking setup,
+	// lets just directly manipulate the removalInfo in the keeper store
+	timeNow := uint64(time.Now().UTC().Unix())
+	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+		TimestampRemovalStarted: timeNow + 1000000,
+		Placements: []*state.StakeRemovalPlacement{
+			{
+				TopicsIds: []uint64{0},
+				Target:    reputerAddr.String(),
+				Amount:    registrationInitialStake,
+			},
+		},
+	})
+	require.NoError(err, "Set stake removal queue should work")
+	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	}
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeTooEarly, "ConfirmRemoveStake should return an error when stake removal is too early")
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooLate() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// if you try to call the geniune msgServer.StartStakeRemoval
+	// the unix time set there is going to be in the future,
+	// rather than having to monkey patch the unix time, or some complicated mocking setup,
+	// lets just directly manipulate the removalInfo in the keeper store
+	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+		TimestampRemovalStarted: 0,
+		Placements: []*state.StakeRemovalPlacement{
+			{
+				TopicsIds: []uint64{0},
+				Target:    reputerAddr.String(),
+				Amount:    registrationInitialStake,
+			},
+		},
+	})
+	require.NoError(err, "Set stake removal queue should work")
+	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	}
+	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
+	require.ErrorIs(err, state.ErrConfirmRemoveStakeTooLate, "ConfirmRemoveStake should return an error when stake removal is too early")
 }
 
 func (s *KeeperTestSuite) TestModifyStakeSimple() {
@@ -724,7 +1073,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
 		Creator:      worker2,
 		LibP2PKey:    "test2",
 		MultiAddress: "test2",
-		TopicId:      0,
+		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr2, state.ModuleName, registrationInitialStakeCoins)
