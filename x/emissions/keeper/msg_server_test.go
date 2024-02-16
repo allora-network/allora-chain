@@ -42,10 +42,10 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalid() {
 		InitialStake: registrationInitialStake,
 	}
 	_, err := msgServer.RegisterReputer(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrTopicDoesNotExist,"RegisterReputer should return an error")
+	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterReputer should return an error")
 
 	// Scenario 2: Reputer already registered
-    // Create topic 0 and register reputer in it
+	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	// Try to registe again
 	registerMsg = &state.MsgRegisterReputer{
@@ -56,7 +56,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalid() {
 		InitialStake: registrationInitialStake,
 	}
 	_, err = msgServer.RegisterReputer(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrReputerAlreadyRegisteredInTopic,"RegisterReputer should return an error")
+	require.ErrorIs(err, state.ErrReputerAlreadyRegisteredInTopic, "RegisterReputer should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalid() {
@@ -77,10 +77,10 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalid() {
 		InitialStake: registrationInitialStake,
 	}
 	_, err := msgServer.RegisterWorker(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrTopicDoesNotExist,"RegisterWorker should return an error")
+	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterWorker should return an error")
 
 	// Scenario 2: Worker already registered
-    // Create topic 0 and register worker in it
+	// Create topic 0 and register worker in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	// Try to registe again
 	registerMsg = &state.MsgRegisterWorker{
@@ -91,7 +91,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalid() {
 		InitialStake: registrationInitialStake,
 	}
 	_, err = msgServer.RegisterWorker(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrWorkerAlreadyRegisteredInTopic,"RegisterWorker should return an error")
+	require.ErrorIs(err, state.ErrWorkerAlreadyRegisteredInTopic, "RegisterWorker should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgSetWeights() {
@@ -418,7 +418,7 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 	// Registration Stake: 100
-	// Stake placed upon target: 1000 
+	// Stake placed upon target: 1000
 	// Total: 1100
 	require.Equal(stakeAmount.Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch")
 
