@@ -25,15 +25,6 @@ type queryServer struct {
 	k Keeper
 }
 
-// GetLatestWeightingTimestamp is a function to call the keeper function GetTopicWeightLastRan
-func (qs queryServer) GetLatestWeightingTimestamp(ctx context.Context, req *state.QueryLatestWeightingTimestampRequest) (*state.QueryLatestWeightingTimestampResponse, error) {
-	var latestTimestamp, err = qs.k.GetTopicWeightLastRan(ctx, req.TopicId)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &state.QueryLatestWeightingTimestampResponse{LatestTimestamp: latestTimestamp}, nil
-}
-
 // Params defines the handler for the Query/Params RPC method.
 func (qs queryServer) Params(ctx context.Context, req *state.QueryParamsRequest) (*state.QueryParamsResponse, error) {
 	params, err := qs.k.params.Get(ctx)

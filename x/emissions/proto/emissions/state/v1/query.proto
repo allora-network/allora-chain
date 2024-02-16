@@ -96,21 +96,6 @@ service Query {
     "/emissions/state/v1/worker_nodes/{libp2p_key}";
   }
 
-  rpc GetLatestWeightingTimestamp(QueryLatestWeightingTimestampRequest) returns (QueryLatestWeightingTimestampResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/state/v1/latest_weighting_timestamp/{topic_id}";
-  }
-}
-
-// Request the latest weighting timestamp
-message QueryLatestWeightingTimestampRequest {
-    uint64 topic_id = 1;
-}
-
-// Response the latest weighting timestamp
-message QueryLatestWeightingTimestampResponse {
-    uint64 latest_timestamp = 1;
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
