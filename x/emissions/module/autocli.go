@@ -150,50 +150,50 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "amount"},
 					},
 				},
-				{
-					RpcMethod: "ModifyStake",
-					Use:       "modify-stake sender placements_remove placements_add",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
-						{ProtoField: "placements_add"},
-					},
-				},
-				{
-					RpcMethod: "StartRemoveStake",
-					Use:       "start-remove-stake sender target amount",
-					Short:     "Start remove stake process for [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "stake_target"},
-						{ProtoField: "amount"},
-					},
-				},
-				{
-					RpcMethod: "ConfirmRemoveStake",
-					Use:       "confirm-remove-stake sender target amount",
-					Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
-				{
-					RpcMethod: "StartRemoveAllStake",
-					Use:       "start-remove-all-stake sender",
-					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
-				{
-					RpcMethod: "ConfirmRemoveAllStake",
-					Use:       "confirm-remove-all-stake sender",
-					Short:     "Proceed with removing all stake from a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
+				// {
+				// 	RpcMethod: "ModifyStake",
+				// 	Use:       "modify-stake sender placements_remove placements_add",
+				// 	Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 		{ProtoField: "placements_remove"},
+				// 		{ProtoField: "placements_add"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "StartRemoveStake",
+				// 	Use:       "start-remove-stake sender target amount",
+				// 	Short:     "Start remove stake process for [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 		{ProtoField: "stake_target"},
+				// 		{ProtoField: "amount"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "ConfirmRemoveStake",
+				// 	Use:       "confirm-remove-stake sender target amount",
+				// 	Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "StartRemoveAllStake",
+				// 	Use:       "start-remove-all-stake sender",
+				// 	Short:     "Start the process to remove all stake from a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
+				// {
+				// 	RpcMethod: "ConfirmRemoveAllStake",
+				// 	Use:       "confirm-remove-all-stake sender",
+				// 	Short:     "Proceed with removing all stake from a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
 			},
 		},
 	}

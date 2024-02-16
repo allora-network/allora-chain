@@ -17,8 +17,6 @@ service Msg {
 
   rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
 
-  rpc SetLatestInferencesTimestamp(MsgSetLatestInferencesTimestamp) returns (MsgSetLatestInferencesTimestampResponse);
-
   rpc SetWeights(MsgSetWeights) returns (MsgSetWeightsResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
@@ -79,17 +77,6 @@ message MsgSetInferences {
 }
 
 message MsgSetInferencesResponse {}
-
-message MsgSetLatestInferencesTimestamp {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  uint64 topic_id = 2;
-  uint64 inference_timestamp = 3;
-}
-
-message MsgSetLatestInferencesTimestampResponse {}
-
 
 message MsgProcessInferences {
   option (cosmos.msg.v1.signer) = "sender";

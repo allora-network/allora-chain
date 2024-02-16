@@ -72,25 +72,41 @@ func (s *KeeperTestSuite) TestMsgSetInferences() {
 	require.NoError(err, "SetInferences should not return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgSetLatestTimestampsInference() {
+func (s *KeeperTestSuite) CreateOneTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	// Mock setup for topic
-	topicId := uint64(1)
-	inferenceTs := uint64(time.Now().UTC().Unix())
-
-	// Create a MsgSetInferences message
-	inferencesMsg := &state.MsgSetLatestInferencesTimestamp{
-		TopicId:            topicId,
-		InferenceTimestamp: inferenceTs,
+	// Create a topic first
+	metadata := "Some metadata for the new topic"
+	// Create a MsgCreateNewTopic message
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:         metadata,
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		InferenceCadence: 60,
+		Active:           true,
 	}
 
-	_, err := msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
-	require.NoError(err, "SetLatestTimestampInferences should not return an error")
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on first creation")
+}
 
-	result, err := s.emissionsKeeper.GetLatestInferenceTimestamp(s.ctx, topicId)
-	fmt.Printf("The timestamp value is %d.\n", result)
+func (s *KeeperTestSuite) TestUpdateTopicWeightLastRan() {
+	ctx := s.ctx
+	require := s.Require()
+	s.CreateOneTopic()
+
+	// Mock setup for topic
+	topicId := uint64(0)
+	inferenceTs := uint64(time.Now().UTC().Unix())
+
+	err := s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTs)
+	require.NoError(err, "UpdateTopicWeightLastRan should not return an error")
+
+	result, err := s.emissionsKeeper.GetTopicWeightLastRan(s.ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, inferenceTs)
@@ -99,11 +115,12 @@ func (s *KeeperTestSuite) TestMsgSetLatestTimestampsInference() {
 func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
+	s.CreateOneTopic()
 
 	// Mock setup for inferences
 	inferences := []*state.Inference{
-		{TopicId: 1, Worker: "worker1", Value: cosmosMath.NewUint(2200)},
-		{TopicId: 1, Worker: "worker2", Value: cosmosMath.NewUint(2100)},
+		{TopicId: 0, Worker: "worker1", Value: cosmosMath.NewUint(2200)},
+		{TopicId: 0, Worker: "worker2", Value: cosmosMath.NewUint(2100)},
 		{TopicId: 2, Worker: "worker2", Value: cosmosMath.NewUint(12)},
 	}
 
@@ -118,14 +135,14 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	 * Inferences over threshold should be returned
 	 */
 	// Ensure low ts for topic 1
-	inferencesMsg := &state.MsgSetLatestInferencesTimestamp{
-		TopicId:            uint64(1),
-		InferenceTimestamp: 1500000000,
-	}
-	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
+	var topicId = uint64(0)
+	var inferenceTimestamp = uint64(1500000000)
+
+	// _, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
+	err = s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTimestamp)
 	require.NoError(err, "Setting latest inference timestamp should not fail")
 
-	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
+	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(0))
 	require.Equal(len(allInferences), 1)
 	for _, inference := range allInferences {
 		require.Equal(len(inference.Inferences.Inferences), 2)
@@ -135,15 +152,13 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	/*
 	 * Inferences under threshold should not be returned
 	 */
-	// Ensure highest ts for topic 1
-	inferencesMsg = &state.MsgSetLatestInferencesTimestamp{
-		TopicId:            uint64(1),
-		InferenceTimestamp: math.MaxUint64,
-	}
-	_, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
+	inferenceTimestamp = math.MaxUint64
+
+	err = s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTimestamp)
 	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
+
 	require.Equal(len(allInferences), 0)
 	require.NoError(err, "Inferences under ts threshold should not be returned")
 
