@@ -67,8 +67,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceMethod:  msg.InferenceMethod,
 		InferenceCadence: msg.InferenceCadence,
 		InferenceLastRan: 0,
-		// TODO: Maybe we should put this as default once it can't be modified by user input
-		Active:           msg.Active,
+		Active: true,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -199,9 +198,14 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		}
 	}
 
-	// move the tokens from the creator to the module account
-	// then add the stake to the total, topicTotal, and 3 staking tracking maps
-	moveFundsAddStake(ctx, ms, reputerAddr, msg)
+	if len(topicsIds) == 0 {
+		// move the tokens from the creator to the module account
+		// then add the stake to the total, topicTotal, and 3 staking tracking maps
+		moveFundsAddStake(ctx, ms, reputerAddr, msg)
+	} else {
+		// add overall staking power of the wallet to the topics stakes
+		moveFundsAddStakeToTopics(ctx, ms, reputerAddr, msg)
+	}
 
 	// add node to the data structures that track the nodes:
 	// add node to topicReputers
@@ -258,9 +262,14 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		}
 	}
 
-	// move the tokens from the creator to the module account
-	// then add the stake to the total, topicTotal, and 3 staking tracking maps
-	moveFundsAddStake(ctx, ms, workerAddr, msg)
+	if len(topicsIds) == 0 {
+		// move the tokens from the creator to the module account
+		// then add the stake to the total, topicTotal, and 3 staking tracking maps
+		moveFundsAddStake(ctx, ms, workerAddr, msg)
+	} else {
+		// add overall staking power of the wallet to the topics stakes
+		moveFundsAddStakeToTopics(ctx, ms, workerAddr, msg)
+	}
 
 	// add node to the data structures that track the nodes:
 	// add node to topicReputers
@@ -610,6 +619,21 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
 	err = ms.k.AddStake(ctx, msg.GetTopicsIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func moveFundsAddStakeToTopics[M RegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
+	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, nodeAddr)
+	if err != nil {
+		return err
+	}
+
+	// add to topic stake
+	err = ms.k.AddStakeToTopics(ctx, msg.GetTopicsIds(), totalAddressStake)
 	if err != nil {
 		return err
 	}

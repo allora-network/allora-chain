@@ -366,7 +366,6 @@ func mockCreateTopic(s *ModuleTestSuite) (uint64, error) {
 		InferenceLogic:   "morelogic",
 		InferenceMethod:  "whatever2",
 		InferenceCadence: 0,
-		Active:           true,
 	}
 	response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
 	if err != nil {

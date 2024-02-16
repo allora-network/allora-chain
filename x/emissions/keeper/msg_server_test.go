@@ -233,7 +233,6 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
-		Active:           true,
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -272,7 +271,6 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
-		Active:           true,
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
@@ -390,7 +388,6 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
-		Active:           true,
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
@@ -404,7 +401,6 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 		InitialStake: registrationInitialStake,
 		Owner:        workerAddr.String(),
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.ModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt()))))
 	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
@@ -422,27 +418,25 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	delegatorStake, err := s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 	// Registration Stake: 100
-	// Stake placed upon target: 1000
+	// Stake placed upon target: 1000 
 	// Total: 1100
 	require.Equal(stakeAmount.Add(registrationInitialStake), delegatorStake, "Delegator stake amount mismatch")
 
 	// Check updated stake for target
 	targetStake, err := s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
 	require.NoError(err)
-	// Registration Stake: 100
-	// Registration Stake 2: 100
+	// Registration Stake: 100 - first registration - topic 0
 	// Stake placed upon target: 1000
 	// Total: 1100
-	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), targetStake, "Target stake amount mismatch")
+	require.Equal(stakeAmount.Add(registrationInitialStake), targetStake, "Target stake amount mismatch")
 
 	// Check updated total stake
 	totalStake, err := s.emissionsKeeper.GetTotalStake(ctx)
 	require.NoError(err)
-	// Registration Stake: 200 (100 for reputer, 100 for worker)
-	// Registration Stake 2: 100 (100 worker in topic 1)
+	// Registration Stake: 200 (100 for reputer, 100 for worker) - topic 0
 	// Stake placed upon target: 1000
 	// Total: 1200
-	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(3))), totalStake, "Total stake amount mismatch")
+	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStake, "Total stake amount mismatch")
 
 	// Check updated total stake for topic 0
 	totalStakeForTopic0, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
@@ -452,11 +446,10 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	// Total: 1200
 	require.Equal(stakeAmount.Add(registrationInitialStake.Mul(cosmosMath.NewUint(2))), totalStakeForTopic0, "Total stake amount for topic mismatch")
 
-	// Check updated total stake for topic 0
+	// Check updated total stake for topic 1
 	totalStakeForTopic1, err := s.emissionsKeeper.GetTopicStake(ctx, uint64(1))
 	require.NoError(err)
-	// Registration Stake: 100 (worker)
-	// Stake placed upon target: 1000
+	// Stake placed upon target: 1100
 	// Total: 1100
 	require.Equal(stakeAmount.Add(registrationInitialStake), totalStakeForTopic1, "Total stake amount for topic mismatch")
 
@@ -489,7 +482,7 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	delegatorStake, err = s.emissionsKeeper.GetDelegatorStake(ctx, reputerAddr)
 	require.NoError(err)
 
-	// Registration Stake: 100
+	// Registration Stake: 100 - topic 0
 	// Stake placed upon target: 0
 	// Total: 100
 	require.Equal(registrationInitialStake, delegatorStake, "Delegator stake amount mismatch")
@@ -498,21 +491,19 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	targetStake, err = s.emissionsKeeper.GetStakePlacedUponTarget(ctx, workerAddr)
 	require.NoError(err)
 
-	// Registration Stake: 100
-	// Registration Stake 2: 100
+	// Registration Stake: 100 - topic 0
 	// Stake placed upon target: 0
 	// Total: 100
-	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), targetStake, "Target stake amount mismatch")
+	require.Equal(registrationInitialStake, targetStake, "Target stake amount mismatch")
 
 	// Check updated total stake
 	totalStake, err = s.emissionsKeeper.GetTotalStake(ctx)
 	require.NoError(err)
 
 	// Registration Stake: 200 (100 for reputer, 100 for worker)
-	// Registration Stake 2: 100 (100 worker in topic 1)
 	// Stake placed upon target: 0
-	// Total: 300
-	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(3)), totalStake, "Total stake amount mismatch")
+	// Total: 200
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), totalStake, "Total stake amount mismatch")
 
 	// Check updated total stake for topic 0
 	totalStakeForTopic0, err = s.emissionsKeeper.GetTopicStake(ctx, uint64(0))
