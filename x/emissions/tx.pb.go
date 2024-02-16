@@ -1144,10 +1144,9 @@ type InferenceRequest struct {
 	TopicId              uint64                 `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 	Cadence              uint64                 `protobuf:"varint,4,opt,name=cadence,proto3" json:"cadence,omitempty"`
 	MaxPricePerInference cosmossdk_io_math.Uint `protobuf:"bytes,5,opt,name=max_price_per_inference,json=maxPricePerInference,proto3,customtype=cosmossdk.io/math.Uint" json:"max_price_per_inference"`
-	// length of time this inference repeats for =  num_inference_possible * cadence
-	BidAmount           cosmossdk_io_math.Uint `protobuf:"bytes,6,opt,name=bid_amount,json=bidAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"bid_amount"`
-	TimestampValidUntil uint64                 `protobuf:"varint,7,opt,name=timestamp_valid_until,json=timestampValidUntil,proto3" json:"timestamp_valid_until,omitempty"`
-	ExtraData           []byte                 `protobuf:"bytes,8,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+	BidAmount            cosmossdk_io_math.Uint `protobuf:"bytes,6,opt,name=bid_amount,json=bidAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"bid_amount"`
+	TimestampValidUntil  uint64                 `protobuf:"varint,7,opt,name=timestamp_valid_until,json=timestampValidUntil,proto3" json:"timestamp_valid_until,omitempty"`
+	ExtraData            []byte                 `protobuf:"bytes,8,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 }
 
 func (m *InferenceRequest) Reset()         { *m = InferenceRequest{} }

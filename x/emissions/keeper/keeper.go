@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -1036,11 +1037,14 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 }
 
 func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
+	fmt.Println("Adding request to mempool")
 	requestId, err := request.GetRequestId()
 	if err != nil {
 		return err
 	}
+	fmt.Println("Request ID: ", requestId)
 	key := collections.Join(request.TopicId, requestId)
+	fmt.Println("Key: ", key)
 	return k.mempool.Set(ctx, key, request)
 }
 
