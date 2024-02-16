@@ -213,7 +213,8 @@ message InferenceRequest {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
-  ]; // number of inferences possible = bidAmount / (max_per_inference_price * cadence)
+  ]; // num_inference_possible = bid_amount / max_price_per_inference
+  // length of time this inference repeats for =  num_inference_possible * cadence
   string bid_amount = 6 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
