@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 
@@ -172,6 +171,8 @@ func NewKeeper(
 		stakePlacement:        collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
 		stakeRemovalQueue:     collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		mempool:               collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
+		funds:                 collections.NewMap(sb, state.FundsKey, "funds", collections.StringKey, UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
@@ -1037,14 +1038,11 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 }
 
 func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
-	fmt.Println("Adding request to mempool")
 	requestId, err := request.GetRequestId()
 	if err != nil {
 		return err
 	}
-	fmt.Println("Request ID: ", requestId)
 	key := collections.Join(request.TopicId, requestId)
-	fmt.Println("Key: ", key)
 	return k.mempool.Set(ctx, key, request)
 }
 

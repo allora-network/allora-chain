@@ -188,7 +188,8 @@ message MsgModifyStake{
 
 message MsgModifyStakeResponse{}
 
-
+// num_inference_possible = bid_amount / max_price_per_inference, 
+// length of time this inference repeats for =  num_inference_possible * cadence
 message InferenceRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
@@ -200,7 +201,7 @@ message InferenceRequest {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
-  ]; // num_inference_possible = bid_amount / max_price_per_inference, length of time this inference repeats for =  num_inference_possible * cadence
+  ]; // the maximum price per inference that alice is willing to pay
   string bid_amount = 6 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",

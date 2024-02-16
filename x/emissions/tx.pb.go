@@ -1138,6 +1138,8 @@ func (m *MsgModifyStakeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgModifyStakeResponse proto.InternalMessageInfo
 
+// num_inference_possible = bid_amount / max_price_per_inference,
+// length of time this inference repeats for =  num_inference_possible * cadence
 type InferenceRequest struct {
 	Sender               string                 `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Nonce                uint64                 `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
