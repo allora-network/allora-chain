@@ -19,18 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_SetInferences_FullMethodName                = "/emissions.state.v1.Msg/SetInferences"
-	Msg_ProcessInferences_FullMethodName            = "/emissions.state.v1.Msg/ProcessInferences"
-	Msg_SetLatestInferencesTimestamp_FullMethodName = "/emissions.state.v1.Msg/SetLatestInferencesTimestamp"
-	Msg_SetWeights_FullMethodName                   = "/emissions.state.v1.Msg/SetWeights"
-	Msg_CreateNewTopic_FullMethodName               = "/emissions.state.v1.Msg/CreateNewTopic"
-	Msg_RegisterReputer_FullMethodName              = "/emissions.state.v1.Msg/RegisterReputer"
-	Msg_RegisterWorker_FullMethodName               = "/emissions.state.v1.Msg/RegisterWorker"
-	Msg_AddStake_FullMethodName                     = "/emissions.state.v1.Msg/AddStake"
-	Msg_ModifyStake_FullMethodName                  = "/emissions.state.v1.Msg/ModifyStake"
-	Msg_StartRemoveStake_FullMethodName             = "/emissions.state.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName           = "/emissions.state.v1.Msg/ConfirmRemoveStake"
-	Msg_StartRemoveAllStake_FullMethodName          = "/emissions.state.v1.Msg/StartRemoveAllStake"
+	Msg_SetInferences_FullMethodName       = "/emissions.state.v1.Msg/SetInferences"
+	Msg_ProcessInferences_FullMethodName   = "/emissions.state.v1.Msg/ProcessInferences"
+	Msg_SetWeights_FullMethodName          = "/emissions.state.v1.Msg/SetWeights"
+	Msg_CreateNewTopic_FullMethodName      = "/emissions.state.v1.Msg/CreateNewTopic"
+	Msg_RegisterReputer_FullMethodName     = "/emissions.state.v1.Msg/RegisterReputer"
+	Msg_RegisterWorker_FullMethodName      = "/emissions.state.v1.Msg/RegisterWorker"
+	Msg_AddStake_FullMethodName            = "/emissions.state.v1.Msg/AddStake"
+	Msg_ModifyStake_FullMethodName         = "/emissions.state.v1.Msg/ModifyStake"
+	Msg_StartRemoveStake_FullMethodName    = "/emissions.state.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName  = "/emissions.state.v1.Msg/ConfirmRemoveStake"
+	Msg_StartRemoveAllStake_FullMethodName = "/emissions.state.v1.Msg/StartRemoveAllStake"
 )
 
 // MsgClient is the client API for Msg service.
@@ -39,7 +38,6 @@ const (
 type MsgClient interface {
 	SetInferences(ctx context.Context, in *MsgSetInferences, opts ...grpc.CallOption) (*MsgSetInferencesResponse, error)
 	ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error)
-	SetLatestInferencesTimestamp(ctx context.Context, in *MsgSetLatestInferencesTimestamp, opts ...grpc.CallOption) (*MsgSetLatestInferencesTimestampResponse, error)
 	SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
 	RegisterReputer(ctx context.Context, in *MsgRegisterReputer, opts ...grpc.CallOption) (*MsgRegisterReputerResponse, error)
@@ -71,15 +69,6 @@ func (c *msgClient) SetInferences(ctx context.Context, in *MsgSetInferences, opt
 func (c *msgClient) ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error) {
 	out := new(MsgProcessInferencesResponse)
 	err := c.cc.Invoke(ctx, Msg_ProcessInferences_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) SetLatestInferencesTimestamp(ctx context.Context, in *MsgSetLatestInferencesTimestamp, opts ...grpc.CallOption) (*MsgSetLatestInferencesTimestampResponse, error) {
-	out := new(MsgSetLatestInferencesTimestampResponse)
-	err := c.cc.Invoke(ctx, Msg_SetLatestInferencesTimestamp_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +162,6 @@ func (c *msgClient) StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveA
 type MsgServer interface {
 	SetInferences(context.Context, *MsgSetInferences) (*MsgSetInferencesResponse, error)
 	ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error)
-	SetLatestInferencesTimestamp(context.Context, *MsgSetLatestInferencesTimestamp) (*MsgSetLatestInferencesTimestampResponse, error)
 	SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
 	RegisterReputer(context.Context, *MsgRegisterReputer) (*MsgRegisterReputerResponse, error)
@@ -195,9 +183,6 @@ func (UnimplementedMsgServer) SetInferences(context.Context, *MsgSetInferences) 
 }
 func (UnimplementedMsgServer) ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessInferences not implemented")
-}
-func (UnimplementedMsgServer) SetLatestInferencesTimestamp(context.Context, *MsgSetLatestInferencesTimestamp) (*MsgSetLatestInferencesTimestampResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetLatestInferencesTimestamp not implemented")
 }
 func (UnimplementedMsgServer) SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetWeights not implemented")
@@ -271,24 +256,6 @@ func _Msg_ProcessInferences_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).ProcessInferences(ctx, req.(*MsgProcessInferences))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_SetLatestInferencesTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetLatestInferencesTimestamp)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).SetLatestInferencesTimestamp(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_SetLatestInferencesTimestamp_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetLatestInferencesTimestamp(ctx, req.(*MsgSetLatestInferencesTimestamp))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -469,10 +436,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ProcessInferences",
 			Handler:    _Msg_ProcessInferences_Handler,
-		},
-		{
-			MethodName: "SetLatestInferencesTimestamp",
-			Handler:    _Msg_SetLatestInferencesTimestamp_Handler,
 		},
 		{
 			MethodName: "SetWeights",

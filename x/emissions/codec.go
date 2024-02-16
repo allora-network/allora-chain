@@ -11,7 +11,6 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgSetWeights{},
 		&MsgSetInferences{},
-		&MsgSetLatestInferencesTimestamp{},
 		&MsgProcessInferences{},
 	)
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

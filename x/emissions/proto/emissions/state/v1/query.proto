@@ -95,6 +95,7 @@ service Query {
     option (google.api.http).get =
     "/emissions/state/v1/worker_nodes/{libp2p_key}";
   }
+
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
