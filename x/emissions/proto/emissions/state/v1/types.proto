@@ -149,4 +149,7 @@ enum Err {
   ErrConfirmRemoveStakeTooLate = 24;
   ErrScalarMultiplyNegative = 25;
   ErrDivideMapValuesByZero = 26;
+  ErrTopicIdListValueDecodeInvalidLength =  27;
+  ErrTopicIdListValueDecodeJsonInvalidLength = 28;
+  ErrTopicIdListValueDecodeJsonInvalidFormat =  29;
 }

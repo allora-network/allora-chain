@@ -543,8 +543,8 @@ func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
 	targetAddr := sdk.AccAddress(PKS[1].Address())
 	placement := state.StakeRemovalPlacement{
 		TopicsIds: []uint64{1},
-		Target:  targetAddr.String(),
-		Amount:  cosmosMath.NewUint(500),
+		Target:    targetAddr.String(),
+		Amount:    cosmosMath.NewUint(500),
 	}
 	placements := []*state.StakeRemovalPlacement{&placement}
 	removalInfo := state.StakeRemoval{

@@ -170,7 +170,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// check if topics exists and if reputer is already registered in any of them
 	reputerAddr, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
@@ -394,7 +394,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 
-		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)	
+		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -418,7 +418,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 
-		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)	
+		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -479,8 +479,8 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		// 5. push to the stake removal object
 		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
 			TopicsIds: topicsIds,
-			Target:  stakePlacement.Target,
-			Amount:  stakePlacement.Amount,
+			Target:    stakePlacement.Target,
+			Amount:    stakePlacement.Amount,
 		})
 	}
 	// 6. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
@@ -608,7 +608,7 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakeOwnedByDelegator
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetTopicsIds(),  msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	err = ms.k.AddStake(ctx, msg.GetTopicsIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
 	if err != nil {
 		return err
 	}

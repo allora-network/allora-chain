@@ -338,7 +338,6 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-
 	// Add stake from reputer (sender) to worker (target)
 	addStakeMsg := &state.MsgAddStake{
 		Sender:      reputerAddr.String(),
@@ -399,7 +398,7 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 
 	// Remove stake from reputer (sender) to worker (target)
 	removeStakeMsg := &state.MsgStartRemoveStake{
-		Sender:      reputerAddr.String(),
+		Sender: reputerAddr.String(),
 		PlacementsRemove: []*state.StakePlacement{
 			{
 				Target: workerAddr.String(),

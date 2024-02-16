@@ -32,3 +32,6 @@ var ErrConfirmRemoveStakeTooEarly = fmt.Errorf(Err_ErrConfirmRemoveStakeTooEarly
 var ErrConfirmRemoveStakeTooLate = fmt.Errorf(Err_ErrConfirmRemoveStakeTooLate.String())
 var ErrScalarMultiplyNegative = fmt.Errorf(Err_ErrScalarMultiplyNegative.String())
 var ErrDivideMapValuesByZero = fmt.Errorf(Err_ErrDivideMapValuesByZero.String())
+var ErrTopicIdListValueDecodeInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueDecodeInvalidLength.String())
+var ErrTopicIdListValueDecodeJsonInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidLength.String())
+var ErrTopicIdListValueDecodeJsonInvalidFormat = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidFormat.String())
