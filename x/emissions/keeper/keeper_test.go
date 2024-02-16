@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -437,7 +438,7 @@ func (s *KeeperTestSuite) TestSubStakePlacementErr() {
 	// Sub stake
 	subAmount := cosmosMath.NewUint(600)
 	err = k.SubStakePlacement(ctx, delegatorAddr, targetAddr, subAmount)
-	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowBonds)
+	s.Require().ErrorIs(err, state.ErrIntegerUnderflowBonds)
 
 	// Check remaining stake for delegator
 	remainingStake, err := k.GetBond(ctx, delegatorAddr, targetAddr)
@@ -507,7 +508,7 @@ func (s *KeeperTestSuite) TestSubStakePlacedUponTargetErr() {
 	// Sub stake
 	subAmount := cosmosMath.NewUint(600)
 	err = k.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
-	s.Require().ErrorIs(err, keeper.ErrIntegerUnderflowTarget)
+	s.Require().ErrorIs(err, state.ErrIntegerUnderflowTarget)
 
 	// Check remaining stake for delegator
 	remainingStake, err := k.GetStakePlacedUponTarget(ctx, targetAddr)
@@ -535,4 +536,31 @@ func (s *KeeperTestSuite) TestAddStakePlacedUponTarget() {
 	finalStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
+}
+
+func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	placement := state.StakeRemovalPlacement{
+		TopicId: 1,
+		Target:  targetAddr.String(),
+		Amount:  cosmosMath.NewUint(500),
+	}
+	placements := []*state.StakeRemovalPlacement{&placement}
+	removalInfo := state.StakeRemoval{
+		TimestampRemovalStarted: uint64(time.Now().Unix()),
+		Placements:              placements,
+	}
+
+	_, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr)
+	s.Require().ErrorIs(err, collections.ErrNotFound)
+
+	// Set stake removal queue
+	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr, removalInfo)
+	s.Require().NoError(err)
+
+	// Check stake removal queue
+	stakeRemovalQueue, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(removalInfo, stakeRemovalQueue, "Stake removal queue should be equal to the set removal info")
 }

@@ -28,8 +28,9 @@ const (
 	Msg_RegisterWorker_FullMethodName               = "/emissions.state.v1.Msg/RegisterWorker"
 	Msg_AddStake_FullMethodName                     = "/emissions.state.v1.Msg/AddStake"
 	Msg_ModifyStake_FullMethodName                  = "/emissions.state.v1.Msg/ModifyStake"
-	Msg_RemoveStake_FullMethodName                  = "/emissions.state.v1.Msg/RemoveStake"
-	Msg_RemoveAllStake_FullMethodName               = "/emissions.state.v1.Msg/RemoveAllStake"
+	Msg_StartRemoveStake_FullMethodName             = "/emissions.state.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName           = "/emissions.state.v1.Msg/ConfirmRemoveStake"
+	Msg_StartRemoveAllStake_FullMethodName          = "/emissions.state.v1.Msg/StartRemoveAllStake"
 )
 
 // MsgClient is the client API for Msg service.
@@ -45,8 +46,9 @@ type MsgClient interface {
 	RegisterWorker(ctx context.Context, in *MsgRegisterWorker, opts ...grpc.CallOption) (*MsgRegisterWorkerResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
 	ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error)
-	RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error)
-	RemoveAllStake(ctx context.Context, in *MsgRemoveAllStake, opts ...grpc.CallOption) (*MsgRemoveAllStakeResponse, error)
+	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
+	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
+	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
 }
 
 type msgClient struct {
@@ -138,18 +140,27 @@ func (c *msgClient) ModifyStake(ctx context.Context, in *MsgModifyStake, opts ..
 	return out, nil
 }
 
-func (c *msgClient) RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error) {
-	out := new(MsgRemoveStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveStake_FullMethodName, in, out, opts...)
+func (c *msgClient) StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error) {
+	out := new(MsgStartRemoveStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_StartRemoveStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveAllStake(ctx context.Context, in *MsgRemoveAllStake, opts ...grpc.CallOption) (*MsgRemoveAllStakeResponse, error) {
-	out := new(MsgRemoveAllStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveAllStake_FullMethodName, in, out, opts...)
+func (c *msgClient) ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error) {
+	out := new(MsgConfirmRemoveStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_ConfirmRemoveStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error) {
+	out := new(MsgStartRemoveAllStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_StartRemoveAllStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -169,8 +180,9 @@ type MsgServer interface {
 	RegisterWorker(context.Context, *MsgRegisterWorker) (*MsgRegisterWorkerResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
 	ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error)
-	RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error)
-	RemoveAllStake(context.Context, *MsgRemoveAllStake) (*MsgRemoveAllStakeResponse, error)
+	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
+	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
+	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -205,11 +217,14 @@ func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddSt
 func (UnimplementedMsgServer) ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModifyStake not implemented")
 }
-func (UnimplementedMsgServer) RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveStake not implemented")
+func (UnimplementedMsgServer) StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveStake not implemented")
 }
-func (UnimplementedMsgServer) RemoveAllStake(context.Context, *MsgRemoveAllStake) (*MsgRemoveAllStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveAllStake not implemented")
+func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveStake not implemented")
+}
+func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveAllStake not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -386,38 +401,56 @@ func _Msg_ModifyStake_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveStake)
+func _Msg_StartRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgStartRemoveStake)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveStake(ctx, in)
+		return srv.(MsgServer).StartRemoveStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveStake_FullMethodName,
+		FullMethod: Msg_StartRemoveStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveStake(ctx, req.(*MsgRemoveStake))
+		return srv.(MsgServer).StartRemoveStake(ctx, req.(*MsgStartRemoveStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveAllStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveAllStake)
+func _Msg_ConfirmRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgConfirmRemoveStake)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveAllStake(ctx, in)
+		return srv.(MsgServer).ConfirmRemoveStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveAllStake_FullMethodName,
+		FullMethod: Msg_ConfirmRemoveStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveAllStake(ctx, req.(*MsgRemoveAllStake))
+		return srv.(MsgServer).ConfirmRemoveStake(ctx, req.(*MsgConfirmRemoveStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_StartRemoveAllStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgStartRemoveAllStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).StartRemoveAllStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_StartRemoveAllStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).StartRemoveAllStake(ctx, req.(*MsgStartRemoveAllStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -466,12 +499,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_ModifyStake_Handler,
 		},
 		{
-			MethodName: "RemoveStake",
-			Handler:    _Msg_RemoveStake_Handler,
+			MethodName: "StartRemoveStake",
+			Handler:    _Msg_StartRemoveStake_Handler,
 		},
 		{
-			MethodName: "RemoveAllStake",
-			Handler:    _Msg_RemoveAllStake_Handler,
+			MethodName: "ConfirmRemoveStake",
+			Handler:    _Msg_ConfirmRemoveStake_Handler,
+		},
+		{
+			MethodName: "StartRemoveAllStake",
+			Handler:    _Msg_StartRemoveAllStake_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

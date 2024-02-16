@@ -133,7 +133,7 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Value: "/api",
 				},
 				{
-					Name:  "UPSHOT_ARG_PARAMS",
+					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
 				},
 				{
@@ -157,6 +157,7 @@ func generateInferences(functionId string, functionMethod string, param string, 
 }
 
 func makeApiCall(payload string) {
+	fmt.Println("Making Api Call, Payload: ", payload)
 	url := os.Getenv("BLOCKLESS_API_URL")
 	method := "POST"
 

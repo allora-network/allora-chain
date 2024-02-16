@@ -113,6 +113,8 @@ type Keeper struct {
 	stakePlacement collections.Map[collections.Pair[DELEGATOR, TARGET], Uint]
 	// map of (target) -> total amount staked upon target by themselves and all other delegators
 	stakePlacedUponTarget collections.Map[TARGET, Uint]
+	// map of (delegator) -> removal information for that delegator
+	stakeRemovalQueue collections.Map[DELEGATOR, state.StakeRemoval]
 
 	// ############################################
 	// #            MISC GLOBAL STATE:            #
@@ -164,6 +166,7 @@ func NewKeeper(
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
 		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
+		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
 		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
@@ -278,7 +281,7 @@ func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 // Set the last block height at which rewards emissions were updated
 func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) error {
 	if blockHeight < 0 {
-		return ErrBlockHeightNegative
+		return state.ErrBlockHeightNegative
 	}
 	previousBlockHeight, err := k.lastRewardsUpdate.Get(ctx)
 	if err != nil {
@@ -289,7 +292,7 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 		}
 	}
 	if blockHeight < previousBlockHeight {
-		return ErrBlockHeightLessThanPrevious
+		return state.ErrBlockHeightLessThanPrevious
 	}
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
@@ -526,7 +529,7 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 
 	// if stake is zero this function is a no-op
 	if stake.IsZero() {
-		return ErrDoNotSetMapValueToZero
+		return state.ErrDoNotSetMapValueToZero
 	}
 
 	// update the stake array that tracks how much each delegator has invested in the system total
@@ -647,7 +650,7 @@ func (k *Keeper) RemoveStakeFromBond(
 		return err
 	}
 	if stake.GT(topicStake) {
-		return ErrIntegerUnderflowTopicStake
+		return state.ErrIntegerUnderflowTopicStake
 	}
 
 	// 5. Check: totalStake >= stake
@@ -656,7 +659,7 @@ func (k *Keeper) RemoveStakeFromBond(
 		return err
 	}
 	if stake.GT(totalStake) {
-		return ErrIntegerUnderflowTotalStake
+		return state.ErrIntegerUnderflowTotalStake
 	}
 
 	// Perform State Updates
@@ -701,7 +704,7 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 		return err
 	}
 	if stake.GT(delegatorStake) {
-		return ErrIntegerUnderflowDelegator
+		return state.ErrIntegerUnderflowDelegator
 	}
 
 	// 2. Check: bonds(target, delegator) >= stake
@@ -710,7 +713,7 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 		return err
 	}
 	if stake.GT(bond) {
-		return ErrIntegerUnderflowBonds
+		return state.ErrIntegerUnderflowBonds
 	}
 
 	// 3. Check: targetStake(target) >= stake
@@ -719,7 +722,7 @@ func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 		return err
 	}
 	if stake.GT(targetStake) {
-		return ErrIntegerUnderflowTarget
+		return state.ErrIntegerUnderflowTarget
 	}
 
 	// Perform State Updates
@@ -769,7 +772,7 @@ func (k *Keeper) SubStakePlacement(ctx context.Context, delegator sdk.AccAddress
 		return err
 	}
 	if amount.GT(bond) {
-		return ErrIntegerUnderflowBonds
+		return state.ErrIntegerUnderflowBonds
 	}
 	bondNew := bond.Sub(amount)
 	return k.stakePlacement.Set(ctx, collections.Join(delegator, target), bondNew)
@@ -794,7 +797,7 @@ func (k *Keeper) SubStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 		return err
 	}
 	if amount.GT(targetStake) {
-		return ErrIntegerUnderflowTarget
+		return state.ErrIntegerUnderflowTarget
 	}
 	targetStakeNew := targetStake.Sub(amount)
 	return k.stakePlacedUponTarget.Set(ctx, target, targetStakeNew)
@@ -868,7 +871,7 @@ func (k *Keeper) GetAllBondsForDelegator(ctx context.Context, delegator sdk.AccA
 		}
 	}
 	if len(targets) != len(amounts) {
-		return nil, nil, ErrIterationLengthDoesNotMatch
+		return nil, nil, state.ErrIterationLengthDoesNotMatch
 	}
 
 	return targets, amounts, nil
@@ -1028,4 +1031,14 @@ func (k *Keeper) SetInference(
 	inference state.Inference) error {
 	key := collections.Join(topicID, worker)
 	return k.inferences.Set(ctx, key, inference)
+}
+
+// for a given delegator, get their stake removal information
+func (k *Keeper) GetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress) (state.StakeRemoval, error) {
+	return k.stakeRemovalQueue.Get(ctx, delegator)
+}
+
+// For a given delegator, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress, removalInfo state.StakeRemoval) error {
+	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
 }

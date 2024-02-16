@@ -1,11 +1,11 @@
 package module
 
 import (
-	"errors"
+	"fmt"
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
-
+	state "github.com/allora-network/allora-chain/x/emissions"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,12 +15,6 @@ type Float = big.Float
 type Number interface {
 	*Float | *cosmosMath.Uint
 }
-
-// errors defined in this file
-var ErrInvalidLastUpdate = errors.New("invalid last update")
-var ErrEpochNotReached = errors.New("not enough blocks have passed to hit an epoch")
-var ErrScalarMultiplyNegative = errors.New("token rewards multiplication output should always be positive")
-var ErrDivideMapValuesByZero = errors.New("cannot divide map values by zero")
 
 // ********************************************************
 // *        PUBLIC EXPORTED READ-ONLY FUNCTIONS           *
@@ -205,9 +199,12 @@ func emitRewardsToTopicParticipants(
 	topic keeper.TOPIC_ID,
 	rewards map[string]*Uint) {
 	// by default emissions are restaked, upon the person themselves.
+	fmt.Println("\n---------------- Rewards ----------------")
 	for participant, reward := range rewards {
+		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
 		am.keeper.AddStake(ctx, topic, participant, participant, *reward)
 	}
+	fmt.Println("\n-----------------------------------------")
 }
 
 // ********************************************************
@@ -279,7 +276,7 @@ func divideMapValues(
 	a map[string]*Float,
 	divisor *Float) (map[string]*Float, error) {
 	if divisor.Cmp(big.NewFloat(0)) == 0 {
-		return nil, ErrDivideMapValuesByZero
+		return nil, state.ErrDivideMapValuesByZero
 	}
 	ret := make(map[keeper.ACC_ADDRESS]*Float)
 	for key, val := range a {
@@ -345,7 +342,7 @@ func scalarMultiply(
 	for key, val := range matrix {
 		val := big.NewFloat(0).Mul(val, scalar)
 		if val.Sign() == -1 {
-			return nil, ErrScalarMultiplyNegative
+			return nil, state.ErrScalarMultiplyNegative
 		}
 		valBigInt, _ := val.Int(nil)
 		valUint := cosmosMath.NewUintFromBigInt(valBigInt)

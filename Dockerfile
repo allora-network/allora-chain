@@ -7,7 +7,7 @@ WORKDIR /src
 
 # Set up git for private repos
 RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
-ENV GOPRIVATE="github.com/upshot-tech/"
+ENV GOPRIVATE="github.com/allora-network/"
 RUN make install
 
 #==============================================================
