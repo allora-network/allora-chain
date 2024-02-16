@@ -123,8 +123,8 @@ message StakeRemoval {
 
 enum Err {
   ErrInvalidTopicId = 0;
-  ErrReputerAlreadyRegistered = 1;
-  ErrWorkerAlreadyRegistered = 2;
+  ErrReputerAlreadyRegisteredInTopic = 1;
+  ErrWorkerAlreadyRegisteredInTopic = 2;
   ErrInsufficientStakeToRegister = 3;
   ErrLibP2PKeyRequired = 4;
   ErrAddressNotRegistered = 5;
@@ -152,4 +152,5 @@ enum Err {
   ErrTopicIdListValueDecodeInvalidLength =  27;
   ErrTopicIdListValueDecodeJsonInvalidLength = 28;
   ErrTopicIdListValueDecodeJsonInvalidFormat =  29;
+  ErrTopicDoesNotExist = 30;
 }

@@ -67,6 +67,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceMethod:  msg.InferenceMethod,
 		InferenceCadence: msg.InferenceCadence,
 		InferenceLastRan: 0,
+		// TODO: Maybe we should put this as default once it can't be modified by user input
 		Active:           msg.Active,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
@@ -185,7 +186,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		// check if topic exists
 		exist, err := ms.k.TopicExists(ctx, topicId)
 		if !exist {
-			return nil, fmt.Errorf("topic does not exist")
+			return nil, state.ErrTopicDoesNotExist
 		} else if err != nil {
 			return nil, err
 		}
@@ -193,7 +194,7 @@ func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterR
 		// check if reputer is already registered in the topic
 		for _, topicIdRegistered := range topicsIds {
 			if topicIdRegistered == topicId {
-				return nil, state.ErrReputerAlreadyRegistered
+				return nil, state.ErrReputerAlreadyRegisteredInTopic
 			}
 		}
 	}
@@ -235,7 +236,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 	if err != nil {
 		return nil, err
 	}
-	topicsIds, err := ms.k.GetRegisteredTopicsIdsByReputerAddress(ctx, workerAddr)
+	topicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, workerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +245,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		// check if topic exists
 		exist, err := ms.k.TopicExists(ctx, topicId)
 		if !exist {
-			return nil, fmt.Errorf("topic does not exist")
+			return nil, state.ErrTopicDoesNotExist
 		} else if err != nil {
 			return nil, err
 		}
@@ -252,7 +253,7 @@ func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWo
 		// check if worker is already registered in the topic
 		for _, topicIdRegistered := range topicsIds {
 			if topicIdRegistered == topicId {
-				return nil, state.ErrWorkerAlreadyRegistered
+				return nil, state.ErrWorkerAlreadyRegisteredInTopic
 			}
 		}
 	}
