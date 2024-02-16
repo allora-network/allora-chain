@@ -31,6 +31,7 @@ type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
 type UNIX_TIMESTAMP = uint64
+type REQUEST_ID = string
 
 // Emissions rate Constants
 // TODO make these not constants and figure out how they should
@@ -117,6 +118,12 @@ type Keeper struct {
 	stakeRemovalQueue collections.Map[DELEGATOR, state.StakeRemoval]
 
 	// ############################################
+	// #        INFERENCE REQUEST MEMPOOL         #
+	// ############################################
+	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], state.InferenceRequest]
+	funds   collections.Map[REQUEST_ID, Uint]
+
+	// ############################################
 	// #            MISC GLOBAL STATE:            #
 	// ############################################
 
@@ -164,6 +171,8 @@ func NewKeeper(
 		stakePlacement:        collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
 		stakeRemovalQueue:     collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		mempool:               collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
+		funds:                 collections.NewMap(sb, state.FundsKey, "funds", collections.StringKey, UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
@@ -1026,4 +1035,62 @@ func (k *Keeper) GetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 // For a given delegator, adds their stake removal information to the removal queue for delay waiting
 func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress, removalInfo state.StakeRemoval) error {
 	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
+}
+
+func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
+	requestId, err := request.GetRequestId()
+	if err != nil {
+		return err
+	}
+	key := collections.Join(request.TopicId, requestId)
+	return k.mempool.Set(ctx, key, request)
+}
+
+func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOPIC_ID, requestId string) (state.InferenceRequest, error) {
+	return k.mempool.Get(ctx, collections.Join(topicId, requestId))
+}
+
+func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TOPIC_ID) ([]state.InferenceRequest, error) {
+	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
+	rng := collections.NewPrefixedPairRange[TOPIC_ID, string](topicId)
+	iter, err := k.mempool.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		value, err := iter.Value()
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, value)
+	}
+	return ret, nil
+}
+
+func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
+	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
+	iter, err := k.mempool.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		value, err := iter.Value()
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, value)
+	}
+	return ret, nil
+
+}
+
+func (k *Keeper) SetFunds(ctx context.Context, requestId string, amount Uint) error {
+	if amount.IsZero() {
+		return k.funds.Remove(ctx, requestId)
+	}
+	return k.funds.Set(ctx, requestId, amount)
+}
+
+func (k *Keeper) GetFunds(ctx context.Context, requestId string) (Uint, error) {
+	return k.funds.Get(ctx, requestId)
 }

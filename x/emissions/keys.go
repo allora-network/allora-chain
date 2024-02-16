@@ -25,4 +25,6 @@ var (
 	// LatestInferencesCountKey = collections.NewPrefix(17)
 	AllInferencesKey     = collections.NewPrefix(18)
 	StakeRemovalQueueKey = collections.NewPrefix(19)
+	MempoolKey           = collections.NewPrefix(21)
+	FundsKey             = collections.NewPrefix(22)
 )
