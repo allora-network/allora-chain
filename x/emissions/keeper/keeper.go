@@ -135,9 +135,6 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
-	// map of topic -> latestInferenceTimestamp (M1)
-	latestInferencesTimestamps collections.Map[TOPIC_ID, UNIX_TIMESTAMP]
-
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
 }
@@ -151,28 +148,27 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                        cdc,
-		addressCodec:               addressCodec,
-		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
-		authKeeper:                 ak,
-		bankKeeper:                 bk,
-		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
-		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
-		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
-		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
-		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
-		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
-		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
-		latestInferencesTimestamps: collections.NewMap(sb, state.LatestInferencesTsKey, "inferences_latest_ts", collections.Uint64Key, collections.Uint64Value),
-		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
+		cdc:                   cdc,
+		addressCodec:          addressCodec,
+		params:                collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
+		authKeeper:            ak,
+		bankKeeper:            bk,
+		totalStake:            collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
+		topicStake:            collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		lastRewardsUpdate:     collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		nextTopicId:           collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
+		topics:                collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
+		topicWorkers:          collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		topicReputers:         collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		stakeOwnedByDelegator: collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
+		stakePlacement:        collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
+		stakeRemovalQueue:     collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
+		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
+		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
+		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -189,22 +185,13 @@ func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
 	return k.params.Set(ctx, params)
 }
 
-func (k *Keeper) GetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
-	ret, err := k.latestInferencesTimestamps.Get(ctx, topicId)
+func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil
-		}
 		return 0, err
 	}
+	ret := topic.WeightLastRan
 	return ret, nil
-}
-
-func (k *Keeper) SetLatestInferenceTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) error {
-	if timestamp == 0 {
-		return k.latestInferencesTimestamps.Remove(ctx, topicId)
-	}
-	return k.latestInferencesTimestamps.Set(ctx, topicId, timestamp)
 }
 
 func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*state.Inferences, error) {
@@ -379,12 +366,10 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
 	var inferences []*state.InferenceSetForScoring
-
-	latest_timestamp, err := k.GetLatestInferenceTimestamp(ctx, topicId)
+	var latest_timestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
 	if err != nil {
-		return nil, err
+		latest_timestamp = 0
 	}
-
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
 		StartInclusive(latest_timestamp).

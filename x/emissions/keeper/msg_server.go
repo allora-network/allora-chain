@@ -83,7 +83,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
-	fmt.Println("Processing updated weights")
 
 	for _, weightEntry := range msg.Weights {
 
@@ -114,20 +113,6 @@ func (ms msgServer) SetInferences(ctx context.Context, msg *state.MsgSetInferenc
 	return &state.MsgSetInferencesResponse{}, nil
 }
 
-// Sets a timestamp for a topic
-func (ms msgServer) SetLatestInferencesTimestamp(ctx context.Context, msg *state.MsgSetLatestInferencesTimestamp) (*state.MsgSetLatestInferencesTimestampResponse, error) {
-	topic := msg.TopicId
-	inference_timestamp := msg.InferenceTimestamp
-
-	// Update the map with the new timestamp for the topic
-	if err := ms.k.SetLatestInferenceTimestamp(ctx, topic, inference_timestamp); err != nil {
-		return nil, err
-	}
-
-	// Return an empty response as the operation was successful
-	return &state.MsgSetLatestInferencesTimestampResponse{}, nil
-}
-
 // T1: a tx function that accepts a list of inferences and possibly returns an error
 func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcessInferences) (*state.MsgProcessInferencesResponse, error) {
 	inferences := msg.Inferences
@@ -140,7 +125,6 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 	}
 
 	actualTimestamp := uint64(time.Now().UTC().Unix())
-	fmt.Println("Processing inferences for timestamp: ", actualTimestamp)
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
@@ -150,9 +134,6 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
 		if err != nil {
 			return nil, err
-		}
-		for _, inference := range inferences.Inferences {
-			fmt.Println("Topic: ", topicId, "| Inference: ", inference.Value.String(), "| Worker: ", inference.Worker)
 		}
 	}
 

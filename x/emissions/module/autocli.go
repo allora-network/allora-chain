@@ -186,14 +186,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "sender"},
 					},
 				},
-				{
-					RpcMethod: "ConfirmRemoveAllStake",
-					Use:       "confirm-remove-all-stake sender",
-					Short:     "Proceed with removing all stake from a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
+				// {
+				// 	RpcMethod: "ConfirmRemoveAllStake",
+				// 	Use:       "confirm-remove-all-stake sender",
+				// 	Short:     "Proceed with removing all stake from a sender [reputer or worker]",
+				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				// 		{ProtoField: "sender"},
+				// 	},
+				// },
 			},
 		},
 	}
