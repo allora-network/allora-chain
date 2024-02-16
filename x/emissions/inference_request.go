@@ -10,8 +10,6 @@ func (m *InferenceRequest) GetRequestId() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	h := sha256.New()
-	h.Write(inferenceRequestBytes)
-	reqId := h.Sum(nil)
+	reqId := sha256.Sum256(inferenceRequestBytes)
 	return fmt.Sprintf("0x%x", reqId), nil
 }
