@@ -14,8 +14,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 	}
 
 	// ensure the module account exists
-	moduleAccount := k.authKeeper.GetModuleAccount(ctx, state.ModuleName)
-	k.authKeeper.SetModuleAccount(ctx, moduleAccount)
+	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingModuleName)
+	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
+	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsModuleName)
+	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
 	}

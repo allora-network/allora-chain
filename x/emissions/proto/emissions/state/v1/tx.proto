@@ -34,6 +34,8 @@ service Msg {
   rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
 
   rpc StartRemoveAllStake(MsgStartRemoveAllStake) returns (MsgStartRemoveAllStakeResponse);
+
+  rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
 }
 
 message MsgCreateNewTopic {
@@ -213,3 +215,8 @@ message InferenceRequest {
 }
 
 
+message MsgRequestInference {
+  repeated InferenceRequest requests = 1;
+}
+
+message MsgRequestInferenceResponse {}
