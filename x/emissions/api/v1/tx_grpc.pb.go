@@ -30,6 +30,7 @@ const (
 	Msg_StartRemoveStake_FullMethodName    = "/emissions.state.v1.Msg/StartRemoveStake"
 	Msg_ConfirmRemoveStake_FullMethodName  = "/emissions.state.v1.Msg/ConfirmRemoveStake"
 	Msg_StartRemoveAllStake_FullMethodName = "/emissions.state.v1.Msg/StartRemoveAllStake"
+	Msg_RequestInference_FullMethodName    = "/emissions.state.v1.Msg/RequestInference"
 )
 
 // MsgClient is the client API for Msg service.
@@ -47,6 +48,7 @@ type MsgClient interface {
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
+	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
 }
 
 type msgClient struct {
@@ -156,6 +158,15 @@ func (c *msgClient) StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveA
 	return out, nil
 }
 
+func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error) {
+	out := new(MsgRequestInferenceResponse)
+	err := c.cc.Invoke(ctx, Msg_RequestInference_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -171,6 +182,7 @@ type MsgServer interface {
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
+	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -210,6 +222,9 @@ func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRem
 }
 func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveAllStake not implemented")
+}
+func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -422,6 +437,24 @@ func _Msg_StartRemoveAllStake_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRequestInference)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RequestInference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RequestInference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RequestInference(ctx, req.(*MsgRequestInference))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -472,6 +505,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartRemoveAllStake",
 			Handler:    _Msg_StartRemoveAllStake_Handler,
+		},
+		{
+			MethodName: "RequestInference",
+			Handler:    _Msg_RequestInference_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -14,7 +14,10 @@ import (
 )
 
 const REQUIRED_MINIMUM_STAKE = 1
-const DELAY_WINDOW = 172800 // 48 hours in seconds
+const DELAY_WINDOW = 172800                                        // 48 hours in seconds
+const MIN_FASTEST_ALLOWED_CADENCE = 60                             // 1 minute in seconds
+const MAX_INFERENCE_REQUEST_VALIDITY = 60 * 60 * 24 * 7 * 24       // 24 weeks approximately 6 months in seconds
+const MAX_SLOWEST_ALLOWED_CADENCE = MAX_INFERENCE_REQUEST_VALIDITY // 24 weeks approximately 6 months in seconds
 
 type NodeExists int8
 
@@ -269,7 +272,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	// 5. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.ModuleName, coins)
+	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingModuleName, coins)
 
 	// 6. update the stake data structures
 	err = ms.k.AddStake(ctx, topicId, msg.Sender, msg.StakeTarget, msg.Amount)
@@ -458,7 +461,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		// 6. send the funds
 		amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.ModuleName, senderAddr, coins)
+		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
 
 		// 7. update the stake data structures
 		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicId, senderAddr, targetAddr, stakePlacement.Amount)
@@ -500,6 +503,82 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 	return &state.MsgStartRemoveAllStakeResponse{}, nil
 }
 
+func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestInference) (*state.MsgRequestInferenceResponse, error) {
+	for _, request := range msg.Requests {
+		// 1. check the topic is valid
+		exists, err := ms.k.TopicExists(ctx, request.TopicId)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, state.ErrInvalidTopicId
+		}
+		requestId, err := request.GetRequestId()
+		if err != nil {
+			return nil, err
+		}
+		// 2. check the request isn't already in the mempool
+		exists, err = ms.k.IsRequestInMempool(ctx, request.TopicId, requestId)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			return nil, state.ErrInferenceRequestAlreadyInMempool
+		}
+		// 3. Check the BidAmount is greater than the price per request
+		if request.BidAmount.LT(request.MaxPricePerInference) {
+			return nil, state.ErrInferenceRequestBidAmountLessThanPrice
+		}
+		// 4. Check the timestamp valid until is in the future
+		timeNow := uint64(time.Now().UTC().Unix())
+		if request.TimestampValidUntil < timeNow {
+			return nil, state.ErrInferenceRequestTimestampValidUntilInPast
+		}
+		// 5. Check the timestamp validity is no more than the maximum allowed time in the future
+		if request.TimestampValidUntil > timeNow+MAX_INFERENCE_REQUEST_VALIDITY {
+			return nil, state.ErrInferenceRequestTimestampValidUntilTooFarInFuture
+		}
+		if request.Cadence != 0 {
+			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
+			if request.Cadence < MIN_FASTEST_ALLOWED_CADENCE {
+				return nil, state.ErrInferenceRequestCadenceTooFast
+			}
+			// 7. Check the cadence is no more than the maximum allowed slowest cadence
+			if request.Cadence > MAX_SLOWEST_ALLOWED_CADENCE {
+				return nil, state.ErrInferenceRequestCadenceTooSlow
+			}
+		}
+		// 8. Check the cadence is not greater than the timestamp valid until
+		if timeNow+request.Cadence > request.TimestampValidUntil {
+			return nil, state.ErrInferenceRequestWillNeverBeScheduled
+		}
+		// 9. Check sender has funds to pay for the inference request
+		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
+		// 10. Send funds
+		senderAddr, err := sdk.AccAddressFromBech32(request.Sender)
+		if err != nil {
+			return nil, err
+		}
+		amountInt := cosmosMath.NewIntFromBigInt(request.BidAmount.BigInt())
+		coins := sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, amountInt))
+		err = ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraRequestsModuleName, coins)
+		if err != nil {
+			return nil, err
+		}
+		// 11. record the number of tokens sent to the module account
+		err = ms.k.SetFunds(ctx, requestId, request.BidAmount)
+		if err != nil {
+			return nil, err
+		}
+		// 12. Write request state into the mempool state
+		err = ms.k.AddToMempool(ctx, *request)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &state.MsgRequestInferenceResponse{}, nil
+}
+
 // ########################################
 // #           Private Functions          #
 // ########################################
@@ -537,7 +616,7 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// move funds
 	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
 	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
-	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.ModuleName, amount)
+	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.AlloraStakingModuleName, amount)
 	if err != nil {
 		return err
 	}

@@ -317,7 +317,7 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 // mint new rewards coins to this module account
 func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	return k.bankKeeper.MintCoins(ctx, state.ModuleName, coins)
+	return k.bankKeeper.MintCoins(ctx, state.AlloraStakingModuleName, coins)
 }
 
 // for a given topic, returns every reputer node registered to it and their normalized stake
@@ -493,6 +493,11 @@ func (k *Keeper) IncrementTopicId(ctx context.Context) (TOPIC_ID, error) {
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Topic) error {
 	return k.topics.Set(ctx, topicId, topic)
+}
+
+// Checks if a topic exists
+func (k *Keeper) TopicExists(ctx context.Context, topicId TOPIC_ID) (bool, error) {
+	return k.topics.Has(ctx, topicId)
 }
 
 // Returns the number of topics that are active in the network
@@ -1044,6 +1049,10 @@ func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceReques
 	}
 	key := collections.Join(request.TopicId, requestId)
 	return k.mempool.Set(ctx, key, request)
+}
+
+func (k *Keeper) IsRequestInMempool(ctx context.Context, topicId TOPIC_ID, requestId string) (bool, error) {
+	return k.mempool.Has(ctx, collections.Join(topicId, requestId))
 }
 
 func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOPIC_ID, requestId string) (state.InferenceRequest, error) {

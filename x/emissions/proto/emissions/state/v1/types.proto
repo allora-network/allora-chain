@@ -149,4 +149,11 @@ enum Err {
   ErrConfirmRemoveStakeTooLate = 24;
   ErrScalarMultiplyNegative = 25;
   ErrDivideMapValuesByZero = 26;
+  ErrInferenceRequestAlreadyInMempool = 27;
+  ErrInferenceRequestBidAmountLessThanPrice = 28;
+  ErrInferenceRequestTimestampValidUntilInPast = 29;
+  ErrInferenceRequestTimestampValidUntilTooFarInFuture = 30;
+  ErrInferenceRequestCadenceTooFast = 31;
+  ErrInferenceRequestCadenceTooSlow = 32;
+  ErrInferenceRequestWillNeverBeScheduled = 33;
 }

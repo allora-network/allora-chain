@@ -3,6 +3,8 @@ package emissions
 import "cosmossdk.io/collections"
 
 const ModuleName = "emissions"
+const AlloraStakingModuleName = "allorastaking"
+const AlloraRequestsModuleName = "allorarequests"
 
 var (
 	ParamsKey             = collections.NewPrefix(0)
@@ -22,9 +24,8 @@ var (
 	WorkerNodesKey        = collections.NewPrefix(14)
 	ReputerNodesKey       = collections.NewPrefix(15)
 	LatestInferencesTsKey = collections.NewPrefix(16)
-	// LatestInferencesCountKey = collections.NewPrefix(17)
-	AllInferencesKey     = collections.NewPrefix(18)
-	StakeRemovalQueueKey = collections.NewPrefix(19)
-	MempoolKey           = collections.NewPrefix(21)
-	FundsKey             = collections.NewPrefix(22)
+	MempoolKey            = collections.NewPrefix(19)
+	FundsKey              = collections.NewPrefix(20)
+	AllInferencesKey      = collections.NewPrefix(21)
+	StakeRemovalQueueKey  = collections.NewPrefix(22)
 )
