@@ -1109,7 +1109,61 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 }
 
 // test more than one inference in the message
-func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {}
+func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	var requestStake int64 = 500
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	requestStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(requestStake)))
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+			{
+				Sender:               sender,
+				Nonce:                1,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake)),
+				TimestampValidUntil:  timeNow + 400,
+				ExtraData:            nil,
+			},
+		},
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, requestStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, requestStakeCoins)
+	response, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err, "RequestInference should not return an error")
+	s.Require().Equal(&state.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
+
+	// Check updated stake for delegator
+	requestId, err := r.Requests[0].GetRequestId()
+	s.Require().NoError(err)
+	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
+	s.Require().NoError(err)
+	s.Require().Equal(*(r.Requests[0]), storedRequest, "Stored request should match the request")
+	requestId, err = r.Requests[1].GetRequestId()
+	s.Require().NoError(err)
+	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
+	s.Require().NoError(err)
+	s.Require().Equal(*(r.Requests[1]), storedRequest, "Stored request should match the request")
+}
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 	timeNow := uint64(time.Now().UTC().Unix())
@@ -1132,6 +1186,202 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 	s.Require().ErrorIs(err, state.ErrInvalidTopicId, "RequestInference should return an error when the topic does not exist")
 }
 
-func (s *KeeperTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {}
+func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceSet() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake + 20)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestBidAmountLessThanPrice, "RequestInference should return an error when the bid amount is less than the price")
+}
 
-func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceSet() {}
+func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, initialStakeCoins)
+	s.msgServer.RequestInference(s.ctx, &r)
+
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestAlreadyInMempool, "RequestInference should return an error when the request already exists")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow - 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestTimestampValidUntilInPast, "RequestInference should return an error when the request timestamp is in the past")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  math.MaxUint64,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestTimestampValidUntilTooFarInFuture, "RequestInference should return an error when the request timestamp is too far in the future")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterNoLongerValid() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              1000,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestWillNeverBeScheduled, "RequestInference should return an error when the request cadence happens after the request is no longer valid")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              1,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestCadenceTooFast, "RequestInference should return an error when the request cadence is too fast")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Requests: []*state.InferenceRequest{
+			{
+				Sender:               sender,
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              math.MaxUint64,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
+				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestCadenceTooSlow, "RequestInference should return an error when the request cadence is too slow")
+}
