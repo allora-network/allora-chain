@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 
@@ -167,9 +166,9 @@ func NewKeeper(
 		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
 		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:              collections.NewMap(sb, state.AddressTopics, "address_topics", sdk.AccAddressKey, TopicIdListValue),
+		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSum, "all_topic_stake_sum", UintValue),
+		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
 		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
@@ -915,7 +914,7 @@ func (k *Keeper) AddStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 // Add stake into an array of topics
 func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
 	if stake.IsZero() {
-		return errors.New("stake cannot be zero")
+		return state.ErrDoNotSetMapValueToZero
 	}
 
 	// Calculate the total stake to be added across all topics
@@ -954,7 +953,7 @@ func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, sta
 // Remove stake from an array of topics
 func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
 	if stake.IsZero() {
-		return errors.New("stake cannot be zero")
+		return state.ErrDoNotSetMapValueToZero
 	}
 
 	// Calculate the total stake to be removed across all topics
@@ -967,7 +966,7 @@ func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, topicsIds []TOPIC_ID
 		}
 
 		if topicStake.LT(stake) {
-			return fmt.Errorf("cannot remove more stake than is present for topic ID %d", topicId)
+			return state.ErrCannotRemoveMoreStakeThanStakedInTopic
 		}
 
 		topicStakeNew := topicStake.Sub(stake)

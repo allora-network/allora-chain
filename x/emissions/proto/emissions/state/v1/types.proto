@@ -153,4 +153,5 @@ enum Err {
   ErrTopicIdListValueDecodeJsonInvalidLength = 28;
   ErrTopicIdListValueDecodeJsonInvalidFormat =  29;
   ErrTopicDoesNotExist = 30;
+  ErrCannotRemoveMoreStakeThanStakedInTopic = 31;
 }

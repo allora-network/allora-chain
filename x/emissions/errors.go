@@ -36,3 +36,4 @@ var ErrTopicIdListValueDecodeInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueD
 var ErrTopicIdListValueDecodeJsonInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidLength.String())
 var ErrTopicIdListValueDecodeJsonInvalidFormat = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidFormat.String())
 var ErrTopicDoesNotExist = fmt.Errorf(Err_ErrTopicDoesNotExist.String())
+var ErrCannotRemoveMoreStakeThanStakedInTopic = fmt.Errorf(Err_ErrCannotRemoveMoreStakeThanStakedInTopic.String())
