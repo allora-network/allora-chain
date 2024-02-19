@@ -381,13 +381,13 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
 	var inferences []*state.InferenceSetForScoring
-	var latest_timestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
+	var latestTimestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
 	if err != nil {
-		latest_timestamp = 0
+		latestTimestamp = 0
 	}
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latest_timestamp).
+		StartInclusive(latestTimestamp).
 		Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
