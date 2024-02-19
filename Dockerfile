@@ -18,11 +18,19 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
     APP_PATH=/data
 
+#* curl jq - required for readyness probe and to download genesis
 RUN apt update && \
     apt -y dist-upgrade && \
     apt install -y --no-install-recommends \
+        curl jq \
         tzdata \
         ca-certificates && \
+    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+    apt update && \
+    apt install -y --no-install-recommends -t testing \
+      zlib1g \
+      libgnutls30 \
+      perl-base && \
     rm -rf /var/cache/apt/*
 
 COPY --from=builder /go/bin/* /usr/local/bin/
