@@ -149,9 +149,16 @@ enum Err {
   ErrConfirmRemoveStakeTooLate = 24;
   ErrScalarMultiplyNegative = 25;
   ErrDivideMapValuesByZero = 26;
-  ErrTopicIdListValueDecodeInvalidLength =  27;
-  ErrTopicIdListValueDecodeJsonInvalidLength = 28;
-  ErrTopicIdListValueDecodeJsonInvalidFormat =  29;
-  ErrTopicDoesNotExist = 30;
-  ErrCannotRemoveMoreStakeThanStakedInTopic = 31;
+  ErrInferenceRequestAlreadyInMempool = 27;
+  ErrInferenceRequestBidAmountLessThanPrice = 28;
+  ErrInferenceRequestTimestampValidUntilInPast = 29;
+  ErrInferenceRequestTimestampValidUntilTooFarInFuture = 30;
+  ErrInferenceRequestCadenceTooFast = 31;
+  ErrInferenceRequestCadenceTooSlow = 32;
+  ErrInferenceRequestWillNeverBeScheduled = 33;
+  ErrTopicIdListValueDecodeInvalidLength =  34;
+  ErrTopicIdListValueDecodeJsonInvalidLength = 35;
+  ErrTopicIdListValueDecodeJsonInvalidFormat =  36;
+  ErrTopicDoesNotExist = 37;
+  ErrCannotRemoveMoreStakeThanStakedInTopic = 38;
 }

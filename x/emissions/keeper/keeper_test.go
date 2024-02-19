@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -563,4 +564,117 @@ func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
 	stakeRemovalQueue, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo, stakeRemovalQueue, "Stake removal queue should be equal to the set removal info")
+}
+
+func (s *KeeperTestSuite) TestSetFunds() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	amount := cosmosMath.NewUint(1000)
+	requestId := "0xa948904f2f0f479b8f8197694b30184b0d2ed1c1cd2a1ec0fb85d299a192a447"
+
+	// Set funds
+	err := keeper.SetFunds(ctx, requestId, amount)
+	s.Require().NoError(err)
+
+	// Check funds
+	funds, err := keeper.GetFunds(ctx, requestId)
+	s.Require().NoError(err)
+	s.Require().Equal(amount, funds, "Funds should be equal to the set amount")
+}
+
+func (s *KeeperTestSuite) TestAddToMempool() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	inferenceRequest := state.InferenceRequest{
+		Sender:               sdk.AccAddress(PKS[0].Address()).String(),
+		Nonce:                1,
+		TopicId:              1,
+		Cadence:              60 * 60 * 24,
+		MaxPricePerInference: cosmosMath.NewUint(1000),
+		BidAmount:            cosmosMath.NewUint(1446),
+		TimestampValidUntil:  uint64(time.Now().Unix()),
+		ExtraData:            []byte("extra data"),
+	}
+	requestId, err := inferenceRequest.GetRequestId()
+	s.Require().NoError(err, "error getting request id")
+
+	// Add to mempool
+	err = keeper.AddToMempool(ctx, inferenceRequest)
+	s.Require().NoError(err, "Error adding to mempool")
+
+	// Check mempool
+	mempool, err := keeper.GetMempoolInferenceRequestById(ctx, inferenceRequest.TopicId, requestId)
+	s.Require().NoError(err)
+	s.Require().Equal(inferenceRequest, mempool, "Mempool should contain the added inference request")
+}
+
+func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	var i uint64
+	var inferenceRequestMap = make(map[string]state.InferenceRequest)
+	for i = 0; i < 10; i++ {
+		inferenceRequest := state.InferenceRequest{
+			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
+			Nonce:                i,
+			TopicId:              1,
+			Cadence:              60 * 60 * 24,
+			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
+			BidAmount:            cosmosMath.NewUint(1446 * i),
+			TimestampValidUntil:  uint64(time.Now().Unix()),
+			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
+		}
+		// Add to mempool
+		err := keeper.AddToMempool(ctx, inferenceRequest)
+		s.Require().NoError(err, "Error adding to mempool")
+		requestId, err := inferenceRequest.GetRequestId()
+		s.Require().NoError(err, "error getting request id 1")
+		inferenceRequestMap[requestId] = inferenceRequest
+	}
+
+	requestsForTopic, err := keeper.GetMempoolInferenceRequestsForTopic(ctx, 1)
+	s.Require().NoError(err, "error getting requests for topic")
+	for _, request := range requestsForTopic {
+		requestId, err := request.GetRequestId()
+		s.Require().NoError(err, "error getting request id 2")
+		s.Require().Contains(inferenceRequestMap, requestId, "Mempool should contain the added inference request id")
+		expected := inferenceRequestMap[requestId]
+		s.Require().Equal(expected, request, "Mempool should contain the added inference request")
+	}
+}
+
+func (s *KeeperTestSuite) TestGetMempoolSimple() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	var i uint64
+	var inferenceRequestMap = make(map[string]state.InferenceRequest)
+	for i = 0; i < 10; i++ {
+		inferenceRequest := state.InferenceRequest{
+			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
+			Nonce:                i,
+			TopicId:              i,
+			Cadence:              60 * 60 * 24,
+			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
+			BidAmount:            cosmosMath.NewUint(1446 * i),
+			TimestampValidUntil:  uint64(time.Now().Unix()),
+			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
+		}
+		// Add to mempool
+		err := keeper.AddToMempool(ctx, inferenceRequest)
+		s.Require().NoError(err, "Error adding to mempool")
+		requestId, err := inferenceRequest.GetRequestId()
+		s.Require().NoError(err, "error getting request id 1")
+		inferenceRequestMap[requestId] = inferenceRequest
+	}
+
+	mempool, err := keeper.GetMempool(ctx)
+	s.Require().NoError(err, "error getting mempool")
+
+	for _, request := range mempool {
+		requestId, err := request.GetRequestId()
+		s.Require().NoError(err, "error getting request id 2")
+		s.Require().Contains(inferenceRequestMap, requestId, "Mempool should contain the added inference request id")
+		expected := inferenceRequestMap[requestId]
+		s.Require().Equal(expected, request, "Mempool should contain the added inference request")
+	}
 }
