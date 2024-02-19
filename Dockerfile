@@ -25,6 +25,12 @@ RUN apt update && \
         curl jq \
         tzdata \
         ca-certificates && \
+    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+    apt update && \
+    apt install -y --no-install-recommends -t testing \
+      zlib1g \
+      libgnutls30 \
+      perl-base && \
     rm -rf /var/cache/apt/*
 
 COPY --from=builder /go/bin/* /usr/local/bin/
