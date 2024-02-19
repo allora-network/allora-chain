@@ -28,6 +28,6 @@ var (
 	FundsKey              = collections.NewPrefix(18)
 	AllInferencesKey      = collections.NewPrefix(19)
 	StakeRemovalQueueKey  = collections.NewPrefix(20)
-	AllTopicStakeSumKey      = collections.NewPrefix(21)
-	AddressTopicsKey         = collections.NewPrefix(22)
+	AllTopicStakeSumKey   = collections.NewPrefix(21)
+	AddressTopicsKey      = collections.NewPrefix(22)
 )

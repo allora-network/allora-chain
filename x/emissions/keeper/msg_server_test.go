@@ -24,91 +24,91 @@ var (
 // ########################################
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
-    ctx, msgServer := s.ctx, s.msgServer
-    require := s.Require()
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
 
-    // Mock setup for addresses
-    reputerAddr := sdk.AccAddress(PKS[0].Address())
-    registrationInitialStake := cosmosMath.NewUint(100)
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
 
-    // Topic does not exist
-    registerMsg := &state.MsgRegisterReputer{
-        Creator:      reputerAddr.String(),
-        LibP2PKey:    "test",
-        MultiAddress: "test",
-        TopicsIds:    []uint64{0},
-        InitialStake: registrationInitialStake,
-    }
-    _, err := msgServer.RegisterReputer(ctx, registerMsg)
-    require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterReputer should return an error")
+	// Topic does not exist
+	registerMsg := &state.MsgRegisterReputer{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicsIds:    []uint64{0},
+		InitialStake: registrationInitialStake,
+	}
+	_, err := msgServer.RegisterReputer(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterReputer should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
-    ctx, msgServer := s.ctx, s.msgServer
-    require := s.Require()
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
 
-    // Mock setup for addresses
-    reputerAddr := sdk.AccAddress(PKS[0].Address())
-    workerAddr := sdk.AccAddress(PKS[1].Address())
-    registrationInitialStake := cosmosMath.NewUint(100)
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddr := sdk.AccAddress(PKS[1].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
 
-    // Create topic 0 and register reputer in it
-    s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	// Create topic 0 and register reputer in it
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
-    // Try to register again
-    registerMsg := &state.MsgRegisterReputer{
-        Creator:      reputerAddr.String(),
-        LibP2PKey:    "test",
-        MultiAddress: "test",
-        TopicsIds:    []uint64{0},
-        InitialStake: registrationInitialStake,
-    }
-    _, err := msgServer.RegisterReputer(ctx, registerMsg)
-    require.ErrorIs(err, state.ErrReputerAlreadyRegisteredInTopic, "RegisterReputer should return an error")
+	// Try to register again
+	registerMsg := &state.MsgRegisterReputer{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicsIds:    []uint64{0},
+		InitialStake: registrationInitialStake,
+	}
+	_, err := msgServer.RegisterReputer(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrReputerAlreadyRegisteredInTopic, "RegisterReputer should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidTopicNotExist() {
-    ctx, msgServer := s.ctx, s.msgServer
-    require := s.Require()
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
 
-    // Mock setup for addresses
-    workerAddr := sdk.AccAddress(PKS[1].Address())
-    registrationInitialStake := cosmosMath.NewUint(100)
+	// Mock setup for addresses
+	workerAddr := sdk.AccAddress(PKS[1].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
 
-    // Topic does not exist
-    registerMsg := &state.MsgRegisterWorker{
-        Creator:      workerAddr.String(),
-        LibP2PKey:    "test",
-        MultiAddress: "test",
-        TopicsIds:    []uint64{0},
-        InitialStake: registrationInitialStake,
-    }
-    _, err := msgServer.RegisterWorker(ctx, registerMsg)
-    require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterWorker should return an error")
+	// Topic does not exist
+	registerMsg := &state.MsgRegisterWorker{
+		Creator:      workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicsIds:    []uint64{0},
+		InitialStake: registrationInitialStake,
+	}
+	_, err := msgServer.RegisterWorker(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterWorker should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidAlreadyRegistered() {
-    ctx, msgServer := s.ctx, s.msgServer
-    require := s.Require()
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
 
-    // Mock setup for addresses
-    reputerAddr := sdk.AccAddress(PKS[0].Address())
-    workerAddr := sdk.AccAddress(PKS[1].Address())
-    registrationInitialStake := cosmosMath.NewUint(100)
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddr := sdk.AccAddress(PKS[1].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
 
-    // Create topic 0 and register worker in it
-    s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	// Create topic 0 and register worker in it
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
-    // Try to register again
-    registerMsg := &state.MsgRegisterWorker{
-        Creator:      workerAddr.String(),
-        LibP2PKey:    "test",
-        MultiAddress: "test",
-        TopicsIds:    []uint64{0},
-        InitialStake: registrationInitialStake,
-    }
-    _, err := msgServer.RegisterWorker(ctx, registerMsg)
-    require.ErrorIs(err, state.ErrWorkerAlreadyRegisteredInTopic, "RegisterWorker should return an error")
+	// Try to register again
+	registerMsg := &state.MsgRegisterWorker{
+		Creator:      workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicsIds:    []uint64{0},
+		InitialStake: registrationInitialStake,
+	}
+	_, err := msgServer.RegisterWorker(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrWorkerAlreadyRegisteredInTopic, "RegisterWorker should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgSetWeights() {
