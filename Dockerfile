@@ -18,9 +18,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
     APP_PATH=/data
 
+#* curl jq - required for readyness probe and to download genesis
 RUN apt update && \
     apt -y dist-upgrade && \
     apt install -y --no-install-recommends \
+        curl jq \
         tzdata \
         ca-certificates && \
     rm -rf /var/cache/apt/*
