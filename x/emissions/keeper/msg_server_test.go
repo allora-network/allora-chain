@@ -88,6 +88,7 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
 		Active:           true,
+		DefaultArg:       "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -179,6 +180,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
 		Active:           true,
+		DefaultArg:       "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -218,6 +220,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
 		Active:           true,
+		DefaultArg:       "ETH",
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
@@ -1082,9 +1085,9 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
-		Requests: []*state.InferenceRequest{
+		Sender: sender,
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1101,11 +1104,12 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.Require().Equal(&state.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
 
 	// Check updated stake for delegator
-	requestId, err := r.Requests[0].GetRequestId()
+	r0 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
+	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*(r.Requests[0]), storedRequest, "Stored request should match the request")
+	s.Require().Equal(*r0, storedRequest, "Stored request should match the request")
 }
 
 // test more than one inference in the message
@@ -1123,9 +1127,9 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	requestStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(requestStake)))
 	r := state.MsgRequestInference{
-		Requests: []*state.InferenceRequest{
+		Sender: sender,
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1135,7 +1139,6 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 				ExtraData:            []byte("Test"),
 			},
 			{
-				Sender:               sender,
 				Nonce:                1,
 				TopicId:              0,
 				Cadence:              0,
@@ -1153,16 +1156,18 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.Require().Equal(&state.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
 
 	// Check updated stake for delegator
-	requestId, err := r.Requests[0].GetRequestId()
+	r0 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
+	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*(r.Requests[0]), storedRequest, "Stored request should match the request")
-	requestId, err = r.Requests[1].GetRequestId()
+	s.Require().Equal(*r0, storedRequest, "Stored request should match the request")
+	r1 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[1])
+	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*(r.Requests[1]), storedRequest, "Stored request should match the request")
+	s.Require().Equal(*r1, storedRequest, "Stored request should match the request")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
@@ -1170,9 +1175,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 	senderAddr := sdk.AccAddress(PKS[0].Address()).String()
 	r := state.MsgRequestInference{
 		Sender: senderAddr,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               senderAddr,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1195,9 +1199,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 	var initialStake int64 = 1000
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1225,9 +1228,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1258,9 +1260,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1287,9 +1288,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              0,
@@ -1317,9 +1317,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              1000,
@@ -1347,9 +1346,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              1,
@@ -1377,9 +1375,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               sender,
 				Nonce:                0,
 				TopicId:              0,
 				Cadence:              math.MaxUint64,

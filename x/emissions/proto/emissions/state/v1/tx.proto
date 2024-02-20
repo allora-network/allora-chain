@@ -52,6 +52,7 @@ message MsgCreateNewTopic {
   string inference_method = 7;
   uint64 inference_cadence = 8;
   bool active = 9;
+  string default_arg = 10;
 }
 
 message MsgCreateNewTopicResponse {
@@ -190,35 +191,30 @@ message MsgModifyStake{
 
 message MsgModifyStakeResponse{}
 
-// num_inference_possible = bid_amount / max_price_per_inference, 
-// length of time this inference repeats for =  num_inference_possible * cadence
-message InferenceRequest {
+message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  uint64 nonce = 2;
-  uint64 topic_id = 3;
-  uint64 cadence = 4; // time in seconds between inferences, zero means oneshot inference
-  string max_price_per_inference = 5 [
+  repeated RequestInferenceListItem requests = 2;
+  }
+
+message RequestInferenceListItem{
+  uint64 nonce = 1;
+  uint64 topic_id = 2;
+  uint64 cadence = 3; // time in seconds between inferences, zero means oneshot inference
+  string max_price_per_inference = 4 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // the maximum price per inference that alice is willing to pay
-  string bid_amount = 6 [
+  string bid_amount = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // how many funds to send from alice with this Inference Request
-  uint64 timestamp_valid_until = 7;
-  bytes extra_data = 8;
-}
-
-
-message MsgRequestInference {
-  option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  repeated InferenceRequest requests = 2;
+  uint64 timestamp_valid_until = 6;
+  bytes extra_data = 7;
 }
 
 message MsgRequestInferenceResponse {}

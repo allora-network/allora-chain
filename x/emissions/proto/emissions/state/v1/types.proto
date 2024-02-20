@@ -37,6 +37,7 @@ message Topic {
   uint64 inference_cadence = 10;
   uint64 inference_last_ran = 11;
   bool active = 12;
+  string default_arg = 13;
 }
 
 message Weight {
@@ -119,6 +120,29 @@ message StakeRemovalPlacement {
 message StakeRemoval {
   uint64 timestamp_removal_started = 1;
   repeated StakeRemovalPlacement placements = 3;
+}
+
+// num_inference_possible = bid_amount / max_price_per_inference, 
+// length of time this inference repeats for =  num_inference_possible * cadence
+message InferenceRequest {
+  string sender = 1;
+  uint64 nonce = 2;
+  uint64 topic_id = 3;
+  uint64 cadence = 4; // time in seconds between inferences, zero means oneshot inference
+  string max_price_per_inference = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // the maximum price per inference that alice is willing to pay
+  string bid_amount = 6 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // how many funds to send from alice with this Inference Request
+  uint64 timestamp_valid_until = 7;
+  bytes extra_data = 8;
 }
 
 enum Err {
