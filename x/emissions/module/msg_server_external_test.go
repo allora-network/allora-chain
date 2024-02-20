@@ -14,9 +14,8 @@ func (s *ModuleTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {
 	mockCreateTopic(s)
 	r := state.MsgRequestInference{
 		Sender: s.addrsStr[0],
-		Requests: []*state.InferenceRequest{
+		Requests: []*state.RequestInferenceListItem{
 			{
-				Sender:               s.addrsStr[0],
 				Nonce:                0,
 				TopicId:              1,
 				Cadence:              0,
