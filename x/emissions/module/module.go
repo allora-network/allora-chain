@@ -155,9 +155,9 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic *state.Topic) {
 			// Check the cadence of inferences
 			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n", topic.Id, topic.Metadata, topic.DefaultArg)
 
-				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata, topic.Id)
+				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id)
 
 				// Update the last inference ran
 				am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
@@ -165,7 +165,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 
 			// Check the cadence of weight calculations
 			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-				fmt.Printf("Weight cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Printf("Weight cadence met for topic: %v metadata: %s default arg: %s \n", topic.Id, topic.Metadata, topic.DefaultArg)
 
 				// Get Latest Weights
 				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)

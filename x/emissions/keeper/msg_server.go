@@ -70,7 +70,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceMethod:  msg.InferenceMethod,
 		InferenceCadence: msg.InferenceCadence,
 		InferenceLastRan: 0,
-		Active:           true,
+		Active:           msg.Active,
+		DefaultArg:       msg.DefaultArg,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {

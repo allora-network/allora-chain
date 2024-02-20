@@ -174,6 +174,8 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
+		Active:           true,
+		DefaultArg:       "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -264,6 +266,8 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
+		Active:           true,
+		DefaultArg:       "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -302,6 +306,8 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		InferenceCadence: 60,
+		Active:           true,
+		DefaultArg:       "ETH",
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")

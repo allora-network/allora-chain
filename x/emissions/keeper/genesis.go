@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
 	state "github.com/allora-network/allora-chain/x/emissions"
@@ -15,9 +16,19 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 
 	// ensure the module account exists
 	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingModuleName)
-	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
+	if stakingModuleAccount == nil {
+		fmt.Println("Staking acct is null")
+	} else {
+		k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
+	}
+
 	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsModuleName)
-	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
+	if requestsModuleAccount == nil {
+		fmt.Println("Emissions acct is null")
+	} else {
+		k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
+	}
+
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
 	}

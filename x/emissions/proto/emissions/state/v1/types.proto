@@ -37,6 +37,7 @@ message Topic {
   uint64 inference_cadence = 10;
   uint64 inference_last_ran = 11;
   bool active = 12;
+  string default_arg = 13;
 }
 
 message Weight {
