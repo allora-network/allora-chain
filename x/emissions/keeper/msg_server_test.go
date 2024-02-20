@@ -1169,6 +1169,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 	timeNow := uint64(time.Now().UTC().Unix())
 	senderAddr := sdk.AccAddress(PKS[0].Address()).String()
 	r := state.MsgRequestInference{
+		Sender: senderAddr,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               senderAddr,
@@ -1193,6 +1194,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1222,6 +1224,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1254,6 +1257,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1282,6 +1286,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1311,6 +1316,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1340,6 +1346,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
@@ -1369,6 +1376,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	r := state.MsgRequestInference{
+		Sender: sender,
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               sender,
