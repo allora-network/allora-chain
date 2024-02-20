@@ -10,7 +10,7 @@ modules:
       end_blockers: [staking, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [auth, bank, staking, genutil, mint, emissions]
+      init_genesis: [auth, bank, staking, genutil, mint, emissions, allorastaking, allorarequests]
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
@@ -26,13 +26,15 @@ modules:
           permissions: [burner, staking]
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
-        - account: emissions
+        - account : allorastaking
+          permissions: [burner, minter, staking]
+        - account : allorarequests
           permissions: [burner, minter, staking]
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
       blocked_module_accounts_override:
-        [auth, bonded_tokens_pool, not_bonded_tokens_pool, emissions]
+        [auth, bonded_tokens_pool, not_bonded_tokens_pool, emissions, allorastaking, allorarequests]
   - name: staking
     config:
       "@type": cosmos.staking.module.v1.Module
@@ -51,4 +53,4 @@ modules:
   - name: emissions
     config:
       "@type": emissions.state.module.v1.Module
-  
+
