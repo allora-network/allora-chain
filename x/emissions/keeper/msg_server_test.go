@@ -32,14 +32,15 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
-	registerMsg := &state.MsgRegisterReputer{
+	registerMsg := &state.MsgRegister{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
+		IsReputer:    true,
 	}
-	_, err := msgServer.RegisterReputer(ctx, registerMsg)
+	_, err := msgServer.Register(ctx, registerMsg)
 	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterReputer should return an error")
 }
 
@@ -56,15 +57,16 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
 	// Try to register again
-	registerMsg := &state.MsgRegisterReputer{
+	registerMsg := &state.MsgRegister{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
+		IsReputer:    true,
 	}
-	_, err := msgServer.RegisterReputer(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrReputerAlreadyRegisteredInTopic, "RegisterReputer should return an error")
+	_, err := msgServer.Register(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrAddressAlreadyRegisteredInATopic, "RegisterReputer should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidTopicNotExist() {
@@ -76,14 +78,14 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidTopicNotExist() {
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
-	registerMsg := &state.MsgRegisterWorker{
+	registerMsg := &state.MsgRegister{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
-	_, err := msgServer.RegisterWorker(ctx, registerMsg)
+	_, err := msgServer.Register(ctx, registerMsg)
 	require.ErrorIs(err, state.ErrTopicDoesNotExist, "RegisterWorker should return an error")
 }
 
@@ -100,15 +102,15 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidAlreadyRegistered() {
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
 	// Try to register again
-	registerMsg := &state.MsgRegisterWorker{
+	registerMsg := &state.MsgRegister{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
-	_, err := msgServer.RegisterWorker(ctx, registerMsg)
-	require.ErrorIs(err, state.ErrWorkerAlreadyRegisteredInTopic, "RegisterWorker should return an error")
+	_, err := msgServer.Register(ctx, registerMsg)
+	require.ErrorIs(err, state.ErrAddressAlreadyRegisteredInATopic, "RegisterWorker should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgSetWeights() {
@@ -307,19 +309,20 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Reputer
-	reputerRegMsg := &state.MsgRegisterReputer{
+	reputerRegMsg := &state.MsgRegister{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
+		IsReputer:    true,
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
-	_, err = msgServer.RegisterReputer(ctx, reputerRegMsg)
+	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
 	// Register Worker
-	workerRegMsg := &state.MsgRegisterWorker{
+	workerRegMsg := &state.MsgRegister{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
@@ -328,7 +331,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		Owner:        workerAddr.String(),
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
-	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
+	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 }
 
@@ -424,15 +427,14 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetWorkerRegisteredInMu
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Worker in topic 1
-	workerRegMsg := &state.MsgRegisterWorker{
+	workerAddRegMsg := &state.MsgAddNewRegistration{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{1},
-		InitialStake: registrationInitialStake,
+		TopicId:      1,
 		Owner:        workerAddr.String(),
 	}
-	_, err = msgServer.RegisterWorker(ctx, workerRegMsg)
+	_, err = msgServer.AddNewRegistration(ctx, workerAddRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
 	// Add stake from reputer (sender) to worker (target)
@@ -590,14 +592,14 @@ func (s *KeeperTestSuite) TestMsgAddAndRemoveStakeWithTargetReputerRegisteredInM
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Reputer in topic 1
-	reputerRegMsg := &state.MsgRegisterReputer{
+	reputerAddRegMsg := &state.MsgAddNewRegistration{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{1},
-		InitialStake: registrationInitialStake,
+		TopicId:      1,
+		IsReputer:    true,
 	}
-	_, err = msgServer.RegisterReputer(ctx, reputerRegMsg)
+	_, err = msgServer.AddNewRegistration(ctx, reputerAddRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
 	// Add stake from reputer (sender) to reputer (target)
@@ -1399,15 +1401,16 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins)
 	// Register Reputer
-	worker2RegMsg := &state.MsgRegisterWorker{
+	worker2RegMsg := &state.MsgRegister{
 		Creator:      worker2,
 		LibP2PKey:    "test2",
 		MultiAddress: "test2",
 		TopicsIds:    []uint64{0},
 		InitialStake: registrationInitialStake,
+		Owner:        worker2,
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr2, state.AlloraStakingModuleName, registrationInitialStakeCoins)
-	_, err := s.msgServer.RegisterWorker(s.ctx, worker2RegMsg)
+	_, err := s.msgServer.Register(s.ctx, worker2RegMsg)
 	s.Require().NoError(err, "Registering worker2 should not return an error")
 
 	stakeAmount := cosmosMath.NewUint(1000)

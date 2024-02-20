@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/big"
+
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
@@ -22,6 +23,7 @@ type Uint = cosmosMath.Uint
 type Int = cosmosMath.Int
 
 type TOPIC_ID = uint64
+type LIB_P2P_KEY = string
 type ACC_ADDRESS = string
 type TARGET = sdk.AccAddress
 type TARGET_STR = string
@@ -138,10 +140,10 @@ type Keeper struct {
 	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[sdk.AccAddress, state.OffchainNode]
+	workers collections.Map[LIB_P2P_KEY, state.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[sdk.AccAddress, state.OffchainNode]
+	reputers collections.Map[LIB_P2P_KEY, state.OffchainNode]
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
@@ -181,8 +183,8 @@ func NewKeeper(
 		funds:                 collections.NewMap(sb, state.FundsKey, "funds", collections.StringKey, UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
-		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
+		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
+		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 	}
 
@@ -351,13 +353,13 @@ func (k *Keeper) GetReputerNormalizedStake(
 	return reputerNormalizedStakeMap, retErr
 }
 
-func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
-	return k.workers.Get(ctx, worker)
-}
+// func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
+// 	return k.workers.Get(ctx, worker)
+// }
 
-func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
-	return k.reputers.Get(ctx, reputer)
-}
+// func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
+// 	return k.reputers.Get(ctx, reputer)
+// }
 
 // Gets the total sum of all stake in the network across all topics
 func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
@@ -470,6 +472,26 @@ func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, n
 
 	// Set the updated list of topics for the address
 	return k.addressTopics.Set(ctx, address, currentTopics)
+}
+
+// RemoveAddressTopic removes a specified topic from the address's list of topics.
+func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
+	// Get the current list of topics for the address
+	currentTopics, err := k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	// Find and remove the specified topic
+	filteredTopics := make([]uint64, 0)
+	for _, topic := range currentTopics {
+		if topic != topicToRemove {
+			filteredTopics = append(filteredTopics, topic)
+		}
+	}
+
+	// Set the updated list of topics for the address
+	return k.addressTopics.Set(ctx, address, filteredTopics)
 }
 
 // GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
@@ -1096,21 +1118,16 @@ func (k *Keeper) UpdateTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID,
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// check a reputer node is registered
-func (k *Keeper) IsReputerRegistered(ctx context.Context, reputer sdk.AccAddress) (bool, error) {
-	return k.reputers.Has(ctx, reputer)
-}
-
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *Keeper) InsertReputer(ctx context.Context, topicsIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
 	for _, topicId := range topicsIds {
-		topickey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
-		err := k.topicReputers.Set(ctx, topickey)
+		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+		err := k.topicReputers.Set(ctx, topicKey)
 		if err != nil {
 			return err
 		}
 	}
-	err := k.reputers.Set(ctx, reputer, reputerInfo)
+	err := k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
 	if err != nil {
 		return err
 	}
@@ -1121,9 +1138,36 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicsIds []TOPIC_ID, repute
 	return nil
 }
 
-// check a worker node is registered
-func (k *Keeper) IsWorkerRegistered(ctx context.Context, worker sdk.AccAddress) (bool, error) {
-	return k.workers.Has(ctx, worker)
+// Remove a reputer to the reputer tracking data structures and topicReputers
+func (k *Keeper) RemoveReputer(ctx context.Context, topicId TOPIC_ID, reputerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	err := k.topicReputers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TOPIC_ID, workerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
@@ -1135,7 +1179,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicsIds []TOPIC_ID, worker 
 			return err
 		}
 	}
-	err := k.workers.Set(ctx, worker, workerInfo)
+	err := k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
 	if err != nil {
 		return err
 	}
@@ -1172,24 +1216,17 @@ func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*stat
 }
 
 func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	iterator, err := k.workers.Iterate(ctx, nil)
+	worker, err := k.workers.Get(ctx, p2pKey)
 	if err != nil {
 		return nil, err
 	}
 
-	for ; iterator.Valid(); iterator.Next() {
-		node, _ := iterator.Value()
-		if node.LibP2PKey == p2pKey {
-			address, err := sdk.AccAddressFromBech32(node.NodeAddress)
-			if err != nil {
-				return nil, err
-			}
-
-			return address, nil
-		}
+	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, collections.ErrNotFound
+	return workerAddress, nil
 }
 
 func (k *Keeper) SetWeight(
