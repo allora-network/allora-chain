@@ -563,7 +563,8 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 }
 
 func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestInference) (*state.MsgRequestInferenceResponse, error) {
-	for _, request := range msg.Requests {
+	for _, requestItem := range msg.Requests {
+		request := state.CreateNewInferenceRequestFromListItem(msg.Sender, requestItem)
 		// 1. check the topic is valid
 		exists, err := ms.k.TopicExists(ctx, request.TopicId)
 		if err != nil {
