@@ -243,6 +243,9 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 
 		// add node to topicReputers
 		err = ms.k.InsertReputer(ctx, []uint64{msg.TopicId}, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		// get topics where the users is registered as worker
 		reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, address)
@@ -257,6 +260,9 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 
 		// add node to topicWorkers
 		err = ms.k.InsertWorker(ctx, []uint64{msg.TopicId}, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &state.MsgAddNewRegistrationResponse{
@@ -470,10 +476,6 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 	if err != nil {
 		return nil, err
 	}
-	err = checkNodeRegistered(ctx, ms, senderAddr)
-	if err != nil {
-		return nil, err
-	}
 	stakeRemoval := state.StakeRemoval{
 		TimestampRemovalStarted: uint64(time.Now().UTC().Unix()),
 		Placements:              make([]*state.StakeRemovalPlacement, 0),
@@ -481,10 +483,6 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 	for _, stakePlacement := range msg.PlacementsRemove {
 		// 2. check the target exists and is registered
 		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
-		if err != nil {
-			return nil, err
-		}
-		err = checkNodeRegistered(ctx, ms, targetAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -504,14 +502,22 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 			return nil, err
 		}
 
-		// 5. push to the stake removal object
+		// 6. If user is removing stake from themselves and he still registered in topics
+		//  check that the stake is greater than the minimum required
+		if senderAddr.String() == targetAddr.String() && 
+		   stakePlaced.Sub(stakePlacement.Amount).LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) &&
+		   len(topicsIds) > 0 {
+			return nil, state.ErrInsufficientStakeAfterRemoval
+		}
+
+		// 7. push to the stake removal object
 		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
 			TopicsIds: topicsIds,
 			Target:    stakePlacement.Target,
 			Amount:    stakePlacement.Amount,
 		})
 	}
-	// 6. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
+	// 8. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
 	err = ms.k.SetStakeRemovalQueueForDelegator(ctx, senderAddr, stakeRemoval)
 	if err != nil {
 		return nil, err

@@ -164,4 +164,5 @@ enum Err {
   ErrOwnerCannotBeEmpty = 40;
   ErrAddressIsNotRegisteredInAnyTopic = 41;
   ErrAddressIsNotRegisteredInThisTopic = 42;
+  ErrInsufficientStakeAfterRemoval = 43;
 }

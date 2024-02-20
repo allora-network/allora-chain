@@ -48,3 +48,5 @@ var ErrInferenceRequestCadenceTooFast = fmt.Errorf(Err_ErrInferenceRequestCadenc
 var ErrInferenceRequestCadenceTooSlow = fmt.Errorf(Err_ErrInferenceRequestCadenceTooSlow.String())
 var ErrInferenceRequestWillNeverBeScheduled = fmt.Errorf(Err_ErrInferenceRequestWillNeverBeScheduled.String())
 var ErrOwnerCannotBeEmpty = fmt.Errorf(Err_ErrOwnerCannotBeEmpty.String())
+var ErrInsufficientStakeAfterRemoval = fmt.Errorf(Err_ErrInsufficientStakeAfterRemoval.String())
+

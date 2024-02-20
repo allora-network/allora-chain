@@ -69,6 +69,85 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
 	require.ErrorIs(err, state.ErrAddressAlreadyRegisteredInATopic, "RegisterReputer should return an error")
 }
 
+func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditonalTopic() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddr := sdk.AccAddress(PKS[1].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
+
+	// Create topic 0 and register reputer in it
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Create Topic 1
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          reputerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		InferenceCadence: 60,
+	}
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on creation")
+
+	// Register Reputer in additional topic 1
+	registerReputerMsg := &state.MsgAddNewRegistration{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "reputerKey",
+		MultiAddress: "reputerAddr",
+		TopicId:      1,
+		IsReputer:    true,
+	}
+	_, err = msgServer.AddNewRegistration(ctx, registerReputerMsg)
+	require.NoError(err, "RegisterReputer should not return an error")
+
+	// Check Topic 1 stake
+	// Should have same amount of the account's initial stake
+	topicStake, err := s.emissionsKeeper.GetTopicStake(ctx, 1)
+	require.NoError(err)
+	require.Equal(registrationInitialStake, topicStake, "Topic 1 stake amount mismatch")
+
+	// Check Address Topics
+	// Should have two topics
+	addressTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(ctx, reputerAddr)
+	require.NoError(err)
+	require.Equal(2, len(addressTopics), "Address topics count mismatch")
+
+	// Add Stake to Topic 1
+	stakeToAdd := cosmosMath.NewUint(50)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeToAdd.BigInt()))))
+	_, err = msgServer.AddStake(ctx, &state.MsgAddStake{
+		Sender:      reputerAddr.String(),
+		StakeTarget: reputerAddr.String(),
+		Amount:      stakeToAdd,
+	})
+	require.NoError(err, "AddStake should not return an error")
+
+	// Check Topic 1 stake
+	// Should have same amount of the account's initial stake + stakeToAdd
+	topicStake, err = s.emissionsKeeper.GetTopicStake(ctx, 1)
+	require.NoError(err)
+	require.Equal(registrationInitialStake.Add(stakeToAdd), topicStake, "Topic 1 stake amount mismatch")
+
+	// Remove Reputer from Topic 1
+	_, err = msgServer.RemoveRegistration(ctx, &state.MsgRemoveRegistration{
+		Creator: reputerAddr.String(),
+		TopicId: 1,
+		IsReputer: true,
+	})
+	require.NoError(err, "RemoveRegistration should not return an error")
+
+	// Check Address Topics
+	// Should have only one topic
+	addressTopics, err = s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(ctx, reputerAddr)
+	require.NoError(err)
+	require.Equal(1, len(addressTopics), "Address topics count mismatch")
+}
+
 func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -1061,6 +1140,45 @@ func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveMoreThanExists() {
 	}
 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 	require.ErrorIs(err, state.ErrInsufficientStakeToRemove, "RemoveStake should return an error when attempting to remove more stake than exists")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveMoreThanMinimalAmountWhileBeingRegisteredInTopics() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
+
+	// Common setup for staking
+	registrationInitialStake := cosmosMath.NewUint(100)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Attempt to remove more stake than exists in the system
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputerAddr.String(),
+				Amount: registrationInitialStake,
+			},
+		},
+	}
+	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.ErrorIs(err, state.ErrInsufficientStakeAfterRemoval, "RemoveStake should return an error when attempting to remove more stake than exists")
+
+	// Remove Registration
+	removeRegistrationMsg := &state.MsgRemoveRegistration{
+		Creator: reputerAddr.String(),
+		TopicId:  0,
+		IsReputer: true,
+	}
+	_, err = msgServer.RemoveRegistration(ctx, removeRegistrationMsg)
+	require.NoError(err, "RemoveRegistration should not return an error")
+
+	// Successfully remove stake
+	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.NoError(err, "RemoveStake should not return an error when removing all stake")
 }
 
 func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredTarget() {
