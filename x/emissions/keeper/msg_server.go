@@ -62,7 +62,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceMethod:  msg.InferenceMethod,
 		InferenceCadence: msg.InferenceCadence,
 		InferenceLastRan: 0,
-		Active:           true,
+		Active:           msg.Active,
+		DefaultArg:       msg.DefaultArg,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -504,9 +505,9 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 		// 6. If user is removing stake from themselves and he still registered in topics
 		//  check that the stake is greater than the minimum required
-		if senderAddr.String() == targetAddr.String() && 
-		   stakePlaced.Sub(stakePlacement.Amount).LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) &&
-		   len(topicsIds) > 0 {
+		if senderAddr.String() == targetAddr.String() &&
+			stakePlaced.Sub(stakePlacement.Amount).LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) &&
+			len(topicsIds) > 0 {
 			return nil, state.ErrInsufficientStakeAfterRemoval
 		}
 
@@ -603,7 +604,8 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 }
 
 func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestInference) (*state.MsgRequestInferenceResponse, error) {
-	for _, request := range msg.Requests {
+	for _, requestItem := range msg.Requests {
+		request := state.CreateNewInferenceRequestFromListItem(msg.Sender, requestItem)
 		// 1. check the topic is valid
 		exists, err := ms.k.TopicExists(ctx, request.TopicId)
 		if err != nil {

@@ -104,7 +104,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// },
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence]",
+					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [active] [default_arg]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -115,30 +115,34 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
 						{ProtoField: "inference_cadence"},
+						{ProtoField: "active"},
+						{ProtoField: "default_arg"},
 					},
 				},
-				{
-					RpcMethod: "RegisterReputer",
-					Use:       "register-reputer [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
-					Short:     "Register a new reputer for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topics_ids"},
-						{ProtoField: "initial_stake"},
+				/*
+					{
+						RpcMethod: "RegisterReputer",
+						Use:       "register-reputer [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
+						Short:     "Register a new reputer for a topic",
+						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+							{ProtoField: "lib_p2p_key"},
+							{ProtoField: "multi_address"},
+							{ProtoField: "topics_ids"},
+							{ProtoField: "initial_stake"},
+						},
 					},
-				},
-				{
-					RpcMethod: "RegisterWorker",
-					Use:       "register-worker [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
-					Short:     "Register a new worker for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topics_ids"},
-						{ProtoField: "initial_stake"},
+					{
+						RpcMethod: "RegisterWorker",
+						Use:       "register-worker [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
+						Short:     "Register a new worker for a topic",
+						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+							{ProtoField: "lib_p2p_key"},
+							{ProtoField: "multi_address"},
+							{ProtoField: "topics_ids"},
+							{ProtoField: "initial_stake"},
+						},
 					},
-				},
+				*/
 				{
 					RpcMethod: "AddStake",
 					Use:       "add-stake sender target amount",
