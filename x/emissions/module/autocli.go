@@ -115,7 +115,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
 						{ProtoField: "inference_cadence"},
-						{ProtoField: "active"},
 					},
 				},
 				{
