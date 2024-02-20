@@ -217,7 +217,9 @@ message InferenceRequest {
 
 
 message MsgRequestInference {
-  repeated InferenceRequest requests = 1;
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated InferenceRequest requests = 2;
 }
 
 message MsgRequestInferenceResponse {}
