@@ -210,8 +210,9 @@ message InferenceRequest {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // how many funds to send from alice with this Inference Request
-  uint64 timestamp_valid_until = 7;
-  bytes extra_data = 8;
+  uint64 last_checked = 7; // the last time the inference was checked and was possibly drawn from
+  uint64 timestamp_valid_until = 8;
+  bytes extra_data = 9;
 }
 
 

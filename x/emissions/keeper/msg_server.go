@@ -566,11 +566,12 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, err
 		}
 		// 11. record the number of tokens sent to the module account
-		err = ms.k.SetFunds(ctx, requestId, request.BidAmount)
+		err = ms.k.SetRequestDemand(ctx, requestId, request.BidAmount)
 		if err != nil {
 			return nil, err
 		}
 		// 12. Write request state into the mempool state
+		request.LastChecked = timeNow
 		err = ms.k.AddToMempool(ctx, *request)
 		if err != nil {
 			return nil, err

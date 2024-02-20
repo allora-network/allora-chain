@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"cosmossdk.io/core/appmodule"
+	cosmosMath "cosmossdk.io/math"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -149,8 +151,119 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 
 	fmt.Println("Active topics: ", len(topics))
 
+	// START OF demand-driven pricing model
+	// Big Principle:
+	//		The price of inference is determined by the demand for inference vs the scarcity of capacity to run topic-level shit
+	// Find the demand per epoch of the topic by counting inference requests per topic that have not yet been filtered out
+	// Order topics by "demand" (num unfiltered requests)
+	// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand (sort desc by num requests)
+	// If number of topics > keeper.TARGET_CAPACITY_PER_BLOCK, price := price * (1 + keeper.PRICE_CHANGE_PERCENT)
+	// If number of topics < keeper.TARGET_CAPACITY_PER_BLOCK, price := max(keeper.MIN_PRICE_PER_EPOCH, price * (1 - keeper.PRICE_CHANGE_PERCENT))
+	// Deduct from all unfiltered requests `price` amount among those top topics
+	// Delete requests with negligible demand leftover
+
 	currentTime := uint64(sdkCtx.BlockTime().Unix())
+	numValidRequestsPerTopic := make(map[uint64]uint64) // using price of previous block as heuristic to calc total current demand
+	validRequestsPerTopic := make(map[uint64][]state.InferenceRequest)
+	minNextPrice, price, maxNextPrice, err := am.keeper.GetCurrentAndNextPossiblePricePerEpoch(sdkCtx)
+	activeTopics := make([]state.Topic, 0)
+	if err != nil {
+		fmt.Println("Error getting current and next possible price per epoch: ", err)
+		return err
+	}
 	for _, topic := range topics {
+		inferenceRequests, err := am.keeper.GetMempoolInferenceRequestsForTopic(sdkCtx, topic.Id)
+		if err != nil {
+			fmt.Println("Error getting mempool inference requests: ", err)
+			return err
+		}
+
+		// Loop through inference requests and check if cadence has been met
+		// AND if their remaining bid amount is greater than the lowest possible next price (optimization),
+		// AND if their max price per inference is less than or equal to the max possible next price (optimization),
+		// AND request is not yet expired
+		// then add to list of requests to be served
+		for _, req := range inferenceRequests {
+			reqId, err := req.GetRequestId()
+			if err != nil {
+				fmt.Println("Error getting request id: ", err)
+				return err
+			}
+			reqDemand, err := am.keeper.GetRequestDemand(sdkCtx, reqId)
+			if err != nil {
+				fmt.Println("Error getting request demand: ", err)
+				return err
+			}
+			if req.LastChecked+req.Cadence <= currentTime && reqDemand.GTE(minNextPrice) && req.MaxPricePerInference.LTE(maxNextPrice) && req.TimestampValidUntil > currentTime {
+				validRequestsPerTopic[topic.Id] = append(validRequestsPerTopic[topic.Id], req)
+				numValidRequestsPerTopic[topic.Id]++
+			}
+		}
+
+		if numValidRequestsPerTopic[topic.Id] > 0 {
+			activeTopics = append(activeTopics, *topic)
+		}
+		if price.Mul(cosmosMath.NewUint(numValidRequestsPerTopic[topic.Id])).LT(cosmosMath.NewUint(keeper.MIN_DEMAND)) {
+			// TODO: Add more intelligent inactivation logic; should be easier to be inactive than it currently is
+			fmt.Printf("Inactivating topic due to no demand: %v metadata: %s", topic.Id, topic.Metadata)
+			am.keeper.InactivateTopic(sdkCtx, topic.Id)
+		}
+	}
+
+	// Sort topics by numValidRequestsPerTopic
+	sortedTopics := SortDescWithRandomTiebreaker[state.Topic](activeTopics, numValidRequestsPerTopic, currentTime)
+	// Take top am.keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand
+	sortedTopics = sortedTopics[:uint(math.Min(float64(len(sortedTopics)), keeper.MAX_TOPICS_PER_BLOCK))]
+	if len(sortedTopics) > keeper.TARGET_CAPACITY_PER_BLOCK {
+		price = maxNextPrice // increase price because demand is high
+		am.keeper.SetPricePerEpoch(sdkCtx, price)
+	} else if len(sortedTopics) < keeper.TARGET_CAPACITY_PER_BLOCK {
+		price = minNextPrice // decrease price because demand is low
+		am.keeper.SetPricePerEpoch(sdkCtx, price)
+	}
+
+	// Determine how many funds to draw from demand
+	totalFundsToDrawFromDemand := cosmosMath.NewInt(0)
+	for _, topic := range activeTopics {
+		for _, req := range validRequestsPerTopic[topic.Id] {
+			reqId, err := req.GetRequestId()
+			if err != nil {
+				fmt.Println("Error getting request demand: ", err)
+				return err
+			}
+			reqDemand, err := am.keeper.GetRequestDemand(sdkCtx, reqId)
+			if err != nil {
+				fmt.Println("Error getting request demand: ", err)
+				return err
+			}
+			// all the previous conditionals were already applied to the requests in the previous loop
+			if reqDemand.GTE(price) && req.MaxPricePerInference.LTE(price) {
+				// should never be negative due to immediately preceding control flow
+				newReqDemand := reqDemand.Sub(price)
+				am.keeper.SetRequestDemand(sdkCtx, reqId, newReqDemand)
+				if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) {
+					// should never be negative due to wrapping control flow
+					am.keeper.RemoveFromMempool(sdkCtx, req)
+					// TODO: Do something with the leftover dust? Maybe leave as is?
+					// This is just a 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
+				}
+				validRequestsPerTopic[topic.Id] = append(validRequestsPerTopic[topic.Id], req)
+			}
+		}
+		totalDemandPerTopic := price.Mul(cosmosMath.NewUint(numValidRequestsPerTopic[topic.Id]))
+		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(cosmosMath.NewInt(totalDemandPerTopic.BigInt().Int64()))
+	}
+
+	err = am.keeper.SendCoinsFromModuleToModule(sdkCtx, state.ModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", totalFundsToDrawFromDemand)))
+	if err != nil {
+		fmt.Println("Error sending coins from module to module: ", err)
+		return err
+	}
+
+	// END OF demand-driven pricing model
+
+	// Loop over and run epochs on topics whose inferences are demanded enough to be served
+	for _, topic := range activeTopics {
 		// Parallelize the inference and weight cadence checks
 		go func(topic *state.Topic) {
 			// Check the cadence of inferences
@@ -186,7 +299,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 				// Update the last weight ran
 				am.keeper.UpdateTopicWeightLastRan(sdkCtx, topic.Id, currentTime)
 			}
-		}(topic)
+		}(&topic)
 	}
 
 	return nil
