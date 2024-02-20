@@ -13,6 +13,7 @@ func (s *ModuleTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {
 	var initialStake int64 = 100
 	mockCreateTopic(s)
 	r := state.MsgRequestInference{
+		Sender: s.addrsStr[0],
 		Requests: []*state.InferenceRequest{
 			{
 				Sender:               s.addrsStr[0],
