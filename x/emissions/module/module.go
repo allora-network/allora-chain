@@ -125,6 +125,19 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	topTopicsActiveWithDemand, metDemand, err := ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(sdkCtx, am, currentTime)
+	if err != nil {
+		fmt.Println("Error getting active topics and met demand: ", err)
+		return err
+	}
+
+	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.ModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
+	if err != nil {
+		fmt.Println("Error sending coins from module to module: ", err)
+		return err
+	}
+
 	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
@@ -140,18 +153,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		}
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(sdkCtx, am, currentTime)
-	if err != nil {
-		fmt.Println("Error getting active topics and met demand: ", err)
-		return err
-	}
-
-	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.ModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
-	if err != nil {
-		fmt.Println("Error sending coins from module to module: ", err)
-		return err
-	}
-
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
 	// Within each loop, execute the inference and weight cadence checks
 	for _, topic := range *topTopicsActiveWithDemand {
@@ -159,9 +160,9 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic *state.Topic) {
 			// Check the cadence of inferences
 			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n", topic.Id, topic.Metadata, topic.DefaultArg)
 
-				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.Metadata, topic.Id)
+				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id)
 
 				// Update the last inference ran
 				am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
@@ -169,7 +170,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 
 			// Check the cadence of weight calculations
 			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-				fmt.Printf("Weight cadence met for topic: %v metadata: %s", topic.Id, topic.Metadata)
+				fmt.Printf("Weight cadence met for topic: %v metadata: %s default arg: %s \n", topic.Id, topic.Metadata, topic.DefaultArg)
 
 				// Get Latest Weights
 				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)

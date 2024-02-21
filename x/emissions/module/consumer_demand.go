@@ -118,7 +118,7 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, a
 			return nil, nil, err
 		}
 
-		// Initialize a map of request price to array of valid requests
+		// Initialize a map of request price to map of valid requests
 		demandCurve := make(map[cosmosMath.Uint]map[RequestId]state.InferenceRequest)
 
 		// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
@@ -203,7 +203,7 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, a
 			// => should never be negative
 			newReqDemand := reqDemand.Sub(bestPrice)
 			am.keeper.SetRequestDemand(ctx, reqId, newReqDemand)
-			if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) {
+			if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) { // TylerTODO check cadence and remove if one-shot
 				// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
 				// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
 				// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests

@@ -21,9 +21,11 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
-  rpc RegisterReputer(MsgRegisterReputer) returns (MsgRegisterReputerResponse);
+  rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc RegisterWorker(MsgRegisterWorker) returns (MsgRegisterWorkerResponse);
+  rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
+
+  rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -51,7 +53,7 @@ message MsgCreateNewTopic {
   string inference_logic = 6;
   string inference_method = 7;
   uint64 inference_cadence = 8;
-  bool active = 9;
+  string default_arg = 9;
 }
 
 message MsgCreateNewTopicResponse {
@@ -93,55 +95,60 @@ message MsgProcessInferencesResponse {}
 ///
 ///  Inference Node Registration
 ///
-
-// Message for registering an Inference compute node
-message MsgRegisterReputer {
+message MsgRegister {
   option (cosmos.msg.v1.signer) = "creator";
 
-  string creator = 1;                      // Message sender.
-  string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;              // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
+  string creator = 1;
+  string lib_p2p_key = 2;
+  string multi_address = 3;
+  repeated uint64 topics_ids = 4;
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
-  ]; // Initial stake for the node.
-
-}
-
-// Response for registering an Inference compute node
-message MsgRegisterReputerResponse {
-  bool success = 1;                     // Indicates if registration was successful.
-  string message = 2;                   // Additional message or details.
-}
-
-
-// Message for registering an Inference compute node
-message MsgRegisterWorker {
-  option (cosmos.msg.v1.signer) = "creator";
-
-  string creator = 1;                      // Message sender.
-  string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;                // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
-  string initial_stake = 5 [
-    (cosmos_proto.scalar)  = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true
-  ]; // Initial stake for the node.
+  ];
   string owner = 6;
+  bool is_reputer = 7;
 }
 
-// Response for registering an Inference compute node
-message MsgRegisterWorkerResponse {
-  bool success = 1;                     // Indicates if registration was successful.
-  string message = 2;                   // Additional message or details.
+message MsgRegisterResponse {
+  bool success = 1;
+  string message = 2;
 }
 
+message MsgAddNewRegistration {
+  option (cosmos.msg.v1.signer) = "creator";
 
+  string creator = 1;
+  string lib_p2p_key = 2;
+  string multi_address = 3;
+  uint64 topic_id = 4;
+  string owner = 5;
+  bool is_reputer = 6;
+}
+
+message MsgAddNewRegistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message MsgRemoveRegistration {
+  option (cosmos.msg.v1.signer) = "creator";
+
+  string creator = 1;
+  uint64 topic_id = 2;
+  bool is_reputer = 3;
+}
+
+message MsgRemoveRegistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+///
+///  Staking
+///
 message MsgAddStake {
   option (cosmos.msg.v1.signer) = "sender";
 
@@ -190,34 +197,30 @@ message MsgModifyStake{
 
 message MsgModifyStakeResponse{}
 
-// num_inference_possible = bid_amount / max_price_per_inference, 
-// length of time this inference repeats for =  num_inference_possible * cadence
-message InferenceRequest {
+message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  uint64 nonce = 2;
-  uint64 topic_id = 3;
-  uint64 cadence = 4; // time in seconds between inferences, zero means oneshot inference
-  string max_price_per_inference = 5 [
+  repeated RequestInferenceListItem requests = 2;
+  }
+
+message RequestInferenceListItem{
+  uint64 nonce = 1;
+  uint64 topic_id = 2;
+  uint64 cadence = 3; // time in seconds between inferences, zero means oneshot inference
+  string max_price_per_inference = 4 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // the maximum price per inference that alice is willing to pay
-  string bid_amount = 6 [
+  string bid_amount = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ]; // how many funds to send from alice with this Inference Request
-  uint64 last_checked = 7; // the last time the inference was checked and was possibly drawn from
-  uint64 timestamp_valid_until = 8;
-  bytes extra_data = 9;
-}
-
-
-message MsgRequestInference {
-  repeated InferenceRequest requests = 1;
+  uint64 timestamp_valid_until = 6;
+  bytes extra_data = 7;
 }
 
 message MsgRequestInferenceResponse {}

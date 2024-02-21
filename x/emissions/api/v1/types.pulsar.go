@@ -1368,6 +1368,7 @@ var (
 	fd_Topic_inference_cadence  protoreflect.FieldDescriptor
 	fd_Topic_inference_last_ran protoreflect.FieldDescriptor
 	fd_Topic_active             protoreflect.FieldDescriptor
+	fd_Topic_default_arg        protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -1385,6 +1386,7 @@ func init() {
 	fd_Topic_inference_cadence = md_Topic.Fields().ByName("inference_cadence")
 	fd_Topic_inference_last_ran = md_Topic.Fields().ByName("inference_last_ran")
 	fd_Topic_active = md_Topic.Fields().ByName("active")
+	fd_Topic_default_arg = md_Topic.Fields().ByName("default_arg")
 }
 
 var _ protoreflect.Message = (*fastReflection_Topic)(nil)
@@ -1524,6 +1526,12 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
+	if x.DefaultArg != "" {
+		value := protoreflect.ValueOfString(x.DefaultArg)
+		if !f(fd_Topic_default_arg, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -1563,6 +1571,8 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.InferenceLastRan != uint64(0)
 	case "emissions.state.v1.Topic.active":
 		return x.Active != false
+	case "emissions.state.v1.Topic.default_arg":
+		return x.DefaultArg != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1603,6 +1613,8 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 		x.InferenceLastRan = uint64(0)
 	case "emissions.state.v1.Topic.active":
 		x.Active = false
+	case "emissions.state.v1.Topic.default_arg":
+		x.DefaultArg = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1655,6 +1667,9 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 	case "emissions.state.v1.Topic.active":
 		value := x.Active
 		return protoreflect.ValueOfBool(value)
+	case "emissions.state.v1.Topic.default_arg":
+		value := x.DefaultArg
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1699,6 +1714,8 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 		x.InferenceLastRan = value.Uint()
 	case "emissions.state.v1.Topic.active":
 		x.Active = value.Bool()
+	case "emissions.state.v1.Topic.default_arg":
+		x.DefaultArg = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1743,6 +1760,8 @@ func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoref
 		panic(fmt.Errorf("field inference_last_ran of message emissions.state.v1.Topic is not mutable"))
 	case "emissions.state.v1.Topic.active":
 		panic(fmt.Errorf("field active of message emissions.state.v1.Topic is not mutable"))
+	case "emissions.state.v1.Topic.default_arg":
+		panic(fmt.Errorf("field default_arg of message emissions.state.v1.Topic is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1780,6 +1799,8 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.Topic.active":
 		return protoreflect.ValueOfBool(false)
+	case "emissions.state.v1.Topic.default_arg":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Topic"))
@@ -1891,6 +1912,10 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if x.Active {
 			n += 2
 		}
+		l = len(x.DefaultArg)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1919,6 +1944,13 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.DefaultArg) > 0 {
+			i -= len(x.DefaultArg)
+			copy(dAtA[i:], x.DefaultArg)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DefaultArg)))
+			i--
+			dAtA[i] = 0x6a
 		}
 		if x.Active {
 			i--
@@ -2353,6 +2385,38 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					}
 				}
 				x.Active = bool(v != 0)
+			case 13:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DefaultArg", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DefaultArg = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -4636,7 +4700,6 @@ func (x *fastReflection_Inferences) ProtoMethods() *protoiface.Methods {
 
 var (
 	md_OffchainNode               protoreflect.MessageDescriptor
-	fd_OffchainNode_topic_id      protoreflect.FieldDescriptor
 	fd_OffchainNode_lib_p2p_key   protoreflect.FieldDescriptor
 	fd_OffchainNode_multi_address protoreflect.FieldDescriptor
 	fd_OffchainNode_owner         protoreflect.FieldDescriptor
@@ -4647,7 +4710,6 @@ var (
 func init() {
 	file_emissions_state_v1_types_proto_init()
 	md_OffchainNode = File_emissions_state_v1_types_proto.Messages().ByName("OffchainNode")
-	fd_OffchainNode_topic_id = md_OffchainNode.Fields().ByName("topic_id")
 	fd_OffchainNode_lib_p2p_key = md_OffchainNode.Fields().ByName("lib_p2p_key")
 	fd_OffchainNode_multi_address = md_OffchainNode.Fields().ByName("multi_address")
 	fd_OffchainNode_owner = md_OffchainNode.Fields().ByName("owner")
@@ -4720,12 +4782,6 @@ func (x *fastReflection_OffchainNode) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_OffchainNode_topic_id, value) {
-			return
-		}
-	}
 	if x.LibP2PKey != "" {
 		value := protoreflect.ValueOfString(x.LibP2PKey)
 		if !f(fd_OffchainNode_lib_p2p_key, value) {
@@ -4771,8 +4827,6 @@ func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		return x.TopicId != uint64(0)
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		return x.LibP2PKey != ""
 	case "emissions.state.v1.OffchainNode.multi_address":
@@ -4799,8 +4853,6 @@ func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		x.TopicId = uint64(0)
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = ""
 	case "emissions.state.v1.OffchainNode.multi_address":
@@ -4827,9 +4879,6 @@ func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		value := x.TopicId
-		return protoreflect.ValueOfUint64(value)
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		value := x.LibP2PKey
 		return protoreflect.ValueOfString(value)
@@ -4865,8 +4914,6 @@ func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		x.TopicId = value.Uint()
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		x.LibP2PKey = value.Interface().(string)
 	case "emissions.state.v1.OffchainNode.multi_address":
@@ -4897,8 +4944,6 @@ func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.state.v1.OffchainNode is not mutable"))
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		panic(fmt.Errorf("field lib_p2p_key of message emissions.state.v1.OffchainNode is not mutable"))
 	case "emissions.state.v1.OffchainNode.multi_address":
@@ -4922,8 +4967,6 @@ func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_OffchainNode) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.OffchainNode.topic_id":
-		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.OffchainNode.lib_p2p_key":
 		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.OffchainNode.multi_address":
@@ -5003,9 +5046,6 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
-		}
 		l = len(x.LibP2PKey)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -5060,40 +5100,35 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.NodeId)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NodeId)))
 			i--
-			dAtA[i] = 0x32
+			dAtA[i] = 0x2a
 		}
 		if len(x.NodeAddress) > 0 {
 			i -= len(x.NodeAddress)
 			copy(dAtA[i:], x.NodeAddress)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NodeAddress)))
 			i--
-			dAtA[i] = 0x2a
+			dAtA[i] = 0x22
 		}
 		if len(x.Owner) > 0 {
 			i -= len(x.Owner)
 			copy(dAtA[i:], x.Owner)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Owner)))
 			i--
-			dAtA[i] = 0x22
+			dAtA[i] = 0x1a
 		}
 		if len(x.MultiAddress) > 0 {
 			i -= len(x.MultiAddress)
 			copy(dAtA[i:], x.MultiAddress)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MultiAddress)))
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x12
 		}
 		if len(x.LibP2PKey) > 0 {
 			i -= len(x.LibP2PKey)
 			copy(dAtA[i:], x.LibP2PKey)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LibP2PKey)))
 			i--
-			dAtA[i] = 0x12
-		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
-			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -5145,25 +5180,6 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-				}
-				x.TopicId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LibP2PKey", wireType)
 				}
@@ -5195,7 +5211,7 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 				}
 				x.LibP2PKey = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 3:
+			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MultiAddress", wireType)
 				}
@@ -5227,7 +5243,7 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 				}
 				x.MultiAddress = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 4:
+			case 3:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
 				}
@@ -5259,7 +5275,7 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 				}
 				x.Owner = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 5:
+			case 4:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeAddress", wireType)
 				}
@@ -5291,7 +5307,7 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 				}
 				x.NodeAddress = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 6:
+			case 5:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeId", wireType)
 				}
@@ -6867,17 +6883,63 @@ func (x *fastReflection_StakePlacement) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var _ protoreflect.List = (*_StakeRemovalPlacement_1_list)(nil)
+
+type _StakeRemovalPlacement_1_list struct {
+	list *[]uint64
+}
+
+func (x *_StakeRemovalPlacement_1_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_StakeRemovalPlacement_1_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfUint64((*x.list)[i])
+}
+
+func (x *_StakeRemovalPlacement_1_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_StakeRemovalPlacement_1_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_StakeRemovalPlacement_1_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message StakeRemovalPlacement at list field TopicsIds as it is not of Message kind"))
+}
+
+func (x *_StakeRemovalPlacement_1_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_StakeRemovalPlacement_1_list) NewElement() protoreflect.Value {
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
+}
+
+func (x *_StakeRemovalPlacement_1_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_StakeRemovalPlacement          protoreflect.MessageDescriptor
-	fd_StakeRemovalPlacement_topic_id protoreflect.FieldDescriptor
-	fd_StakeRemovalPlacement_target   protoreflect.FieldDescriptor
-	fd_StakeRemovalPlacement_amount   protoreflect.FieldDescriptor
+	md_StakeRemovalPlacement            protoreflect.MessageDescriptor
+	fd_StakeRemovalPlacement_topics_ids protoreflect.FieldDescriptor
+	fd_StakeRemovalPlacement_target     protoreflect.FieldDescriptor
+	fd_StakeRemovalPlacement_amount     protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_state_v1_types_proto_init()
 	md_StakeRemovalPlacement = File_emissions_state_v1_types_proto.Messages().ByName("StakeRemovalPlacement")
-	fd_StakeRemovalPlacement_topic_id = md_StakeRemovalPlacement.Fields().ByName("topic_id")
+	fd_StakeRemovalPlacement_topics_ids = md_StakeRemovalPlacement.Fields().ByName("topics_ids")
 	fd_StakeRemovalPlacement_target = md_StakeRemovalPlacement.Fields().ByName("target")
 	fd_StakeRemovalPlacement_amount = md_StakeRemovalPlacement.Fields().ByName("amount")
 }
@@ -6947,9 +7009,9 @@ func (x *fastReflection_StakeRemovalPlacement) Interface() protoreflect.ProtoMes
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_StakeRemovalPlacement) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TopicId != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_StakeRemovalPlacement_topic_id, value) {
+	if len(x.TopicsIds) != 0 {
+		value := protoreflect.ValueOfList(&_StakeRemovalPlacement_1_list{list: &x.TopicsIds})
+		if !f(fd_StakeRemovalPlacement_topics_ids, value) {
 			return
 		}
 	}
@@ -6980,8 +7042,8 @@ func (x *fastReflection_StakeRemovalPlacement) Range(f func(protoreflect.FieldDe
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_StakeRemovalPlacement) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		return x.TopicId != uint64(0)
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		return len(x.TopicsIds) != 0
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		return x.Target != ""
 	case "emissions.state.v1.StakeRemovalPlacement.amount":
@@ -7002,8 +7064,8 @@ func (x *fastReflection_StakeRemovalPlacement) Has(fd protoreflect.FieldDescript
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_StakeRemovalPlacement) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		x.TopicId = uint64(0)
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		x.TopicsIds = nil
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		x.Target = ""
 	case "emissions.state.v1.StakeRemovalPlacement.amount":
@@ -7024,9 +7086,12 @@ func (x *fastReflection_StakeRemovalPlacement) Clear(fd protoreflect.FieldDescri
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_StakeRemovalPlacement) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		value := x.TopicId
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		if len(x.TopicsIds) == 0 {
+			return protoreflect.ValueOfList(&_StakeRemovalPlacement_1_list{})
+		}
+		listValue := &_StakeRemovalPlacement_1_list{list: &x.TopicsIds}
+		return protoreflect.ValueOfList(listValue)
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		value := x.Target
 		return protoreflect.ValueOfString(value)
@@ -7053,8 +7118,10 @@ func (x *fastReflection_StakeRemovalPlacement) Get(descriptor protoreflect.Field
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_StakeRemovalPlacement) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		x.TopicId = value.Uint()
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		lv := value.List()
+		clv := lv.(*_StakeRemovalPlacement_1_list)
+		x.TopicsIds = *clv.list
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		x.Target = value.Interface().(string)
 	case "emissions.state.v1.StakeRemovalPlacement.amount":
@@ -7079,8 +7146,12 @@ func (x *fastReflection_StakeRemovalPlacement) Set(fd protoreflect.FieldDescript
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_StakeRemovalPlacement) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.state.v1.StakeRemovalPlacement is not mutable"))
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		if x.TopicsIds == nil {
+			x.TopicsIds = []uint64{}
+		}
+		value := &_StakeRemovalPlacement_1_list{list: &x.TopicsIds}
+		return protoreflect.ValueOfList(value)
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		panic(fmt.Errorf("field target of message emissions.state.v1.StakeRemovalPlacement is not mutable"))
 	case "emissions.state.v1.StakeRemovalPlacement.amount":
@@ -7098,8 +7169,9 @@ func (x *fastReflection_StakeRemovalPlacement) Mutable(fd protoreflect.FieldDesc
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_StakeRemovalPlacement) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.StakeRemovalPlacement.topic_id":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.StakeRemovalPlacement.topics_ids":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_StakeRemovalPlacement_1_list{list: &list})
 	case "emissions.state.v1.StakeRemovalPlacement.target":
 		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.StakeRemovalPlacement.amount":
@@ -7173,8 +7245,12 @@ func (x *fastReflection_StakeRemovalPlacement) ProtoMethods() *protoiface.Method
 		var n int
 		var l int
 		_ = l
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
+		if len(x.TopicsIds) > 0 {
+			l = 0
+			for _, e := range x.TopicsIds {
+				l += runtime.Sov(uint64(e))
+			}
+			n += 1 + runtime.Sov(uint64(l)) + l
 		}
 		l = len(x.Target)
 		if l > 0 {
@@ -7227,10 +7303,25 @@ func (x *fastReflection_StakeRemovalPlacement) ProtoMethods() *protoiface.Method
 			i--
 			dAtA[i] = 0x12
 		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+		if len(x.TopicsIds) > 0 {
+			var pksize2 int
+			for _, num := range x.TopicsIds {
+				pksize2 += runtime.Sov(uint64(num))
+			}
+			i -= pksize2
+			j1 := i
+			for _, num := range x.TopicsIds {
+				for num >= 1<<7 {
+					dAtA[j1] = uint8(uint64(num)&0x7f | 0x80)
+					num >>= 7
+					j1++
+				}
+				dAtA[j1] = uint8(num)
+				j1++
+			}
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize2))
 			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -7282,23 +7373,80 @@ func (x *fastReflection_StakeRemovalPlacement) ProtoMethods() *protoiface.Method
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-				}
-				x.TopicId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				if wireType == 0 {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
 					}
-					if iNdEx >= l {
+					x.TopicsIds = append(x.TopicsIds, v)
+				} else if wireType == 2 {
+					var packedLen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						packedLen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if packedLen < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					postIndex := iNdEx + packedLen
+					if postIndex < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					if postIndex > l {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
+					var elementCount int
+					var count int
+					for _, integer := range dAtA[iNdEx:postIndex] {
+						if integer < 128 {
+							count++
+						}
 					}
+					elementCount = count
+					if elementCount != 0 && len(x.TopicsIds) == 0 {
+						x.TopicsIds = make([]uint64, 0, elementCount)
+					}
+					for iNdEx < postIndex {
+						var v uint64
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+							}
+							if iNdEx >= l {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							v |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								break
+							}
+						}
+						x.TopicsIds = append(x.TopicsIds, v)
+					}
+				} else {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicsIds", wireType)
 				}
 			case 2:
 				if wireType != 2 {
@@ -7941,6 +8089,860 @@ func (x *fastReflection_StakeRemoval) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var (
+	md_InferenceRequest                         protoreflect.MessageDescriptor
+	fd_InferenceRequest_sender                  protoreflect.FieldDescriptor
+	fd_InferenceRequest_nonce                   protoreflect.FieldDescriptor
+	fd_InferenceRequest_topic_id                protoreflect.FieldDescriptor
+	fd_InferenceRequest_cadence                 protoreflect.FieldDescriptor
+	fd_InferenceRequest_max_price_per_inference protoreflect.FieldDescriptor
+	fd_InferenceRequest_bid_amount              protoreflect.FieldDescriptor
+	fd_InferenceRequest_last_checked            protoreflect.FieldDescriptor
+	fd_InferenceRequest_timestamp_valid_until   protoreflect.FieldDescriptor
+	fd_InferenceRequest_extra_data              protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_state_v1_types_proto_init()
+	md_InferenceRequest = File_emissions_state_v1_types_proto.Messages().ByName("InferenceRequest")
+	fd_InferenceRequest_sender = md_InferenceRequest.Fields().ByName("sender")
+	fd_InferenceRequest_nonce = md_InferenceRequest.Fields().ByName("nonce")
+	fd_InferenceRequest_topic_id = md_InferenceRequest.Fields().ByName("topic_id")
+	fd_InferenceRequest_cadence = md_InferenceRequest.Fields().ByName("cadence")
+	fd_InferenceRequest_max_price_per_inference = md_InferenceRequest.Fields().ByName("max_price_per_inference")
+	fd_InferenceRequest_bid_amount = md_InferenceRequest.Fields().ByName("bid_amount")
+	fd_InferenceRequest_last_checked = md_InferenceRequest.Fields().ByName("last_checked")
+	fd_InferenceRequest_timestamp_valid_until = md_InferenceRequest.Fields().ByName("timestamp_valid_until")
+	fd_InferenceRequest_extra_data = md_InferenceRequest.Fields().ByName("extra_data")
+}
+
+var _ protoreflect.Message = (*fastReflection_InferenceRequest)(nil)
+
+type fastReflection_InferenceRequest InferenceRequest
+
+func (x *InferenceRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_InferenceRequest)(x)
+}
+
+func (x *InferenceRequest) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_state_v1_types_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_InferenceRequest_messageType fastReflection_InferenceRequest_messageType
+var _ protoreflect.MessageType = fastReflection_InferenceRequest_messageType{}
+
+type fastReflection_InferenceRequest_messageType struct{}
+
+func (x fastReflection_InferenceRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_InferenceRequest)(nil)
+}
+func (x fastReflection_InferenceRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_InferenceRequest)
+}
+func (x fastReflection_InferenceRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_InferenceRequest
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_InferenceRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_InferenceRequest
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_InferenceRequest) Type() protoreflect.MessageType {
+	return _fastReflection_InferenceRequest_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_InferenceRequest) New() protoreflect.Message {
+	return new(fastReflection_InferenceRequest)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_InferenceRequest) Interface() protoreflect.ProtoMessage {
+	return (*InferenceRequest)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_InferenceRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Sender != "" {
+		value := protoreflect.ValueOfString(x.Sender)
+		if !f(fd_InferenceRequest_sender, value) {
+			return
+		}
+	}
+	if x.Nonce != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Nonce)
+		if !f(fd_InferenceRequest_nonce, value) {
+			return
+		}
+	}
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_InferenceRequest_topic_id, value) {
+			return
+		}
+	}
+	if x.Cadence != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Cadence)
+		if !f(fd_InferenceRequest_cadence, value) {
+			return
+		}
+	}
+	if x.MaxPricePerInference != "" {
+		value := protoreflect.ValueOfString(x.MaxPricePerInference)
+		if !f(fd_InferenceRequest_max_price_per_inference, value) {
+			return
+		}
+	}
+	if x.BidAmount != "" {
+		value := protoreflect.ValueOfString(x.BidAmount)
+		if !f(fd_InferenceRequest_bid_amount, value) {
+			return
+		}
+	}
+	if x.LastChecked != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.LastChecked)
+		if !f(fd_InferenceRequest_last_checked, value) {
+			return
+		}
+	}
+	if x.TimestampValidUntil != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TimestampValidUntil)
+		if !f(fd_InferenceRequest_timestamp_valid_until, value) {
+			return
+		}
+	}
+	if len(x.ExtraData) != 0 {
+		value := protoreflect.ValueOfBytes(x.ExtraData)
+		if !f(fd_InferenceRequest_extra_data, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_InferenceRequest) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		return x.Sender != ""
+	case "emissions.state.v1.InferenceRequest.nonce":
+		return x.Nonce != uint64(0)
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.state.v1.InferenceRequest.cadence":
+		return x.Cadence != uint64(0)
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		return x.MaxPricePerInference != ""
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		return x.BidAmount != ""
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		return x.LastChecked != uint64(0)
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		return x.TimestampValidUntil != uint64(0)
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		return len(x.ExtraData) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_InferenceRequest) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		x.Sender = ""
+	case "emissions.state.v1.InferenceRequest.nonce":
+		x.Nonce = uint64(0)
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.state.v1.InferenceRequest.cadence":
+		x.Cadence = uint64(0)
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		x.MaxPricePerInference = ""
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		x.BidAmount = ""
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		x.LastChecked = uint64(0)
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		x.TimestampValidUntil = uint64(0)
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		x.ExtraData = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_InferenceRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		value := x.Sender
+		return protoreflect.ValueOfString(value)
+	case "emissions.state.v1.InferenceRequest.nonce":
+		value := x.Nonce
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.InferenceRequest.cadence":
+		value := x.Cadence
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		value := x.MaxPricePerInference
+		return protoreflect.ValueOfString(value)
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		value := x.BidAmount
+		return protoreflect.ValueOfString(value)
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		value := x.LastChecked
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		value := x.TimestampValidUntil
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		value := x.ExtraData
+		return protoreflect.ValueOfBytes(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_InferenceRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		x.Sender = value.Interface().(string)
+	case "emissions.state.v1.InferenceRequest.nonce":
+		x.Nonce = value.Uint()
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.state.v1.InferenceRequest.cadence":
+		x.Cadence = value.Uint()
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		x.MaxPricePerInference = value.Interface().(string)
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		x.BidAmount = value.Interface().(string)
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		x.LastChecked = value.Uint()
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		x.TimestampValidUntil = value.Uint()
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		x.ExtraData = value.Bytes()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_InferenceRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.nonce":
+		panic(fmt.Errorf("field nonce of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.cadence":
+		panic(fmt.Errorf("field cadence of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		panic(fmt.Errorf("field max_price_per_inference of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		panic(fmt.Errorf("field bid_amount of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		panic(fmt.Errorf("field last_checked of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		panic(fmt.Errorf("field timestamp_valid_until of message emissions.state.v1.InferenceRequest is not mutable"))
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		panic(fmt.Errorf("field extra_data of message emissions.state.v1.InferenceRequest is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_InferenceRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.InferenceRequest.sender":
+		return protoreflect.ValueOfString("")
+	case "emissions.state.v1.InferenceRequest.nonce":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.InferenceRequest.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.InferenceRequest.cadence":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.InferenceRequest.max_price_per_inference":
+		return protoreflect.ValueOfString("")
+	case "emissions.state.v1.InferenceRequest.bid_amount":
+		return protoreflect.ValueOfString("")
+	case "emissions.state.v1.InferenceRequest.last_checked":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.InferenceRequest.timestamp_valid_until":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.InferenceRequest.extra_data":
+		return protoreflect.ValueOfBytes(nil)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.InferenceRequest"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.InferenceRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_InferenceRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.InferenceRequest", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_InferenceRequest) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_InferenceRequest) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_InferenceRequest) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*InferenceRequest)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Sender)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Nonce != 0 {
+			n += 1 + runtime.Sov(uint64(x.Nonce))
+		}
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.Cadence != 0 {
+			n += 1 + runtime.Sov(uint64(x.Cadence))
+		}
+		l = len(x.MaxPricePerInference)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.BidAmount)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.LastChecked != 0 {
+			n += 1 + runtime.Sov(uint64(x.LastChecked))
+		}
+		if x.TimestampValidUntil != 0 {
+			n += 1 + runtime.Sov(uint64(x.TimestampValidUntil))
+		}
+		l = len(x.ExtraData)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*InferenceRequest)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.ExtraData) > 0 {
+			i -= len(x.ExtraData)
+			copy(dAtA[i:], x.ExtraData)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ExtraData)))
+			i--
+			dAtA[i] = 0x4a
+		}
+		if x.TimestampValidUntil != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TimestampValidUntil))
+			i--
+			dAtA[i] = 0x40
+		}
+		if x.LastChecked != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.LastChecked))
+			i--
+			dAtA[i] = 0x38
+		}
+		if len(x.BidAmount) > 0 {
+			i -= len(x.BidAmount)
+			copy(dAtA[i:], x.BidAmount)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BidAmount)))
+			i--
+			dAtA[i] = 0x32
+		}
+		if len(x.MaxPricePerInference) > 0 {
+			i -= len(x.MaxPricePerInference)
+			copy(dAtA[i:], x.MaxPricePerInference)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxPricePerInference)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if x.Cadence != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Cadence))
+			i--
+			dAtA[i] = 0x20
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.Nonce != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Nonce))
+			i--
+			dAtA[i] = 0x10
+		}
+		if len(x.Sender) > 0 {
+			i -= len(x.Sender)
+			copy(dAtA[i:], x.Sender)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Sender)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*InferenceRequest)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceRequest: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: InferenceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Sender = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+				}
+				x.Nonce = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Nonce |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Cadence", wireType)
+				}
+				x.Cadence = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Cadence |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxPricePerInference", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxPricePerInference = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BidAmount", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.BidAmount = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 7:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastChecked", wireType)
+				}
+				x.LastChecked = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.LastChecked |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 8:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TimestampValidUntil", wireType)
+				}
+				x.TimestampValidUntil = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TimestampValidUntil |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ExtraData = append(x.ExtraData[:0], dAtA[iNdEx:postIndex]...)
+				if x.ExtraData == nil {
+					x.ExtraData = []byte{}
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -7953,154 +8955,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-type Err int32
-
-const (
-	Err_ErrInvalidTopicId                                    Err = 0
-	Err_ErrReputerAlreadyRegistered                          Err = 1
-	Err_ErrWorkerAlreadyRegistered                           Err = 2
-	Err_ErrInsufficientStakeToRegister                       Err = 3
-	Err_ErrLibP2PKeyRequired                                 Err = 4
-	Err_ErrAddressNotRegistered                              Err = 5
-	Err_ErrStakeTargetNotRegistered                          Err = 6
-	Err_ErrTopicIdOfStakerAndTargetDoNotMatch                Err = 7
-	Err_ErrInsufficientStakeToRemove                         Err = 8
-	Err_ErrIntegerUnderflowDelegator                         Err = 9
-	Err_ErrIntegerUnderflowBonds                             Err = 10
-	Err_ErrIntegerUnderflowTarget                            Err = 11
-	Err_ErrIntegerUnderflowTopicStake                        Err = 12
-	Err_ErrIntegerUnderflowTotalStake                        Err = 13
-	Err_ErrIterationLengthDoesNotMatch                       Err = 14
-	Err_ErrDoNotSetMapValueToZero                            Err = 15
-	Err_ErrBlockHeightNegative                               Err = 16
-	Err_ErrBlockHeightLessThanPrevious                       Err = 17
-	Err_ErrNoStakeToRemove                                   Err = 18
-	Err_ErrModifyStakeBeforeBondLessThanAmountModified       Err = 19
-	Err_ErrModifyStakeBeforeSumGreaterThanSenderStake        Err = 20
-	Err_ErrModifyStakeSumBeforeNotEqualToSumAfter            Err = 21
-	Err_ErrConfirmRemoveStakeNoRemovalStarted                Err = 22
-	Err_ErrConfirmRemoveStakeTooEarly                        Err = 23
-	Err_ErrConfirmRemoveStakeTooLate                         Err = 24
-	Err_ErrScalarMultiplyNegative                            Err = 25
-	Err_ErrDivideMapValuesByZero                             Err = 26
-	Err_ErrInferenceRequestAlreadyInMempool                  Err = 27
-	Err_ErrInferenceRequestBidAmountLessThanPrice            Err = 28
-	Err_ErrInferenceRequestTimestampValidUntilInPast         Err = 29
-	Err_ErrInferenceRequestTimestampValidUntilTooFarInFuture Err = 30
-	Err_ErrInferenceRequestCadenceTooFast                    Err = 31
-	Err_ErrInferenceRequestCadenceTooSlow                    Err = 32
-	Err_ErrInferenceRequestWillNeverBeScheduled              Err = 33
-	Err_ErrInferenceRequestBidAmountTooLow                   Err = 34
-	Err_ErrIntegerUnderflowUnmetDemand                       Err = 35
-)
-
-// Enum value maps for Err.
-var (
-	Err_name = map[int32]string{
-		0:  "ErrInvalidTopicId",
-		1:  "ErrReputerAlreadyRegistered",
-		2:  "ErrWorkerAlreadyRegistered",
-		3:  "ErrInsufficientStakeToRegister",
-		4:  "ErrLibP2PKeyRequired",
-		5:  "ErrAddressNotRegistered",
-		6:  "ErrStakeTargetNotRegistered",
-		7:  "ErrTopicIdOfStakerAndTargetDoNotMatch",
-		8:  "ErrInsufficientStakeToRemove",
-		9:  "ErrIntegerUnderflowDelegator",
-		10: "ErrIntegerUnderflowBonds",
-		11: "ErrIntegerUnderflowTarget",
-		12: "ErrIntegerUnderflowTopicStake",
-		13: "ErrIntegerUnderflowTotalStake",
-		14: "ErrIterationLengthDoesNotMatch",
-		15: "ErrDoNotSetMapValueToZero",
-		16: "ErrBlockHeightNegative",
-		17: "ErrBlockHeightLessThanPrevious",
-		18: "ErrNoStakeToRemove",
-		19: "ErrModifyStakeBeforeBondLessThanAmountModified",
-		20: "ErrModifyStakeBeforeSumGreaterThanSenderStake",
-		21: "ErrModifyStakeSumBeforeNotEqualToSumAfter",
-		22: "ErrConfirmRemoveStakeNoRemovalStarted",
-		23: "ErrConfirmRemoveStakeTooEarly",
-		24: "ErrConfirmRemoveStakeTooLate",
-		25: "ErrScalarMultiplyNegative",
-		26: "ErrDivideMapValuesByZero",
-		27: "ErrInferenceRequestAlreadyInMempool",
-		28: "ErrInferenceRequestBidAmountLessThanPrice",
-		29: "ErrInferenceRequestTimestampValidUntilInPast",
-		30: "ErrInferenceRequestTimestampValidUntilTooFarInFuture",
-		31: "ErrInferenceRequestCadenceTooFast",
-		32: "ErrInferenceRequestCadenceTooSlow",
-		33: "ErrInferenceRequestWillNeverBeScheduled",
-		34: "ErrInferenceRequestBidAmountTooLow",
-		35: "ErrIntegerUnderflowUnmetDemand",
-	}
-	Err_value = map[string]int32{
-		"ErrInvalidTopicId":                                    0,
-		"ErrReputerAlreadyRegistered":                          1,
-		"ErrWorkerAlreadyRegistered":                           2,
-		"ErrInsufficientStakeToRegister":                       3,
-		"ErrLibP2PKeyRequired":                                 4,
-		"ErrAddressNotRegistered":                              5,
-		"ErrStakeTargetNotRegistered":                          6,
-		"ErrTopicIdOfStakerAndTargetDoNotMatch":                7,
-		"ErrInsufficientStakeToRemove":                         8,
-		"ErrIntegerUnderflowDelegator":                         9,
-		"ErrIntegerUnderflowBonds":                             10,
-		"ErrIntegerUnderflowTarget":                            11,
-		"ErrIntegerUnderflowTopicStake":                        12,
-		"ErrIntegerUnderflowTotalStake":                        13,
-		"ErrIterationLengthDoesNotMatch":                       14,
-		"ErrDoNotSetMapValueToZero":                            15,
-		"ErrBlockHeightNegative":                               16,
-		"ErrBlockHeightLessThanPrevious":                       17,
-		"ErrNoStakeToRemove":                                   18,
-		"ErrModifyStakeBeforeBondLessThanAmountModified":       19,
-		"ErrModifyStakeBeforeSumGreaterThanSenderStake":        20,
-		"ErrModifyStakeSumBeforeNotEqualToSumAfter":            21,
-		"ErrConfirmRemoveStakeNoRemovalStarted":                22,
-		"ErrConfirmRemoveStakeTooEarly":                        23,
-		"ErrConfirmRemoveStakeTooLate":                         24,
-		"ErrScalarMultiplyNegative":                            25,
-		"ErrDivideMapValuesByZero":                             26,
-		"ErrInferenceRequestAlreadyInMempool":                  27,
-		"ErrInferenceRequestBidAmountLessThanPrice":            28,
-		"ErrInferenceRequestTimestampValidUntilInPast":         29,
-		"ErrInferenceRequestTimestampValidUntilTooFarInFuture": 30,
-		"ErrInferenceRequestCadenceTooFast":                    31,
-		"ErrInferenceRequestCadenceTooSlow":                    32,
-		"ErrInferenceRequestWillNeverBeScheduled":              33,
-		"ErrInferenceRequestBidAmountTooLow":                   34,
-		"ErrIntegerUnderflowUnmetDemand":                       35,
-	}
-)
-
-func (x Err) Enum() *Err {
-	p := new(Err)
-	*p = x
-	return p
-}
-
-func (x Err) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Err) Descriptor() protoreflect.EnumDescriptor {
-	return file_emissions_state_v1_types_proto_enumTypes[0].Descriptor()
-}
-
-func (Err) Type() protoreflect.EnumType {
-	return &file_emissions_state_v1_types_proto_enumTypes[0]
-}
-
-func (x Err) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Err.Descriptor instead.
-func (Err) EnumDescriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{0}
-}
 
 // Params defines the parameters of the module.
 type Params struct {
@@ -8235,6 +9089,7 @@ type Topic struct {
 	InferenceCadence uint64 `protobuf:"varint,10,opt,name=inference_cadence,json=inferenceCadence,proto3" json:"inference_cadence,omitempty"`
 	InferenceLastRan uint64 `protobuf:"varint,11,opt,name=inference_last_ran,json=inferenceLastRan,proto3" json:"inference_last_ran,omitempty"`
 	Active           bool   `protobuf:"varint,12,opt,name=active,proto3" json:"active,omitempty"`
+	DefaultArg       string `protobuf:"bytes,13,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
 }
 
 func (x *Topic) Reset() {
@@ -8339,6 +9194,13 @@ func (x *Topic) GetActive() bool {
 		return x.Active
 	}
 	return false
+}
+
+func (x *Topic) GetDefaultArg() string {
+	if x != nil {
+		return x.DefaultArg
+	}
+	return ""
 }
 
 type Weight struct {
@@ -8542,12 +9404,11 @@ type OffchainNode struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId      uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`               // What topic the node belongs to
-	LibP2PKey    string `protobuf:"bytes,2,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`        // LibP2P key of the node
-	MultiAddress string `protobuf:"bytes,3,opt,name=multi_address,json=multiAddress,proto3" json:"multi_address,omitempty"` // Network address for accessing the node
-	Owner        string `protobuf:"bytes,4,opt,name=owner,proto3" json:"owner,omitempty"`
-	NodeAddress  string `protobuf:"bytes,5,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
-	NodeId       string `protobuf:"bytes,6,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	LibP2PKey    string `protobuf:"bytes,1,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`        // LibP2P key of the node
+	MultiAddress string `protobuf:"bytes,2,opt,name=multi_address,json=multiAddress,proto3" json:"multi_address,omitempty"` // Network address for accessing the node
+	Owner        string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	NodeAddress  string `protobuf:"bytes,4,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
+	NodeId       string `protobuf:"bytes,5,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
 }
 
 func (x *OffchainNode) Reset() {
@@ -8568,13 +9429,6 @@ func (*OffchainNode) ProtoMessage() {}
 // Deprecated: Use OffchainNode.ProtoReflect.Descriptor instead.
 func (*OffchainNode) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *OffchainNode) GetTopicId() uint64 {
-	if x != nil {
-		return x.TopicId
-	}
-	return 0
 }
 
 func (x *OffchainNode) GetLibP2PKey() string {
@@ -8746,9 +9600,9 @@ type StakeRemovalPlacement struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Target  string `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
-	Amount  string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	TopicsIds []uint64 `protobuf:"varint,1,rep,packed,name=topics_ids,json=topicsIds,proto3" json:"topics_ids,omitempty"`
+	Target    string   `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+	Amount    string   `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
 }
 
 func (x *StakeRemovalPlacement) Reset() {
@@ -8771,11 +9625,11 @@ func (*StakeRemovalPlacement) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *StakeRemovalPlacement) GetTopicId() uint64 {
+func (x *StakeRemovalPlacement) GetTopicsIds() []uint64 {
 	if x != nil {
-		return x.TopicId
+		return x.TopicsIds
 	}
-	return 0
+	return nil
 }
 
 func (x *StakeRemovalPlacement) GetTarget() string {
@@ -8835,6 +9689,107 @@ func (x *StakeRemoval) GetPlacements() []*StakeRemovalPlacement {
 	return nil
 }
 
+// num_inference_possible = bid_amount / max_price_per_inference,
+// length of time this inference repeats for =  num_inference_possible * cadence
+type InferenceRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sender               string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	Nonce                uint64 `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	TopicId              uint64 `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Cadence              uint64 `protobuf:"varint,4,opt,name=cadence,proto3" json:"cadence,omitempty"`                                                          // time in seconds between inferences, zero means oneshot inference
+	MaxPricePerInference string `protobuf:"bytes,5,opt,name=max_price_per_inference,json=maxPricePerInference,proto3" json:"max_price_per_inference,omitempty"` // the maximum price per inference that alice is willing to pay
+	BidAmount            string `protobuf:"bytes,6,opt,name=bid_amount,json=bidAmount,proto3" json:"bid_amount,omitempty"`                                      // how many funds to send from alice with this Inference Request
+	LastChecked          uint64 `protobuf:"varint,7,opt,name=last_checked,json=lastChecked,proto3" json:"last_checked,omitempty"`                               // the last time the inference was checked and was possibly drawn from
+	TimestampValidUntil  uint64 `protobuf:"varint,8,opt,name=timestamp_valid_until,json=timestampValidUntil,proto3" json:"timestamp_valid_until,omitempty"`
+	ExtraData            []byte `protobuf:"bytes,9,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
+}
+
+func (x *InferenceRequest) Reset() {
+	*x = InferenceRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_state_v1_types_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *InferenceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InferenceRequest) ProtoMessage() {}
+
+// Deprecated: Use InferenceRequest.ProtoReflect.Descriptor instead.
+func (*InferenceRequest) Descriptor() ([]byte, []int) {
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *InferenceRequest) GetSender() string {
+	if x != nil {
+		return x.Sender
+	}
+	return ""
+}
+
+func (x *InferenceRequest) GetNonce() uint64 {
+	if x != nil {
+		return x.Nonce
+	}
+	return 0
+}
+
+func (x *InferenceRequest) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *InferenceRequest) GetCadence() uint64 {
+	if x != nil {
+		return x.Cadence
+	}
+	return 0
+}
+
+func (x *InferenceRequest) GetMaxPricePerInference() string {
+	if x != nil {
+		return x.MaxPricePerInference
+	}
+	return ""
+}
+
+func (x *InferenceRequest) GetBidAmount() string {
+	if x != nil {
+		return x.BidAmount
+	}
+	return ""
+}
+
+func (x *InferenceRequest) GetLastChecked() uint64 {
+	if x != nil {
+		return x.LastChecked
+	}
+	return 0
+}
+
+func (x *InferenceRequest) GetTimestampValidUntil() uint64 {
+	if x != nil {
+		return x.TimestampValidUntil
+	}
+	return 0
+}
+
+func (x *InferenceRequest) GetExtraData() []byte {
+	if x != nil {
+		return x.ExtraData
+	}
+	return nil
+}
+
 var File_emissions_state_v1_types_proto protoreflect.FileDescriptor
 
 var file_emissions_state_v1_types_proto_rawDesc = []byte{
@@ -8856,7 +9811,7 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x6e, 0x66, 0x6f, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x16, 0x0a,
 	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xab, 0x03, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12,
+	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xcc, 0x03, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12,
 	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12,
 	0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65, 0x74,
@@ -8883,190 +9838,134 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x72, 0x61, 0x6e, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72,
 	0x65, 0x6e, 0x63, 0x65, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x61, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x61,
 	0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74,
-	0x69, 0x76, 0x65, 0x22, 0xa7, 0x01, 0x0a, 0x06, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70,
-	0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75,
-	0x74, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x77,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f,
-	0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69,
-	0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
-	0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x3f, 0x0a,
-	0x07, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x34, 0x0a, 0x07, 0x77, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x22, 0xc3,
-	0x01, 0x0a, 0x09, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12,
-	0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32,
-	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
-	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
-	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
-	0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74,
-	0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65,
-	0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f,
-	0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a, 0x04,
-	0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4b, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x73, 0x22, 0xc0, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f,
-	0x64, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1e, 0x0a,
-	0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a,
-	0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f, 0x64, 0x65,
-	0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
-	0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17, 0x0a, 0x07, 0x6e,
-	0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f,
-	0x64, 0x65, 0x49, 0x64, 0x22, 0x53, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e,
-	0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x42, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69,
-	0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66,
-	0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22, 0x91, 0x01, 0x0a, 0x16, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f,
-	0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12,
-	0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x3e, 0x0a,
-	0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x74, 0x0a,
-	0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12,
-	0x16, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
+	0x69, 0x76, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x5f, 0x61,
+	0x72, 0x67, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c,
+	0x74, 0x41, 0x72, 0x67, 0x22, 0xa7, 0x01, 0x0a, 0x06, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
+	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70,
+	0x75, 0x74, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06,
+	0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
+	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x3f,
+	0x0a, 0x07, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x34, 0x0a, 0x07, 0x77, 0x65, 0x69,
+	0x67, 0x68, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x22,
+	0xc3, 0x01, 0x0a, 0x09, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b,
+	0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2,
+	0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78,
+	0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09,
+	0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f,
+	0x6f, 0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a,
+	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4b, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x22, 0xa5, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e,
+	0x6f, 0x64, 0x65, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b,
+	0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70,
+	0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74,
+	0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65,
+	0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21,
+	0x0a, 0x0c, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x04,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x12, 0x17, 0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x53, 0x0a, 0x0d, 0x4f, 0x66,
+	0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x42, 0x0a, 0x0d, 0x6f,
+	0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22,
+	0x91, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74,
+	0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+	0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74,
+	0x61, 0x6d, 0x70, 0x12, 0x3e, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x73, 0x22, 0x74, 0x0a, 0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63,
+	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x4a, 0x0a,
+	0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x9a, 0x01, 0x0a, 0x15, 0x53, 0x74,
+	0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x5f, 0x69, 0x64,
+	0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x49,
+	0x64, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x95, 0x01, 0x0a, 0x0c, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x12, 0x3a, 0x0a, 0x19, 0x74, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61,
+	0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x17, 0x74, 0x69, 0x6d, 0x65,
+	0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72,
+	0x74, 0x65, 0x64, 0x12, 0x49, 0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74,
+	0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x61,
+	0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65,
+	0x6e, 0x74, 0x52, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x22, 0xa9,
+	0x03, 0x0a, 0x10, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x6e,
+	0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63,
+	0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07,
+	0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x63,
+	0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x69, 0x0a, 0x17, 0x6d, 0x61, 0x78, 0x5f, 0x70, 0x72,
+	0x69, 0x63, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
 	0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61,
 	0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x22, 0x96, 0x01, 0x0a, 0x15, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x61, 0x6c, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x19, 0x0a,
-	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x74, 0x61, 0x72, 0x67,
-	0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
-	0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
-	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
-	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
-	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x95, 0x01, 0x0a,
-	0x0c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x12, 0x3a, 0x0a,
-	0x19, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76,
-	0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x17, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x6d, 0x6f, 0x76,
-	0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12, 0x49, 0x0a, 0x0a, 0x70, 0x6c, 0x61,
-	0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x29, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x50,
-	0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d,
-	0x65, 0x6e, 0x74, 0x73, 0x2a, 0xb4, 0x0a, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x12, 0x15, 0x0a, 0x11,
-	0x45, 0x72, 0x72, 0x49, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x10, 0x00, 0x12, 0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x65, 0x64, 0x10, 0x01, 0x12, 0x1e, 0x0a, 0x1a, 0x45, 0x72, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x65, 0x64, 0x10, 0x02, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66,
-	0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x10, 0x03, 0x12, 0x18, 0x0a, 0x14, 0x45, 0x72, 0x72, 0x4c,
-	0x69, 0x62, 0x50, 0x32, 0x50, 0x4b, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64,
-	0x10, 0x04, 0x12, 0x1b, 0x0a, 0x17, 0x45, 0x72, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x05, 0x12,
-	0x1f, 0x0a, 0x1b, 0x45, 0x72, 0x72, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65,
-	0x74, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x10, 0x06,
-	0x12, 0x29, 0x0a, 0x25, 0x45, 0x72, 0x72, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x4f, 0x66,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x72, 0x41, 0x6e, 0x64, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x44,
-	0x6f, 0x4e, 0x6f, 0x74, 0x4d, 0x61, 0x74, 0x63, 0x68, 0x10, 0x07, 0x12, 0x20, 0x0a, 0x1c, 0x45,
-	0x72, 0x72, 0x49, 0x6e, 0x73, 0x75, 0x66, 0x66, 0x69, 0x63, 0x69, 0x65, 0x6e, 0x74, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10, 0x08, 0x12, 0x20, 0x0a,
-	0x1c, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72,
-	0x66, 0x6c, 0x6f, 0x77, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x10, 0x09, 0x12,
-	0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64,
-	0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x42, 0x6f, 0x6e, 0x64, 0x73, 0x10, 0x0a, 0x12, 0x1d, 0x0a,
-	0x19, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72,
-	0x66, 0x6c, 0x6f, 0x77, 0x54, 0x61, 0x72, 0x67, 0x65, 0x74, 0x10, 0x0b, 0x12, 0x21, 0x0a, 0x1d,
-	0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66,
-	0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x10, 0x0c, 0x12,
-	0x21, 0x0a, 0x1d, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64,
-	0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65,
-	0x10, 0x0d, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x74, 0x65, 0x72, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x44, 0x6f, 0x65, 0x73, 0x4e, 0x6f, 0x74, 0x4d,
-	0x61, 0x74, 0x63, 0x68, 0x10, 0x0e, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x44, 0x6f, 0x4e,
-	0x6f, 0x74, 0x53, 0x65, 0x74, 0x4d, 0x61, 0x70, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x54, 0x6f, 0x5a,
-	0x65, 0x72, 0x6f, 0x10, 0x0f, 0x12, 0x1a, 0x0a, 0x16, 0x45, 0x72, 0x72, 0x42, 0x6c, 0x6f, 0x63,
-	0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x4e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65, 0x10,
-	0x10, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x4c, 0x65, 0x73, 0x73, 0x54, 0x68, 0x61, 0x6e, 0x50, 0x72, 0x65, 0x76, 0x69,
-	0x6f, 0x75, 0x73, 0x10, 0x11, 0x12, 0x16, 0x0a, 0x12, 0x45, 0x72, 0x72, 0x4e, 0x6f, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x54, 0x6f, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x10, 0x12, 0x12, 0x32, 0x0a,
-	0x2e, 0x45, 0x72, 0x72, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x42,
-	0x65, 0x66, 0x6f, 0x72, 0x65, 0x42, 0x6f, 0x6e, 0x64, 0x4c, 0x65, 0x73, 0x73, 0x54, 0x68, 0x61,
-	0x6e, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x69, 0x65, 0x64, 0x10,
-	0x13, 0x12, 0x31, 0x0a, 0x2d, 0x45, 0x72, 0x72, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x42, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x53, 0x75, 0x6d, 0x47, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x72, 0x54, 0x68, 0x61, 0x6e, 0x53, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x53, 0x74, 0x61,
-	0x6b, 0x65, 0x10, 0x14, 0x12, 0x2d, 0x0a, 0x29, 0x45, 0x72, 0x72, 0x4d, 0x6f, 0x64, 0x69, 0x66,
-	0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x53, 0x75, 0x6d, 0x42, 0x65, 0x66, 0x6f, 0x72, 0x65, 0x4e,
-	0x6f, 0x74, 0x45, 0x71, 0x75, 0x61, 0x6c, 0x54, 0x6f, 0x53, 0x75, 0x6d, 0x41, 0x66, 0x74, 0x65,
-	0x72, 0x10, 0x15, 0x12, 0x29, 0x0a, 0x25, 0x45, 0x72, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72,
-	0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x4e, 0x6f, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x10, 0x16, 0x12, 0x21,
-	0x0a, 0x1d, 0x45, 0x72, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x6f, 0x45, 0x61, 0x72, 0x6c, 0x79, 0x10,
-	0x17, 0x12, 0x20, 0x0a, 0x1c, 0x45, 0x72, 0x72, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x6f, 0x6f, 0x4c, 0x61, 0x74,
-	0x65, 0x10, 0x18, 0x12, 0x1d, 0x0a, 0x19, 0x45, 0x72, 0x72, 0x53, 0x63, 0x61, 0x6c, 0x61, 0x72,
-	0x4d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x79, 0x4e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65,
-	0x10, 0x19, 0x12, 0x1c, 0x0a, 0x18, 0x45, 0x72, 0x72, 0x44, 0x69, 0x76, 0x69, 0x64, 0x65, 0x4d,
-	0x61, 0x70, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x42, 0x79, 0x5a, 0x65, 0x72, 0x6f, 0x10, 0x1a,
-	0x12, 0x27, 0x0a, 0x23, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x41, 0x6c, 0x72, 0x65, 0x61, 0x64, 0x79, 0x49, 0x6e,
-	0x4d, 0x65, 0x6d, 0x70, 0x6f, 0x6f, 0x6c, 0x10, 0x1b, 0x12, 0x2d, 0x0a, 0x29, 0x45, 0x72, 0x72,
-	0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x42, 0x69, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x4c, 0x65, 0x73, 0x73, 0x54, 0x68, 0x61,
-	0x6e, 0x50, 0x72, 0x69, 0x63, 0x65, 0x10, 0x1c, 0x12, 0x30, 0x0a, 0x2c, 0x45, 0x72, 0x72, 0x49,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x54,
-	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x55, 0x6e, 0x74,
-	0x69, 0x6c, 0x49, 0x6e, 0x50, 0x61, 0x73, 0x74, 0x10, 0x1d, 0x12, 0x38, 0x0a, 0x34, 0x45, 0x72,
-	0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x55,
-	0x6e, 0x74, 0x69, 0x6c, 0x54, 0x6f, 0x6f, 0x46, 0x61, 0x72, 0x49, 0x6e, 0x46, 0x75, 0x74, 0x75,
-	0x72, 0x65, 0x10, 0x1e, 0x12, 0x25, 0x0a, 0x21, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e,
-	0x63, 0x65, 0x54, 0x6f, 0x6f, 0x46, 0x61, 0x73, 0x74, 0x10, 0x1f, 0x12, 0x25, 0x0a, 0x21, 0x45,
-	0x72, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x54, 0x6f, 0x6f, 0x53, 0x6c, 0x6f, 0x77,
-	0x10, 0x20, 0x12, 0x2b, 0x0a, 0x27, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x57, 0x69, 0x6c, 0x6c, 0x4e, 0x65, 0x76,
-	0x65, 0x72, 0x42, 0x65, 0x53, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x64, 0x10, 0x21, 0x12,
-	0x26, 0x0a, 0x22, 0x45, 0x72, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x42, 0x69, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x54,
-	0x6f, 0x6f, 0x4c, 0x6f, 0x77, 0x10, 0x22, 0x12, 0x22, 0x0a, 0x1e, 0x45, 0x72, 0x72, 0x49, 0x6e,
-	0x74, 0x65, 0x67, 0x65, 0x72, 0x55, 0x6e, 0x64, 0x65, 0x72, 0x66, 0x6c, 0x6f, 0x77, 0x55, 0x6e,
-	0x6d, 0x65, 0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x10, 0x23, 0x42, 0xe1, 0x01, 0x0a, 0x16,
-	0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f,
-	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12,
-	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x56, 0x31, 0xca, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53,
-	0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42,
-	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14, 0x6d, 0x61, 0x78,
+	0x50, 0x72, 0x69, 0x63, 0x65, 0x50, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x12, 0x51, 0x0a, 0x0a, 0x62, 0x69, 0x64, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x62, 0x69, 0x64, 0x41, 0x6d,
+	0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63, 0x68, 0x65,
+	0x63, 0x6b, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74,
+	0x43, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x32, 0x0a, 0x15, 0x74, 0x69, 0x6d, 0x65, 0x73,
+	0x74, 0x61, 0x6d, 0x70, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x5f, 0x75, 0x6e, 0x74, 0x69, 0x6c,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x13, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x55, 0x6e, 0x74, 0x69, 0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x65,
+	0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x42, 0xe1, 0x01, 0x0a, 0x16, 0x63,
+	0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56,
+	0x31, 0xca, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74,
+	0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d,
+	0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -9081,32 +9980,31 @@ func file_emissions_state_v1_types_proto_rawDescGZIP() []byte {
 	return file_emissions_state_v1_types_proto_rawDescData
 }
 
-var file_emissions_state_v1_types_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_emissions_state_v1_types_proto_goTypes = []interface{}{
-	(Err)(0),                       // 0: emissions.state.v1.Err
-	(*Params)(nil),                 // 1: emissions.state.v1.Params
-	(*GenesisState)(nil),           // 2: emissions.state.v1.GenesisState
-	(*StakeInfo)(nil),              // 3: emissions.state.v1.StakeInfo
-	(*Topic)(nil),                  // 4: emissions.state.v1.Topic
-	(*Weight)(nil),                 // 5: emissions.state.v1.Weight
-	(*Weights)(nil),                // 6: emissions.state.v1.Weights
-	(*Inference)(nil),              // 7: emissions.state.v1.Inference
-	(*Inferences)(nil),             // 8: emissions.state.v1.Inferences
-	(*OffchainNode)(nil),           // 9: emissions.state.v1.OffchainNode
-	(*OffchainNodes)(nil),          // 10: emissions.state.v1.OffchainNodes
-	(*InferenceSetForScoring)(nil), // 11: emissions.state.v1.InferenceSetForScoring
-	(*StakePlacement)(nil),         // 12: emissions.state.v1.StakePlacement
-	(*StakeRemovalPlacement)(nil),  // 13: emissions.state.v1.StakeRemovalPlacement
-	(*StakeRemoval)(nil),           // 14: emissions.state.v1.StakeRemoval
+	(*Params)(nil),                 // 0: emissions.state.v1.Params
+	(*GenesisState)(nil),           // 1: emissions.state.v1.GenesisState
+	(*StakeInfo)(nil),              // 2: emissions.state.v1.StakeInfo
+	(*Topic)(nil),                  // 3: emissions.state.v1.Topic
+	(*Weight)(nil),                 // 4: emissions.state.v1.Weight
+	(*Weights)(nil),                // 5: emissions.state.v1.Weights
+	(*Inference)(nil),              // 6: emissions.state.v1.Inference
+	(*Inferences)(nil),             // 7: emissions.state.v1.Inferences
+	(*OffchainNode)(nil),           // 8: emissions.state.v1.OffchainNode
+	(*OffchainNodes)(nil),          // 9: emissions.state.v1.OffchainNodes
+	(*InferenceSetForScoring)(nil), // 10: emissions.state.v1.InferenceSetForScoring
+	(*StakePlacement)(nil),         // 11: emissions.state.v1.StakePlacement
+	(*StakeRemovalPlacement)(nil),  // 12: emissions.state.v1.StakeRemovalPlacement
+	(*StakeRemoval)(nil),           // 13: emissions.state.v1.StakeRemoval
+	(*InferenceRequest)(nil),       // 14: emissions.state.v1.InferenceRequest
 }
 var file_emissions_state_v1_types_proto_depIdxs = []int32{
-	1,  // 0: emissions.state.v1.GenesisState.params:type_name -> emissions.state.v1.Params
-	5,  // 1: emissions.state.v1.Weights.weights:type_name -> emissions.state.v1.Weight
-	7,  // 2: emissions.state.v1.Inferences.inferences:type_name -> emissions.state.v1.Inference
-	7,  // 3: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
-	8,  // 4: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
-	13, // 5: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakeRemovalPlacement
+	0,  // 0: emissions.state.v1.GenesisState.params:type_name -> emissions.state.v1.Params
+	4,  // 1: emissions.state.v1.Weights.weights:type_name -> emissions.state.v1.Weight
+	6,  // 2: emissions.state.v1.Inferences.inferences:type_name -> emissions.state.v1.Inference
+	6,  // 3: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
+	7,  // 4: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
+	12, // 5: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakeRemovalPlacement
 	6,  // [6:6] is the sub-list for method output_type
 	6,  // [6:6] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
@@ -9288,20 +10186,31 @@ func file_emissions_state_v1_types_proto_init() {
 				return nil
 			}
 		}
+		file_emissions_state_v1_types_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*InferenceRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_state_v1_types_proto_rawDesc,
-			NumEnums:      1,
-			NumMessages:   14,
+			NumEnums:      0,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_emissions_state_v1_types_proto_goTypes,
 		DependencyIndexes: file_emissions_state_v1_types_proto_depIdxs,
-		EnumInfos:         file_emissions_state_v1_types_proto_enumTypes,
 		MessageInfos:      file_emissions_state_v1_types_proto_msgTypes,
 	}.Build()
 	File_emissions_state_v1_types_proto = out.File
