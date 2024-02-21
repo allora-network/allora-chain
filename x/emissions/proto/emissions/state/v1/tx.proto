@@ -53,8 +53,7 @@ message MsgCreateNewTopic {
   string inference_logic = 6;
   string inference_method = 7;
   uint64 inference_cadence = 8;
-  bool active = 9;
-  string default_arg = 10;
+  string default_arg = 9;
 }
 
 message MsgCreateNewTopicResponse {
@@ -126,7 +125,7 @@ message MsgAddNewRegistration {
   string multi_address = 3;
   uint64 topic_id = 4;
   string owner = 5;
-  bool isReputer = 6;
+  bool is_reputer = 6;
 }
 
 message MsgAddNewRegistrationResponse {
@@ -139,7 +138,7 @@ message MsgRemoveRegistration {
 
   string creator = 1;
   uint64 topic_id = 2;
-  bool isReputer = 3;
+  bool is_reputer = 3;
 }
 
 message MsgRemoveRegistrationResponse {

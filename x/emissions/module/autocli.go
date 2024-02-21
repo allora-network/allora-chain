@@ -104,7 +104,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// },
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [active] [default_arg]",
+					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [default_arg]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -115,34 +115,46 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
 						{ProtoField: "inference_cadence"},
-						{ProtoField: "active"},
 						{ProtoField: "default_arg"},
 					},
 				},
-				/*
-					{
-						RpcMethod: "RegisterReputer",
-						Use:       "register-reputer [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
-						Short:     "Register a new reputer for a topic",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-							{ProtoField: "lib_p2p_key"},
-							{ProtoField: "multi_address"},
-							{ProtoField: "topics_ids"},
-							{ProtoField: "initial_stake"},
-						},
+				{
+					RpcMethod: "Register",
+					Use:       "register [creator] [lib_p2p_key] [multi_address] [topics_ids] [initial_stake] [owner] [is_reputer]",
+					Short:     "Register a new reputer or worker for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "creator"},
+						{ProtoField: "lib_p2p_key"},
+						{ProtoField: "multi_address"},
+						{ProtoField: "topics_ids"},
+						{ProtoField: "initial_stake"},
+						{ProtoField: "owner"},
+						{ProtoField: "is_reputer"},
 					},
-					{
-						RpcMethod: "RegisterWorker",
-						Use:       "register-worker [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
-						Short:     "Register a new worker for a topic",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-							{ProtoField: "lib_p2p_key"},
-							{ProtoField: "multi_address"},
-							{ProtoField: "topics_ids"},
-							{ProtoField: "initial_stake"},
-						},
+				},
+				{
+					RpcMethod: "AddNewRegistration",
+					Use:       "add-registration [creator] [lib_p2p_key] [multi_address] [topic_id] [owner] [is_reputer]",
+					Short:     "Register a reputer or worker for an additional topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "creator"},
+						{ProtoField: "lib_p2p_key"},
+						{ProtoField: "multi_address"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "owner"},
+						{ProtoField: "is_reputer"},
 					},
-				*/
+				},
+				{
+					RpcMethod: "RemoveRegistration",
+					Use:       "remove-registration [creator] [owner] [is_reputer]",
+					Short:     "Remove a reputer or worker from a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "creator"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "is_reputer"},
+					},
+				},
 				{
 					RpcMethod: "AddStake",
 					Use:       "add-stake sender target amount",
