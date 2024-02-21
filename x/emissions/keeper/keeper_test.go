@@ -566,20 +566,20 @@ func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
 	s.Require().Equal(removalInfo, stakeRemovalQueue, "Stake removal queue should be equal to the set removal info")
 }
 
-func (s *KeeperTestSuite) TestSetFunds() {
+func (s *KeeperTestSuite) TestSetRequestDemand() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	amount := cosmosMath.NewUint(1000)
 	requestId := "0xa948904f2f0f479b8f8197694b30184b0d2ed1c1cd2a1ec0fb85d299a192a447"
 
-	// Set funds
-	err := keeper.SetFunds(ctx, requestId, amount)
+	// Set demand
+	err := keeper.SetRequestDemand(ctx, requestId, amount)
 	s.Require().NoError(err)
 
-	// Check funds
-	funds, err := keeper.GetFunds(ctx, requestId)
+	// Check demand
+	demand, err := keeper.GetRequestDemand(ctx, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(amount, funds, "Funds should be equal to the set amount")
+	s.Require().Equal(amount, demand, "Demand should be equal to the set amount")
 }
 
 func (s *KeeperTestSuite) TestAddToMempool() {

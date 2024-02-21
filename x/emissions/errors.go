@@ -47,4 +47,6 @@ var (
 	ErrInferenceRequestWillNeverBeScheduled              = errors.Register(ModuleName, 42, "inference request will never be scheduled")
 	ErrOwnerCannotBeEmpty                                = errors.Register(ModuleName, 43, "owner cannot be empty")
 	ErrInsufficientStakeAfterRemoval                     = errors.Register(ModuleName, 44, "insufficient stake after removal")
+	ErrInferenceRequestBidAmountTooLow                   = errors.Register(ModuleName, 45, "inference request bid amount too low")
+	ErrIntegerUnderflowUnmetDemand                       = errors.Register(ModuleName, 46, "integer underflow for unmet demand")
 )

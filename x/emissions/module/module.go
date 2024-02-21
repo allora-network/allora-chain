@@ -8,14 +8,14 @@ import (
 	"cosmossdk.io/core/appmodule"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
+	cosmosMath "cosmossdk.io/math"
+	state "github.com/allora-network/allora-chain/x/emissions"
+	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-
-	state "github.com/allora-network/allora-chain/x/emissions"
-	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 )
 
 var (
@@ -120,37 +120,42 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	// Ensure that enough blocks have passed to hit an epoch.
 	// If not, skip rewards calculation
 	blockNumber := sdkCtx.BlockHeight()
+	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	lastRewardsUpdate, err := am.keeper.GetLastRewardsUpdate(sdkCtx)
 	if err != nil {
 		return err
 	}
+
+	topTopicsActiveWithDemand, metDemand, err := ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(sdkCtx, am, currentTime)
+	if err != nil {
+		fmt.Println("Error getting active topics and met demand: ", err)
+		return err
+	}
+
+	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.ModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
+	if err != nil {
+		fmt.Println("Error sending coins from module to module: ", err)
+		return err
+	}
+
 	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	if blocksSinceLastUpdate < am.keeper.EpochLength() {
-		return nil
-	}
-	err = emitRewards(sdkCtx, am)
-	// the following code does NOT halt the chain in case of an error in rewards payments
-	// if an error occurs and rewards payments are not made, globally they will still accumulate
-	// and we can retroactively pay them out
-	if err != nil {
-		fmt.Println("Error calculating global emission per topic: ", err)
-		panic(err)
-	}
-
-	// Execute the inference and weight cadence checks
-	topics, err := am.keeper.GetActiveTopics(sdkCtx)
-	if err != nil {
-		fmt.Println("Error getting active topics: ", err)
-		return err
+	if blocksSinceLastUpdate >= am.keeper.EpochLength() {
+		err = emitRewards(sdkCtx, am)
+		// the following code does NOT halt the chain in case of an error in rewards payments
+		// if an error occurs and rewards payments are not made, globally they will still accumulate
+		// and we can retroactively pay them out
+		if err != nil {
+			fmt.Println("Error calculating global emission per topic: ", err)
+			panic(err)
+		}
 	}
 
-	fmt.Println("Active topics: ", len(topics))
-
-	currentTime := uint64(sdkCtx.BlockTime().Unix())
-	for _, topic := range topics {
+	// Loop over and run epochs on topics whose inferences are demanded enough to be served
+	// Within each loop, execute the inference and weight cadence checks
+	for _, topic := range *topTopicsActiveWithDemand {
 		// Parallelize the inference and weight cadence checks
 		go func(topic *state.Topic) {
 			// Check the cadence of inferences
@@ -186,7 +191,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 				// Update the last weight ran
 				am.keeper.UpdateTopicWeightLastRan(sdkCtx, topic.Id, currentTime)
 			}
-		}(topic)
+		}(&topic)
 	}
 
 	return nil
