@@ -156,5 +156,6 @@ enum Err {
   ErrInferenceRequestCadenceTooFast = 31;
   ErrInferenceRequestCadenceTooSlow = 32;
   ErrInferenceRequestWillNeverBeScheduled = 33;
-  ErrIntegerUnderflowUnmetDemand = 34;
+  ErrInferenceRequestBidAmountTooLow = 34;
+  ErrIntegerUnderflowUnmetDemand = 35;
 }

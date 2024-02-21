@@ -39,4 +39,5 @@ var ErrInferenceRequestTimestampValidUntilTooFarInFuture = fmt.Errorf(Err_ErrInf
 var ErrInferenceRequestCadenceTooFast = fmt.Errorf(Err_ErrInferenceRequestCadenceTooFast.String())
 var ErrInferenceRequestCadenceTooSlow = fmt.Errorf(Err_ErrInferenceRequestCadenceTooSlow.String())
 var ErrInferenceRequestWillNeverBeScheduled = fmt.Errorf(Err_ErrInferenceRequestWillNeverBeScheduled.String())
+var ErrInferenceRequestBidAmountTooLow = fmt.Errorf(Err_ErrInferenceRequestBidAmountTooLow.String())
 var ErrIntegerUnderflowUnmetDemand = fmt.Errorf(Err_ErrIntegerUnderflowUnmetDemand.String())

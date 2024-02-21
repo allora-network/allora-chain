@@ -39,7 +39,7 @@ type REQUEST_ID = string
 // Likely should be params within the keeper.
 const EPOCH_LENGTH = 5
 const EMISSIONS_PER_EPOCH = 1000
-const MIN_DEMAND = 10                    // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+const MIN_TOPIC_DEMAND = 10              // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
 const MAX_TOPICS_PER_BLOCK = 1000        // max number of topics to run cadence for per block
 const MIN_PRICE_PER_EPOCH = 10           // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
 const TARGET_CAPACITY_PER_BLOCK = 500    // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
@@ -132,8 +132,6 @@ type Keeper struct {
 	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
 	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
-	// price per epoch for a topic
-	pricePerEpoch collections.Item[Uint]
 
 	// ############################################
 	// #            MISC GLOBAL STATE:            #
@@ -186,7 +184,6 @@ func NewKeeper(
 		mempool:               collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
 		requestUnmetDemand:    collections.NewMap(sb, state.RequestUnmetDemandKey, "requestUnmetDemand", collections.StringKey, UintValue),
 		topicUnmetDemand:      collections.NewMap(sb, state.TopicUnmetDemandKey, "topicUnmetDemand", collections.Uint64Key, UintValue),
-		pricePerEpoch:         collections.NewItem(sb, state.PricePerEpochKey, "pricePerEpoch", UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
@@ -1056,27 +1053,34 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
 }
 
-func (k *Keeper) GetPricePerEpoch(ctx context.Context) (Uint, error) {
-	ret, err := k.pricePerEpoch.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return ret, nil
-}
+// pricePerEpoch collections.Item[Uint]
+// pricePerEpoch:         collections.NewItem(sb, state.PricePerEpochKey, "pricePerEpoch", UintValue),
 
-func (k *Keeper) GetCurrentAndNextPossiblePricePerEpoch(ctx context.Context) (Uint, Uint, Uint, error) {
-	pricePerEpoch, err := k.GetPricePerEpoch(ctx)
-	if err != nil {
-		return cosmosMath.Uint{}, cosmosMath.Uint{}, cosmosMath.Uint{}, err
-	}
-	arg := uint64(PRICE_CHANGE_PERCENT * PRICE_ADJUSTMENT_PRECISION)
-	minVal := cosmosMath.MaxUint(pricePerEpoch.Mul(cosmosMath.NewUint(PRICE_ADJUSTMENT_PRECISION).SubUint64(arg).QuoUint64(PRICE_ADJUSTMENT_PRECISION)), cosmosMath.NewUint(MIN_PRICE_PER_EPOCH))
-	maxVal := pricePerEpoch.Mul(cosmosMath.NewUint(1).AddUint64(arg))
-	return minVal, pricePerEpoch, maxVal, nil
-}
+// func (k *Keeper) GetPricePerEpoch(ctx context.Context) (Uint, error) {
+// 	ret, err := k.pricePerEpoch.Get(ctx)
+// 	if err != nil {
+// 		if errors.Is(err, collections.ErrNotFound) {
+// 			return cosmosMath.NewUint(0), nil
+// 		}
+// 		return cosmosMath.Uint{}, err
+// 	}
+// 	return ret, nil
+// }
+
+// func (k *Keeper) GetCurrentAndNextPossiblePricePerEpoch(ctx context.Context) (Uint, Uint, Uint, error) {
+// 	pricePerEpoch, err := k.GetPricePerEpoch(ctx)
+// 	if err != nil {
+// 		return cosmosMath.Uint{}, cosmosMath.Uint{}, cosmosMath.Uint{}, err
+// 	}
+// 	arg := uint64(PRICE_CHANGE_PERCENT * PRICE_ADJUSTMENT_PRECISION)
+// 	minVal := cosmosMath.MaxUint(pricePerEpoch.Mul(cosmosMath.NewUint(PRICE_ADJUSTMENT_PRECISION).SubUint64(arg).QuoUint64(PRICE_ADJUSTMENT_PRECISION)), cosmosMath.NewUint(MIN_PRICE_PER_EPOCH))
+// 	maxVal := pricePerEpoch.Mul(cosmosMath.NewUint(1).AddUint64(arg))
+// 	return minVal, pricePerEpoch, maxVal, nil
+// }
+
+// func (k *Keeper) SetPricePerEpoch(ctx context.Context, newPrice cosmosMath.Uint) error {
+// 	return k.pricePerEpoch.Set(ctx, newPrice)
+// }
 
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
 	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
@@ -1097,6 +1101,14 @@ func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt co
 	}
 	topicUnmetDemand = topicUnmetDemand.Sub(amt)
 	return k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
+}
+
+func (k *Keeper) GetUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+	return topicUnmetDemand, nil
 }
 
 func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
@@ -1193,10 +1205,6 @@ func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount 
 
 func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, error) {
 	return k.requestUnmetDemand.Get(ctx, requestId)
-}
-
-func (k *Keeper) SetPricePerEpoch(ctx context.Context, newPrice cosmosMath.Uint) error {
-	return k.pricePerEpoch.Set(ctx, newPrice)
 }
 
 //

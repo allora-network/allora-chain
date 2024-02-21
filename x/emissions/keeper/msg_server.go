@@ -552,6 +552,10 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		if timeNow+request.Cadence > request.TimestampValidUntil {
 			return nil, state.ErrInferenceRequestWillNeverBeScheduled
 		}
+		// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
+		if request.BidAmount.LT(cosmosMath.NewUint(MIN_UNMET_DEMAND)) {
+			return nil, state.ErrInferenceRequestBidAmountTooLow
+		}
 		// 9. Check sender has funds to pay for the inference request
 		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 		// 10. Send funds
