@@ -1053,35 +1053,6 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
 }
 
-// pricePerEpoch collections.Item[Uint]
-// pricePerEpoch:         collections.NewItem(sb, state.PricePerEpochKey, "pricePerEpoch", UintValue),
-
-// func (k *Keeper) GetPricePerEpoch(ctx context.Context) (Uint, error) {
-// 	ret, err := k.pricePerEpoch.Get(ctx)
-// 	if err != nil {
-// 		if errors.Is(err, collections.ErrNotFound) {
-// 			return cosmosMath.NewUint(0), nil
-// 		}
-// 		return cosmosMath.Uint{}, err
-// 	}
-// 	return ret, nil
-// }
-
-// func (k *Keeper) GetCurrentAndNextPossiblePricePerEpoch(ctx context.Context) (Uint, Uint, Uint, error) {
-// 	pricePerEpoch, err := k.GetPricePerEpoch(ctx)
-// 	if err != nil {
-// 		return cosmosMath.Uint{}, cosmosMath.Uint{}, cosmosMath.Uint{}, err
-// 	}
-// 	arg := uint64(PRICE_CHANGE_PERCENT * PRICE_ADJUSTMENT_PRECISION)
-// 	minVal := cosmosMath.MaxUint(pricePerEpoch.Mul(cosmosMath.NewUint(PRICE_ADJUSTMENT_PRECISION).SubUint64(arg).QuoUint64(PRICE_ADJUSTMENT_PRECISION)), cosmosMath.NewUint(MIN_PRICE_PER_EPOCH))
-// 	maxVal := pricePerEpoch.Mul(cosmosMath.NewUint(1).AddUint64(arg))
-// 	return minVal, pricePerEpoch, maxVal, nil
-// }
-
-// func (k *Keeper) SetPricePerEpoch(ctx context.Context, newPrice cosmosMath.Uint) error {
-// 	return k.pricePerEpoch.Set(ctx, newPrice)
-// }
-
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
 	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
 	if err != nil {

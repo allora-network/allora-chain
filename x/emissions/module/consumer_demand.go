@@ -76,21 +76,9 @@ func IsValidAtPrice(ctx sdk.Context, am AppModule, req state.InferenceRequest, p
 	return &res, nil
 }
 
-// Big Principle:
-//
-//	The price of inference is determined by the demand for inference vs the scarcity of capacity to run topic-level shit
-//
-// We process all inference requests, draw demand from them, possibly remove them from the mempool
-// in order to determine which topics we should calculate, the current price per inference, and total
-// demand to meet with supply (how much demand to draw).
-//
-// Find the demand per epoch of the topic by counting inference requests per topic that have not yet been filtered out
-// Order topics by "demand" (num unfiltered requests)
-// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand (sort desc by num requests)
-// If number of topics > keeper.TARGET_CAPACITY_PER_BLOCK, price := price * (1 + keeper.PRICE_CHANGE_PERCENT)
-// If number of topics < keeper.TARGET_CAPACITY_PER_BLOCK, price := max(keeper.MIN_PRICE_PER_EPOCH, price * (1 - keeper.PRICE_CHANGE_PERCENT))
-// Deduct from all unfiltered requests `price` amount among those top topics
-// Delete requests with negligible demand leftover
+// The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
+// Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
+// at their optimal prices and then skimming the top.
 func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, am AppModule, currentTime uint64) (*[]state.Topic, *cosmosMath.Uint, error) {
 	// Inactivate topics with below keeper.MIN_TOPIC_DEMAND demand)
 	topicsActive, err := am.keeper.GetActiveTopics(ctx)
