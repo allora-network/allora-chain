@@ -3,6 +3,7 @@ package emissions
 import (
 	"errors"
 	"fmt"
+	sdkerrors"cosmossdk.io/errors"
 )
 
 var ErrIntegerUnderflowDelegator = errors.New(Err_ErrIntegerUnderflowDelegator.String())
@@ -49,4 +50,5 @@ var ErrInferenceRequestCadenceTooSlow = fmt.Errorf(Err_ErrInferenceRequestCadenc
 var ErrInferenceRequestWillNeverBeScheduled = fmt.Errorf(Err_ErrInferenceRequestWillNeverBeScheduled.String())
 var ErrOwnerCannotBeEmpty = fmt.Errorf(Err_ErrOwnerCannotBeEmpty.String())
 var ErrInsufficientStakeAfterRemoval = fmt.Errorf(Err_ErrInsufficientStakeAfterRemoval.String())
+var ErrTestError = sdkerrors.Register(ModuleName, 50, "THIS IS A TEST ERROR WHATEVER")
 
