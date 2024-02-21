@@ -1,0 +1,183 @@
+syntax = "proto3";
+package emissions.state.v1;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+// import "google/protobuf/timestamp.proto";
+
+// Params defines the parameters of the module.
+message Params {
+  string version = 1;
+}
+
+// GenesisState is the state that must be provided at genesis.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+message StakeInfo {
+  string address = 1;
+  string amount = 2;
+}
+
+message Topic {
+  uint64 id = 1;
+  string creator = 2;
+  string metadata = 3;
+  string weight_logic = 4;
+  string weight_method = 5;
+  uint64 weight_cadence = 6;
+  uint64 weight_last_ran = 7;
+  string inference_logic = 8;
+  string inference_method = 9;
+  uint64 inference_cadence = 10;
+  uint64 inference_last_ran = 11;
+  bool active = 12;
+  string default_arg = 13;
+}
+
+message Weight {
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string worker = 3;  
+  string weight = 4 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message Weights {
+  repeated Weight weights = 1;
+}
+
+message Inference {
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  string worker = 2;
+  string value = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+  bytes extra_data = 4;
+  string proof = 5;
+}
+
+message Inferences {
+  repeated Inference inferences = 1;
+}
+
+message OffchainNode {
+  uint64 topic_id = 1;          // What topic the node belongs to
+  string lib_p2p_key = 2;       // LibP2P key of the node
+  string multi_address = 3;   // Network address for accessing the node
+  string owner = 4;
+  string node_address = 5;
+  string node_id = 6;
+}
+
+message OffchainNodes {
+  repeated Inference offchain_node = 1;
+}
+
+message InferenceSetForScoring {
+  uint64 topic_id = 1;
+  uint64 timestamp = 2;
+  Inferences inferences = 3;
+}
+
+message StakePlacement {
+  string target = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemovalPlacement {
+  uint64 topic_id = 1;
+  string target = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemoval {
+  uint64 timestamp_removal_started = 1;
+  repeated StakeRemovalPlacement placements = 3;
+}
+
+// num_inference_possible = bid_amount / max_price_per_inference, 
+// length of time this inference repeats for =  num_inference_possible * cadence
+message InferenceRequest {
+  string sender = 1;
+  uint64 nonce = 2;
+  uint64 topic_id = 3;
+  uint64 cadence = 4; // time in seconds between inferences, zero means oneshot inference
+  string max_price_per_inference = 5 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // the maximum price per inference that alice is willing to pay
+  string bid_amount = 6 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; // how many funds to send from alice with this Inference Request
+  uint64 timestamp_valid_until = 7;
+  bytes extra_data = 8;
+}
+
+enum Err {
+  ErrInvalidTopicId = 0;
+  ErrReputerAlreadyRegistered = 1;
+  ErrWorkerAlreadyRegistered = 2;
+  ErrInsufficientStakeToRegister = 3;
+  ErrLibP2PKeyRequired = 4;
+  ErrAddressNotRegistered = 5;
+  ErrStakeTargetNotRegistered = 6; 
+  ErrTopicIdOfStakerAndTargetDoNotMatch = 7; 
+  ErrInsufficientStakeToRemove = 8;
+  ErrIntegerUnderflowDelegator = 9;
+  ErrIntegerUnderflowBonds = 10;
+  ErrIntegerUnderflowTarget = 11; 
+  ErrIntegerUnderflowTopicStake = 12;
+  ErrIntegerUnderflowTotalStake = 13;
+  ErrIterationLengthDoesNotMatch = 14;
+  ErrDoNotSetMapValueToZero = 15;
+  ErrBlockHeightNegative = 16;
+  ErrBlockHeightLessThanPrevious = 17;
+  ErrNoStakeToRemove = 18;
+  ErrModifyStakeBeforeBondLessThanAmountModified = 19;
+  ErrModifyStakeBeforeSumGreaterThanSenderStake = 20;
+  ErrModifyStakeSumBeforeNotEqualToSumAfter = 21;
+  ErrConfirmRemoveStakeNoRemovalStarted = 22;
+  ErrConfirmRemoveStakeTooEarly = 23;
+  ErrConfirmRemoveStakeTooLate = 24;
+  ErrScalarMultiplyNegative = 25;
+  ErrDivideMapValuesByZero = 26;
+  ErrInferenceRequestAlreadyInMempool = 27;
+  ErrInferenceRequestBidAmountLessThanPrice = 28;
+  ErrInferenceRequestTimestampValidUntilInPast = 29;
+  ErrInferenceRequestTimestampValidUntilTooFarInFuture = 30;
+  ErrInferenceRequestCadenceTooFast = 31;
+  ErrInferenceRequestCadenceTooSlow = 32;
+  ErrInferenceRequestWillNeverBeScheduled = 33;
+}

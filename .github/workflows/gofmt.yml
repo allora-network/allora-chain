@@ -1,0 +1,28 @@
+name: fmt
+
+on: [pull_request]
+
+jobs:
+  formatter:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.21.x
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '12'
+
+    - name: Checkout code
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+    - name: Check code formatting using gofmt
+      uses: Jerome1337/gofmt-action@v1.0.5
+      with:
+          gofmt-path: '.'
+          gofmt-flags: '-l -d'
