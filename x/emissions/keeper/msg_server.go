@@ -141,10 +141,14 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 // #           Node Registration          #
 // ########################################
 
+// Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*state.MsgRegisterResponse, error) {
-	err := validateRegistrationCommon(ctx, ms, msg)
-	if err != nil {
-		return nil, err
+	if msg.GetLibP2PKey() == "" {
+		return nil, state.ErrLibP2PKeyRequired
+	}
+	// require funds to be at least greater than the minimum stake
+	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
+		return nil, state.ErrInsufficientStakeToRegister
 	}
 	// check if topics exists and if address is already registered in any of them
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
@@ -221,8 +225,17 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		return nil, state.ErrAddressIsNotRegisteredInAnyTopic
 	}
 
-	// add overall staking power of the wallet to the topic stake
-	addStakeToTopics(ctx, ms, address, msg)
+	// copy overall staking power of the wallet to the topic stake
+	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+
+	// add to topic stake
+	err = ms.k.AddStakeToTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
+	if err != nil {
+		return nil, err
+	}
 
 	nodeInfo := state.OffchainNode{
 		NodeAddress:  msg.Creator,
@@ -296,7 +309,16 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 	}
 
 	// remove overall staking power of the wallet to the topic stake
-	removeStakeFromTopics(ctx, ms, address, msg)
+	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+
+	// remove from topic stake
+	err = ms.k.RemoveStakeFromTopics(ctx, []uint64{msg.TopicId}, totalAddressStake)
+	if err != nil {
+		return nil, err
+	}
 
 	// Proceed based on whether the address is registered as a reputer or worker
 	if msg.IsReputer {
@@ -685,27 +707,11 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 // ########################################
 
 // Making common interfaces available to protobuf messages
-type RegistrationMessage interface {
-	GetInitialStake() cosmosMath.Uint
-	GetTopicsIds() []uint64
-	GetLibP2PKey() string
-	GetCreator() string
-}
-
-func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms msgServer, msg M) error {
-	// Validate the message contents
-	if msg.GetLibP2PKey() == "" {
-		return state.ErrLibP2PKeyRequired
-	}
-
-	// require funds to be at least greater than the minimum stake
-	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
-		return state.ErrInsufficientStakeToRegister
-	}
-	return nil
-}
-
-func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
+func moveFundsAddStake(
+	ctx context.Context,
+	ms msgServer,
+	nodeAddr sdk.AccAddress,
+	msg *state.MsgRegister) error {
 	// move funds
 	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
 	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
@@ -721,44 +727,6 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
 	err = ms.k.AddStake(ctx, msg.GetTopicsIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type AddRegistrationMessage interface {
-	GetTopicId() uint64
-}
-
-func addStakeToTopics[M AddRegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
-	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, nodeAddr)
-	if err != nil {
-		return err
-	}
-
-	// add to topic stake
-	err = ms.k.AddStakeToTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type RemoveRegistrationMessage interface {
-	GetTopicId() uint64
-}
-
-func removeStakeFromTopics[M RemoveRegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
-	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, nodeAddr)
-	if err != nil {
-		return err
-	}
-
-	// remove from topic stake
-	err = ms.k.RemoveStakeFromTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
 	if err != nil {
 		return err
 	}

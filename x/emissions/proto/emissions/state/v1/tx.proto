@@ -124,7 +124,7 @@ message MsgAddNewRegistration {
   string creator = 1;
   string lib_p2p_key = 2;
   string multi_address = 3;
-  uint64 topicId = 4;
+  uint64 topic_id = 4;
   string owner = 5;
   bool isReputer = 6;
 }
@@ -138,7 +138,7 @@ message MsgRemoveRegistration {
   option (cosmos.msg.v1.signer) = "creator";
 
   string creator = 1;
-  uint64 topicId = 2;
+  uint64 topic_id = 2;
   bool isReputer = 3;
 }
 

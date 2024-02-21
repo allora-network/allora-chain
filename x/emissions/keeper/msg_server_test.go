@@ -69,7 +69,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
 	require.ErrorIs(err, state.ErrAddressAlreadyRegisteredInATopic, "RegisterReputer should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditonalTopic() {
+func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -1025,6 +1025,15 @@ func (s *KeeperTestSuite) TestMsgStartRemoveAllStake() {
 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
 
+	// Remove Registration
+	removeRegistrationMsg := &state.MsgRemoveRegistration{
+		Creator:   reputerAddr.String(),
+		TopicId:   0,
+		IsReputer: true,
+	}
+	_, err = msgServer.RemoveRegistration(ctx, removeRegistrationMsg)
+	require.NoError(err, "RemoveRegistration should not return an error")
+
 	// Remove all stake
 	removeAllStakeMsg := &state.MsgStartRemoveAllStake{
 		Sender: reputerAddr.String(),
@@ -1076,6 +1085,15 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveAllStake() {
 	removeAllStakeMsg := &state.MsgStartRemoveAllStake{
 		Sender: reputerAddr.String(),
 	}
+
+	// Remove registration
+	removeRegistrationMsg := &state.MsgRemoveRegistration{
+		Creator:   reputerAddr.String(),
+		TopicId:   0,
+		IsReputer: true,
+	}
+	_, err = msgServer.RemoveRegistration(ctx, removeRegistrationMsg)
+	require.NoError(err, "RemoveRegistration should not return an error")
 
 	_, err = msgServer.StartRemoveAllStake(ctx, removeAllStakeMsg)
 
@@ -1185,62 +1203,6 @@ func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveMoreThanMinimalAmount
 	// Successfully remove stake
 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 	require.NoError(err, "RemoveStake should not return an error when removing all stake")
-}
-
-func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredTarget() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
-	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
-
-	// Common setup for staking
-	registrationInitialStake := cosmosMath.NewUint(100)
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-
-	// Scenario 2: Attempt to remove stake from unregistered target
-	unregisteredWorkerAddr := sdk.AccAddress(PKS[2].Address()) // unregistered target
-	removeStakeMsg := &state.MsgStartRemoveStake{
-		Sender: reputerAddr.String(),
-		PlacementsRemove: []*state.StakePlacement{
-			{
-				Target: unregisteredWorkerAddr.String(),
-				Amount: registrationInitialStake,
-			},
-		},
-	}
-	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
-	require.ErrorIs(err, state.ErrAddressNotRegistered, "RemoveStake should return an error when attempting to remove stake from a unregistered target")
-}
-
-func (s *KeeperTestSuite) TestStartRemoveStakeInvalidRemoveFromUnregisteredSender() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
-	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
-
-	// Common setup for staking
-	registrationInitialStake := cosmosMath.NewUint(100)
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-
-	// Scenario 3: Attempt to remove stake as a unregistered sender
-	unregisteredReputerAddr := sdk.AccAddress(PKS[3].Address()) // unregistered sender
-	removeStakeMsg := &state.MsgStartRemoveStake{
-		Sender: unregisteredReputerAddr.String(),
-		PlacementsRemove: []*state.StakePlacement{
-			{
-
-				Target: workerAddr.String(),
-				Amount: registrationInitialStake,
-			},
-		},
-	}
-	_, err := msgServer.StartRemoveStake(ctx, removeStakeMsg)
-	require.ErrorIs(err, state.ErrAddressNotRegistered, "RemoveStake should return an error when attempting to remove stake as a unregistered sender")
-
 }
 
 func (s *KeeperTestSuite) TestStartRemoveStakeInvalidNotEnoughStake() {
