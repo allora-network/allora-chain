@@ -26,10 +26,10 @@ BUILDDIR ?= $(CURDIR)/build
 all: install
 
 install:
-	# @echo "--> ensure dependencies have not been modified"
-	# @go mod verify
-	# @go mod tidy
-	# @echo "--> installing allorad"
+	@echo "--> ensure dependencies have not been modified"
+	@go mod verify
+	@go mod tidy
+	@echo "--> installing allorad"
 	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/allorad
 
 init:

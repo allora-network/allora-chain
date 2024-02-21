@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -34,6 +35,11 @@ import (
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper" //nolint:staticcheck
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" // TODO move to new non-deprecated package
+	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	"github.com/allora-network/allora-chain/inflation"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -162,6 +168,107 @@ func NewAlloraApp(
 	}
 
 	return app, nil
+}
+
+const (
+	// TypeUnrecognized means coin type is unrecognized
+	TypeUnrecognized = iota
+	// TypeGeneralMessage is a pure message
+	TypeGeneralMessage
+	// TypeGeneralMessageWithToken is a general message with token
+	TypeGeneralMessageWithToken
+	// TypeSendToken is a direct token transfer
+	TypeSendToken
+)
+
+type AxelarBody struct {
+	DestinationChain   string     `json:"destination_chain"`
+	DestinationAddress string     `json:"destination_address"`
+	Payload            []byte     `json:"payload"`
+	Type               int64      `json:"type"`
+	Fee                *AxelarFee `json:"fee"`
+}
+
+type AxelarFee struct {
+	Amount    string `json:"amount"`
+	Recipient string `json:"recipient"`
+}
+
+type msgServer struct {
+	ibcTransferK ibctransferkeeper.Keeper
+}
+
+const AxelarGMPAcc = "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5"
+
+/*
+// TODO. figure out why this doesn't compile
+// app/app.go:207:9: cannot use &msgServer{…} (value of type *msgServer) as
+// "cosmossdk.io/x/circuit/types".MsgServer value in return statement: *msgServer
+// does not implement "cosmossdk.io/x/circuit/types".MsgServer (missing method AuthorizeCircuitBreaker)
+
+func NewMsgServerImpl(ibcTransferK ibctransferkeeper.Keeper) types.MsgServer {
+	return &msgServer{
+		ibcTransferK: ibcTransferK,
+	}
+}
+*/
+
+func (k msgServer) BuildAndSendIBCDataMessage(
+	goCtx sdk.Context,
+	msg struct {
+		DestinationChain   string
+		DestinationAddress string
+		IbcChannel         string
+		Sender             sdk.AccAddress
+		ExecutorAccount    string
+		FeeTokenAndAmount  sdk.Coin
+		bytesData          string
+	}) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// build payload that can be decoded by solidity
+	bytesDataType, err := abi.NewType("bytes", "bytes", nil)
+	if err != nil {
+		return err
+	}
+
+	payload, err := abi.Arguments{{Type: bytesDataType}}.Pack(msg.bytesData)
+	if err != nil {
+		return err
+	}
+
+	axelarMemo := AxelarBody{
+		DestinationChain:   msg.DestinationChain,
+		DestinationAddress: msg.DestinationAddress,
+		Payload:            payload,
+		Type:               TypeGeneralMessage,
+		Fee: &AxelarFee{
+			Amount:    msg.FeeTokenAndAmount.Amount.String(),
+			Recipient: msg.ExecutorAccount,
+		},
+	}
+
+	axelarMemoJson, err := json.Marshal(axelarMemo)
+	if err != nil {
+		return err
+	}
+
+	transferMsg := ibctransfertypes.NewMsgTransfer(
+		ibctransfertypes.PortID,
+		msg.IbcChannel,
+		msg.FeeTokenAndAmount,
+		string(msg.Sender),
+		AxelarGMPAcc,
+		ibcclienttypes.ZeroHeight(),
+		uint64(ctx.BlockTime().Add(6*time.Hour).UnixNano()),
+		string(axelarMemoJson),
+	)
+	_, err = k.ibcTransferK.Transfer(goCtx, transferMsg)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // LegacyAmino returns AlloraApp's amino codec.
