@@ -114,46 +114,48 @@ func TestModuleTestSuite(t *testing.T) {
 
 func (s *ModuleTestSuite) TestRegisterReputer() {
 	topicId, addr, amount := registerCommonBefore(s)
-	response, err := s.msgServer.RegisterReputer(s.ctx, &state.MsgRegisterReputer{
+	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: amount,
+		IsReputer:    true,
 	})
 	s.Require().NoError(err)
-	expected := state.MsgRegisterReputerResponse{
+	expected := state.MsgRegisterResponse{
 		Success: true,
-		Message: "Reputer node successfully registered",
+		Message: "Node successfully registered",
 	}
 	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegistered(s.ctx, addr)
+	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(s.ctx, addr)
 	s.Require().NoError(err)
-	s.Require().True(isReputerRegistered, "Expect reputer to be registered")
+	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
 
 	registerCommonAfter(s, topicId, addr, amount)
 }
 
 func (s *ModuleTestSuite) TestRegisterWorker() {
 	topicId, addr, amount := registerCommonBefore(s)
-	response, err := s.msgServer.RegisterWorker(s.ctx, &state.MsgRegisterWorker{
+	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicId:      topicId,
+		TopicsIds:    []uint64{topicId},
 		InitialStake: amount,
+		Owner:        addr.String(),
 	})
 	s.Require().NoError(err)
-	expected := state.MsgRegisterWorkerResponse{
+	expected := state.MsgRegisterResponse{
 		Success: true,
-		Message: "Worker node successfully registered",
+		Message: "Node successfully registered",
 	}
 	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
 
-	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegistered(s.ctx, addr)
+	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByWorkerAddress(s.ctx, addr)
 	s.Require().NoError(err)
-	s.Require().True(isWorkerRegistered, "Expect reputer to be registered")
+	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
 	registerCommonAfter(s, topicId, addr, amount)
 }
 

@@ -23,8 +23,9 @@ const (
 	Msg_ProcessInferences_FullMethodName   = "/emissions.state.v1.Msg/ProcessInferences"
 	Msg_SetWeights_FullMethodName          = "/emissions.state.v1.Msg/SetWeights"
 	Msg_CreateNewTopic_FullMethodName      = "/emissions.state.v1.Msg/CreateNewTopic"
-	Msg_RegisterReputer_FullMethodName     = "/emissions.state.v1.Msg/RegisterReputer"
-	Msg_RegisterWorker_FullMethodName      = "/emissions.state.v1.Msg/RegisterWorker"
+	Msg_Register_FullMethodName            = "/emissions.state.v1.Msg/Register"
+	Msg_AddNewRegistration_FullMethodName  = "/emissions.state.v1.Msg/AddNewRegistration"
+	Msg_RemoveRegistration_FullMethodName  = "/emissions.state.v1.Msg/RemoveRegistration"
 	Msg_AddStake_FullMethodName            = "/emissions.state.v1.Msg/AddStake"
 	Msg_ModifyStake_FullMethodName         = "/emissions.state.v1.Msg/ModifyStake"
 	Msg_StartRemoveStake_FullMethodName    = "/emissions.state.v1.Msg/StartRemoveStake"
@@ -41,8 +42,9 @@ type MsgClient interface {
 	ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error)
 	SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
-	RegisterReputer(ctx context.Context, in *MsgRegisterReputer, opts ...grpc.CallOption) (*MsgRegisterReputerResponse, error)
-	RegisterWorker(ctx context.Context, in *MsgRegisterWorker, opts ...grpc.CallOption) (*MsgRegisterWorkerResponse, error)
+	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
+	AddNewRegistration(ctx context.Context, in *MsgAddNewRegistration, opts ...grpc.CallOption) (*MsgAddNewRegistrationResponse, error)
+	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
 	ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error)
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
@@ -95,18 +97,27 @@ func (c *msgClient) CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, o
 	return out, nil
 }
 
-func (c *msgClient) RegisterReputer(ctx context.Context, in *MsgRegisterReputer, opts ...grpc.CallOption) (*MsgRegisterReputerResponse, error) {
-	out := new(MsgRegisterReputerResponse)
-	err := c.cc.Invoke(ctx, Msg_RegisterReputer_FullMethodName, in, out, opts...)
+func (c *msgClient) Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error) {
+	out := new(MsgRegisterResponse)
+	err := c.cc.Invoke(ctx, Msg_Register_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RegisterWorker(ctx context.Context, in *MsgRegisterWorker, opts ...grpc.CallOption) (*MsgRegisterWorkerResponse, error) {
-	out := new(MsgRegisterWorkerResponse)
-	err := c.cc.Invoke(ctx, Msg_RegisterWorker_FullMethodName, in, out, opts...)
+func (c *msgClient) AddNewRegistration(ctx context.Context, in *MsgAddNewRegistration, opts ...grpc.CallOption) (*MsgAddNewRegistrationResponse, error) {
+	out := new(MsgAddNewRegistrationResponse)
+	err := c.cc.Invoke(ctx, Msg_AddNewRegistration_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error) {
+	out := new(MsgRemoveRegistrationResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveRegistration_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +186,9 @@ type MsgServer interface {
 	ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error)
 	SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
-	RegisterReputer(context.Context, *MsgRegisterReputer) (*MsgRegisterReputerResponse, error)
-	RegisterWorker(context.Context, *MsgRegisterWorker) (*MsgRegisterWorkerResponse, error)
+	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
+	AddNewRegistration(context.Context, *MsgAddNewRegistration) (*MsgAddNewRegistrationResponse, error)
+	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
 	ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error)
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
@@ -202,11 +214,14 @@ func (UnimplementedMsgServer) SetWeights(context.Context, *MsgSetWeights) (*MsgS
 func (UnimplementedMsgServer) CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
 }
-func (UnimplementedMsgServer) RegisterReputer(context.Context, *MsgRegisterReputer) (*MsgRegisterReputerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterReputer not implemented")
+func (UnimplementedMsgServer) Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedMsgServer) RegisterWorker(context.Context, *MsgRegisterWorker) (*MsgRegisterWorkerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterWorker not implemented")
+func (UnimplementedMsgServer) AddNewRegistration(context.Context, *MsgAddNewRegistration) (*MsgAddNewRegistrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddNewRegistration not implemented")
+}
+func (UnimplementedMsgServer) RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveRegistration not implemented")
 }
 func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
@@ -311,38 +326,56 @@ func _Msg_CreateNewTopic_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RegisterReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterReputer)
+func _Msg_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRegister)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RegisterReputer(ctx, in)
+		return srv.(MsgServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RegisterReputer_FullMethodName,
+		FullMethod: Msg_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterReputer(ctx, req.(*MsgRegisterReputer))
+		return srv.(MsgServer).Register(ctx, req.(*MsgRegister))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RegisterWorker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterWorker)
+func _Msg_AddNewRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddNewRegistration)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RegisterWorker(ctx, in)
+		return srv.(MsgServer).AddNewRegistration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RegisterWorker_FullMethodName,
+		FullMethod: Msg_AddNewRegistration_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterWorker(ctx, req.(*MsgRegisterWorker))
+		return srv.(MsgServer).AddNewRegistration(ctx, req.(*MsgAddNewRegistration))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveRegistration)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveRegistration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveRegistration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveRegistration(ctx, req.(*MsgRemoveRegistration))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -479,12 +512,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_CreateNewTopic_Handler,
 		},
 		{
-			MethodName: "RegisterReputer",
-			Handler:    _Msg_RegisterReputer_Handler,
+			MethodName: "Register",
+			Handler:    _Msg_Register_Handler,
 		},
 		{
-			MethodName: "RegisterWorker",
-			Handler:    _Msg_RegisterWorker_Handler,
+			MethodName: "AddNewRegistration",
+			Handler:    _Msg_AddNewRegistration_Handler,
+		},
+		{
+			MethodName: "RemoveRegistration",
+			Handler:    _Msg_RemoveRegistration_Handler,
 		},
 		{
 			MethodName: "AddStake",

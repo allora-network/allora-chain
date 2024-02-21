@@ -19,14 +19,6 @@ const MIN_FASTEST_ALLOWED_CADENCE = 60                             // 1 minute i
 const MAX_INFERENCE_REQUEST_VALIDITY = 60 * 60 * 24 * 7 * 24       // 24 weeks approximately 6 months in seconds
 const MAX_SLOWEST_ALLOWED_CADENCE = MAX_INFERENCE_REQUEST_VALIDITY // 24 weeks approximately 6 months in seconds
 
-type NodeExists int8
-
-const (
-	isWorker NodeExists = iota
-	isReputer
-	isNotFound
-)
-
 type msgServer struct {
 	k Keeper
 }
@@ -39,6 +31,8 @@ func NewMsgServerImpl(keeper Keeper) state.MsgServer {
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
+	return nil, state.ErrTestError
+
 	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
@@ -148,96 +142,183 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 // ########################################
 // #           Node Registration          #
 // ########################################
-// Reputer Registration signs up a new reputer
-// to be a reputer for a given topicId on the network
-func (ms msgServer) RegisterReputer(ctx context.Context, msg *state.MsgRegisterReputer) (*state.MsgRegisterReputerResponse, error) {
+
+func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*state.MsgRegisterResponse, error) {
 	err := validateRegistrationCommon(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
-	// check the reputer isn't already registered
-	reputerAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+	// check if topics exists and if address is already registered in any of them
+	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
-	reputerExists, err := ms.k.IsReputerRegistered(ctx, reputerAddr)
+	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	if reputerExists {
-		return nil, state.ErrReputerAlreadyRegistered
+	if len(registeredTopicsIds) > 0 {
+		return nil, state.ErrAddressAlreadyRegisteredInATopic
+	}
+
+	for _, topicId := range msg.TopicsIds {
+		// check if topic exists
+		exist, err := ms.k.TopicExists(ctx, topicId)
+		if !exist {
+			return nil, state.ErrTopicDoesNotExist
+		} else if err != nil {
+			return nil, err
+		}
 	}
 
 	// move the tokens from the creator to the module account
 	// then add the stake to the total, topicTotal, and 3 staking tracking maps
-	moveFundsAddStake(ctx, ms, reputerAddr, msg)
+	moveFundsAddStake(ctx, ms, address, msg)
 
-	// add node to the data structures that track the nodes:
-	// add node to topicReputers
-	// add node to reputers
-	reputerInfo := state.OffchainNode{
-		TopicId:      msg.TopicId,
+	nodeInfo := state.OffchainNode{
+		NodeAddress:  msg.Creator,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
 	}
+	if msg.IsReputer {
+		// add node to topicReputers
+		// add node to reputers
+		err = ms.k.InsertReputer(ctx, msg.TopicsIds, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if msg.Owner == "" {
+			return nil, state.ErrOwnerCannotBeEmpty
+		}
+		nodeInfo.Owner = msg.Owner
+		nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
 
-	err = ms.k.InsertReputer(ctx, msg.TopicId, reputerAddr, reputerInfo)
-	if err != nil {
-		return nil, err
+		// add node to topicWorkers
+		// add node to workers
+		err = ms.k.InsertWorker(ctx, msg.TopicsIds, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Return a successful response
-	return &state.MsgRegisterReputerResponse{
+	return &state.MsgRegisterResponse{
 		Success: true,
-		Message: "Reputer node successfully registered",
+		Message: "Node successfully registered",
 	}, nil
 }
 
-// Reputer Registration signs up a new reputer
-// to be a reputer for a given topicId on the network
-func (ms msgServer) RegisterWorker(ctx context.Context, msg *state.MsgRegisterWorker) (*state.MsgRegisterWorkerResponse, error) {
-	err := validateRegistrationCommon(ctx, ms, msg)
+// Add additional topics after initial reputer or worker registration
+func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNewRegistration) (*state.MsgAddNewRegistrationResponse, error) {
+	// check if topics exists and if address is already registered in any of them
+	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
-	// check the worker isn't already registered
-	workerAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	workerExists, err := ms.k.IsWorkerRegistered(ctx, workerAddr)
-	if err != nil {
-		return nil, err
-	}
-	if workerExists {
-		return nil, state.ErrWorkerAlreadyRegistered
+	if len(registeredTopicsIds) == 0 {
+		return nil, state.ErrAddressIsNotRegisteredInAnyTopic
 	}
 
-	// move the tokens from the creator to the module account
-	// then add the stake to the total, topicTotal, and 3 staking tracking maps
-	moveFundsAddStake(ctx, ms, workerAddr, msg)
+	// add overall staking power of the wallet to the topic stake
+	addStakeToTopics(ctx, ms, address, msg)
 
-	// add node to the data structures that track the nodes:
-	// add node to topicReputers
-	// add node to reputers
-	workerInfo := state.OffchainNode{
+	nodeInfo := state.OffchainNode{
 		NodeAddress:  msg.Creator,
-		TopicId:      msg.TopicId,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
-		Owner:        msg.Owner,
-		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
 	}
 
-	err = ms.k.InsertWorker(ctx, msg.TopicId, workerAddr, workerInfo)
+	if msg.IsReputer {
+		// get topics where the users is registered as reputer
+		reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByReputerAddress(ctx, address)
+		if err != nil {
+			return nil, err
+		}
+		for _, topicIdRegistered := range reputerRegisteredTopicsIds {
+			if topicIdRegistered == msg.TopicId {
+				return nil, state.ErrReputerAlreadyRegisteredInTopic
+			}
+		}
+
+		// add node to topicReputers
+		err = ms.k.InsertReputer(ctx, []uint64{msg.TopicId}, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// get topics where the users is registered as worker
+		reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, address)
+		if err != nil {
+			return nil, err
+		}
+		for _, topicIdRegistered := range reputerRegisteredTopicsIds {
+			if topicIdRegistered == msg.TopicId {
+				return nil, state.ErrReputerAlreadyRegisteredInTopic
+			}
+		}
+
+		// add node to topicWorkers
+		err = ms.k.InsertWorker(ctx, []uint64{msg.TopicId}, address, nodeInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &state.MsgAddNewRegistrationResponse{
+		Success: true,
+		Message: fmt.Sprintf("Node successfully registered in topic %d", msg.TopicId),
+	}, nil
+}
+
+// Remove registration from a topic
+func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemoveRegistration) (*state.MsgRemoveRegistrationResponse, error) {
+	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
+	}
+
+	// Check if the address is registered in the specified topic
+	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	isRegisteredInTopic := false
+	for _, topicId := range registeredTopicsIds {
+		if topicId == msg.TopicId {
+			isRegisteredInTopic = true
+			break
+		}
+	}
+	if !isRegisteredInTopic {
+		return nil, state.ErrAddressIsNotRegisteredInThisTopic
+	}
+
+	// remove overall staking power of the wallet to the topic stake
+	removeStakeFromTopics(ctx, ms, address, msg)
+
+	// Proceed based on whether the address is registered as a reputer or worker
+	if msg.IsReputer {
+		// Remove the reputer registration from the topic
+		err = ms.k.RemoveReputer(ctx, msg.TopicId, address)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Remove the worker registration from the topic
+		err = ms.k.RemoveWorker(ctx, msg.TopicId, address)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Return a successful response
-	return &state.MsgRegisterWorkerResponse{
+	return &state.MsgRemoveRegistrationResponse{
 		Success: true,
-		Message: "Worker node successfully registered",
+		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
 	}, nil
 }
 
@@ -252,31 +333,32 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	if err != nil {
 		return nil, err
 	}
-	senderNodeType, err := checkNodeRegistered(ctx, ms, senderAddr)
+	err = checkNodeRegistered(ctx, ms, senderAddr)
 	if err != nil {
 		return nil, err
 	}
+
 	// 2. check the target exists and is registered
-	targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
+	err = checkNodeRegistered(ctx, ms, targetAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3. check target and sender are signed up for the same topic. err == nil if they are
-	topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
-	if err != nil {
-		return nil, err
-	}
-
-	// 4. check the sender has enough funds to add the stake
+	// 3. check the sender has enough funds to add the stake
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 5. send the funds
+	// 4. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingModuleName, coins)
 
+	// 5. get target topics Registerd
+	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+	if err != nil {
+		return nil, err
+	}
+
 	// 6. update the stake data structures
-	err = ms.k.AddStake(ctx, topicId, msg.Sender, msg.StakeTarget, msg.Amount)
+	err = ms.k.AddStake(ctx, topicsIds, msg.Sender, msg.StakeTarget, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +405,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 		afterSum = afterSum.Add(stakeAfter.Amount)
-		_, err = checkNodeRegistered(ctx, ms, targetAddr)
+		err = checkNodeRegistered(ctx, ms, targetAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -348,6 +430,16 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 		if err != nil {
 			return nil, err
 		}
+
+		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ms.k.RemoveStakeFromTopics(ctx, topicsIds, stakeBefore.Amount)
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, stakeAfter := range msg.PlacementsAdd {
 		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
@@ -359,6 +451,16 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 		err = ms.k.AddStakePlacedUponTarget(ctx, targetAddr, stakeAfter.Amount)
+		if err != nil {
+			return nil, err
+		}
+
+		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ms.k.AddStakeToTopics(ctx, topicsIds, stakeAfter.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -377,33 +479,18 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 	if err != nil {
 		return nil, err
 	}
-	senderNodeType, err := checkNodeRegistered(ctx, ms, senderAddr)
-	if err != nil {
-		return nil, err
-	}
 	stakeRemoval := state.StakeRemoval{
 		TimestampRemovalStarted: uint64(time.Now().UTC().Unix()),
 		Placements:              make([]*state.StakeRemovalPlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
+		// 2. check the target exists and is registered
 		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
 		if err != nil {
 			return nil, err
 		}
 
-		// 2. check the target exists and is registered
-		targetNodeType, err := checkNodeRegistered(ctx, ms, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		// 3. check target and sender are signed up for the same topic. err == nil if they are
-		topicId, err := checkSenderAndTargetSameTopic(ctx, ms, senderAddr, senderNodeType, targetAddr, targetNodeType)
-		if err != nil {
-			return nil, err
-		}
-
-		// 4. check the sender has enough stake already placed on the target to remove the stake
+		// 3. check the sender has enough stake already placed on the target to remove the stake
 		stakePlaced, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
 		if err != nil {
 			return nil, err
@@ -412,14 +499,28 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 			return nil, state.ErrInsufficientStakeToRemove
 		}
 
-		// 5. push to the stake removal object
+		// 4. get topics ids where the target is registered
+		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		// 6. If user is removing stake from themselves and he still registered in topics
+		//  check that the stake is greater than the minimum required
+		if senderAddr.String() == targetAddr.String() &&
+			stakePlaced.Sub(stakePlacement.Amount).LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) &&
+			len(topicsIds) > 0 {
+			return nil, state.ErrInsufficientStakeAfterRemoval
+		}
+
+		// 7. push to the stake removal object
 		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
-			TopicId: topicId,
-			Target:  stakePlacement.Target,
-			Amount:  stakePlacement.Amount,
+			TopicsIds: topicsIds,
+			Target:    stakePlacement.Target,
+			Amount:    stakePlacement.Amount,
 		})
 	}
-	// 6. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
+	// 8. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
 	err = ms.k.SetStakeRemovalQueueForDelegator(ctx, senderAddr, stakeRemoval)
 	if err != nil {
 		return nil, err
@@ -465,7 +566,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
 
 		// 7. update the stake data structures
-		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicId, senderAddr, targetAddr, stakePlacement.Amount)
+		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicsIds, senderAddr, targetAddr, stakePlacement.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -587,9 +688,9 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 
 // Making common interfaces available to protobuf messages
 type RegistrationMessage interface {
-	GetTopicId() uint64
-	GetLibP2PKey() string
 	GetInitialStake() cosmosMath.Uint
+	GetTopicsIds() []uint64
+	GetLibP2PKey() string
 	GetCreator() string
 }
 
@@ -597,14 +698,6 @@ func validateRegistrationCommon[M RegistrationMessage](ctx context.Context, ms m
 	// Validate the message contents
 	if msg.GetLibP2PKey() == "" {
 		return state.ErrLibP2PKeyRequired
-	}
-	// check the topic specified is a valid topic
-	numTopics, err := ms.k.GetNumTopics(ctx)
-	if err != nil {
-		return err
-	}
-	if msg.GetTopicId() >= numTopics { // topic id is 0 indexed
-		return state.ErrInvalidTopicId
 	}
 
 	// require funds to be at least greater than the minimum stake
@@ -629,7 +722,45 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 	// add to stakeOwnedByDelegator
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetTopicId(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	err = ms.k.AddStake(ctx, msg.GetTopicsIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type AddRegistrationMessage interface {
+	GetTopicId() uint64
+}
+
+func addStakeToTopics[M AddRegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
+	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, nodeAddr)
+	if err != nil {
+		return err
+	}
+
+	// add to topic stake
+	err = ms.k.AddStakeToTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type RemoveRegistrationMessage interface {
+	GetTopicId() uint64
+}
+
+func removeStakeFromTopics[M RemoveRegistrationMessage](ctx context.Context, ms msgServer, nodeAddr sdk.AccAddress, msg M) error {
+	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, nodeAddr)
+	if err != nil {
+		return err
+	}
+
+	// remove from topic stake
+	err = ms.k.RemoveStakeFromTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
 	if err != nil {
 		return err
 	}
@@ -639,68 +770,21 @@ func moveFundsAddStake[M RegistrationMessage](ctx context.Context, ms msgServer,
 
 // checks if a node is registered in the system and if it is,
 // returns whether said node is a reputer or a worker
-func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress) (NodeExists, error) {
-	nodeIsReputer, err := ms.k.IsReputerRegistered(ctx, node)
+func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress) error {
+
+	reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByReputerAddress(ctx, node)
 	if err != nil {
-		return isNotFound, err
+		return err
 	}
-	if nodeIsReputer {
-		return isReputer, nil
+	if len(reputerRegisteredTopicsIds) > 0 {
+		return nil
 	}
-	nodeIsWorker, err := ms.k.IsWorkerRegistered(ctx, node)
+	workerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, node)
 	if err != nil {
-		return isNotFound, err
+		return err
 	}
-	if nodeIsWorker {
-		return isWorker, nil
+	if len(workerRegisteredTopicsIds) > 0 {
+		return nil
 	}
-	return isNotFound, state.ErrAddressNotRegistered
-}
-
-// checks if the sender and target are signed up for the same topic
-// if they are, returns that topic id
-func checkSenderAndTargetSameTopic(
-	ctx context.Context,
-	ms msgServer,
-	senderAddr sdk.AccAddress,
-	senderType NodeExists,
-	targetAddr sdk.AccAddress,
-	targetType NodeExists) (TOPIC_ID, error) {
-
-	var senderTopicId uint64
-	if senderType == isReputer {
-		nodeInfo, err := ms.k.GetReputer(ctx, senderAddr)
-		if err != nil {
-			return 0, err
-		}
-		senderTopicId = nodeInfo.TopicId
-	} else {
-		nodeInfo, err := ms.k.GetWorker(ctx, senderAddr)
-		if err != nil {
-			return 0, err
-		}
-		senderTopicId = nodeInfo.TopicId
-	}
-
-	var targetTopicId uint64
-	if targetType == isReputer {
-		nodeInfo, err := ms.k.GetReputer(ctx, targetAddr)
-		if err != nil {
-			return 0, err
-		}
-		targetTopicId = nodeInfo.TopicId
-	} else {
-		nodeInfo, err := ms.k.GetWorker(ctx, targetAddr)
-		if err != nil {
-			return 0, err
-		}
-		targetTopicId = nodeInfo.TopicId
-	}
-
-	// only success case
-	if senderTopicId == targetTopicId {
-		return senderTopicId, nil
-	}
-
-	return 0, state.ErrTopicIdOfStakerAndTargetDoNotMatch
+	return state.ErrAddressNotRegistered
 }

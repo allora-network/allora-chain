@@ -3,6 +3,7 @@ package emissions
 import (
 	"errors"
 	"fmt"
+	sdkerrors"cosmossdk.io/errors"
 )
 
 var ErrIntegerUnderflowDelegator = errors.New(Err_ErrIntegerUnderflowDelegator.String())
@@ -12,8 +13,11 @@ var ErrIntegerUnderflowTopicStake = errors.New(Err_ErrIntegerUnderflowTopicStake
 var ErrIntegerUnderflowTotalStake = errors.New(Err_ErrIntegerUnderflowTotalStake.String())
 var ErrIterationLengthDoesNotMatch = errors.New(Err_ErrIterationLengthDoesNotMatch.String())
 var ErrInvalidTopicId = fmt.Errorf(Err_ErrInvalidTopicId.String())
-var ErrReputerAlreadyRegistered = fmt.Errorf(Err_ErrReputerAlreadyRegistered.String())
-var ErrWorkerAlreadyRegistered = fmt.Errorf(Err_ErrWorkerAlreadyRegistered.String())
+var ErrReputerAlreadyRegisteredInTopic = fmt.Errorf(Err_ErrReputerAlreadyRegisteredInTopic.String())
+var ErrWorkerAlreadyRegisteredInTopic = fmt.Errorf(Err_ErrWorkerAlreadyRegisteredInTopic.String())
+var ErrAddressAlreadyRegisteredInATopic = fmt.Errorf(Err_ErrAddressAlreadyRegisteredInATopic.String())
+var ErrAddressIsNotRegisteredInAnyTopic = fmt.Errorf(Err_ErrAddressIsNotRegisteredInAnyTopic.String())
+var ErrAddressIsNotRegisteredInThisTopic = fmt.Errorf(Err_ErrAddressIsNotRegisteredInThisTopic.String())
 var ErrInsufficientStakeToRegister = fmt.Errorf(Err_ErrInsufficientStakeToRegister.String())
 var ErrLibP2PKeyRequired = fmt.Errorf(Err_ErrLibP2PKeyRequired.String())
 var ErrAddressNotRegistered = fmt.Errorf(Err_ErrAddressNotRegistered.String())
@@ -32,6 +36,11 @@ var ErrConfirmRemoveStakeTooEarly = fmt.Errorf(Err_ErrConfirmRemoveStakeTooEarly
 var ErrConfirmRemoveStakeTooLate = fmt.Errorf(Err_ErrConfirmRemoveStakeTooLate.String())
 var ErrScalarMultiplyNegative = fmt.Errorf(Err_ErrScalarMultiplyNegative.String())
 var ErrDivideMapValuesByZero = fmt.Errorf(Err_ErrDivideMapValuesByZero.String())
+var ErrTopicIdListValueDecodeInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueDecodeInvalidLength.String())
+var ErrTopicIdListValueDecodeJsonInvalidLength = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidLength.String())
+var ErrTopicIdListValueDecodeJsonInvalidFormat = fmt.Errorf(Err_ErrTopicIdListValueDecodeJsonInvalidFormat.String())
+var ErrTopicDoesNotExist = fmt.Errorf(Err_ErrTopicDoesNotExist.String())
+var ErrCannotRemoveMoreStakeThanStakedInTopic = fmt.Errorf(Err_ErrCannotRemoveMoreStakeThanStakedInTopic.String())
 var ErrInferenceRequestAlreadyInMempool = fmt.Errorf(Err_ErrInferenceRequestAlreadyInMempool.String())
 var ErrInferenceRequestBidAmountLessThanPrice = fmt.Errorf(Err_ErrInferenceRequestBidAmountLessThanPrice.String())
 var ErrInferenceRequestTimestampValidUntilInPast = fmt.Errorf(Err_ErrInferenceRequestTimestampValidUntilInPast.String())
@@ -39,3 +48,7 @@ var ErrInferenceRequestTimestampValidUntilTooFarInFuture = fmt.Errorf(Err_ErrInf
 var ErrInferenceRequestCadenceTooFast = fmt.Errorf(Err_ErrInferenceRequestCadenceTooFast.String())
 var ErrInferenceRequestCadenceTooSlow = fmt.Errorf(Err_ErrInferenceRequestCadenceTooSlow.String())
 var ErrInferenceRequestWillNeverBeScheduled = fmt.Errorf(Err_ErrInferenceRequestWillNeverBeScheduled.String())
+var ErrOwnerCannotBeEmpty = fmt.Errorf(Err_ErrOwnerCannotBeEmpty.String())
+var ErrInsufficientStakeAfterRemoval = fmt.Errorf(Err_ErrInsufficientStakeAfterRemoval.String())
+var ErrTestError = sdkerrors.Register(ModuleName, 50, "THIS IS A TEST ERROR WHATEVER")
+

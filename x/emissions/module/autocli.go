@@ -119,28 +119,30 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "default_arg"},
 					},
 				},
-				{
-					RpcMethod: "RegisterReputer",
-					Use:       "register-reputer lib_p2p_key network_address topic_id initial_stake",
-					Short:     "Register a new reputer for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topic_id"},
-						{ProtoField: "initial_stake"},
+				/*
+					{
+						RpcMethod: "RegisterReputer",
+						Use:       "register-reputer [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
+						Short:     "Register a new reputer for a topic",
+						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+							{ProtoField: "lib_p2p_key"},
+							{ProtoField: "multi_address"},
+							{ProtoField: "topics_ids"},
+							{ProtoField: "initial_stake"},
+						},
 					},
-				},
-				{
-					RpcMethod: "RegisterWorker",
-					Use:       "register-worker lib_p2p_key network_address topic_id initial_stake",
-					Short:     "Register a new worker for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topic_id"},
-						{ProtoField: "initial_stake"},
+					{
+						RpcMethod: "RegisterWorker",
+						Use:       "register-worker [lib_p2p_key] [network_address] [topics_ids] [initial_stake]",
+						Short:     "Register a new worker for a topic",
+						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+							{ProtoField: "lib_p2p_key"},
+							{ProtoField: "multi_address"},
+							{ProtoField: "topics_ids"},
+							{ProtoField: "initial_stake"},
+						},
 					},
-				},
+				*/
 				{
 					RpcMethod: "AddStake",
 					Use:       "add-stake sender target amount",
@@ -151,6 +153,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "amount"},
 					},
 				},
+				// TODO: Need to test it - breaking when initializing the chain
 				// {
 				// 	RpcMethod: "ModifyStake",
 				// 	Use:       "modify-stake sender placements_remove placements_add",
@@ -163,11 +166,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// },
 				// {
 				// 	RpcMethod: "StartRemoveStake",
-				// 	Use:       "start-remove-stake sender target amount",
+				// 	Use:       "start-remove-stake [sender] [target] [amount]",
 				// 	Short:     "Start remove stake process for [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
 				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 				// 		{ProtoField: "sender"},
-				// 		{ProtoField: "stake_target"},
+				// 		{ProtoField: "target"},
 				// 		{ProtoField: "amount"},
 				// 	},
 				// },
@@ -183,14 +186,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				// 	RpcMethod: "StartRemoveAllStake",
 				// 	Use:       "start-remove-all-stake sender",
 				// 	Short:     "Start the process to remove all stake from a sender [reputer or worker]",
-				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-				// 		{ProtoField: "sender"},
-				// 	},
-				// },
-				// {
-				// 	RpcMethod: "ConfirmRemoveAllStake",
-				// 	Use:       "confirm-remove-all-stake sender",
-				// 	Short:     "Proceed with removing all stake from a sender [reputer or worker]",
 				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 				// 		{ProtoField: "sender"},
 				// 	},

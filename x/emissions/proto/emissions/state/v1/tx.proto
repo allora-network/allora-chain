@@ -21,9 +21,11 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
-  rpc RegisterReputer(MsgRegisterReputer) returns (MsgRegisterReputerResponse);
+  rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc RegisterWorker(MsgRegisterWorker) returns (MsgRegisterWorkerResponse);
+  rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
+
+  rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -94,55 +96,60 @@ message MsgProcessInferencesResponse {}
 ///
 ///  Inference Node Registration
 ///
-
-// Message for registering an Inference compute node
-message MsgRegisterReputer {
+message MsgRegister {
   option (cosmos.msg.v1.signer) = "creator";
 
-  string creator = 1;                      // Message sender.
-  string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;              // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
+  string creator = 1;
+  string lib_p2p_key = 2;
+  string multi_address = 3;
+  repeated uint64 topics_ids = 4;
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
-  ]; // Initial stake for the node.
-
-}
-
-// Response for registering an Inference compute node
-message MsgRegisterReputerResponse {
-  bool success = 1;                     // Indicates if registration was successful.
-  string message = 2;                   // Additional message or details.
-}
-
-
-// Message for registering an Inference compute node
-message MsgRegisterWorker {
-  option (cosmos.msg.v1.signer) = "creator";
-
-  string creator = 1;                      // Message sender.
-  string lib_p2p_key = 2;                  // LibP2P key of the node.
-  string multi_address = 3;                // Network address for connectivity.
-  uint64 topic_id = 4;                     // Topic ID the node is signing up to participate in.
-  string initial_stake = 5 [
-    (cosmos_proto.scalar)  = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true
-  ]; // Initial stake for the node.
+  ];
   string owner = 6;
+  bool is_reputer = 7;
 }
 
-// Response for registering an Inference compute node
-message MsgRegisterWorkerResponse {
-  bool success = 1;                     // Indicates if registration was successful.
-  string message = 2;                   // Additional message or details.
+message MsgRegisterResponse {
+  bool success = 1;
+  string message = 2;
 }
 
+message MsgAddNewRegistration {
+  option (cosmos.msg.v1.signer) = "creator";
 
+  string creator = 1;
+  string lib_p2p_key = 2;
+  string multi_address = 3;
+  uint64 topicId = 4;
+  string owner = 5;
+  bool isReputer = 6;
+}
+
+message MsgAddNewRegistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message MsgRemoveRegistration {
+  option (cosmos.msg.v1.signer) = "creator";
+
+  string creator = 1;
+  uint64 topicId = 2;
+  bool isReputer = 3;
+}
+
+message MsgRemoveRegistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+///
+///  Staking
+///
 message MsgAddStake {
   option (cosmos.msg.v1.signer) = "sender";
 
