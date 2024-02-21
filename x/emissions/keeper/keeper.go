@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/big"
+
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
@@ -22,6 +23,7 @@ type Uint = cosmosMath.Uint
 type Int = cosmosMath.Int
 
 type TOPIC_ID = uint64
+type LIB_P2P_KEY = string
 type ACC_ADDRESS = string
 type TARGET = sdk.AccAddress
 type TARGET_STR = string
@@ -61,11 +63,15 @@ type Keeper struct {
 	topicWorkers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
+	// for an address, what are all the topics that it's registered for?
+	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
 	// ############################################
 	// #                STAKING                   #
 	// ############################################
 
+	// total sum stake of all topics
+	allTopicStakeSum collections.Item[Uint]
 	// total sum stake of all stakers on the network
 	totalStake collections.Item[Uint]
 	// for every topic, how much total stake does that topic have accumulated?
@@ -134,10 +140,10 @@ type Keeper struct {
 	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[sdk.AccAddress, state.OffchainNode]
+	workers collections.Map[LIB_P2P_KEY, state.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[sdk.AccAddress, state.OffchainNode]
+	reputers collections.Map[LIB_P2P_KEY, state.OffchainNode]
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
@@ -166,7 +172,9 @@ func NewKeeper(
 		nextTopicId:           collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
 		topicWorkers:          collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:         collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:         collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		allTopicStakeSum:      collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
 		stakeOwnedByDelegator: collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
 		stakePlacement:        collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
@@ -175,8 +183,8 @@ func NewKeeper(
 		funds:                 collections.NewMap(sb, state.FundsKey, "funds", collections.StringKey, UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
-		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", sdk.AccAddressKey, codec.CollValue[state.OffchainNode](cdc)),
+		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
+		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 	}
 
@@ -345,14 +353,6 @@ func (k *Keeper) GetReputerNormalizedStake(
 	return reputerNormalizedStakeMap, retErr
 }
 
-func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
-	return k.workers.Get(ctx, worker)
-}
-
-func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
-	return k.reputers.Get(ctx, reputer)
-}
-
 // Gets the total sum of all stake in the network across all topics
 func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
 	ret, err := k.totalStake.Get(ctx)
@@ -375,13 +375,13 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
 	var inferences []*state.InferenceSetForScoring
-	var latest_timestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
+	var latestTimestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
 	if err != nil {
-		latest_timestamp = 0
+		latestTimestamp = 0
 	}
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latest_timestamp).
+		StartInclusive(latestTimestamp).
 		Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
@@ -441,6 +441,96 @@ func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*sta
 	}
 
 	return topicsByCreator, nil
+}
+
+// AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
+func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
+	// Get the current list of topics for the address
+	currentTopics, err := k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	topicSet := make(map[uint64]bool)
+	for _, topic := range currentTopics {
+		topicSet[topic] = true
+	}
+
+	for _, newTopic := range newTopics {
+		if _, exists := topicSet[newTopic]; !exists {
+			currentTopics = append(currentTopics, newTopic)
+		}
+	}
+
+	// Set the updated list of topics for the address
+	return k.addressTopics.Set(ctx, address, currentTopics)
+}
+
+// RemoveAddressTopic removes a specified topic from the address's list of topics.
+func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
+	// Get the current list of topics for the address
+	currentTopics, err := k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	// Find and remove the specified topic
+	filteredTopics := make([]uint64, 0)
+	for _, topic := range currentTopics {
+		if topic != topicToRemove {
+			filteredTopics = append(filteredTopics, topic)
+		}
+	}
+
+	// Set the updated list of topics for the address
+	return k.addressTopics.Set(ctx, address, filteredTopics)
+}
+
+// GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
+func (k *Keeper) GetRegisteredTopicsIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	topics, err := k.addressTopics.Get(ctx, address)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			// Return an empty slice if the address is not found, or handle it differently if needed.
+			return []uint64{}, nil
+		}
+		return nil, err
+	}
+	return topics, nil
+}
+
+// GetRegisteredTopicsIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
+func (k *Keeper) GetRegisteredTopicsIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	var topicsByAddress []uint64
+
+	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
+		if pair.K2().String() == address.String() {
+			topicsByAddress = append(topicsByAddress, pair.K1())
+		}
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByAddress, nil
+}
+
+// GetRegisteredTopicsIdsByReputerAddress returns a slice of all topics ids registered by a given reputer address.
+func (k *Keeper) GetRegisteredTopicsIdsByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	var topicsByAddress []uint64
+
+	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
+		if pair.K2().String() == address.String() {
+			topicsByAddress = append(topicsByAddress, pair.K1())
+		}
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByAddress, nil
 }
 
 func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
@@ -524,7 +614,7 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*state.Topic, error) {
 // it places the stake upon target, from delegator, in amount.
 // it also updates the total stake for the subnet in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
-func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string, target string, stake Uint) error {
+func (k *Keeper) AddStake(ctx context.Context, topicsIds []TOPIC_ID, delegator string, target string, stake Uint) error {
 
 	// if stake is zero this function is a no-op
 	if stake.IsZero() {
@@ -589,18 +679,34 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 		return err
 	}
 
-	// Update the sum topic stake for this topic
-	topicStake, err := k.topicStake.Get(ctx, topic)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topicStake = cosmosMath.NewUint(0)
-		} else {
+	// Update the sum topic stake for all topics
+	for _, topicId := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topicId)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				topicStake = cosmosMath.NewUint(0)
+			} else {
+				return err
+			}
+		}
+		topicStakeNew := topicStake.Add(stake)
+		if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
 			return err
 		}
-	}
-	topicStakeNew := topicStake.Add(stake)
-	if err := k.topicStake.Set(ctx, topic, topicStakeNew); err != nil {
-		return err
+
+		// Update the total stake across all topics
+		allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				allTopicStakeSum = cosmosMath.NewUint(0)
+			} else {
+				return err
+			}
+		}
+		allTopicStakeSumNew := allTopicStakeSum.Add(stake)
+		if err := k.allTopicStakeSum.Set(ctx, allTopicStakeSumNew); err != nil {
+			return err
+		}
 	}
 
 	// Update the total stake across the entire system
@@ -627,7 +733,7 @@ func (k *Keeper) AddStake(ctx context.Context, topic TOPIC_ID, delegator string,
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) RemoveStakeFromBond(
 	ctx context.Context,
-	topic TOPIC_ID,
+	topicsIds []TOPIC_ID,
 	delegator sdk.AccAddress,
 	target sdk.AccAddress,
 	stake Uint) error {
@@ -638,21 +744,38 @@ func (k *Keeper) RemoveStakeFromBond(
 
 	// 1. 2. and 3. make checks and update state for
 	// delegatorStake, bonds, and targetStake
-	err := k.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, topic, delegator, target, stake)
+	err := k.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, delegator, target, stake)
 	if err != nil {
 		return err
 	}
 
-	// 4. Check: topicStake(topic) >= stake
-	topicStake, err := k.topicStake.Get(ctx, topic)
-	if err != nil {
-		return err
-	}
-	if stake.GT(topicStake) {
-		return state.ErrIntegerUnderflowTopicStake
+	// Perform State Updates
+	// TODO: make this function prevent partial state updates / do rollbacks if any of the set statements fail
+	// not necessary as long as callers are responsible, but it would be nice to have
+
+	// topicStake(topic) = topicStake(topic) - stake
+	for _, topic := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topic)
+		if err != nil {
+			return err
+		}
+		if stake.GT(topicStake) {
+			return state.ErrIntegerUnderflowTopicStake
+		}
+
+		topicStakeNew := topicStake.Sub(stake)
+		if topicStakeNew.IsZero() {
+			err = k.topicStake.Remove(ctx, topic)
+		} else {
+			err = k.topicStake.Set(ctx, topic, topicStakeNew)
+		}
+		if err != nil {
+			return err
+		}
 	}
 
-	// 5. Check: totalStake >= stake
+	// totalStake = totalStake - stake
+	// 4. Check: totalStake >= stake
 	totalStake, err := k.totalStake.Get(ctx)
 	if err != nil {
 		return err
@@ -661,22 +784,6 @@ func (k *Keeper) RemoveStakeFromBond(
 		return state.ErrIntegerUnderflowTotalStake
 	}
 
-	// Perform State Updates
-	// TODO: make this function prevent partial state updates / do rollbacks if any of the set statements fail
-	// not necessary as long as callers are responsible, but it would be nice to have
-
-	// topicStake(topic) = topicStake(topic) - stake
-	topicStakeNew := topicStake.Sub(stake)
-	if topicStakeNew.IsZero() {
-		err = k.topicStake.Remove(ctx, topic)
-	} else {
-		err = k.topicStake.Set(ctx, topic, topicStakeNew)
-	}
-	if err != nil {
-		return err
-	}
-
-	// totalStake = totalStake - stake
 	// we do write zero here, because totalStake is allowed to be zero
 	err = k.totalStake.Set(ctx, totalStake.Sub(stake))
 	if err != nil {
@@ -693,7 +800,6 @@ func (k *Keeper) RemoveStakeFromBond(
 // this is used by RemoveAllStake to avoid double counting the topic/total stake removal
 func (k *Keeper) RemoveStakeFromBondMissingTotalOrTopicStake(
 	ctx context.Context,
-	topic TOPIC_ID,
 	delegator sdk.AccAddress,
 	target sdk.AccAddress,
 	stake Uint) error {
@@ -813,6 +919,84 @@ func (k *Keeper) AddStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 	return k.stakePlacedUponTarget.Set(ctx, target, targetStakeNew)
 }
 
+// Add stake into an array of topics
+func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
+	if stake.IsZero() {
+		return state.ErrDoNotSetMapValueToZero
+	}
+
+	// Calculate the total stake to be added across all topics
+	totalStakeToAdd := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+
+	for _, topicId := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topicId)
+		if err != nil {
+			if errors.Is(err, collections.ErrNotFound) {
+				topicStake = cosmosMath.NewUint(0)
+			} else {
+				return err
+			}
+		}
+
+		topicStakeNew := topicStake.Add(stake)
+		if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
+			return err
+		}
+	}
+
+	// Update the allTopicStakeSum
+	allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	newAllTopicStakeSum := allTopicStakeSum.Add(totalStakeToAdd)
+	if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Remove stake from an array of topics
+func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
+	if stake.IsZero() {
+		return state.ErrDoNotSetMapValueToZero
+	}
+
+	// Calculate the total stake to be removed across all topics
+	totalStakeToRemove := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+
+	for _, topicId := range topicsIds {
+		topicStake, err := k.topicStake.Get(ctx, topicId)
+		if err != nil {
+			return err // If there's an error, it's not because the topic doesn't exist but some other reason
+		}
+
+		if topicStake.LT(stake) {
+			return state.ErrCannotRemoveMoreStakeThanStakedInTopic
+		}
+
+		topicStakeNew := topicStake.Sub(stake)
+		if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
+			return err
+		}
+	}
+
+	// Update the allTopicStakeSum
+	allTopicStakeSum, err := k.allTopicStakeSum.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	newAllTopicStakeSum := allTopicStakeSum.Sub(totalStakeToRemove)
+	if err := k.allTopicStakeSum.Set(ctx, newAllTopicStakeSum); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // for a given address, find out how much stake they've put into the system
 func (k *Keeper) GetDelegatorStake(ctx context.Context, delegator sdk.AccAddress) (Uint, error) {
 	ret, err := k.stakeOwnedByDelegator.Get(ctx, delegator)
@@ -926,38 +1110,72 @@ func (k *Keeper) UpdateTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID,
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// check a reputer node is registered
-func (k *Keeper) IsReputerRegistered(ctx context.Context, reputer sdk.AccAddress) (bool, error) {
-	return k.reputers.Has(ctx, reputer)
-}
-
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicId uint64, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
-	topickey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
-	err := k.topicReputers.Set(ctx, topickey)
+func (k *Keeper) InsertReputer(ctx context.Context, topicsIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
+	for _, topicId := range topicsIds {
+		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+		err := k.topicReputers.Set(ctx, topicKey)
+		if err != nil {
+			return err
+		}
+	}
+	err := k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
 	if err != nil {
 		return err
 	}
-	err = k.reputers.Set(ctx, reputer, reputerInfo)
+	err = k.AddAddressTopics(ctx, reputer, topicsIds)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// check a worker node is registered
-func (k *Keeper) IsWorkerRegistered(ctx context.Context, worker sdk.AccAddress) (bool, error) {
-	return k.workers.Has(ctx, worker)
-}
+// Remove a reputer to the reputer tracking data structures and topicReputers
+func (k *Keeper) RemoveReputer(ctx context.Context, topicId TOPIC_ID, reputerAddr sdk.AccAddress) error {
 
-// Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicId uint64, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
-	topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
-	err := k.topicWorkers.Set(ctx, topickey)
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
 	}
-	err = k.workers.Set(ctx, worker, workerInfo)
+
+	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TOPIC_ID, workerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Adds a new worker to the worker tracking data structures, workers and topicWorkers
+func (k *Keeper) InsertWorker(ctx context.Context, topicsIds []TOPIC_ID, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
+	for _, topicId := range topicsIds {
+		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
+		err := k.topicWorkers.Set(ctx, topickey)
+		if err != nil {
+			return err
+		}
+	}
+	err := k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+	if err != nil {
+		return err
+	}
+	err = k.AddAddressTopics(ctx, worker, topicsIds)
 	if err != nil {
 		return err
 	}
@@ -990,24 +1208,17 @@ func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*stat
 }
 
 func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	iterator, err := k.workers.Iterate(ctx, nil)
+	worker, err := k.workers.Get(ctx, p2pKey)
 	if err != nil {
 		return nil, err
 	}
 
-	for ; iterator.Valid(); iterator.Next() {
-		node, _ := iterator.Value()
-		if node.LibP2PKey == p2pKey {
-			address, err := sdk.AccAddressFromBech32(node.NodeAddress)
-			if err != nil {
-				return nil, err
-			}
-
-			return address, nil
-		}
+	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, collections.ErrNotFound
+	return workerAddress, nil
 }
 
 func (k *Keeper) SetWeight(
