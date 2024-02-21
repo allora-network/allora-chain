@@ -31,8 +31,6 @@ func NewMsgServerImpl(keeper Keeper) state.MsgServer {
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
-	return nil, state.ErrTestError
-
 	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err

@@ -353,14 +353,6 @@ func (k *Keeper) GetReputerNormalizedStake(
 	return reputerNormalizedStakeMap, retErr
 }
 
-// func (k *Keeper) GetWorker(ctx context.Context, worker sdk.AccAddress) (state.OffchainNode, error) {
-// 	return k.workers.Get(ctx, worker)
-// }
-
-// func (k *Keeper) GetReputer(ctx context.Context, reputer sdk.AccAddress) (state.OffchainNode, error) {
-// 	return k.reputers.Get(ctx, reputer)
-// }
-
 // Gets the total sum of all stake in the network across all topics
 func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
 	ret, err := k.totalStake.Get(ctx)
