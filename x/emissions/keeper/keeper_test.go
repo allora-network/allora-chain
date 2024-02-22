@@ -593,6 +593,7 @@ func (s *KeeperTestSuite) TestAddToMempool() {
 		MaxPricePerInference: cosmosMath.NewUint(1000),
 		BidAmount:            cosmosMath.NewUint(1446),
 		TimestampValidUntil:  uint64(time.Now().Unix()),
+		LastChecked:          0,
 		ExtraData:            []byte("extra data"),
 	}
 	requestId, err := inferenceRequest.GetRequestId()

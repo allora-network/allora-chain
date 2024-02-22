@@ -133,7 +133,9 @@ type Keeper struct {
 	// ############################################
 	// #        INFERENCE REQUEST MEMPOOL         #
 	// ############################################
-	mempool            collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], state.InferenceRequest]
+	// map of (topic, request_id) -> full InferenceRequest information for that request
+	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], state.InferenceRequest]
+	// amount of money available for an inference request id that has been placed in the mempool but has not yet been fully satisfied
 	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
 	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
@@ -1264,7 +1266,7 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 }
 
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
-	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
+	topicUnmetDemand, err := k.GetUnmetDemand(ctx, topicId)
 	if err != nil {
 		return err
 	}
@@ -1281,13 +1283,24 @@ func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt co
 		return state.ErrIntegerUnderflowUnmetDemand
 	}
 	topicUnmetDemand = topicUnmetDemand.Sub(amt)
-	return k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
+	return k.SetUnmetDemand(ctx, topicId, topicUnmetDemand)
+}
+
+func (k *Keeper) SetUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
+	if amt.IsZero() {
+		return k.topicUnmetDemand.Remove(ctx, topicId)
+	}
+	return k.topicUnmetDemand.Set(ctx, topicId, amt)
 }
 
 func (k *Keeper) GetUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
 	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
 	if err != nil {
-		return cosmosMath.Uint{}, err
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		} else {
+			return cosmosMath.Uint{}, err
+		}
 	}
 	return topicUnmetDemand, nil
 }
