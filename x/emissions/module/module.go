@@ -9,6 +9,7 @@ import (
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -132,7 +133,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		return err
 	}
 
-	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.AlloraRequestsModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
+	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.AlloraRequestsModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
 		return err
