@@ -1404,7 +1404,7 @@ func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, 
 	return k.requestUnmetDemand.Get(ctx, requestId)
 }
 
-func (k *Keeper) GetAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
 	res, err := k.accumulatedMetDemand.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -1415,7 +1415,7 @@ func (k *Keeper) GetAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID) 
 	return res, nil
 }
 
-func (k *Keeper) AccumulateMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+func (k *Keeper) AddTopicAccumulateMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
 	currentMetDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -1424,7 +1424,14 @@ func (k *Keeper) AccumulateMetDemand(ctx context.Context, topicId TOPIC_ID, metD
 		return err
 	}
 	currentMetDemand = currentMetDemand.Add(metDemand)
-	return k.accumulatedMetDemand.Set(ctx, topicId, currentMetDemand)
+	return k.SetTopicAccumulatedMetDemand(ctx, topicId, currentMetDemand)
+}
+
+func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+	if metDemand.IsZero() {
+		return k.accumulatedMetDemand.Remove(ctx, topicId)
+	}
+	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
 }
 
 //

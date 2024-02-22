@@ -226,7 +226,7 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, k
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	for _, topic := range topTopicsByReturn {
 		// Log the accumulated met demand for each topic
-		k.AccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
+		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 
 		// Draw demand from the valid requests
 		bestPrice := topicBestPrices[topic.Id].Price
