@@ -345,3 +345,28 @@ func (s *ModuleTestSuite) TestGetRequestsThatMaxFeesMultipleRequestsAtSamePrice(
 	var expectedRequests []state.InferenceRequest = []state.InferenceRequest{req1, req2, req4, req5}
 	s.Require().Equal(expectedRequests, requestsList, "GetRequestsThatMaxFees should return the expected requests list")
 }
+
+func (s *ModuleTestSuite) TestSortTopicsByReturnDescWithRandomTiebreakerSimple() {
+	var unsortedList []state.Topic = []state.Topic{
+		{Id: 1, Metadata: "Test1", DefaultArg: "Test1", InferenceCadence: 0, InferenceLastRan: 0, WeightCadence: 0, WeightLastRan: 0},
+		{Id: 2, Metadata: "Test2", DefaultArg: "Test2", InferenceCadence: 0, InferenceLastRan: 0, WeightCadence: 0, WeightLastRan: 0},
+		{Id: 3, Metadata: "Test3", DefaultArg: "Test3", InferenceCadence: 0, InferenceLastRan: 0, WeightCadence: 0, WeightLastRan: 0},
+		{Id: 4, Metadata: "Test4", DefaultArg: "Test4", InferenceCadence: 0, InferenceLastRan: 0, WeightCadence: 0, WeightLastRan: 0},
+		{Id: 5, Metadata: "Test5", DefaultArg: "Test5", InferenceCadence: 0, InferenceLastRan: 0, WeightCadence: 0, WeightLastRan: 0},
+	}
+	var weights map[uint64]module.PriceAndReturn = map[uint64]module.PriceAndReturn{
+		1: {Price: cosmosMath.NewUint(100), Return: cosmosMath.NewUint(100)},
+		2: {Price: cosmosMath.NewUint(300), Return: cosmosMath.NewUint(300)},
+		3: {Price: cosmosMath.NewUint(700), Return: cosmosMath.NewUint(700)},
+		4: {Price: cosmosMath.NewUint(400), Return: cosmosMath.NewUint(400)},
+		5: {Price: cosmosMath.NewUint(200), Return: cosmosMath.NewUint(200)},
+	}
+	sortedList := module.SortTopicsByReturnDescWithRandomTiebreaker(unsortedList, weights, 0)
+
+	s.Require().Equal(len(unsortedList), len(sortedList), "SortTopicsByReturnDescWithRandomTiebreaker should return the same length list")
+	s.Require().Equal(uint64(3), sortedList[0].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+	s.Require().Equal(uint64(4), sortedList[1].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+	s.Require().Equal(uint64(2), sortedList[2].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+	s.Require().Equal(uint64(5), sortedList[3].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+	s.Require().Equal(uint64(1), sortedList[4].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+}

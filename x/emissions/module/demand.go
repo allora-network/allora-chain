@@ -190,7 +190,7 @@ func GetRequestsThatMaxFees(
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
-func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) (*[]state.Topic, *cosmosMath.Uint, error) {
+func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) (*[]state.Topic, *cosmosMath.Uint, error) {
 	topicsActive, err := InactivateLowDemandTopics(ctx, k)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
