@@ -246,11 +246,16 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			// => should never be negative
 			newReqDemand := reqDemand.Sub(bestPrice)
 			k.SetRequestDemand(ctx, reqId, newReqDemand)
-			if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) { // TylerTODO check cadence and remove if one-shot
-				// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
-				// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
-				// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests
+			// if the request is a one-shot request, remove it from the mempool
+			if req.Cadence == 0 {
 				k.RemoveFromMempool(ctx, req)
+			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
+				if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) {
+					// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
+					// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
+					// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests
+					k.RemoveFromMempool(ctx, req)
+				}
 			}
 			numRequestsServed++
 		}
