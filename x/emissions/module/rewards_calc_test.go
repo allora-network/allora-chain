@@ -381,10 +381,10 @@ func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) 
 			Metadata:         "metadata",
 			WeightLogic:      "logic",
 			WeightMethod:     "whatever",
-			WeightCadence:    0,
+			WeightCadence:    10800,
 			InferenceLogic:   "morelogic",
 			InferenceMethod:  "whatever2",
-			InferenceCadence: 0,
+			InferenceCadence: 60,
 		}
 		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
 		if err != nil {
