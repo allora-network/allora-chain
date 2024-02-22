@@ -1266,7 +1266,7 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 }
 
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
-	topicUnmetDemand, err := k.GetUnmetDemand(ctx, topicId)
+	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
 	if err != nil {
 		return err
 	}
@@ -1283,17 +1283,17 @@ func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt co
 		return state.ErrIntegerUnderflowUnmetDemand
 	}
 	topicUnmetDemand = topicUnmetDemand.Sub(amt)
-	return k.SetUnmetDemand(ctx, topicId, topicUnmetDemand)
+	return k.SetTopicUnmetDemand(ctx, topicId, topicUnmetDemand)
 }
 
-func (k *Keeper) SetUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
+func (k *Keeper) SetTopicUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
 	if amt.IsZero() {
 		return k.topicUnmetDemand.Remove(ctx, topicId)
 	}
 	return k.topicUnmetDemand.Set(ctx, topicId, amt)
 }
 
-func (k *Keeper) GetUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+func (k *Keeper) GetTopicUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
 	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {

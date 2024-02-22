@@ -11,7 +11,8 @@ import (
 func (s *ModuleTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {
 	timeNow := uint64(time.Now().UTC().Unix())
 	var initialStake int64 = 100
-	mockCreateTopic(s)
+	_, err := mockCreateTopics(s, 1)
+	s.Require().NoError(err)
 	r := state.MsgRequestInference{
 		Sender: s.addrsStr[0],
 		Requests: []*state.RequestInferenceListItem{
@@ -26,6 +27,6 @@ func (s *ModuleTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {
 			},
 		},
 	}
-	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().Error(err, "spendable balance 0uallo is smaller than 100uallo: insufficient funds")
 }

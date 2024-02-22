@@ -1,6 +1,7 @@
 package module
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"math/rand"
@@ -76,29 +77,37 @@ func IsValidAtPrice(ctx sdk.Context, am AppModule, req state.InferenceRequest, p
 	return &res, nil
 }
 
+// Inactivates topics with below keeper.MIN_TOPIC_DEMAND demand
+// returns a list of topics that are still active after this operation
+func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingActiveTopics []*state.Topic, err error) {
+	topicsActive, err := k.GetActiveTopics(ctx)
+	remainingActiveTopics = make([]*state.Topic, 0)
+	if err != nil {
+		fmt.Println("Error getting active topics: ", err)
+		return nil, err
+	}
+	minTopicDemand := cosmosMath.NewUint(keeper.MIN_TOPIC_DEMAND)
+	for _, topic := range topicsActive {
+		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
+		if err != nil {
+			fmt.Println("Error getting unmet demand: ", err)
+			return nil, err
+		}
+		if topicUnmetDemand.LT(minTopicDemand) {
+			fmt.Printf("Inactivating topic due to no demand: %v metadata: %s\n", topic.Id, topic.Metadata)
+			k.InactivateTopic(ctx, topic.Id)
+		} else {
+			remainingActiveTopics = append(remainingActiveTopics, topic)
+		}
+	}
+	return remainingActiveTopics, nil
+}
+
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
 func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, am AppModule, currentTime uint64) (*[]state.Topic, *cosmosMath.Uint, error) {
-	// Inactivate topics with below keeper.MIN_TOPIC_DEMAND demand)
-	topicsActive, err := am.keeper.GetActiveTopics(ctx)
-	if err != nil {
-		fmt.Println("Error getting active topics: ", err)
-		return nil, nil, err
-	}
-	for _, topic := range topicsActive {
-		topicUnmetDemand, err := am.keeper.GetUnmetDemand(ctx, topic.Id)
-		if err != nil {
-			fmt.Println("Error getting unmet demand: ", err)
-			return nil, nil, err
-		}
-		if topicUnmetDemand.LT(cosmosMath.NewUint(keeper.MIN_TOPIC_DEMAND)) {
-			fmt.Printf("Inactivating topic due to no demand: %v metadata: %s", topic.Id, topic.Metadata)
-			am.keeper.InactivateTopic(ctx, topic.Id)
-		}
-	}
-
-	topicsActive, err = am.keeper.GetActiveTopics(ctx)
+	topicsActive, err := InactivateLowDemandTopics(ctx, am.keeper)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
 		return nil, nil, err

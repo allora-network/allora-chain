@@ -31,9 +31,10 @@ func getConstZeroWeights() [2][4]uint64 {
 }
 
 func (s *ModuleTestSuite) TestRegistrationTotalStakeAmountSet() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
-	_, err = mockCreateTopic(s)
+	topicId := topicIds[0]
+	_, err = mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic 2")
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	_, err = mockSomeReputers(s, topicId)
@@ -48,9 +49,10 @@ func (s *ModuleTestSuite) TestRegistrationTotalStakeAmountSet() {
 }
 
 func (s *ModuleTestSuite) TestRegistrationTopicStakeAmountSet() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
-	_, err = mockCreateTopic(s)
+	topicId := topicIds[0]
+	_, err = mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic 2")
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	_, err = mockSomeReputers(s, topicId)
@@ -65,9 +67,10 @@ func (s *ModuleTestSuite) TestRegistrationTopicStakeAmountSet() {
 }
 
 func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
-	_, err = mockCreateTopic(s)
+	topicId := topicIds[0]
+	_, err = mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic 2")
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	reputers, err := mockSomeReputers(s, topicId)
@@ -100,9 +103,10 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
 }
 
 func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
-	_, err = mockCreateTopic(s)
+	topicId := topicIds[0]
+	_, err = mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic 2")
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	reputers, err := mockSomeReputers(s, topicId)
@@ -135,8 +139,9 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions(
 }
 
 func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
+	topicId := topicIds[0]
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	reputers, err := mockSomeReputers(s, topicId)
 	s.NoError(err, "Error creating reputers")
@@ -174,8 +179,9 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
 }
 
 func (s *ModuleTestSuite) TestEmitRewardsSimple() {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
+	topicId := topicIds[0]
 	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
 	reputers, err := mockSomeReputers(s, topicId)
 	s.NoError(err, "Error creating reputers")
@@ -360,20 +366,25 @@ func mockSetWeights(
 }
 
 // create a topic
-func mockCreateTopic(s *ModuleTestSuite) (uint64, error) {
-	topicMessage := state.MsgCreateNewTopic{
-		Creator:          s.addrsStr[0],
-		Metadata:         "metadata",
-		WeightLogic:      "logic",
-		WeightMethod:     "whatever",
-		WeightCadence:    0,
-		InferenceLogic:   "morelogic",
-		InferenceMethod:  "whatever2",
-		InferenceCadence: 0,
+func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
+	ret := make([]uint64, 0)
+	var i uint64
+	for i = 0; i < numToCreate; i++ {
+		topicMessage := state.MsgCreateNewTopic{
+			Creator:          s.addrsStr[0],
+			Metadata:         "metadata",
+			WeightLogic:      "logic",
+			WeightMethod:     "whatever",
+			WeightCadence:    0,
+			InferenceLogic:   "morelogic",
+			InferenceMethod:  "whatever2",
+			InferenceCadence: 0,
+		}
+		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, response.TopicId)
 	}
-	response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
-	if err != nil {
-		return 0, err
-	}
-	return response.TopicId, nil
+	return ret, nil
 }
