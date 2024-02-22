@@ -690,7 +690,6 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, state.ErrInferenceRequestWillNeverBeScheduled
 		}
 		// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
-		// TylerTODO update test
 		if request.BidAmount.LT(cosmosMath.NewUint(MIN_UNMET_DEMAND)) {
 			return nil, state.ErrInferenceRequestBidAmountTooLow
 		}

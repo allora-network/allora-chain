@@ -4,9 +4,11 @@ import (
 	"time"
 
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveTwoTopics() {
@@ -369,4 +371,46 @@ func (s *ModuleTestSuite) TestSortTopicsByReturnDescWithRandomTiebreakerSimple()
 	s.Require().Equal(uint64(2), sortedList[2].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
 	s.Require().Equal(uint64(5), sortedList[3].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
 	s.Require().Equal(uint64(1), sortedList[4].Id, "SortTopicsByReturnDescWithRandomTiebreaker should return the expected sorted list")
+}
+
+func (s *ModuleTestSuite) TestChurnRequestsGetActiveTopicsAndDemandSimple() {
+	createdTopicIds, err := mockCreateTopics(s, 2)
+	s.Require().NoError(err)
+	timeNow := uint64(time.Now().UTC().Unix())
+	var initialStake int64 = 1100
+	var requestStake0 int64 = 500
+	var requestStake1 int64 = 600
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
+	r := state.MsgRequestInference{
+		Sender: s.addrsStr[0],
+		Requests: []*state.RequestInferenceListItem{
+			{
+				Nonce:                0,
+				TopicId:              createdTopicIds[0],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+			{
+				Nonce:                1,
+				TopicId:              createdTopicIds[1],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake1)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake1)),
+				TimestampValidUntil:  timeNow + 400,
+				ExtraData:            nil,
+			},
+		},
+	}
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err)
+
+	topics, demand, err := module.ChurnRequestsGetActiveTopicsAndDemand(s.ctx, s.emissionsKeeper, timeNow+20)
+	s.Require().NoError(err, "ChurnRequestsGetActiveTopicsAndDemand should not throw an error")
+	s.Require().Len(*topics, 2, "ChurnRequestsGetActiveTopicsAndDemand should return 2 topics")
+	s.Require().Greater((*demand).Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
 }

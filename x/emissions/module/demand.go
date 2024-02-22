@@ -196,7 +196,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		fmt.Println("Error getting active topics: ", err)
 		return nil, nil, err
 	}
-	fmt.Println("Active topics: ", len(topicsActive))
+	//fmt.Println("Active topics: ", len(topicsActive))
 
 	topicsActiveWithDemand := make([]state.Topic, 0)
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
@@ -213,14 +213,20 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			fmt.Println("Error getting requests that maximize fees: ", err)
 			return nil, nil, err
 		}
+		//fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
+		topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
 		topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
 		requestsToDrawDemandFrom[topic.Id] = requestsToUse
 	}
 
 	// Sort topics by topicBestPrices
 	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentTime)
+	//fmt.Println("Length sorted topics: ", len(sortedTopics))
 	// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand
-	topTopicsByReturn := sortedTopics[:uint(math.Min(float64(len(sortedTopics)), keeper.MAX_TOPICS_PER_BLOCK))]
+	cutoff := uint(math.Min(float64(len(sortedTopics)), keeper.MAX_TOPICS_PER_BLOCK))
+	//fmt.Println("Cutoff: ", cutoff)
+	topTopicsByReturn := sortedTopics[:cutoff]
+	//fmt.Println("Length top topics by return: ", len(topTopicsByReturn))
 
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
@@ -233,6 +239,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		numRequestsServed := 0
 		for _, req := range requestsToDrawDemandFrom[topic.Id] {
 			reqId, err := req.GetRequestId()
+			//fmt.Println("Processing request: ", reqId, " with best price: ", bestPrice)
 			if err != nil {
 				fmt.Println("Error getting request demand: ", err)
 				return nil, nil, err
