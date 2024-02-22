@@ -1343,7 +1343,7 @@ func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOP
 
 func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TOPIC_ID) ([]state.InferenceRequest, error) {
 	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
-	rng := collections.NewPrefixedPairRange[TOPIC_ID, string](topicId)
+	rng := collections.NewPrefixedPairRange[TOPIC_ID, REQUEST_ID](topicId)
 	iter, err := k.mempool.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
