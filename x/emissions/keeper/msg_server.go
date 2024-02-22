@@ -165,8 +165,8 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 
 	for _, topicId := range msg.TopicsIds {
 		// check if topic exists
-		exist, err := ms.k.TopicExists(ctx, topicId)
-		if !exist {
+		topicExists, err := ms.k.TopicExists(ctx, topicId)
+		if !topicExists {
 			return nil, state.ErrTopicDoesNotExist
 		} else if err != nil {
 			return nil, err
@@ -216,6 +216,13 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
+	}
+	// check if topic exists
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !topicExists {
+		return nil, state.ErrTopicDoesNotExist
 	}
 	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
@@ -287,12 +294,19 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 
 // Remove registration from a topic
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemoveRegistration) (*state.MsgRemoveRegistrationResponse, error) {
+	// check if topic exists
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !topicExists {
+		return nil, state.ErrTopicDoesNotExist
+	}
+
+	// Check if the address is registered in the specified topic
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
-
-	// Check if the address is registered in the specified topic
 	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
@@ -629,11 +643,11 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 	for _, requestItem := range msg.Requests {
 		request := state.CreateNewInferenceRequestFromListItem(msg.Sender, requestItem)
 		// 1. check the topic is valid
-		exists, err := ms.k.TopicExists(ctx, request.TopicId)
+		topicExists, err := ms.k.TopicExists(ctx, request.TopicId)
 		if err != nil {
 			return nil, err
 		}
-		if !exists {
+		if !topicExists {
 			return nil, state.ErrInvalidTopicId
 		}
 		requestId, err := request.GetRequestId()
@@ -641,11 +655,11 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, err
 		}
 		// 2. check the request isn't already in the mempool
-		exists, err = ms.k.IsRequestInMempool(ctx, request.TopicId, requestId)
+		requestExists, err := ms.k.IsRequestInMempool(ctx, request.TopicId, requestId)
 		if err != nil {
 			return nil, err
 		}
-		if exists {
+		if requestExists {
 			return nil, state.ErrInferenceRequestAlreadyInMempool
 		}
 		// 3. Check the BidAmount is greater than the price per request
