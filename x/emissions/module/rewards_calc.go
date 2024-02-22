@@ -30,10 +30,11 @@ func GetParticipantEmissionsForTopic(
 	topicId keeper.TOPIC_ID,
 	topicStake *Uint,
 	cumulativeEmission *Uint,
+	accumulatedMetDemand *Uint,
 	totalStake *Uint) (rewards map[string]*Uint, err error) {
 	// get total emission for topic
 	topicEmissionXStake := cumulativeEmission.Mul(*topicStake)
-	topicEmissions := topicEmissionXStake.Quo(*totalStake)
+	topicEmissions := topicEmissionXStake.Quo(*totalStake).Add(*accumulatedMetDemand)
 
 	// get all reputers in that topic
 	// get all normalized stakes of those reputers
@@ -164,6 +165,10 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 
 	// use anonymous function to iterate through each (topic, sumStakeForTopic)
 	funcEachTopic := func(topicId keeper.TOPIC_ID, topicStake Uint) (bool, error) {
+		accumulatedMetDemand, err := am.keeper.GetAccumulatedMetDemand(ctx, topicId)
+		if err != nil {
+			return true, err
+		}
 		// for each topic get percentage of total emissions
 		// then get each participant's percentage of that percentage
 		rewards, err := GetParticipantEmissionsForTopic(
@@ -172,6 +177,7 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 			topicId,
 			&topicStake,
 			&cumulativeEmission,
+			&accumulatedMetDemand,
 			&totalStake)
 		if err != nil {
 			return true, err
