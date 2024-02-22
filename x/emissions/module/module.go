@@ -132,7 +132,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		return err
 	}
 
-	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.ModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
+	err = am.keeper.SendCoinsFromModuleToModule(ctx, state.AlloraRequestsModuleName, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin("stake", cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
 		return err
