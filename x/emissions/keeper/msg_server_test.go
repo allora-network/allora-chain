@@ -271,6 +271,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 func (s *KeeperTestSuite) TestMsgRemoveRegistrationInvalidAddressNotRegistered() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
+	s.CreateOneTopic()
 
 	// Start Remove Registration
 	addr := sdk.AccAddress(PKS[0].Address())
