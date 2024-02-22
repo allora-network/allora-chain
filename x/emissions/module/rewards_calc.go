@@ -199,7 +199,7 @@ func emitRewardsToTopicParticipants(
 	topic keeper.TOPIC_ID,
 	rewards map[string]*Uint) {
 	// by default emissions are restaked, upon the person themselves.
-	fmt.Printf("\n---------------- Rewards for Topic %v ----------------", topic)
+	fmt.Printf("\n---------------- Rewards for Topic %v ----------------\n", topic)
 	for participant, reward := range rewards {
 		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
 		am.keeper.AddStake(ctx, []uint64{topic}, participant, participant, *reward)
