@@ -165,7 +165,7 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 
 	// use anonymous function to iterate through each (topic, sumStakeForTopic)
 	funcEachTopic := func(topicId keeper.TOPIC_ID, topicStake Uint) (bool, error) {
-		accumulatedMetDemand, err := am.keeper.GetAccumulatedMetDemand(ctx, topicId)
+		accumulatedMetDemand, err := am.keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
 		if err != nil {
 			return true, err
 		}
@@ -185,6 +185,7 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 
 		// Mint new tokens to the participants of that topic
 		emitRewardsToTopicParticipants(ctx, am, topicId, rewards)
+		am.keeper.SetTopicAccumulatedMetDemand(ctx, topicId, cosmosMath.ZeroUint())
 		return false, nil
 	}
 
