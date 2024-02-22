@@ -127,7 +127,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(sdkCtx, am.keeper, currentTime)
+	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, currentTime)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
