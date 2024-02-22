@@ -41,14 +41,13 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 
-	// TODO: Add after demo
-	// if msg.InferenceCadence < 60 {
-	// 	return nil, fmt.Errorf("inference cadence must be at least 60 seconds (1 minute)")
-	// }
+	if msg.InferenceCadence < 60 {
+		return nil, state.ErrInferenceCadenceBelowMinimum
+	}
 
-	// if msg.WeightCadence < 10800 {
-	// 	return nil, fmt.Errorf("weight cadence must be at least 10800 seconds (3 hours)")
-	// }
+	if msg.WeightCadence < 10800 {
+		return nil, state.ErrWeightCadenceBelowMinimum
+	}
 
 	topic := state.Topic{
 		Id:               id,

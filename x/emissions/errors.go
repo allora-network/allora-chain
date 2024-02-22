@@ -49,4 +49,6 @@ var (
 	ErrInsufficientStakeAfterRemoval                     = errors.Register(ModuleName, 44, "insufficient stake after removal")
 	ErrInferenceRequestBidAmountTooLow                   = errors.Register(ModuleName, 45, "inference request bid amount too low")
 	ErrIntegerUnderflowUnmetDemand                       = errors.Register(ModuleName, 46, "integer underflow for unmet demand")
+	ErrInferenceCadenceBelowMinimum                      = errors.Register(ModuleName, 47, "inference cadence must be at least 60 seconds (1 minute)")
+	ErrWeightCadenceBelowMinimum                         = errors.Register(ModuleName, 48, "weight cadence must be at least 10800 seconds (3 hours)")
 )
