@@ -456,10 +456,18 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
 	s.NoError(err)
 	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
+	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
+	requestsModuleBalance := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+	s.Require().Equal(
+		initialStakeCoins.AmountOf(params.DefaultBondDenom),
+		requestsModuleBalance.Amount,
+		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
 
 	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
 
 	err = s.appModule.EndBlock(s.ctx)
 	s.NoError(err, "EndBlock error")
 
+	requestsModuleBalance = s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+	s.Require().Equal(cosmosMath.ZeroInt(), requestsModuleBalance.Amount, "Balance should be zero after inferences are processed")
 }
