@@ -84,12 +84,14 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
 	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
+	metDemand := cosmosMath.NewUint(0)
 	rewards, err := module.GetParticipantEmissionsForTopic(
 		s.ctx,
 		s.appModule,
 		topicId,
 		&topicStake,
 		&cumulativeEmissions,
+		&metDemand,
 		&totalStake,
 	)
 	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
@@ -120,12 +122,14 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions(
 	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
+	metDemand := cosmosMath.NewUint(0)
 	rewards, err := module.GetParticipantEmissionsForTopic(
 		s.ctx,
 		s.appModule,
 		topicId,
 		&topicStake,
 		&cumulativeEmissions,
+		&metDemand,
 		&totalStake,
 	)
 	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
@@ -154,12 +158,14 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
 	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
 	s.NoError(err, "Error getting total stake")
 	cumulativeEmissions := cosmosMath.NewUint(5000)
+	metDemand := cosmosMath.NewUint(0)
 	rewards, err := module.GetParticipantEmissionsForTopic(
 		s.ctx,
 		s.appModule,
 		topicId,
 		&topicStake,
 		&cumulativeEmissions,
+		&metDemand,
 		&totalStake,
 	)
 	s.NoError(err, "Cumulative emissions for zero blocks should just be 0")
