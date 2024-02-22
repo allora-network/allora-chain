@@ -62,19 +62,23 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []state.Topic, weight
 //	AND didn't expire
 //	AND would have enough funds to cover the potential next price
 //	AND admits and acceptable max price per inference
-func IsValidAtPrice(ctx sdk.Context, am AppModule, req state.InferenceRequest, price cosmosMath.Uint, currentTime uint64) (*bool, error) {
+func IsValidAtPrice(ctx sdk.Context, am AppModule, req state.InferenceRequest, price cosmosMath.Uint, currentTime uint64) (bool, error) {
 	reqId, err := req.GetRequestId()
 	if err != nil {
 		fmt.Println("Error getting request id: ", err)
-		return nil, err
+		return false, err
 	}
 	reqUnmetDemand, err := am.keeper.GetRequestDemand(ctx, reqId)
 	if err != nil {
 		fmt.Println("Error getting request demand: ", err)
-		return nil, err
+		return false, err
 	}
-	res := req.LastChecked+req.Cadence <= currentTime && req.TimestampValidUntil > currentTime && reqUnmetDemand.GTE(price) && req.MaxPricePerInference.LTE(price)
-	return &res, nil
+	res :=
+		req.LastChecked+req.Cadence <= currentTime &&
+			req.TimestampValidUntil > currentTime &&
+			reqUnmetDemand.GTE(price) &&
+			req.MaxPricePerInference.GTE(price)
+	return res, nil
 }
 
 // Inactivates topics with below keeper.MIN_TOPIC_DEMAND demand
@@ -115,9 +119,6 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, a
 	fmt.Println("Active topics: ", len(topicsActive))
 
 	topicsActiveWithDemand := make([]state.Topic, 0)
-	_IsValidAtPrice := func(req state.InferenceRequest, price cosmosMath.Uint) (*bool, error) {
-		return IsValidAtPrice(ctx, am, req, price, currentTime)
-	}
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId]map[string]state.InferenceRequest, 0)
 	for _, topic := range topicsActive {
@@ -133,12 +134,12 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, a
 		// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
 		for _, req := range inferenceRequests {
 			// Check validity of current request at its own price
-			isValidAtPrice, err := _IsValidAtPrice(req, req.MaxPricePerInference)
+			isValidAtPrice, err := IsValidAtPrice(ctx, am, req, req.MaxPricePerInference, currentTime)
 			if err != nil {
 				fmt.Println("Error checking if request is valid at price: ", err)
 				return nil, nil, err
 			}
-			if *isValidAtPrice {
+			if isValidAtPrice {
 				reqId, err := req.GetRequestId()
 				if err != nil {
 					fmt.Println("Error getting request id: ", err)
@@ -161,12 +162,12 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, a
 					}
 					_, ok := demandCurve[potentialNextPrice][reqId2]
 					if !ok {
-						isValidAtPrice, err := _IsValidAtPrice(req2, potentialNextPrice)
+						isValidAtPrice, err := IsValidAtPrice(ctx, am, req2, potentialNextPrice, currentTime)
 						if err != nil {
 							fmt.Println("Error checking if request is valid at price: ", err)
 							return nil, nil, err
 						}
-						if *isValidAtPrice {
+						if isValidAtPrice {
 							demandCurve[potentialNextPrice][reqId2] = req2
 						}
 					}
