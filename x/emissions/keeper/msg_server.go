@@ -217,6 +217,13 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 	if err != nil {
 		return nil, err
 	}
+	// check if topic exists
+	exist, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !exist {
+		return nil, state.ErrTopicDoesNotExist
+	} 
 	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
@@ -287,12 +294,19 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 
 // Remove registration from a topic
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemoveRegistration) (*state.MsgRemoveRegistrationResponse, error) {
+	// check if topic exists
+	exist, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !exist {
+		return nil, state.ErrTopicDoesNotExist
+	} 
+
+	// Check if the address is registered in the specified topic
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
-
-	// Check if the address is registered in the specified topic
 	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err

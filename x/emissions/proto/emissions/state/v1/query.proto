@@ -96,6 +96,12 @@ service Query {
     "/emissions/state/v1/worker_nodes/{libp2p_key}";
   }
 
+  rpc GetRegisteredTopicsIds(QueryRegisteredTopicsIdsRequest) returns (QueryRegisteredTopicsIdsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+    "/emissions/state/v1/registered_topics_ids";
+  }
+
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -184,6 +190,15 @@ message QueryGetTopicsByCreatorRequest {
 
 message QueryGetTopicsByCreatorResponse {
   repeated Topic topics = 1;
+}
+
+message QueryRegisteredTopicsIdsRequest {
+  string address = 1;
+  bool is_reputer = 2;
+}
+
+message QueryRegisteredTopicsIdsResponse {
+  repeated uint64 topics_ids = 1;
 }
 
 // Returns the weight assigned by a reputer onto a worker for a given topic
