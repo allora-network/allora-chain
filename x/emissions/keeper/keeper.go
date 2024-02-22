@@ -161,6 +161,8 @@ type Keeper struct {
 
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
+
+	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 }
 
 func NewKeeper(
@@ -198,6 +200,7 @@ func NewKeeper(
 		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
+		accumulatedMetDemand:  collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 	}
 
 	schema, err := sb.Build()
@@ -1399,6 +1402,36 @@ func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount 
 
 func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, error) {
 	return k.requestUnmetDemand.Get(ctx, requestId)
+}
+
+func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+	res, err := k.accumulatedMetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return res, nil
+}
+
+func (k *Keeper) AddTopicAccumulateMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+	currentMetDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	currentMetDemand = currentMetDemand.Add(metDemand)
+	return k.SetTopicAccumulatedMetDemand(ctx, topicId, currentMetDemand)
+}
+
+func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+	if metDemand.IsZero() {
+		return k.accumulatedMetDemand.Remove(ctx, topicId)
+	}
+	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
 }
 
 //

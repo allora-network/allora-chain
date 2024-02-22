@@ -225,6 +225,10 @@ func ChurnAndDrawFromRequestsToGetTopActiveTopicsAndMetDemand(ctx sdk.Context, k
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	for _, topic := range topTopicsByReturn {
+		// Log the accumulated met demand for each topic
+		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
+
+		// Draw demand from the valid requests
 		bestPrice := topicBestPrices[topic.Id].Price
 		numRequestsServed := 0
 		for _, req := range requestsToDrawDemandFrom[topic.Id] {
