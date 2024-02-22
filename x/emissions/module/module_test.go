@@ -164,8 +164,9 @@ func (s *ModuleTestSuite) TestRegisterWorker() {
 *********************************************/
 
 func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMath.Uint) {
-	topicId, err := mockCreateTopic(s)
+	topicIds, err := mockCreateTopics(s, 1)
 	s.Require().NoError(err)
+	topicId := topicIds[0]
 	s.Require().Equal(topicId, uint64(1))
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
