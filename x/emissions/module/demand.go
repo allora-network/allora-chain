@@ -190,11 +190,11 @@ func GetRequestsThatMaxFees(
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
-func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) (*[]state.Topic, *cosmosMath.Uint, error) {
+func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) ([]state.Topic, cosmosMath.Uint, error) {
 	topicsActive, err := InactivateLowDemandTopics(ctx, k)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
-		return nil, nil, err
+		return nil, cosmosMath.Uint{}, err
 	}
 	//fmt.Println("Active topics: ", len(topicsActive))
 
@@ -205,13 +205,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		inferenceRequests, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id)
 		if err != nil {
 			fmt.Println("Error getting mempool inference requests: ", err)
-			return nil, nil, err
+			return nil, cosmosMath.Uint{}, err
 		}
 
 		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentTime, inferenceRequests)
 		if err != nil {
 			fmt.Println("Error getting requests that maximize fees: ", err)
-			return nil, nil, err
+			return nil, cosmosMath.Uint{}, err
 		}
 		//fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
 		topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
@@ -242,12 +242,12 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			//fmt.Println("Processing request: ", reqId, " with best price: ", bestPrice)
 			if err != nil {
 				fmt.Println("Error getting request demand: ", err)
-				return nil, nil, err
+				return nil, cosmosMath.Uint{}, err
 			}
 			reqDemand, err := k.GetRequestDemand(ctx, reqId)
 			if err != nil {
 				fmt.Println("Error getting request demand: ", err)
-				return nil, nil, err
+				return nil, cosmosMath.Uint{}, err
 			}
 			// all the previous conditionals were already applied to the requests in the previous loop
 			// => should never be negative
@@ -269,5 +269,5 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
 	}
 
-	return &topTopicsByReturn, &totalFundsToDrawFromDemand, nil
+	return topTopicsByReturn, totalFundsToDrawFromDemand, nil
 }

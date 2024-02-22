@@ -411,8 +411,8 @@ func (s *ModuleTestSuite) TestChurnRequestsGetActiveTopicsAndDemandSimple() {
 
 	topics, demand, err := module.ChurnRequestsGetActiveTopicsAndDemand(s.ctx, s.emissionsKeeper, timeNow+20)
 	s.Require().NoError(err, "ChurnRequestsGetActiveTopicsAndDemand should not throw an error")
-	s.Require().Len(*topics, 2, "ChurnRequestsGetActiveTopicsAndDemand should return 2 topics")
-	s.Require().Greater((*demand).Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
+	s.Require().Len(topics, 2, "ChurnRequestsGetActiveTopicsAndDemand should return 2 topics")
+	s.Require().Greater(demand.Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
 }
 
 func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
@@ -457,17 +457,39 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
 	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
 	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
-	requestsModuleBalance := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
 	s.Require().Equal(
 		initialStakeCoins.AmountOf(params.DefaultBondDenom),
-		requestsModuleBalance.Amount,
+		requestsModuleBalanceBefore.Amount,
 		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
+
+	lastInferenceRanTopic0Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[0])
+	s.Require().NoError(err)
+	lastInferenceRanTopic1Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
+	s.Require().NoError(err)
 
 	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
 
-	err = s.appModule.EndBlock(s.ctx)
-	s.NoError(err, "EndBlock error")
+	// make a messaging channel that can pass between threads
+	done := make(chan bool)
+	go func() {
+		// we just made a new multi threaded context that the compiler is aware of
+		err = s.appModule.EndBlock(s.ctx)
+		s.NoError(err, "EndBlock error")
+		// send that letter in the main to whoever is listening to this channel
+		done <- true
+	}()
+	// this thread has halted waiting for someone to send me a love letter
+	<-done
 
-	requestsModuleBalance = s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
-	s.Require().Equal(cosmosMath.ZeroInt(), requestsModuleBalance.Amount, "Balance should be zero after inferences are processed")
+	lastInferenceRanTopic0After, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[0])
+	s.Require().NoError(err)
+	lastInferenceRanTopic1After, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
+	s.Require().NoError(err)
+
+	s.Require().Greater(lastInferenceRanTopic0After, lastInferenceRanTopic0Before, "Inference last ran should be greater after EndBlock")
+	s.Require().Greater(lastInferenceRanTopic1After, lastInferenceRanTopic1Before, "Inference last ran should be greater after EndBlock")
+
+	requestsModuleBalanceAfter := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+	s.Require().Equal(cosmosMath.ZeroInt(), requestsModuleBalanceAfter.Amount, "Balance should be zero after inferences are processed")
 }

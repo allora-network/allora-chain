@@ -1105,14 +1105,40 @@ func (k *Keeper) GetWeightsFromTopic(ctx context.Context, topicId TOPIC_ID) (map
 	return weights, nil
 }
 
+// Get the last time an inference was ran for a given topic
+func (k *Keeper) GetTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID) (lastRanTime uint64, err error) {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return topic.InferenceLastRan, nil
+}
+
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic.InferenceLastRan = lastRanTime
-	return k.topics.Set(ctx, topicId, topic)
+	var newTopic state.Topic = state.Topic{
+		Id:               topic.Id,
+		Creator:          topic.Creator,
+		Metadata:         topic.Metadata,
+		WeightLogic:      topic.WeightLogic,
+		WeightMethod:     topic.WeightMethod,
+		WeightCadence:    topic.WeightCadence,
+		WeightLastRan:    topic.WeightLastRan,
+		InferenceLogic:   topic.InferenceLogic,
+		InferenceMethod:  topic.InferenceMethod,
+		InferenceCadence: topic.InferenceCadence,
+		InferenceLastRan: lastRanTime,
+		Active:           topic.Active,
+		DefaultArg:       topic.DefaultArg,
+	}
+	return k.topics.Set(ctx, topicId, newTopic)
 }
 
 // UpdateTopicWeightLastRan updates the WeightLastRan timestamp for a given topic.
