@@ -50,11 +50,22 @@ func GetParticipantEmissionsForTopic(
 	if err != nil {
 		return nil, err
 	}
+	// Mask inferences if workers admit insufficient liveness
+	maskedTopicWeights, err := MaskWeightsIfInsufficientLiveness(ctx, am, topicId, topicWeights)
+	if err != nil {
+		return nil, err
+	}
 
 	// Ranks = matmul Weights * NormalizedStake
 	// for i rows and j columns
 	// i.e. rank[j] = sum(j) + weight_ij * normalizedStake_i
-	ranks := matmul(topicWeights, reputerStakeNorm)
+	ranks := matmul(maskedTopicWeights, reputerStakeNorm)
+	// TODO:
+	// * Increment when inferences added (in keeper?)
+	// * Remove entirely via Set(new(0)) when after reward epochs for each topic
+	//
+	// PICKUP HERE^
+	//
 
 	// Incentive = normalize(Ranks)
 	incentive, err := normalize(ranks)
@@ -64,7 +75,7 @@ func GetParticipantEmissionsForTopic(
 
 	// BondDeltas using elementwise multiplication of the same vector for all rows of Weight matrix.
 	// i.e. For each row i: BondDelta_ij = Weights_ij x Stake_j
-	bondDeltas := elementWiseProduct(topicWeights, reputerStakeNorm)
+	bondDeltas := elementWiseProduct(maskedTopicWeights, reputerStakeNorm)
 
 	// Row-wise normalize BondDeltas
 	bondDeltasNorm, err := normalizeBondDeltas(bondDeltas)
@@ -123,6 +134,49 @@ func GetParticipantEmissionsForTopic(
 		rewards = mapAdd(reputerEmissions, workerEmissions)
 	}
 	return rewards, nil
+}
+
+// This function checks topic weights and then masks them if not enough inferences were collected in that timestep
+// It should:
+//
+//	mask the inputted weights above with GetNumInferencesInRewardEpoch(),
+//	checking inference cadence by reward epoch length / topic inference cadence
+//	simple forgiveness check (only if many inferences are missing, don't reward)
+func MaskWeightsIfInsufficientLiveness(
+	ctx sdk.Context,
+	am AppModule,
+	topicId keeper.TOPIC_ID,
+	weights map[string]map[string]*Uint) (map[string]map[string]*Uint, error) {
+	maskedWeights := make(map[string]map[string]*Uint)
+	for reputer, workerWeights := range weights {
+		for worker := range workerWeights {
+			// Get the topic => its inference cadence
+			topic, err := am.keeper.GetTopic(ctx, topicId)
+			if err != nil {
+				return nil, err
+			}
+			// Get the number of inferences in the reward epoch
+			workerAddress, err := sdk.AccAddressFromBech32(worker)
+			if err != nil {
+				return nil, err
+			}
+			numInferencesInRewardEpoch, err := am.keeper.GetNumInferencesInRewardEpoch(ctx, topicId, workerAddress)
+			if err != nil {
+				return nil, err
+			}
+			// If number of inferences in the reward epoch < amount that should be there by too much, then mask the weight
+			expectedNumInferencesInRewardEpoch := uint64(am.keeper.EpochLength()) / topic.InferenceCadence
+			// Allow for for 10% of inferences to be missing
+			expectedNumInferencesInRewardEpoch = expectedNumInferencesInRewardEpoch - (expectedNumInferencesInRewardEpoch / keeper.MAX_ALLOWABLE_MISSING_INFERENCE_PERCENT)
+			if numInferencesInRewardEpoch.LT(cosmosMath.NewUint(expectedNumInferencesInRewardEpoch)) {
+				maskedVal := cosmosMath.ZeroUint()
+				maskedWeights[reputer][worker] = &maskedVal
+			} else {
+				maskedWeights[reputer][worker] = weights[reputer][worker]
+			}
+		}
+	}
+	return maskedWeights, nil
 }
 
 // ********************************************************
@@ -195,7 +249,7 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 		return err
 	}
 
-	return nil
+	return am.keeper.ResetNumInferencesInRewardEpoch(ctx)
 }
 
 // this function addStake to each participant of a topic according
