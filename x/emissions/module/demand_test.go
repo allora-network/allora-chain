@@ -414,3 +414,52 @@ func (s *ModuleTestSuite) TestChurnRequestsGetActiveTopicsAndDemandSimple() {
 	s.Require().Len(*topics, 2, "ChurnRequestsGetActiveTopicsAndDemand should return 2 topics")
 	s.Require().Greater((*demand).Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
 }
+
+func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
+	createdTopicIds, err := mockCreateTopics(s, 2)
+	s.Require().NoError(err)
+	timeNow := uint64(time.Now().UTC().Unix())
+	var initialStake int64 = 1100
+	var requestStake0 int64 = 500
+	var requestStake1 int64 = 600
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
+	r := state.MsgRequestInference{
+		Sender: s.addrsStr[0],
+		Requests: []*state.RequestInferenceListItem{
+			{
+				Nonce:                0,
+				TopicId:              createdTopicIds[0],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+			{
+				Nonce:                1,
+				TopicId:              createdTopicIds[1],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake1)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake1)),
+				TimestampValidUntil:  timeNow + 400,
+				ExtraData:            nil,
+			},
+		},
+	}
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err)
+	reputers, err := mockSomeReputers(s, createdTopicIds[0])
+	s.NoError(err)
+	workers, err := mockSomeWorkers(s, createdTopicIds[0])
+	s.NoError(err)
+	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
+	s.NoError(err, "Error setting weights")
+
+	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
+
+	err = s.appModule.EndBlock(s.ctx)
+	s.NoError(err, "EndBlock error")
+
+}
