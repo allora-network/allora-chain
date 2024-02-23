@@ -60,12 +60,6 @@ func GetParticipantEmissionsForTopic(
 	// for i rows and j columns
 	// i.e. rank[j] = sum(j) + weight_ij * normalizedStake_i
 	ranks := matmul(maskedTopicWeights, reputerStakeNorm)
-	// TODO:
-	// * Increment when inferences added (in keeper?)
-	// * Remove entirely via Set(new(0)) when after reward epochs for each topic
-	//
-	// PICKUP HERE^
-	//
 
 	// Incentive = normalize(Ranks)
 	incentive, err := normalize(ranks)
