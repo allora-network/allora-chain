@@ -86,7 +86,7 @@ func (s *KeeperTestSuite) TestMsgReactivateTopic() {
 
 	// Create a MsgCreateNewTopic message
 	reactivateTopicMsg := &state.MsgReactivateTopic{
-		Sender: topicCreator,
+		Sender:  topicCreator,
 		TopicId: 0,
 	}
 
@@ -111,7 +111,7 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 
 	// Create a MsgCreateNewTopic message
 	reactivateTopicMsg := &state.MsgReactivateTopic{
-		Sender: topicCreator,
+		Sender:  topicCreator,
 		TopicId: 0,
 	}
 
