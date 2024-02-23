@@ -2230,6 +2230,25 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelist() {
 	require.False(isInWhitelist, "addressToRemove should no longer be in the topic creation whitelist")
 }
 
+func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelistInvalidUnauthorized() {
+	ctx := s.ctx
+	require := s.Require()
+
+	randomAddresses := simtestutil.CreateRandomAccounts(2)
+
+	nonAdminAddr := randomAddresses[0]
+	addressToRemove := randomAddresses[1]
+
+	// Attempt to remove addressToRemove from the topic creation whitelist by nonAdminAddr
+	msg := &state.MsgRemoveFromTopicCreationWhitelist{
+		Sender:  nonAdminAddr.String(),
+		Address: addressToRemove.String(),
+	}
+
+	_, err := s.msgServer.RemoveFromTopicCreationWhitelist(ctx, msg)
+	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the topic creation whitelist")
+}
+
 func (s *KeeperTestSuite) TestAddToWeightSettingWhitelist() {
 	ctx := s.ctx
 	require := s.Require()
@@ -2252,6 +2271,25 @@ func (s *KeeperTestSuite) TestAddToWeightSettingWhitelist() {
 	require.True(isInWhitelist, "newAddr should be in the weight setting whitelist")
 }
 
+func (s *KeeperTestSuite) TestAddToWeightSettingWhitelistInvalidUnauthorized() {
+	ctx := s.ctx
+	require := s.Require()
+
+	randomAddresses := simtestutil.CreateRandomAccounts(2)
+
+	nonAdminAddr := randomAddresses[0]
+	newAddr := randomAddresses[1]
+
+	// Attempt to add addressToAdd to the weight setting whitelist by nonAdminAddr
+	msg := &state.MsgAddToWeightSettingWhitelist{
+		Sender:  nonAdminAddr.String(),
+		Address: newAddr.String(),
+	}
+
+	_, err := s.msgServer.AddToWeightSettingWhitelist(ctx, msg)
+	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the weight setting whitelist")
+}
+
 func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelist() {
 	ctx := s.ctx
 	require := s.Require()
@@ -2271,4 +2309,23 @@ func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelist() {
 	isInWhitelist, err := s.emissionsKeeper.IsInWeightSettingWhitelist(ctx, addressToRemove)
 	require.NoError(err, "IsInWeightSettingWhitelist check should not return an error")
 	require.False(isInWhitelist, "addressToRemove should no longer be in the weight setting whitelist")
+}
+
+func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelistInvalidUnauthorized() {
+	ctx := s.ctx
+	require := s.Require()
+
+	randomAddresses := simtestutil.CreateRandomAccounts(2)
+
+	nonAdminAddr := randomAddresses[0]
+	addressToRemove := randomAddresses[1]
+
+	// Attempt to remove addressToRemove from the weight setting whitelist by nonAdminAddr
+	msg := &state.MsgRemoveFromWeightSettingWhitelist{
+		Sender:  nonAdminAddr.String(),
+		Address: addressToRemove.String(),
+	}
+
+	_, err := s.msgServer.RemoveFromWeightSettingWhitelist(ctx, msg)
+	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the weight setting whitelist")
 }
