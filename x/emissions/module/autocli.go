@@ -23,7 +23,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetTopic",
-					Use:       "get-topic topic_id",
+					Use:       "get-topic [topic_id]",
 					Short:     "Get topic by topic id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -157,7 +157,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddStake",
-					Use:       "add-stake sender target amount",
+					Use:       "add-stake [sender] [target] [amount]",
 					Short:     "Add stake [amount] from a sender [reputer or worker] to a stakeTarget [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -167,7 +167,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ModifyStake",
-					Use:       "modify-stake sender placements_remove placements_add",
+					Use:       "modify-stake [sender] [placements_remove] [placements_add]",
 					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -177,7 +177,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "StartRemoveStake",
-					Use:       "start-remove-stake sender placements_remove",
+					Use:       "start-remove-stake [sender] [placements_remove]",
 					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -186,7 +186,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ConfirmRemoveStake",
-					Use:       "confirm-remove-stake sender target amount",
+					Use:       "confirm-remove-stake [sender] [target] [amount]",
 					Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -194,7 +194,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "StartRemoveAllStake",
-					Use:       "start-remove-all-stake sender",
+					Use:       "start-remove-all-stake [sender]",
 					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -202,7 +202,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "SetInferences",
-					Use:       "set-inferences sender inferences",
+					Use:       "set-inferences [sender] [inferences]",
 					Short:     "Set a batch of inferences on a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -211,7 +211,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ProcessInferences",
-					Use:       "process-inferences sender inferences",
+					Use:       "process-inferences [sender] [inferences]",
 					Short:     "Process a batch of inferences",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -220,7 +220,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "SetWeights",
-					Use:       "set-weights sender weights",
+					Use:       "set-weights [sender] [weights]",
 					Short:     "Set a batch of weights",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -229,7 +229,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ReactivateTopic",
-					Use:       "reactivate-topic sender topic_id",
+					Use:       "reactivate-topic [sender] [topic_id]",
 					Short:     "Reactivate a topic that has become inactivated",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -238,7 +238,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RequestInference",
-					Use:       "request-inference sender requests",
+					Use:       "request-inference [sender] [requests]",
 					Short:     "Request a batch of inferences to be kicked off",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -247,7 +247,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddToWhitelistAdmin",
-					Use:       "add-to-whitelist-admin sender address",
+					Use:       "add-to-whitelist-admin [sender] [address]",
 					Short:     "add an admin address to the whitelist used for admin functions on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -256,7 +256,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RemoveFromWhitelistAdmin",
-					Use:       "remove-from-whitelist-admin sender address",
+					Use:       "remove-from-whitelist-admin [sender] [address]",
 					Short:     "remove a admin address from the whitelist used for admin functions on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -265,7 +265,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddToTopicCreationWhitelist",
-					Use:       "add-to-topic-creation-whitelist sender address",
+					Use:       "add-to-topic-creation-whitelist [sender] [address]",
 					Short:     "add an address to the whitelist used for creating topics on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -274,7 +274,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RemoveFromTopicCreationWhitelist",
-					Use:       "remove-from-topic-creation-whitelist sender address",
+					Use:       "remove-from-topic-creation-whitelist [sender] [address]",
 					Short:     "remove an address from the whitelist used for creating topics on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -283,7 +283,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddToWeightSettingWhitelist",
-					Use:       "add-to-weight-setting-whitelist sender address",
+					Use:       "add-to-weight-setting-whitelist [sender] [address]",
 					Short:     "add an address to the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -292,7 +292,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RemoveFromWeightSettingWhitelist",
-					Use:       "remove-from-weight-setting-whitelist sender address",
+					Use:       "remove-from-weight-setting-whitelist [sender] [address]",
 					Short:     "remove an address from the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
