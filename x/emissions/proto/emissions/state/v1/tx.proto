@@ -13,6 +13,8 @@ import "cosmos_proto/cosmos.proto";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
   rpc SetInferences(MsgSetInferences) returns (MsgSetInferencesResponse);
 
   rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
@@ -53,6 +55,15 @@ service Msg {
 
   rpc RemoveFromWeightSettingWhitelist(MsgRemoveFromWeightSettingWhitelist) returns (MsgRemoveFromWeightSettingWhitelistResponse);
 }
+
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  Params params = 2;
+}
+
+message MsgUpdateParamsResponse {}
 
 message MsgCreateNewTopic {
   option (cosmos.msg.v1.signer) = "creator";

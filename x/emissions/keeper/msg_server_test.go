@@ -8,7 +8,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -258,7 +257,14 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Add Stake to Topic 1
 	stakeToAdd := cosmosMath.NewUint(50)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeToAdd.BigInt()))))
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(
+		gomock.Any(),
+		reputerAddr,
+		state.AlloraStakingModuleName,
+		sdk.NewCoins(
+			sdk.NewCoin(
+				params.DefaultBondDenom,
+				cosmosMath.NewIntFromBigInt(stakeToAdd.BigInt()))))
 	_, err = msgServer.AddStake(ctx, &state.MsgAddStake{
 		Sender:      reputerAddr.String(),
 		StakeTarget: reputerAddr.String(),
@@ -336,7 +342,14 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Add Stake to Topic 1
 	stakeToAdd := cosmosMath.NewUint(50)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.AlloraStakingModuleName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeToAdd.BigInt()))))
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(
+		gomock.Any(),
+		workerAddr,
+		state.AlloraStakingModuleName,
+		sdk.NewCoins(
+			sdk.NewCoin(
+				params.DefaultBondDenom,
+				cosmosMath.NewIntFromBigInt(stakeToAdd.BigInt()))))
 	_, err = msgServer.AddStake(ctx, &state.MsgAddStake{
 		Sender:      workerAddr.String(),
 		StakeTarget: workerAddr.String(),
@@ -631,7 +644,10 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.AccAddress, workerAddr sdk.AccAddress, registrationInitialStake cosmosMath.Uint) {
 	msgServer := s.msgServer
 	require := s.Require()
-	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
+	registrationInitialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(
+			params.DefaultBondDenom,
+			cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
 
 	// Create Topic
 	newTopicMsg := &state.MsgCreateNewTopic{
@@ -1155,7 +1171,9 @@ func (s *KeeperTestSuite) TestMsgStartRemoveStake() {
 	require.NoError(err, "Stake removal queue should not be empty")
 	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
-	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	delayWindow, err := s.emissionsKeeper.GetRemoveStakeDelayWindow(ctx)
+	s.Require().NoError(err)
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+delayWindow, timeNow, "Time should be valid ending")
 	require.Equal(1, len(removalInfo.Placements), "There should be one placement in the removal queue")
 	require.Equal(removalAmount, removalInfo.Placements[0].Amount, "The amount in the removal queue should be the same as the amount in the message")
 	require.Equal(workerAddr.String(), removalInfo.Placements[0].Target, "The target in the removal queue should be the same as the target in the message")
@@ -1302,7 +1320,9 @@ func (s *KeeperTestSuite) TestMsgStartRemoveAllStake() {
 	require.NoError(err, "Stake removal queue should not be empty")
 	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
-	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+keeper.DELAY_WINDOW, timeNow, "Time should be valid ending")
+	delayWindow, err := s.emissionsKeeper.GetRemoveStakeDelayWindow(ctx)
+	s.Require().NoError(err)
+	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted+delayWindow, timeNow, "Time should be valid ending")
 	require.Equal(2, len(removalInfo.Placements), "There should be two placements in the removal queue")
 	require.Equal(removalInfo.Placements[0].Target, workerAddr.String(), "The target in the removal queue should be the same as the target in the message")
 	require.Equal(removalInfo.Placements[0].Amount, stakeAmount, "The amount in the removal queue should be the same as the amount in the message")

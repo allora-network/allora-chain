@@ -106,7 +106,7 @@ func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingA
 		fmt.Println("Error getting active topics: ", err)
 		return nil, err
 	}
-	minTopicDemand := cosmosMath.NewUint(keeper.MIN_TOPIC_UNMET_DEMAND)
+	minTopicDemand, err := k.GetMinTopicUnmetDemand(ctx)
 	for _, topic := range topicsActive {
 		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
 		if err != nil {
@@ -231,8 +231,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	// Sort topics by topicBestPrices
 	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentTime)
 	//fmt.Println("Length sorted topics: ", len(sortedTopics))
+	maxTopicsPerBlock, err := k.GetMaxTopicsPerBlock(ctx)
+	if err != nil {
+		fmt.Println("Error getting max topics per block: ", err)
+		return nil, cosmosMath.Uint{}, err
+	}
 	// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand
-	cutoff := uint(math.Min(float64(len(sortedTopics)), keeper.MAX_TOPICS_PER_BLOCK))
+	cutoff := uint(math.Min(float64(len(sortedTopics)), maxTopicsPerBlock))
 	//fmt.Println("Cutoff: ", cutoff)
 	topTopicsByReturn := sortedTopics[:cutoff]
 	//fmt.Println("Length top topics by return: ", len(topTopicsByReturn))
@@ -269,7 +274,12 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			if req.Cadence == 0 {
 				k.RemoveFromMempool(ctx, req)
 			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
-				if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_REQUEST_UNMET_DEMAND)) {
+				minRequestUnmetDemand, err := k.GetMinRequestUnmetDemand(ctx)
+				if err != nil {
+					fmt.Println("Error getting min request unmet demand: ", err)
+					return nil, cosmosMath.Uint{}, err
+				}
+				if newReqDemand.LT(minRequestUnmetDemand) {
 					// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
 					// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
 					// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests
