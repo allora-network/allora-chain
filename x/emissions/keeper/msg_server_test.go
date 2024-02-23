@@ -15,6 +15,8 @@ import (
 )
 
 var (
+	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
+	// TODO: Change PKS to accounts here and in all the tests (like the above line)
 	PKS     = simtestutil.CreateTestPubKeys(4)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = sdk.ValAddress(Addr)
@@ -23,6 +25,99 @@ var (
 // ########################################
 // #           Topics tests              #
 // ########################################
+
+func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Create a MsgCreateNewTopic message
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:         "Some metadata for the new topic",
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		InferenceCadence: 60,
+		DefaultArg:       "ETH",
+	}
+
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on first creation")
+
+	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
+	s.Require().NoError(err)
+	s.Require().NotNil(result)
+	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
+}
+
+func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Create a MsgCreateNewTopic message
+	newTopicMsg := &state.MsgCreateNewTopic{
+		Creator:          nonAdminAccounts[0].String(),
+		Metadata:         "Some metadata for the new topic",
+		WeightLogic:      "logic",
+		WeightCadence:    10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		InferenceCadence: 60,
+		DefaultArg:       "ETH",
+	}
+
+	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.ErrorIs(err, state.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
+}
+
+func (s *KeeperTestSuite) TestMsgReactivateTopic() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
+	s.CreateOneTopic()
+
+	// Deactivate topic
+	s.emissionsKeeper.InactivateTopic(ctx, 0)
+
+	// Set unmet demand for topic
+	s.emissionsKeeper.SetTopicUnmetDemand(ctx, 0, cosmosMath.NewUint(100))
+
+	// Create a MsgCreateNewTopic message
+	reactivateTopicMsg := &state.MsgReactivateTopic{
+		Sender: topicCreator,
+		TopicId: 0,
+	}
+
+	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
+	require.NoError(err, "ReactivateTopic should not return an error")
+
+	// Check if topic is active
+	topic, err := s.emissionsKeeper.GetTopic(ctx, 0)
+	require.NoError(err)
+	require.True(topic.Active, "Topic should be active")
+}
+
+func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
+	s.CreateOneTopic()
+
+	// Deactivate topic
+	s.emissionsKeeper.InactivateTopic(ctx, 0)
+
+	// Create a MsgCreateNewTopic message
+	reactivateTopicMsg := &state.MsgReactivateTopic{
+		Sender: topicCreator,
+		TopicId: 0,
+	}
+
+	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
+	require.ErrorIs(err, state.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
+}
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -351,6 +446,31 @@ func (s *KeeperTestSuite) TestMsgSetWeights() {
 
 	_, err := msgServer.SetWeights(ctx, weightMsg)
 	require.NoError(err, "SetWeights should not return an error")
+}
+
+func (s *KeeperTestSuite) TestMsgSetWeightsInvalidUnauthorized() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := nonAdminAccounts[0].String()
+	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
+
+	// Create a MsgSetWeights message
+	weightMsg := &state.MsgSetWeights{
+		Sender: reputerAddr,
+		Weights: []*state.Weight{
+			{
+				TopicId: 1,
+				Reputer: reputerAddr,
+				Worker:  workerAddr,
+				Weight:  cosmosMath.NewUint(100),
+			},
+		},
+	}
+
+	_, err := msgServer.SetWeights(ctx, weightMsg)
+	require.ErrorIs(err, state.ErrNotInWeightSettingWhitelist, "SetWeights should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgSetInferences() {
@@ -2090,7 +2210,7 @@ func (s *KeeperTestSuite) TestAddWhitelistAdmin() {
 	msgServer := s.msgServer
 
 	adminAddr := sdk.AccAddress(PKS[0].Address())
-	newAdminAddr := simtestutil.CreateRandomAccounts(1)[0]
+	newAdminAddr := nonAdminAccounts[0]
 
 	// Verify that newAdminAddr is not a whitelist admin
 	isWhitelistAdmin, err := s.emissionsKeeper.IsWhitelistAdmin(ctx, newAdminAddr)
@@ -2116,7 +2236,7 @@ func (s *KeeperTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
-	nonAdminAddr := simtestutil.CreateRandomAccounts(1)[0]
+	nonAdminAddr := nonAdminAccounts[0]
 	targetAddr := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to add targetAddr to whitelist by nonAdminAddr
@@ -2156,7 +2276,7 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
-	nonAdminAddr := simtestutil.CreateRandomAccounts(1)[0]
+	nonAdminAddr := nonAdminAccounts[0]
 
 	// Attempt to remove an admin from whitelist by nonAdminAddr
 	msg := &state.MsgRemoveFromWhitelistAdmin{
@@ -2173,7 +2293,7 @@ func (s *KeeperTestSuite) TestAddToTopicCreationWhitelist() {
 	require := s.Require()
 
 	adminAddr := sdk.AccAddress(PKS[0].Address())
-	newAddr := simtestutil.CreateRandomAccounts(1)[0]
+	newAddr := nonAdminAccounts[0]
 
 	// Attempt to add newAddr to the topic creation whitelist by adminAddr
 	msg := &state.MsgAddToTopicCreationWhitelist{
@@ -2194,10 +2314,8 @@ func (s *KeeperTestSuite) TestAddToTopicCreationWhitelistInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
-	randomAddresses := simtestutil.CreateRandomAccounts(2)
-
-	nonAdminAddr := randomAddresses[0]
-	newAddr := randomAddresses[1]
+	nonAdminAddr := nonAdminAccounts[0]
+	newAddr := nonAdminAccounts[1]
 
 	// Attempt to add addressToAdd to the topic creation whitelist by nonAdminAddr
 	msg := &state.MsgAddToTopicCreationWhitelist{
@@ -2234,10 +2352,8 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelistInvalidUnauthorize
 	ctx := s.ctx
 	require := s.Require()
 
-	randomAddresses := simtestutil.CreateRandomAccounts(2)
-
-	nonAdminAddr := randomAddresses[0]
-	addressToRemove := randomAddresses[1]
+	nonAdminAddr := nonAdminAccounts[0]
+	addressToRemove := nonAdminAccounts[1]
 
 	// Attempt to remove addressToRemove from the topic creation whitelist by nonAdminAddr
 	msg := &state.MsgRemoveFromTopicCreationWhitelist{
@@ -2254,7 +2370,7 @@ func (s *KeeperTestSuite) TestAddToWeightSettingWhitelist() {
 	require := s.Require()
 
 	adminAddr := sdk.AccAddress(PKS[0].Address())
-	newAddr := simtestutil.CreateRandomAccounts(1)[0]
+	newAddr := nonAdminAccounts[0]
 
 	// Attempt to add newAddr to the weight setting whitelist by adminAddr
 	msg := &state.MsgAddToWeightSettingWhitelist{
@@ -2275,10 +2391,8 @@ func (s *KeeperTestSuite) TestAddToWeightSettingWhitelistInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
-	randomAddresses := simtestutil.CreateRandomAccounts(2)
-
-	nonAdminAddr := randomAddresses[0]
-	newAddr := randomAddresses[1]
+	nonAdminAddr := nonAdminAccounts[0]
+	newAddr := nonAdminAccounts[1]
 
 	// Attempt to add addressToAdd to the weight setting whitelist by nonAdminAddr
 	msg := &state.MsgAddToWeightSettingWhitelist{
@@ -2315,10 +2429,8 @@ func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelistInvalidUnauthorize
 	ctx := s.ctx
 	require := s.Require()
 
-	randomAddresses := simtestutil.CreateRandomAccounts(2)
-
-	nonAdminAddr := randomAddresses[0]
-	addressToRemove := randomAddresses[1]
+	nonAdminAddr := nonAdminAccounts[0]
+	addressToRemove := nonAdminAccounts[1]
 
 	// Attempt to remove addressToRemove from the weight setting whitelist by nonAdminAddr
 	msg := &state.MsgRemoveFromWeightSettingWhitelist{

@@ -21,6 +21,8 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
+  rpc ReactivateTopic(MsgReactivateTopic) returns (MsgReactivateTopicResponse);
+
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
   rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
