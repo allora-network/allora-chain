@@ -106,6 +106,13 @@ func (s *ModuleTestSuite) SetupTest() {
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
 	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.appModule = appModule
+
+	// Add all tests addresses in whitelists
+	for _, addr := range addrs {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
+		s.emissionsKeeper.AddToWeightSettingWhitelist(ctx, addr)
+	}
 }
 
 func TestModuleTestSuite(t *testing.T) {
