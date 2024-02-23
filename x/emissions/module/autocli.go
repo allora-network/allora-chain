@@ -165,43 +165,140 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "amount"},
 					},
 				},
-				// TODO: Need to test it - breaking when initializing the chain
-				// {
-				// 	RpcMethod: "ModifyStake",
-				// 	Use:       "modify-stake sender placements_remove placements_add",
-				// 	Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
-				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-				// 		{ProtoField: "sender"},
-				// 		{ProtoField: "placements_remove"},
-				// 		{ProtoField: "placements_add"},
-				// 	},
-				// },
-				// {
-				// 	RpcMethod: "StartRemoveStake",
-				// 	Use:       "start-remove-stake [sender] [target] [amount]",
-				// 	Short:     "Start remove stake process for [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-				// 		{ProtoField: "sender"},
-				// 		{ProtoField: "target"},
-				// 		{ProtoField: "amount"},
-				// 	},
-				// },
-				// {
-				// 	RpcMethod: "ConfirmRemoveStake",
-				// 	Use:       "confirm-remove-stake sender target amount",
-				// 	Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-				// 		{ProtoField: "sender"},
-				// 	},
-				// },
-				// {
-				// 	RpcMethod: "StartRemoveAllStake",
-				// 	Use:       "start-remove-all-stake sender",
-				// 	Short:     "Start the process to remove all stake from a sender [reputer or worker]",
-				// 	PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-				// 		{ProtoField: "sender"},
-				// 	},
-				// },
+				{
+					RpcMethod: "ModifyStake",
+					Use:       "modify-stake sender placements_remove placements_add",
+					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "placements_remove"},
+						{ProtoField: "placements_add"},
+					},
+				},
+				{
+					RpcMethod: "StartRemoveStake",
+					Use:       "start-remove-stake sender placements_remove",
+					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "placements_remove"},
+					},
+				},
+				{
+					RpcMethod: "ConfirmRemoveStake",
+					Use:       "confirm-remove-stake sender target amount",
+					Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+					},
+				},
+				{
+					RpcMethod: "StartRemoveAllStake",
+					Use:       "start-remove-all-stake sender",
+					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+					},
+				},
+				{
+					RpcMethod: "SetInferences",
+					Use:       "set-inferences sender inferences",
+					Short:     "Set a batch of inferences on a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "inferences"},
+					},
+				},
+				{
+					RpcMethod: "ProcessInferences",
+					Use:       "process-inferences sender inferences",
+					Short:     "Process a batch of inferences",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "inferences"},
+					},
+				},
+				{
+					RpcMethod: "SetWeights",
+					Use:       "set-weights sender weights",
+					Short:     "Set a batch of weights",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "weights"},
+					},
+				},
+				{
+					RpcMethod: "ReactivateTopic",
+					Use:       "reactivate-topic sender topic_id",
+					Short:     "Reactivate a topic that has become inactivated",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "RequestInference",
+					Use:       "request-inference sender requests",
+					Short:     "Request a batch of inferences to be kicked off",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "requests"},
+					},
+				},
+				{
+					RpcMethod: "AddToWhitelistAdmin",
+					Use:       "add-to-whitelist-admin sender address",
+					Short:     "add an admin address to the whitelist used for admin functions on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "RemoveFromWhitelistAdmin",
+					Use:       "remove-from-whitelist-admin sender address",
+					Short:     "remove a admin address from the whitelist used for admin functions on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "AddToTopicCreationWhitelist",
+					Use:       "add-to-topic-creation-whitelist sender address",
+					Short:     "add an address to the whitelist used for creating topics on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "RemoveFromTopicCreationWhitelist",
+					Use:       "remove-from-topic-creation-whitelist sender address",
+					Short:     "remove an address from the whitelist used for creating topics on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "AddToWeightSettingWhitelist",
+					Use:       "add-to-weight-setting-whitelist sender address",
+					Short:     "add an address to the whitelist used for setting weights on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "RemoveFromWeightSettingWhitelist",
+					Use:       "remove-from-weight-setting-whitelist sender address",
+					Short:     "remove an address from the whitelist used for setting weights on-chain",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "address"},
+					},
+				},
 			},
 		},
 	}
