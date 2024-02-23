@@ -47,7 +47,12 @@ type WeightInferencePayload struct {
 	LatestWeights map[string]string  `json:"latest_weights"`
 }
 
-func generateWeights(weights map[string]map[string]*math.Uint, inferences []*state.InferenceSetForScoring, functionId string, functionMethod string, topicId uint64) {
+func generateWeights(
+	weights map[string]map[string]*math.Uint,
+	inferences []*state.InferenceSetForScoring,
+	functionId string,
+	functionMethod string,
+	topicId uint64) {
 	inferencesByTimestamp := []LatestInferences{}
 
 	for _, infSet := range inferences {

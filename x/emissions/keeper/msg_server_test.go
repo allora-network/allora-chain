@@ -1741,7 +1741,17 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*r0, storedRequest, "Stored request should match the request")
+	// the last checked time is not set in the request, so we can't compare it
+	// we can compare the rest of the fields
+	s.Require().Equal(r0.Sender, storedRequest.Sender, "Stored request sender should match the request")
+	s.Require().Equal(r0.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
+	s.Require().Equal(r0.TopicId, storedRequest.TopicId, "Stored request topic id should match the request")
+	s.Require().Equal(r0.Cadence, storedRequest.Cadence, "Stored request cadence should match the request")
+	s.Require().Equal(r0.MaxPricePerInference, storedRequest.MaxPricePerInference, "Stored request max price per inference should match the request")
+	s.Require().Equal(r0.BidAmount, storedRequest.BidAmount, "Stored request bid amount should match the request")
+	s.Require().GreaterOrEqual(storedRequest.LastChecked, timeNow, "LastChecked should be greater than timeNow")
+	s.Require().Equal(r0.TimestampValidUntil, storedRequest.TimestampValidUntil, "Stored request timestamp valid until should match the request")
+	s.Require().Equal(r0.ExtraData, storedRequest.ExtraData, "Stored request extra data should match the request")
 }
 
 // test more than one inference in the message
@@ -1793,13 +1803,29 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*r0, storedRequest, "Stored request should match the request")
+	s.Require().Equal(r0.Sender, storedRequest.Sender, "Stored request sender should match the request")
+	s.Require().Equal(r0.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
+	s.Require().Equal(r0.TopicId, storedRequest.TopicId, "Stored request topic id should match the request")
+	s.Require().Equal(r0.Cadence, storedRequest.Cadence, "Stored request cadence should match the request")
+	s.Require().Equal(r0.MaxPricePerInference, storedRequest.MaxPricePerInference, "Stored request max price per inference should match the request")
+	s.Require().Equal(r0.BidAmount, storedRequest.BidAmount, "Stored request bid amount should match the request")
+	s.Require().GreaterOrEqual(storedRequest.LastChecked, timeNow, "LastChecked should be greater than timeNow")
+	s.Require().Equal(r0.TimestampValidUntil, storedRequest.TimestampValidUntil, "Stored request timestamp valid until should match the request")
+	s.Require().Equal(r0.ExtraData, storedRequest.ExtraData, "Stored request extra data should match the request")
 	r1 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[1])
 	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
 	s.Require().NoError(err)
-	s.Require().Equal(*r1, storedRequest, "Stored request should match the request")
+	s.Require().Equal(r1.Sender, storedRequest.Sender, "Stored request sender should match the request")
+	s.Require().Equal(r1.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
+	s.Require().Equal(r1.TopicId, storedRequest.TopicId, "Stored request topic id should match the request")
+	s.Require().Equal(r1.Cadence, storedRequest.Cadence, "Stored request cadence should match the request")
+	s.Require().Equal(r1.MaxPricePerInference, storedRequest.MaxPricePerInference, "Stored request max price per inference should match the request")
+	s.Require().Equal(r1.BidAmount, storedRequest.BidAmount, "Stored request bid amount should match the request")
+	s.Require().GreaterOrEqual(storedRequest.LastChecked, timeNow, "LastChecked should be greater than timeNow")
+	s.Require().Equal(r1.TimestampValidUntil, storedRequest.TimestampValidUntil, "Stored request timestamp valid until should match the request")
+	s.Require().Equal(r1.ExtraData, storedRequest.ExtraData, "Stored request extra data should match the request")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
@@ -2021,4 +2047,33 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().ErrorIs(err, state.ErrInferenceRequestCadenceTooSlow, "RequestInference should return an error when the request cadence is too slow")
+}
+
+func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMinimum() {
+	timeNow := uint64(time.Now().UTC().Unix())
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	s.CreateOneTopic()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := state.MsgRequestInference{
+		Sender: sender,
+		Requests: []*state.RequestInferenceListItem{
+			{
+				Nonce:                0,
+				TopicId:              0,
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.ZeroUint(),
+				BidAmount:            cosmosMath.ZeroUint(),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err := s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().ErrorIs(err, state.ErrInferenceRequestBidAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
 }

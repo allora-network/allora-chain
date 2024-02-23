@@ -2,11 +2,32 @@ package emissions
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (m *InferenceRequest) GetRequestBytes() (ret []byte, err error) {
+	senderAddr, err := sdk.AccAddressFromBech32(m.Sender)
+	if err != nil {
+		return []byte{}, err
+	}
+	senderBytes := senderAddr.Bytes()
+
+	nonceBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(nonceBytes, m.Nonce)
+	ret = append(senderBytes, nonceBytes...)
+
+	topicIdBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(topicIdBytes, m.TopicId)
+	ret = append(ret, topicIdBytes...)
+	return ret, nil
+}
+
+// a request id is a hash of (sender, nonce, topicId)
 func (m *InferenceRequest) GetRequestId() (string, error) {
-	inferenceRequestBytes, err := m.Marshal()
+	inferenceRequestBytes, err := m.GetRequestBytes()
 	if err != nil {
 		return "", err
 	}
@@ -25,6 +46,7 @@ func CreateNewInferenceRequestFromListItem(sender string, item *RequestInference
 		MaxPricePerInference: item.MaxPricePerInference,
 		BidAmount:            item.BidAmount,
 		TimestampValidUntil:  item.TimestampValidUntil,
+		LastChecked:          0,
 		ExtraData:            item.ExtraData,
 	}
 	return newInferenceRequest

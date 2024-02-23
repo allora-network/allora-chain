@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"math/big"
-
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
@@ -37,9 +36,17 @@ type REQUEST_ID = string
 
 // Emissions rate Constants
 // TODO make these not constants and figure out how they should
-// be changeable by governance or some algorithm or whatever
+// be changeable by governance or some algorithm or whatever.
+// Likely should be params within the keeper.
 const EPOCH_LENGTH = 5
 const EMISSIONS_PER_EPOCH = 1000
+const MIN_TOPIC_DEMAND = 10              // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+const MAX_TOPICS_PER_BLOCK = 1000        // max number of topics to run cadence for per block
+const MIN_PRICE_PER_EPOCH = 10           // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
+const TARGET_CAPACITY_PER_BLOCK = 500    // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
+const PRICE_CHANGE_PERCENT = 0.1         // how much the price changes per block
+const PRICE_ADJUSTMENT_PRECISION = 10000 // just used for price calculations
+const MIN_UNMET_DEMAND = 1               // delete requests if they have below this demand remaining
 
 type Keeper struct {
 	cdc          codec.BinaryCodec
@@ -126,8 +133,12 @@ type Keeper struct {
 	// ############################################
 	// #        INFERENCE REQUEST MEMPOOL         #
 	// ############################################
+	// map of (topic, request_id) -> full InferenceRequest information for that request
 	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], state.InferenceRequest]
-	funds   collections.Map[REQUEST_ID, Uint]
+	// amount of money available for an inference request id that has been placed in the mempool but has not yet been fully satisfied
+	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
+	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
+	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
 
 	// ############################################
 	// #            MISC GLOBAL STATE:            #
@@ -150,6 +161,8 @@ type Keeper struct {
 
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
+
+	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 }
 
 func NewKeeper(
@@ -180,12 +193,14 @@ func NewKeeper(
 		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
 		stakeRemovalQueue:     collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
 		mempool:               collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
-		funds:                 collections.NewMap(sb, state.FundsKey, "funds", collections.StringKey, UintValue),
+		requestUnmetDemand:    collections.NewMap(sb, state.RequestUnmetDemandKey, "requestUnmetDemand", collections.StringKey, UintValue),
+		topicUnmetDemand:      collections.NewMap(sb, state.TopicUnmetDemandKey, "topicUnmetDemand", collections.Uint64Key, UintValue),
 		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
+		accumulatedMetDemand:  collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 	}
 
 	schema, err := sb.Build()
@@ -1090,14 +1105,40 @@ func (k *Keeper) GetWeightsFromTopic(ctx context.Context, topicId TOPIC_ID) (map
 	return weights, nil
 }
 
+// Get the last time an inference was ran for a given topic
+func (k *Keeper) GetTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID) (lastRanTime uint64, err error) {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return topic.InferenceLastRan, nil
+}
+
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic.InferenceLastRan = lastRanTime
-	return k.topics.Set(ctx, topicId, topic)
+	var newTopic state.Topic = state.Topic{
+		Id:               topic.Id,
+		Creator:          topic.Creator,
+		Metadata:         topic.Metadata,
+		WeightLogic:      topic.WeightLogic,
+		WeightMethod:     topic.WeightMethod,
+		WeightCadence:    topic.WeightCadence,
+		WeightLastRan:    topic.WeightLastRan,
+		InferenceLogic:   topic.InferenceLogic,
+		InferenceMethod:  topic.InferenceMethod,
+		InferenceCadence: topic.InferenceCadence,
+		InferenceLastRan: lastRanTime,
+		Active:           topic.Active,
+		DefaultArg:       topic.DefaultArg,
+	}
+	return k.topics.Set(ctx, topicId, newTopic)
 }
 
 // UpdateTopicWeightLastRan updates the WeightLastRan timestamp for a given topic.
@@ -1253,13 +1294,72 @@ func (k *Keeper) SetStakeRemovalQueueForDelegator(ctx context.Context, delegator
 	return k.stakeRemovalQueue.Set(ctx, delegator, removalInfo)
 }
 
+func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
+	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topicUnmetDemand = topicUnmetDemand.Add(amt)
+	return k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
+}
+
+func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
+	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	if amt.GT(topicUnmetDemand) {
+		return state.ErrIntegerUnderflowUnmetDemand
+	}
+	topicUnmetDemand = topicUnmetDemand.Sub(amt)
+	return k.SetTopicUnmetDemand(ctx, topicId, topicUnmetDemand)
+}
+
+func (k *Keeper) SetTopicUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
+	if amt.IsZero() {
+		return k.topicUnmetDemand.Remove(ctx, topicId)
+	}
+	return k.topicUnmetDemand.Set(ctx, topicId, amt)
+}
+
+func (k *Keeper) GetTopicUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		} else {
+			return cosmosMath.Uint{}, err
+		}
+	}
+	return topicUnmetDemand, nil
+}
+
 func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
 	requestId, err := request.GetRequestId()
 	if err != nil {
 		return err
 	}
 	key := collections.Join(request.TopicId, requestId)
-	return k.mempool.Set(ctx, key, request)
+	err = k.mempool.Set(ctx, key, request)
+	if err != nil {
+		return err
+	}
+
+	return k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
+}
+
+func (k *Keeper) RemoveFromMempool(ctx context.Context, request state.InferenceRequest) error {
+	requestId, err := request.GetRequestId()
+	if err != nil {
+		return err
+	}
+	key := collections.Join(request.TopicId, requestId)
+	err = k.mempool.Remove(ctx, key)
+	if err != nil {
+		return err
+	}
+
+	return k.RemoveUnmetDemand(ctx, request.TopicId, request.BidAmount)
 }
 
 func (k *Keeper) IsRequestInMempool(ctx context.Context, topicId TOPIC_ID, requestId string) (bool, error) {
@@ -1272,7 +1372,7 @@ func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOP
 
 func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TOPIC_ID) ([]state.InferenceRequest, error) {
 	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
-	rng := collections.NewPrefixedPairRange[TOPIC_ID, string](topicId)
+	rng := collections.NewPrefixedPairRange[TOPIC_ID, REQUEST_ID](topicId)
 	iter, err := k.mempool.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
@@ -1285,6 +1385,22 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicI
 		ret = append(ret, value)
 	}
 	return ret, nil
+}
+
+func (k *Keeper) InactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	topic.Active = false
+
+	err = k.topics.Set(ctx, topicId, topic)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
@@ -1301,16 +1417,54 @@ func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, erro
 		ret = append(ret, value)
 	}
 	return ret, nil
-
 }
 
-func (k *Keeper) SetFunds(ctx context.Context, requestId string, amount Uint) error {
+func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount Uint) error {
 	if amount.IsZero() {
-		return k.funds.Remove(ctx, requestId)
+		return k.requestUnmetDemand.Remove(ctx, requestId)
 	}
-	return k.funds.Set(ctx, requestId, amount)
+	return k.requestUnmetDemand.Set(ctx, requestId, amount)
 }
 
-func (k *Keeper) GetFunds(ctx context.Context, requestId string) (Uint, error) {
-	return k.funds.Get(ctx, requestId)
+func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, error) {
+	return k.requestUnmetDemand.Get(ctx, requestId)
+}
+
+func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
+	res, err := k.accumulatedMetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return res, nil
+}
+
+func (k *Keeper) AddTopicAccumulateMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+	currentMetDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	currentMetDemand = currentMetDemand.Add(metDemand)
+	return k.SetTopicAccumulatedMetDemand(ctx, topicId, currentMetDemand)
+}
+
+func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC_ID, metDemand Uint) error {
+	if metDemand.IsZero() {
+		return k.accumulatedMetDemand.Remove(ctx, topicId)
+	}
+	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
+}
+
+//
+// BANK KEEPER WRAPPERS
+//
+
+// SendCoinsFromModuleToModule
+func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
+	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
 }
