@@ -19,19 +19,25 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_SetInferences_FullMethodName       = "/emissions.state.v1.Msg/SetInferences"
-	Msg_ProcessInferences_FullMethodName   = "/emissions.state.v1.Msg/ProcessInferences"
-	Msg_SetWeights_FullMethodName          = "/emissions.state.v1.Msg/SetWeights"
-	Msg_CreateNewTopic_FullMethodName      = "/emissions.state.v1.Msg/CreateNewTopic"
-	Msg_Register_FullMethodName            = "/emissions.state.v1.Msg/Register"
-	Msg_AddNewRegistration_FullMethodName  = "/emissions.state.v1.Msg/AddNewRegistration"
-	Msg_RemoveRegistration_FullMethodName  = "/emissions.state.v1.Msg/RemoveRegistration"
-	Msg_AddStake_FullMethodName            = "/emissions.state.v1.Msg/AddStake"
-	Msg_ModifyStake_FullMethodName         = "/emissions.state.v1.Msg/ModifyStake"
-	Msg_StartRemoveStake_FullMethodName    = "/emissions.state.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName  = "/emissions.state.v1.Msg/ConfirmRemoveStake"
-	Msg_StartRemoveAllStake_FullMethodName = "/emissions.state.v1.Msg/StartRemoveAllStake"
-	Msg_RequestInference_FullMethodName    = "/emissions.state.v1.Msg/RequestInference"
+	Msg_SetInferences_FullMethodName                    = "/emissions.state.v1.Msg/SetInferences"
+	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
+	Msg_SetWeights_FullMethodName                       = "/emissions.state.v1.Msg/SetWeights"
+	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
+	Msg_Register_FullMethodName                         = "/emissions.state.v1.Msg/Register"
+	Msg_AddNewRegistration_FullMethodName               = "/emissions.state.v1.Msg/AddNewRegistration"
+	Msg_RemoveRegistration_FullMethodName               = "/emissions.state.v1.Msg/RemoveRegistration"
+	Msg_AddStake_FullMethodName                         = "/emissions.state.v1.Msg/AddStake"
+	Msg_ModifyStake_FullMethodName                      = "/emissions.state.v1.Msg/ModifyStake"
+	Msg_StartRemoveStake_FullMethodName                 = "/emissions.state.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.state.v1.Msg/ConfirmRemoveStake"
+	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.state.v1.Msg/StartRemoveAllStake"
+	Msg_RequestInference_FullMethodName                 = "/emissions.state.v1.Msg/RequestInference"
+	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.state.v1.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.state.v1.Msg/RemoveFromWhitelistAdmin"
+	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToTopicCreationWhitelist"
+	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromTopicCreationWhitelist"
+	Msg_AddToWeightSettingWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToWeightSettingWhitelist"
+	Msg_RemoveFromWeightSettingWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromWeightSettingWhitelist"
 )
 
 // MsgClient is the client API for Msg service.
@@ -51,6 +57,12 @@ type MsgClient interface {
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
 	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
+	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
+	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
+	AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error)
+	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
+	AddToWeightSettingWhitelist(ctx context.Context, in *MsgAddToWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgAddToWeightSettingWhitelistResponse, error)
+	RemoveFromWeightSettingWhitelist(ctx context.Context, in *MsgRemoveFromWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromWeightSettingWhitelistResponse, error)
 }
 
 type msgClient struct {
@@ -178,6 +190,60 @@ func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInferenc
 	return out, nil
 }
 
+func (c *msgClient) AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error) {
+	out := new(MsgAddToWhitelistAdminResponse)
+	err := c.cc.Invoke(ctx, Msg_AddToWhitelistAdmin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error) {
+	out := new(MsgRemoveFromWhitelistAdminResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveFromWhitelistAdmin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error) {
+	out := new(MsgAddToTopicCreationWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_AddToTopicCreationWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
+	out := new(MsgRemoveFromTopicCreationWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveFromTopicCreationWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) AddToWeightSettingWhitelist(ctx context.Context, in *MsgAddToWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgAddToWeightSettingWhitelistResponse, error) {
+	out := new(MsgAddToWeightSettingWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_AddToWeightSettingWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveFromWeightSettingWhitelist(ctx context.Context, in *MsgRemoveFromWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromWeightSettingWhitelistResponse, error) {
+	out := new(MsgRemoveFromWeightSettingWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveFromWeightSettingWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -195,6 +261,12 @@ type MsgServer interface {
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
 	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
+	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
+	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
+	AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error)
+	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
+	AddToWeightSettingWhitelist(context.Context, *MsgAddToWeightSettingWhitelist) (*MsgAddToWeightSettingWhitelistResponse, error)
+	RemoveFromWeightSettingWhitelist(context.Context, *MsgRemoveFromWeightSettingWhitelist) (*MsgRemoveFromWeightSettingWhitelistResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -240,6 +312,24 @@ func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemo
 }
 func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
+}
+func (UnimplementedMsgServer) AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToWhitelistAdmin not implemented")
+}
+func (UnimplementedMsgServer) RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWhitelistAdmin not implemented")
+}
+func (UnimplementedMsgServer) AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToTopicCreationWhitelist not implemented")
+}
+func (UnimplementedMsgServer) RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicCreationWhitelist not implemented")
+}
+func (UnimplementedMsgServer) AddToWeightSettingWhitelist(context.Context, *MsgAddToWeightSettingWhitelist) (*MsgAddToWeightSettingWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToWeightSettingWhitelist not implemented")
+}
+func (UnimplementedMsgServer) RemoveFromWeightSettingWhitelist(context.Context, *MsgRemoveFromWeightSettingWhitelist) (*MsgRemoveFromWeightSettingWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWeightSettingWhitelist not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -488,6 +578,114 @@ func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_AddToWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddToWhitelistAdmin)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddToWhitelistAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AddToWhitelistAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddToWhitelistAdmin(ctx, req.(*MsgAddToWhitelistAdmin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveFromWhitelistAdmin)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveFromWhitelistAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, req.(*MsgRemoveFromWhitelistAdmin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_AddToTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddToTopicCreationWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AddToTopicCreationWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, req.(*MsgAddToTopicCreationWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveFromTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveFromTopicCreationWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveFromTopicCreationWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, req.(*MsgRemoveFromTopicCreationWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_AddToWeightSettingWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddToWeightSettingWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddToWeightSettingWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AddToWeightSettingWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddToWeightSettingWhitelist(ctx, req.(*MsgAddToWeightSettingWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveFromWeightSettingWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveFromWeightSettingWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveFromWeightSettingWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveFromWeightSettingWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveFromWeightSettingWhitelist(ctx, req.(*MsgRemoveFromWeightSettingWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -546,6 +744,30 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RequestInference",
 			Handler:    _Msg_RequestInference_Handler,
+		},
+		{
+			MethodName: "AddToWhitelistAdmin",
+			Handler:    _Msg_AddToWhitelistAdmin_Handler,
+		},
+		{
+			MethodName: "RemoveFromWhitelistAdmin",
+			Handler:    _Msg_RemoveFromWhitelistAdmin_Handler,
+		},
+		{
+			MethodName: "AddToTopicCreationWhitelist",
+			Handler:    _Msg_AddToTopicCreationWhitelist_Handler,
+		},
+		{
+			MethodName: "RemoveFromTopicCreationWhitelist",
+			Handler:    _Msg_RemoveFromTopicCreationWhitelist_Handler,
+		},
+		{
+			MethodName: "AddToWeightSettingWhitelist",
+			Handler:    _Msg_AddToWeightSettingWhitelist_Handler,
+		},
+		{
+			MethodName: "RemoveFromWeightSettingWhitelist",
+			Handler:    _Msg_RemoveFromWeightSettingWhitelist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -818,9 +818,13 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 /// WHITELIST FUNCTIONS
 ///
 
-func (ms msgServer) AddWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWhitelistAdmin) (*state.MsgAddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWhitelistAdmin) (*state.MsgAddToWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -832,16 +836,20 @@ func (ms msgServer) AddWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWh
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
-	err = ms.k.AddWhitelistAdmin(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.AddWhitelistAdmin(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
 	return &state.MsgAddToWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) RemoveWhitelistAdmin(ctx context.Context, msg *state.MsgRemoveFromWhitelistAdmin) (*state.MsgRemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *state.MsgRemoveFromWhitelistAdmin) (*state.MsgRemoveFromWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -853,7 +861,7 @@ func (ms msgServer) RemoveWhitelistAdmin(ctx context.Context, msg *state.MsgRemo
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
-	err = ms.k.RemoveWhitelistAdmin(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.RemoveWhitelistAdmin(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -866,6 +874,10 @@ func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *state.
 	if err != nil {
 		return nil, err
 	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -874,7 +886,7 @@ func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *state.
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
-	err = ms.k.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.AddToTopicCreationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -887,6 +899,10 @@ func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *s
 	if err != nil {
 		return nil, err
 	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -895,7 +911,7 @@ func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *s
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
-	err = ms.k.RemoveFromTopicCreationWhitelist(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.RemoveFromTopicCreationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -908,6 +924,10 @@ func (ms msgServer) AddToWeightSettingWhitelist(ctx context.Context, msg *state.
 	if err != nil {
 		return nil, err
 	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -916,7 +936,7 @@ func (ms msgServer) AddToWeightSettingWhitelist(ctx context.Context, msg *state.
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
-	err = ms.k.AddToWeightSettingWhitelist(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.AddToWeightSettingWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -929,6 +949,10 @@ func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *s
 	if err != nil {
 		return nil, err
 	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -937,7 +961,7 @@ func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *s
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
-	err = ms.k.RemoveFromWeightSettingWhitelist(ctx, sdk.AccAddress(msg.Address))
+	err = ms.k.RemoveFromWeightSettingWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}

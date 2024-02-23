@@ -38,6 +38,18 @@ service Msg {
   rpc StartRemoveAllStake(MsgStartRemoveAllStake) returns (MsgStartRemoveAllStakeResponse);
 
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
+
+  rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
+
+  rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+
+  rpc AddToTopicCreationWhitelist(MsgAddToTopicCreationWhitelist) returns (MsgAddToTopicCreationWhitelistResponse);
+
+  rpc RemoveFromTopicCreationWhitelist(MsgRemoveFromTopicCreationWhitelist) returns (MsgRemoveFromTopicCreationWhitelistResponse);
+
+  rpc AddToWeightSettingWhitelist(MsgAddToWeightSettingWhitelist) returns (MsgAddToWeightSettingWhitelistResponse);
+
+  rpc RemoveFromWeightSettingWhitelist(MsgRemoveFromWeightSettingWhitelist) returns (MsgRemoveFromWeightSettingWhitelistResponse);
 }
 
 message MsgCreateNewTopic {
