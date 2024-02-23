@@ -337,6 +337,7 @@ func (s *KeeperTestSuite) TestMsgSetWeights() {
 
 	// Create a MsgSetWeights message
 	weightMsg := &state.MsgSetWeights{
+		Sender: reputerAddr,
 		Weights: []*state.Weight{
 			{
 				TopicId: 1,

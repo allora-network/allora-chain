@@ -52,6 +52,13 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key
+
+	// Add all tests addresses in whitelists
+	for _, addr := range PKS {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.Address()))
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.Address()))
+		s.emissionsKeeper.AddToWeightSettingWhitelist(ctx, sdk.AccAddress(addr.Address()))
+	}
 }
 
 func TestKeeperTestSuite(t *testing.T) {
