@@ -5,6 +5,7 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	state "github.com/allora-network/allora-chain/x/emissions"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
@@ -27,6 +28,21 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 	// reserve topic ID 0 for future use
 	if _, err := k.IncrementTopicId(ctx); err != nil {
 		return err
+	}
+
+	// Add the core team to the whitelists
+	coreTeamAddresses := []string{
+		"allo1srjcynn6jw5l709upwwx70gs3eyjdmkgufcqdt",
+	}
+	// Map these addresses to AccAddress
+	for _, addr := range coreTeamAddresses {
+		accAddress, err := sdk.AccAddressFromBech32(addr)
+		if err != nil {
+			return err
+		}
+		k.AddWhitelistAdmin(ctx, accAddress)
+		k.AddToTopicCreationWhitelist(ctx, accAddress)
+		k.AddToWeightSettingWhitelist(ctx, accAddress)
 	}
 
 	return nil

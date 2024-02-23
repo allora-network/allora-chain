@@ -31,12 +31,20 @@ func NewMsgServerImpl(keeper Keeper) state.MsgServer {
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
-	id, err := ms.k.GetNumTopics(ctx)
+	// Check if the sender is in the topic creation whitelist
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
+	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
+	if err != nil {
+		return nil, err
+	}
+	if !isTopicCreator {
+		return nil, state.ErrNotInTopicCreationWhitelist
+	}
 
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,10 +86,20 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
-	//
-	// WHITELIST CHECK SENDER
-	//
+	// Check if the sender is in the weight setting whitelist
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isWeightSetter, err := ms.k.IsInWeightSettingWhitelist(ctx, sender)
+	if err != nil {
+		return nil, err
+	}
+	if !isWeightSetter {
+		return nil, state.ErrNotInWeightSettingWhitelist
+	}
 
+	// Iterate through the array and set the weights
 	for _, weightEntry := range msg.Weights {
 
 		fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
@@ -692,7 +710,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, state.ErrInferenceRequestWillNeverBeScheduled
 		}
 		// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
-		if request.BidAmount.LT(cosmosMath.NewUint(MIN_UNMET_DEMAND)) {
+		if request.BidAmount.LT(cosmosMath.NewUint(MIN_REQUEST_UNMET_DEMAND)) {
 			return nil, state.ErrInferenceRequestBidAmountTooLow
 		}
 		// 9. Check sender has funds to pay for the inference request
@@ -774,4 +792,154 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 		return nil
 	}
 	return state.ErrAddressNotRegistered
+}
+
+func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivateTopic) (*state.MsgReactivateTopicResponse, error) {
+	// Check that the topic has enough demand to be reactivated
+	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	// If the topic does not have enough demand, return an error
+	if unmetDemand.LT(ms.k.GetMinTopicUnmetDemand(ctx)) {
+		return nil, state.ErrTopicNotEnoughDemand
+	}
+
+	// If the topic has enough demand, reactivate it
+	err = ms.k.ReactivateTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgReactivateTopicResponse{Success: true}, nil
+}
+
+///
+/// WHITELIST FUNCTIONS
+///
+
+func (ms msgServer) AddWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWhitelistAdmin) (*state.MsgAddToWhitelistAdminResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Add the address to the whitelist
+	err = ms.k.AddWhitelistAdmin(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgAddToWhitelistAdminResponse{}, nil
+}
+
+func (ms msgServer) RemoveWhitelistAdmin(ctx context.Context, msg *state.MsgRemoveFromWhitelistAdmin) (*state.MsgRemoveFromWhitelistAdminResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Remove the address from the whitelist
+	err = ms.k.RemoveWhitelistAdmin(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgRemoveFromWhitelistAdminResponse{}, nil
+}
+
+func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *state.MsgAddToTopicCreationWhitelist) (*state.MsgAddToTopicCreationWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Add the address to the whitelist
+	err = ms.k.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgAddToTopicCreationWhitelistResponse{}, nil
+}
+
+func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *state.MsgRemoveFromTopicCreationWhitelist) (*state.MsgRemoveFromTopicCreationWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Remove the address from the whitelist
+	err = ms.k.RemoveFromTopicCreationWhitelist(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgRemoveFromTopicCreationWhitelistResponse{}, nil
+}
+
+func (ms msgServer) AddToWeightSettingWhitelist(ctx context.Context, msg *state.MsgAddToWeightSettingWhitelist) (*state.MsgAddToWeightSettingWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Add the address to the whitelist
+	err = ms.k.AddToWeightSettingWhitelist(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgAddToWeightSettingWhitelistResponse{}, nil
+}
+
+func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *state.MsgRemoveFromWeightSettingWhitelist) (*state.MsgRemoveFromWeightSettingWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Remove the address from the whitelist
+	err = ms.k.RemoveFromWeightSettingWhitelist(ctx, sdk.AccAddress(msg.Address))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgRemoveFromWeightSettingWhitelistResponse{}, nil
 }

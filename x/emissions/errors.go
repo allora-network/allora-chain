@@ -51,4 +51,8 @@ var (
 	ErrIntegerUnderflowUnmetDemand                       = errors.Register(ModuleName, 46, "integer underflow for unmet demand")
 	ErrInferenceCadenceBelowMinimum                      = errors.Register(ModuleName, 47, "inference cadence must be at least 60 seconds (1 minute)")
 	ErrWeightCadenceBelowMinimum                         = errors.Register(ModuleName, 48, "weight cadence must be at least 10800 seconds (3 hours)")
+	ErrNotWhitelistAdmin                                 = errors.Register(ModuleName, 49, "not whitelist admin")
+	ErrNotInTopicCreationWhitelist                       = errors.Register(ModuleName, 50, "not in topic creation whitelist")
+	ErrNotInWeightSettingWhitelist                       = errors.Register(ModuleName, 51, "not in topic weight setting whitelist")
+	ErrTopicNotEnoughDemand                              = errors.Register(ModuleName, 52, "topic not enough demand")
 )

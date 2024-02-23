@@ -224,3 +224,72 @@ message RequestInferenceListItem{
 }
 
 message MsgRequestInferenceResponse {}
+
+///
+///  Whitelist
+///
+
+message MsgAddToWhitelistAdmin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgAddToWhitelistAdminResponse {}
+
+message MsgRemoveFromWhitelistAdmin {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgRemoveFromWhitelistAdminResponse {}
+
+message MsgAddToTopicCreationWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgAddToTopicCreationWhitelistResponse {}
+
+message MsgRemoveFromTopicCreationWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgRemoveFromTopicCreationWhitelistResponse {}
+
+message MsgAddToWeightSettingWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgAddToWeightSettingWhitelistResponse {}
+
+message MsgRemoveFromWeightSettingWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgRemoveFromWeightSettingWhitelistResponse {}
+
+message MsgReactivateTopic {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  uint64 topic_id = 2;
+}
+
+message MsgReactivateTopicResponse {
+  bool success = 1;
+}

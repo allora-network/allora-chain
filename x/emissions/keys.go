@@ -33,4 +33,7 @@ var (
 	AddressTopicsKey              = collections.NewPrefix(23)
 	AccumulatedMetDemandKey       = collections.NewPrefix(24)
 	NumInferencesInRewardEpochKey = collections.NewPrefix(25)
+	WhitelistAdminsKey            = collections.NewPrefix(26)
+	TopicCreationWhitelistKey     = collections.NewPrefix(27)
+	WeightSettingWhitelistKey     = collections.NewPrefix(28)
 )

@@ -40,13 +40,13 @@ type REQUEST_ID = string
 // Likely should be params within the keeper.
 const EPOCH_LENGTH = 5
 const EMISSIONS_PER_EPOCH = 1000
-const MIN_TOPIC_DEMAND = 10                        // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+const MIN_TOPIC_UNMET_DEMAND = 100                 // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
 const MAX_TOPICS_PER_BLOCK = 1000                  // max number of topics to run cadence for per block
 const MIN_PRICE_PER_EPOCH = 10                     // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
 const TARGET_CAPACITY_PER_BLOCK = 500              // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
 const PRICE_CHANGE_PERCENT = 0.1                   // how much the price changes per block
 const PRICE_ADJUSTMENT_PRECISION = 10000           // just used for price calculations
-const MIN_UNMET_DEMAND = 1                         // delete requests if they have below this demand remaining
+const MIN_REQUEST_UNMET_DEMAND = 1                 // delete requests if they have below this demand remaining
 const MAX_ALLOWABLE_MISSING_INFERENCE_PERCENT = 10 // if a worker has this percentage of inferences missing, they are penalized
 
 type Keeper struct {
@@ -167,6 +167,12 @@ type Keeper struct {
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
+
+	whitelistAdmins collections.KeySet[sdk.AccAddress]
+
+	topicCreationWhitelist collections.KeySet[sdk.AccAddress]
+
+	weightSettingWhitelist collections.KeySet[sdk.AccAddress]
 }
 
 func NewKeeper(
@@ -206,6 +212,9 @@ func NewKeeper(
 		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
+		weightSettingWhitelist:     collections.NewKeySet(sb, state.WeightSettingWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 	}
 
 	schema, err := sb.Build()
@@ -220,6 +229,10 @@ func NewKeeper(
 
 func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
 	return k.params.Set(ctx, params)
+}
+
+func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
+	return k.params.Get(ctx)
 }
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
@@ -1412,6 +1425,26 @@ func (k *Keeper) InactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
+func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	topic.Active = true
+
+	err = k.topics.Set(ctx, topicId, topic)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) GetMinTopicUnmetDemand(ctx context.Context) Uint {
+	return cosmosMath.NewUint(MIN_TOPIC_UNMET_DEMAND)
+}
+
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
 	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
 	iter, err := k.mempool.Iterate(ctx, nil)
@@ -1519,6 +1552,46 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 
 func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (state.Topic, error) {
 	return k.topics.Get(ctx, topicId)
+}
+
+//
+// WHITELIST FUNCTIONS
+//
+
+func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
+	return k.whitelistAdmins.Has(ctx, admin)
+}
+
+func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+	return k.whitelistAdmins.Set(ctx, admin)
+}
+
+func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+	return k.whitelistAdmins.Remove(ctx, admin)
+}
+
+func (k *Keeper) IsInTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.topicCreationWhitelist.Has(ctx, address)
+}
+
+func (k *Keeper) AddToTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.topicCreationWhitelist.Set(ctx, address)
+}
+
+func (k *Keeper) RemoveFromTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.topicCreationWhitelist.Remove(ctx, address)
+}
+
+func (k *Keeper) IsInWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.weightSettingWhitelist.Has(ctx, address)
+}
+
+func (k *Keeper) AddToWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.weightSettingWhitelist.Set(ctx, address)
+}
+
+func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.weightSettingWhitelist.Remove(ctx, address)
 }
 
 //
