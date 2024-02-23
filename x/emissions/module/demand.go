@@ -83,6 +83,12 @@ func IsValidAtPrice(
 		fmt.Println("Error getting request demand: ", err)
 		return false, err
 	}
+	/*
+		fmt.Println("req.LastChecked+req.Cadence <= currentTime", req.LastChecked+req.Cadence <= currentTime)
+		fmt.Println("req.TimestampValidUntil > currentTime", req.TimestampValidUntil > currentTime)
+		fmt.Println("reqUnmetDemand.GTE(price)", reqUnmetDemand.GTE(price))
+		fmt.Println("req.MaxPricePerInference.GTE(price)", req.MaxPricePerInference.GTE(price))
+	*/
 	res :=
 		req.LastChecked+req.Cadence <= currentTime &&
 			req.TimestampValidUntil > currentTime &&
@@ -148,6 +154,7 @@ func GetRequestsThatMaxFees(
 			fmt.Println("Error checking if request is valid at price: ", err)
 			return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
 		}
+		//fmt.Println("Req id ", req.TopicId, " is valid at price ", req.MaxPricePerInference, " : ", isValidAtPrice)
 		if isValidAtPrice {
 			price := req.MaxPricePerInference
 			priceStr := price.String()
@@ -207,13 +214,15 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			fmt.Println("Error getting mempool inference requests: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
+		//fmt.Println("Topic: ", topic.Id, " Inference requests: ", len(inferenceRequests))
+		//fmt.Println(inferenceRequests)
 
 		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentTime, inferenceRequests)
 		if err != nil {
 			fmt.Println("Error getting requests that maximize fees: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
-		//fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
+		fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
 		topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
 		topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
 		requestsToDrawDemandFrom[topic.Id] = requestsToUse
@@ -227,10 +236,12 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	//fmt.Println("Cutoff: ", cutoff)
 	topTopicsByReturn := sortedTopics[:cutoff]
 	//fmt.Println("Length top topics by return: ", len(topTopicsByReturn))
+	//fmt.Println(topTopicsByReturn)
 
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	for _, topic := range topTopicsByReturn {
+		//fmt.Println("Topic: ", topic.Id, " Best price: ", topicBestPrices[topic.Id].Price.String(), " Return: ", topicBestPrices[topic.Id].Return.String())
 		// Log the accumulated met demand for each topic
 		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 
@@ -254,6 +265,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			newReqDemand := reqDemand.Sub(bestPrice)
 			k.SetRequestDemand(ctx, reqId, newReqDemand)
 			// if the request is a one-shot request, remove it from the mempool
+
 			if req.Cadence == 0 {
 				k.RemoveFromMempool(ctx, req)
 			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
