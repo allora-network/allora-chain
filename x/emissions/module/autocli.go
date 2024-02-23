@@ -247,7 +247,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RequestSingleInference",
-					Use:       "request-single-inference sender nonce topic_id cadence max_price_per_inference bid_amount timestamp_valid_until extra_data", 
+					Use:       "request-single-inference sender nonce topic_id cadence max_price_per_inference bid_amount timestamp_valid_until extra_data",
 					Short:     "Request a batch of inferences to be kicked off",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
