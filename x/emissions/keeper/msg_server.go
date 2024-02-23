@@ -78,6 +78,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 }
 
 func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
+	//
+	// WHITELIST CHECK SENDER
+	//
 
 	for _, weightEntry := range msg.Weights {
 
