@@ -741,6 +741,96 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 	return &state.MsgRequestInferenceResponse{}, nil
 }
 
+func (ms msgServer) RequestSingleInference(ctx context.Context, msg *state.MsgRequestSingleInference) (*state.MsgRequestInferenceResponse, error) {
+	requestItem := &state.RequestInferenceListItem{
+		Nonce:                msg.Nonce,
+		TopicId:              msg.TopicId,
+		Cadence:              msg.Cadence,
+		MaxPricePerInference: msg.MaxPricePerInference,
+		BidAmount:            msg.BidAmount,
+		TimestampValidUntil:  msg.TimestampValidUntil,
+		ExtraData:            msg.ExtraData,
+	}
+	request := state.CreateNewInferenceRequestFromListItem(msg.Sender, requestItem)
+	// 1. check the topic is valid
+	topicExists, err := ms.k.TopicExists(ctx, request.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, state.ErrInvalidTopicId
+	}
+	requestId, err := request.GetRequestId()
+	if err != nil {
+		return nil, err
+	}
+	// 2. check the request isn't already in the mempool
+	requestExists, err := ms.k.IsRequestInMempool(ctx, request.TopicId, requestId)
+	if err != nil {
+		return nil, err
+	}
+	if requestExists {
+		return nil, state.ErrInferenceRequestAlreadyInMempool
+	}
+	// 3. Check the BidAmount is greater than the price per request
+	if request.BidAmount.LT(request.MaxPricePerInference) {
+		return nil, state.ErrInferenceRequestBidAmountLessThanPrice
+	}
+	// 4. Check the timestamp valid until is in the future
+	timeNow := uint64(time.Now().UTC().Unix())
+	if request.TimestampValidUntil < timeNow {
+		return nil, state.ErrInferenceRequestTimestampValidUntilInPast
+	}
+	// 5. Check the timestamp validity is no more than the maximum allowed time in the future
+	if request.TimestampValidUntil > timeNow+MAX_INFERENCE_REQUEST_VALIDITY {
+		return nil, state.ErrInferenceRequestTimestampValidUntilTooFarInFuture
+	}
+	if request.Cadence != 0 {
+		// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
+		if request.Cadence < MIN_FASTEST_ALLOWED_CADENCE {
+			return nil, state.ErrInferenceRequestCadenceTooFast
+		}
+		// 7. Check the cadence is no more than the maximum allowed slowest cadence
+		if request.Cadence > MAX_SLOWEST_ALLOWED_CADENCE {
+			return nil, state.ErrInferenceRequestCadenceTooSlow
+		}
+	}
+	// 8. Check the cadence is not greater than the timestamp valid until
+	if timeNow+request.Cadence > request.TimestampValidUntil {
+		return nil, state.ErrInferenceRequestWillNeverBeScheduled
+	}
+	// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
+	if request.BidAmount.LT(cosmosMath.NewUint(MIN_REQUEST_UNMET_DEMAND)) {
+		return nil, state.ErrInferenceRequestBidAmountTooLow
+	}
+	// 9. Check sender has funds to pay for the inference request
+	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
+	// 10. Send funds
+	senderAddr, err := sdk.AccAddressFromBech32(request.Sender)
+	if err != nil {
+		return nil, err
+	}
+	amountInt := cosmosMath.NewIntFromBigInt(request.BidAmount.BigInt())
+	coins := sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, amountInt))
+	err = ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraRequestsModuleName, coins)
+	if err != nil {
+		return nil, err
+	}
+	// 11. record the number of tokens sent to the module account
+	err = ms.k.SetRequestDemand(ctx, requestId, request.BidAmount)
+	if err != nil {
+		return nil, err
+	}
+	// 12. Write request state into the mempool state
+	request.LastChecked = timeNow
+	err = ms.k.AddToMempool(ctx, *request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &state.MsgRequestInferenceResponse{}, nil
+}
+
 // ########################################
 // #           Private Functions          #
 // ########################################

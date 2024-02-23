@@ -246,6 +246,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "RequestSingleInference",
+					Use:       "request-single-inference sender nonce topic_id cadence max_price_per_inference bid_amount timestamp_valid_until extra_data", 
+					Short:     "Request a batch of inferences to be kicked off",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "nonce"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "cadence"},
+						{ProtoField: "max_price_per_inference"},
+						{ProtoField: "bid_amount"},
+						{ProtoField: "timestamp_valid_until"},
+						{ProtoField: "extra_data"},
+					},
+				},
+				{
 					RpcMethod: "AddToWhitelistAdmin",
 					Use:       "add-to-whitelist-admin sender address",
 					Short:     "add an admin address to the whitelist used for admin functions on-chain",

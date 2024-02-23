@@ -33,6 +33,7 @@ const (
 	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.state.v1.Msg/ConfirmRemoveStake"
 	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.state.v1.Msg/StartRemoveAllStake"
 	Msg_RequestInference_FullMethodName                 = "/emissions.state.v1.Msg/RequestInference"
+	Msg_RequestSingleInference_FullMethodName           = "/emissions.state.v1.Msg/RequestSingleInference"
 	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.state.v1.Msg/AddToWhitelistAdmin"
 	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.state.v1.Msg/RemoveFromWhitelistAdmin"
 	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToTopicCreationWhitelist"
@@ -59,6 +60,7 @@ type MsgClient interface {
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
 	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
+	RequestSingleInference(ctx context.Context, in *MsgRequestSingleInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
 	AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error)
@@ -201,6 +203,15 @@ func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInferenc
 	return out, nil
 }
 
+func (c *msgClient) RequestSingleInference(ctx context.Context, in *MsgRequestSingleInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error) {
+	out := new(MsgRequestInferenceResponse)
+	err := c.cc.Invoke(ctx, Msg_RequestSingleInference_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error) {
 	out := new(MsgAddToWhitelistAdminResponse)
 	err := c.cc.Invoke(ctx, Msg_AddToWhitelistAdmin_FullMethodName, in, out, opts...)
@@ -273,6 +284,7 @@ type MsgServer interface {
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
 	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
+	RequestSingleInference(context.Context, *MsgRequestSingleInference) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
 	AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error)
@@ -327,6 +339,9 @@ func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemo
 }
 func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
+}
+func (UnimplementedMsgServer) RequestSingleInference(context.Context, *MsgRequestSingleInference) (*MsgRequestInferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestSingleInference not implemented")
 }
 func (UnimplementedMsgServer) AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToWhitelistAdmin not implemented")
@@ -611,6 +626,24 @@ func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RequestSingleInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRequestSingleInference)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RequestSingleInference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RequestSingleInference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RequestSingleInference(ctx, req.(*MsgRequestSingleInference))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_AddToWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgAddToWhitelistAdmin)
 	if err := dec(in); err != nil {
@@ -781,6 +814,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RequestInference",
 			Handler:    _Msg_RequestInference_Handler,
+		},
+		{
+			MethodName: "RequestSingleInference",
+			Handler:    _Msg_RequestSingleInference_Handler,
 		},
 		{
 			MethodName: "AddToWhitelistAdmin",
