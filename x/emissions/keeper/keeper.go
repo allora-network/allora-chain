@@ -40,13 +40,14 @@ type REQUEST_ID = string
 // Likely should be params within the keeper.
 const EPOCH_LENGTH = 5
 const EMISSIONS_PER_EPOCH = 1000
-const MIN_TOPIC_DEMAND = 10              // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-const MAX_TOPICS_PER_BLOCK = 1000        // max number of topics to run cadence for per block
-const MIN_PRICE_PER_EPOCH = 10           // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
-const TARGET_CAPACITY_PER_BLOCK = 500    // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
-const PRICE_CHANGE_PERCENT = 0.1         // how much the price changes per block
-const PRICE_ADJUSTMENT_PRECISION = 10000 // just used for price calculations
-const MIN_UNMET_DEMAND = 1               // delete requests if they have below this demand remaining
+const MIN_TOPIC_UNMET_DEMAND = 100                 // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+const MAX_TOPICS_PER_BLOCK = 1000                  // max number of topics to run cadence for per block
+const MIN_PRICE_PER_EPOCH = 10                     // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
+const TARGET_CAPACITY_PER_BLOCK = 500              // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
+const PRICE_CHANGE_PERCENT = 0.1                   // how much the price changes per block
+const PRICE_ADJUSTMENT_PRECISION = 10000           // just used for price calculations
+const MIN_REQUEST_UNMET_DEMAND = 1                 // delete requests if they have below this demand remaining
+const MAX_ALLOWABLE_MISSING_INFERENCE_PERCENT = 10 // if a worker has this percentage of inferences missing, they are penalized
 
 type Keeper struct {
 	cdc          codec.BinaryCodec
@@ -150,6 +151,9 @@ type Keeper struct {
 	// map of (topic, worker) -> inference
 	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
 
+	// map of (topic, worker) -> num_inferences_in_reward_epoch
+	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], Uint]
+
 	// map of worker id to node data about that worker
 	workers collections.Map[LIB_P2P_KEY, state.OffchainNode]
 
@@ -163,6 +167,12 @@ type Keeper struct {
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
+
+	whitelistAdmins collections.KeySet[sdk.AccAddress]
+
+	topicCreationWhitelist collections.KeySet[sdk.AccAddress]
+
+	weightSettingWhitelist collections.KeySet[sdk.AccAddress]
 }
 
 func NewKeeper(
@@ -174,33 +184,37 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                   cdc,
-		addressCodec:          addressCodec,
-		params:                collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
-		authKeeper:            ak,
-		bankKeeper:            bk,
-		totalStake:            collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
-		topicStake:            collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate:     collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:           collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
-		topics:                collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
-		topicWorkers:          collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:         collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
-		topicReputers:         collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		allTopicStakeSum:      collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
-		stakeOwnedByDelegator: collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
-		stakePlacement:        collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		stakePlacedUponTarget: collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
-		stakeRemovalQueue:     collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
-		mempool:               collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
-		requestUnmetDemand:    collections.NewMap(sb, state.RequestUnmetDemandKey, "requestUnmetDemand", collections.StringKey, UintValue),
-		topicUnmetDemand:      collections.NewMap(sb, state.TopicUnmetDemandKey, "topicUnmetDemand", collections.Uint64Key, UintValue),
-		weights:               collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		inferences:            collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		workers:               collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
-		reputers:              collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
-		allInferences:         collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
-		accumulatedMetDemand:  collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
+		cdc:                        cdc,
+		addressCodec:               addressCodec,
+		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
+		authKeeper:                 ak,
+		bankKeeper:                 bk,
+		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
+		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
+		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
+		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
+		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
+		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
+		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
+		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		mempool:                    collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
+		requestUnmetDemand:         collections.NewMap(sb, state.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
+		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
+		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
+		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
+		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
+		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
+		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
+		weightSettingWhitelist:     collections.NewKeySet(sb, state.WeightSettingWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 	}
 
 	schema, err := sb.Build()
@@ -215,6 +229,10 @@ func NewKeeper(
 
 func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
 	return k.params.Set(ctx, params)
+}
+
+func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
+	return k.params.Get(ctx)
 }
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
@@ -1277,11 +1295,15 @@ func (k *Keeper) SetWeight(
 
 func (k *Keeper) SetInference(
 	ctx context.Context,
-	topicID TOPIC_ID,
+	topicId TOPIC_ID,
 	worker sdk.AccAddress,
 	inference state.Inference) error {
-	key := collections.Join(topicID, worker)
-	return k.inferences.Set(ctx, key, inference)
+	key := collections.Join(topicId, worker)
+	err := k.inferences.Set(ctx, key, inference)
+	if err != nil {
+		return err
+	}
+	return k.IncrementNumInferencesInRewardEpoch(ctx, topicId, worker)
 }
 
 // for a given delegator, get their stake removal information
@@ -1403,6 +1425,26 @@ func (k *Keeper) InactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
+func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	topic.Active = true
+
+	err = k.topics.Set(ctx, topicId, topic)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) GetMinTopicUnmetDemand(ctx context.Context) Uint {
+	return cosmosMath.NewUint(MIN_TOPIC_UNMET_DEMAND)
+}
+
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
 	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
 	iter, err := k.mempool.Iterate(ctx, nil)
@@ -1458,6 +1500,98 @@ func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId TOPIC
 		return k.accumulatedMetDemand.Remove(ctx, topicId)
 	}
 	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
+}
+
+func (k *Keeper) GetNumInferencesInRewardEpoch(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress) (Uint, error) {
+	key := collections.Join(topicId, worker)
+	res, err := k.numInferencesInRewardEpoch.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return res, nil
+}
+
+func (k *Keeper) IncrementNumInferencesInRewardEpoch(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress) error {
+	key := collections.Join(topicId, worker)
+	currentNumInferences, err := k.numInferencesInRewardEpoch.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			currentNumInferences = cosmosMath.NewUint(0)
+		} else {
+			return err
+		}
+	}
+	newNumInferences := currentNumInferences.Add(cosmosMath.NewUint(1))
+	return k.numInferencesInRewardEpoch.Set(ctx, key, newNumInferences)
+}
+
+// Reset the mapping entirely. Should be called at the end of every reward epoch
+func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
+	iter, err := k.numInferencesInRewardEpoch.Iterate(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	// Iterate over all keys
+	kvs, err := iter.Keys()
+	if err != nil {
+		return err
+	}
+	for _, kv := range kvs {
+		err := k.numInferencesInRewardEpoch.Remove(ctx, kv)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (state.Topic, error) {
+	return k.topics.Get(ctx, topicId)
+}
+
+//
+// WHITELIST FUNCTIONS
+//
+
+func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
+	return k.whitelistAdmins.Has(ctx, admin)
+}
+
+func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+	return k.whitelistAdmins.Set(ctx, admin)
+}
+
+func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+	return k.whitelistAdmins.Remove(ctx, admin)
+}
+
+func (k *Keeper) IsInTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.topicCreationWhitelist.Has(ctx, address)
+}
+
+func (k *Keeper) AddToTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.topicCreationWhitelist.Set(ctx, address)
+}
+
+func (k *Keeper) RemoveFromTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.topicCreationWhitelist.Remove(ctx, address)
+}
+
+func (k *Keeper) IsInWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.weightSettingWhitelist.Has(ctx, address)
+}
+
+func (k *Keeper) AddToWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.weightSettingWhitelist.Set(ctx, address)
+}
+
+func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.weightSettingWhitelist.Remove(ctx, address)
 }
 
 //

@@ -97,7 +97,7 @@ func IsValidAtPrice(
 	return res, nil
 }
 
-// Inactivates topics with below keeper.MIN_TOPIC_DEMAND demand
+// Inactivates topics with below keeper.MIN_TOPIC_UNMET_DEMAND demand
 // returns a list of topics that are still active after this operation
 func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingActiveTopics []*state.Topic, err error) {
 	topicsActive, err := k.GetActiveTopics(ctx)
@@ -106,7 +106,7 @@ func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingA
 		fmt.Println("Error getting active topics: ", err)
 		return nil, err
 	}
-	minTopicDemand := cosmosMath.NewUint(keeper.MIN_TOPIC_DEMAND)
+	minTopicDemand := cosmosMath.NewUint(keeper.MIN_TOPIC_UNMET_DEMAND)
 	for _, topic := range topicsActive {
 		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
 		if err != nil {
@@ -269,7 +269,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			if req.Cadence == 0 {
 				k.RemoveFromMempool(ctx, req)
 			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
-				if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_UNMET_DEMAND)) {
+				if newReqDemand.LT(cosmosMath.NewUint(keeper.MIN_REQUEST_UNMET_DEMAND)) {
 					// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
 					// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
 					// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests

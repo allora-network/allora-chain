@@ -23,7 +23,7 @@ func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveTwoTopics() {
 func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveOneTopicLeaveOne() {
 	createdTopicIds, err := mockCreateTopics(s, 2)
 	s.Require().NoError(err, "mockCreateTopics should not throw an error")
-	err = s.emissionsKeeper.SetTopicUnmetDemand(s.ctx, createdTopicIds[0], cosmosMath.NewUint(keeper.MIN_TOPIC_DEMAND+1))
+	err = s.emissionsKeeper.SetTopicUnmetDemand(s.ctx, createdTopicIds[0], cosmosMath.NewUint(keeper.MIN_TOPIC_UNMET_DEMAND+1))
 	s.Require().NoError(err, "SetTopicUnmetDemand should not throw an error")
 	listTopics, err := module.InactivateLowDemandTopics(s.ctx, s.emissionsKeeper)
 	s.Require().NoError(err, "InactivateLowDemandTopics should not throw an error")
