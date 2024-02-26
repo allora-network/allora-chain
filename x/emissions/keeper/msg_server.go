@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
@@ -144,6 +143,8 @@ func (ms msgServer) SetInferences(ctx context.Context, msg *state.MsgSetInferenc
 
 // T1: a tx function that accepts a list of inferences and possibly returns an error
 func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcessInferences) (*state.MsgProcessInferencesResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	inferences := msg.Inferences
 	// Group inferences by topicId - Create a map to store the grouped inferences
 	groupedInferences := make(map[uint64][]*state.Inference)
@@ -153,7 +154,7 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 		groupedInferences[inference.TopicId] = append(groupedInferences[inference.TopicId], inference)
 	}
 
-	actualTimestamp := uint64(time.Now().UTC().Unix())
+	actualTimestamp := uint64(sdkCtx.BlockTime().Unix())
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
@@ -545,13 +546,14 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRemoveStake) (*state.MsgStartRemoveStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// 1. check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 	stakeRemoval := state.StakeRemoval{
-		TimestampRemovalStarted: uint64(time.Now().UTC().Unix()),
+		TimestampRemovalStarted: uint64(sdkCtx.BlockTime().Unix()),
 		Placements:              make([]*state.StakeRemovalPlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
@@ -605,6 +607,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// pull the stake removal from the delayed queue
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -618,7 +621,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		return nil, err
 	}
 	// check the timestamp is valid
-	timeNow := uint64(time.Now().UTC().Unix())
+	timeNow := uint64(sdkCtx.BlockTime().Unix())
 	if stakeRemoval.TimestampRemovalStarted > timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooEarly
 	}
@@ -685,6 +688,8 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 }
 
 func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestInference) (*state.MsgRequestInferenceResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	for _, requestItem := range msg.Requests {
 		request := state.CreateNewInferenceRequestFromListItem(msg.Sender, requestItem)
 		// 1. check the topic is valid
@@ -712,7 +717,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, state.ErrInferenceRequestBidAmountLessThanPrice
 		}
 		// 4. Check the timestamp valid until is in the future
-		timeNow := uint64(time.Now().UTC().Unix())
+		timeNow := uint64(sdkCtx.BlockTime().Unix())
 		if request.TimestampValidUntil < timeNow {
 			return nil, state.ErrInferenceRequestTimestampValidUntilInPast
 		}
