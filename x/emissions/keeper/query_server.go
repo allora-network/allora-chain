@@ -146,9 +146,9 @@ func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightReque
 }
 
 // GetInference retrieves the inference value for a given topic ID and worker address.
-func (qs queryServer) GetInference(ctx context.Context, req *state.QueryInferenceRequest) (*state.QueryInferenceResponse, error) {
+func (qs queryServer) GetInference(ctx context.Context, req *state.QueryAllInferencesRequest) (*state.QueryAllInferencesResponse, error) {
 	// TODO: Implement
-	return &state.QueryInferenceResponse{}, nil
+	return &state.QueryAllInferencesResponse{}, nil
 }
 
 func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.QueryInferencesToScoreRequest) (*state.QueryInferencesToScoreResponse, error) {
@@ -163,7 +163,7 @@ func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.Query
 	return response, nil
 }
 
-func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryInferenceRequest) (*state.QueryInferenceResponse, error) {
+func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryAllInferencesRequest) (*state.QueryAllInferencesResponse, error) {
 	// Defers implementation to the function in the Keeper
 	topicId := req.TopicId
 	timestamp := req.Timestamp
@@ -172,7 +172,7 @@ func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryInfe
 		return nil, err
 	}
 
-	return &state.QueryInferenceResponse{Inferences: inferences}, nil
+	return &state.QueryAllInferencesResponse{Inferences: inferences}, nil
 }
 
 func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *state.QueryRegisteredWorkerNodesRequest) (*state.QueryRegisteredWorkerNodesResponse, error) {
@@ -225,4 +225,55 @@ func (qs queryServer) GetRegisteredTopicsIds(ctx context.Context, req *state.Que
 	}
 
 	return &state.QueryRegisteredTopicsIdsResponse{TopicsIds: topicsIds}, nil
+}
+
+func (qs queryServer) GetInferenceRequest(ctx context.Context, req *state.QueryInferenceRequestRequest) (*state.QueryInferenceRequestResponse, error) {
+	valid := state.IsValidRequestId(req.RequestId)
+	if !valid {
+		return nil, state.ErrInvalidRequestId
+	}
+	inMempool, err := qs.k.IsRequestInMempool(ctx, req.TopicId, req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+	if !inMempool {
+		return nil, state.ErrInferenceRequestNotInMempool
+	}
+	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.TopicId, req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+	demandLeft, err := qs.k.GetRequestDemand(ctx, req.RequestId)
+	if err != nil {
+		return nil, err
+	}
+	return &state.QueryInferenceRequestResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
+}
+
+func (qs queryServer) GetAllInferenceRequests(ctx context.Context, req *state.QueryAllInferenceRequestsRequest) (*state.QueryAllInferenceRequestsResponse, error) {
+	ret := make([]*state.InferenceRequestAndDemandLeft, 0)
+	mempool, err := qs.k.GetMempool(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, inferenceRequest := range mempool {
+		reqId, err := inferenceRequest.GetRequestId()
+		if err != nil {
+			return nil, err
+		}
+		demandLeft, err := qs.k.GetRequestDemand(ctx, reqId)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft})
+	}
+	return &state.QueryAllInferenceRequestsResponse{InferenceRequests: ret}, nil
+}
+
+func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *state.QueryTopicUnmetDemandRequest) (*state.QueryTopicUnmetDemandResponse, error) {
+	unmetDemand, err := qs.k.GetTopicUnmetDemand(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	return &state.QueryTopicUnmetDemandResponse{DemandLeft: unmetDemand}, nil
 }

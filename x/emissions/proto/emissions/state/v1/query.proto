@@ -60,7 +60,25 @@ service Query {
       "/emissions/state/v1/weights/{topic_id}/{reputer}/{worker}";
   }
 
-  rpc GetAllInferences(QueryInferenceRequest) returns (QueryInferenceResponse) {
+  rpc GetInferenceRequest(QueryInferenceRequestRequest) returns (QueryInferenceRequestResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+      "/emissions/state/v1/inferences/requests/{request_id}";
+  }
+
+  rpc GetAllInferenceRequests(QueryAllInferenceRequestsRequest) returns (QueryAllInferenceRequestsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+      "/emissions/state/v1/inferences/all_requests";
+  }
+
+  rpc GetTopicUnmetDemand(QueryTopicUnmetDemandRequest) returns (QueryTopicUnmetDemandResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+      "/emissions/state/v1/unmet_demand/{topic_id}";
+  }
+
+  rpc GetAllInferences(QueryAllInferencesRequest) returns (QueryAllInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
       "/emissions/state/v1/inferences/{topic_id}/{timestamp}";
@@ -223,7 +241,7 @@ message QueryWeightResponse {
 }
 
 // Returns the latest inference on a topic from a worker
-message QueryInferenceRequest {
+message QueryAllInferencesRequest {
   uint64 topic_id = 1;
   uint64 timestamp = 2;
 }
@@ -232,7 +250,7 @@ message QueryInferenceRequest {
 //
 // NOTE: The amount field is a Uint which implements the custom method
 // signatures required by gogoproto.
-message QueryInferenceResponse {
+message QueryAllInferencesResponse {
   Inferences inferences = 1;
 }
 
@@ -258,4 +276,48 @@ message QueryWorkerAddressByP2PKeyRequest {
 
 message QueryWorkerAddressByP2PKeyResponse {
   string address = 1;
+}
+
+message QueryInferenceRequestRequest {
+  string request_id = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryInferenceRequestResponse {
+  InferenceRequest inference_request = 1;
+  string demand_left = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; 
+}
+
+message QueryAllInferenceRequestsRequest {}
+
+message InferenceRequestAndDemandLeft {
+  InferenceRequest inference_request = 1;
+  string demand_left = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ]; 
+}
+
+message QueryAllInferenceRequestsResponse {
+  repeated InferenceRequestAndDemandLeft inference_requests = 1;
+}
+
+message QueryTopicUnmetDemandRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicUnmetDemandResponse {
+  string demand_left = 1 [
+    (cosmos_proto.scalar)  = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable)   = false,
+    (amino.dont_omitempty) = true
+  ];
 }
