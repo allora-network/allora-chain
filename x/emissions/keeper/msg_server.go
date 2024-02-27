@@ -35,79 +35,51 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if !isAdmin {
 		return nil, state.ErrNotWhitelistAdmin
 	}
+	existingParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// every option is a repeated field, so we interpret an empty array as "make no change"
-	params := msg.Params
-	if len(params.Version) == 1 {
-		err := ms.k.SetParamsVersion(ctx, params.Version[0])
-		if err != nil {
-			return nil, err
-		}
+	newParams := msg.Params
+	if len(newParams.Version) == 1 {
+		existingParams.Version = newParams.Version[0]
 	}
-	if len(params.EpochLength) == 1 {
-		err := ms.k.SetParamsEpochLength(ctx, params.EpochLength[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.EpochLength) == 1 {
+		existingParams.EpochLength = newParams.EpochLength[0]
 	}
-	if len(params.EmissionsPerEpoch) == 1 {
-		err := ms.k.SetParamsEmissionsPerEpoch(ctx, params.EmissionsPerEpoch[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.EmissionsPerEpoch) == 1 {
+		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]
 	}
-	if len(params.MinTopicUnmetDemand) == 1 {
-		err := ms.k.SetParamsMinTopicUnmetDemand(ctx, params.MinTopicUnmetDemand[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MinTopicUnmetDemand) == 1 {
+		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
 	}
-	if len(params.MaxTopicsPerBlock) == 1 {
-		err := ms.k.SetParamsMaxTopicsPerBlock(ctx, params.MaxTopicsPerBlock[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MaxTopicsPerBlock) == 1 {
+		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
 	}
-	if len(params.MinRequestUnmetDemand) == 1 {
-		err := ms.k.SetParamsMinRequestUnmetDemand(ctx, params.MinRequestUnmetDemand[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MinRequestUnmetDemand) == 1 {
+		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
-	if len(params.MaxAllowableMissingInferencePercent) == 1 {
-		err := ms.k.SetParamsMaxAllowableMissingInferencePercent(ctx, params.MaxAllowableMissingInferencePercent[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MaxAllowableMissingInferencePercent) == 1 {
+		existingParams.MaxAllowableMissingInferencePercent = newParams.MaxAllowableMissingInferencePercent[0]
 	}
-	if len(params.RequiredMinimumStake) == 1 {
-		err := ms.k.SetParamsRequiredMinimumStake(ctx, params.RequiredMinimumStake[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.RequiredMinimumStake) == 1 {
+		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
 	}
-	if len(params.RemoveStakeDelayWindow) == 1 {
-		err := ms.k.SetParamsRemoveStakeDelayWindow(ctx, params.RemoveStakeDelayWindow[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.RemoveStakeDelayWindow) == 1 {
+		existingParams.RemoveStakeDelayWindow = newParams.RemoveStakeDelayWindow[0]
 	}
-	if len(params.MinFastestAllowedCadence) == 1 {
-		err := ms.k.SetParamsMinFastestAllowedCadence(ctx, params.MinFastestAllowedCadence[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MinFastestAllowedCadence) == 1 {
+		existingParams.MinFastestAllowedCadence = newParams.MinFastestAllowedCadence[0]
 	}
-	if len(params.MaxInferenceRequestValidity) == 1 {
-		err := ms.k.SetParamsMaxInferenceRequestValidity(ctx, params.MaxInferenceRequestValidity[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MaxInferenceRequestValidity) == 1 {
+		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
 	}
-	if len(params.MaxSlowestAllowedCadence) == 1 {
-		err := ms.k.SetParamsMaxSlowestAllowedCadence(ctx, params.MaxSlowestAllowedCadence[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(newParams.MaxSlowestAllowedCadence) == 1 {
+		existingParams.MaxSlowestAllowedCadence = newParams.MaxSlowestAllowedCadence[0]
+	}
+	err = ms.k.SetParams(ctx, existingParams)
+	if err != nil {
+		return nil, err
 	}
 	return &state.MsgUpdateParamsResponse{}, nil
 }
