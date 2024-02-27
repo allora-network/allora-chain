@@ -34,21 +34,6 @@ type BLOCK_NUMBER = int64
 type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
-// Emissions rate Constants
-// TODO make these not constants and figure out how they should
-// be changeable by governance or some algorithm or whatever.
-// Likely should be params within the keeper.
-const EPOCH_LENGTH = 5
-const EMISSIONS_PER_EPOCH = 1000
-const MIN_TOPIC_UNMET_DEMAND = 100                 // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-const MAX_TOPICS_PER_BLOCK = 1000                  // max number of topics to run cadence for per block
-const MIN_PRICE_PER_EPOCH = 10                     // protocol participants never paid less than this per epoch from consumer demand if enough demand exists
-const TARGET_CAPACITY_PER_BLOCK = 500              // between 0 and this number the price goes down, above this number up to MAX_TOPICS_PER_BLOCK the price goes up
-const PRICE_CHANGE_PERCENT = 0.1                   // how much the price changes per block
-const PRICE_ADJUSTMENT_PRECISION = 10000           // just used for price calculations
-const MIN_REQUEST_UNMET_DEMAND = 1                 // delete requests if they have below this demand remaining
-const MAX_ALLOWABLE_MISSING_INFERENCE_PERCENT = 10 // if a worker has this percentage of inferences missing, they are penalized
-
 type Keeper struct {
 	cdc          codec.BinaryCodec
 	addressCodec address.Codec
@@ -232,7 +217,14 @@ func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
 }
 
 func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
-	return k.params.Get(ctx)
+	ret, err := k.params.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return state.DefaultParams(), nil
+		}
+		return state.Params{}, err
+	}
+	return ret, nil
 }
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
@@ -335,8 +327,12 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 }
 
 // return epoch length
-func (k *Keeper) EpochLength() int64 {
-	return EPOCH_LENGTH
+func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.EpochLength, nil
 }
 
 // return how many new coins should be minted for the next emission
@@ -350,9 +346,13 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 	}
 	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
 	// number of epochs that have passed (if more than 1)
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / EPOCH_LENGTH)
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.EpochLength)
 	// get emission amount
-	return epochsPassed.Mul(cosmosMath.NewInt(EMISSIONS_PER_EPOCH)), nil
+	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
 }
 
 // mint new rewards coins to this module account
@@ -1441,8 +1441,76 @@ func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
-func (k *Keeper) GetMinTopicUnmetDemand(ctx context.Context) Uint {
-	return cosmosMath.NewUint(MIN_TOPIC_UNMET_DEMAND)
+func (k *Keeper) GetParamsMaxAllowableMissingInferencePercent(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxAllowableMissingInferencePercent, nil
+}
+
+func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopicsPerBlock, nil
+}
+
+func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+	return params.MinRequestUnmetDemand, nil
+}
+
+func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+	return params.MinTopicUnmetDemand, nil
+}
+
+func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+	return params.RequiredMinimumStake, nil
+}
+
+func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.RemoveStakeDelayWindow, nil
+}
+
+func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxInferenceRequestValidity, nil
+}
+
+func (k *Keeper) GetParamsMinFastestAllowedCadence(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MinFastestAllowedCadence, nil
+}
+
+func (k *Keeper) GetParamsMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxSlowestAllowedCadence, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {

@@ -98,10 +98,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: statev1.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
-				// {
-				// 	RpcMethod: "UpdateParams",
-				// 	Skip:      true, // This is a authority gated tx, so we skip it.
-				// },
+				{
+					RpcMethod: "UpdateParams",
+					Use:       "update-params [sender] [params]",
+					Short:     "Add a new topic to the network",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "params"},
+					},
+				},
 				{
 					RpcMethod: "CreateNewTopic",
 					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [default_arg]",

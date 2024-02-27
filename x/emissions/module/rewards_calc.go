@@ -164,9 +164,18 @@ func MaskWeightsIfInsufficientLiveness(
 				return nil, err
 			}
 			// If number of inferences in the reward epoch < amount that should be there by too much, then mask the weight
-			expectedNumInferencesInRewardEpoch := uint64(am.keeper.EpochLength()) / topic.InferenceCadence
-			// Allow for for 10% of inferences to be missing
-			expectedNumInferencesInRewardEpoch = expectedNumInferencesInRewardEpoch - (expectedNumInferencesInRewardEpoch / keeper.MAX_ALLOWABLE_MISSING_INFERENCE_PERCENT)
+			epochLength, err := am.keeper.GetParamsEpochLength(ctx)
+			if err != nil {
+				return nil, err
+			}
+			expectedNumInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
+			// Allow for for 10% of inferences to be missing. Percent directly encoded as uint64, not float
+			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxAllowableMissingInferencePercent(ctx)
+			if err != nil {
+				return nil, err
+			}
+			expectedNumInferencesInRewardEpoch =
+				expectedNumInferencesInRewardEpoch - (expectedNumInferencesInRewardEpoch / maxAllowableMissingInferencePercent)
 			if numInferencesInRewardEpoch.LT(cosmosMath.NewUint(expectedNumInferencesInRewardEpoch)) {
 				maskedVal := cosmosMath.ZeroUint()
 				maskedWeights[reputer][worker] = &maskedVal

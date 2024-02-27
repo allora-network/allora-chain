@@ -196,7 +196,9 @@ func (s *ModuleTestSuite) TestEmitRewardsSimple() {
 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
 
-	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+	s.NoError(err, "Error getting epoch length")
+	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 
 	reputer1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
 	s.NoError(err, "Error getting reputer 1 stake")

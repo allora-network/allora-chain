@@ -148,7 +148,11 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	if blocksSinceLastUpdate >= am.keeper.EpochLength() {
+	epochLength, err := am.keeper.GetParamsEpochLength(ctx)
+	if err != nil {
+		return err
+	}
+	if blocksSinceLastUpdate >= epochLength {
 		err = emitRewards(sdkCtx, am)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate
