@@ -22,7 +22,8 @@ func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveTwoTopics() {
 func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveOneTopicLeaveOne() {
 	createdTopicIds, err := mockCreateTopics(s, 2)
 	s.Require().NoError(err, "mockCreateTopics should not throw an error")
-	minTopicUnmetDemand, err := s.emissionsKeeper.GetMinTopicUnmetDemand(s.ctx)
+	minTopicUnmetDemand, err := s.emissionsKeeper.GetParamsMinTopicUnmetDemand(s.ctx)
+	s.Require().NoError(err, "GetParamsMinTopicUnmetDemand should not throw an error")
 	err = s.emissionsKeeper.SetTopicUnmetDemand(s.ctx, createdTopicIds[0], minTopicUnmetDemand.Add(cosmosMath.OneUint()))
 	s.Require().NoError(err, "SetTopicUnmetDemand should not throw an error")
 	listTopics, err := module.InactivateLowDemandTopics(s.ctx, s.emissionsKeeper)
@@ -468,7 +469,7 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
 	lastInferenceRanTopic1Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
 	s.Require().NoError(err)
 
-	epochLength, err := s.emissionsKeeper.GetEpochLength(s.ctx)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 
@@ -538,7 +539,7 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlockConsumesSubscriptionLeavesDust()
 	s.Require().NoError(err)
 	s.Require().Len(mempool, 1, "Mempool should have exactly 1 request")
 
-	epochLength, err := s.emissionsKeeper.GetEpochLength(s.ctx)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(time.Second * 61))

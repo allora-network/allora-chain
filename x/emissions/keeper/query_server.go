@@ -27,12 +27,8 @@ type queryServer struct {
 
 // Params defines the handler for the Query/Params RPC method.
 func (qs queryServer) Params(ctx context.Context, req *state.QueryParamsRequest) (*state.QueryParamsResponse, error) {
-	params, err := qs.k.params.Get(ctx)
+	params, err := qs.k.GetParams(ctx)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &state.QueryParamsResponse{Params: state.Params{}}, nil
-		}
-
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

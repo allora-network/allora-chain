@@ -35,9 +35,79 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if !isAdmin {
 		return nil, state.ErrNotWhitelistAdmin
 	}
-	err = ms.k.SetParams(ctx, *msg.Params)
-	if err != nil {
-		return nil, err
+	// every option is a repeated field, so we interpret an empty array as "make no change"
+	params := msg.Params
+	if len(params.Version) == 1 {
+		err := ms.k.SetParamsVersion(ctx, params.Version[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.EpochLength) == 1 {
+		err := ms.k.SetParamsEpochLength(ctx, params.EpochLength[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.EmissionsPerEpoch) == 1 {
+		err := ms.k.SetParamsEmissionsPerEpoch(ctx, params.EmissionsPerEpoch[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MinTopicUnmetDemand) == 1 {
+		err := ms.k.SetParamsMinTopicUnmetDemand(ctx, params.MinTopicUnmetDemand[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MaxTopicsPerBlock) == 1 {
+		err := ms.k.SetParamsMaxTopicsPerBlock(ctx, params.MaxTopicsPerBlock[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MinRequestUnmetDemand) == 1 {
+		err := ms.k.SetParamsMinRequestUnmetDemand(ctx, params.MinRequestUnmetDemand[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MaxAllowableMissingInferencePercent) == 1 {
+		err := ms.k.SetParamsMaxAllowableMissingInferencePercent(ctx, params.MaxAllowableMissingInferencePercent[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.RequiredMinimumStake) == 1 {
+		err := ms.k.SetParamsRequiredMinimumStake(ctx, params.RequiredMinimumStake[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.RemoveStakeDelayWindow) == 1 {
+		err := ms.k.SetParamsRemoveStakeDelayWindow(ctx, params.RemoveStakeDelayWindow[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MinFastestAllowedCadence) == 1 {
+		err := ms.k.SetParamsMinFastestAllowedCadence(ctx, params.MinFastestAllowedCadence[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MaxInferenceRequestValidity) == 1 {
+		err := ms.k.SetParamsMaxInferenceRequestValidity(ctx, params.MaxInferenceRequestValidity[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(params.MaxSlowestAllowedCadence) == 1 {
+		err := ms.k.SetParamsMaxSlowestAllowedCadence(ctx, params.MaxSlowestAllowedCadence[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &state.MsgUpdateParamsResponse{}, nil
 }
@@ -181,7 +251,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		return nil, state.ErrLibP2PKeyRequired
 	}
 	// require funds to be at least greater than the minimum stake
-	requiredMinimumStake, err := ms.k.GetRequiredMinimumStake(ctx)
+	requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -580,7 +650,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 		// 6. If user is removing stake from themselves and he still registered in topics
 		//  check that the stake is greater than the minimum required
-		requiredMinimumStake, err := ms.k.GetRequiredMinimumStake(ctx)
+		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -625,7 +695,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	if stakeRemoval.TimestampRemovalStarted > timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooEarly
 	}
-	delayWindow, err := ms.k.GetRemoveStakeDelayWindow(ctx)
+	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -722,7 +792,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, state.ErrInferenceRequestTimestampValidUntilInPast
 		}
 		// 5. Check the timestamp validity is no more than the maximum allowed time in the future
-		maxInferenceRequestValidity, err := ms.k.GetMaxInferenceRequestValidity(ctx)
+		maxInferenceRequestValidity, err := ms.k.GetParamsMaxInferenceRequestValidity(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -731,7 +801,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		}
 		if request.Cadence != 0 {
 			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
-			minFastestAllowedCadence, err := ms.k.GetMinFastestAllowedCadence(ctx)
+			minFastestAllowedCadence, err := ms.k.GetParamsMinFastestAllowedCadence(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -739,7 +809,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 				return nil, state.ErrInferenceRequestCadenceTooFast
 			}
 			// 7. Check the cadence is no more than the maximum allowed slowest cadence
-			maxSlowestAllowedCadence, err := ms.k.GetMaxSlowestAllowedCadence(ctx)
+			maxSlowestAllowedCadence, err := ms.k.GetParamsMaxSlowestAllowedCadence(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -751,7 +821,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		if timeNow+request.Cadence > request.TimestampValidUntil {
 			return nil, state.ErrInferenceRequestWillNeverBeScheduled
 		}
-		MinRequestUnmetDemand, err := ms.k.GetMinRequestUnmetDemand(ctx)
+		MinRequestUnmetDemand, err := ms.k.GetParamsMinRequestUnmetDemand(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -847,7 +917,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 		return nil, err
 	}
 
-	minTopicUnmentDemand, err := ms.k.GetMinTopicUnmetDemand(ctx)
+	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
 	if err != nil {
 		return nil, err
 	}

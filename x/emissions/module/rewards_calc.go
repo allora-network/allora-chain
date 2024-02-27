@@ -164,13 +164,13 @@ func MaskWeightsIfInsufficientLiveness(
 				return nil, err
 			}
 			// If number of inferences in the reward epoch < amount that should be there by too much, then mask the weight
-			epochLength, err := am.keeper.GetEpochLength(ctx)
+			epochLength, err := am.keeper.GetParamsEpochLength(ctx)
 			if err != nil {
 				return nil, err
 			}
 			expectedNumInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
-			// Allow for for 10% of inferences to be missing
-			maxAllowableMissingInferencePercent, err := am.keeper.GetMaxAllowableMissingInferencePercent(ctx)
+			// Allow for for 10% of inferences to be missing. Percent directly encoded as uint64, not float
+			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxAllowableMissingInferencePercent(ctx)
 			if err != nil {
 				return nil, err
 			}

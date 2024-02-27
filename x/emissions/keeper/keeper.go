@@ -40,9 +40,23 @@ type Keeper struct {
 
 	// State management
 	schema     collections.Schema
-	params     collections.Item[state.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
+	/*
+		// Params
+		paramsVersion                             collections.Item[string]
+		paramsEpochLength                         collections.Item[int64]
+		paramsEmissionsPerEpoch                   collections.Item[Int]
+		paramsMinTopicUnmetDemand                 collections.Item[Uint]
+		paramsMaxTopicsPerBlock                   collections.Item[uint64]
+		paramsMinRequestUnmetDemand               collections.Item[Uint]
+		paramsMaxAllowableMissingInferencePercent collections.Item[uint64]
+		paramsRequiredMinimumStake                collections.Item[Uint]
+		paramsRemoveStakeDelayWindow              collections.Item[uint64]
+		paramsMinFastestAllowedCadence            collections.Item[uint64]
+		paramsMaxInferenceRequestValidity         collections.Item[uint64]
+		paramsMaxSlowestAllowedCadence            collections.Item[uint64]
+	*/
 
 	// ############################################
 	// #             TOPIC STATE:                 #
@@ -169,20 +183,30 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                        cdc,
-		addressCodec:               addressCodec,
-		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
-		authKeeper:                 ak,
-		bankKeeper:                 bk,
-		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		cdc:          cdc,
+		addressCodec: addressCodec,
+		authKeeper:   ak,
+		bankKeeper:   bk, /*
+			paramsVersion:               collections.NewItem(sb, state.ParamsVersionKey, "params_version", collections.StringValue),
+			paramsEpochLength:           collections.NewItem(sb, state.ParamsEpochLengthKey, "epoch_length", collections.Int64Value),
+			paramsEmissionsPerEpoch:     collections.NewItem(sb, state.ParamsEmissionsPerEpochKey, "emissions_per_epoch", sdk.IntValue),
+			paramsMinTopicUnmetDemand:   collections.NewItem(sb, state.ParamsMinTopicUnmetDemandKey, "min_topic_unmet_demand", UintValue),
+			paramsMaxTopicsPerBlock:     collections.NewItem(sb, state.ParamsMaxTopicsPerBlockKey, "max_topics_per_block", collections.Uint64Value),
+			paramsMinRequestUnmetDemand: collections.NewItem(sb, state.ParamsMinRequestUnmetDemandKey, "min_request_unmet_demand", UintValue),
+			paramsMaxAllowableMissingInferencePercent: collections.NewItem(sb, state.ParamsMaxAllowableMissingInferencePercentKey, "max_allowable_missing_inference_percent", collections.Uint64Value),
+			paramsRequiredMinimumStake:                collections.NewItem(sb, state.ParamsRequiredMinimumStakeKey, "required_minimum_stake", UintValue),
+			paramsRemoveStakeDelayWindow:              collections.NewItem(sb, state.ParamsRemoveStakeDelayWindowKey, "remove_stake_delay_window", collections.Uint64Value),
+			paramsMinFastestAllowedCadence:            collections.NewItem(sb, state.ParamsMinFastestAllowedCadenceKey, "min_fastest_allowed_cadence", collections.Uint64Value),
+			paramsMaxInferenceRequestValidity:         collections.NewItem(sb, state.ParamsMaxInferenceRequestValidityKey, "max_inference_request_validity", collections.Uint64Value),
+			paramsMaxSlowestAllowedCadence:            collections.NewItem(sb, state.ParamsMaxSlowestAllowedCadenceKey, "max_slowest_allowed_cadence", collections.Uint64Value),*/
 		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
 		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		allTopicStakeSum:           collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
+		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
+		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
 		stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
 		stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
@@ -192,11 +216,12 @@ func NewKeeper(
 		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
 		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
+		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
+		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
-		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		weightSettingWhitelist:     collections.NewKeySet(sb, state.WeightSettingWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -212,20 +237,124 @@ func NewKeeper(
 	return k
 }
 
+/*
 func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
-	return k.params.Set(ctx, params)
+	if err := k.paramsVersion.Set(ctx, params.Version); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsVersion, err.Error())
+	}
+	if err := k.paramsEpochLength.Set(ctx, params.EpochLength); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsEpochLength, err.Error())
+	}
+	if err := k.paramsEmissionsPerEpoch.Set(ctx, params.EmissionsPerEpoch); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsEmissionsPerEpoch, err.Error())
+	}
+	if err := k.paramsMinTopicUnmetDemand.Set(ctx, params.MinTopicUnmetDemand); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMinTopicUnmetDemand, err.Error())
+	}
+	if err := k.paramsMaxTopicsPerBlock.Set(ctx, params.MaxTopicsPerBlock); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMaxTopicsPerBlock, err.Error())
+	}
+	if err := k.paramsMinRequestUnmetDemand.Set(ctx, params.MinRequestUnmetDemand); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMinRequestUnmetDemand, err.Error())
+	}
+	if err := k.paramsMaxAllowableMissingInferencePercent.Set(ctx, params.MaxAllowableMissingInferencePercent); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMaxAllowableMissingInferencePercent, err.Error())
+	}
+	if err := k.paramsRequiredMinimumStake.Set(ctx, params.RequiredMinimumStake); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsRequiredMinimumStake, err.Error())
+	}
+	if err := k.paramsRemoveStakeDelayWindow.Set(ctx, params.RemoveStakeDelayWindow); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsRemoveStakeDelayWindow, err.Error())
+	}
+	if err := k.paramsMinFastestAllowedCadence.Set(ctx, params.MinFastestAllowedCadence); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMinFastestAllowedCadence, err.Error())
+	}
+	if err := k.paramsMaxInferenceRequestValidity.Set(ctx, params.MaxInferenceRequestValidity); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMaxInferenceRequestValidity, err.Error())
+	}
+	if err := k.paramsMaxSlowestAllowedCadence.Set(ctx, params.MaxSlowestAllowedCadence); err != nil {
+		return cosmosErrors.Wrap(state.ErrSetParamsMaxSlowestAllowedCadence, err.Error())
+	}
+	return nil
 }
 
 func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
-	ret, err := k.params.Get(ctx)
+	version, err := k.GetParamsVersion(ctx)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return state.DefaultParams(), nil
-		}
 		return state.Params{}, err
 	}
-	return ret, nil
+
+	epochLength, err := k.GetParamsEpochLength(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	emissionsPerEpoch, err := k.GetParamsEmissionsPerEpoch(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	minTopicUnmetDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	minRequestUnmetDemand, err := k.GetParamsMinRequestUnmetDemand(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	maxAllowableMissingInferencePercent, err := k.GetParamsMaxAllowableMissingInferencePercent(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	requiredMinimumStake, err := k.GetParamsRequiredMinimumStake(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	removeStakeDelayWindow, err := k.GetParamsRemoveStakeDelayWindow(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	minFastestAllowedCadence, err := k.GetParamsMinFastestAllowedCadence(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	maxInferenceRequestValidity, err := k.GetParamsMaxInferenceRequestValidity(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	maxSlowestAllowedCadence, err := k.GetParamsMaxSlowestAllowedCadence(ctx)
+	if err != nil {
+		return state.Params{}, err
+	}
+
+	return state.Params{
+		Version:                             version,
+		EpochLength:                         epochLength,
+		EmissionsPerEpoch:                   emissionsPerEpoch,
+		MinTopicUnmetDemand:                 minTopicUnmetDemand,
+		MaxTopicsPerBlock:                   maxTopicsPerBlock,
+		MinRequestUnmetDemand:               minRequestUnmetDemand,
+		MaxAllowableMissingInferencePercent: maxAllowableMissingInferencePercent,
+		RequiredMinimumStake:                requiredMinimumStake,
+		RemoveStakeDelayWindow:              removeStakeDelayWindow,
+		MinFastestAllowedCadence:            minFastestAllowedCadence,
+		MaxInferenceRequestValidity:         maxInferenceRequestValidity,
+		MaxSlowestAllowedCadence:            maxSlowestAllowedCadence,
+	}, nil
 }
+*/
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
 	topic, err := k.topics.Get(ctx, topicId)
@@ -326,15 +455,6 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
 
-// return epoch length
-func (k *Keeper) GetEpochLength(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.EpochLength, nil
-}
-
 // return how many new coins should be minted for the next emission
 func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.Int, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -346,13 +466,17 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 	}
 	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
 	// number of epochs that have passed (if more than 1)
-	params, err := k.GetParams(ctx)
+	epochLength, err := k.paramsEpochLength.Get(ctx)
 	if err != nil {
 		return cosmosMath.Int{}, err
 	}
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.EpochLength)
+	emissionsPerEpoch, err := k.paramsEmissionsPerEpoch.Get(ctx)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / epochLength)
 	// get emission amount
-	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
+	return epochsPassed.Mul(emissionsPerEpoch), nil
 }
 
 // mint new rewards coins to this module account
@@ -1441,76 +1565,196 @@ func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
-func (k *Keeper) GetMaxAllowableMissingInferencePercent(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) GetParamsVersion(ctx context.Context) (string, error) {
+	version, err := k.paramsVersion.Get(ctx)
 	if err != nil {
-		return 0, err
+		if errors.Is(err, collections.ErrNotFound) {
+			version = state.DefaultParamsVersion()
+		} else {
+			return "", err
+		}
 	}
-	return params.MaxAllowableMissingInferencePercent, nil
+	return version, nil
 }
 
-func (k *Keeper) GetMaxTopicsPerBlock(ctx context.Context) (float64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxTopicsPerBlock, nil
+func (k *Keeper) SetParamsVersion(ctx context.Context, version string) error {
+	return k.paramsVersion.Set(ctx, version)
 }
 
-func (k *Keeper) GetMinRequestUnmetDemand(ctx context.Context) (Uint, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
+	epochLength, err := k.paramsEpochLength.Get(ctx)
 	if err != nil {
-		return cosmosMath.Uint{}, err
+		if errors.Is(err, collections.ErrNotFound) {
+			epochLength = state.DefaultParamsEpochLength()
+		} else {
+			return 0, err
+		}
 	}
-	return params.MinRequestUnmetDemand, nil
+	return epochLength, nil
 }
 
-func (k *Keeper) GetMinTopicUnmetDemand(ctx context.Context) (Uint, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-	return params.MinTopicUnmetDemand, nil
+func (k *Keeper) SetParamsEpochLength(ctx context.Context, epochLength int64) error {
+	return k.paramsEpochLength.Set(ctx, epochLength)
 }
 
-func (k *Keeper) GetRequiredMinimumStake(ctx context.Context) (Uint, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) GetParamsEmissionsPerEpoch(ctx context.Context) (Int, error) {
+	emissionsPerEpoch, err := k.paramsEmissionsPerEpoch.Get(ctx)
 	if err != nil {
-		return cosmosMath.Uint{}, err
+		if errors.Is(err, collections.ErrNotFound) {
+			emissionsPerEpoch = state.DefaultParamsEmissionsPerEpoch()
+		} else {
+			return Int{}, err
+		}
 	}
-	return params.RequiredMinimumStake, nil
+	return emissionsPerEpoch, nil
 }
 
-func (k *Keeper) GetRemoveStakeDelayWindow(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.RemoveStakeDelayWindow, nil
+func (k *Keeper) SetParamsEmissionsPerEpoch(ctx context.Context, emissionsPerEpoch Int) error {
+	return k.paramsEmissionsPerEpoch.Set(ctx, emissionsPerEpoch)
 }
 
-func (k *Keeper) GetMaxInferenceRequestValidity(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error) {
+	minTopicUnmetDemand, err := k.paramsMinTopicUnmetDemand.Get(ctx)
 	if err != nil {
-		return 0, err
+		if errors.Is(err, collections.ErrNotFound) {
+			minTopicUnmetDemand = state.DefaultParamsMinTopicUnmetDemand()
+		} else {
+			return Uint{}, err
+		}
 	}
-	return params.MaxInferenceRequestValidity, nil
+	return minTopicUnmetDemand, nil
 }
 
-func (k *Keeper) GetMinFastestAllowedCadence(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MinFastestAllowedCadence, nil
+func (k *Keeper) SetParamsMinTopicUnmetDemand(ctx context.Context, minTopicUnmetDemand Uint) error {
+	return k.paramsMinTopicUnmetDemand.Set(ctx, minTopicUnmetDemand)
 }
 
-func (k *Keeper) GetMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
+	maxTopicsPerBlock, err := k.paramsMaxTopicsPerBlock.Get(ctx)
 	if err != nil {
-		return 0, err
+		if errors.Is(err, collections.ErrNotFound) {
+			maxTopicsPerBlock = state.DefaultParamsMaxTopicsPerBlock()
+		} else {
+			return 0, err
+		}
 	}
-	return params.MaxSlowestAllowedCadence, nil
+	return maxTopicsPerBlock, nil
+}
+
+func (k *Keeper) SetParamsMaxTopicsPerBlock(ctx context.Context, maxTopicsPerBlock uint64) error {
+	return k.paramsMaxTopicsPerBlock.Set(ctx, maxTopicsPerBlock)
+}
+
+func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, error) {
+	minRequestUnmetDemand, err := k.paramsMinRequestUnmetDemand.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			minRequestUnmetDemand = state.DefaultParamsMinRequestUnmetDemand()
+		} else {
+			return Uint{}, err
+		}
+	}
+	return minRequestUnmetDemand, nil
+}
+
+func (k *Keeper) SetParamsMinRequestUnmetDemand(ctx context.Context, minRequestUnmetDemand Uint) error {
+	return k.paramsMinRequestUnmetDemand.Set(ctx, minRequestUnmetDemand)
+}
+
+func (k *Keeper) GetParamsMaxAllowableMissingInferencePercent(ctx context.Context) (uint64, error) {
+	maxAllowableMissingInferencePercent, err := k.paramsMaxAllowableMissingInferencePercent.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			maxAllowableMissingInferencePercent = state.DefaultParamsMaxAllowableMissingInferencePercent()
+		} else {
+			return 0, err
+		}
+	}
+	return maxAllowableMissingInferencePercent, nil
+}
+
+func (k *Keeper) SetParamsMaxAllowableMissingInferencePercent(ctx context.Context, maxAllowableMissingInferencePercent uint64) error {
+	return k.paramsMaxAllowableMissingInferencePercent.Set(ctx, maxAllowableMissingInferencePercent)
+}
+
+func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error) {
+	requiredMinimumStake, err := k.paramsRequiredMinimumStake.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			requiredMinimumStake = state.DefaultParamsRequiredMinimumStake()
+		} else {
+			return Uint{}, err
+		}
+	}
+	return requiredMinimumStake, nil
+}
+
+func (k *Keeper) SetParamsRequiredMinimumStake(ctx context.Context, requiredMinimumStake Uint) error {
+	return k.paramsRequiredMinimumStake.Set(ctx, requiredMinimumStake)
+}
+
+func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, error) {
+	removeStakeDelayWindow, err := k.paramsRemoveStakeDelayWindow.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			removeStakeDelayWindow = state.DefaultParamsRemoveStakeDelayWindow()
+		} else {
+			return 0, err
+		}
+	}
+	return removeStakeDelayWindow, nil
+}
+
+func (k *Keeper) SetParamsRemoveStakeDelayWindow(ctx context.Context, removeStakeDelayWindow uint64) error {
+	return k.paramsRemoveStakeDelayWindow.Set(ctx, removeStakeDelayWindow)
+}
+
+func (k *Keeper) GetParamsMinFastestAllowedCadence(ctx context.Context) (uint64, error) {
+	minFastestAllowedCadence, err := k.paramsMinFastestAllowedCadence.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			minFastestAllowedCadence = state.DefaultParamsMinFastestAllowedCadence()
+		} else {
+			return 0, err
+		}
+	}
+	return minFastestAllowedCadence, nil
+}
+
+func (k *Keeper) SetParamsMinFastestAllowedCadence(ctx context.Context, minFastestAllowedCadence uint64) error {
+	return k.paramsMinFastestAllowedCadence.Set(ctx, minFastestAllowedCadence)
+}
+
+func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint64, error) {
+	maxInferenceRequestValidity, err := k.paramsMaxInferenceRequestValidity.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			maxInferenceRequestValidity = state.DefaultParamsMaxInferenceRequestValidity()
+		} else {
+			return 0, err
+		}
+	}
+	return maxInferenceRequestValidity, nil
+}
+
+func (k *Keeper) SetParamsMaxInferenceRequestValidity(ctx context.Context, maxInferenceRequestValidity uint64) error {
+	return k.paramsMaxInferenceRequestValidity.Set(ctx, maxInferenceRequestValidity)
+}
+
+func (k *Keeper) GetParamsMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
+	maxSlowestAllowedCadence, err := k.paramsMaxSlowestAllowedCadence.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			maxSlowestAllowedCadence = state.DefaultParamsMaxSlowestAllowedCadence()
+		} else {
+			return 0, err
+		}
+	}
+	return maxSlowestAllowedCadence, nil
+}
+
+func (k *Keeper) SetParamsMaxSlowestAllowedCadence(ctx context.Context, maxSlowestAllowedCadence uint64) error {
+	return k.paramsMaxSlowestAllowedCadence.Set(ctx, maxSlowestAllowedCadence)
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {

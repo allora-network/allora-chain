@@ -196,7 +196,7 @@ func (s *ModuleTestSuite) TestEmitRewardsSimple() {
 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
 	s.NoError(err, "Error setting weights")
 
-	epochLength, err := s.emissionsKeeper.GetEpochLength(s.ctx)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
 	s.NoError(err, "Error getting epoch length")
 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 

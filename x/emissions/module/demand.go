@@ -106,7 +106,7 @@ func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingA
 		fmt.Println("Error getting active topics: ", err)
 		return nil, err
 	}
-	minTopicDemand, err := k.GetMinTopicUnmetDemand(ctx)
+	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
 	for _, topic := range topicsActive {
 		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
 		if err != nil {
@@ -231,13 +231,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	// Sort topics by topicBestPrices
 	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentTime)
 	//fmt.Println("Length sorted topics: ", len(sortedTopics))
-	maxTopicsPerBlock, err := k.GetMaxTopicsPerBlock(ctx)
+	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
 	if err != nil {
 		fmt.Println("Error getting max topics per block: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
 	// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand
-	cutoff := uint(math.Min(float64(len(sortedTopics)), maxTopicsPerBlock))
+	cutoff := uint(math.Min(float64(len(sortedTopics)), float64(maxTopicsPerBlock)))
 	//fmt.Println("Cutoff: ", cutoff)
 	topTopicsByReturn := sortedTopics[:cutoff]
 	//fmt.Println("Length top topics by return: ", len(topTopicsByReturn))
@@ -274,7 +274,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			if req.Cadence == 0 {
 				k.RemoveFromMempool(ctx, req)
 			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
-				minRequestUnmetDemand, err := k.GetMinRequestUnmetDemand(ctx)
+				minRequestUnmetDemand, err := k.GetParamsMinRequestUnmetDemand(ctx)
 				if err != nil {
 					fmt.Println("Error getting min request unmet demand: ", err)
 					return nil, cosmosMath.Uint{}, err

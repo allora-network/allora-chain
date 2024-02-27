@@ -148,7 +148,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	epochLength, err := am.keeper.GetEpochLength(ctx)
+	epochLength, err := am.keeper.GetParamsEpochLength(ctx)
 	if err != nil {
 		return err
 	}
