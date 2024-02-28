@@ -6,7 +6,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -23,7 +22,9 @@ func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveTwoTopics() {
 func (s *ModuleTestSuite) TestInactivateLowDemandTopicsRemoveOneTopicLeaveOne() {
 	createdTopicIds, err := mockCreateTopics(s, 2)
 	s.Require().NoError(err, "mockCreateTopics should not throw an error")
-	err = s.emissionsKeeper.SetTopicUnmetDemand(s.ctx, createdTopicIds[0], cosmosMath.NewUint(keeper.MIN_TOPIC_UNMET_DEMAND+1))
+	minTopicUnmetDemand, err := s.emissionsKeeper.GetParamsMinTopicUnmetDemand(s.ctx)
+	s.Require().NoError(err, "GetParamsMinTopicUnmetDemand should not throw an error")
+	err = s.emissionsKeeper.SetTopicUnmetDemand(s.ctx, createdTopicIds[0], minTopicUnmetDemand.Add(cosmosMath.OneUint()))
 	s.Require().NoError(err, "SetTopicUnmetDemand should not throw an error")
 	listTopics, err := module.InactivateLowDemandTopics(s.ctx, s.emissionsKeeper)
 	s.Require().NoError(err, "InactivateLowDemandTopics should not throw an error")
@@ -468,7 +469,9 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
 	lastInferenceRanTopic1Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
 	s.Require().NoError(err)
 
-	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 
 	// make a messaging channel that can pass between threads
 	done := make(chan bool)
@@ -536,7 +539,9 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlockConsumesSubscriptionLeavesDust()
 	s.Require().NoError(err)
 	s.Require().Len(mempool, 1, "Mempool should have exactly 1 request")
 
-	s.ctx = s.ctx.WithBlockHeight(s.emissionsKeeper.EpochLength() + 1)
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
 	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(time.Second * 61))
 
 	// make a messaging channel that can pass between threads

@@ -12,12 +12,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const REQUIRED_MINIMUM_STAKE = 1
-const DELAY_WINDOW = 172800                                        // 48 hours in seconds
-const MIN_FASTEST_ALLOWED_CADENCE = 60                             // 1 minute in seconds
-const MAX_INFERENCE_REQUEST_VALIDITY = 60 * 60 * 24 * 7 * 24       // 24 weeks approximately 6 months in seconds
-const MAX_SLOWEST_ALLOWED_CADENCE = MAX_INFERENCE_REQUEST_VALIDITY // 24 weeks approximately 6 months in seconds
-
 type msgServer struct {
 	k Keeper
 }
@@ -27,6 +21,67 @@ var _ state.MsgServer = msgServer{}
 // NewMsgServerImpl returns an implementation of the module MsgServer interface.
 func NewMsgServerImpl(keeper Keeper) state.MsgServer {
 	return &msgServer{k: keeper}
+}
+
+func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams) (*state.MsgUpdateParamsResponse, error) {
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, sender)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	existingParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// every option is a repeated field, so we interpret an empty array as "make no change"
+	newParams := msg.Params
+	if len(newParams.Version) == 1 {
+		existingParams.Version = newParams.Version[0]
+	}
+	if len(newParams.EpochLength) == 1 {
+		existingParams.EpochLength = newParams.EpochLength[0]
+	}
+	if len(newParams.EmissionsPerEpoch) == 1 {
+		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]
+	}
+	if len(newParams.MinTopicUnmetDemand) == 1 {
+		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
+	}
+	if len(newParams.MaxTopicsPerBlock) == 1 {
+		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
+	}
+	if len(newParams.MinRequestUnmetDemand) == 1 {
+		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
+	}
+	if len(newParams.MaxAllowableMissingInferencePercent) == 1 {
+		existingParams.MaxAllowableMissingInferencePercent = newParams.MaxAllowableMissingInferencePercent[0]
+	}
+	if len(newParams.RequiredMinimumStake) == 1 {
+		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
+	}
+	if len(newParams.RemoveStakeDelayWindow) == 1 {
+		existingParams.RemoveStakeDelayWindow = newParams.RemoveStakeDelayWindow[0]
+	}
+	if len(newParams.MinFastestAllowedCadence) == 1 {
+		existingParams.MinFastestAllowedCadence = newParams.MinFastestAllowedCadence[0]
+	}
+	if len(newParams.MaxInferenceRequestValidity) == 1 {
+		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
+	}
+	if len(newParams.MaxSlowestAllowedCadence) == 1 {
+		existingParams.MaxSlowestAllowedCadence = newParams.MaxSlowestAllowedCadence[0]
+	}
+	err = ms.k.SetParams(ctx, existingParams)
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgUpdateParamsResponse{}, nil
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
@@ -168,7 +223,11 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		return nil, state.ErrLibP2PKeyRequired
 	}
 	// require funds to be at least greater than the minimum stake
-	if msg.GetInitialStake().LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) {
+	requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if msg.GetInitialStake().LT(requiredMinimumStake) {
 		return nil, state.ErrInsufficientStakeToRegister
 	}
 	// check if topics exists and if address is already registered in any of them
@@ -563,8 +622,12 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 
 		// 6. If user is removing stake from themselves and he still registered in topics
 		//  check that the stake is greater than the minimum required
+		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
+		if err != nil {
+			return nil, err
+		}
 		if senderAddr.String() == targetAddr.String() &&
-			stakePlaced.Sub(stakePlacement.Amount).LT(cosmosMath.NewUint(REQUIRED_MINIMUM_STAKE)) &&
+			stakePlaced.Sub(stakePlacement.Amount).LT(requiredMinimumStake) &&
 			len(topicsIds) > 0 {
 			return nil, state.ErrInsufficientStakeAfterRemoval
 		}
@@ -604,7 +667,11 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	if stakeRemoval.TimestampRemovalStarted > timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooEarly
 	}
-	if stakeRemoval.TimestampRemovalStarted+DELAY_WINDOW < timeNow {
+	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if stakeRemoval.TimestampRemovalStarted+delayWindow < timeNow {
 		return nil, state.ErrConfirmRemoveStakeTooLate
 	}
 	// skip checking all the data is valid
@@ -697,16 +764,28 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, state.ErrInferenceRequestTimestampValidUntilInPast
 		}
 		// 5. Check the timestamp validity is no more than the maximum allowed time in the future
-		if request.TimestampValidUntil > timeNow+MAX_INFERENCE_REQUEST_VALIDITY {
+		maxInferenceRequestValidity, err := ms.k.GetParamsMaxInferenceRequestValidity(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if request.TimestampValidUntil > timeNow+maxInferenceRequestValidity {
 			return nil, state.ErrInferenceRequestTimestampValidUntilTooFarInFuture
 		}
 		if request.Cadence != 0 {
 			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
-			if request.Cadence < MIN_FASTEST_ALLOWED_CADENCE {
+			minFastestAllowedCadence, err := ms.k.GetParamsMinFastestAllowedCadence(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if request.Cadence < minFastestAllowedCadence {
 				return nil, state.ErrInferenceRequestCadenceTooFast
 			}
 			// 7. Check the cadence is no more than the maximum allowed slowest cadence
-			if request.Cadence > MAX_SLOWEST_ALLOWED_CADENCE {
+			maxSlowestAllowedCadence, err := ms.k.GetParamsMaxSlowestAllowedCadence(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if request.Cadence > maxSlowestAllowedCadence {
 				return nil, state.ErrInferenceRequestCadenceTooSlow
 			}
 		}
@@ -714,8 +793,12 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		if timeNow+request.Cadence > request.TimestampValidUntil {
 			return nil, state.ErrInferenceRequestWillNeverBeScheduled
 		}
+		MinRequestUnmetDemand, err := ms.k.GetParamsMinRequestUnmetDemand(ctx)
+		if err != nil {
+			return nil, err
+		}
 		// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
-		if request.BidAmount.LT(cosmosMath.NewUint(MIN_REQUEST_UNMET_DEMAND)) {
+		if request.BidAmount.LT(MinRequestUnmetDemand) {
 			return nil, state.ErrInferenceRequestBidAmountTooLow
 		}
 		// 9. Check sender has funds to pay for the inference request
@@ -726,7 +809,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 			return nil, err
 		}
 		amountInt := cosmosMath.NewIntFromBigInt(request.BidAmount.BigInt())
-		coins := sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, amountInt))
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 		err = ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraRequestsModuleName, coins)
 		if err != nil {
 			return nil, err
@@ -806,8 +889,12 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 		return nil, err
 	}
 
+	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// If the topic does not have enough demand, return an error
-	if unmetDemand.LT(ms.k.GetMinTopicUnmetDemand(ctx)) {
+	if unmetDemand.LT(minTopicUnmentDemand) {
 		return nil, state.ErrTopicNotEnoughDemand
 	}
 
