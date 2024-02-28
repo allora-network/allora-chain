@@ -18,12 +18,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetNextTopicId",
-					Use:       "get-next-topic-id",
+					Use:       "next-topic-id",
 					Short:     "Get next topic id",
 				},
 				{
 					RpcMethod: "GetTopic",
-					Use:       "get-topic [topic_id]",
+					Use:       "topic [topic_id]",
 					Short:     "Get topic by topic id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -31,17 +31,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetActiveTopics",
-					Use:       "get-active-topics",
+					Use:       "active-topics",
 					Short:     "Get Active Topics",
 				},
 				{
 					RpcMethod: "GetAllTopics",
-					Use:       "get-all-topics",
+					Use:       "all-topics",
 					Short:     "Get the full list of all topics created on the network",
 				},
 				{
 					RpcMethod: "GetTopicsByCreator",
-					Use:       "get-topics-by-creator [creator]",
+					Use:       "topics-by-creator [creator]",
 					Short:     "Get Topics by Creator",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -49,7 +49,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetAccountStakeList",
-					Use:       "get-account-stake-list [address]",
+					Use:       "account-stake-list [address]",
 					Short:     "Get Account Stake List",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
@@ -57,7 +57,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetWeight",
-					Use:       "get-weight [topic_id] [reputer] [worker]",
+					Use:       "weight [topic_id] [reputer] [worker]",
 					Short:     "Get Weight From a Reputer to a Worker for a Topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -67,7 +67,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetAllInferences",
-					Use:       "get-inference [topic_id] [timestamp]",
+					Use:       "inference [topic_id] [timestamp]",
 					Short:     "Get Latest Inference for a Topic in a timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -76,7 +76,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetInferencesToScore",
-					Use:       "get-inferences-to-score [topic_id]",
+					Use:       "inferences-to-score [topic_id]",
 					Short:     "Get Latest Inferences for a Topic to be scored",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -84,15 +84,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetWorkerNodeRegistration",
-					Use:       "inference-nodes [owner|libp2p-pub-key]",
-					Short:     "Get Latest Inference From Worker for a Topic",
+					Use:       "worker-registration [owner|libp2p-pub-key]",
+					Short:     "Get registration for worker node id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "node_id"},
 					},
 				},
 				{
 					RpcMethod: "GetWorkerAddressByP2PKey",
-					Use:       "get-inference-node [libp2p_key]",
+					Use:       "worker-address [libp2p_key]",
 					Short:     "Get Worker Address by libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "libp2p_key"},
@@ -100,7 +100,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetExistingInferenceRequest",
-					Use:       "get-inference-request [topic_id] [request_id]",
+					Use:       "inference-request [topic_id] [request_id]",
 					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -109,12 +109,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetAllExistingInferenceRequests",
-					Use:       "get-all-inference-requests",
+					Use:       "all-inference-requests",
 					Short:     "Get All Inference Requests and demand left for each request in mempool",
 				},
 				{
 					RpcMethod: "GetTopicUnmetDemand",
-					Use:       "get-topic-unmet-demand [topic_id]",
+					Use:       "topic-unmet-demand [topic_id]",
 					Short:     "Get Topic Unmet Demand",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
