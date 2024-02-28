@@ -10,7 +10,6 @@ import (
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
-
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -154,6 +153,9 @@ func NewAlloraApp(
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
+
+	topicsHandler := NewTopicsHandler(app.emissionsKeeper)
+	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)
 

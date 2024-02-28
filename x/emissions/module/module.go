@@ -4,11 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 
 	"cosmossdk.io/core/appmodule"
-	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
@@ -18,6 +15,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 )
 
 var (
@@ -128,7 +126,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, currentTime)
+	_, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, currentTime)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
@@ -162,60 +160,6 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 			panic(err)
 		}
 	}
-
-	var wg sync.WaitGroup
-	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	// Within each loop, execute the inference and weight cadence checks
-	for _, topic := range topTopicsActiveWithDemand {
-		// Parallelize the inference and weight cadence checks
-		wg.Add(1)
-		go func(topic state.Topic) {
-			defer wg.Done()
-			// Check the cadence of inferences
-			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
-					topic.Id,
-					topic.Metadata,
-					topic.DefaultArg)
-
-				go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id)
-
-				// Update the last inference ran
-				err = am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
-				if err != nil {
-					fmt.Println("Error updating last inference ran: ", err)
-				}
-			}
-
-			// Check the cadence of weight calculations
-			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-				fmt.Printf("Weight cadence met for topic: %v metadata: %s default arg: %s \n", topic.Id, topic.Metadata, topic.DefaultArg)
-
-				// Get Latest Weights
-				weights, err := am.keeper.GetWeightsFromTopic(sdkCtx, topic.Id)
-				if err != nil {
-					fmt.Println("Error getting latest weights: ", err)
-					return
-				}
-
-				// Get Lastest Inference
-				inferences, err := am.keeper.GetLatestInferencesFromTopic(sdkCtx, topic.Id)
-				if err != nil {
-					fmt.Println("Error getting latest inferences: ", err)
-					return
-				}
-
-				go generateWeights(weights, inferences, topic.WeightLogic, topic.WeightMethod, topic.Id)
-
-				// Update the last weight ran
-				err = am.keeper.UpdateTopicWeightLastRan(sdkCtx, topic.Id, currentTime)
-				if err != nil {
-					fmt.Println("Error updating last weight ran: ", err)
-				}
-			}
-		}(topic)
-	}
-	wg.Wait()
 
 	return nil
 }
