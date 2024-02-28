@@ -120,6 +120,30 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetAccumulatedEpochRewards",
+					Use:       "accumulated-epoch-rewards",
+					Short:     "Get the accumlated rewards for the current epoch that have not yet been paid out to network participants",
+				},
+				{
+					RpcMethod: "GetLastRewardsUpdate",
+					Use:       "last-rewards-update",
+					Short:     "Get timestamp of the last rewards update",
+				},
+				{
+					RpcMethod: "GetRegisteredTopicIds",
+					Use:       "registered-topic-ids [address] [bool is_reputer]",
+					Short:     "Get the list of topics that a reputer or worker is registered to",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
+						{ProtoField: "is_reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetTotalStake",
+					Use:       "total-stake",
+					Short:     "Get the total amount of staked tokens by all participants in the network",
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
@@ -152,13 +176,13 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [creator] [lib_p2p_key] [multi_address] [topics_ids] [initial_stake] [owner] [is_reputer]",
+					Use:       "register [creator] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
-						{ProtoField: "topics_ids"},
+						{ProtoField: "topic_ids"},
 						{ProtoField: "initial_stake"},
 						{ProtoField: "owner"},
 						{ProtoField: "is_reputer"},

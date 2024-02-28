@@ -165,7 +165,7 @@ message MsgRegister {
   string creator = 1;
   string lib_p2p_key = 2;
   string multi_address = 3;
-  repeated uint64 topics_ids = 4;
+  repeated uint64 topic_ids = 4;
   string initial_stake = 5 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",

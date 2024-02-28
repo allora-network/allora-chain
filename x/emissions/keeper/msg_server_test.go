@@ -131,7 +131,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -153,7 +153,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -174,7 +174,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -199,7 +199,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -251,7 +251,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Check Address Topics
 	// Should have two topics
-	addressTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(ctx, reputerAddr)
+	addressTopics, err := s.emissionsKeeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddr)
 	require.NoError(err)
 	require.Equal(2, len(addressTopics), "Address topics count mismatch")
 
@@ -288,7 +288,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Check Address Topics
 	// Should have only one topic
-	addressTopics, err = s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(ctx, reputerAddr)
+	addressTopics, err = s.emissionsKeeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddr)
 	require.NoError(err)
 	require.Equal(1, len(addressTopics), "Address topics count mismatch")
 }
@@ -336,7 +336,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Check Address Topics
 	// Should have two topics
-	addressTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByWorkerAddress(ctx, workerAddr)
+	addressTopics, err := s.emissionsKeeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddr)
 	require.NoError(err)
 	require.Equal(2, len(addressTopics), "Address topics count mismatch")
 
@@ -372,7 +372,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Check Address Topics
 	// Should have only one topic
-	addressTopics, err = s.emissionsKeeper.GetRegisteredTopicsIdsByWorkerAddress(ctx, workerAddr)
+	addressTopics, err = s.emissionsKeeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddr)
 	require.NoError(err)
 	require.Equal(1, len(addressTopics), "Address topics count mismatch")
 }
@@ -405,7 +405,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidTopicNotExist() {
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
@@ -429,7 +429,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidAlreadyRegistered() {
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
@@ -668,7 +668,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -681,7 +681,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		Owner:        workerAddr.String(),
 	}
@@ -1214,9 +1214,9 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveStake() {
 		TimestampRemovalStarted: timeNow - 1000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
-				TopicsIds: []uint64{0},
-				Target:    workerAddr.String(),
-				Amount:    removalAmount,
+				TopicIds: []uint64{0},
+				Target:   workerAddr.String(),
+				Amount:   removalAmount,
 			},
 		},
 	})
@@ -1546,9 +1546,9 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooEarly() {
 		TimestampRemovalStarted: timeNow + 1000000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
-				TopicsIds: []uint64{0},
-				Target:    reputerAddr.String(),
-				Amount:    registrationInitialStake,
+				TopicIds: []uint64{0},
+				Target:   reputerAddr.String(),
+				Amount:   registrationInitialStake,
 			},
 		},
 	})
@@ -1580,9 +1580,9 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooLate() {
 		TimestampRemovalStarted: 0,
 		Placements: []*state.StakeRemovalPlacement{
 			{
-				TopicsIds: []uint64{0},
-				Target:    reputerAddr.String(),
-				Amount:    registrationInitialStake,
+				TopicIds: []uint64{0},
+				Target:   reputerAddr.String(),
+				Amount:   registrationInitialStake,
 			},
 		},
 	})
@@ -1765,7 +1765,7 @@ func (s *KeeperTestSuite) TestModifyStakeInvalidNotHaveEnoughBond() {
 		Creator:      worker2,
 		LibP2PKey:    "test2",
 		MultiAddress: "test2",
-		TopicsIds:    []uint64{0},
+		TopicIds:     []uint64{0},
 		InitialStake: registrationInitialStake,
 		Owner:        worker2,
 	}
