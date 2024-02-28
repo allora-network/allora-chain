@@ -51,3 +51,19 @@ func CreateNewInferenceRequestFromListItem(sender string, item *RequestInference
 	}
 	return newInferenceRequest
 }
+
+func IsValidRequestId(requestId string) bool {
+	if len(requestId) != 66 {
+		return false
+	}
+	if requestId[:2] != "0x" {
+		return false
+	}
+	for _, c := range requestId[2:] {
+		// we only allow lowercase hex
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	return true
+}

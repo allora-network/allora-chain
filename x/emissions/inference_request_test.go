@@ -68,3 +68,24 @@ func TestInferenceRequest_GetRequestIdDifferentHash(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, expectedRequestId, requestId)
 }
+
+func TestIsValidRequestId(t *testing.T) {
+	testCasesInvalid := [4]string{
+		"",
+		"0x3ed3fBee9d2b2dd644621e4b681d5dd9675400049bb76baede120847be8c0430",
+		"0x3ed3fBee9d2b2dd644621e4b681d5dd9675400049bb76baede120847be8c043O",
+		"3ed3fbee9d2b2dd644621e4b681d5dd9675400049bb76baede120847be8c0430",
+	}
+	testCasesValid := [4]string{
+		"0x3ed3fbee9d2b2dd644621e4b681d5dd9675400049bb76baede120847be8c0430",
+		"0x2babfffe58eb0fdad2830d9b1c4c4a97db9f0682c5530230305daa5967857f37",
+		"0x0000000000000000000000000000000000000000000000000000000000000000",
+		"0xfeedfacecafebabedeadbeefbadd1e5f00ba5c0ffee1baddecafbeefbadd1e59",
+	}
+	for _, testCase := range testCasesInvalid {
+		require.False(t, emissions.IsValidRequestId(testCase))
+	}
+	for _, testCase := range testCasesValid {
+		require.True(t, emissions.IsValidRequestId(testCase))
+	}
+}

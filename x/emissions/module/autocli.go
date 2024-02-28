@@ -93,6 +93,28 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "libp2p_key"},
 					},
 				},
+				{
+					RpcMethod: "GetExistingInferenceRequest",
+					Use:       "get-inference-request [topic_id] [request_id]",
+					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "request_id"},
+					},
+				},
+				{
+					RpcMethod: "GetAllExistingInferenceRequests",
+					Use:       "get-all-inference-requests",
+					Short:     "Get All Inference Requests and demand left for each request in mempool",
+				},
+				{
+					RpcMethod: "GetTopicUnmetDemand",
+					Use:       "get-topic-unmet-demand [topic_id]",
+					Short:     "Get Topic Unmet Demand",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
