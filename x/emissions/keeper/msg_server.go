@@ -235,15 +235,15 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 	if err != nil {
 		return nil, err
 	}
-	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	if len(registeredTopicsIds) > 0 {
+	if len(registeredTopicIds) > 0 {
 		return nil, state.ErrAddressAlreadyRegisteredInATopic
 	}
 
-	for _, topicId := range msg.TopicsIds {
+	for _, topicId := range msg.TopicIds {
 		// check if topic exists
 		topicExists, err := ms.k.TopicExists(ctx, topicId)
 		if !topicExists {
@@ -265,7 +265,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 	if msg.IsReputer {
 		// add node to topicReputers
 		// add node to reputers
-		err = ms.k.InsertReputer(ctx, msg.TopicsIds, address, nodeInfo)
+		err = ms.k.InsertReputer(ctx, msg.TopicIds, address, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -278,7 +278,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 
 		// add node to topicWorkers
 		// add node to workers
-		err = ms.k.InsertWorker(ctx, msg.TopicsIds, address, nodeInfo)
+		err = ms.k.InsertWorker(ctx, msg.TopicIds, address, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -304,11 +304,11 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 	} else if !topicExists {
 		return nil, state.ErrTopicDoesNotExist
 	}
-	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
-	if len(registeredTopicsIds) == 0 {
+	if len(registeredTopicIds) == 0 {
 		return nil, state.ErrAddressIsNotRegisteredInAnyTopic
 	}
 
@@ -332,11 +332,11 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 
 	if msg.IsReputer {
 		// get topics where the users is registered as reputer
-		reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByReputerAddress(ctx, address)
+		reputerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdByReputerAddress(ctx, address)
 		if err != nil {
 			return nil, err
 		}
-		for _, topicIdRegistered := range reputerRegisteredTopicsIds {
+		for _, topicIdRegistered := range reputerRegisteredTopicIds {
 			if topicIdRegistered == msg.TopicId {
 				return nil, state.ErrReputerAlreadyRegisteredInTopic
 			}
@@ -349,11 +349,11 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		}
 	} else {
 		// get topics where the users is registered as worker
-		reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, address)
+		reputerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdsByWorkerAddress(ctx, address)
 		if err != nil {
 			return nil, err
 		}
-		for _, topicIdRegistered := range reputerRegisteredTopicsIds {
+		for _, topicIdRegistered := range reputerRegisteredTopicIds {
 			if topicIdRegistered == msg.TopicId {
 				return nil, state.ErrReputerAlreadyRegisteredInTopic
 			}
@@ -387,12 +387,12 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 	if err != nil {
 		return nil, err
 	}
-	registeredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
 	isRegisteredInTopic := false
-	for _, topicId := range registeredTopicsIds {
+	for _, topicId := range registeredTopicIds {
 		if topicId == msg.TopicId {
 			isRegisteredInTopic = true
 			break
@@ -466,13 +466,13 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingModuleName, coins)
 
 	// 5. get target topics Registerd
-	topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	// 6. update the stake data structures
-	err = ms.k.AddStake(ctx, topicsIds, msg.Sender, msg.StakeTarget, msg.Amount)
+	err = ms.k.AddStake(ctx, TopicIds, msg.Sender, msg.StakeTarget, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -545,12 +545,12 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 
-		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
 		if err != nil {
 			return nil, err
 		}
 
-		err = ms.k.RemoveStakeFromTopics(ctx, topicsIds, stakeBefore.Amount)
+		err = ms.k.RemoveStakeFromTopics(ctx, TopicIds, stakeBefore.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -569,12 +569,12 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 			return nil, err
 		}
 
-		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
 		if err != nil {
 			return nil, err
 		}
 
-		err = ms.k.AddStakeToTopics(ctx, topicsIds, stakeAfter.Amount)
+		err = ms.k.AddStakeToTopics(ctx, TopicIds, stakeAfter.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -615,7 +615,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		}
 
 		// 4. get topics ids where the target is registered
-		topicsIds, err := ms.k.GetRegisteredTopicsIdsByAddress(ctx, targetAddr)
+		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -628,15 +628,15 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		}
 		if senderAddr.String() == targetAddr.String() &&
 			stakePlaced.Sub(stakePlacement.Amount).LT(requiredMinimumStake) &&
-			len(topicsIds) > 0 {
+			len(TopicIds) > 0 {
 			return nil, state.ErrInsufficientStakeAfterRemoval
 		}
 
 		// 7. push to the stake removal object
 		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
-			TopicsIds: topicsIds,
-			Target:    stakePlacement.Target,
-			Amount:    stakePlacement.Amount,
+			TopicIds: TopicIds,
+			Target:   stakePlacement.Target,
+			Amount:   stakePlacement.Amount,
 		})
 	}
 	// 8. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
@@ -690,7 +690,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
 
 		// 7. update the stake data structures
-		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicsIds, senderAddr, targetAddr, stakePlacement.Amount)
+		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicIds, senderAddr, targetAddr, stakePlacement.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -853,7 +853,7 @@ func moveFundsAddStake(
 	// add to stakeOwnedByDelegator
 	// add to stakePlacement
 	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetTopicsIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
+	err = ms.k.AddStake(ctx, msg.GetTopicIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
 	if err != nil {
 		return err
 	}
@@ -865,18 +865,18 @@ func moveFundsAddStake(
 // returns whether said node is a reputer or a worker
 func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress) error {
 
-	reputerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByReputerAddress(ctx, node)
+	reputerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdByReputerAddress(ctx, node)
 	if err != nil {
 		return err
 	}
-	if len(reputerRegisteredTopicsIds) > 0 {
+	if len(reputerRegisteredTopicIds) > 0 {
 		return nil
 	}
-	workerRegisteredTopicsIds, err := ms.k.GetRegisteredTopicsIdsByWorkerAddress(ctx, node)
+	workerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdsByWorkerAddress(ctx, node)
 	if err != nil {
 		return err
 	}
-	if len(workerRegisteredTopicsIds) > 0 {
+	if len(workerRegisteredTopicIds) > 0 {
 		return nil
 	}
 	return state.ErrAddressNotRegistered

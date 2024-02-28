@@ -479,7 +479,7 @@ func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*sta
 // AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
 func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
 	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return err
 	}
@@ -502,7 +502,7 @@ func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, n
 // RemoveAddressTopic removes a specified topic from the address's list of topics.
 func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
 	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicsIdsByAddress(ctx, address)
+	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return err
 	}
@@ -520,7 +520,7 @@ func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress,
 }
 
 // GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
-func (k *Keeper) GetRegisteredTopicsIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	topics, err := k.addressTopics.Get(ctx, address)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -532,8 +532,8 @@ func (k *Keeper) GetRegisteredTopicsIdsByAddress(ctx context.Context, address sd
 	return topics, nil
 }
 
-// GetRegisteredTopicsIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
-func (k *Keeper) GetRegisteredTopicsIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+// GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
+func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	var topicsByAddress []uint64
 
 	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
@@ -549,8 +549,8 @@ func (k *Keeper) GetRegisteredTopicsIdsByWorkerAddress(ctx context.Context, addr
 	return topicsByAddress, nil
 }
 
-// GetRegisteredTopicsIdsByReputerAddress returns a slice of all topics ids registered by a given reputer address.
-func (k *Keeper) GetRegisteredTopicsIdsByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+// GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
+func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	var topicsByAddress []uint64
 
 	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
@@ -665,7 +665,7 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*state.Topic, error) {
 // it places the stake upon target, from delegator, in amount.
 // it also updates the total stake for the subnet in question and the total global stake.
 // see comments in keeper.go data structures for examples of how the data structure tracking works
-func (k *Keeper) AddStake(ctx context.Context, topicsIds []TOPIC_ID, delegator string, target string, stake Uint) error {
+func (k *Keeper) AddStake(ctx context.Context, TopicIds []TOPIC_ID, delegator string, target string, stake Uint) error {
 
 	// if stake is zero this function is a no-op
 	if stake.IsZero() {
@@ -731,7 +731,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicsIds []TOPIC_ID, delegator s
 	}
 
 	// Update the sum topic stake for all topics
-	for _, topicId := range topicsIds {
+	for _, topicId := range TopicIds {
 		topicStake, err := k.topicStake.Get(ctx, topicId)
 		if err != nil {
 			if errors.Is(err, collections.ErrNotFound) {
@@ -784,7 +784,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicsIds []TOPIC_ID, delegator s
 // see comments in keeper.go data structures for examples of how the data structure tracking works
 func (k *Keeper) RemoveStakeFromBond(
 	ctx context.Context,
-	topicsIds []TOPIC_ID,
+	TopicIds []TOPIC_ID,
 	delegator sdk.AccAddress,
 	target sdk.AccAddress,
 	stake Uint) error {
@@ -805,7 +805,7 @@ func (k *Keeper) RemoveStakeFromBond(
 	// not necessary as long as callers are responsible, but it would be nice to have
 
 	// topicStake(topic) = topicStake(topic) - stake
-	for _, topic := range topicsIds {
+	for _, topic := range TopicIds {
 		topicStake, err := k.topicStake.Get(ctx, topic)
 		if err != nil {
 			return err
@@ -971,15 +971,15 @@ func (k *Keeper) AddStakePlacedUponTarget(ctx context.Context, target sdk.AccAdd
 }
 
 // Add stake into an array of topics
-func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
+func (k *Keeper) AddStakeToTopics(ctx context.Context, TopicIds []TOPIC_ID, stake Uint) error {
 	if stake.IsZero() {
 		return state.ErrDoNotSetMapValueToZero
 	}
 
 	// Calculate the total stake to be added across all topics
-	totalStakeToAdd := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+	totalStakeToAdd := stake.Mul(cosmosMath.NewUint(uint64(len(TopicIds))))
 
-	for _, topicId := range topicsIds {
+	for _, topicId := range TopicIds {
 		topicStake, err := k.topicStake.Get(ctx, topicId)
 		if err != nil {
 			if errors.Is(err, collections.ErrNotFound) {
@@ -1010,15 +1010,15 @@ func (k *Keeper) AddStakeToTopics(ctx context.Context, topicsIds []TOPIC_ID, sta
 }
 
 // Remove stake from an array of topics
-func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, topicsIds []TOPIC_ID, stake Uint) error {
+func (k *Keeper) RemoveStakeFromTopics(ctx context.Context, TopicIds []TOPIC_ID, stake Uint) error {
 	if stake.IsZero() {
 		return state.ErrDoNotSetMapValueToZero
 	}
 
 	// Calculate the total stake to be removed across all topics
-	totalStakeToRemove := stake.Mul(cosmosMath.NewUint(uint64(len(topicsIds))))
+	totalStakeToRemove := stake.Mul(cosmosMath.NewUint(uint64(len(TopicIds))))
 
-	for _, topicId := range topicsIds {
+	for _, topicId := range TopicIds {
 		topicStake, err := k.topicStake.Get(ctx, topicId)
 		if err != nil {
 			return err // If there's an error, it's not because the topic doesn't exist but some other reason
@@ -1188,8 +1188,8 @@ func (k *Keeper) UpdateTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID,
 }
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicsIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
-	for _, topicId := range topicsIds {
+func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
+	for _, topicId := range TopicIds {
 		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
 		err := k.topicReputers.Set(ctx, topicKey)
 		if err != nil {
@@ -1200,7 +1200,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicsIds []TOPIC_ID, repute
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, reputer, topicsIds)
+	err = k.AddAddressTopics(ctx, reputer, TopicIds)
 	if err != nil {
 		return err
 	}
@@ -1240,8 +1240,8 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TOPIC_ID, workerAddr 
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicsIds []TOPIC_ID, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
-	for _, topicId := range topicsIds {
+func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TOPIC_ID, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
+	for _, topicId := range TopicIds {
 		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
 		err := k.topicWorkers.Set(ctx, topickey)
 		if err != nil {
@@ -1252,7 +1252,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicsIds []TOPIC_ID, worker 
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, worker, topicsIds)
+	err = k.AddAddressTopics(ctx, worker, TopicIds)
 	if err != nil {
 		return err
 	}
