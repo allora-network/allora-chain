@@ -227,7 +227,7 @@ func (qs queryServer) GetRegisteredTopicsIds(ctx context.Context, req *state.Que
 	return &state.QueryRegisteredTopicsIdsResponse{TopicsIds: topicsIds}, nil
 }
 
-func (qs queryServer) GetInferenceRequest(ctx context.Context, req *state.QueryInferenceRequestRequest) (*state.QueryInferenceRequestResponse, error) {
+func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *state.QueryExistingInferenceRequest) (*state.QueryExistingInferenceResponse, error) {
 	valid := state.IsValidRequestId(req.RequestId)
 	if !valid {
 		return nil, state.ErrInvalidRequestId
@@ -247,10 +247,10 @@ func (qs queryServer) GetInferenceRequest(ctx context.Context, req *state.QueryI
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryInferenceRequestResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
+	return &state.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
 }
 
-func (qs queryServer) GetAllInferenceRequests(ctx context.Context, req *state.QueryAllInferenceRequestsRequest) (*state.QueryAllInferenceRequestsResponse, error) {
+func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *state.QueryAllExistingInferenceRequest) (*state.QueryAllExistingInferenceResponse, error) {
 	ret := make([]*state.InferenceRequestAndDemandLeft, 0)
 	mempool, err := qs.k.GetMempool(ctx)
 	if err != nil {
@@ -267,7 +267,7 @@ func (qs queryServer) GetAllInferenceRequests(ctx context.Context, req *state.Qu
 		}
 		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft})
 	}
-	return &state.QueryAllInferenceRequestsResponse{InferenceRequests: ret}, nil
+	return &state.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
 }
 
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *state.QueryTopicUnmetDemandRequest) (*state.QueryTopicUnmetDemandResponse, error) {

@@ -60,13 +60,13 @@ service Query {
       "/emissions/state/v1/weights/{topic_id}/{reputer}/{worker}";
   }
 
-  rpc GetInferenceRequest(QueryInferenceRequestRequest) returns (QueryInferenceRequestResponse) {
+  rpc GetExistingInferenceRequest(QueryExistingInferenceRequest) returns (QueryExistingInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
       "/emissions/state/v1/inferences/requests/{request_id}";
   }
 
-  rpc GetAllInferenceRequests(QueryAllInferenceRequestsRequest) returns (QueryAllInferenceRequestsResponse) {
+  rpc GetAllExistingInferenceRequests(QueryAllExistingInferenceRequest) returns (QueryAllExistingInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
       "/emissions/state/v1/inferences/all_requests";
@@ -278,12 +278,12 @@ message QueryWorkerAddressByP2PKeyResponse {
   string address = 1;
 }
 
-message QueryInferenceRequestRequest {
+message QueryExistingInferenceRequest {
   string request_id = 1;
   uint64 topic_id = 2;
 }
 
-message QueryInferenceRequestResponse {
+message QueryExistingInferenceResponse {
   InferenceRequest inference_request = 1;
   string demand_left = 2 [
     (cosmos_proto.scalar)  = "cosmos.Uint",
@@ -293,7 +293,7 @@ message QueryInferenceRequestResponse {
   ]; 
 }
 
-message QueryAllInferenceRequestsRequest {}
+message QueryAllExistingInferenceRequest {}
 
 message InferenceRequestAndDemandLeft {
   InferenceRequest inference_request = 1;
@@ -305,7 +305,7 @@ message InferenceRequestAndDemandLeft {
   ]; 
 }
 
-message QueryAllInferenceRequestsResponse {
+message QueryAllExistingInferenceResponse {
   repeated InferenceRequestAndDemandLeft inference_requests = 1;
 }
 
