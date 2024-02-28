@@ -35,6 +35,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get Active Topics",
 				},
 				{
+					RpcMethod: "GetAllTopics",
+					Use:       "get-all-topics",
+					Short:     "Get the full list of all topics created on the network",
+				},
+				{
 					RpcMethod: "GetTopicsByCreator",
 					Use:       "get-topics-by-creator [creator]",
 					Short:     "Get Topics by Creator",

@@ -48,6 +48,12 @@ service Query {
       "/emissions/state/v1/active_topics";
   }
 
+  rpc GetAllTopics(QueryAllTopicsRequest) returns (QueryAllTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+      "/emissions/state/v1/all_topics";
+  }
+
   rpc GetTopicsByCreator(QueryGetTopicsByCreatorRequest) returns (QueryGetTopicsByCreatorResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
@@ -199,6 +205,13 @@ message QueryActiveTopicsRequest {
 }
 
 message QueryActiveTopicsResponse {
+  repeated Topic topics = 1;
+}
+
+message QueryAllTopicsRequest {
+}
+
+message QueryAllTopicsResponse {
   repeated Topic topics = 1;
 }
 

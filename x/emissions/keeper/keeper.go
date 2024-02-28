@@ -613,9 +613,27 @@ func (k *Keeper) IncrementTopicId(ctx context.Context) (TOPIC_ID, error) {
 	return k.nextTopicId.Next(ctx)
 }
 
+// Gets topic by topicId
+func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (state.Topic, error) {
+	return k.topics.Get(ctx, topicId)
+}
+
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Topic) error {
 	return k.topics.Set(ctx, topicId, topic)
+}
+
+// Gets every topic
+func (k *Keeper) GetAllTopics(ctx context.Context) ([]*state.Topic, error) {
+	var allTopics []*state.Topic
+	err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic state.Topic) (bool, error) {
+		allTopics = append(allTopics, &topic)
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return allTopics, nil
 }
 
 // Checks if a topic exists
@@ -1616,10 +1634,6 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (state.Topic, error) {
-	return k.topics.Get(ctx, topicId)
 }
 
 //

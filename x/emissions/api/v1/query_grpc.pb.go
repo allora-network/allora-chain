@@ -25,6 +25,7 @@ const (
 	Query_GetNextTopicId_FullMethodName                  = "/emissions.state.v1.Query/GetNextTopicId"
 	Query_GetTopic_FullMethodName                        = "/emissions.state.v1.Query/GetTopic"
 	Query_GetActiveTopics_FullMethodName                 = "/emissions.state.v1.Query/GetActiveTopics"
+	Query_GetAllTopics_FullMethodName                    = "/emissions.state.v1.Query/GetAllTopics"
 	Query_GetTopicsByCreator_FullMethodName              = "/emissions.state.v1.Query/GetTopicsByCreator"
 	Query_GetWeight_FullMethodName                       = "/emissions.state.v1.Query/GetWeight"
 	Query_GetExistingInferenceRequest_FullMethodName     = "/emissions.state.v1.Query/GetExistingInferenceRequest"
@@ -50,6 +51,7 @@ type QueryClient interface {
 	GetNextTopicId(ctx context.Context, in *QueryNextTopicIdRequest, opts ...grpc.CallOption) (*QueryNextTopicIdResponse, error)
 	GetTopic(ctx context.Context, in *QueryTopicRequest, opts ...grpc.CallOption) (*QueryTopicResponse, error)
 	GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error)
+	GetAllTopics(ctx context.Context, in *QueryAllTopicsRequest, opts ...grpc.CallOption) (*QueryAllTopicsResponse, error)
 	GetTopicsByCreator(ctx context.Context, in *QueryGetTopicsByCreatorRequest, opts ...grpc.CallOption) (*QueryGetTopicsByCreatorResponse, error)
 	GetWeight(ctx context.Context, in *QueryWeightRequest, opts ...grpc.CallOption) (*QueryWeightResponse, error)
 	GetExistingInferenceRequest(ctx context.Context, in *QueryExistingInferenceRequest, opts ...grpc.CallOption) (*QueryExistingInferenceResponse, error)
@@ -120,6 +122,15 @@ func (c *queryClient) GetTopic(ctx context.Context, in *QueryTopicRequest, opts 
 func (c *queryClient) GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error) {
 	out := new(QueryActiveTopicsResponse)
 	err := c.cc.Invoke(ctx, Query_GetActiveTopics_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetAllTopics(ctx context.Context, in *QueryAllTopicsRequest, opts ...grpc.CallOption) (*QueryAllTopicsResponse, error) {
+	out := new(QueryAllTopicsResponse)
+	err := c.cc.Invoke(ctx, Query_GetAllTopics_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +256,7 @@ type QueryServer interface {
 	GetNextTopicId(context.Context, *QueryNextTopicIdRequest) (*QueryNextTopicIdResponse, error)
 	GetTopic(context.Context, *QueryTopicRequest) (*QueryTopicResponse, error)
 	GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error)
+	GetAllTopics(context.Context, *QueryAllTopicsRequest) (*QueryAllTopicsResponse, error)
 	GetTopicsByCreator(context.Context, *QueryGetTopicsByCreatorRequest) (*QueryGetTopicsByCreatorResponse, error)
 	GetWeight(context.Context, *QueryWeightRequest) (*QueryWeightResponse, error)
 	GetExistingInferenceRequest(context.Context, *QueryExistingInferenceRequest) (*QueryExistingInferenceResponse, error)
@@ -281,6 +293,9 @@ func (UnimplementedQueryServer) GetTopic(context.Context, *QueryTopicRequest) (*
 }
 func (UnimplementedQueryServer) GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTopics not implemented")
+}
+func (UnimplementedQueryServer) GetAllTopics(context.Context, *QueryAllTopicsRequest) (*QueryAllTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTopics not implemented")
 }
 func (UnimplementedQueryServer) GetTopicsByCreator(context.Context, *QueryGetTopicsByCreatorRequest) (*QueryGetTopicsByCreatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicsByCreator not implemented")
@@ -435,6 +450,24 @@ func _Query_GetActiveTopics_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetActiveTopics(ctx, req.(*QueryActiveTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetAllTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetAllTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetAllTopics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetAllTopics(ctx, req.(*QueryAllTopicsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -685,6 +718,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActiveTopics",
 			Handler:    _Query_GetActiveTopics_Handler,
+		},
+		{
+			MethodName: "GetAllTopics",
+			Handler:    _Query_GetAllTopics_Handler,
 		},
 		{
 			MethodName: "GetTopicsByCreator",
