@@ -125,7 +125,7 @@ func (s *ModuleTestSuite) TestRegisterReputer() {
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: amount,
 		IsReputer:    true,
 	})
@@ -136,7 +136,7 @@ func (s *ModuleTestSuite) TestRegisterReputer() {
 	}
 	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
 
-	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByReputerAddress(s.ctx, addr)
+	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdByReputerAddress(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
 
@@ -149,7 +149,7 @@ func (s *ModuleTestSuite) TestRegisterWorker() {
 		Creator:      addr.String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: amount,
 		Owner:        addr.String(),
 	})
@@ -160,7 +160,7 @@ func (s *ModuleTestSuite) TestRegisterWorker() {
 	}
 	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
 
-	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicsIdsByWorkerAddress(s.ctx, addr)
+	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdsByWorkerAddress(s.ctx, addr)
 	s.Require().NoError(err)
 	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
 	registerCommonAfter(s, topicId, addr, amount)

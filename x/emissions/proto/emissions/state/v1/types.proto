@@ -137,7 +137,7 @@ message StakePlacement {
 }
 
 message StakeRemovalPlacement {
-  repeated uint64 topics_ids = 1;
+  repeated uint64 topic_ids = 1;
   string target = 2;
   string amount = 3 [
     (cosmos_proto.scalar)  = "cosmos.Uint",

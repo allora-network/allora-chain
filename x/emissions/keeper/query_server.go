@@ -210,7 +210,7 @@ func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *state.Q
 	return &state.QueryWorkerAddressByP2PKeyResponse{Address: workerAddr.String()}, nil
 }
 
-func (qs queryServer) GetRegisteredTopicsIds(ctx context.Context, req *state.QueryRegisteredTopicsIdsRequest) (*state.QueryRegisteredTopicsIdsResponse, error) {
+func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *state.QueryRegisteredTopicIdsRequest) (*state.QueryRegisteredTopicIdsResponse, error) {
 	if req == nil {
 		return nil, fmt.Errorf("received nil request")
 	}
@@ -220,20 +220,20 @@ func (qs queryServer) GetRegisteredTopicsIds(ctx context.Context, req *state.Que
 		return nil, err
 	}
 
-	var topicsIds []uint64
+	var TopicIds []uint64
 	if req.IsReputer {
-		topicsIds, err = qs.k.GetRegisteredTopicsIdsByReputerAddress(ctx.(sdk.Context), address)
+		TopicIds, err = qs.k.GetRegisteredTopicIdByReputerAddress(ctx.(sdk.Context), address)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		topicsIds, err = qs.k.GetRegisteredTopicsIdsByWorkerAddress(ctx.(sdk.Context), address)
+		TopicIds, err = qs.k.GetRegisteredTopicIdsByWorkerAddress(ctx.(sdk.Context), address)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &state.QueryRegisteredTopicsIdsResponse{TopicsIds: topicsIds}, nil
+	return &state.QueryRegisteredTopicIdsResponse{TopicIds: TopicIds}, nil
 }
 
 func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *state.QueryExistingInferenceRequest) (*state.QueryExistingInferenceResponse, error) {

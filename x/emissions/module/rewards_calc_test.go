@@ -276,7 +276,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 		Creator:      reputerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt()),
 		IsReputer:    true,
 	})
@@ -287,7 +287,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 		Creator:      reputerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyReputer2",
 		MultiAddress: "multiaddressReputer2",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[1].BigInt()),
 		IsReputer:    true,
 	})
@@ -319,7 +319,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 		Creator:      workerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyWorker1",
 		MultiAddress: "multiaddressWorker1",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[0].BigInt()),
 		Owner:        workerAddrs[0].String(),
 	})
@@ -330,7 +330,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 		Creator:      workerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyWorker2",
 		MultiAddress: "multiaddressWorker2",
-		TopicsIds:    []uint64{topicId},
+		TopicIds:     []uint64{topicId},
 		InitialStake: cosmosMath.NewUintFromBigInt(workerAmounts[1].BigInt()),
 		Owner:        workerAddrs[1].String(),
 	})
