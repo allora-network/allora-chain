@@ -74,6 +74,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			}(*topic)
 		}
 		wg.Wait()
-		return &abci.ResponsePrepareProposal{Txs: [][]byte{}}, nil
+		// Return the transactions as they came
+		return &abci.ResponsePrepareProposal{Txs: req.Txs}, nil
 	}
 }
