@@ -95,6 +95,15 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *state.QueryActiv
 	return &state.QueryActiveTopicsResponse{Topics: activeTopics}, nil
 }
 
+func (qs queryServer) GetAllTopics(ctx context.Context, req *state.QueryAllTopicsRequest) (*state.QueryAllTopicsResponse, error) {
+	topics, err := qs.k.GetAllTopics(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &state.QueryAllTopicsResponse{Topics: topics}, nil
+}
+
 // GetTopicsByCreator retrieves a list of topics created by a given address.
 func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *state.QueryGetTopicsByCreatorRequest) (*state.QueryGetTopicsByCreatorResponse, error) {
 	if req == nil {
