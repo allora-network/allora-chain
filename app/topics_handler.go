@@ -50,11 +50,11 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 				// Check the cadence of weight calculations
 				if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-					fmt.Printf("Triggering Weight cadence met for topic: %v metadata: %s default arg: %s \n", 
-						topic.Id, 
-						topic.Metadata, 
+					fmt.Printf("Triggering Weight cadence met for topic: %v metadata: %s default arg: %s \n",
+						topic.Id,
+						topic.Metadata,
 						topic.DefaultArg)
-		
+
 					// Get Latest Weights
 					weights, err := th.emissionsKeeper.GetWeightsFromTopic(ctx, topic.Id)
 					fmt.Println("Error getting latest weights: ", err)
