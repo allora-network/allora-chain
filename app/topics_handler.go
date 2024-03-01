@@ -24,7 +24,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentTime := uint64(ctx.BlockTime().Unix())
-		activeTopics, err := th.emissionsKeeper.GetActiveTopics(ctx)
+		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting active topics and met demand: ", err)
 			return nil, err
@@ -33,7 +33,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for _, topic := range activeTopics {
+		for _, topic := range churnReadyTopics {
 			// Parallelize the inference and weight cadence checks
 			wg.Add(1)
 			go func(topic emissionstypes.Topic) {

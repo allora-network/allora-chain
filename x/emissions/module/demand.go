@@ -227,7 +227,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 
 	// Sort topics by topicBestPrices
 	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentTime)
-	//fmt.Println("Length sorted topics: ", len(sortedTopics))
+
 	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
 	if err != nil {
 		fmt.Println("Error getting max topics per block: ", err)
@@ -235,8 +235,15 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	}
 	// Take top keeper.MAX_TOPICS_PER_BLOCK number of topics with the highest demand
 	cutoff := uint(math.Min(float64(len(sortedTopics)), float64(maxTopicsPerBlock)))
-	//fmt.Println("Cutoff: ", cutoff)
+
 	topTopicsByReturn := sortedTopics[:cutoff]
+
+	// Reset Churn Ready Topics
+	err = k.ResetChurnReadyTopics(ctx)
+	if err != nil {
+		fmt.Println("Error resetting churn ready topics: ", err)
+		return nil, cosmosMath.Uint{}, err
+	}
 
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
@@ -282,6 +289,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			numRequestsServed++
 		}
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
+
+		// Set the topic as churn ready
+		err = k.SetChurnReadyTopic(ctx, topic.Id, topic)
+		if err != nil {
+			fmt.Println("Error setting churn ready topic: ", err)
+			return nil, cosmosMath.Uint{}, err
+		}
 	}
 
 	return topTopicsByReturn, totalFundsToDrawFromDemand, nil
