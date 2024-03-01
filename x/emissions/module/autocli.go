@@ -152,7 +152,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "UpdateParams",
 					Use:       "update-params [sender] [params]",
-					Short:     "Add a new topic to the network",
+					Short:     "Update params of the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "params"},
