@@ -2,13 +2,10 @@ package app
 
 import (
 	_ "embed"
-	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 
-	"cosmossdk.io/math"
-	abci "github.com/cometbft/cometbft/abci/types"
 	dbm "github.com/cosmos/cosmos-db"
 
 	"cosmossdk.io/core/appconfig"
@@ -24,7 +21,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -35,10 +31,9 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
+	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	"github.com/allora-network/allora-chain/inflation"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-
-	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
@@ -193,29 +188,6 @@ func (app *AlloraApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 // SimulationManager implements the SimulationApp interface
 func (app *AlloraApp) SimulationManager() *module.SimulationManager {
 	return app.sm
-}
-
-// InitChainer updates at chain initialization
-func (app *AlloraApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
-	var genesisState map[string]json.RawMessage
-	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
-		panic(err)
-	}
-
-	var (
-		initialBlockRewardBTC = 50
-		blocksPerYear         = 6311520 //TODO: Check Block Time --> BTC is actually 52560 (10min)
-		totalALLORA           = 21000000
-		initialProvisions     = math.LegacyNewDec(int64(initialBlockRewardBTC * blocksPerYear))
-		initialInflation      = initialProvisions.QuoInt64(int64(totalALLORA))
-	)
-
-	app.MintKeeper.Minter.Set(ctx, minttypes.Minter{
-		Inflation:        initialInflation,
-		AnnualProvisions: initialProvisions,
-	})
-
-	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
