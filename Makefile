@@ -39,6 +39,3 @@ build:
 	mkdir -p $(BUILDDIR)/
 	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
-test-integration:
-	@echo "--> Running integration tests"
-	cd integration; go test -v ./...
