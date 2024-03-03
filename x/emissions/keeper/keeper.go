@@ -1523,6 +1523,14 @@ func (k *Keeper) GetParamsMinFastestAllowedCadence(ctx context.Context) (uint64,
 	return params.MinFastestAllowedCadence, nil
 }
 
+func (k *Keeper) GetParamsMinFastestWeightCadence(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MinFastestWeightCadence, nil
+}
+
 func (k *Keeper) GetParamsMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
