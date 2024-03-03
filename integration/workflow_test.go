@@ -47,7 +47,7 @@ func (s *WorkflowTestSuite) TestQueryNextTopicId() {
 	s.Require().NoError(err)
 	nextTopicId, err := target.NextTopicId.Int64()
 	s.Require().NoError(err)
-	s.Require().Less(nextTopicId, int64(0))
+	s.Require().Greater(nextTopicId, int64(0))
 }
 
 //func (s *WorkflowTestSuite) TestTopicCreate() {
