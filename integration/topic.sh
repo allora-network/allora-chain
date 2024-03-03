@@ -90,13 +90,13 @@ do
     COUNT_SLEEP=$((COUNT_SLEEP+1))
     sleep 1
   else
-    echo "The network has incremented the topic count, topic probably created successfully"
+    echo "The network has appears to have something in the mempool, inference request probably created successfully"
     MEMPOOL_INCREMENTED=true
     break
   fi
 done
 if [ "$MEMPOOL_INCREMENTED" = false ]; then
-  echo "The network failed to mine the topic inference request"
+  echo "The network failed to mine the inference request"
   exit 1
 fi
 
@@ -104,5 +104,6 @@ echo
 echo "reactivating the topic so the request will fire"
 
 $ALLORAD_BIN tx emissions reactivate-topic $RI_CREATOR 1 --yes;
+echo "not waiting for reactivate-topic"
 
 echo "Initial state setup complete"
