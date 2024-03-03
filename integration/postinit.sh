@@ -26,6 +26,15 @@ CONTINUE_LINE_NUM=$(($GENESIS_TOTAL_LINES-$CORE_TEAM_LINE_NUM+1))
 tail -n $CONTINUE_LINE_NUM $GENESIS >> $GENESIS.tmp
 mv $GENESIS.tmp $GENESIS
 
+echo "Turning on GRPC to HTTP RPC Gateway in app.toml config"
+APP_TOML=$HOME/.allorad/config/app.toml
+APP_TOML_TOTAL_LINES=$(wc -l $APP_TOML | cut -f 1 -d " ")
+GRPC_GATEWAY_LINE_NUM=$(grep -n "# Enable defines if the API server should be enabled." $APP_TOML | cut -f 1 -d ":")
+cat $APP_TOML | head -n $GRPC_GATEWAY_LINE_NUM > $APP_TOML.tmp
+echo "enable = true" >> $APP_TOML.tmp
+CONTINUE_LINE_NUM=$(($APP_TOML_TOTAL_LINES-$GRPC_GATEWAY_LINE_NUM-1))
+tail -n $CONTINUE_LINE_NUM $APP_TOML >> $APP_TOML.tmp
+mv $APP_TOML.tmp $APP_TOML
 
 echo "Starting allorad daemon and sleep for 3 seconds to let it start"
 $ALLORAD_BIN start & disown;
