@@ -19,3 +19,8 @@
 
 # Go workspace file
 go.work
+
+# Data folder
+data/
+# Account info
+*.account_info
