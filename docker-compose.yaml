@@ -17,15 +17,3 @@ services:
       - ./scripts/:/scripts
     user: "0:0"
     entrypoint: /scripts/l1_node.sh
-
-#     networks:
-#       localnet:
-#         # ipv4_address: 192.168.10.2
-
-# networks:
-#   localnet:
-#     # driver: bridge
-#     # ipam:
-#     #   driver: default
-#     #   config:
-#     #     - subnet: 192.168.10.0/25
