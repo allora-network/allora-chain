@@ -30,6 +30,11 @@ RUN apt update && \
       perl-base && \
     rm -rf /var/cache/apt/*
 
+#* Install dasel to work with json/yaml/toml configs
+ENV DASEL_VERSION="v2.6.0"
+ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
+RUN chmod a+x /usr/local/bin/dasel
+
 COPY --from=builder /go/bin/* /usr/local/bin/
 
 RUN groupadd -g 1001 ${USERNAME} \

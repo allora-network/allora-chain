@@ -52,6 +52,8 @@ type Keeper struct {
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics collections.Map[TOPIC_ID, state.Topic]
+	// every topics that has been churned and ready to get inferences in the block
+	churnReadyTopics collections.Item[state.TopicList]
 	// for a topic, what is every worker node that has registered to it?
 	topicWorkers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
@@ -179,6 +181,7 @@ func NewKeeper(
 		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
 		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
+		churnReadyTopics:           collections.NewItem(sb, state.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[state.TopicList](cdc)),
 		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
@@ -1523,6 +1526,14 @@ func (k *Keeper) GetParamsMinFastestAllowedCadence(ctx context.Context) (uint64,
 	return params.MinFastestAllowedCadence, nil
 }
 
+func (k *Keeper) GetParamsMinFastestWeightCadence(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MinFastestWeightCadence, nil
+}
+
 func (k *Keeper) GetParamsMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -1612,6 +1623,28 @@ func (k *Keeper) IncrementNumInferencesInRewardEpoch(ctx context.Context, topicI
 	}
 	newNumInferences := currentNumInferences.Add(cosmosMath.NewUint(1))
 	return k.numInferencesInRewardEpoch.Set(ctx, key, newNumInferences)
+}
+
+// Reset the mapping entirely. Should be called at the end of every block
+func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
+	return k.churnReadyTopics.Remove(ctx)
+}
+
+// Set a topic as churn ready
+func (k *Keeper) SetChurnReadyTopics(ctx context.Context, topicList state.TopicList) error {
+	return k.churnReadyTopics.Set(ctx, topicList)
+}
+
+// Get all churn ready topics
+func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (state.TopicList, error) {
+	topicList, err := k.churnReadyTopics.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return state.TopicList{}, nil
+		}
+		return state.TopicList{}, err
+	}
+	return topicList, nil
 }
 
 // Reset the mapping entirely. Should be called at the end of every reward epoch
