@@ -29,17 +29,12 @@ make init
 allorad start
 ```
 
-
-
-*NOTE:* The following commands will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
-
 ## Run a node
 `scripts/l1_node.sh`, you will see the log in the output of the script.
 
-## Run a node with docker compose
+*NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
 
-### Build docker image
-`docker compose build`
+## Run a node with docker compose
 
 ### Run
 `docker compose up`, add `-d` to run detached.
@@ -59,45 +54,32 @@ With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up
 
 1. run and sync a full allorad node, follow [the instructions]()
 
-2. Prepare an account & Fund it.
-    `l1_node.sh` script generates keys you can see its address 
+2. Wait until the node is fully synced
 
-If you don't have an account (wallet) on Lava yet, Refer to creating new accounts and the faucet.
-3. Stake & start validating
+Verify that your node has finished synching and it is caught up with the network
 
-Once your account is funded, run this to stake and start validating.
+`curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up`
+Wait until you see the output: "false"
 
-    Verify that your node has finished synching and it is caught up with the network
+3. Fund account.
 
-$current_lavad_binary status | jq .SyncInfo.catching_up
-# Wait until you see the output: "false"
+`l1_node.sh` script generates keys, you can find created account information in `data/*.account_info`. Get the address from the file and fund, on testnets you can use faucet `https://faucet.${NETWORK}.allora.network`.
 
-    Verify that your account has funds in it in order to perform staking
+4. Stake validator
 
-# Make sure you can see your account name in the keys list
-$current_lavad_binary keys list
+Here's an example with Values which starts with a stake of 10000000uallo.
 
-# Make sure you see your account has Lava tokens in it
-YOUR_ADDRESS=$($current_lavad_binary keys show -a $ACCOUNT_NAME)
-$current_lavad_binary query \
-    bank balances \
-    $YOUR_ADDRESS \
-    --denom ulava
+All the following command needs to be executed inside the validator container.
+Run `docker compose exec validator0 bash` to get shell of the validator.
 
-    Back up your validator's consensus key
+You can change `--moniker=...` with a human readable name you choose for your validator.
+and `--from=` - is the account name in the keyring, you can list all availble keys with `allorad --home=$APP_HOME keys --keyring-backend=test list`
 
-    A validator participates in the consensus by sending a message signed by a consensus key which is automatically generated when you first run a node. You must create a backup of this consensus key in case that you migrate your validator to another server or accidentally lose access to your validator.
-
-    A consensus key is stored as a json file in $lavad_home_folder/config/priv_validator_key.json by default, or a custom path specified in the parameter priv_validator_key_file of config.toml.
-
-    Stake validator
-
-Here's an example with Values which starts with a stake of 50000000ulava. Replace <<moniker_node>> With a human readable name you choose for your validator.
-
-$current_lavad_binary tx staking create-validator \
-    --amount="50000000ulava" \
-    --pubkey=$($current_lavad_binary tendermint show-validator --home "$HOME/.lava/") \
-    --moniker="<<moniker_node>>" \
+```bash
+allorad tx staking create-validator \
+    --amount="10000000uallo" \
+    --pubkey=$(allorad --home=$APP_HOME comet show-validator) \
+    --moniker="myvalidator" \
     --chain-id=lava-testnet-2 \
     --commission-rate="0.10" \
     --commission-max-rate="0.20" \
@@ -105,23 +87,48 @@ $current_lavad_binary tx staking create-validator \
     --min-self-delegation="10000" \
     --gas="auto" \
     --gas-adjustment "1.5" \
-    --gas-prices="0.05ulava" \
-    --home="$HOME/.lava/" \
-    --from=$ACCOUNT_NAME
+    --gas-prices="0.05uallo" \
+    --home="$APP_HOME" \
+    --from=validator0
+```
+if you see code: 0 in the output, the command was successful
 
-Once you have finished running the command above, if you see code: 0 in the output, the command was successful
+5. Verify validator setup
 
-    Verify validator setup
+### Check that the validator node is registered and staked
 
-block_time=60
-# Check that the validator node is registered and staked
-validator_pubkey=$($current_lavad_binary tendermint show-validator | jq .key | tr -d '"')
+```bash
+allorad --home=$APP_HOME q staking validators -o=json | \
+    jq '.validators[] | select(.consensus_pubkey.value=="$(allorad --home=$APP_HOME comet show-validator | jq -r .key)")'
+```
+- this command should return you all the information about the validator. Similar to the following:
+```
+{
+  "operator_address": "allovaloper1n8t4ffvwstysveuf3ccx9jqf3c6y7kte48qcxm",
+  "consensus_pubkey": {
+    "type": "tendermint/PubKeyEd25519",
+    "value": "gOl6fwPc19BtkmiOGjjharfe6eyniaxdkfyqiko3/cQ="
+  },
+  "status": 3,
+  "tokens": "1000000",
+  "delegator_shares": "1000000000000000000000000",
+  "description": {
+    "moniker": "val2"
+  },
+  "unbonding_time": "1970-01-01T00:00:00Z",
+  "commission": {
+    "commission_rates": {
+      "rate": "100000000000000000",
+      "max_rate": "200000000000000000",
+      "max_change_rate": "10000000000000000"
+    },
+    "update_time": "2024-02-26T22:50:31.187119394Z"
+  },
+  "min_self_delegation": "1"
+}
+```
+### Check the voting power of your validator node
+*NOTE:* please allow 30-60 seconds for the output to be updated
 
-$current_lavad_binary q staking validators | grep $validator_pubkey
-
-# Check the voting power of your validator node - please allow 30-60 seconds for the output to be updated
-sleep $block_time
-$current_lavad_binary status | jq .ValidatorInfo.VotingPower | tr -d '"'
-# Output should be > 0
-
-
+`allorad --home=$APP_HOME status | jq -r '.validator_info.voting_power'`
+- Output should be > 0

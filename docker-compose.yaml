@@ -7,6 +7,7 @@ services:
     image: "696230526504.dkr.ecr.us-east-1.amazonaws.com/allora-chain:v0.0.3"
     environment:
       - NETWORK=edgenet
+      - MONIKER=validator0
       - BLOCKLESS_API_URL=https://heads.edgenet.allora.network:8443
       - APP_HOME=/data
     ports:
