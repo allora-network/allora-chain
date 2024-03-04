@@ -71,6 +71,10 @@ message Topic {
   string default_arg = 13;
 }
 
+message TopicList {
+  repeated Topic topics = 1;
+}
+
 message Weight {
   option (gogoproto.equal) = true;
 
