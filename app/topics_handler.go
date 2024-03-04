@@ -33,7 +33,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for _, topic := range churnReadyTopics {
+		for _, topic := range churnReadyTopics.Topics {
 			// Parallelize the inference and weight cadence checks
 			wg.Add(1)
 			go func(topic emissionstypes.Topic) {

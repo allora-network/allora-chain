@@ -247,6 +247,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
+	var topicsToSetChurn []*state.Topic
 	for _, topic := range topTopicsByReturn {
 		// Log the accumulated met demand for each topic
 		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
@@ -289,13 +290,14 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			numRequestsServed++
 		}
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
+		topicsToSetChurn = append(topicsToSetChurn, &topic)
+	}
 
-		// Set the topic as churn ready
-		err = k.SetChurnReadyTopic(ctx, topic.Id, topic)
-		if err != nil {
-			fmt.Println("Error setting churn ready topic: ", err)
-			return nil, cosmosMath.Uint{}, err
-		}
+	// Set the topics as churn ready
+	err = k.SetChurnReadyTopics(ctx, state.TopicList{Topics: topicsToSetChurn})
+	if err != nil {
+		fmt.Println("Error setting churn ready topic: ", err)
+		return nil, cosmosMath.Uint{}, err
 	}
 
 	return topTopicsByReturn, totalFundsToDrawFromDemand, nil

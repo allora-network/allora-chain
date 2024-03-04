@@ -556,6 +556,12 @@ func (s *ModuleTestSuite) TestDemandFlowEndBlockConsumesSubscriptionLeavesDust()
 	// this thread has halted waiting for someone to send me a love letter
 	<-done
 
+	// check churn ready topics
+	churnReadyTopics, err := s.emissionsKeeper.GetChurnReadyTopics(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Len(churnReadyTopics.Topics, 1, "There should be 1 churn-ready topic after EndBlock")
+	s.Equal(churnReadyTopics.Topics[0].Id, createdTopicIds[0], "Topic should be in the list of churn-ready topic")
+
 	mempool, err = s.emissionsKeeper.GetMempool(s.ctx)
 	s.Require().NoError(err)
 	s.Require().Len(mempool, 0, "Mempool should be empty after EndBlock")
