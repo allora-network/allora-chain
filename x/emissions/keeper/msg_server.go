@@ -71,6 +71,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.MinFastestAllowedCadence) == 1 {
 		existingParams.MinFastestAllowedCadence = newParams.MinFastestAllowedCadence[0]
 	}
+	if len(newParams.MinFastestWeightCadence) == 1 {
+		existingParams.MinFastestWeightCadence = newParams.MinFastestWeightCadence[0]
+	}
 	if len(newParams.MaxInferenceRequestValidity) == 1 {
 		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
 	}
@@ -85,31 +88,47 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 }
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
+	fmt.Println("CreateNewTopic called with: ", msg)
 	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	fmt.Println("0")
 	if err != nil {
 		return nil, err
 	}
 	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
+	fmt.Println("0.2")
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("0.3")
 	if !isTopicCreator {
 		return nil, state.ErrNotInTopicCreationWhitelist
 	}
+	fmt.Println("1")
 
 	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("2")
 
-	if msg.InferenceCadence < 60 {
+	fastestCadence, err := ms.k.GetParamsMinFastestAllowedCadence(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if msg.InferenceCadence < fastestCadence {
 		return nil, state.ErrInferenceCadenceBelowMinimum
 	}
+	fmt.Println("3")
 
-	if msg.WeightCadence < 10800 {
+	weightFastestCadence, err := ms.k.GetParamsMinFastestWeightCadence(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if msg.WeightCadence < weightFastestCadence {
 		return nil, state.ErrWeightCadenceBelowMinimum
 	}
+	fmt.Println("4")
 
 	topic := state.Topic{
 		Id:               id,
@@ -130,9 +149,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("4")
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
 		return nil, err
 	}
+	fmt.Println("5")
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
