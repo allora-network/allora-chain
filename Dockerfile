@@ -5,9 +5,6 @@ ARG GH_TOKEN
 ADD . /src
 WORKDIR /src
 
-# Set up git for private repos
-RUN git config --global url."https://${GH_TOKEN}@github.com".insteadOf "https://github.com"
-ENV GOPRIVATE="github.com/allora-network/"
 RUN make install
 
 #==============================================================
@@ -39,7 +36,6 @@ ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_
 RUN chmod a+x /usr/local/bin/dasel
 
 COPY --from=builder /go/bin/* /usr/local/bin/
-COPY scripts/init.sh /init.sh
 
 RUN groupadd -g 1001 ${USERNAME} \
     && useradd -m -d ${APP_PATH} -u 1001 -g 1001 ${USERNAME}
