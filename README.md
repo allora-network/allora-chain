@@ -75,32 +75,42 @@ Run `docker compose exec validator0 bash` to get shell of the validator.
 You can change `--moniker=...` with a human readable name you choose for your validator.
 and `--from=` - is the account name in the keyring, you can list all availble keys with `allorad --home=$APP_HOME keys --keyring-backend=test list`
 
+Create stake info file:
 ```bash
-allorad tx staking create-validator \
-    --amount="10000000uallo" \
-    --pubkey=$(allorad --home=$APP_HOME comet show-validator) \
-    --moniker="myvalidator" \
-    --chain-id=lava-testnet-2 \
-    --commission-rate="0.10" \
-    --commission-max-rate="0.20" \
-    --commission-max-change-rate="0.01" \
-    --min-self-delegation="10000" \
-    --gas="auto" \
-    --gas-adjustment "1.5" \
-    --gas-prices="0.05uallo" \
+cat > stake-validator.json << EOF
+{
+    "pubkey": $(allorad --home=$APP_HOME comet show-validator),
+    "amount": "1000000uallo",
+    "moniker": "myvalidator",
+    "commission-rate": "0.1",
+    "commission-max-rate": "0.2",
+    "commission-max-change-rate": "0.01",
+    "min-self-delegation": "1"
+}
+EOF
+```
+
+Stake the validator
+```bash
+allorad tx staking create-validator ./stake-validator.json \
+    --chain-id=edgenet \
     --home="$APP_HOME" \
+    --keyring-backend=test \
     --from=validator0
 ```
-if you see code: 0 in the output, the command was successful
+The command will output tx hash, you can check its status in the explorer: `https://explorer.edgenet.allora.network:8443/allora-edgenet/tx/$TX_HASH`
+
 
 5. Verify validator setup
 
 ### Check that the validator node is registered and staked
 
 ```bash
+VAL_PUBKEY=$(allorad --home=$APP_HOME comet show-validator | jq -r .key)
 allorad --home=$APP_HOME q staking validators -o=json | \
-    jq '.validators[] | select(.consensus_pubkey.value=="$(allorad --home=$APP_HOME comet show-validator | jq -r .key)")'
+    jq '.validators[] | select(.consensus_pubkey.value=="'$VAL_PUBKEY'")'
 ```
+
 - this command should return you all the information about the validator. Similar to the following:
 ```
 {
