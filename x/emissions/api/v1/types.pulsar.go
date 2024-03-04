@@ -3216,6 +3216,500 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 	}
 }
 
+var _ protoreflect.List = (*_TopicList_1_list)(nil)
+
+type _TopicList_1_list struct {
+	list *[]*Topic
+}
+
+func (x *_TopicList_1_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_TopicList_1_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_TopicList_1_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Topic)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_TopicList_1_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Topic)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_TopicList_1_list) AppendMutable() protoreflect.Value {
+	v := new(Topic)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TopicList_1_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_TopicList_1_list) NewElement() protoreflect.Value {
+	v := new(Topic)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_TopicList_1_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_TopicList        protoreflect.MessageDescriptor
+	fd_TopicList_topics protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_state_v1_types_proto_init()
+	md_TopicList = File_emissions_state_v1_types_proto.Messages().ByName("TopicList")
+	fd_TopicList_topics = md_TopicList.Fields().ByName("topics")
+}
+
+var _ protoreflect.Message = (*fastReflection_TopicList)(nil)
+
+type fastReflection_TopicList TopicList
+
+func (x *TopicList) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_TopicList)(x)
+}
+
+func (x *TopicList) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_state_v1_types_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_TopicList_messageType fastReflection_TopicList_messageType
+var _ protoreflect.MessageType = fastReflection_TopicList_messageType{}
+
+type fastReflection_TopicList_messageType struct{}
+
+func (x fastReflection_TopicList_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_TopicList)(nil)
+}
+func (x fastReflection_TopicList_messageType) New() protoreflect.Message {
+	return new(fastReflection_TopicList)
+}
+func (x fastReflection_TopicList_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_TopicList
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_TopicList) Descriptor() protoreflect.MessageDescriptor {
+	return md_TopicList
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_TopicList) Type() protoreflect.MessageType {
+	return _fastReflection_TopicList_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_TopicList) New() protoreflect.Message {
+	return new(fastReflection_TopicList)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_TopicList) Interface() protoreflect.ProtoMessage {
+	return (*TopicList)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_TopicList) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if len(x.Topics) != 0 {
+		value := protoreflect.ValueOfList(&_TopicList_1_list{list: &x.Topics})
+		if !f(fd_TopicList_topics, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_TopicList) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		return len(x.Topics) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TopicList) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		x.Topics = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_TopicList) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		if len(x.Topics) == 0 {
+			return protoreflect.ValueOfList(&_TopicList_1_list{})
+		}
+		listValue := &_TopicList_1_list{list: &x.Topics}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TopicList) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		lv := value.List()
+		clv := lv.(*_TopicList_1_list)
+		x.Topics = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TopicList) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		if x.Topics == nil {
+			x.Topics = []*Topic{}
+		}
+		value := &_TopicList_1_list{list: &x.Topics}
+		return protoreflect.ValueOfList(value)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_TopicList) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.TopicList.topics":
+		list := []*Topic{}
+		return protoreflect.ValueOfList(&_TopicList_1_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.TopicList"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.TopicList does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_TopicList) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.TopicList", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_TopicList) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_TopicList) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_TopicList) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_TopicList) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*TopicList)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if len(x.Topics) > 0 {
+			for _, e := range x.Topics {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*TopicList)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Topics) > 0 {
+			for iNdEx := len(x.Topics) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Topics[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0xa
+			}
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*TopicList)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicList: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicList: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Topics", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Topics = append(x.Topics, &Topic{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Topics[len(x.Topics)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 var (
 	md_Weight          protoreflect.MessageDescriptor
 	fd_Weight_topic_id protoreflect.FieldDescriptor
@@ -3242,7 +3736,7 @@ func (x *Weight) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Weight) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[4]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3883,7 +4377,7 @@ func (x *Weights) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Weights) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[5]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4334,7 +4828,7 @@ func (x *Inference) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Inference) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[6]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5039,7 +5533,7 @@ func (x *Inferences) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Inferences) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[7]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5490,7 +5984,7 @@ func (x *OffchainNode) ProtoReflect() protoreflect.Message {
 }
 
 func (x *OffchainNode) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[8]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6209,7 +6703,7 @@ func (x *OffchainNodes) ProtoReflect() protoreflect.Message {
 }
 
 func (x *OffchainNodes) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[9]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6656,7 +7150,7 @@ func (x *InferenceSetForScoring) ProtoReflect() protoreflect.Message {
 }
 
 func (x *InferenceSetForScoring) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[10]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7185,7 +7679,7 @@ func (x *StakePlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakePlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[11]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7717,7 +8211,7 @@ func (x *StakeRemovalPlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakeRemovalPlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[12]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8384,7 +8878,7 @@ func (x *StakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[13]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8889,7 +9383,7 @@ func (x *InferenceRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *InferenceRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[14]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10071,6 +10565,41 @@ func (x *Topic) GetDefaultArg() string {
 	return ""
 }
 
+type TopicList struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Topics []*Topic `protobuf:"bytes,1,rep,name=topics,proto3" json:"topics,omitempty"`
+}
+
+func (x *TopicList) Reset() {
+	*x = TopicList{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_state_v1_types_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TopicList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TopicList) ProtoMessage() {}
+
+// Deprecated: Use TopicList.ProtoReflect.Descriptor instead.
+func (*TopicList) Descriptor() ([]byte, []int) {
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *TopicList) GetTopics() []*Topic {
+	if x != nil {
+		return x.Topics
+	}
+	return nil
+}
+
 type Weight struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -10085,7 +10614,7 @@ type Weight struct {
 func (x *Weight) Reset() {
 	*x = Weight{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[4]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10099,7 +10628,7 @@ func (*Weight) ProtoMessage() {}
 
 // Deprecated: Use Weight.ProtoReflect.Descriptor instead.
 func (*Weight) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{4}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Weight) GetTopicId() uint64 {
@@ -10141,7 +10670,7 @@ type Weights struct {
 func (x *Weights) Reset() {
 	*x = Weights{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[5]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10155,7 +10684,7 @@ func (*Weights) ProtoMessage() {}
 
 // Deprecated: Use Weights.ProtoReflect.Descriptor instead.
 func (*Weights) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{5}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Weights) GetWeights() []*Weight {
@@ -10180,7 +10709,7 @@ type Inference struct {
 func (x *Inference) Reset() {
 	*x = Inference{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[6]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10194,7 +10723,7 @@ func (*Inference) ProtoMessage() {}
 
 // Deprecated: Use Inference.ProtoReflect.Descriptor instead.
 func (*Inference) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{6}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Inference) GetTopicId() uint64 {
@@ -10243,7 +10772,7 @@ type Inferences struct {
 func (x *Inferences) Reset() {
 	*x = Inferences{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[7]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10257,7 +10786,7 @@ func (*Inferences) ProtoMessage() {}
 
 // Deprecated: Use Inferences.ProtoReflect.Descriptor instead.
 func (*Inferences) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{7}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Inferences) GetInferences() []*Inference {
@@ -10282,7 +10811,7 @@ type OffchainNode struct {
 func (x *OffchainNode) Reset() {
 	*x = OffchainNode{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[8]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10296,7 +10825,7 @@ func (*OffchainNode) ProtoMessage() {}
 
 // Deprecated: Use OffchainNode.ProtoReflect.Descriptor instead.
 func (*OffchainNode) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{8}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *OffchainNode) GetLibP2PKey() string {
@@ -10345,7 +10874,7 @@ type OffchainNodes struct {
 func (x *OffchainNodes) Reset() {
 	*x = OffchainNodes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[9]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10359,7 +10888,7 @@ func (*OffchainNodes) ProtoMessage() {}
 
 // Deprecated: Use OffchainNodes.ProtoReflect.Descriptor instead.
 func (*OffchainNodes) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{9}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *OffchainNodes) GetOffchainNode() []*Inference {
@@ -10382,7 +10911,7 @@ type InferenceSetForScoring struct {
 func (x *InferenceSetForScoring) Reset() {
 	*x = InferenceSetForScoring{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[10]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10396,7 +10925,7 @@ func (*InferenceSetForScoring) ProtoMessage() {}
 
 // Deprecated: Use InferenceSetForScoring.ProtoReflect.Descriptor instead.
 func (*InferenceSetForScoring) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{10}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *InferenceSetForScoring) GetTopicId() uint64 {
@@ -10432,7 +10961,7 @@ type StakePlacement struct {
 func (x *StakePlacement) Reset() {
 	*x = StakePlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[11]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10446,7 +10975,7 @@ func (*StakePlacement) ProtoMessage() {}
 
 // Deprecated: Use StakePlacement.ProtoReflect.Descriptor instead.
 func (*StakePlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{11}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StakePlacement) GetTarget() string {
@@ -10476,7 +11005,7 @@ type StakeRemovalPlacement struct {
 func (x *StakeRemovalPlacement) Reset() {
 	*x = StakeRemovalPlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[12]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10490,7 +11019,7 @@ func (*StakeRemovalPlacement) ProtoMessage() {}
 
 // Deprecated: Use StakeRemovalPlacement.ProtoReflect.Descriptor instead.
 func (*StakeRemovalPlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{12}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StakeRemovalPlacement) GetTopicIds() []uint64 {
@@ -10526,7 +11055,7 @@ type StakeRemoval struct {
 func (x *StakeRemoval) Reset() {
 	*x = StakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[13]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10540,7 +11069,7 @@ func (*StakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use StakeRemoval.ProtoReflect.Descriptor instead.
 func (*StakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{13}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *StakeRemoval) GetTimestampRemovalStarted() uint64 {
@@ -10578,7 +11107,7 @@ type InferenceRequest struct {
 func (x *InferenceRequest) Reset() {
 	*x = InferenceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[14]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -10592,7 +11121,7 @@ func (*InferenceRequest) ProtoMessage() {}
 
 // Deprecated: Use InferenceRequest.ProtoReflect.Descriptor instead.
 func (*InferenceRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{14}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *InferenceRequest) GetSender() string {
@@ -10767,7 +11296,11 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x52, 0x61, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x0c, 0x20,
 	0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x64,
 	0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x5f, 0x61, 0x72, 0x67, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x41, 0x72, 0x67, 0x22, 0xa7, 0x01, 0x0a,
+	0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x41, 0x72, 0x67, 0x22, 0x3e, 0x0a, 0x09,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x31, 0x0a, 0x06, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x22, 0xa7, 0x01, 0x0a,
 	0x06, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
 	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
 	0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20,
@@ -10907,36 +11440,38 @@ func file_emissions_state_v1_types_proto_rawDescGZIP() []byte {
 	return file_emissions_state_v1_types_proto_rawDescData
 }
 
-var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_emissions_state_v1_types_proto_goTypes = []interface{}{
 	(*Params)(nil),                 // 0: emissions.state.v1.Params
 	(*GenesisState)(nil),           // 1: emissions.state.v1.GenesisState
 	(*StakeInfo)(nil),              // 2: emissions.state.v1.StakeInfo
 	(*Topic)(nil),                  // 3: emissions.state.v1.Topic
-	(*Weight)(nil),                 // 4: emissions.state.v1.Weight
-	(*Weights)(nil),                // 5: emissions.state.v1.Weights
-	(*Inference)(nil),              // 6: emissions.state.v1.Inference
-	(*Inferences)(nil),             // 7: emissions.state.v1.Inferences
-	(*OffchainNode)(nil),           // 8: emissions.state.v1.OffchainNode
-	(*OffchainNodes)(nil),          // 9: emissions.state.v1.OffchainNodes
-	(*InferenceSetForScoring)(nil), // 10: emissions.state.v1.InferenceSetForScoring
-	(*StakePlacement)(nil),         // 11: emissions.state.v1.StakePlacement
-	(*StakeRemovalPlacement)(nil),  // 12: emissions.state.v1.StakeRemovalPlacement
-	(*StakeRemoval)(nil),           // 13: emissions.state.v1.StakeRemoval
-	(*InferenceRequest)(nil),       // 14: emissions.state.v1.InferenceRequest
+	(*TopicList)(nil),              // 4: emissions.state.v1.TopicList
+	(*Weight)(nil),                 // 5: emissions.state.v1.Weight
+	(*Weights)(nil),                // 6: emissions.state.v1.Weights
+	(*Inference)(nil),              // 7: emissions.state.v1.Inference
+	(*Inferences)(nil),             // 8: emissions.state.v1.Inferences
+	(*OffchainNode)(nil),           // 9: emissions.state.v1.OffchainNode
+	(*OffchainNodes)(nil),          // 10: emissions.state.v1.OffchainNodes
+	(*InferenceSetForScoring)(nil), // 11: emissions.state.v1.InferenceSetForScoring
+	(*StakePlacement)(nil),         // 12: emissions.state.v1.StakePlacement
+	(*StakeRemovalPlacement)(nil),  // 13: emissions.state.v1.StakeRemovalPlacement
+	(*StakeRemoval)(nil),           // 14: emissions.state.v1.StakeRemoval
+	(*InferenceRequest)(nil),       // 15: emissions.state.v1.InferenceRequest
 }
 var file_emissions_state_v1_types_proto_depIdxs = []int32{
 	0,  // 0: emissions.state.v1.GenesisState.params:type_name -> emissions.state.v1.Params
-	4,  // 1: emissions.state.v1.Weights.weights:type_name -> emissions.state.v1.Weight
-	6,  // 2: emissions.state.v1.Inferences.inferences:type_name -> emissions.state.v1.Inference
-	6,  // 3: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
-	7,  // 4: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
-	12, // 5: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakeRemovalPlacement
-	6,  // [6:6] is the sub-list for method output_type
-	6,  // [6:6] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	3,  // 1: emissions.state.v1.TopicList.topics:type_name -> emissions.state.v1.Topic
+	5,  // 2: emissions.state.v1.Weights.weights:type_name -> emissions.state.v1.Weight
+	7,  // 3: emissions.state.v1.Inferences.inferences:type_name -> emissions.state.v1.Inference
+	7,  // 4: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
+	8,  // 5: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
+	13, // 6: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakeRemovalPlacement
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_emissions_state_v1_types_proto_init() }
@@ -10994,7 +11529,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Weight); i {
+			switch v := v.(*TopicList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11006,7 +11541,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Weights); i {
+			switch v := v.(*Weight); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11018,7 +11553,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Inference); i {
+			switch v := v.(*Weights); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11030,7 +11565,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Inferences); i {
+			switch v := v.(*Inference); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11042,7 +11577,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OffchainNode); i {
+			switch v := v.(*Inferences); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11054,7 +11589,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OffchainNodes); i {
+			switch v := v.(*OffchainNode); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11066,7 +11601,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*InferenceSetForScoring); i {
+			switch v := v.(*OffchainNodes); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11078,7 +11613,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakePlacement); i {
+			switch v := v.(*InferenceSetForScoring); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11090,7 +11625,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakeRemovalPlacement); i {
+			switch v := v.(*StakePlacement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11102,7 +11637,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakeRemoval); i {
+			switch v := v.(*StakeRemovalPlacement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -11114,6 +11649,18 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*StakeRemoval); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_state_v1_types_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InferenceRequest); i {
 			case 0:
 				return &v.state
@@ -11132,7 +11679,7 @@ func file_emissions_state_v1_types_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_state_v1_types_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

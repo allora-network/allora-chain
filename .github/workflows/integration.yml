@@ -24,6 +24,9 @@ jobs:
     
     - name: CreateTopic
       run: bash ./integration/topic.sh
+<<<<<<< HEAD
     
     - name: RunTest
       run: INTEGRATION=TRUE go test ./integration
+=======
+>>>>>>> origin/main
