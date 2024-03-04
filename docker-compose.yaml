@@ -4,7 +4,7 @@ services:
   validator0:
     container_name: validator0
     # build: .
-    image: "696230526504.dkr.ecr.us-east-1.amazonaws.com/allora-chain:v0.0.3"
+    image: "alloranetwork/allora-chain:v0.0.3"
     environment:
       - NETWORK=edgenet
       - MONIKER=validator0
