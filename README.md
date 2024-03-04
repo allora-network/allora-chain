@@ -29,3 +29,17 @@ make init
 allorad start
 ```
 
+## Run a node with docker compose
+
+*NOTE:* The given script will generate keys for te node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
+
+### Build docker image
+`docker compose build`
+
+### Run
+`docker compose up -d`
+
+### See logs
+`docker compose logs -f`
+
+

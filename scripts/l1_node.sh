@@ -3,7 +3,8 @@ set -exu
 
 NETWORK="${NETWORK:-edgenet}"
 GENESIS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/genesis.json"
-BLOCKLESS_API_URL="https://heads.edgenet.allora.network:8443"            #! Replace with your blockless API URL
+PEERS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/peers.txt"
+BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.edgenet.allora.network:8443}"               #! Replace with your blockless API URL
 
 
 APP_HOME="${APP_HOME:-./data}"
@@ -15,7 +16,7 @@ DENOM="uallo"
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
-    rm -rf ${APP_HOME}
+    rm -rf ${APP_HOME}/config
 
     #* Init node
     allorad --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
@@ -26,7 +27,7 @@ if [ ! -f $INIT_FLAG ]; then
 
     #* Import allora account, priv_validator_key.json and node_key.json from the vault here
     #* Here create a new allorad account
-    allorad --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > ${MONIKER}.account_info 2>&1
+    allorad --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > $APP_HOME/${MONIKER}.account_info 2>&1
 
     #* Adjust configs
     #* Enable prometheus metrics
@@ -43,8 +44,7 @@ if [ ! -f $INIT_FLAG ]; then
 fi
 echo "Node is initialized"
 
-# PEERS=$(curl -s ${PEERS_URL})
-PEERS="54f2c6967576e8287e5cea8614932581f8e80c14@peer-0.edgenet.allora.network:30003,e66473795b9893ebfd673a3c24e07a3c16c6b7e7@peer-1.edgenet.allora.network:30004,734990443d4f1225966999e316f5c36d140b9f44@peer-2.edgenet.allora.network:30005"
+PEERS=$(curl -s ${PEERS_URL})
 
 echo "Starting validator node"
 allorad \
@@ -52,5 +52,5 @@ allorad \
     start \
     --moniker=${MONIKER} \
     --minimum-gas-prices=0${DENOM} \
+    --rpc.laddr=tcp://0.0.0.0:26657 \
     --p2p.persistent_peers=${PEERS}
-

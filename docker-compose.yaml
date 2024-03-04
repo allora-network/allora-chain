@@ -4,22 +4,27 @@ services:
   validator0:
     container_name: validator0
     build: .
-    image: "696230526504.dkr.ecr.us-east-1.amazonaws.com/allora-chain:v0.0.3"
+    image: "allora/allora-chain:v0.0.3"
     environment:
       - NETWORK=edgenet
-      - BLOCKLESS_API_URL=
+      - BLOCKLESS_API_URL=https://heads.edgenet.allora.network:8443
+      - APP_HOME=/data
     #   - LOG=${LOG:-simd.log}
-    # cap_add:
-    #   - SYS_PTRACE
-    # security_opt:
-    #   - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
     ports:
       - "26656-26657:26656-26657"
-      - "1317:1317"
-      - "9090:9090"
-      - "2345:2345"
     volumes:
-      - ./.testnets:/data
+      - ./data:/data
+      - ./scripts/:/scripts
+    user: "0:0"
+    entrypoint: /scripts/l1_node.sh
+    # command:
+    #   - /bin/bash
+    #   - -c
+    #   - /scripts/l1_node.sh
     networks:
       localnet:
         # ipv4_address: 192.168.10.2
