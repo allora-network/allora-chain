@@ -28,6 +28,7 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -39,6 +40,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"        // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
 )
 
@@ -67,6 +69,7 @@ type AlloraApp struct {
 	AccountKeeper         authkeeper.AccountKeeper
 	BankKeeper            bankkeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
+	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
 	emissionsKeeper       emissionsKeeper.Keeper
@@ -127,6 +130,7 @@ func NewAlloraApp(
 		&app.AccountKeeper,
 		&app.BankKeeper,
 		&app.StakingKeeper,
+		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
 		&app.emissionsKeeper,
