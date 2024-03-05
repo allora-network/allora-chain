@@ -12,6 +12,8 @@ import (
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -27,19 +29,15 @@ import (
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
-	"github.com/allora-network/allora-chain/inflation"
-	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
+	_ "github.com/allora-network/allora-chain/x/mint" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/mint"           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
 )
 
@@ -118,7 +116,6 @@ func NewAlloraApp(
 			depinject.Supply(
 				logger,
 				appOpts,
-				minttypes.InflationCalculationFn(inflation.CustomInflationCalculation),
 			),
 		),
 		&appBuilder,
