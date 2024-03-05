@@ -12,8 +12,8 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 
-	"github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
+	"github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"

@@ -8,8 +8,8 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
+	"github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
