@@ -36,4 +36,5 @@ var (
 	WhitelistAdminsKey            = collections.NewPrefix(26)
 	TopicCreationWhitelistKey     = collections.NewPrefix(27)
 	WeightSettingWhitelistKey     = collections.NewPrefix(28)
+	ChurnReadyTopicsKey           = collections.NewPrefix(30)
 )

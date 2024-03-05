@@ -11,6 +11,7 @@ import (
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
+
 	storetypes "cosmossdk.io/store/types"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
@@ -33,12 +34,12 @@ import (
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
-	_ "github.com/allora-network/allora-chain/x/mint" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth"           // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/bank"           // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/consensus"      // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/staking"        // import for side-effects
+	_ "github.com/allora-network/allora-chain/x/mint/module" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth"                  // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"        // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/bank"                  // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -146,6 +147,9 @@ func NewAlloraApp(
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
+
+	topicsHandler := NewTopicsHandler(app.emissionsKeeper)
+	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)
 

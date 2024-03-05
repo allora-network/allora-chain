@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  validator0:
+    container_name: validator0
+    # build: .
+    image: "alloranetwork/allora-chain:v0.0.3"
+    environment:
+      - NETWORK=edgenet
+      - MONIKER=validator0
+      - BLOCKLESS_API_URL=https://heads.edgenet.allora.network:8443
+      - APP_HOME=/data
+    ports:
+      - "26656-26657:26656-26657"
+    volumes:
+      - ./data:/data
+      - ./scripts/:/scripts
+    user: "0:0"
+    entrypoint: /scripts/l1_node.sh
