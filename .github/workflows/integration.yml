@@ -26,4 +26,4 @@ jobs:
       run: bash ./integration/topic.sh
     
     - name: RunTest
-      run: INTEGRATION=TRUE go test ./integration
+      run: bash ./integration/integration_runner.sh

@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+# ignore runner file which has (test non prod) private keys in the env
+integration/integration_runner.sh

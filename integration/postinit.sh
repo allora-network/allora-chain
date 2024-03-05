@@ -16,6 +16,12 @@ BOB_ADDRESS=$($ALLORAD_BIN keys show bob | head -n 1 | cut -f 2 -d ":" | tr -d "
 echo "Got test keys pub address: $ALICE_ADDRESS and $BOB_ADDRESS"
 echo
 
+echo "exporting alice and bob keys to environment for golang tests"
+DIRNAME=$(dirname "$0")
+ALICE_PK=$(yes | $ALLORAD_BIN keys export alice --unsafe  --unarmored-hex)
+BOB_PK=$(yes | $ALLORAD_BIN keys export bob --unsafe  --unarmored-hex)
+echo "ALICE_PK=\"$ALICE_PK\" ALICE_ADDRESS=\"$ALICE_ADDRESS\" BOB_PK=\"$BOB_PK\" BOB_ADDRESS=\"$BOB_ADDRESS\" INTEGRATION=TRUE go test ./integration" > $DIRNAME/integration_runner.sh
+
 echo "Putting alice and bob in the whitelisted core team list"
 GENESIS_TOTAL_LINES=$(wc -l $GENESIS | cut -f 1 -d " ")
 CORE_TEAM_LINE_NUM=$(grep -n "core_team_addresses" $GENESIS | cut -f 1 -d ":")
