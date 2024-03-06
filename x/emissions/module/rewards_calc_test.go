@@ -67,6 +67,7 @@ func (s *ModuleTestSuite) TestRegistrationTopicStakeAmountSet() {
 }
 
 func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
+	s.UtilSetParams()
 	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
 	topicId := topicIds[0]
@@ -105,6 +106,7 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicSimple() {
 }
 
 func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoReputerEmissions() {
+	s.UtilSetParams()
 	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
 	topicId := topicIds[0]
@@ -185,6 +187,7 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
 }
 
 func (s *ModuleTestSuite) TestEmitRewardsSimple() {
+	s.UtilSetParams()
 	topicIds, err := mockCreateTopics(s, 1)
 	s.NoError(err, "Error creating topic")
 	topicId := topicIds[0]

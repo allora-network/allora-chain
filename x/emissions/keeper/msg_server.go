@@ -59,8 +59,8 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.MinRequestUnmetDemand) == 1 {
 		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
-	if len(newParams.MaxAllowableMissingInferencePercent) == 1 {
-		existingParams.MaxAllowableMissingInferencePercent = newParams.MaxAllowableMissingInferencePercent[0]
+	if len(newParams.MaxMissingInferencePercent) == 1 {
+		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
 	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
@@ -68,17 +68,17 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.RemoveStakeDelayWindow) == 1 {
 		existingParams.RemoveStakeDelayWindow = newParams.RemoveStakeDelayWindow[0]
 	}
-	if len(newParams.MinFastestAllowedCadence) == 1 {
-		existingParams.MinFastestAllowedCadence = newParams.MinFastestAllowedCadence[0]
+	if len(newParams.MinRequestCadence) == 1 {
+		existingParams.MinRequestCadence = newParams.MinRequestCadence[0]
 	}
-	if len(newParams.MinFastestWeightCadence) == 1 {
-		existingParams.MinFastestWeightCadence = newParams.MinFastestWeightCadence[0]
+	if len(newParams.MinWeightCadence) == 1 {
+		existingParams.MinWeightCadence = newParams.MinWeightCadence[0]
 	}
 	if len(newParams.MaxInferenceRequestValidity) == 1 {
 		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
 	}
-	if len(newParams.MaxSlowestAllowedCadence) == 1 {
-		existingParams.MaxSlowestAllowedCadence = newParams.MaxSlowestAllowedCadence[0]
+	if len(newParams.MaxRequestCadence) == 1 {
+		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
@@ -112,7 +112,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	}
 	fmt.Println("2")
 
-	fastestCadence, err := ms.k.GetParamsMinFastestAllowedCadence(ctx)
+	fastestCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	}
 	fmt.Println("3")
 
-	weightFastestCadence, err := ms.k.GetParamsMinFastestWeightCadence(ctx)
+	weightFastestCadence, err := ms.k.GetParamsMinWeightCadence(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -794,7 +794,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		}
 		if request.Cadence != 0 {
 			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
-			minFastestAllowedCadence, err := ms.k.GetParamsMinFastestAllowedCadence(ctx)
+			minFastestAllowedCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -802,7 +802,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 				return nil, state.ErrInferenceRequestCadenceTooFast
 			}
 			// 7. Check the cadence is no more than the maximum allowed slowest cadence
-			maxSlowestAllowedCadence, err := ms.k.GetParamsMaxSlowestAllowedCadence(ctx)
+			maxSlowestAllowedCadence, err := ms.k.GetParamsMaxRequestCadence(ctx)
 			if err != nil {
 				return nil, err
 			}

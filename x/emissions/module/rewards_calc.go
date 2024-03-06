@@ -170,7 +170,7 @@ func MaskWeightsIfInsufficientLiveness(
 			}
 			expectedNumInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
 			// Allow for for 10% of inferences to be missing. Percent directly encoded as uint64, not float
-			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxAllowableMissingInferencePercent(ctx)
+			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxMissingInferencePercent(ctx)
 			if err != nil {
 				return nil, err
 			}
