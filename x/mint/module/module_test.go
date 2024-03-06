@@ -1,7 +1,6 @@
 package mint_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 	state "github.com/allora-network/allora-chain/x/emissions"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	"github.com/allora-network/allora-chain/x/mint/module"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -119,61 +118,68 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.appModule = appModule
 }
 
-func TestAbciTestSuite(t *testing.T) {
-	fmt.Println("Running AbciTestSuite")
-	a := new(MintModuleTestSuite)
-	fmt.Println("Running AbciTestSuite", a)
+func TestMintModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(MintModuleTestSuite))
 }
 
-func (s *MintModuleTestSuite) TestBeginBlockerMinting() {
-
+func (s *MintModuleTestSuite) TestMintingBelowMaxSupplyInHalvingBlock() {
 	defaultMintModuleParams := types.DefaultParams()
 	s.mintKeeper.Params.Set(s.ctx, defaultMintModuleParams)
 
-	// Define test cases
-	testCases := []struct {
-		name           string
-		blockHeight    int64
-		existingSupply cosmosMath.Int
-		expectedMint   bool
-	}{
-		{
-			name:           "Minting below max supply",
-			blockHeight:    1,
-			existingSupply: cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString("500000000000000000000000000").BigInt()), // 50% of max supply
-			expectedMint:   true,
-		},
-		{
-			name:           "Minting at max supply",
-			blockHeight:    2,
-			existingSupply: mint.MaxSupply,
-			expectedMint:   false,
-		},
-	}
+	// Fetch updated minter and params
+	minterBeforeUpdate, err := s.mintKeeper.Minter.Get(s.ctx)
+	s.Require().NoError(err)
+	paramBeforeUpdate, err := s.mintKeeper.Params.Get(s.ctx)
+	s.Require().NoError(err)
+	expectedBlockProvision := paramBeforeUpdate.CurrentBlockProvision.QuoUint64(2)
 
-	for _, tc := range testCases {
-		// Setup each test case
-		ctx := s.ctx.WithBlockHeight(tc.blockHeight)
+	// Set block height and existing supply for the test case
+	blockHeight := int64(25246080)
+	existingSupply := cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString("50000000000000000000000000").BigInt()) // Equivalent 50 million * 1e18 uallo
 
-		s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, tc.existingSupply)))
+	ctx := s.ctx.WithBlockHeight(blockHeight)
+	s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, existingSupply)))
 
-		// Call BeginBlocker
-		err := mint.BeginBlocker(ctx, s.mintKeeper)
-		s.Require().NoError(err)
+	// Call BeginBlocker
+	err = mint.BeginBlocker(ctx, s.mintKeeper)
+	s.Require().NoError(err)
 
-		// Fetch updated minter and params
-		minter, err := s.mintKeeper.Minter.Get(ctx)
-		s.Require().NoError(err)
+	// Fetch updated minter and params
+	minter, err := s.mintKeeper.Minter.Get(ctx)
+	s.Require().NoError(err)
+	params, err := s.mintKeeper.Params.Get(ctx)
+	s.Require().NoError(err)
 
-		if tc.expectedMint {
-			// Verify minting occurred
-			s.Require().NotEqual(cosmosMath.LegacyZeroDec(), minter.Inflation, "Inflation should not be zero")
-			s.Require().NotEqual(cosmosMath.LegacyZeroDec(), minter.AnnualProvisions, "Annual provisions should not be zero")
-		} else {
-			// Verify no minting occurred
-			s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.Inflation, "Inflation should be zero")
-			s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.AnnualProvisions, "Annual provisions should be zero")
-		}
-	}
+	// Verify minting occurred and current block provision remains as set
+	s.Require().Equal(minterBeforeUpdate.Inflation.QuoInt64(2), minter.Inflation, "Inflation should equal half of previous value")
+	s.Require().Equal(minterBeforeUpdate.AnnualProvisions.QuoInt64(2), minter.AnnualProvisions, "Annual should equal half of previous value")
+	s.Require().Equal(expectedBlockProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should equal half of previous value")
+}
+
+func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
+	defaultMintModuleParams := types.DefaultParams()
+	s.mintKeeper.Params.Set(s.ctx, defaultMintModuleParams)
+
+	// Set block height and existing supply for the test case
+	blockHeight := int64(2)
+	existingSupply := cosmosMath.NewIntFromBigInt(defaultMintModuleParams.MaxSupply.BigInt())
+	expectedProvision := cosmosMath.NewUint(0) // Expecting no minting, hence provision should be zero.
+
+	ctx := s.ctx.WithBlockHeight(blockHeight)
+	s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, existingSupply)))
+
+	// Call BeginBlocker
+	err := mint.BeginBlocker(ctx, s.mintKeeper)
+	s.Require().NoError(err)
+
+	// Fetch updated minter and params
+	minter, err := s.mintKeeper.Minter.Get(ctx)
+	s.Require().NoError(err)
+	params, err := s.mintKeeper.Params.Get(ctx)
+	s.Require().NoError(err)
+
+	// Verify no minting occurred and current block provision is zero
+	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.Inflation, "Inflation should be zero")
+	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.AnnualProvisions, "Annual provisions should be zero")
+	s.Require().Equal(expectedProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should be zero")
 }

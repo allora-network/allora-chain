@@ -72,7 +72,7 @@ type AlloraApp struct {
 	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
-	emissionsKeeper       emissionsKeeper.Keeper
+	EmissionsKeeper       emissionsKeeper.Keeper
 
 	// simulation manager
 	sm *module.SimulationManager
@@ -133,7 +133,7 @@ func NewAlloraApp(
 		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
-		&app.emissionsKeeper,
+		&app.EmissionsKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func NewAlloraApp(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
 
-	topicsHandler := NewTopicsHandler(app.emissionsKeeper)
+	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
 	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)

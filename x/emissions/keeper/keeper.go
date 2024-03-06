@@ -1462,12 +1462,12 @@ func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
-func (k *Keeper) GetParamsMaxAllowableMissingInferencePercent(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MaxAllowableMissingInferencePercent, nil
+	return params.MaxMissingInferencePercent, nil
 }
 
 func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
@@ -1518,28 +1518,28 @@ func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint
 	return params.MaxInferenceRequestValidity, nil
 }
 
-func (k *Keeper) GetParamsMinFastestAllowedCadence(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinRequestCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MinFastestAllowedCadence, nil
+	return params.MinRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsMinFastestWeightCadence(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinWeightCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MinFastestWeightCadence, nil
+	return params.MinWeightCadence, nil
 }
 
-func (k *Keeper) GetParamsMaxSlowestAllowedCadence(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MaxSlowestAllowedCadence, nil
+	return params.MaxRequestCadence, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {

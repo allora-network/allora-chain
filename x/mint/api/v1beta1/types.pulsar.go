@@ -500,13 +500,16 @@ func (x *fastReflection_Minter) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_Params                       protoreflect.MessageDescriptor
-	fd_Params_mint_denom            protoreflect.FieldDescriptor
-	fd_Params_inflation_rate_change protoreflect.FieldDescriptor
-	fd_Params_inflation_max         protoreflect.FieldDescriptor
-	fd_Params_inflation_min         protoreflect.FieldDescriptor
-	fd_Params_goal_bonded           protoreflect.FieldDescriptor
-	fd_Params_blocks_per_year       protoreflect.FieldDescriptor
+	md_Params                         protoreflect.MessageDescriptor
+	fd_Params_mint_denom              protoreflect.FieldDescriptor
+	fd_Params_inflation_rate_change   protoreflect.FieldDescriptor
+	fd_Params_inflation_max           protoreflect.FieldDescriptor
+	fd_Params_inflation_min           protoreflect.FieldDescriptor
+	fd_Params_goal_bonded             protoreflect.FieldDescriptor
+	fd_Params_blocks_per_year         protoreflect.FieldDescriptor
+	fd_Params_max_supply              protoreflect.FieldDescriptor
+	fd_Params_halving_interval        protoreflect.FieldDescriptor
+	fd_Params_current_block_provision protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -518,6 +521,9 @@ func init() {
 	fd_Params_inflation_min = md_Params.Fields().ByName("inflation_min")
 	fd_Params_goal_bonded = md_Params.Fields().ByName("goal_bonded")
 	fd_Params_blocks_per_year = md_Params.Fields().ByName("blocks_per_year")
+	fd_Params_max_supply = md_Params.Fields().ByName("max_supply")
+	fd_Params_halving_interval = md_Params.Fields().ByName("halving_interval")
+	fd_Params_current_block_provision = md_Params.Fields().ByName("current_block_provision")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -621,6 +627,24 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.MaxSupply != "" {
+		value := protoreflect.ValueOfString(x.MaxSupply)
+		if !f(fd_Params_max_supply, value) {
+			return
+		}
+	}
+	if x.HalvingInterval != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.HalvingInterval)
+		if !f(fd_Params_halving_interval, value) {
+			return
+		}
+	}
+	if x.CurrentBlockProvision != "" {
+		value := protoreflect.ValueOfString(x.CurrentBlockProvision)
+		if !f(fd_Params_current_block_provision, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -648,6 +672,12 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.GoalBonded != ""
 	case "mint.v1beta1.Params.blocks_per_year":
 		return x.BlocksPerYear != uint64(0)
+	case "mint.v1beta1.Params.max_supply":
+		return x.MaxSupply != ""
+	case "mint.v1beta1.Params.halving_interval":
+		return x.HalvingInterval != uint64(0)
+	case "mint.v1beta1.Params.current_block_provision":
+		return x.CurrentBlockProvision != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -676,6 +706,12 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.GoalBonded = ""
 	case "mint.v1beta1.Params.blocks_per_year":
 		x.BlocksPerYear = uint64(0)
+	case "mint.v1beta1.Params.max_supply":
+		x.MaxSupply = ""
+	case "mint.v1beta1.Params.halving_interval":
+		x.HalvingInterval = uint64(0)
+	case "mint.v1beta1.Params.current_block_provision":
+		x.CurrentBlockProvision = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -710,6 +746,15 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "mint.v1beta1.Params.blocks_per_year":
 		value := x.BlocksPerYear
 		return protoreflect.ValueOfUint64(value)
+	case "mint.v1beta1.Params.max_supply":
+		value := x.MaxSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.halving_interval":
+		value := x.HalvingInterval
+		return protoreflect.ValueOfUint64(value)
+	case "mint.v1beta1.Params.current_block_provision":
+		value := x.CurrentBlockProvision
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -742,6 +787,12 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.GoalBonded = value.Interface().(string)
 	case "mint.v1beta1.Params.blocks_per_year":
 		x.BlocksPerYear = value.Uint()
+	case "mint.v1beta1.Params.max_supply":
+		x.MaxSupply = value.Interface().(string)
+	case "mint.v1beta1.Params.halving_interval":
+		x.HalvingInterval = value.Uint()
+	case "mint.v1beta1.Params.current_block_provision":
+		x.CurrentBlockProvision = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -774,6 +825,12 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field goal_bonded of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.blocks_per_year":
 		panic(fmt.Errorf("field blocks_per_year of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.max_supply":
+		panic(fmt.Errorf("field max_supply of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.halving_interval":
+		panic(fmt.Errorf("field halving_interval of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.current_block_provision":
+		panic(fmt.Errorf("field current_block_provision of message mint.v1beta1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -799,6 +856,12 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfString("")
 	case "mint.v1beta1.Params.blocks_per_year":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v1beta1.Params.max_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.halving_interval":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v1beta1.Params.current_block_provision":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -891,6 +954,17 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.BlocksPerYear != 0 {
 			n += 1 + runtime.Sov(uint64(x.BlocksPerYear))
 		}
+		l = len(x.MaxSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.HalvingInterval != 0 {
+			n += 1 + runtime.Sov(uint64(x.HalvingInterval))
+		}
+		l = len(x.CurrentBlockProvision)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -919,6 +993,25 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.CurrentBlockProvision) > 0 {
+			i -= len(x.CurrentBlockProvision)
+			copy(dAtA[i:], x.CurrentBlockProvision)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CurrentBlockProvision)))
+			i--
+			dAtA[i] = 0x4a
+		}
+		if x.HalvingInterval != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.HalvingInterval))
+			i--
+			dAtA[i] = 0x40
+		}
+		if len(x.MaxSupply) > 0 {
+			i -= len(x.MaxSupply)
+			copy(dAtA[i:], x.MaxSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxSupply)))
+			i--
+			dAtA[i] = 0x3a
 		}
 		if x.BlocksPerYear != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlocksPerYear))
@@ -1188,6 +1281,89 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 8:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field HalvingInterval", wireType)
+				}
+				x.HalvingInterval = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.HalvingInterval |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CurrentBlockProvision", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CurrentBlockProvision = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1300,6 +1476,12 @@ type Params struct {
 	GoalBonded string `protobuf:"bytes,5,opt,name=goal_bonded,json=goalBonded,proto3" json:"goal_bonded,omitempty"`
 	// expected blocks per year
 	BlocksPerYear uint64 `protobuf:"varint,6,opt,name=blocks_per_year,json=blocksPerYear,proto3" json:"blocks_per_year,omitempty"`
+	// maximum total supply of the coin
+	MaxSupply string `protobuf:"bytes,7,opt,name=max_supply,json=maxSupply,proto3" json:"max_supply,omitempty"`
+	// halving interval in blocks
+	HalvingInterval uint64 `protobuf:"varint,8,opt,name=halving_interval,json=halvingInterval,proto3" json:"halving_interval,omitempty"`
+	// current provision per block
+	CurrentBlockProvision string `protobuf:"bytes,9,opt,name=current_block_provision,json=currentBlockProvision,proto3" json:"current_block_provision,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -1364,6 +1546,27 @@ func (x *Params) GetBlocksPerYear() uint64 {
 	return 0
 }
 
+func (x *Params) GetMaxSupply() string {
+	if x != nil {
+		return x.MaxSupply
+	}
+	return ""
+}
+
+func (x *Params) GetHalvingInterval() uint64 {
+	if x != nil {
+		return x.HalvingInterval
+	}
+	return 0
+}
+
+func (x *Params) GetCurrentBlockProvision() string {
+	if x != nil {
+		return x.CurrentBlockProvision
+	}
+	return ""
+}
+
 var File_mint_v1beta1_types_proto protoreflect.FileDescriptor
 
 var file_mint_v1beta1_types_proto_rawDesc = []byte{
@@ -1385,7 +1588,7 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c,
 	0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x10, 0x61, 0x6e, 0x6e, 0x75, 0x61, 0x6c, 0x50, 0x72,
-	0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0xef, 0x03, 0x0a, 0x06, 0x50, 0x61, 0x72,
+	0x6f, 0x76, 0x69, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0xd9, 0x05, 0x0a, 0x06, 0x50, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x74, 0x5f, 0x64, 0x65, 0x6e, 0x6f,
 	0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x69, 0x6e, 0x74, 0x44, 0x65, 0x6e,
 	0x6f, 0x6d, 0x12, 0x6a, 0x0a, 0x15, 0x69, 0x6e, 0x66, 0x6c, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f,
@@ -1414,21 +1617,36 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0a, 0x67, 0x6f, 0x61, 0x6c, 0x42, 0x6f, 0x6e, 0x64, 0x65,
 	0x64, 0x12, 0x26, 0x0a, 0x0f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f,
 	0x79, 0x65, 0x61, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x62, 0x6c, 0x6f, 0x63,
-	0x6b, 0x73, 0x50, 0x65, 0x72, 0x59, 0x65, 0x61, 0x72, 0x3a, 0x1f, 0x8a, 0xe7, 0xb0, 0x2a, 0x1a,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d,
-	0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb, 0x01, 0x0a, 0x10, 0x63,
-	0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x42,
-	0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67,
-	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
-	0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
-	0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69,
-	0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa,
-	0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02,
-	0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18,
-	0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42,
-	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a,
-	0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6b, 0x73, 0x50, 0x65, 0x72, 0x59, 0x65, 0x61, 0x72, 0x12, 0x51, 0x0a, 0x0a, 0x6d, 0x61, 0x78,
+	0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x09, 0x6d, 0x61, 0x78, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x29, 0x0a, 0x10,
+	0x68, 0x61, 0x6c, 0x76, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c,
+	0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0f, 0x68, 0x61, 0x6c, 0x76, 0x69, 0x6e, 0x67, 0x49,
+	0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c, 0x12, 0x6a, 0x0a, 0x17, 0x63, 0x75, 0x72, 0x72, 0x65,
+	0x6e, 0x74, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x73, 0x69,
+	0x6f, 0x6e, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15, 0x63, 0x75,
+	0x72, 0x72, 0x65, 0x6e, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x73,
+	0x69, 0x6f, 0x6e, 0x3a, 0x1f, 0x8a, 0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61,
+	0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73,
+	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
+	0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f,
+	0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74,
+	0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c,
+	0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56,
+	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
+	0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

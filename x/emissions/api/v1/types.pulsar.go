@@ -16,20 +16,20 @@ import (
 )
 
 var (
-	md_Params                                         protoreflect.MessageDescriptor
-	fd_Params_version                                 protoreflect.FieldDescriptor
-	fd_Params_epoch_length                            protoreflect.FieldDescriptor
-	fd_Params_emissions_per_epoch                     protoreflect.FieldDescriptor
-	fd_Params_min_topic_unmet_demand                  protoreflect.FieldDescriptor
-	fd_Params_max_topics_per_block                    protoreflect.FieldDescriptor
-	fd_Params_min_request_unmet_demand                protoreflect.FieldDescriptor
-	fd_Params_max_allowable_missing_inference_percent protoreflect.FieldDescriptor
-	fd_Params_required_minimum_stake                  protoreflect.FieldDescriptor
-	fd_Params_remove_stake_delay_window               protoreflect.FieldDescriptor
-	fd_Params_min_fastest_allowed_cadence             protoreflect.FieldDescriptor
-	fd_Params_min_fastest_weight_cadence              protoreflect.FieldDescriptor
-	fd_Params_max_inference_request_validity          protoreflect.FieldDescriptor
-	fd_Params_max_slowest_allowed_cadence             protoreflect.FieldDescriptor
+	md_Params                                protoreflect.MessageDescriptor
+	fd_Params_version                        protoreflect.FieldDescriptor
+	fd_Params_epoch_length                   protoreflect.FieldDescriptor
+	fd_Params_emissions_per_epoch            protoreflect.FieldDescriptor
+	fd_Params_min_topic_unmet_demand         protoreflect.FieldDescriptor
+	fd_Params_max_topics_per_block           protoreflect.FieldDescriptor
+	fd_Params_min_request_unmet_demand       protoreflect.FieldDescriptor
+	fd_Params_max_missing_inference_percent  protoreflect.FieldDescriptor
+	fd_Params_required_minimum_stake         protoreflect.FieldDescriptor
+	fd_Params_remove_stake_delay_window      protoreflect.FieldDescriptor
+	fd_Params_min_request_cadence            protoreflect.FieldDescriptor
+	fd_Params_min_weight_cadence             protoreflect.FieldDescriptor
+	fd_Params_max_inference_request_validity protoreflect.FieldDescriptor
+	fd_Params_max_request_cadence            protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -41,13 +41,13 @@ func init() {
 	fd_Params_min_topic_unmet_demand = md_Params.Fields().ByName("min_topic_unmet_demand")
 	fd_Params_max_topics_per_block = md_Params.Fields().ByName("max_topics_per_block")
 	fd_Params_min_request_unmet_demand = md_Params.Fields().ByName("min_request_unmet_demand")
-	fd_Params_max_allowable_missing_inference_percent = md_Params.Fields().ByName("max_allowable_missing_inference_percent")
+	fd_Params_max_missing_inference_percent = md_Params.Fields().ByName("max_missing_inference_percent")
 	fd_Params_required_minimum_stake = md_Params.Fields().ByName("required_minimum_stake")
 	fd_Params_remove_stake_delay_window = md_Params.Fields().ByName("remove_stake_delay_window")
-	fd_Params_min_fastest_allowed_cadence = md_Params.Fields().ByName("min_fastest_allowed_cadence")
-	fd_Params_min_fastest_weight_cadence = md_Params.Fields().ByName("min_fastest_weight_cadence")
+	fd_Params_min_request_cadence = md_Params.Fields().ByName("min_request_cadence")
+	fd_Params_min_weight_cadence = md_Params.Fields().ByName("min_weight_cadence")
 	fd_Params_max_inference_request_validity = md_Params.Fields().ByName("max_inference_request_validity")
-	fd_Params_max_slowest_allowed_cadence = md_Params.Fields().ByName("max_slowest_allowed_cadence")
+	fd_Params_max_request_cadence = md_Params.Fields().ByName("max_request_cadence")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -151,9 +151,9 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.MaxAllowableMissingInferencePercent != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxAllowableMissingInferencePercent)
-		if !f(fd_Params_max_allowable_missing_inference_percent, value) {
+	if x.MaxMissingInferencePercent != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.MaxMissingInferencePercent)
+		if !f(fd_Params_max_missing_inference_percent, value) {
 			return
 		}
 	}
@@ -169,15 +169,15 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.MinFastestAllowedCadence != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MinFastestAllowedCadence)
-		if !f(fd_Params_min_fastest_allowed_cadence, value) {
+	if x.MinRequestCadence != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.MinRequestCadence)
+		if !f(fd_Params_min_request_cadence, value) {
 			return
 		}
 	}
-	if x.MinFastestWeightCadence != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MinFastestWeightCadence)
-		if !f(fd_Params_min_fastest_weight_cadence, value) {
+	if x.MinWeightCadence != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.MinWeightCadence)
+		if !f(fd_Params_min_weight_cadence, value) {
 			return
 		}
 	}
@@ -187,9 +187,9 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.MaxSlowestAllowedCadence != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxSlowestAllowedCadence)
-		if !f(fd_Params_max_slowest_allowed_cadence, value) {
+	if x.MaxRequestCadence != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.MaxRequestCadence)
+		if !f(fd_Params_max_request_cadence, value) {
 			return
 		}
 	}
@@ -220,20 +220,20 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxTopicsPerBlock != uint64(0)
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		return x.MinRequestUnmetDemand != ""
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
-		return x.MaxAllowableMissingInferencePercent != uint64(0)
+	case "emissions.state.v1.Params.max_missing_inference_percent":
+		return x.MaxMissingInferencePercent != uint64(0)
 	case "emissions.state.v1.Params.required_minimum_stake":
 		return x.RequiredMinimumStake != ""
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		return x.RemoveStakeDelayWindow != uint64(0)
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
-		return x.MinFastestAllowedCadence != uint64(0)
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
-		return x.MinFastestWeightCadence != uint64(0)
+	case "emissions.state.v1.Params.min_request_cadence":
+		return x.MinRequestCadence != uint64(0)
+	case "emissions.state.v1.Params.min_weight_cadence":
+		return x.MinWeightCadence != uint64(0)
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		return x.MaxInferenceRequestValidity != uint64(0)
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
-		return x.MaxSlowestAllowedCadence != uint64(0)
+	case "emissions.state.v1.Params.max_request_cadence":
+		return x.MaxRequestCadence != uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -262,20 +262,20 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxTopicsPerBlock = uint64(0)
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		x.MinRequestUnmetDemand = ""
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
-		x.MaxAllowableMissingInferencePercent = uint64(0)
+	case "emissions.state.v1.Params.max_missing_inference_percent":
+		x.MaxMissingInferencePercent = uint64(0)
 	case "emissions.state.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = ""
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		x.RemoveStakeDelayWindow = uint64(0)
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
-		x.MinFastestAllowedCadence = uint64(0)
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
-		x.MinFastestWeightCadence = uint64(0)
+	case "emissions.state.v1.Params.min_request_cadence":
+		x.MinRequestCadence = uint64(0)
+	case "emissions.state.v1.Params.min_weight_cadence":
+		x.MinWeightCadence = uint64(0)
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		x.MaxInferenceRequestValidity = uint64(0)
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
-		x.MaxSlowestAllowedCadence = uint64(0)
+	case "emissions.state.v1.Params.max_request_cadence":
+		x.MaxRequestCadence = uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -310,8 +310,8 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		value := x.MinRequestUnmetDemand
 		return protoreflect.ValueOfString(value)
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
-		value := x.MaxAllowableMissingInferencePercent
+	case "emissions.state.v1.Params.max_missing_inference_percent":
+		value := x.MaxMissingInferencePercent
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.state.v1.Params.required_minimum_stake":
 		value := x.RequiredMinimumStake
@@ -319,17 +319,17 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		value := x.RemoveStakeDelayWindow
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
-		value := x.MinFastestAllowedCadence
+	case "emissions.state.v1.Params.min_request_cadence":
+		value := x.MinRequestCadence
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
-		value := x.MinFastestWeightCadence
+	case "emissions.state.v1.Params.min_weight_cadence":
+		value := x.MinWeightCadence
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		value := x.MaxInferenceRequestValidity
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
-		value := x.MaxSlowestAllowedCadence
+	case "emissions.state.v1.Params.max_request_cadence":
+		value := x.MaxRequestCadence
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
@@ -363,20 +363,20 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxTopicsPerBlock = value.Uint()
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		x.MinRequestUnmetDemand = value.Interface().(string)
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
-		x.MaxAllowableMissingInferencePercent = value.Uint()
+	case "emissions.state.v1.Params.max_missing_inference_percent":
+		x.MaxMissingInferencePercent = value.Uint()
 	case "emissions.state.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = value.Interface().(string)
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		x.RemoveStakeDelayWindow = value.Uint()
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
-		x.MinFastestAllowedCadence = value.Uint()
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
-		x.MinFastestWeightCadence = value.Uint()
+	case "emissions.state.v1.Params.min_request_cadence":
+		x.MinRequestCadence = value.Uint()
+	case "emissions.state.v1.Params.min_weight_cadence":
+		x.MinWeightCadence = value.Uint()
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		x.MaxInferenceRequestValidity = value.Uint()
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
-		x.MaxSlowestAllowedCadence = value.Uint()
+	case "emissions.state.v1.Params.max_request_cadence":
+		x.MaxRequestCadence = value.Uint()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -409,20 +409,20 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field max_topics_per_block of message emissions.state.v1.Params is not mutable"))
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		panic(fmt.Errorf("field min_request_unmet_demand of message emissions.state.v1.Params is not mutable"))
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
-		panic(fmt.Errorf("field max_allowable_missing_inference_percent of message emissions.state.v1.Params is not mutable"))
+	case "emissions.state.v1.Params.max_missing_inference_percent":
+		panic(fmt.Errorf("field max_missing_inference_percent of message emissions.state.v1.Params is not mutable"))
 	case "emissions.state.v1.Params.required_minimum_stake":
 		panic(fmt.Errorf("field required_minimum_stake of message emissions.state.v1.Params is not mutable"))
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		panic(fmt.Errorf("field remove_stake_delay_window of message emissions.state.v1.Params is not mutable"))
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
-		panic(fmt.Errorf("field min_fastest_allowed_cadence of message emissions.state.v1.Params is not mutable"))
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
-		panic(fmt.Errorf("field min_fastest_weight_cadence of message emissions.state.v1.Params is not mutable"))
+	case "emissions.state.v1.Params.min_request_cadence":
+		panic(fmt.Errorf("field min_request_cadence of message emissions.state.v1.Params is not mutable"))
+	case "emissions.state.v1.Params.min_weight_cadence":
+		panic(fmt.Errorf("field min_weight_cadence of message emissions.state.v1.Params is not mutable"))
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		panic(fmt.Errorf("field max_inference_request_validity of message emissions.state.v1.Params is not mutable"))
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
-		panic(fmt.Errorf("field max_slowest_allowed_cadence of message emissions.state.v1.Params is not mutable"))
+	case "emissions.state.v1.Params.max_request_cadence":
+		panic(fmt.Errorf("field max_request_cadence of message emissions.state.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -448,19 +448,19 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		return protoreflect.ValueOfString("")
-	case "emissions.state.v1.Params.max_allowable_missing_inference_percent":
+	case "emissions.state.v1.Params.max_missing_inference_percent":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.Params.required_minimum_stake":
 		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.Params.remove_stake_delay_window":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.state.v1.Params.min_fastest_allowed_cadence":
+	case "emissions.state.v1.Params.min_request_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.state.v1.Params.min_fastest_weight_cadence":
+	case "emissions.state.v1.Params.min_weight_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.Params.max_inference_request_validity":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.state.v1.Params.max_slowest_allowed_cadence":
+	case "emissions.state.v1.Params.max_request_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
@@ -553,8 +553,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.MaxAllowableMissingInferencePercent != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxAllowableMissingInferencePercent))
+		if x.MaxMissingInferencePercent != 0 {
+			n += 1 + runtime.Sov(uint64(x.MaxMissingInferencePercent))
 		}
 		l = len(x.RequiredMinimumStake)
 		if l > 0 {
@@ -563,17 +563,17 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.RemoveStakeDelayWindow != 0 {
 			n += 1 + runtime.Sov(uint64(x.RemoveStakeDelayWindow))
 		}
-		if x.MinFastestAllowedCadence != 0 {
-			n += 1 + runtime.Sov(uint64(x.MinFastestAllowedCadence))
+		if x.MinRequestCadence != 0 {
+			n += 1 + runtime.Sov(uint64(x.MinRequestCadence))
 		}
-		if x.MinFastestWeightCadence != 0 {
-			n += 1 + runtime.Sov(uint64(x.MinFastestWeightCadence))
+		if x.MinWeightCadence != 0 {
+			n += 1 + runtime.Sov(uint64(x.MinWeightCadence))
 		}
 		if x.MaxInferenceRequestValidity != 0 {
 			n += 1 + runtime.Sov(uint64(x.MaxInferenceRequestValidity))
 		}
-		if x.MaxSlowestAllowedCadence != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxSlowestAllowedCadence))
+		if x.MaxRequestCadence != 0 {
+			n += 1 + runtime.Sov(uint64(x.MaxRequestCadence))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -604,8 +604,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.MaxSlowestAllowedCadence != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxSlowestAllowedCadence))
+		if x.MaxRequestCadence != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxRequestCadence))
 			i--
 			dAtA[i] = 0x70
 		}
@@ -614,13 +614,13 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x68
 		}
-		if x.MinFastestWeightCadence != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinFastestWeightCadence))
+		if x.MinWeightCadence != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinWeightCadence))
 			i--
 			dAtA[i] = 0x60
 		}
-		if x.MinFastestAllowedCadence != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinFastestAllowedCadence))
+		if x.MinRequestCadence != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinRequestCadence))
 			i--
 			dAtA[i] = 0x58
 		}
@@ -636,8 +636,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x4a
 		}
-		if x.MaxAllowableMissingInferencePercent != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxAllowableMissingInferencePercent))
+		if x.MaxMissingInferencePercent != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxMissingInferencePercent))
 			i--
 			dAtA[i] = 0x40
 		}
@@ -896,9 +896,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 8:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxAllowableMissingInferencePercent", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxMissingInferencePercent", wireType)
 				}
-				x.MaxAllowableMissingInferencePercent = 0
+				x.MaxMissingInferencePercent = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -908,7 +908,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxAllowableMissingInferencePercent |= uint64(b&0x7F) << shift
+					x.MaxMissingInferencePercent |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -966,9 +966,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 			case 11:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinFastestAllowedCadence", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinRequestCadence", wireType)
 				}
-				x.MinFastestAllowedCadence = 0
+				x.MinRequestCadence = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -978,16 +978,16 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MinFastestAllowedCadence |= uint64(b&0x7F) << shift
+					x.MinRequestCadence |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
 			case 12:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinFastestWeightCadence", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinWeightCadence", wireType)
 				}
-				x.MinFastestWeightCadence = 0
+				x.MinWeightCadence = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -997,7 +997,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MinFastestWeightCadence |= uint64(b&0x7F) << shift
+					x.MinWeightCadence |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1023,9 +1023,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 			case 14:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxSlowestAllowedCadence", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxRequestCadence", wireType)
 				}
-				x.MaxSlowestAllowedCadence = 0
+				x.MaxRequestCadence = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1035,7 +1035,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxSlowestAllowedCadence |= uint64(b&0x7F) << shift
+					x.MaxRequestCadence |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -10220,19 +10220,23 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version                             string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                                           // version of the protocol should be in lockstep with github release tag version
-	EpochLength                         int64  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                                                                               // length of an "epoch" for rewards payouts in blocks
-	EmissionsPerEpoch                   string `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3" json:"emissions_per_epoch,omitempty"`                                                            // default amount of tokens to issue per epoch
-	MinTopicUnmetDemand                 string `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                                    // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-	MaxTopicsPerBlock                   uint64 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                                         // max number of topics to run cadence for per block
-	MinRequestUnmetDemand               string `protobuf:"bytes,7,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                                              // delete requests if they have below this demand remaining
-	MaxAllowableMissingInferencePercent uint64 `protobuf:"varint,8,opt,name=max_allowable_missing_inference_percent,json=maxAllowableMissingInferencePercent,proto3" json:"max_allowable_missing_inference_percent,omitempty"` // if a worker has this percentage of inferences missing, they are penalized
-	RequiredMinimumStake                string `protobuf:"bytes,9,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                                   // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow              uint64 `protobuf:"varint,10,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                                         // how long to wait before allowed to remove stake
-	MinFastestAllowedCadence            uint64 `protobuf:"varint,11,opt,name=min_fastest_allowed_cadence,json=minFastestAllowedCadence,proto3" json:"min_fastest_allowed_cadence,omitempty"`                                   // Fastest allowed cadence of a repeating inference request
-	MinFastestWeightCadence             uint64 `protobuf:"varint,12,opt,name=min_fastest_weight_cadence,json=minFastestWeightCadence,proto3" json:"min_fastest_weight_cadence,omitempty"`                                      // Fastest allowed cadence of uploading weights
-	MaxInferenceRequestValidity         uint64 `protobuf:"varint,13,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`                          // the longest time a subscription of inferences is allowed to be valid
-	MaxSlowestAllowedCadence            uint64 `protobuf:"varint,14,opt,name=max_slowest_allowed_cadence,json=maxSlowestAllowedCadence,proto3" json:"max_slowest_allowed_cadence,omitempty"`                                   // the slowest amount of time a subscription is allowed to be between inferences
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"` // version of the protocol should be in lockstep with
+	// github release tag version
+	EpochLength         int64  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                            // length of an "epoch" for rewards payouts in blocks
+	EmissionsPerEpoch   string `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3" json:"emissions_per_epoch,omitempty"`         // default amount of tokens to issue per epoch
+	MinTopicUnmetDemand string `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"` // total unmet demand for a topic < this => don't run inference
+	// solicatation or weight-adjustment
+	MaxTopicsPerBlock          uint64 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                            // max number of topics to run cadence for per block
+	MinRequestUnmetDemand      string `protobuf:"bytes,7,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                 // delete requests if they have below this demand remaining
+	MaxMissingInferencePercent uint64 `protobuf:"varint,8,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"` // if a worker has this percentage of inferences missing, they are
+	// penalized
+	RequiredMinimumStake        string `protobuf:"bytes,9,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                          // minimum amount of tokens to send to stake as a reputer or worker
+	RemoveStakeDelayWindow      uint64 `protobuf:"varint,10,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                // how long to wait before allowed to remove stake
+	MinRequestCadence           uint64 `protobuf:"varint,11,opt,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`                                 // Fastest allowed cadence of a repeating inference request
+	MinWeightCadence            uint64 `protobuf:"varint,12,opt,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`                                    // Fastest allowed cadence of uploading weights
+	MaxInferenceRequestValidity uint64 `protobuf:"varint,13,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"` // the longest time a subscription of inferences is allowed to be
+	// valid
+	MaxRequestCadence uint64 `protobuf:"varint,14,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"` // the slowest (largest) amount of time a subscription can take between
 }
 
 func (x *Params) Reset() {
@@ -10297,9 +10301,9 @@ func (x *Params) GetMinRequestUnmetDemand() string {
 	return ""
 }
 
-func (x *Params) GetMaxAllowableMissingInferencePercent() uint64 {
+func (x *Params) GetMaxMissingInferencePercent() uint64 {
 	if x != nil {
-		return x.MaxAllowableMissingInferencePercent
+		return x.MaxMissingInferencePercent
 	}
 	return 0
 }
@@ -10318,16 +10322,16 @@ func (x *Params) GetRemoveStakeDelayWindow() uint64 {
 	return 0
 }
 
-func (x *Params) GetMinFastestAllowedCadence() uint64 {
+func (x *Params) GetMinRequestCadence() uint64 {
 	if x != nil {
-		return x.MinFastestAllowedCadence
+		return x.MinRequestCadence
 	}
 	return 0
 }
 
-func (x *Params) GetMinFastestWeightCadence() uint64 {
+func (x *Params) GetMinWeightCadence() uint64 {
 	if x != nil {
-		return x.MinFastestWeightCadence
+		return x.MinWeightCadence
 	}
 	return 0
 }
@@ -10339,9 +10343,9 @@ func (x *Params) GetMaxInferenceRequestValidity() uint64 {
 	return 0
 }
 
-func (x *Params) GetMaxSlowestAllowedCadence() uint64 {
+func (x *Params) GetMaxRequestCadence() uint64 {
 	if x != nil {
-		return x.MaxSlowestAllowedCadence
+		return x.MaxRequestCadence
 	}
 	return 0
 }
@@ -11197,7 +11201,7 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
-	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa9, 0x07, 0x0a, 0x06, 0x50, 0x61, 0x72,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe9, 0x06, 0x0a, 0x06, 0x50, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x21, 0x0a,
 	0x0c, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x02, 0x20,
@@ -11224,38 +11228,34 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
 	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
 	0x2a, 0x01, 0x52, 0x15, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x55, 0x6e,
-	0x6d, 0x65, 0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x54, 0x0a, 0x27, 0x6d, 0x61, 0x78,
-	0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x70, 0x65, 0x72,
-	0x63, 0x65, 0x6e, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x23, 0x6d, 0x61, 0x78, 0x41,
-	0x6c, 0x6c, 0x6f, 0x77, 0x61, 0x62, 0x6c, 0x65, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x49,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x12,
-	0x68, 0x0a, 0x16, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x69, 0x6e, 0x69,
-	0x6d, 0x75, 0x6d, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x42,
-	0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
-	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2,
-	0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7,
-	0xb0, 0x2a, 0x01, 0x52, 0x14, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4d, 0x69, 0x6e,
-	0x69, 0x6d, 0x75, 0x6d, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x72, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f,
-	0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04, 0x52, 0x16, 0x72, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x57, 0x69,
-	0x6e, 0x64, 0x6f, 0x77, 0x12, 0x3d, 0x0a, 0x1b, 0x6d, 0x69, 0x6e, 0x5f, 0x66, 0x61, 0x73, 0x74,
-	0x65, 0x73, 0x74, 0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x63, 0x61, 0x64, 0x65,
-	0x6e, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x18, 0x6d, 0x69, 0x6e, 0x46, 0x61,
-	0x73, 0x74, 0x65, 0x73, 0x74, 0x41, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x64, 0x43, 0x61, 0x64, 0x65,
-	0x6e, 0x63, 0x65, 0x12, 0x3b, 0x0a, 0x1a, 0x6d, 0x69, 0x6e, 0x5f, 0x66, 0x61, 0x73, 0x74, 0x65,
-	0x73, 0x74, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63,
-	0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x17, 0x6d, 0x69, 0x6e, 0x46, 0x61, 0x73, 0x74,
-	0x65, 0x73, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65,
-	0x12, 0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x69,
-	0x74, 0x79, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56, 0x61, 0x6c,
-	0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x3d, 0x0a, 0x1b, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x6c, 0x6f,
-	0x77, 0x65, 0x73, 0x74, 0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x64, 0x5f, 0x63, 0x61, 0x64,
-	0x65, 0x6e, 0x63, 0x65, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x04, 0x52, 0x18, 0x6d, 0x61, 0x78, 0x53,
-	0x6c, 0x6f, 0x77, 0x65, 0x73, 0x74, 0x41, 0x6c, 0x6c, 0x6f, 0x77, 0x65, 0x64, 0x43, 0x61, 0x64,
+	0x6d, 0x65, 0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x41, 0x0a, 0x1d, 0x6d, 0x61, 0x78,
+	0x5f, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x1a, 0x6d, 0x61, 0x78, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x68, 0x0a, 0x16,
+	0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d,
+	0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
+	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x14, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75,
+	0x6d, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65,
+	0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e,
+	0x64, 0x6f, 0x77, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04, 0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f,
+	0x77, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x69, 0x6e, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11,
+	0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63,
+	0x65, 0x12, 0x2c, 0x0a, 0x12, 0x6d, 0x69, 0x6e, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f,
+	0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x6d,
+	0x69, 0x6e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12,
+	0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74,
+	0x79, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56, 0x61, 0x6c, 0x69,
+	0x64, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0e, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x11, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64,
 	0x65, 0x6e, 0x63, 0x65, 0x22, 0x78, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53,
 	0x74, 0x61, 0x74, 0x65, 0x12, 0x38, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,

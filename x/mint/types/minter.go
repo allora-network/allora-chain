@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // NewMinter returns a new Minter object with the given inflation and annual
@@ -19,17 +17,19 @@ func NewMinter(inflation, annualProvisions math.LegacyDec) Minter {
 
 // InitialMinter returns an initial Minter object with a given inflation value.
 func InitialMinter(inflation math.LegacyDec) Minter {
+
 	return NewMinter(
 		inflation,
-		math.LegacyNewDec(0),
+		// 2831000000000000000000 (initial uallo per block) * 6311520 (blocks per year) = 17867913120000000000000000 (initial annual provisions)
+		math.LegacyNewDecFromBigInt(math.NewUintFromString("17867913120000000000000000").BigInt()),
 	)
 }
 
 // DefaultInitialMinter returns a default initial Minter object for a new chain
-// which uses an inflation rate of 13%.
+// which uses an inflation rate of 15,03%.
 func DefaultInitialMinter() Minter {
 	return InitialMinter(
-		math.LegacyNewDecWithPrec(13, 2),
+		math.LegacyNewDecWithPrec(3573582624, 7),
 	)
 }
 
@@ -42,33 +42,6 @@ func ValidateMinter(minter Minter) error {
 	return nil
 }
 
-// NextInflationRate returns the new inflation rate for the next block.
-func (m Minter) NextInflationRate(params Params, blockHeight int64) math.LegacyDec {
-	// Block per year: 6311520
-	// Halving interval (years): 4
-	halvingInterval := int64(25246080)
-
-	// Initial inflation rate
-	currentInflationRate := params.InflationRateChange
-
-	// Check for halving event
-	if blockHeight > 0 && blockHeight%halvingInterval == 0 {
-		// Halve the inflation rate
-		currentInflationRate = currentInflationRate.QuoInt64(2)
-	}
-
-	return currentInflationRate
-}
-
-// NextAnnualProvisions returns the annual provisions based on current total
-// circulating supply and inflation rate.
-func (m Minter) NextAnnualProvisions(_ Params, totalCirculatingSupply math.Int) math.LegacyDec {
-	return m.Inflation.MulInt(totalCirculatingSupply)
-}
-
-// BlockProvision returns the provisions for a block based on the annual
-// provisions rate.
-func (m Minter) BlockProvision(params Params) sdk.Coin {
-	provisionAmt := m.AnnualProvisions.QuoInt(math.NewInt(int64(params.BlocksPerYear)))
-	return sdk.NewCoin(params.MintDenom, provisionAmt.TruncateInt())
+func (m Minter) NextInflationRate(totalCirculatingSupply math.Int, currentBlockProvision math.LegacyDec, blocksPerYear uint64) math.LegacyDec {
+	return currentBlockProvision.Mul(math.LegacyNewDec(int64(blocksPerYear))).Quo(math.LegacyNewDecFromInt(totalCirculatingSupply))
 }

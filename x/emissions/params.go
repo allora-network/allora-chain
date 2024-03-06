@@ -7,19 +7,19 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                             "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
-		EpochLength:                         int64(5),                      // length of an "epoch" for rewards payouts in blocks
-		EmissionsPerEpoch:                   cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
-		MinTopicUnmetDemand:                 cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-		MaxTopicsPerBlock:                   uint64(1000),                  // max number of topics to run cadence for per block
-		MinRequestUnmetDemand:               cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
-		MaxAllowableMissingInferencePercent: uint64(10),                    // if a worker has this percentage of inferences missing, they are penalized
-		RequiredMinimumStake:                cosmosMath.NewUint(1),         // minimum stake required to be a worker
-		RemoveStakeDelayWindow:              uint64(172800),                // 2 days in seconds
-		MinFastestAllowedCadence:            uint64(60),                    // 1 minute in seconds
-		MinFastestWeightCadence:             uint64(10800),                 // 3 hours in seconds
-		MaxInferenceRequestValidity:         uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
-		MaxSlowestAllowedCadence:            uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
+		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
+		EpochLength:                 int64(600),                    // length of an "epoch" for rewards payouts in blocks
+		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
+		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+		MaxTopicsPerBlock:           uint64(2048),                  // max number of topics to run cadence for per block
+		MinRequestUnmetDemand:       cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
+		MaxMissingInferencePercent:  uint64(20),                    // if a worker has this percentage of inferences missing, they are penalized
+		RequiredMinimumStake:        cosmosMath.NewUint(100),       // minimum stake required to be a worker or reputer
+		RemoveStakeDelayWindow:      uint64(60 * 60 * 24),          // 1 day in seconds
+		MinRequestCadence:           uint64(10),                    // 10 seconds
+		MinWeightCadence:            uint64(60 * 60),               // 1 hour in seconds
+		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
+		MaxRequestCadence:           uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
 	}
 }
 
@@ -47,8 +47,8 @@ func DefaultParamsMinRequestUnmetDemand() cosmosMath.Uint {
 	return DefaultParams().MinRequestUnmetDemand
 }
 
-func DefaultParamsMaxAllowableMissingInferencePercent() uint64 {
-	return DefaultParams().MaxAllowableMissingInferencePercent
+func DefaultParamsMaxMissingInferencePercent() uint64 {
+	return DefaultParams().MaxMissingInferencePercent
 }
 
 func DefaultParamsRequiredMinimumStake() cosmosMath.Uint {
@@ -59,16 +59,20 @@ func DefaultParamsRemoveStakeDelayWindow() uint64 {
 	return DefaultParams().RemoveStakeDelayWindow
 }
 
-func DefaultParamsMinFastestAllowedCadence() uint64 {
-	return DefaultParams().MinFastestAllowedCadence
+func DefaultParamsMinRequestCadence() uint64 {
+	return DefaultParams().MinRequestCadence
+}
+
+func DefaultParamsMinWeightCadence() uint64 {
+	return DefaultParams().MinWeightCadence
 }
 
 func DefaultParamsMaxInferenceRequestValidity() uint64 {
 	return DefaultParams().MaxInferenceRequestValidity
 }
 
-func DefaultParamsMaxSlowestAllowedCadence() uint64 {
-	return DefaultParams().MaxSlowestAllowedCadence
+func DefaultParamsMaxRequestCadence() uint64 {
+	return DefaultParams().MaxRequestCadence
 }
 
 // Validate does the sanity check on the params.
