@@ -14,7 +14,7 @@ func DefaultParams() Params {
 		MaxTopicsPerBlock:           uint64(2048),                  // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:       cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
 		MaxMissingInferencePercent:  uint64(20),                    // if a worker has this percentage of inferences missing, they are penalized
-		RequiredMinimumStake:        cosmosMath.NewUint(10),        // minimum stake required to be a worker or reputer
+		RequiredMinimumStake:        cosmosMath.NewUint(100),       // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:      uint64(60 * 60 * 24 * 5),      // 5 days in seconds
 		MinRequestCadence:           uint64(10),                    // 10 seconds
 		MinWeightCadence:            uint64(60 * 60),               // 1 hour in seconds
