@@ -434,6 +434,74 @@ func (s *ModuleTestSuite) TestChurnRequestsGetActiveTopicsAndDemandSimple() {
 	s.Require().Greater(demand.Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
 }
 
+func (s *ModuleTestSuite) TestDemandFlowEndBlockWhenInsufficientWorkerLiveness() {
+	createdTopicIds, err := mockCreateTopics(s, 2)
+	s.Require().NoError(err)
+	timeNow := uint64(time.Now().UTC().Unix())
+	var initialStake int64 = 1100
+	var requestStake0 int64 = 500
+	var requestStake1 int64 = 600
+	// the default EpochLength and insufficient number of inferences will ensure worker weights are masked
+	// due to lack of liveness => should invoke a div by 0 error that gets caught and empty rewards returned
+	// => EndBlock should run without doing much by way of rewards
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
+	r := state.MsgRequestInference{
+		Sender: s.addrsStr[0],
+		Requests: []*state.RequestInferenceListItem{
+			{
+				Nonce:                0,
+				TopicId:              createdTopicIds[0],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
+				TimestampValidUntil:  timeNow + 100,
+				ExtraData:            []byte("Test"),
+			},
+			{
+				Nonce:                1,
+				TopicId:              createdTopicIds[1],
+				Cadence:              0,
+				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake1)),
+				BidAmount:            cosmosMath.NewUint(uint64(requestStake1)),
+				TimestampValidUntil:  timeNow + 400,
+				ExtraData:            nil,
+			},
+		},
+	}
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err)
+	reputers, err := mockSomeReputers(s, createdTopicIds[0])
+	s.NoError(err)
+	workers, err := mockSomeWorkers(s, createdTopicIds[0])
+	s.NoError(err)
+	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
+	s.NoError(err, "Error setting weights")
+	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
+	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+	s.Require().Equal(
+		initialStakeCoins.AmountOf(params.DefaultBondDenom),
+		requestsModuleBalanceBefore.Amount,
+		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
+
+	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
+
+	// make a messaging channel that can pass between threads
+	done := make(chan bool)
+	go func() {
+		// we just made a new multi threaded context that the compiler is aware of
+		err = s.appModule.EndBlock(s.ctx)
+		s.NoError(err, "EndBlock error")
+		// send that letter in the main to whoever is listening to this channel
+		done <- true
+	}()
+	// this thread has halted waiting for someone to send me a love letter
+	<-done
+}
+
 func (s *ModuleTestSuite) TestDemandFlowEndBlock() {
 	createdTopicIds, err := mockCreateTopics(s, 2)
 	s.Require().NoError(err)

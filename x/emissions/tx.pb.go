@@ -46,16 +46,16 @@ type OptionalParams struct {
 	MinTopicUnmetDemand []cosmossdk_io_math.Uint `protobuf:"bytes,4,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
 	// solicatation or weight-adjustment
 	MaxTopicsPerBlock          []uint64                 `protobuf:"varint,5,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
-	MinRequestUnmetDemand      []cosmossdk_io_math.Uint `protobuf:"bytes,7,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_request_unmet_demand"`
-	MaxMissingInferencePercent []uint64                 `protobuf:"varint,8,rep,packed,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`
+	MinRequestUnmetDemand      []cosmossdk_io_math.Uint `protobuf:"bytes,6,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_request_unmet_demand"`
+	MaxMissingInferencePercent []uint64                 `protobuf:"varint,7,rep,packed,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`
 	// penalized
-	RequiredMinimumStake        []cosmossdk_io_math.Uint `protobuf:"bytes,9,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Uint" json:"required_minimum_stake"`
-	RemoveStakeDelayWindow      []uint64                 `protobuf:"varint,10,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
-	MinRequestCadence           []uint64                 `protobuf:"varint,11,rep,packed,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`
-	MinWeightCadence            []uint64                 `protobuf:"varint,12,rep,packed,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`
-	MaxInferenceRequestValidity []uint64                 `protobuf:"varint,13,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`
+	RequiredMinimumStake        []cosmossdk_io_math.Uint `protobuf:"bytes,8,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Uint" json:"required_minimum_stake"`
+	RemoveStakeDelayWindow      []uint64                 `protobuf:"varint,9,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
+	MinRequestCadence           []uint64                 `protobuf:"varint,10,rep,packed,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`
+	MinWeightCadence            []uint64                 `protobuf:"varint,11,rep,packed,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`
+	MaxInferenceRequestValidity []uint64                 `protobuf:"varint,12,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`
 	// valid
-	MaxRequestCadence []uint64 `protobuf:"varint,14,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
+	MaxRequestCadence []uint64 `protobuf:"varint,13,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
 }
 
 func (m *OptionalParams) Reset()         { *m = OptionalParams{} }
@@ -2363,18 +2363,18 @@ var fileDescriptor_72ef1bd09180c1d8 = []byte{
 	0x94, 0x66, 0x16, 0x03, 0x12, 0x1e, 0x72, 0x85, 0xcf, 0xb9, 0xbe, 0xa7, 0x42, 0x9d, 0x51, 0x83,
 	0xa5, 0x00, 0x75, 0xa4, 0x21, 0x79, 0x97, 0x63, 0x3f, 0x6a, 0x9e, 0x99, 0x93, 0x9b, 0xe3, 0xdb,
 	0x13, 0xf6, 0x42, 0x80, 0x3a, 0x42, 0x84, 0x33, 0x7b, 0xcc, 0x0f, 0x8c, 0x33, 0x30, 0x39, 0xb3,
-	0x18, 0xff, 0xbc, 0x8d, 0x29, 0x4b, 0x73, 0x9b, 0xbe, 0x36, 0xb7, 0xe5, 0x80, 0x84, 0xb6, 0x54,
+	0x18, 0xff, 0xbc, 0x8d, 0x29, 0x4b, 0x73, 0x9b, 0xba, 0x36, 0xb7, 0xe5, 0x80, 0x84, 0xb6, 0x54,
 	0xd9, 0xcb, 0xae, 0x0e, 0xeb, 0x9c, 0x9d, 0x70, 0x4f, 0xe8, 0x39, 0x24, 0x3c, 0xc1, 0x31, 0x0e,
-	0x9b, 0x98, 0x13, 0x6d, 0xe2, 0x90, 0x99, 0x45, 0x41, 0xd3, 0x0a, 0x50, 0xa7, 0x21, 0x31, 0x7b,
-	0x09, 0x64, 0x5f, 0x22, 0x8c, 0x53, 0x58, 0xe1, 0x5c, 0x49, 0x8c, 0x5d, 0x27, 0x20, 0x21, 0x09,
-	0xda, 0x81, 0x43, 0x19, 0x3a, 0xc3, 0x66, 0xe9, 0xda, 0x6c, 0x97, 0x12, 0x8d, 0x0d, 0xa9, 0xf0,
-	0x80, 0xeb, 0x33, 0xbe, 0x0d, 0xab, 0x31, 0x0e, 0xa2, 0x73, 0x2c, 0xf5, 0x3b, 0x2e, 0xf6, 0xd1,
-	0xa5, 0x73, 0x41, 0x42, 0x37, 0xba, 0x30, 0x41, 0x10, 0x5d, 0x91, 0x00, 0x81, 0x7f, 0xca, 0x8f,
-	0x8f, 0xc4, 0xa9, 0x51, 0x85, 0xc5, 0x5e, 0xa7, 0x36, 0x91, 0xcb, 0xaf, 0x60, 0x96, 0xd5, 0x47,
-	0xd0, 0xbe, 0x79, 0x22, 0x0f, 0x8c, 0xfb, 0x60, 0x70, 0xfc, 0x05, 0x26, 0xde, 0x69, 0x17, 0x3e,
-	0x23, 0xe0, 0xf3, 0x01, 0x09, 0x8f, 0xc4, 0x41, 0x82, 0x7e, 0x02, 0x15, 0xee, 0xc5, 0xae, 0xf7,
-	0x12, 0x3b, 0xe7, 0xc8, 0x27, 0x2e, 0x61, 0x97, 0xe6, 0xac, 0x90, 0x5c, 0x0b, 0x50, 0x47, 0xfb,
-	0x4f, 0x59, 0xfc, 0xb1, 0x82, 0x08, 0x8a, 0xa8, 0x33, 0x40, 0x71, 0x4e, 0xc7, 0x49, 0x9a, 0xe2,
+	0x9b, 0x98, 0x13, 0x6d, 0xe2, 0x90, 0x99, 0xd3, 0x82, 0xa6, 0x15, 0xa0, 0x4e, 0x43, 0x62, 0xf6,
+	0x12, 0xc8, 0xbe, 0x44, 0x18, 0xa7, 0xb0, 0xc2, 0xb9, 0x92, 0x18, 0xbb, 0x4e, 0x40, 0x42, 0x12,
+	0xb4, 0x03, 0x87, 0x32, 0x74, 0x86, 0xcd, 0xe2, 0xb5, 0xd9, 0x2e, 0x25, 0x1a, 0x1b, 0x52, 0xe1,
+	0x01, 0xd7, 0x67, 0x7c, 0x1b, 0x56, 0x63, 0x1c, 0x44, 0xe7, 0x58, 0xea, 0x77, 0x5c, 0xec, 0xa3,
+	0x4b, 0xe7, 0x82, 0x84, 0x6e, 0x74, 0x61, 0x96, 0x04, 0xd1, 0x15, 0x09, 0x10, 0xf8, 0xa7, 0xfc,
+	0xf8, 0x48, 0x9c, 0x1a, 0x55, 0x58, 0xec, 0x75, 0x6a, 0x13, 0xb9, 0xfc, 0x0a, 0x26, 0xa8, 0x8f,
+	0xa0, 0x7d, 0xf3, 0x44, 0x1e, 0x18, 0xf7, 0xc1, 0xe0, 0xf8, 0x0b, 0x4c, 0xbc, 0xd3, 0x2e, 0xbc,
+	0x2c, 0xe0, 0xf3, 0x01, 0x09, 0x8f, 0xc4, 0x41, 0x82, 0x7e, 0x02, 0x15, 0xee, 0xc5, 0xae, 0xf7,
+	0x12, 0x3b, 0xe7, 0xc8, 0x27, 0x2e, 0x61, 0x97, 0xe6, 0x8c, 0x90, 0x5c, 0x0b, 0x50, 0x47, 0xfb,
+	0x4f, 0x59, 0xfc, 0xb1, 0x82, 0x08, 0x8a, 0xa8, 0x33, 0x40, 0x71, 0x56, 0xc7, 0x49, 0x9a, 0xe2,
 	0x56, 0x0c, 0x37, 0x1b, 0xd4, 0x7b, 0xde, 0x72, 0x11, 0xc3, 0x2a, 0xe7, 0x56, 0x60, 0x8a, 0xe2,
 	0xd0, 0xc5, 0xb1, 0x59, 0xd8, 0x2c, 0x6c, 0x97, 0x6c, 0xb5, 0x32, 0x1e, 0xc1, 0x54, 0x4b, 0x20,
 	0xcc, 0xb1, 0xcd, 0xc2, 0x76, 0x79, 0x77, 0xab, 0x3a, 0x58, 0x40, 0xaa, 0xe9, 0xfc, 0xb5, 0x95,
@@ -2464,7 +2464,7 @@ var fileDescriptor_72ef1bd09180c1d8 = []byte{
 	0x77, 0x2f, 0x2b, 0x37, 0xbe, 0x78, 0x59, 0xb9, 0xf1, 0xf7, 0x97, 0x95, 0x1b, 0x1f, 0xef, 0x7a,
 	0x84, 0x9d, 0xb6, 0x8f, 0xab, 0xcd, 0x28, 0xa8, 0x21, 0xdf, 0x8f, 0x62, 0xf4, 0x20, 0xc4, 0xec,
 	0x22, 0x8a, 0xcf, 0x92, 0x65, 0xf3, 0x14, 0x91, 0xb0, 0xd6, 0xa9, 0x69, 0x26, 0xc7, 0x53, 0xe2,
-	0x7f, 0x6b, 0xbf, 0xf1, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x53, 0x6f, 0x8d, 0xf7, 0x5d, 0x1e,
+	0x7f, 0x6b, 0xbf, 0xf1, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6d, 0x7f, 0x8f, 0x2b, 0x5d, 0x1e,
 	0x00, 0x00,
 }
 
@@ -3304,7 +3304,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA2[:j1])
 		i = encodeVarintTx(dAtA, i, uint64(j1))
 		i--
-		dAtA[i] = 0x72
+		dAtA[i] = 0x6a
 	}
 	if len(m.MaxInferenceRequestValidity) > 0 {
 		dAtA4 := make([]byte, len(m.MaxInferenceRequestValidity)*10)
@@ -3322,7 +3322,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA4[:j3])
 		i = encodeVarintTx(dAtA, i, uint64(j3))
 		i--
-		dAtA[i] = 0x6a
+		dAtA[i] = 0x62
 	}
 	if len(m.MinWeightCadence) > 0 {
 		dAtA6 := make([]byte, len(m.MinWeightCadence)*10)
@@ -3340,7 +3340,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA6[:j5])
 		i = encodeVarintTx(dAtA, i, uint64(j5))
 		i--
-		dAtA[i] = 0x62
+		dAtA[i] = 0x5a
 	}
 	if len(m.MinRequestCadence) > 0 {
 		dAtA8 := make([]byte, len(m.MinRequestCadence)*10)
@@ -3358,7 +3358,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA8[:j7])
 		i = encodeVarintTx(dAtA, i, uint64(j7))
 		i--
-		dAtA[i] = 0x5a
+		dAtA[i] = 0x52
 	}
 	if len(m.RemoveStakeDelayWindow) > 0 {
 		dAtA10 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
@@ -3376,7 +3376,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA10[:j9])
 		i = encodeVarintTx(dAtA, i, uint64(j9))
 		i--
-		dAtA[i] = 0x52
+		dAtA[i] = 0x4a
 	}
 	if len(m.RequiredMinimumStake) > 0 {
 		for iNdEx := len(m.RequiredMinimumStake) - 1; iNdEx >= 0; iNdEx-- {
@@ -3389,7 +3389,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x4a
+			dAtA[i] = 0x42
 		}
 	}
 	if len(m.MaxMissingInferencePercent) > 0 {
@@ -3408,7 +3408,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA12[:j11])
 		i = encodeVarintTx(dAtA, i, uint64(j11))
 		i--
-		dAtA[i] = 0x42
+		dAtA[i] = 0x3a
 	}
 	if len(m.MinRequestUnmetDemand) > 0 {
 		for iNdEx := len(m.MinRequestUnmetDemand) - 1; iNdEx >= 0; iNdEx-- {
@@ -3421,7 +3421,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x3a
+			dAtA[i] = 0x32
 		}
 	}
 	if len(m.MaxTopicsPerBlock) > 0 {
@@ -6158,7 +6158,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopicsPerBlock", wireType)
 			}
-		case 7:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinRequestUnmetDemand", wireType)
 			}
@@ -6194,7 +6194,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 8:
+		case 7:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6270,7 +6270,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxMissingInferencePercent", wireType)
 			}
-		case 9:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RequiredMinimumStake", wireType)
 			}
@@ -6306,7 +6306,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 10:
+		case 9:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6382,7 +6382,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field RemoveStakeDelayWindow", wireType)
 			}
-		case 11:
+		case 10:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6458,7 +6458,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinRequestCadence", wireType)
 			}
-		case 12:
+		case 11:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6534,7 +6534,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinWeightCadence", wireType)
 			}
-		case 13:
+		case 12:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6610,7 +6610,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxInferenceRequestValidity", wireType)
 			}
-		case 14:
+		case 13:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
