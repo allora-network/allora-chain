@@ -24,3 +24,6 @@ jobs:
     
     - name: CreateTopic
       run: bash ./integration/topic.sh
+
+    - name : Distribution
+      run: bash ./integration/distribution.sh
