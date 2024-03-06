@@ -2,46 +2,36 @@ package mint
 
 import (
 	"context"
-	"time"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	"github.com/allora-network/allora-chain/x/mint/types"
-	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// TODO: MaxSupply should be defined somewhere else
-var MaxSupply = cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString("1000000000000000000000000000").BigInt())
-
-// BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	// fetch stored minter & params
 	minter, err := k.Minter.Get(ctx)
 	if err != nil {
 		return err
 	}
-
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		return err
 	}
 
 	inflationBeforeUpdates := minter.Inflation
+	totalCirculatingSupply := k.GetSupply(ctx).Amount
 
-	// fetch circulating uallo supply
-	totalCirculatingSupply := k.GetSupply(ctx)
+	maxSupply := cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString(params.MaxSupply).BigInt())
+	currentBlockProvision := cosmosMath.LegacyNewDecFromBigInt(cosmosMath.NewUintFromString(params.CurrentBlockProvision).BigInt())
 
-	if totalCirculatingSupply.Amount.LT(MaxSupply) {
-		minter.Inflation = minter.NextInflationRate(params, sdkCtx.BlockHeight())
-		minter.AnnualProvisions = minter.NextAnnualProvisions(params, totalCirculatingSupply.Amount)
+	// Calculate the new total supply if coins were minted this block
+	newTotalCirculatingSupply := totalCirculatingSupply.Add(currentBlockProvision.TruncateInt())
 
-		// mint coins, update supply
-		mintedCoin := minter.BlockProvision(params)
+	// Only mint new coins if new total supply would not exceed max supply
+	if newTotalCirculatingSupply.LTE(maxSupply) {
+		mintedCoin := sdk.NewCoin(params.MintDenom, currentBlockProvision.TruncateInt())
 		mintedCoins := sdk.NewCoins(mintedCoin)
 
 		err = k.MintCoins(ctx, mintedCoins)
@@ -49,31 +39,39 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			return err
 		}
 
-		// send the minted coins to the fee collector account
+		// Send the minted coins to the fee collector account
 		err = k.AddCollectedFees(ctx, mintedCoins)
 		if err != nil {
 			return err
 		}
 
-		if mintedCoin.Amount.IsInt64() {
-			defer telemetry.ModuleSetGauge(types.ModuleName, float32(mintedCoin.Amount.Int64()), "minted_tokens")
+		// Halving logic: Check if the current block height is a multiple of the halving interval.
+		if sdkCtx.BlockHeight()%int64(params.HalvingInterval) == 0 {
+			currentBlockProvision = currentBlockProvision.QuoInt64(2)
+			params.CurrentBlockProvision = currentBlockProvision.String()
+			minter.AnnualProvisions = minter.AnnualProvisions.QuoInt64(2)
 		}
 
-	} else {
+		// Recalculate the inflation rate based on the updated circulating supply and provisions.
+		calculatedInflationRate := minter.NextInflationRate(totalCirculatingSupply, currentBlockProvision, params.BlocksPerYear)
+		params.InflationRateChange = calculatedInflationRate
+		minter.Inflation = calculatedInflationRate
+
+	} else if inflationBeforeUpdates.GT(cosmosMath.LegacyZeroDec()) {
+		// If the max supply is reached, set the inflation and annual provisions to zero.
 		minter.Inflation = cosmosMath.LegacyZeroDec()
 		minter.AnnualProvisions = cosmosMath.LegacyZeroDec()
+		params.CurrentBlockProvision = cosmosMath.LegacyZeroDec().String()
 	}
 
-	// Just update if the current inflation is not zero to avoid unnecessary writes.
 	if !inflationBeforeUpdates.Equal(cosmosMath.LegacyZeroDec()) {
-		// set new minter inflation and annual provisions
+		// set new minter
 		err = k.Minter.Set(ctx, minter)
 		if err != nil {
 			return err
 		}
 
 		//set new params
-		params.InflationRateChange = minter.Inflation
 		err = k.Params.Set(ctx, params)
 		if err != nil {
 			return err

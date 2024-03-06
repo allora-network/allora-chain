@@ -11,7 +11,7 @@ import (
 )
 
 // NewParams returns Params instance with the given values.
-func NewParams(mintDenom string, inflationRateChange, inflationMax, inflationMin, goalBonded math.LegacyDec, blocksPerYear uint64) Params {
+func NewParams(mintDenom string, inflationRateChange, inflationMax, inflationMin, goalBonded math.LegacyDec, blocksPerYear uint64, maxSupply string) Params {
 	return Params{
 		MintDenom:           mintDenom,
 		InflationRateChange: inflationRateChange,
@@ -19,18 +19,22 @@ func NewParams(mintDenom string, inflationRateChange, inflationMax, inflationMin
 		InflationMin:        inflationMin,
 		GoalBonded:          goalBonded,
 		BlocksPerYear:       blocksPerYear,
+		MaxSupply:           maxSupply,
 	}
 }
 
 // DefaultParams returns default x/mint module parameters.
 func DefaultParams() Params {
 	return Params{
-		MintDenom:           sdk.DefaultBondDenom,
-		InflationRateChange: math.LegacyNewDecWithPrec(1503, 4),
-		InflationMax:        math.LegacyNewDecWithPrec(1503, 4),
-		InflationMin:        math.LegacyNewDecWithPrec(0, 2),
-		GoalBonded:          math.LegacyNewDecWithPrec(67, 2),
-		BlocksPerYear:       uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
+		MintDenom:             sdk.DefaultBondDenom,
+		InflationRateChange:   math.LegacyNewDecWithPrec(3573582624, 7),
+		InflationMax:          math.LegacyNewDecWithPrec(3573582624, 7),
+		InflationMin:          math.LegacyNewDecWithPrec(0, 2),
+		GoalBonded:            math.LegacyNewDecWithPrec(67, 2),
+		BlocksPerYear:         uint64(60 * 60 * 8766 / 5),     // assuming 5 second block times
+		MaxSupply:             "1000000000000000000000000000", //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		HalvingInterval:       uint64(25246080),
+		CurrentBlockProvision: "2831000000000000000000", // uallo per block
 	}
 }
 
@@ -59,6 +63,9 @@ func (p Params) Validate() error {
 			"max inflation (%s) must be greater than or equal to min inflation (%s)",
 			p.InflationMax, p.InflationMin,
 		)
+	}
+	if err := validateMaxSupply(p.MaxSupply); err != nil {
+		return err
 	}
 
 	return nil
@@ -164,6 +171,19 @@ func validateBlocksPerYear(i interface{}) error {
 
 	if v == 0 {
 		return fmt.Errorf("blocks per year must be positive: %d", v)
+	}
+
+	return nil
+}
+
+func validateMaxSupply(i interface{}) error {
+	v, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if strings.TrimSpace(v) == "" {
+		return errors.New("max supply cannot be blank")
 	}
 
 	return nil
