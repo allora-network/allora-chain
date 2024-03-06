@@ -49,7 +49,7 @@ modules:
       "@type": cosmos.tx.config.v1.Config
   - name: mint
     config:
-      "@type": cosmos.mint.module.v1.Module
+      "@type": mint.module.v1.Module
   - name: emissions
     config:
       "@type": emissions.state.module.v1.Module
