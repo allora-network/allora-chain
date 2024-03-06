@@ -107,6 +107,10 @@ func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingA
 		return nil, err
 	}
 	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
+	if err != nil {
+		fmt.Println("Error getting min topic unmet demand: ", err)
+		return nil, err
+	}
 	for _, topic := range topicsActive {
 		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
 		if err != nil {
