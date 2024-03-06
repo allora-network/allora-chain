@@ -15,7 +15,7 @@ func DefaultParams() Params {
 		MinRequestUnmetDemand:       cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
 		MaxMissingInferencePercent:  uint64(20),                    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:        cosmosMath.NewUint(100),       // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:      uint64(60 * 60 * 24 * 5),      // 5 days in seconds
+		RemoveStakeDelayWindow:      uint64(60 * 60 * 24),          // 1 day in seconds
 		MinRequestCadence:           uint64(10),                    // 10 seconds
 		MinWeightCadence:            uint64(60 * 60),               // 1 hour in seconds
 		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
