@@ -22922,23 +22922,19 @@ type OptionalParams struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version []string `protobuf:"bytes,1,rep,name=version,proto3" json:"version,omitempty"` // version of the protocol should be in lockstep
-	// with github release tag version
-	EpochLength         []int64  `protobuf:"varint,2,rep,packed,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                     // length of an "epoch" for rewards payouts in blocks
-	EmissionsPerEpoch   []string `protobuf:"bytes,3,rep,name=emissions_per_epoch,json=emissionsPerEpoch,proto3" json:"emissions_per_epoch,omitempty"`         // default amount of tokens to issue per epoch
-	MinTopicUnmetDemand []string `protobuf:"bytes,4,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"` // total unmet demand for a topic < this => don't run inference
-	// solicatation or weight-adjustment
-	MaxTopicsPerBlock          []uint64 `protobuf:"varint,5,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                            // max number of topics to run cadence for per block
-	MinRequestUnmetDemand      []string `protobuf:"bytes,6,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                        // delete requests if they have below this demand remaining
-	MaxMissingInferencePercent []uint64 `protobuf:"varint,7,rep,packed,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"` // if a worker has this percentage of inferences missing, they are
-	// penalized
+	Version                     []string `protobuf:"bytes,1,rep,name=version,proto3" json:"version,omitempty"`                                                                                         // version of the protocol should be in lockstep with github release tag version
+	EpochLength                 []int64  `protobuf:"varint,2,rep,packed,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                                                      // length of an "epoch" for rewards payouts in blocks
+	EmissionsPerEpoch           []string `protobuf:"bytes,3,rep,name=emissions_per_epoch,json=emissionsPerEpoch,proto3" json:"emissions_per_epoch,omitempty"`                                          // default amount of tokens to issue per epoch
+	MinTopicUnmetDemand         []string `protobuf:"bytes,4,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                  // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+	MaxTopicsPerBlock           []uint64 `protobuf:"varint,5,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                // max number of topics to run cadence for per block
+	MinRequestUnmetDemand       []string `protobuf:"bytes,6,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                            // delete requests if they have below this demand remaining
+	MaxMissingInferencePercent  []uint64 `protobuf:"varint,7,rep,packed,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`     // if worker has this percentage inferences missing penalize them
 	RequiredMinimumStake        []string `protobuf:"bytes,8,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                 // minimum amount of tokens to send to stake as a reputer or worker
 	RemoveStakeDelayWindow      []uint64 `protobuf:"varint,9,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                 // how long to wait before allowed to remove stake
 	MinRequestCadence           []uint64 `protobuf:"varint,10,rep,packed,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`                                 // Fastest allowed cadence of a repeating inference request
 	MinWeightCadence            []uint64 `protobuf:"varint,11,rep,packed,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`                                    // Fastest allowed cadence of uploading weights
-	MaxInferenceRequestValidity []uint64 `protobuf:"varint,12,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"` // the longest time a subscription of inferences is allowed to be
-	// valid
-	MaxRequestCadence []uint64 `protobuf:"varint,13,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"` // the slowest amount of time a subscription is allowed to be between
+	MaxInferenceRequestValidity []uint64 `protobuf:"varint,12,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"` // longest time a subscription is allowed to be valid
+	MaxRequestCadence           []uint64 `protobuf:"varint,13,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                 // slowest/largest amount of time subscription can take between inferences
 }
 
 func (x *OptionalParams) Reset() {

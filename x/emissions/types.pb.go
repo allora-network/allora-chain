@@ -29,23 +29,19 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters of the module.
 type Params struct {
-	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	// github release tag version
-	EpochLength         int64                  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	EmissionsPerEpoch   cosmossdk_io_math.Int  `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3,customtype=cosmossdk.io/math.Int" json:"emissions_per_epoch"`
-	MinTopicUnmetDemand cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
-	// solicatation or weight-adjustment
-	MaxTopicsPerBlock          uint64                 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
-	MinRequestUnmetDemand      cosmossdk_io_math.Uint `protobuf:"bytes,7,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_request_unmet_demand"`
-	MaxMissingInferencePercent uint64                 `protobuf:"varint,8,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`
-	// penalized
+	Version                     string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	EpochLength                 int64                  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	EmissionsPerEpoch           cosmossdk_io_math.Int  `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3,customtype=cosmossdk.io/math.Int" json:"emissions_per_epoch"`
+	MinTopicUnmetDemand         cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
+	MaxTopicsPerBlock           uint64                 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
+	MinRequestUnmetDemand       cosmossdk_io_math.Uint `protobuf:"bytes,7,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_request_unmet_demand"`
+	MaxMissingInferencePercent  uint64                 `protobuf:"varint,8,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`
 	RequiredMinimumStake        cosmossdk_io_math.Uint `protobuf:"bytes,9,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Uint" json:"required_minimum_stake"`
 	RemoveStakeDelayWindow      uint64                 `protobuf:"varint,10,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
 	MinRequestCadence           uint64                 `protobuf:"varint,11,opt,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`
 	MinWeightCadence            uint64                 `protobuf:"varint,12,opt,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`
 	MaxInferenceRequestValidity uint64                 `protobuf:"varint,13,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`
-	// valid
-	MaxRequestCadence uint64 `protobuf:"varint,14,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
+	MaxRequestCadence           uint64                 `protobuf:"varint,14,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
