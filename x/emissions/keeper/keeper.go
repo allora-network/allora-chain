@@ -35,8 +35,9 @@ type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	addressCodec address.Codec
+	cdc              codec.BinaryCodec
+	addressCodec     address.Codec
+	feeCollectorName string
 
 	// State management
 	schema     collections.Schema
@@ -167,12 +168,14 @@ func NewKeeper(
 	addressCodec address.Codec,
 	storeService storetypes.KVStoreService,
 	ak AccountKeeper,
-	bk BankKeeper) Keeper {
+	bk BankKeeper,
+	feeCollectorName string) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                        cdc,
 		addressCodec:               addressCodec,
+		feeCollectorName:           feeCollectorName,
 		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
 		authKeeper:                 ak,
 		bankKeeper:                 bk,
@@ -228,6 +231,10 @@ func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
 		return state.Params{}, err
 	}
 	return ret, nil
+}
+
+func (k *Keeper) FeeCollectorName() string {
+	return k.feeCollectorName
 }
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {

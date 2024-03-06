@@ -6,7 +6,8 @@ modules:
       # During begin block slashing happens after distr.BeginBlocker so that
       # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
       # NOTE: staking module is required if HistoricalEntries param > 0
-      begin_blockers: [distribution, staking, mint]
+      # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
+      begin_blockers: [emissions, distribution, staking, mint]
       end_blockers: [staking, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.

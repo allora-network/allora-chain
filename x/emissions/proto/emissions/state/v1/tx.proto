@@ -67,12 +67,6 @@ service Msg {
 message OptionalParams {
   repeated string version = 1;      // version of the protocol should be in lockstep with github release tag version
   repeated int64 epoch_length = 2;  // length of an "epoch" for rewards payouts in blocks
-  repeated string emissions_per_epoch = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // default amount of tokens to issue per epoch
   repeated string min_topic_unmet_demand = 4 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -98,6 +92,7 @@ message OptionalParams {
   repeated uint64 min_weight_cadence = 11;        // Fastest allowed cadence of uploading weights
   repeated uint64 max_inference_request_validity = 12;  // longest time a subscription is allowed to be valid
   repeated uint64 max_request_cadence = 13;  // slowest/largest amount of time subscription can take between inferences
+  repeated uint64 percent_rewards_reputers_workers = 14;  // rewards percent to workers/reputers. Validators get rest
 }
 
 message MsgUpdateParams {

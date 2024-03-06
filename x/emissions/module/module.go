@@ -20,10 +20,11 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic   = AppModule{}
-	_ module.HasGenesis       = AppModule{}
-	_ appmodule.AppModule     = AppModule{}
-	_ appmodule.HasEndBlocker = AppModule{}
+	_ module.AppModuleBasic     = AppModule{}
+	_ module.HasGenesis         = AppModule{}
+	_ appmodule.AppModule       = AppModule{}
+	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.HasEndBlocker   = AppModule{}
 )
 
 // ConsensusVersion defines the current module consensus version.
@@ -113,6 +114,11 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return cdc.MustMarshalJSON(gs)
 }
 
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	fmt.Printf("\n ---------------- BeginBlock ------------------- \n")
+	return nil
+}
+
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	fmt.Printf("\n ---------------- EndBlock ------------------- \n")
@@ -132,11 +138,13 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
 	}
-
+	// send collected inference request fees to the fee collector account
+	// they will be paid out to reputers, workers, and cosmos validators
+	// in the following BeginBlock of the next block
 	err = am.keeper.SendCoinsFromModuleToModule(
 		ctx,
 		state.AlloraRequestsModuleName,
-		state.AlloraStakingModuleName,
+		am.keeper.FeeCollectorName(),
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)

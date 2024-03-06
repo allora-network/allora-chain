@@ -48,7 +48,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.authKeeper = emissionstestutil.NewMockAccountKeeper(ctrl)
 
 	s.ctx = ctx
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper, "fee_collector")
 	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key

@@ -57,7 +57,7 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                nil,
+		"fee_collector":                {"fee_collector"},
 		"mint":                         {"minter"},
 		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
 		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
@@ -99,7 +99,13 @@ func (s *ModuleTestSuite) SetupTest() {
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, accountKeeper, bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(
+		encCfg.Codec,
+		addressCodec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		maccPerms["fee_collector"][0])
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
