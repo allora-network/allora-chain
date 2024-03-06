@@ -131,7 +131,7 @@ func (s *MintModuleTestSuite) TestMintingBelowMaxSupplyInHalvingBlock() {
 	s.Require().NoError(err)
 	paramBeforeUpdate, err := s.mintKeeper.Params.Get(s.ctx)
 	s.Require().NoError(err)
-	expectedBlockProvision := cosmosMath.LegacyNewDecFromBigInt(cosmosMath.NewUintFromString(paramBeforeUpdate.CurrentBlockProvision).BigInt()).Quo(cosmosMath.LegacyNewDec(2))
+	expectedBlockProvision := paramBeforeUpdate.CurrentBlockProvision.QuoUint64(2)
 
 	// Set block height and existing supply for the test case
 	blockHeight := int64(25246080)
@@ -153,7 +153,7 @@ func (s *MintModuleTestSuite) TestMintingBelowMaxSupplyInHalvingBlock() {
 	// Verify minting occurred and current block provision remains as set
 	s.Require().Equal(minterBeforeUpdate.Inflation.QuoInt64(2), minter.Inflation, "Inflation should equal half of previous value")
 	s.Require().Equal(minterBeforeUpdate.AnnualProvisions.QuoInt64(2), minter.AnnualProvisions, "Annual should equal half of previous value")
-	s.Require().Equal(expectedBlockProvision.String(), params.CurrentBlockProvision, "CurrentBlockProvision should equal half of previous value")
+	s.Require().Equal(expectedBlockProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should equal half of previous value")
 }
 
 func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
@@ -162,8 +162,8 @@ func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
 
 	// Set block height and existing supply for the test case
 	blockHeight := int64(2)
-	existingSupply := cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString(defaultMintModuleParams.MaxSupply).BigInt())
-	expectedProvision := cosmosMath.LegacyZeroDec() // Expecting no minting, hence provision should be zero.
+	existingSupply := cosmosMath.NewIntFromBigInt(defaultMintModuleParams.MaxSupply.BigInt())
+	expectedProvision := cosmosMath.NewUint(0) // Expecting no minting, hence provision should be zero.
 
 	ctx := s.ctx.WithBlockHeight(blockHeight)
 	s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, existingSupply)))
@@ -181,5 +181,5 @@ func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
 	// Verify no minting occurred and current block provision is zero
 	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.Inflation, "Inflation should be zero")
 	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.AnnualProvisions, "Annual provisions should be zero")
-	s.Require().Equal(expectedProvision.String(), params.CurrentBlockProvision, "CurrentBlockProvision should be zero")
+	s.Require().Equal(expectedProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should be zero")
 }

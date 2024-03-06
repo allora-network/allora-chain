@@ -10,7 +10,7 @@ import (
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	"github.com/allora-network/allora-chain/x/mint/module"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -69,7 +69,9 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		math.LegacyNewDecWithPrec(9, 2),
 		math.LegacyNewDecWithPrec(69, 2),
 		uint64(60*60*8766/5),
-		"1000000000000000000000000000",
+		math.NewUintFromString("1000000000000000000000000000"),
+		uint64(25246080),
+		math.NewUintFromString("2831000000000000000000"),
 	)
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)

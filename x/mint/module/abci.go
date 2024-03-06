@@ -23,15 +23,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	inflationBeforeUpdates := minter.Inflation
 	totalCirculatingSupply := k.GetSupply(ctx).Amount
 
-	maxSupply := cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString(params.MaxSupply).BigInt())
-	currentBlockProvision := cosmosMath.LegacyNewDecFromBigInt(cosmosMath.NewUintFromString(params.CurrentBlockProvision).BigInt())
+	currentBlockProvision := params.CurrentBlockProvision
 
 	// Calculate the new total supply if coins were minted this block
-	newTotalCirculatingSupply := totalCirculatingSupply.Add(currentBlockProvision.TruncateInt())
+	newTotalCirculatingSupply := totalCirculatingSupply.Add(cosmosMath.Int(currentBlockProvision))
 
 	// Only mint new coins if new total supply would not exceed max supply
-	if newTotalCirculatingSupply.LTE(maxSupply) {
-		mintedCoin := sdk.NewCoin(params.MintDenom, currentBlockProvision.TruncateInt())
+	if newTotalCirculatingSupply.LTE(cosmosMath.Int(params.MaxSupply)) {
+		mintedCoin := sdk.NewCoin(params.MintDenom, cosmosMath.Int(currentBlockProvision))
 		mintedCoins := sdk.NewCoins(mintedCoin)
 
 		err = k.MintCoins(ctx, mintedCoins)
@@ -47,13 +46,13 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 
 		// Halving logic: Check if the current block height is a multiple of the halving interval.
 		if sdkCtx.BlockHeight()%int64(params.HalvingInterval) == 0 {
-			currentBlockProvision = currentBlockProvision.QuoInt64(2)
-			params.CurrentBlockProvision = currentBlockProvision.String()
+			currentBlockProvision = currentBlockProvision.QuoUint64(2)
+			params.CurrentBlockProvision = currentBlockProvision
 			minter.AnnualProvisions = minter.AnnualProvisions.QuoInt64(2)
 		}
 
 		// Recalculate the inflation rate based on the updated circulating supply and provisions.
-		calculatedInflationRate := minter.NextInflationRate(totalCirculatingSupply, currentBlockProvision, params.BlocksPerYear)
+		calculatedInflationRate := minter.NextInflationRate(totalCirculatingSupply, cosmosMath.LegacyMustNewDecFromStr(currentBlockProvision.String()), params.BlocksPerYear)
 		params.InflationRateChange = calculatedInflationRate
 		minter.Inflation = calculatedInflationRate
 
@@ -61,7 +60,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		// If the max supply is reached, set the inflation and annual provisions to zero.
 		minter.Inflation = cosmosMath.LegacyZeroDec()
 		minter.AnnualProvisions = cosmosMath.LegacyZeroDec()
-		params.CurrentBlockProvision = cosmosMath.LegacyZeroDec().String()
+		params.CurrentBlockProvision = cosmosMath.NewUint(0)
 	}
 
 	if !inflationBeforeUpdates.Equal(cosmosMath.LegacyZeroDec()) {
