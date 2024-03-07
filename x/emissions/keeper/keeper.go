@@ -13,7 +13,6 @@ import (
 	storetypes "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -343,12 +342,6 @@ func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return params.EpochLength, nil
-}
-
-// mint new rewards coins to this module account
-func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	return k.bankKeeper.MintCoins(ctx, state.AlloraStakingModuleName, coins)
 }
 
 // for a given topic, returns every reputer node registered to it and their normalized stake
@@ -1529,6 +1522,14 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error)
 	return params.MaxRequestCadence, nil
 }
 
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.PercentRewardsReputersWorkers, nil
+}
+
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
 	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
 	iter, err := k.mempool.Iterate(ctx, nil)
@@ -1696,11 +1697,10 @@ func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address s
 	return k.weightSettingWhitelist.Remove(ctx, address)
 }
 
-//
-// BANK KEEPER WRAPPERS
-//
+func (k *Keeper) AccountKeeper() AccountKeeper {
+	return k.authKeeper
+}
 
-// SendCoinsFromModuleToModule
-func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
-	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
+func (k *Keeper) BankKeeper() BankKeeper {
+	return k.bankKeeper
 }

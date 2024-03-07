@@ -57,14 +57,14 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                {"fee_collector"},
-		"mint":                         {"minter"},
-		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
+		"fee_collector":                 {"fee_collector"},
+		"mint":                          {"minter"},
+		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(

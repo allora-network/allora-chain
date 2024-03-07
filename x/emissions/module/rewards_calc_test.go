@@ -251,8 +251,8 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 	}
 	for i, addr := range target {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount[i]))
-		s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, coins)
-		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, addr, coins)
+		s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, coins)
+		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, addr, coins)
 	}
 	return nil
 }

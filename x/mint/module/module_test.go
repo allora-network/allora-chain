@@ -57,14 +57,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                nil,
-		"mint":                         {"minter"},
-		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
+		"fee_collector":                 nil,
+		"mint":                          {"minter"},
+		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(

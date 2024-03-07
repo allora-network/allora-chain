@@ -116,6 +116,27 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 func (am AppModule) BeginBlock(ctx context.Context) error {
 	fmt.Printf("\n ---------------- BeginBlock ------------------- \n")
+	percentRewardsToReputersAndWorkers, err := am.keeper.GetParamsPercentRewardsReputersWorkers(ctx)
+	if err != nil {
+		return err
+	}
+	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.FeeCollectorName())
+	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
+	reputerWorkerCut := feesCollectedAndEmissionsMintedLastBlock.Amount.Mul(
+		cosmosMath.NewIntFromUint64(percentRewardsToReputersAndWorkers)).Quo(cosmosMath.NewInt(100))
+	fmt.Println(
+		"Moving ",
+		percentRewardsToReputersAndWorkers,
+		"percent of fees+minted emissions last block to reputer+worker rewards module. This amounts to ",
+		reputerWorkerCut.String(),
+		` tokens.`,
+	)
+	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
+		ctx,
+		am.keeper.FeeCollectorName(),
+		state.AlloraRewardsAccountName,
+		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerWorkerCut)),
+	)
 	return nil
 }
 
@@ -141,9 +162,9 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	// send collected inference request fees to the fee collector account
 	// they will be paid out to reputers, workers, and cosmos validators
 	// in the following BeginBlock of the next block
-	err = am.keeper.SendCoinsFromModuleToModule(
+	err = am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
-		state.AlloraRequestsModuleName,
+		state.AlloraRequestsAccountName,
 		am.keeper.FeeCollectorName(),
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
