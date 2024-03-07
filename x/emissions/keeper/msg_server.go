@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	cosmoserrors "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
@@ -234,19 +235,28 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 	if msg.GetLibP2PKey() == "" {
 		return nil, state.ErrLibP2PKeyRequired
 	}
+	address, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return nil, err
+	}
 	// require funds to be at least greater than the minimum stake
 	requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if msg.GetInitialStake().LT(requiredMinimumStake) {
-		return nil, state.ErrInsufficientStakeToRegister
-	}
-	// check if topics exists and if address is already registered in any of them
-	address, err := sdk.AccAddressFromBech32(msg.Creator)
+	// check user existing stake
+	addressExistingStake, err := ms.k.GetDelegatorStake(ctx, address)
 	if err != nil {
 		return nil, err
 	}
+	// check if the user has enough funds to register
+	totalAddressStake := addressExistingStake.Add(msg.GetInitialStake())
+	if totalAddressStake.LT(requiredMinimumStake) {
+		return nil, cosmoserrors.Wrapf(state.ErrInsufficientStakeToRegister,
+			"required minimum stake: %s, existing address stake: %s, initial stake: %s",
+			requiredMinimumStake, addressExistingStake, msg.GetInitialStake())
+	}
+	// check if topics exists and if address is already registered in any of them
 	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
