@@ -691,15 +691,18 @@ func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	params := state.Params{
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
-		MaxTopicsPerBlock:           1000,
-		MinRequestUnmetDemand:       cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:  10,
-		RequiredMinimumStake:        cosmosMath.NewUint(1),
-		RemoveStakeDelayWindow:      172800,
-		MinRequestCadence:           60,
-		MaxInferenceRequestValidity: 60 * 60 * 24 * 7 * 24,
-		MaxRequestCadence:           60 * 60 * 24 * 7 * 24,
+		Version:                       "v1.0.0",
+		EpochLength:                   60 * 60 * 24 * 7 * 24,
+		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
+		MaxTopicsPerBlock:             1000,
+		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
+		MaxMissingInferencePercent:    10,
+		RequiredMinimumStake:          cosmosMath.NewUint(1),
+		RemoveStakeDelayWindow:        172800,
+		MinRequestCadence:             60,
+		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
+		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
+		PercentRewardsReputersWorkers: 50,
 	}
 
 	// Set params
@@ -710,6 +713,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	paramsFromKeeper, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
+	s.Require().Equal(params.EpochLength, paramsFromKeeper.EpochLength, "Params should be equal to the set params: EpochLength")
 	s.Require().True(params.MinTopicUnmetDemand.Equal(paramsFromKeeper.MinTopicUnmetDemand), "Params should be equal to the set params: MinTopicUnmetDemand")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
 	s.Require().True(params.MinRequestUnmetDemand.Equal(paramsFromKeeper.MinRequestUnmetDemand), "Params should be equal to the set params: MinRequestUnmetDemand")
@@ -719,5 +723,5 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.MinRequestCadence, paramsFromKeeper.MinRequestCadence, "Params should be equal to the set params: MinRequestCadence")
 	s.Require().Equal(params.MaxInferenceRequestValidity, paramsFromKeeper.MaxInferenceRequestValidity, "Params should be equal to the set params: MaxInferenceRequestValidity")
 	s.Require().Equal(params.MaxRequestCadence, paramsFromKeeper.MaxRequestCadence, "Params should be equal to the set params: MaxRequestCadence")
-
+	s.Require().Equal(params.PercentRewardsReputersWorkers, paramsFromKeeper.PercentRewardsReputersWorkers, "Params should be equal to the set params: PercentRewardsReputersWorkers")
 }

@@ -53,15 +53,6 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *state.QueryTotalSt
 	return &state.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
-// Get the amount of token rewards that have accumulated this epoch
-func (qs queryServer) GetAccumulatedEpochRewards(ctx context.Context, req *state.QueryAccumulatedEpochRewardsRequest) (*state.QueryAccumulatedEpochRewardsResponse, error) {
-	emissions, err := qs.k.CalculateAccumulatedEmissions(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &state.QueryAccumulatedEpochRewardsResponse{Amount: emissions}, nil
-}
-
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
 func (qs queryServer) GetNextTopicId(ctx context.Context, req *state.QueryNextTopicIdRequest) (*state.QueryNextTopicIdResponse, error) {
 	nextTopicId, err := qs.k.nextTopicId.Peek(ctx)

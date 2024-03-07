@@ -47,9 +47,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.EpochLength) == 1 {
 		existingParams.EpochLength = newParams.EpochLength[0]
 	}
-	if len(newParams.EmissionsPerEpoch) == 1 {
-		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]
-	}
 	if len(newParams.MinTopicUnmetDemand) == 1 {
 		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
 	}

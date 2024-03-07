@@ -345,26 +345,6 @@ func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
 	return params.EpochLength, nil
 }
 
-// return how many new coins should be minted for the next emission
-func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.Int, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	blockNumber := sdkCtx.BlockHeight()
-	lastRewardsUpdate, err := k.GetLastRewardsUpdate(sdkCtx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
-	// number of epochs that have passed (if more than 1)
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.EpochLength)
-	// get emission amount
-	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
-}
-
 // mint new rewards coins to this module account
 func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
