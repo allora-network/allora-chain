@@ -161,6 +161,64 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	require.ErrorIs(err, state.ErrInsufficientStakeToRegister, "Register should return an error")
 }
 
+func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+	s.CreateOneTopic()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(
+			params.DefaultBondDenom,
+			cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
+
+	// Register Reputer
+	reputerRegMsg := &state.MsgRegister{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicIds:     []uint64{0},
+		InitialStake: registrationInitialStake,
+		IsReputer:    true,
+	}
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
+	_, err := msgServer.Register(ctx, reputerRegMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+
+	// Deregister Reputer
+	_, err = msgServer.RemoveRegistration(ctx, &state.MsgRemoveRegistration{
+		Creator: reputerAddr.String(),
+		TopicId: 0,
+	})
+	require.NoError(err, "RemoveRegistration should not return an error")
+
+	// Remove stake half of the initial stake
+	removeStakeMsg := &state.MsgStartRemoveStake{
+		Sender: reputerAddr.String(),
+		PlacementsRemove: []*state.StakePlacement{
+			{
+				Target: reputerAddr.String(),
+				Amount: registrationInitialStake.QuoUint64(2),
+			},
+		},
+	}
+	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
+	require.NoError(err, "StartRemoveStake should not return an error")
+
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins.QuoInt(cosmosMath.NewInt(2)))
+	_, err = msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
+		Sender: reputerAddr.String(),
+	})
+	require.NoError(err, "ConfirmRemoveStake should not return an error")
+
+	// Try to register with zero initial stake and having half of the initial stake removed
+	reputerRegMsg.InitialStake = cosmosMath.NewUint(0)
+	_, err = msgServer.Register(ctx, reputerRegMsg)
+	require.ErrorIs(err, state.ErrInsufficientStakeToRegister, "Register should return an error")
+}
+
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
