@@ -183,7 +183,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err := msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
@@ -207,7 +207,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 	require.NoError(err, "StartRemoveStake should not return an error")
 
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins.QuoInt(cosmosMath.NewInt(2)))
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, registrationInitialStakeCoins.QuoInt(cosmosMath.NewInt(2)))
 	_, err = msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
 		Sender: reputerAddr.String(),
 	})
