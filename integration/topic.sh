@@ -41,7 +41,7 @@ $ALLORAD_BIN tx emissions push-topic \
   "$PT_INFERENCE_METHOD" \
   "$PT_INFERENCE_CADENCE" \
   "$PT_DEFAULT_ARG" \
-  --yes --keyring-backend=test --chain-id=demo;
+  --yes --keyring-backend=test --chain-id=demo --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
 
 echo "Checking that the network has incremented the topic count"
 TOPIC_INCREMENTED=false
@@ -76,7 +76,7 @@ RI_TIMESTAMP_VALID_UNTIL=$(($(date +%s)+60*60*24))
 $ALLORAD_BIN tx emissions request-inference \
   $RI_CREATOR \
   "{\"nonce\": \"$RI_NONCE\",\"topic_id\":\"$RI_TOPIC_ID\",\"cadence\":\"$RI_CADENCE\",\"max_price_per_inference\":\"$RI_MAX_PRICE_PER_INFERENCE\",\"bid_amount\":\"$RI_BID_AMOUNT\",\"timestamp_valid_until\":\"$RI_TIMESTAMP_VALID_UNTIL\"}" \
-  --yes --keyring-backend=test --chain-id=demo;
+  --yes --keyring-backend=test --chain-id=demo --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
 
 echo "Checking the inference request was made correctly"
 
@@ -103,7 +103,7 @@ fi
 echo
 echo "reactivating the topic so the request will fire"
 
-$ALLORAD_BIN tx emissions reactivate-topic $RI_CREATOR 1 --yes;
+$ALLORAD_BIN tx emissions reactivate-topic $RI_CREATOR 1 --yes --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
 echo "not waiting for reactivate-topic"
 
 echo "Initial state setup complete"
