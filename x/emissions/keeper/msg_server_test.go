@@ -591,9 +591,9 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 
 	// Mock setup for inferences
 	inferences := []*state.Inference{
-		{TopicId: 0, Worker: "worker1", Value: cosmosMath.NewUint(2200)},
-		{TopicId: 0, Worker: "worker2", Value: cosmosMath.NewUint(2100)},
-		{TopicId: 2, Worker: "worker2", Value: cosmosMath.NewUint(12)},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[0].Address()).String(), Value: cosmosMath.NewUint(2200)},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[1].Address()).String(), Value: cosmosMath.NewUint(2100)},
+		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: cosmosMath.NewUint(12)},
 	}
 
 	// Call the ProcessInferences function to test writes
