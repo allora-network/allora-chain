@@ -1327,6 +1327,14 @@ func (k *Keeper) SetInference(
 	return k.IncrementNumInferencesInRewardEpoch(ctx, topicId, worker)
 }
 
+func (k *Keeper) GetInference(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	worker sdk.AccAddress) (state.Inference, error) {
+	key := collections.Join(topicId, worker)
+	return k.inferences.Get(ctx, key)
+}
+
 // for a given delegator, get their stake removal information
 func (k *Keeper) GetStakeRemovalQueueForDelegator(ctx context.Context, delegator sdk.AccAddress) (state.StakeRemoval, error) {
 	return k.stakeRemovalQueue.Get(ctx, delegator)

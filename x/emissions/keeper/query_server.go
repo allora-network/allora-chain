@@ -154,10 +154,30 @@ func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightReque
 	return &state.QueryWeightResponse{Amount: weight}, nil
 }
 
-// GetInference retrieves the inference value for a given topic ID and worker address.
-func (qs queryServer) GetInference(ctx context.Context, req *state.QueryAllInferencesRequest) (*state.QueryAllInferencesResponse, error) {
-	// TODO: Implement
-	return &state.QueryAllInferencesResponse{}, nil
+// GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
+func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *state.QueryWorkerLatestInferenceRequest) (*state.QueryWorkerLatestInferenceResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
+
+	workerAddr, err := sdk.AccAddressFromBech32(req.WorkerAddress)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "worker with address %s not found", req.WorkerAddress)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
+	inference, err := qs.k.GetInference(ctx, req.TopicId, workerAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &state.QueryWorkerLatestInferenceResponse{LatestInference: &inference}, nil
 }
 
 func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.QueryInferencesToScoreRequest) (*state.QueryInferencesToScoreResponse, error) {

@@ -66,6 +66,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetWorkerLatestInferenceByTopicId",
+					Use:       "worker-latest-inference [topic_id] [worker_address]",
+					Short:     "Get the latest inference for a given worker and topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_address"},
+					},
+				},
+				{
 					RpcMethod: "GetAllInferences",
 					Use:       "inference [topic_id] [timestamp]",
 					Short:     "Get Latest Inference for a Topic in a timestamp",
