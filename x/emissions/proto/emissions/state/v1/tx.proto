@@ -15,8 +15,6 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc SetInferences(MsgSetInferences) returns (MsgSetInferencesResponse);
-
   rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
 
   rpc SetWeights(MsgSetWeights) returns (MsgSetWeightsResponse);
@@ -138,17 +136,6 @@ message MsgSetWeights {
 }
 
 message MsgSetWeightsResponse {}
-
-// MsgSetInferences sets the inferences for a given validator.
-message MsgSetInferences {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-
-  repeated Inference inferences = 2;
-}
-
-message MsgSetInferencesResponse {}
 
 message MsgProcessInferences {
   option (cosmos.msg.v1.signer) = "sender";
