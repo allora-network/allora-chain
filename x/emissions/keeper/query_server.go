@@ -172,7 +172,7 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
-	inference, err := qs.k.GetInference(ctx, req.TopicId, workerAddr)
+	inference, err := qs.k.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, workerAddr)
 	if err != nil {
 		return nil, err
 	}

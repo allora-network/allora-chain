@@ -263,11 +263,22 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 			return err
 		}
 		// Update the number of inferences in the reward epoch for each worker
-		return k.IncrementNumInferencesInRewardEpoch(ctx, topicId, workerAcc)
+		err = k.IncrementNumInferencesInRewardEpoch(ctx, topicId, workerAcc)
+		if err != nil {
+			return err
+		}
 	}
 
 	key := collections.Join(topicId, timestamp)
 	return k.allInferences.Set(ctx, key, inferences)
+}
+
+func (k *Keeper) GetWorkerLatestInferenceByTopicId(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	worker sdk.AccAddress) (state.Inference, error) {
+	key := collections.Join(topicId, worker)
+	return k.inferences.Get(ctx, key)
 }
 
 func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress) (Uint, error) {
