@@ -257,15 +257,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "SetInferences",
-					Use:       "set-inferences [sender] [inferences]",
-					Short:     "Set a batch of inferences on a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "inferences"},
-					},
-				},
-				{
 					RpcMethod: "ProcessInferences",
 					Use:       "process-inferences [sender] [inferences]",
 					Short:     "Process a batch of inferences",
