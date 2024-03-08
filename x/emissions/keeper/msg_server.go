@@ -183,19 +183,6 @@ func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*
 	return &state.MsgSetWeightsResponse{}, nil
 }
 
-func (ms msgServer) SetInferences(ctx context.Context, msg *state.MsgSetInferences) (*state.MsgSetInferencesResponse, error) {
-	for _, inferenceEntry := range msg.Inferences {
-		workerAddr := sdk.AccAddress(inferenceEntry.Worker)
-
-		err := ms.k.SetInference(ctx, inferenceEntry.TopicId, workerAddr, *inferenceEntry)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return &state.MsgSetInferencesResponse{}, nil
-}
-
 // T1: a tx function that accepts a list of inferences and possibly returns an error
 func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcessInferences) (*state.MsgProcessInferencesResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

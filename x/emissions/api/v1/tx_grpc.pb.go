@@ -20,7 +20,6 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Msg_UpdateParams_FullMethodName                     = "/emissions.state.v1.Msg/UpdateParams"
-	Msg_SetInferences_FullMethodName                    = "/emissions.state.v1.Msg/SetInferences"
 	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
 	Msg_SetWeights_FullMethodName                       = "/emissions.state.v1.Msg/SetWeights"
 	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
@@ -47,7 +46,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	SetInferences(ctx context.Context, in *MsgSetInferences, opts ...grpc.CallOption) (*MsgSetInferencesResponse, error)
 	ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error)
 	SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
@@ -80,15 +78,6 @@ func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
 func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
 	out := new(MsgUpdateParamsResponse)
 	err := c.cc.Invoke(ctx, Msg_UpdateParams_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) SetInferences(ctx context.Context, in *MsgSetInferences, opts ...grpc.CallOption) (*MsgSetInferencesResponse, error) {
-	out := new(MsgSetInferencesResponse)
-	err := c.cc.Invoke(ctx, Msg_SetInferences_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +260,6 @@ func (c *msgClient) RemoveFromWeightSettingWhitelist(ctx context.Context, in *Ms
 // for forward compatibility
 type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	SetInferences(context.Context, *MsgSetInferences) (*MsgSetInferencesResponse, error)
 	ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error)
 	SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
@@ -300,9 +288,6 @@ type UnimplementedMsgServer struct {
 
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
-}
-func (UnimplementedMsgServer) SetInferences(context.Context, *MsgSetInferences) (*MsgSetInferencesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetInferences not implemented")
 }
 func (UnimplementedMsgServer) ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessInferences not implemented")
@@ -388,24 +373,6 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).UpdateParams(ctx, req.(*MsgUpdateParams))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_SetInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetInferences)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).SetInferences(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_SetInferences_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetInferences(ctx, req.(*MsgSetInferences))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -762,10 +729,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
-		},
-		{
-			MethodName: "SetInferences",
-			Handler:    _Msg_SetInferences_Handler,
 		},
 		{
 			MethodName: "ProcessInferences",

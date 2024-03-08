@@ -544,30 +544,6 @@ func (s *KeeperTestSuite) TestMsgSetWeightsInvalidUnauthorized() {
 	require.ErrorIs(err, state.ErrNotInWeightSettingWhitelist, "SetWeights should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgSetInferences() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
-
-	// Create a MsgSetInferences message
-	inferencesMsg := &state.MsgSetInferences{
-		Inferences: []*state.Inference{
-			{
-				TopicId:   1,
-				Worker:    workerAddr,
-				Value:     cosmosMath.NewUint(12),
-				ExtraData: []byte("test"),
-				Proof:     "test",
-			},
-		},
-	}
-
-	_, err := msgServer.SetInferences(ctx, inferencesMsg)
-	require.NoError(err, "SetInferences should not return an error")
-}
-
 func (s *KeeperTestSuite) CreateOneTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -615,9 +591,9 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 
 	// Mock setup for inferences
 	inferences := []*state.Inference{
-		{TopicId: 0, Worker: "worker1", Value: cosmosMath.NewUint(2200)},
-		{TopicId: 0, Worker: "worker2", Value: cosmosMath.NewUint(2100)},
-		{TopicId: 2, Worker: "worker2", Value: cosmosMath.NewUint(12)},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[0].Address()).String(), Value: cosmosMath.NewUint(2200)},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[1].Address()).String(), Value: cosmosMath.NewUint(2100)},
+		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: cosmosMath.NewUint(12)},
 	}
 
 	// Call the ProcessInferences function to test writes
@@ -665,7 +641,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	require := s.Require()
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
-	// Create a MsgSetInferences message
+	// Create a MsgCreateNewTopic message
 	newTopicMsg := &state.MsgCreateNewTopic{
 		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
 		Metadata:         metadata,
