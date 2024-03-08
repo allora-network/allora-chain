@@ -98,12 +98,14 @@ func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
 		return nil
 	}
 
+	fmt.Println("Mint module: minting coins ", newCoins, " to ", types.ModuleName)
 	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
 }
 
 // AddCollectedFees implements an alias call to the underlying supply keeper's
 // AddCollectedFees to be used in BeginBlocker.
 func (k Keeper) AddCollectedFees(ctx context.Context, fees sdk.Coins) error {
+	fmt.Println("Mint module: adding collected fees ", fees, " to ", k.feeCollectorName)
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, fees)
 }
 

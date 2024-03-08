@@ -115,18 +115,30 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	fmt.Printf("\n ---------------- BeginBlock ------------------- \n")
+	fmt.Printf("\n ---------------- Emissions BeginBlock ------------------- \n")
 	percentRewardsToReputersAndWorkers, err := am.keeper.GetParamsPercentRewardsReputersWorkers(ctx)
 	if err != nil {
 		return err
 	}
 	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
+	fmt.Println("Found that ",
+		am.keeper.GetFeeCollectorName(),
+		" ",
+		feeCollectorAddress.String(),
+		" collected ",
+		feesCollectedAndEmissionsMintedLastBlock,
+		" rewards in ",
+		params.DefaultBondDenom,
+		" last block.",
+	)
 	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
 	fmt.Println(
 		"Moving ",
 		percentRewardsToReputersAndWorkers,
-		"percent of fees+minted emissions last block to reputer+worker rewards module. This amounts to ",
+		"percent of fees+minted emissions last block to reputer+worker rewards module ",
+		state.AlloraRewardsAccountName,
+		" This amounts to ",
 		reputerWorkerCut.String(),
 		` tokens.`,
 	)
@@ -141,7 +153,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	fmt.Printf("\n ---------------- EndBlock ------------------- \n")
+	fmt.Printf("\n ---------------- Emissions EndBlock ------------------- \n")
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Ensure that enough blocks have passed to hit an epoch.

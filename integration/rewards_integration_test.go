@@ -48,19 +48,20 @@ import (
 
 type IntegrationTestSuite struct {
 	suite.Suite
+	Ctx             sdk.Context
+	Addr            []sdk.AccAddress
+	AddrStr         []string
+	EncodingCfg     moduletestutil.TestEncodingConfig
+	IntegrationApp  *integration.App
+	EmissionsKeeper alloraEmissionsKeeper.Keeper
+	BankKeeper      bankkeeper.Keeper
+	AccountKeeper   authkeeper.AccountKeeper
 }
 
 func (s *IntegrationTestSuite) SetupTest() {
-}
-
-func TestIntegrationTestSuite(t *testing.T) {
-	suite.Run(t, new(IntegrationTestSuite))
-}
-
-func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 	// in this example we are testing the integration of the following modules:
 	// emissions (also referred to as state), which directly depends on auth, bank, and mint
-	encodingCfg := moduletestutil.MakeTestEncodingConfig(
+	s.EncodingCfg = moduletestutil.MakeTestEncodingConfig(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
@@ -95,8 +96,8 @@ func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 		"not_bonded_tokens_pool":        {"burner", "staking"},
 	}
 
-	accountKeeper := authkeeper.NewAccountKeeper(
-		encodingCfg.Codec,
+	s.AccountKeeper = authkeeper.NewAccountKeeper(
+		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
@@ -105,85 +106,85 @@ func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 		authority,
 	)
 	// subspace is nil because we don't test params (which is legacy anyway)
-	authModule := auth.NewAppModule(encodingCfg.Codec, accountKeeper, authsims.RandomGenesisAccounts, nil)
+	authModule := auth.NewAppModule(s.EncodingCfg.Codec, s.AccountKeeper, authsims.RandomGenesisAccounts, nil)
 
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		encodingCfg.Codec,
+	s.BankKeeper = bankkeeper.NewBaseKeeper(
+		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
-		accountKeeper,
+		s.AccountKeeper,
 		map[string]bool{},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
 	bankModule := bank.NewAppModule(
-		encodingCfg.Codec,
-		bankKeeper,
-		accountKeeper,
+		s.EncodingCfg.Codec,
+		s.BankKeeper,
+		s.AccountKeeper,
 		nil,
 	)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		authority,
 		addresscodec.NewBech32Codec(params.Bech32PrefixValAddr),
 		addresscodec.NewBech32Codec(params.Bech32PrefixConsAddr),
 	)
 	stakingModule := staking.NewAppModule(
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		stakingKeeper,
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		nil,
 	)
 
 	distrKeeper := distrkeeper.NewKeeper(
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		stakingKeeper,
 		authtypes.FeeCollectorName,
 		authority,
 	)
 	distrModule := distribution.NewAppModule(
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		distrKeeper,
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		stakingKeeper,
 		nil,
 	)
 
 	mintKeeper := mintkeeper.NewKeeper(
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
 		stakingKeeper,
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		authtypes.FeeCollectorName,
 		authority,
 	)
-	mintModule := mint.NewAppModule(encodingCfg.Codec, mintKeeper, accountKeeper)
+	mintModule := mint.NewAppModule(s.EncodingCfg.Codec, mintKeeper, s.AccountKeeper)
 
-	emissionsKeeper := alloraEmissionsKeeper.NewKeeper(
-		encodingCfg.Codec,
+	s.EmissionsKeeper = alloraEmissionsKeeper.NewKeeper(
+		s.EncodingCfg.Codec,
 		addresscodec.NewBech32Codec(params.Bech32PrefixAccAddr),
 		runtime.NewKVStoreService(keys[state.ModuleName]),
-		accountKeeper,
-		bankKeeper,
+		s.AccountKeeper,
+		s.BankKeeper,
 		authtypes.FeeCollectorName,
 	)
-	emissionsModule := emissions.NewAppModule(encodingCfg.Codec, emissionsKeeper)
+	emissionsModule := emissions.NewAppModule(s.EncodingCfg.Codec, s.EmissionsKeeper)
 
 	// create the application and register all the modules from the previous step
-	integrationApp := integration.NewIntegrationApp(
+	s.IntegrationApp = integration.NewIntegrationApp(
 		newCtx,
 		logger,
 		keys,
-		encodingCfg.Codec,
+		s.EncodingCfg.Codec,
 		map[string]appmodule.AppModule{
 			authtypes.ModuleName:    authModule,
 			banktypes.ModuleName:    bankModule,
@@ -205,62 +206,115 @@ func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 	)
 
 	// register the message and query servers
-	authtypes.RegisterMsgServer(integrationApp.MsgServiceRouter(), authkeeper.NewMsgServerImpl(accountKeeper))
-	authtypes.RegisterQueryServer(integrationApp.QueryHelper(), authkeeper.NewQueryServer(accountKeeper))
-	banktypes.RegisterMsgServer(integrationApp.MsgServiceRouter(), bankkeeper.NewMsgServerImpl(bankKeeper))
-	banktypes.RegisterQueryServer(integrationApp.QueryHelper(), bankKeeper)
-	stakingtypes.RegisterMsgServer(integrationApp.MsgServiceRouter(), stakingkeeper.NewMsgServerImpl(stakingKeeper))
-	stakingtypes.RegisterQueryServer(integrationApp.QueryHelper(), stakingkeeper.NewQuerier(stakingKeeper))
-	minttypes.RegisterMsgServer(integrationApp.MsgServiceRouter(), mintkeeper.NewMsgServerImpl(mintKeeper))
-	minttypes.RegisterQueryServer(integrationApp.QueryHelper(), mintkeeper.NewQueryServerImpl(mintKeeper))
-	state.RegisterMsgServer(integrationApp.MsgServiceRouter(), alloraEmissionsKeeper.NewMsgServerImpl(emissionsKeeper))
-	state.RegisterQueryServer(integrationApp.QueryHelper(), alloraEmissionsKeeper.NewQueryServerImpl(emissionsKeeper))
+	authtypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), authkeeper.NewMsgServerImpl(s.AccountKeeper))
+	authtypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), authkeeper.NewQueryServer(s.AccountKeeper))
+	banktypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), bankkeeper.NewMsgServerImpl(s.BankKeeper))
+	banktypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), s.BankKeeper)
+	stakingtypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), stakingkeeper.NewMsgServerImpl(stakingKeeper))
+	stakingtypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), stakingkeeper.NewQuerier(stakingKeeper))
+	minttypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), mintkeeper.NewMsgServerImpl(mintKeeper))
+	minttypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), mintkeeper.NewQueryServerImpl(mintKeeper))
+	state.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), alloraEmissionsKeeper.NewMsgServerImpl(s.EmissionsKeeper))
+	state.RegisterQueryServer(s.IntegrationApp.QueryHelper(), alloraEmissionsKeeper.NewQueryServerImpl(s.EmissionsKeeper))
 
 	// get a test account set up
-	sdkCtx := sdk.UnwrapSDKContext(integrationApp.Context())
+	s.Ctx = sdk.UnwrapSDKContext(s.IntegrationApp.Context())
 	pubkeys := simtestutil.CreateTestPubKeys(5)
-	testerAddr := sdk.AccAddress(pubkeys[0].Address())
-	testerAddrStr := testerAddr.String()
-
-	// give test account some money
+	s.Addr = make([]sdk.AccAddress, 5)
+	s.AddrStr = make([]string, 5)
 	startCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(100000)))
-	bankKeeper.MintCoins(sdkCtx, state.AlloraStakingAccountName, startCoins)
-	bankKeeper.SendCoinsFromModuleToAccount(sdkCtx, state.AlloraStakingAccountName, testerAddr, startCoins)
+	for i := 0; i < 5; i++ {
+		s.Addr[i] = sdk.AccAddress(pubkeys[i].Address())
+		s.AddrStr[i] = s.Addr[i].String()
+		// give test account some money
+		s.BankKeeper.MintCoins(s.Ctx, state.AlloraStakingAccountName, startCoins)
+		s.BankKeeper.SendCoinsFromModuleToAccount(s.Ctx, state.AlloraStakingAccountName, s.Addr[i], startCoins)
+	}
 
-	// run the init genesis for the modules, because integrationApp isn't running them correctly
+	// run the init genesis for the modules, because s.IntegrationApp isn't running them correctly
 	genesisState := state.GenesisState{
-		Params: state.DefaultParams(),
+		Params: state.Params{
+			Version:                       "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
+			EpochLength:                   int64(9),                                  // length of an "epoch" for rewards payouts in blocks
+			MinTopicUnmetDemand:           cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+			MaxTopicsPerBlock:             uint64(1000),                              // max number of topics to run cadence for per block
+			MinRequestUnmetDemand:         cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
+			MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("0.1"), // if a worker has this percentage of inferences missing, they are penalized
+			RequiredMinimumStake:          cosmosMath.NewUint(1),                     // minimum stake required to be a worker
+			RemoveStakeDelayWindow:        uint64(172800),                            // 2 days in seconds
+			MinRequestCadence:             uint64(60),                                // 1 minute in seconds
+			MinWeightCadence:              uint64(10800),                             // 3 hours in seconds
+			MaxInferenceRequestValidity:   uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
+			MaxRequestCadence:             uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
+			PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("0.5"), // 50% of rewards go to workers and reputers, 50% to cosmos validators
+		},
 		CoreTeamAddresses: []string{
-			testerAddrStr,
+			s.AddrStr[0],
 		},
 	}
-	emissionsKeeper.InitGenesis(newCtx, &genesisState)
-	mintKeeper.InitGenesis(newCtx, accountKeeper, minttypes.DefaultGenesisState())
+	s.AccountKeeper.InitGenesis(newCtx, *authtypes.DefaultGenesisState())
+	s.BankKeeper.InitGenesis(newCtx, banktypes.DefaultGenesisState())
+	s.EmissionsKeeper.InitGenesis(newCtx, &genesisState)
+	mintGenesisState := minttypes.DefaultGenesisState()
+	mintGenesisState.Params.MintDenom = params.DefaultBondDenom
+	mintKeeper.InitGenesis(newCtx, s.AccountKeeper, mintGenesisState)
 	// make sure test account is on various whitelists
-	emissionsKeeper.AddWhitelistAdmin(sdkCtx, testerAddr)
-	emissionsKeeper.AddToTopicCreationWhitelist(sdkCtx, testerAddr)
-	emissionsKeeper.AddToWeightSettingWhitelist(sdkCtx, testerAddr)
+	s.EmissionsKeeper.AddWhitelistAdmin(s.Ctx, s.Addr[0])
+	s.EmissionsKeeper.AddToTopicCreationWhitelist(s.Ctx, s.Addr[0])
+	s.EmissionsKeeper.AddToWeightSettingWhitelist(s.Ctx, s.Addr[0])
+	s.EmissionsKeeper.AddToWeightSettingWhitelist(s.Ctx, s.Addr[1])
 
-	// Set emissions module params to expected values for test
-	emissionsKeeper.SetParams(sdkCtx, state.Params{
-		Version:                       "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		EpochLength:                   int64(5),                                  // length of an "epoch" for rewards payouts in blocks
-		MinTopicUnmetDemand:           cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-		MaxTopicsPerBlock:             uint64(1000),                              // max number of topics to run cadence for per block
-		MinRequestUnmetDemand:         cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
-		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("0.1"), // if a worker has this percentage of inferences missing, they are penalized
-		RequiredMinimumStake:          cosmosMath.NewUint(1),                     // minimum stake required to be a worker
-		RemoveStakeDelayWindow:        uint64(172800),                            // 2 days in seconds
-		MinRequestCadence:             uint64(60),                                // 1 minute in seconds
-		MinWeightCadence:              uint64(10800),                             // 3 hours in seconds
-		MaxInferenceRequestValidity:   uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
-		MaxRequestCadence:             uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
-		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("0.5"), // 50% of rewards go to workers and reputers, 50% to cosmos validators
-	})
+}
+
+func TestIntegrationTestSuite(t *testing.T) {
+	suite.Run(t, new(IntegrationTestSuite))
+}
+
+func (s *IntegrationTestSuite) TestAlloraRewardsReceivesFunds() {
+
+	rewardsModuleAddr := s.AccountKeeper.GetModuleAddress(state.AlloraRewardsAccountName)
+	balanceBefore := s.BankKeeper.GetBalance(s.Ctx, rewardsModuleAddr, params.DefaultBondDenom)
 
 	// Create a topic to test with
 	topicMessage := state.MsgCreateNewTopic{
-		Creator:          testerAddrStr,
+		Creator:          s.AddrStr[0],
+		Metadata:         "metadata",
+		WeightLogic:      "logic",
+		WeightMethod:     "whatever",
+		WeightCadence:    10800,
+		InferenceLogic:   "morelogic",
+		InferenceMethod:  "whatever2",
+		InferenceCadence: 60,
+	}
+	_, err := s.IntegrationApp.RunMsg(
+		&topicMessage,
+		cosmosintegration.WithAutomaticFinalizeBlock(),
+		cosmosintegration.WithAutomaticCommit(),
+	)
+	s.Require().NoError(err)
+
+	_, err = s.IntegrationApp.RunMsg(
+		&topicMessage,
+		cosmosintegration.WithAutomaticFinalizeBlock(),
+		cosmosintegration.WithAutomaticCommit(),
+	)
+	s.Require().NoError(err)
+
+	// verify that the begin and end blocker were called
+	// verifying the block height
+	s.Require().Equal(int64(3), s.IntegrationApp.LastBlockHeight())
+
+	// on block 3 rewards get paid for what was minted on block 2
+	balanceAfter := s.BankKeeper.GetBalance(s.Ctx, rewardsModuleAddr, params.DefaultBondDenom)
+
+	s.Require().True(balanceAfter.Amount.GT(balanceBefore.Amount))
+
+}
+
+func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
+	// Create a topic to test with
+	topicMessage := state.MsgCreateNewTopic{
+		Creator:          s.AddrStr[0],
 		Metadata:         "metadata",
 		WeightLogic:      "logic",
 		WeightMethod:     "whatever",
@@ -270,7 +324,7 @@ func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 		InferenceCadence: 60,
 	}
 
-	result, err := integrationApp.RunMsg(
+	result, err := s.IntegrationApp.RunMsg(
 		&topicMessage,
 		cosmosintegration.WithAutomaticFinalizeBlock(),
 		cosmosintegration.WithAutomaticCommit(),
@@ -279,17 +333,141 @@ func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
 
 	// verify that the begin and end blocker were called
 	// verifying the block height
-	s.Require().Equal(int64(2), integrationApp.LastBlockHeight())
+	s.Require().Equal(int64(2), s.IntegrationApp.LastBlockHeight())
 
 	// we now check the result
 	response := &state.MsgCreateNewTopicResponse{}
 	expectedTopicId := uint64(1)
 	expectedResponse := &state.MsgCreateNewTopicResponse{TopicId: expectedTopicId}
-	err = encodingCfg.Codec.Unmarshal(result.Value, response)
+	err = s.EncodingCfg.Codec.Unmarshal(result.Value, response)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedResponse, response)
 
-	nextTopicId, err := emissionsKeeper.GetNumTopics(sdkCtx)
+	nextTopicId, err := s.EmissionsKeeper.GetNumTopics(s.Ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedTopicId+1, nextTopicId)
+
+	// add 2 reputers, then add 2 workers
+	reputerAmounts := []cosmosMath.Int{
+		cosmosMath.NewInt(100),
+		cosmosMath.NewInt(200),
+		cosmosMath.NewInt(300),
+		cosmosMath.NewInt(400),
+	}
+	for i := 0; i < 2; i++ {
+		reputerAddrStr := s.AddrStr[i]
+		registrationMsg := &state.MsgRegister{
+			Creator:      reputerAddrStr,
+			LibP2PKey:    "libp2pkeyReputer" + reputerAddrStr,
+			MultiAddress: "multiaddressReputer" + reputerAddrStr,
+			TopicIds:     []uint64{expectedTopicId},
+			InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[i].BigInt()),
+			IsReputer:    true,
+		}
+
+		result, err := s.IntegrationApp.RunMsg(
+			registrationMsg,
+			cosmosintegration.WithAutomaticFinalizeBlock(),
+			cosmosintegration.WithAutomaticCommit(),
+		)
+		s.Require().NoError(err)
+		response := &state.MsgRegisterResponse{}
+		expectedResponse := &state.MsgRegisterResponse{
+			Success: true,
+			Message: "Node successfully registered",
+		}
+		err = s.EncodingCfg.Codec.Unmarshal(result.Value, response)
+		s.Require().NoError(err)
+		s.Require().Equal(expectedResponse, response)
+	}
+	for i := 2; i < 4; i++ {
+		workerAddrStr := s.AddrStr[i]
+		registrationMsg := &state.MsgRegister{
+			Creator:      workerAddrStr,
+			LibP2PKey:    "libp2pkeyWorker" + workerAddrStr,
+			MultiAddress: "multiaddressWorker" + workerAddrStr,
+			TopicIds:     []uint64{expectedTopicId},
+			InitialStake: cosmosMath.NewUintFromBigInt(reputerAmounts[i].BigInt()),
+			Owner:        s.AddrStr[0],
+			IsReputer:    false,
+		}
+		result, err := s.IntegrationApp.RunMsg(
+			registrationMsg,
+			cosmosintegration.WithAutomaticFinalizeBlock(),
+			cosmosintegration.WithAutomaticCommit(),
+		)
+		s.Require().NoError(err)
+		response := &state.MsgRegisterResponse{}
+		expectedResponse := &state.MsgRegisterResponse{
+			Success: true,
+			Message: "Node successfully registered",
+		}
+		err = s.EncodingCfg.Codec.Unmarshal(result.Value, response)
+		s.Require().NoError(err)
+		s.Require().Equal(expectedResponse, response)
+	}
+
+	topicStake, err := s.EmissionsKeeper.GetTopicStake(s.Ctx, expectedTopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.NewUint(1000), topicStake)
+	s.Require().Equal(int64(6), s.IntegrationApp.LastBlockHeight())
+
+	weightsUint64 := [2][4]uint64{{10, 20, 60, 100}, {30, 40, 50, 70}}
+	// have reputers set weights
+	for i := 0; i < 2; i++ {
+		// test panicked: runtime error: invalid memory address or nil pointer dereference
+		// weights := make([]*state.Weight, 4)
+		// for j := 0; j < 4; j++ {
+		// 	weights = append(weights, &state.Weight{
+		// 		TopicId: expectedTopicId,
+		// 		Reputer: s.AddrStr[i],
+		// 		Worker:  s.AddrStr[j],
+		// 		Weight:  cosmosMath.NewUint(weightsUint64[i][j]),
+		// 	})
+		// }
+		weights := []*state.Weight{
+			{
+				TopicId: expectedTopicId,
+				Reputer: s.AddrStr[i],
+				Worker:  s.AddrStr[0],
+				Weight:  cosmosMath.NewUint(weightsUint64[i][0]),
+			},
+			{
+				TopicId: expectedTopicId,
+				Reputer: s.AddrStr[i],
+				Worker:  s.AddrStr[1],
+				Weight:  cosmosMath.NewUint(weightsUint64[i][1]),
+			},
+			{
+				TopicId: expectedTopicId,
+				Reputer: s.AddrStr[i],
+				Worker:  s.AddrStr[2],
+				Weight:  cosmosMath.NewUint(weightsUint64[i][2]),
+			},
+			{
+				TopicId: expectedTopicId,
+				Reputer: s.AddrStr[i],
+				Worker:  s.AddrStr[3],
+				Weight:  cosmosMath.NewUint(weightsUint64[i][3]),
+			},
+		}
+		weightMessage := state.MsgSetWeights{
+			Sender:  s.AddrStr[i],
+			Weights: weights,
+		}
+		resultA, err := s.IntegrationApp.RunMsg(
+			&weightMessage,
+			cosmosintegration.WithAutomaticFinalizeBlock(),
+			cosmosintegration.WithAutomaticCommit(),
+		)
+		s.Require().NoError(err)
+		responseA := &state.MsgSetWeightsResponse{}
+		expectedResponseA := &state.MsgSetWeightsResponse{}
+		err = s.EncodingCfg.Codec.Unmarshal(resultA.Value, response)
+		s.Require().NoError(err)
+		s.Require().Equal(expectedResponseA, responseA)
+	}
+	s.Require().Equal(int64(8), s.IntegrationApp.LastBlockHeight())
+
+	// here we check stake
 }
