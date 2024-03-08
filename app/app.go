@@ -13,8 +13,10 @@ import (
 	"cosmossdk.io/log"
 
 	storetypes "cosmossdk.io/store/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -29,9 +31,11 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
@@ -146,6 +150,19 @@ func NewAlloraApp(
 	}
 
 	/****  Module Options ****/
+
+	//  begin_blockers: [emissions, distribution, staking, mint]
+	//  end_blockers: [staking, emissions]
+	app.ModuleManager.SetOrderBeginBlockers(
+		emissions.ModuleName,
+		distrtypes.ModuleName,
+		stakingtypes.ModuleName,
+		minttypes.ModuleName,
+	)
+	app.ModuleManager.SetOrderEndBlockers(
+		stakingtypes.ModuleName,
+		emissions.ModuleName,
+	)
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
