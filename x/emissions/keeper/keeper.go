@@ -232,7 +232,7 @@ func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
 	return ret, nil
 }
 
-func (k *Keeper) FeeCollectorName() string {
+func (k *Keeper) GetFeeCollectorName() string {
 	return k.feeCollectorName
 }
 
@@ -1442,10 +1442,10 @@ func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (cosmosMath.LegacyDec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return cosmosMath.LegacyZeroDec(), err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -1522,10 +1522,10 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error)
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return cosmosMath.LegacyZeroDec(), err
 	}
 	return params.PercentRewardsReputersWorkers, nil
 }

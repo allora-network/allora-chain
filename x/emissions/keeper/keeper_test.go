@@ -696,13 +696,13 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
 		MaxTopicsPerBlock:             1000,
 		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:    10,
+		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("10"),
 		RequiredMinimumStake:          cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:        172800,
 		MinRequestCadence:             60,
 		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
 		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
-		PercentRewardsReputersWorkers: 50,
+		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("50"),
 	}
 
 	// Set params

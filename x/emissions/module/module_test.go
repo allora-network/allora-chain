@@ -57,10 +57,11 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                 {"fee_collector"},
+		"fee_collector":                 {"minter"},
 		"mint":                          {"minter"},
 		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
 		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		state.AlloraRewardsAccountName:  {"minter"},
 		"bonded_tokens_pool":            {"burner", "staking"},
 		"not_bonded_tokens_pool":        {"burner", "staking"},
 		multiPerm:                       {"burner", "minter", "staking"},
@@ -105,7 +106,7 @@ func (s *ModuleTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		maccPerms["fee_collector"][0])
+		authtypes.FeeCollectorName)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)

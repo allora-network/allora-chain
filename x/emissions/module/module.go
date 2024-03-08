@@ -120,10 +120,9 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.FeeCollectorName())
+	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	reputerWorkerCut := feesCollectedAndEmissionsMintedLastBlock.Amount.Mul(
-		cosmosMath.NewIntFromUint64(percentRewardsToReputersAndWorkers)).Quo(cosmosMath.NewInt(100))
+	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
 	fmt.Println(
 		"Moving ",
 		percentRewardsToReputersAndWorkers,
@@ -133,7 +132,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	)
 	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
-		am.keeper.FeeCollectorName(),
+		am.keeper.GetFeeCollectorName(),
 		state.AlloraRewardsAccountName,
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerWorkerCut)),
 	)
@@ -165,7 +164,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	err = am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		state.AlloraRequestsAccountName,
-		am.keeper.FeeCollectorName(),
+		am.keeper.GetFeeCollectorName(),
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)

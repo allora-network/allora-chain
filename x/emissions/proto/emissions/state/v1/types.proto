@@ -23,8 +23,13 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                         // delete requests if they have below this demand remaining
-  uint64 max_missing_inference_percent = 6;  // if a worker has this percentage of inferences missing, penalize them
+  ];  // delete requests if they have below this demand remaining
+  string max_missing_inference_percent = 6 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // if a worker has this percentage of inferences missing, penalize them
   string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -36,7 +41,12 @@ message Params {
   uint64 min_weight_cadence = 10;              // Fastest allowed cadence of uploading weights
   uint64 max_inference_request_validity = 11;  // longest time a subscription of inferences is allowed to be valid
   uint64 max_request_cadence = 12;  // slowest (largest) amount of time a subscription can take between inferences
-  uint64 percent_rewards_reputers_workers = 13;  // (tx fees + inflation) paid to workers/reputers. Validators get rest
+  string percent_rewards_reputers_workers = 13 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
 }
 
 // GenesisState is the state that must be provided at genesis.

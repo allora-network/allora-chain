@@ -145,8 +145,8 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.MaxMissingInferencePercent != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxMissingInferencePercent)
+	if x.MaxMissingInferencePercent != "" {
+		value := protoreflect.ValueOfString(x.MaxMissingInferencePercent)
 		if !f(fd_Params_max_missing_inference_percent, value) {
 			return
 		}
@@ -187,8 +187,8 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.PercentRewardsReputersWorkers != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.PercentRewardsReputersWorkers)
+	if x.PercentRewardsReputersWorkers != "" {
+		value := protoreflect.ValueOfString(x.PercentRewardsReputersWorkers)
 		if !f(fd_Params_percent_rewards_reputers_workers, value) {
 			return
 		}
@@ -219,7 +219,7 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		return x.MinRequestUnmetDemand != ""
 	case "emissions.state.v1.Params.max_missing_inference_percent":
-		return x.MaxMissingInferencePercent != uint64(0)
+		return x.MaxMissingInferencePercent != ""
 	case "emissions.state.v1.Params.required_minimum_stake":
 		return x.RequiredMinimumStake != ""
 	case "emissions.state.v1.Params.remove_stake_delay_window":
@@ -233,7 +233,7 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.state.v1.Params.max_request_cadence":
 		return x.MaxRequestCadence != uint64(0)
 	case "emissions.state.v1.Params.percent_rewards_reputers_workers":
-		return x.PercentRewardsReputersWorkers != uint64(0)
+		return x.PercentRewardsReputersWorkers != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -261,7 +261,7 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		x.MinRequestUnmetDemand = ""
 	case "emissions.state.v1.Params.max_missing_inference_percent":
-		x.MaxMissingInferencePercent = uint64(0)
+		x.MaxMissingInferencePercent = ""
 	case "emissions.state.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = ""
 	case "emissions.state.v1.Params.remove_stake_delay_window":
@@ -275,7 +275,7 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.state.v1.Params.max_request_cadence":
 		x.MaxRequestCadence = uint64(0)
 	case "emissions.state.v1.Params.percent_rewards_reputers_workers":
-		x.PercentRewardsReputersWorkers = uint64(0)
+		x.PercentRewardsReputersWorkers = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -309,7 +309,7 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfString(value)
 	case "emissions.state.v1.Params.max_missing_inference_percent":
 		value := x.MaxMissingInferencePercent
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfString(value)
 	case "emissions.state.v1.Params.required_minimum_stake":
 		value := x.RequiredMinimumStake
 		return protoreflect.ValueOfString(value)
@@ -330,7 +330,7 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.state.v1.Params.percent_rewards_reputers_workers":
 		value := x.PercentRewardsReputersWorkers
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -362,7 +362,7 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		x.MinRequestUnmetDemand = value.Interface().(string)
 	case "emissions.state.v1.Params.max_missing_inference_percent":
-		x.MaxMissingInferencePercent = value.Uint()
+		x.MaxMissingInferencePercent = value.Interface().(string)
 	case "emissions.state.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = value.Interface().(string)
 	case "emissions.state.v1.Params.remove_stake_delay_window":
@@ -376,7 +376,7 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	case "emissions.state.v1.Params.max_request_cadence":
 		x.MaxRequestCadence = value.Uint()
 	case "emissions.state.v1.Params.percent_rewards_reputers_workers":
-		x.PercentRewardsReputersWorkers = value.Uint()
+		x.PercentRewardsReputersWorkers = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -447,7 +447,7 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.state.v1.Params.min_request_unmet_demand":
 		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.Params.max_missing_inference_percent":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.Params.required_minimum_stake":
 		return protoreflect.ValueOfString("")
 	case "emissions.state.v1.Params.remove_stake_delay_window":
@@ -461,7 +461,7 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.state.v1.Params.max_request_cadence":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.state.v1.Params.percent_rewards_reputers_workers":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.Params"))
@@ -549,8 +549,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.MaxMissingInferencePercent != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxMissingInferencePercent))
+		l = len(x.MaxMissingInferencePercent)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		l = len(x.RequiredMinimumStake)
 		if l > 0 {
@@ -571,8 +572,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.MaxRequestCadence != 0 {
 			n += 1 + runtime.Sov(uint64(x.MaxRequestCadence))
 		}
-		if x.PercentRewardsReputersWorkers != 0 {
-			n += 1 + runtime.Sov(uint64(x.PercentRewardsReputersWorkers))
+		l = len(x.PercentRewardsReputersWorkers)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -603,10 +605,12 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.PercentRewardsReputersWorkers != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.PercentRewardsReputersWorkers))
+		if len(x.PercentRewardsReputersWorkers) > 0 {
+			i -= len(x.PercentRewardsReputersWorkers)
+			copy(dAtA[i:], x.PercentRewardsReputersWorkers)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PercentRewardsReputersWorkers)))
 			i--
-			dAtA[i] = 0x68
+			dAtA[i] = 0x6a
 		}
 		if x.MaxRequestCadence != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxRequestCadence))
@@ -640,10 +644,12 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x3a
 		}
-		if x.MaxMissingInferencePercent != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxMissingInferencePercent))
+		if len(x.MaxMissingInferencePercent) > 0 {
+			i -= len(x.MaxMissingInferencePercent)
+			copy(dAtA[i:], x.MaxMissingInferencePercent)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxMissingInferencePercent)))
 			i--
-			dAtA[i] = 0x30
+			dAtA[i] = 0x32
 		}
 		if len(x.MinRequestUnmetDemand) > 0 {
 			i -= len(x.MinRequestUnmetDemand)
@@ -860,10 +866,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				x.MinRequestUnmetDemand = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 6:
-				if wireType != 0 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxMissingInferencePercent", wireType)
 				}
-				x.MaxMissingInferencePercent = 0
+				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -873,11 +879,24 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxMissingInferencePercent |= uint64(b&0x7F) << shift
+					stringLen |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxMissingInferencePercent = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			case 7:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RequiredMinimumStake", wireType)
@@ -1006,10 +1025,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 				}
 			case 13:
-				if wireType != 0 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PercentRewardsReputersWorkers", wireType)
 				}
-				x.PercentRewardsReputersWorkers = 0
+				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1019,11 +1038,24 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.PercentRewardsReputersWorkers |= uint64(b&0x7F) << shift
+					stringLen |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PercentRewardsReputersWorkers = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -10204,19 +10236,19 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version                       string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                        // version of the protocol should be in lockstep with github release tag version
-	EpochLength                   int64  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                                                            // length of an "epoch" for rewards payouts in blocks
-	MinTopicUnmetDemand           string `protobuf:"bytes,3,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                 // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-	MaxTopicsPerBlock             uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                      // max number of topics to run cadence for per block
-	MinRequestUnmetDemand         string `protobuf:"bytes,5,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                           // delete requests if they have below this demand remaining
-	MaxMissingInferencePercent    uint64 `protobuf:"varint,6,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`           // if a worker has this percentage of inferences missing, penalize them
-	RequiredMinimumStake          string `protobuf:"bytes,7,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow        uint64 `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                       // how long to wait before allowed to remove stake
-	MinRequestCadence             uint64 `protobuf:"varint,9,opt,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`                                        // Fastest allowed cadence of a repeating inference request
-	MinWeightCadence              uint64 `protobuf:"varint,10,opt,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`                                          // Fastest allowed cadence of uploading weights
-	MaxInferenceRequestValidity   uint64 `protobuf:"varint,11,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`       // longest time a subscription of inferences is allowed to be valid
-	MaxRequestCadence             uint64 `protobuf:"varint,12,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                       // slowest (largest) amount of time a subscription can take between inferences
-	PercentRewardsReputersWorkers uint64 `protobuf:"varint,13,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"` // (tx fees + inflation) paid to workers/reputers. Validators get rest
+	Version                       string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                       // version of the protocol should be in lockstep with github release tag version
+	EpochLength                   int64  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                                                           // length of an "epoch" for rewards payouts in blocks
+	MinTopicUnmetDemand           string `protobuf:"bytes,3,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+	MaxTopicsPerBlock             uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                     // max number of topics to run cadence for per block
+	MinRequestUnmetDemand         string `protobuf:"bytes,5,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                          // delete requests if they have below this demand remaining
+	MaxMissingInferencePercent    string `protobuf:"bytes,6,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`           // if a worker has this percentage of inferences missing, penalize them
+	RequiredMinimumStake          string `protobuf:"bytes,7,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                               // minimum amount of tokens to send to stake as a reputer or worker
+	RemoveStakeDelayWindow        uint64 `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                      // how long to wait before allowed to remove stake
+	MinRequestCadence             uint64 `protobuf:"varint,9,opt,name=min_request_cadence,json=minRequestCadence,proto3" json:"min_request_cadence,omitempty"`                                       // Fastest allowed cadence of a repeating inference request
+	MinWeightCadence              uint64 `protobuf:"varint,10,opt,name=min_weight_cadence,json=minWeightCadence,proto3" json:"min_weight_cadence,omitempty"`                                         // Fastest allowed cadence of uploading weights
+	MaxInferenceRequestValidity   uint64 `protobuf:"varint,11,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`      // longest time a subscription of inferences is allowed to be valid
+	MaxRequestCadence             uint64 `protobuf:"varint,12,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                      // slowest (largest) amount of time a subscription can take between inferences
+	PercentRewardsReputersWorkers string `protobuf:"bytes,13,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"` // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
 }
 
 func (x *Params) Reset() {
@@ -10274,11 +10306,11 @@ func (x *Params) GetMinRequestUnmetDemand() string {
 	return ""
 }
 
-func (x *Params) GetMaxMissingInferencePercent() uint64 {
+func (x *Params) GetMaxMissingInferencePercent() string {
 	if x != nil {
 		return x.MaxMissingInferencePercent
 	}
-	return 0
+	return ""
 }
 
 func (x *Params) GetRequiredMinimumStake() string {
@@ -10323,11 +10355,11 @@ func (x *Params) GetMaxRequestCadence() uint64 {
 	return 0
 }
 
-func (x *Params) GetPercentRewardsReputersWorkers() uint64 {
+func (x *Params) GetPercentRewardsReputersWorkers() string {
 	if x != nil {
 		return x.PercentRewardsReputersWorkers
 	}
-	return 0
+	return ""
 }
 
 // GenesisState is the state that must be provided at genesis.
@@ -11181,7 +11213,7 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f,
-	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xd0, 0x06, 0x0a, 0x06, 0x50, 0x61, 0x72,
+	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc0, 0x07, 0x0a, 0x06, 0x50, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x21, 0x0a,
 	0x0c, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x02, 0x20,
@@ -11202,37 +11234,44 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
 	0x52, 0x15, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x55, 0x6e, 0x6d, 0x65,
-	0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x41, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x6d,
+	0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x79, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1a,
-	0x6d, 0x61, 0x78, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x68, 0x0a, 0x16, 0x72, 0x65,
-	0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x5f, 0x73,
-	0x74, 0x61, 0x6b, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00,
-	0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
-	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14,
-	0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x73,
-	0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x12,
-	0x2e, 0x0a, 0x13, 0x6d, 0x69, 0x6e, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63,
-	0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11, 0x6d, 0x69,
-	0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12,
-	0x2c, 0x0a, 0x12, 0x6d, 0x69, 0x6e, 0x5f, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63, 0x61,
-	0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04, 0x52, 0x10, 0x6d, 0x69, 0x6e,
-	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x43, 0x0a,
-	0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x72,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x18,
-	0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x69,
-	0x74, 0x79, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x11, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e,
-	0x63, 0x65, 0x12, 0x47, 0x0a, 0x20, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65,
-	0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x77,
-	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1d, 0x70, 0x65,
+	0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79,
+	0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65,
+	0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1a, 0x6d, 0x61, 0x78, 0x4d, 0x69, 0x73, 0x73, 0x69,
+	0x6e, 0x67, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63, 0x65,
+	0x6e, 0x74, 0x12, 0x68, 0x0a, 0x16, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f, 0x6d,
+	0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64,
+	0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19,
+	0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c,
+	0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61,
+	0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x69, 0x6e, 0x5f, 0x72,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x09,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x11, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x12, 0x6d, 0x69, 0x6e, 0x5f, 0x77,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0a, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x10, 0x6d, 0x69, 0x6e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x43, 0x61,
+	0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x76,
+	0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x1b, 0x6d,
+	0x61, 0x78, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x61,
+	0x78, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63,
+	0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x7f, 0x0a, 0x20, 0x70, 0x65,
+	0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x72, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x18, 0x0d,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1d, 0x70, 0x65,
 	0x72, 0x63, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x70, 0x75,
 	0x74, 0x65, 0x72, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x22, 0x78, 0x0a, 0x0c, 0x47,
 	0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x38, 0x0a, 0x06, 0x70,
