@@ -160,6 +160,8 @@ type Keeper struct {
 	topicCreationWhitelist collections.KeySet[sdk.AccAddress]
 
 	weightSettingWhitelist collections.KeySet[sdk.AccAddress]
+
+	foundationWhitelist collections.KeySet[sdk.AccAddress]
 }
 
 func NewKeeper(
@@ -203,6 +205,7 @@ func NewKeeper(
 		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		weightSettingWhitelist:     collections.NewKeySet(sb, state.WeightSettingWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
+		foundationWhitelist:        collections.NewKeySet(sb, state.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
 	}
 
 	schema, err := sb.Build()
@@ -1658,9 +1661,9 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	return nil
 }
 
-//
-// WHITELIST FUNCTIONS
-//
+///
+/// WHITELIST FUNCTIONS
+///
 
 func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
 	return k.whitelistAdmins.Has(ctx, admin)
@@ -1698,9 +1701,47 @@ func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address s
 	return k.weightSettingWhitelist.Remove(ctx, address)
 }
 
-//
-// BANK KEEPER WRAPPERS
-//
+func (k *Keeper) IsInFoundationWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.foundationWhitelist.Has(ctx, address)
+}
+
+func (k *Keeper) AddToFoundationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.foundationWhitelist.Set(ctx, address)
+}
+
+func (k *Keeper) RemoveFromFoundationWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.foundationWhitelist.Remove(ctx, address)
+}
+
+///
+/// PER-TOPIC TREASURY FUNCTIONS
+///
+
+// Sets the subsidy for the topic within the topic struct
+// Should only be called by a member of the foundation whitelist
+func (k *Keeper) SetTopicSubsidy(ctx context.Context, topicId TOPIC_ID, subsidy uint64) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.Subsidy = subsidy
+	return k.topics.Set(ctx, topicId, topic)
+}
+
+// Sets the subsidy for the topic within the topic struct
+// Should only be called by a member of the foundation whitelist
+func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreasury float32) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.FTreasury = fTreasury
+	return k.topics.Set(ctx, topicId, topic)
+}
+
+///
+/// BANK KEEPER WRAPPERS
+///
 
 // SendCoinsFromModuleToModule
 func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {

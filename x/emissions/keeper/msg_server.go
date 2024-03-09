@@ -138,6 +138,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		InferenceLastRan: 0,
 		Active:           true,
 		DefaultArg:       msg.DefaultArg,
+		Pnorm:            msg.Pnorm,
+		AlphaRegret:      msg.AlphaRegret,
+		PrewardReputer:   msg.PrewardReputer,
+		PrewardInference: msg.PrewardInference,
+		PrewardForecast:  msg.PrewardForecast,
+		FTolerance:       msg.FTolerance,
+		Subsidy:          0, // default value. can later be updated by a Foundation member
+		FTreasury:        0, // default value. can later be updated by a Foundation member
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -916,6 +924,37 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 }
 
 ///
+/// FOUNDATION TOPIC MANAGEMENT FUNCTIONS
+///
+
+// Modfies topic subsidy and f_treasury properties
+// Can only be called by a whitelisted foundation member
+func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModifyTopicSubsidyAndFTreasury) (*state.MsgModifyTopicSubsidyAndFTreasuryResponse, error) {
+	// Check that sender is in the foundation whitelist
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsInFoundationWhitelist(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Modify the topic subsidy + F_treasury
+	err = ms.k.SetTopicSubsidy(ctx, msg.TopicId, msg.Subsidy)
+	if err != nil {
+		return nil, err
+	}
+	err = ms.k.SetTopicFTreasury(ctx, msg.TopicId, msg.FTreasury)
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgModifyTopicSubsidyAndFTreasuryResponse{Success: true}, nil
+}
+
+///
 /// WHITELIST FUNCTIONS
 ///
 
@@ -1067,4 +1106,54 @@ func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *s
 		return nil, err
 	}
 	return &state.MsgRemoveFromWeightSettingWhitelistResponse{}, nil
+}
+
+func (ms msgServer) AddToFoundationWhitelist(ctx context.Context, msg *state.MsgAddToFoundationWhitelist) (*state.MsgAddToFoundationWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Add the address to the foundation whitelist
+	err = ms.k.AddToFoundationWhitelist(ctx, targetAddr)
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgAddToFoundationWhitelistResponse{}, nil
+}
+
+func (ms msgServer) RemoveFromFoundationWhitelist(ctx context.Context, msg *state.MsgRemoveFromFoundationWhitelist) (*state.MsgRemoveFromFoundationWhitelistResponse, error) {
+	// Check that sender is also a whitelist admin
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Remove the address from the foundation whitelist
+	err = ms.k.RemoveFromFoundationWhitelist(ctx, targetAddr)
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgRemoveFromFoundationWhitelistResponse{}, nil
 }

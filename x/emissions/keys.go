@@ -37,4 +37,5 @@ var (
 	TopicCreationWhitelistKey     = collections.NewPrefix(27)
 	WeightSettingWhitelistKey     = collections.NewPrefix(28)
 	ChurnReadyTopicsKey           = collections.NewPrefix(30)
+	FoundationWhitelistKey        = collections.NewPrefix(31)
 )

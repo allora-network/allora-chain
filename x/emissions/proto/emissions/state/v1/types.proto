@@ -42,6 +42,12 @@ message Params {
   uint64 min_weight_cadence = 12;              // Fastest allowed cadence of uploading weights
   uint64 max_inference_request_validity = 13;  // longest time a subscription of inferences is allowed to be valid
   uint64 max_request_cadence = 14;  // slowest (largest) amount of time a subscription can take between inferences
+  uint64 sharpness = 15; // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
+  float beta_entropy = 16; // controls resilience of reward payouts against copycat workers
+  float dcoef_abs = 17; // delta for numerical differentiation
+  float learning_rate = 18; // speed of gradient descent
+  float max_gradient_threshold = 19; // gradient descent stops when gradient falls below this
+  float min_stake_fraction = 20; // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 }
 
 // GenesisState is the state that must be provided at genesis.
@@ -70,6 +76,14 @@ message Topic {
   uint64 inference_last_ran = 11;
   bool active = 12;
   string default_arg = 13;
+  uint64 pnorm = 14;
+  float alpha_regret = 15;
+  float preward_reputer = 16;
+  float preward_inference = 17;
+  float preward_forecast = 18;
+  float f_tolerance = 19;
+  uint64 subsidy = 20;
+  float f_treasury = 21;
 }
 
 message TopicList {

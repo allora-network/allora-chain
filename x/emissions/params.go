@@ -20,6 +20,12 @@ func DefaultParams() Params {
 		MinWeightCadence:            uint64(60 * 60),               // 1 hour in seconds
 		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
 		MaxRequestCadence:           uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
+		Sharpness:                   uint64(20),                    // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
+		BetaEntropy:                 float32(0.25),                 // controls resilience of reward payouts against copycat workers
+		DcoefAbs:                    float32(0.001),                // delta for numerical differentiation
+		LearningRate:                float32(0.05),                 // speed of gradient descent
+		MaxGradientThreshold:        float32(0.001),                // gradient descent stops when gradient falls below this
+		MinStakeFraction:            float32(0.5),                  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 	}
 }
 
@@ -73,6 +79,30 @@ func DefaultParamsMaxInferenceRequestValidity() uint64 {
 
 func DefaultParamsMaxRequestCadence() uint64 {
 	return DefaultParams().MaxRequestCadence
+}
+
+func DefaultParamsSharpness() uint64 {
+	return DefaultParams().Sharpness
+}
+
+func DefaultParamsBetaEntropy() float32 {
+	return DefaultParams().BetaEntropy
+}
+
+func DefaultParamsDcoefAbs() float32 {
+	return DefaultParams().DcoefAbs
+}
+
+func DefaultParamsLearningRate() float32 {
+	return DefaultParams().LearningRate
+}
+
+func DefaultParamsMaxGradientThreshold() float32 {
+	return DefaultParams().MaxGradientThreshold
+}
+
+func DefaultParamsMinStakeFraction() float32 {
+	return DefaultParams().MinStakeFraction
 }
 
 // Validate does the sanity check on the params.

@@ -120,11 +120,25 @@ message MsgCreateNewTopic {
   string inference_method = 7;
   uint64 inference_cadence = 8;
   string default_arg = 9;
+  uint64 pnorm = 10;
+  float alpha_regret = 11;
+  float preward_reputer = 12;
+  float preward_inference = 13;
+  float preward_forecast = 14;
+  float f_tolerance = 15;
 }
 
 message MsgCreateNewTopicResponse {
   uint64 topic_id = 1;
 }
+
+message MsgSetGlobalFoundationTopicParams {
+  uint64 topic_id = 1;
+  uint64 subsidy = 2;
+  float f_treasury = 3;
+}
+
+message MsgSetGlobalFoundationTopicParamsResponse {}
 
 // MsgSetWeights sets the weights for a given validator.
 message MsgSetWeights {
@@ -338,6 +352,28 @@ message MsgRemoveFromWeightSettingWhitelist {
 
 message MsgRemoveFromWeightSettingWhitelistResponse {}
 
+message MsgAddToFoundationWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgAddToFoundationWhitelistResponse {}
+
+message MsgRemoveFromFoundationWhitelist {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string address = 2;
+}
+
+message MsgRemoveFromFoundationWhitelistResponse {}
+
+///
+/// Topic Management
+///
+
 message MsgReactivateTopic {
   option (cosmos.msg.v1.signer) = "sender";
 
@@ -346,5 +382,22 @@ message MsgReactivateTopic {
 }
 
 message MsgReactivateTopicResponse {
+  bool success = 1;
+}
+
+///
+/// Foundation Topic Management
+///
+
+message MsgModifyTopicSubsidyAndFTreasury {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  uint64 topic_id = 2;
+  uint64 subsidy = 3;
+  float f_treasury = 4;
+}
+
+message MsgModifyTopicSubsidyAndFTreasuryResponse {
   bool success = 1;
 }
