@@ -138,6 +138,9 @@ type Keeper struct {
 	// map of (topic, worker) -> inference
 	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
 
+	// map of (topic, worker) -> forecast[]
+	forecasts collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Forecast]
+
 	// map of (topic, worker) -> num_inferences_in_reward_epoch
 	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], Uint]
 
@@ -152,6 +155,9 @@ type Keeper struct {
 
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
+
+	// map of (topic, timestamp, index) -> Inference
+	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Forecasts]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
@@ -197,9 +203,11 @@ func NewKeeper(
 		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
 		weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
+		forecasts:                  collections.NewMap(sb, state.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Forecast](cdc)),
 		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
+		allForecasts:               collections.NewMap(sb, state.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Forecasts](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
@@ -274,6 +282,30 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 
 	key := collections.Join(topicId, timestamp)
 	return k.allInferences.Set(ctx, key, inferences)
+}
+
+// Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestamp uint64, forecasts state.Forecasts) error {
+	for _, forecast := range forecasts.Forecasts {
+		// Update latests forecasts for each worker
+		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
+		if err != nil {
+			return err
+		}
+		key := collections.Join(topicId, workerAcc)
+		err = k.forecasts.Set(ctx, key, *forecast)
+		if err != nil {
+			return err
+		}
+		// // Update the number of forecasts in the reward epoch for each forecaster
+		// err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
+		// if err != nil {
+		// 	return err
+		// }
+	}
+
+	key := collections.Join(topicId, timestamp)
+	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(

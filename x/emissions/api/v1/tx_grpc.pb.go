@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Msg_UpdateParams_FullMethodName                     = "/emissions.state.v1.Msg/UpdateParams"
 	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
+	Msg_ProcessForecasts_FullMethodName                 = "/emissions.state.v1.Msg/ProcessForecasts"
 	Msg_SetWeights_FullMethodName                       = "/emissions.state.v1.Msg/SetWeights"
 	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
 	Msg_ReactivateTopic_FullMethodName                  = "/emissions.state.v1.Msg/ReactivateTopic"
@@ -39,6 +40,8 @@ const (
 	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromTopicCreationWhitelist"
 	Msg_AddToWeightSettingWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToWeightSettingWhitelist"
 	Msg_RemoveFromWeightSettingWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromWeightSettingWhitelist"
+	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.state.v1.Msg/AddToFoundationWhitelist"
+	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.state.v1.Msg/RemoveFromFoundationWhitelist"
 )
 
 // MsgClient is the client API for Msg service.
@@ -47,6 +50,7 @@ const (
 type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error)
+	ProcessForecasts(ctx context.Context, in *MsgProcessForecasts, opts ...grpc.CallOption) (*MsgProcessForecastsResponse, error)
 	SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
 	ReactivateTopic(ctx context.Context, in *MsgReactivateTopic, opts ...grpc.CallOption) (*MsgReactivateTopicResponse, error)
@@ -65,6 +69,8 @@ type MsgClient interface {
 	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToWeightSettingWhitelist(ctx context.Context, in *MsgAddToWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgAddToWeightSettingWhitelistResponse, error)
 	RemoveFromWeightSettingWhitelist(ctx context.Context, in *MsgRemoveFromWeightSettingWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromWeightSettingWhitelistResponse, error)
+	AddToFoundationWhitelist(ctx context.Context, in *MsgAddToFoundationWhitelist, opts ...grpc.CallOption) (*MsgAddToFoundationWhitelistResponse, error)
+	RemoveFromFoundationWhitelist(ctx context.Context, in *MsgRemoveFromFoundationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromFoundationWhitelistResponse, error)
 }
 
 type msgClient struct {
@@ -87,6 +93,15 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 func (c *msgClient) ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error) {
 	out := new(MsgProcessInferencesResponse)
 	err := c.cc.Invoke(ctx, Msg_ProcessInferences_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ProcessForecasts(ctx context.Context, in *MsgProcessForecasts, opts ...grpc.CallOption) (*MsgProcessForecastsResponse, error) {
+	out := new(MsgProcessForecastsResponse)
+	err := c.cc.Invoke(ctx, Msg_ProcessForecasts_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -255,12 +270,31 @@ func (c *msgClient) RemoveFromWeightSettingWhitelist(ctx context.Context, in *Ms
 	return out, nil
 }
 
+func (c *msgClient) AddToFoundationWhitelist(ctx context.Context, in *MsgAddToFoundationWhitelist, opts ...grpc.CallOption) (*MsgAddToFoundationWhitelistResponse, error) {
+	out := new(MsgAddToFoundationWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_AddToFoundationWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveFromFoundationWhitelist(ctx context.Context, in *MsgRemoveFromFoundationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromFoundationWhitelistResponse, error) {
+	out := new(MsgRemoveFromFoundationWhitelistResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveFromFoundationWhitelist_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error)
+	ProcessForecasts(context.Context, *MsgProcessForecasts) (*MsgProcessForecastsResponse, error)
 	SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
 	ReactivateTopic(context.Context, *MsgReactivateTopic) (*MsgReactivateTopicResponse, error)
@@ -279,6 +313,8 @@ type MsgServer interface {
 	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToWeightSettingWhitelist(context.Context, *MsgAddToWeightSettingWhitelist) (*MsgAddToWeightSettingWhitelistResponse, error)
 	RemoveFromWeightSettingWhitelist(context.Context, *MsgRemoveFromWeightSettingWhitelist) (*MsgRemoveFromWeightSettingWhitelistResponse, error)
+	AddToFoundationWhitelist(context.Context, *MsgAddToFoundationWhitelist) (*MsgAddToFoundationWhitelistResponse, error)
+	RemoveFromFoundationWhitelist(context.Context, *MsgRemoveFromFoundationWhitelist) (*MsgRemoveFromFoundationWhitelistResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -291,6 +327,9 @@ func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*
 }
 func (UnimplementedMsgServer) ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessInferences not implemented")
+}
+func (UnimplementedMsgServer) ProcessForecasts(context.Context, *MsgProcessForecasts) (*MsgProcessForecastsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProcessForecasts not implemented")
 }
 func (UnimplementedMsgServer) SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetWeights not implemented")
@@ -346,6 +385,12 @@ func (UnimplementedMsgServer) AddToWeightSettingWhitelist(context.Context, *MsgA
 func (UnimplementedMsgServer) RemoveFromWeightSettingWhitelist(context.Context, *MsgRemoveFromWeightSettingWhitelist) (*MsgRemoveFromWeightSettingWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWeightSettingWhitelist not implemented")
 }
+func (UnimplementedMsgServer) AddToFoundationWhitelist(context.Context, *MsgAddToFoundationWhitelist) (*MsgAddToFoundationWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddToFoundationWhitelist not implemented")
+}
+func (UnimplementedMsgServer) RemoveFromFoundationWhitelist(context.Context, *MsgRemoveFromFoundationWhitelist) (*MsgRemoveFromFoundationWhitelistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromFoundationWhitelist not implemented")
+}
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
 // UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
@@ -391,6 +436,24 @@ func _Msg_ProcessInferences_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).ProcessInferences(ctx, req.(*MsgProcessInferences))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ProcessForecasts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgProcessForecasts)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ProcessForecasts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ProcessForecasts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ProcessForecasts(ctx, req.(*MsgProcessForecasts))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -719,6 +782,42 @@ func _Msg_RemoveFromWeightSettingWhitelist_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_AddToFoundationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddToFoundationWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddToFoundationWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_AddToFoundationWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddToFoundationWhitelist(ctx, req.(*MsgAddToFoundationWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveFromFoundationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveFromFoundationWhitelist)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveFromFoundationWhitelist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RemoveFromFoundationWhitelist_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveFromFoundationWhitelist(ctx, req.(*MsgRemoveFromFoundationWhitelist))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -733,6 +832,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ProcessInferences",
 			Handler:    _Msg_ProcessInferences_Handler,
+		},
+		{
+			MethodName: "ProcessForecasts",
+			Handler:    _Msg_ProcessForecasts_Handler,
 		},
 		{
 			MethodName: "SetWeights",
@@ -805,6 +908,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromWeightSettingWhitelist",
 			Handler:    _Msg_RemoveFromWeightSettingWhitelist_Handler,
+		},
+		{
+			MethodName: "AddToFoundationWhitelist",
+			Handler:    _Msg_AddToFoundationWhitelist_Handler,
+		},
+		{
+			MethodName: "RemoveFromFoundationWhitelist",
+			Handler:    _Msg_RemoveFromFoundationWhitelist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

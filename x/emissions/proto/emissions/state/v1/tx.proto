@@ -17,6 +17,8 @@ service Msg {
 
   rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
 
+  rpc ProcessForecasts(MsgProcessForecasts) returns (MsgProcessForecastsResponse);
+
   rpc SetWeights(MsgSetWeights) returns (MsgSetWeightsResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
@@ -54,6 +56,10 @@ service Msg {
 
   rpc RemoveFromWeightSettingWhitelist(MsgRemoveFromWeightSettingWhitelist)
       returns (MsgRemoveFromWeightSettingWhitelistResponse);
+
+  rpc AddToFoundationWhitelist(MsgAddToFoundationWhitelist) returns (MsgAddToFoundationWhitelistResponse);
+
+  rpc RemoveFromFoundationWhitelist(MsgRemoveFromFoundationWhitelist) returns (MsgRemoveFromFoundationWhitelistResponse);
 }
 
 // Because gocosmos, grpc-gateway, and go-pulsar do not support optional fields
@@ -161,9 +167,20 @@ message MsgProcessInferences {
 
 message MsgProcessInferencesResponse {}
 
+message MsgProcessForecasts {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+
+  repeated Forecast forecasts = 2;
+}
+
+message MsgProcessForecastsResponse {}
+
 ///
 ///  Inference Node Registration
 ///
+
 message MsgRegister {
   option (cosmos.msg.v1.signer) = "creator";
 
