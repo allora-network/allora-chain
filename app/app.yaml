@@ -28,16 +28,14 @@ modules:
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
         - account : allorastaking
-          permissions: [burner, minter, staking]
         - account : allorarequests
-          permissions: [burner, minter, staking]
         - account : distribution
         - account : allorarewards
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
       blocked_module_accounts_override:
-        [auth, bonded_tokens_pool, not_bonded_tokens_pool, emissions, allorastaking, allorarequests, allorarewards, distribution]
+        [auth, bonded_tokens_pool, not_bonded_tokens_pool, allorastaking, allorarequests, allorarewards, distribution]
   - name: staking
     config:
       "@type": cosmos.staking.module.v1.Module
