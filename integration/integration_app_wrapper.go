@@ -56,6 +56,10 @@ func NewIntegrationApp(
 
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	moduleManager := module.NewManagerFromMap(modules)
+	// for moduleName := range moduleManager.Modules {
+	// 	_, ok := moduleManager.Modules[moduleName].(appmodule.HasBeginBlocker)
+	// 	fmt.Println(moduleName, " ", ok)
+	// }
 
 	moduleManager.SetOrderBeginBlockers(moduleBeginBlockOrder...)
 	moduleManager.SetOrderEndBlockers(moduleEndBlockOrder...)

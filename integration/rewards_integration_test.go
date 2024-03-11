@@ -53,9 +53,12 @@ type IntegrationTestSuite struct {
 	AddrStr         []string
 	EncodingCfg     moduletestutil.TestEncodingConfig
 	IntegrationApp  *integration.App
-	EmissionsKeeper alloraEmissionsKeeper.Keeper
-	BankKeeper      bankkeeper.Keeper
 	AccountKeeper   authkeeper.AccountKeeper
+	BankKeeper      bankkeeper.Keeper
+	StakingKeeper   *stakingkeeper.Keeper
+	DistrKeeper     distrkeeper.Keeper
+	MintKeeper      mintkeeper.Keeper
+	EmissionsKeeper alloraEmissionsKeeper.Keeper
 }
 
 func (s *IntegrationTestSuite) SetupTest() {
@@ -123,7 +126,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 		nil,
 	)
 
-	stakingKeeper := stakingkeeper.NewKeeper(
+	s.StakingKeeper = stakingkeeper.NewKeeper(
 		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		s.AccountKeeper,
@@ -134,34 +137,34 @@ func (s *IntegrationTestSuite) SetupTest() {
 	)
 	stakingModule := staking.NewAppModule(
 		s.EncodingCfg.Codec,
-		stakingKeeper,
+		s.StakingKeeper,
 		s.AccountKeeper,
 		s.BankKeeper,
 		nil,
 	)
 
-	distrKeeper := distrkeeper.NewKeeper(
+	s.DistrKeeper = distrkeeper.NewKeeper(
 		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
 		s.AccountKeeper,
 		s.BankKeeper,
-		stakingKeeper,
+		s.StakingKeeper,
 		authtypes.FeeCollectorName,
 		authority,
 	)
 	distrModule := distribution.NewAppModule(
 		s.EncodingCfg.Codec,
-		distrKeeper,
+		s.DistrKeeper,
 		s.AccountKeeper,
 		s.BankKeeper,
-		stakingKeeper,
+		s.StakingKeeper,
 		nil,
 	)
 
 	mintKeeper := mintkeeper.NewKeeper(
 		s.EncodingCfg.Codec,
 		runtime.NewKVStoreService(keys[minttypes.StoreKey]),
-		stakingKeeper,
+		s.StakingKeeper,
 		s.AccountKeeper,
 		s.BankKeeper,
 		authtypes.FeeCollectorName,
@@ -210,8 +213,8 @@ func (s *IntegrationTestSuite) SetupTest() {
 	authtypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), authkeeper.NewQueryServer(s.AccountKeeper))
 	banktypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), bankkeeper.NewMsgServerImpl(s.BankKeeper))
 	banktypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), s.BankKeeper)
-	stakingtypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), stakingkeeper.NewMsgServerImpl(stakingKeeper))
-	stakingtypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), stakingkeeper.NewQuerier(stakingKeeper))
+	stakingtypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), stakingkeeper.NewMsgServerImpl(s.StakingKeeper))
+	stakingtypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), stakingkeeper.NewQuerier(s.StakingKeeper))
 	minttypes.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), mintkeeper.NewMsgServerImpl(mintKeeper))
 	minttypes.RegisterQueryServer(s.IntegrationApp.QueryHelper(), mintkeeper.NewQueryServerImpl(mintKeeper))
 	state.RegisterMsgServer(s.IntegrationApp.MsgServiceRouter(), alloraEmissionsKeeper.NewMsgServerImpl(s.EmissionsKeeper))
@@ -232,6 +235,13 @@ func (s *IntegrationTestSuite) SetupTest() {
 	}
 
 	// run the init genesis for the modules, because s.IntegrationApp isn't running them correctly
+	s.AccountKeeper.InitGenesis(newCtx, *authtypes.DefaultGenesisState())
+	s.BankKeeper.InitGenesis(newCtx, banktypes.DefaultGenesisState())
+	stakingDefaultParams := stakingtypes.DefaultGenesisState()
+	stakingDefaultParams.Params.BondDenom = params.DefaultBondDenom
+	s.StakingKeeper.InitGenesis(newCtx, stakingDefaultParams)
+	distrGenesisState := distrtypes.DefaultGenesisState()
+	s.DistrKeeper.InitGenesis(newCtx, *distrGenesisState)
 	genesisState := state.GenesisState{
 		Params: state.Params{
 			Version:                       "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
@@ -252,8 +262,6 @@ func (s *IntegrationTestSuite) SetupTest() {
 			s.AddrStr[0],
 		},
 	}
-	s.AccountKeeper.InitGenesis(newCtx, *authtypes.DefaultGenesisState())
-	s.BankKeeper.InitGenesis(newCtx, banktypes.DefaultGenesisState())
 	s.EmissionsKeeper.InitGenesis(newCtx, &genesisState)
 	mintGenesisState := minttypes.DefaultGenesisState()
 	mintGenesisState.Params.MintDenom = params.DefaultBondDenom
@@ -309,6 +317,51 @@ func (s *IntegrationTestSuite) TestAlloraRewardsReceivesFunds() {
 
 	s.Require().True(balanceAfter.Amount.GT(balanceBefore.Amount))
 
+}
+
+func (s *IntegrationTestSuite) TestDistributionModuleReceivesFunds() {
+	distrModuleAddr := s.AccountKeeper.GetModuleAddress(distrtypes.ModuleName)
+	balanceBefore := s.BankKeeper.GetBalance(s.Ctx, distrModuleAddr, params.DefaultBondDenom)
+
+	// Create a topic to test with
+	topicMessage := state.MsgCreateNewTopic{
+		Creator:          s.AddrStr[0],
+		Metadata:         "metadata",
+		WeightLogic:      "logic",
+		WeightMethod:     "whatever",
+		WeightCadence:    10800,
+		InferenceLogic:   "morelogic",
+		InferenceMethod:  "whatever2",
+		InferenceCadence: 60,
+	}
+	_, err := s.IntegrationApp.RunMsg(
+		&topicMessage,
+		cosmosintegration.WithAutomaticFinalizeBlock(),
+		cosmosintegration.WithAutomaticCommit(),
+	)
+	s.Require().NoError(err)
+
+	_, err = s.IntegrationApp.RunMsg(
+		&topicMessage,
+		cosmosintegration.WithAutomaticFinalizeBlock(),
+		cosmosintegration.WithAutomaticCommit(),
+	)
+	s.Require().NoError(err)
+
+	_, err = s.IntegrationApp.RunMsg(
+		&topicMessage,
+		cosmosintegration.WithAutomaticFinalizeBlock(),
+		cosmosintegration.WithAutomaticCommit(),
+	)
+	s.Require().NoError(err)
+
+	// verify that the begin and end blocker were called
+	// verifying the block height
+	s.Require().Equal(int64(4), s.IntegrationApp.LastBlockHeight())
+
+	// on block 3 rewards get paid for what was minted on block 2
+	balanceAfter := s.BankKeeper.GetBalance(s.Ctx, distrModuleAddr, params.DefaultBondDenom)
+	s.Require().True(balanceAfter.Amount.GT(balanceBefore.Amount))
 }
 
 func (s *IntegrationTestSuite) TestEmitRewardsSimple() {
