@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	cosmosMath "cosmossdk.io/math"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -118,8 +117,8 @@ func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *state.QueryGe
 	return &state.QueryGetTopicsByCreatorResponse{Topics: topics}, nil
 }
 
-// GetAccountStakeList retrieves a list of stakes for a given account address.
-func (qs queryServer) GetAccountStakeList(ctx context.Context, req *state.QueryAccountStakeListRequest) (*state.QueryAccountStakeListResponse, error) {
+// GetReputerStakeList retrieves a list of stakes for a given account address.
+func (qs queryServer) GetReputerStakeList(ctx context.Context, req *state.QueryReputerStakeListRequest) (*state.QueryReputerStakeListResponse, error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -129,29 +128,17 @@ func (qs queryServer) GetAccountStakeList(ctx context.Context, req *state.QueryA
 		return nil, err
 	}
 
-	stakes, err := qs.k.GetStakesForAccount(ctx, address)
+	stakes, err := qs.k.GetStakePlacementsForReputer(ctx, address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &state.QueryAccountStakeListResponse{Stakes: stakes}, nil
-}
-
-// GetWeight find out how much weight the reputer has placed upon the worker for a given topid ID, reputer and worker.
-func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightRequest) (*state.QueryWeightResponse, error) {
-	reputerAddr := sdk.AccAddress(req.Reputer)
-	workerAddr := sdk.AccAddress(req.Worker)
-
-	key := collections.Join3(req.TopicId, reputerAddr, workerAddr)
-	weight, err := qs.k.weights.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &state.QueryWeightResponse{Amount: cosmosMath.ZeroUint()}, nil
-		}
-		return nil, err
+	var stakePointers []*state.StakeInfo
+	for _, stake := range stakes {
+		stakePointers = append(stakePointers, &stake)
 	}
 
-	return &state.QueryWeightResponse{Amount: weight}, nil
+	return &state.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
 }
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.

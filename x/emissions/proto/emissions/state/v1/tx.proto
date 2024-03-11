@@ -19,7 +19,7 @@ service Msg {
 
   rpc ProcessForecasts(MsgProcessForecasts) returns (MsgProcessForecastsResponse);
 
-  rpc SetWeights(MsgSetWeights) returns (MsgSetWeightsResponse);
+  rpc SetLosses(MsgSetLosses) returns (MsgSetLossesResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
@@ -32,8 +32,6 @@ service Msg {
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
-
-  rpc ModifyStake(MsgModifyStake) returns (MsgModifyStakeResponse);
 
   rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
 
@@ -146,8 +144,8 @@ message MsgSetGlobalFoundationTopicParams {
 
 message MsgSetGlobalFoundationTopicParamsResponse {}
 
-// MsgSetWeights sets the weights for a given validator.
-message MsgSetWeights {
+// MsgSetLosses sets the weights for a given validator.
+message MsgSetLosses {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -155,7 +153,7 @@ message MsgSetWeights {
   repeated Weight weights = 2;
 }
 
-message MsgSetWeightsResponse {}
+message MsgSetLossesResponse {}
 
 message MsgProcessInferences {
   option (cosmos.msg.v1.signer) = "sender";
@@ -272,16 +270,6 @@ message MsgStartRemoveAllStake {
 }
 
 message MsgStartRemoveAllStakeResponse {}
-
-message MsgModifyStake {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  repeated StakePlacement placements_remove = 2;
-  repeated StakePlacement placements_add = 3;
-}
-
-message MsgModifyStakeResponse {}
 
 message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";

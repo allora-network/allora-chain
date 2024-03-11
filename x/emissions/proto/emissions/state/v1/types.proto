@@ -58,8 +58,13 @@ message GenesisState {
 }
 
 message StakeInfo {
-  string address = 1;
-  string amount = 2;
+  uint64 topic_id = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message Topic {
@@ -172,7 +177,7 @@ message InferenceSetForScoring {
 }
 
 message StakePlacement {
-  string target = 1;
+  uint64 topic_id = 1;
   string amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -182,9 +187,8 @@ message StakePlacement {
 }
 
 message StakeRemovalPlacement {
-  repeated uint64 topic_ids = 1;
-  string target = 2;
-  string amount = 3 [
+  uint64 topic_id = 1;
+  string amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,

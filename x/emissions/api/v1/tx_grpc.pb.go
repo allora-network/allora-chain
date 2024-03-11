@@ -22,14 +22,13 @@ const (
 	Msg_UpdateParams_FullMethodName                     = "/emissions.state.v1.Msg/UpdateParams"
 	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
 	Msg_ProcessForecasts_FullMethodName                 = "/emissions.state.v1.Msg/ProcessForecasts"
-	Msg_SetWeights_FullMethodName                       = "/emissions.state.v1.Msg/SetWeights"
+	Msg_SetLosses_FullMethodName                        = "/emissions.state.v1.Msg/SetLosses"
 	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
 	Msg_ReactivateTopic_FullMethodName                  = "/emissions.state.v1.Msg/ReactivateTopic"
 	Msg_Register_FullMethodName                         = "/emissions.state.v1.Msg/Register"
 	Msg_AddNewRegistration_FullMethodName               = "/emissions.state.v1.Msg/AddNewRegistration"
 	Msg_RemoveRegistration_FullMethodName               = "/emissions.state.v1.Msg/RemoveRegistration"
 	Msg_AddStake_FullMethodName                         = "/emissions.state.v1.Msg/AddStake"
-	Msg_ModifyStake_FullMethodName                      = "/emissions.state.v1.Msg/ModifyStake"
 	Msg_StartRemoveStake_FullMethodName                 = "/emissions.state.v1.Msg/StartRemoveStake"
 	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.state.v1.Msg/ConfirmRemoveStake"
 	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.state.v1.Msg/StartRemoveAllStake"
@@ -51,14 +50,13 @@ type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	ProcessInferences(ctx context.Context, in *MsgProcessInferences, opts ...grpc.CallOption) (*MsgProcessInferencesResponse, error)
 	ProcessForecasts(ctx context.Context, in *MsgProcessForecasts, opts ...grpc.CallOption) (*MsgProcessForecastsResponse, error)
-	SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error)
+	SetLosses(ctx context.Context, in *MsgSetLosses, opts ...grpc.CallOption) (*MsgSetLossesResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
 	ReactivateTopic(ctx context.Context, in *MsgReactivateTopic, opts ...grpc.CallOption) (*MsgReactivateTopicResponse, error)
 	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
 	AddNewRegistration(ctx context.Context, in *MsgAddNewRegistration, opts ...grpc.CallOption) (*MsgAddNewRegistrationResponse, error)
 	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
-	ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error)
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
@@ -108,9 +106,9 @@ func (c *msgClient) ProcessForecasts(ctx context.Context, in *MsgProcessForecast
 	return out, nil
 }
 
-func (c *msgClient) SetWeights(ctx context.Context, in *MsgSetWeights, opts ...grpc.CallOption) (*MsgSetWeightsResponse, error) {
-	out := new(MsgSetWeightsResponse)
-	err := c.cc.Invoke(ctx, Msg_SetWeights_FullMethodName, in, out, opts...)
+func (c *msgClient) SetLosses(ctx context.Context, in *MsgSetLosses, opts ...grpc.CallOption) (*MsgSetLossesResponse, error) {
+	out := new(MsgSetLossesResponse)
+	err := c.cc.Invoke(ctx, Msg_SetLosses_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,15 +163,6 @@ func (c *msgClient) RemoveRegistration(ctx context.Context, in *MsgRemoveRegistr
 func (c *msgClient) AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error) {
 	out := new(MsgAddStakeResponse)
 	err := c.cc.Invoke(ctx, Msg_AddStake_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) ModifyStake(ctx context.Context, in *MsgModifyStake, opts ...grpc.CallOption) (*MsgModifyStakeResponse, error) {
-	out := new(MsgModifyStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_ModifyStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -295,14 +284,13 @@ type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	ProcessInferences(context.Context, *MsgProcessInferences) (*MsgProcessInferencesResponse, error)
 	ProcessForecasts(context.Context, *MsgProcessForecasts) (*MsgProcessForecastsResponse, error)
-	SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error)
+	SetLosses(context.Context, *MsgSetLosses) (*MsgSetLossesResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
 	ReactivateTopic(context.Context, *MsgReactivateTopic) (*MsgReactivateTopicResponse, error)
 	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
 	AddNewRegistration(context.Context, *MsgAddNewRegistration) (*MsgAddNewRegistrationResponse, error)
 	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
-	ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error)
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
@@ -331,8 +319,8 @@ func (UnimplementedMsgServer) ProcessInferences(context.Context, *MsgProcessInfe
 func (UnimplementedMsgServer) ProcessForecasts(context.Context, *MsgProcessForecasts) (*MsgProcessForecastsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessForecasts not implemented")
 }
-func (UnimplementedMsgServer) SetWeights(context.Context, *MsgSetWeights) (*MsgSetWeightsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetWeights not implemented")
+func (UnimplementedMsgServer) SetLosses(context.Context, *MsgSetLosses) (*MsgSetLossesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetLosses not implemented")
 }
 func (UnimplementedMsgServer) CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
@@ -351,9 +339,6 @@ func (UnimplementedMsgServer) RemoveRegistration(context.Context, *MsgRemoveRegi
 }
 func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
-}
-func (UnimplementedMsgServer) ModifyStake(context.Context, *MsgModifyStake) (*MsgModifyStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ModifyStake not implemented")
 }
 func (UnimplementedMsgServer) StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveStake not implemented")
@@ -458,20 +443,20 @@ func _Msg_ProcessForecasts_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_SetWeights_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetWeights)
+func _Msg_SetLosses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSetLosses)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SetWeights(ctx, in)
+		return srv.(MsgServer).SetLosses(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_SetWeights_FullMethodName,
+		FullMethod: Msg_SetLosses_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetWeights(ctx, req.(*MsgSetWeights))
+		return srv.(MsgServer).SetLosses(ctx, req.(*MsgSetLosses))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -580,24 +565,6 @@ func _Msg_AddStake_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).AddStake(ctx, req.(*MsgAddStake))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_ModifyStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgModifyStake)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ModifyStake(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ModifyStake_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ModifyStake(ctx, req.(*MsgModifyStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -838,8 +805,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_ProcessForecasts_Handler,
 		},
 		{
-			MethodName: "SetWeights",
-			Handler:    _Msg_SetWeights_Handler,
+			MethodName: "SetLosses",
+			Handler:    _Msg_SetLosses_Handler,
 		},
 		{
 			MethodName: "CreateNewTopic",
@@ -864,10 +831,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddStake",
 			Handler:    _Msg_AddStake_Handler,
-		},
-		{
-			MethodName: "ModifyStake",
-			Handler:    _Msg_ModifyStake_Handler,
 		},
 		{
 			MethodName: "StartRemoveStake",

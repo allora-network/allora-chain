@@ -546,7 +546,7 @@ func (s *KeeperTestSuite) TestAddStakePlacedUponTarget() {
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
 }
 
-func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
+func (s *KeeperTestSuite) TestSetStakeRemovalQueueForAddress() {
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	targetAddr := sdk.AccAddress(PKS[1].Address())
 	placement := state.StakeRemovalPlacement{
@@ -560,15 +560,15 @@ func (s *KeeperTestSuite) TestSetStakeRemovalQueueForDelegator() {
 		Placements:              placements,
 	}
 
-	_, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr)
+	_, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(s.ctx, delegatorAddr)
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 
 	// Set stake removal queue
-	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr, removalInfo)
+	err = s.emissionsKeeper.SetStakeRemovalQueueForAddress(s.ctx, delegatorAddr, removalInfo)
 	s.Require().NoError(err)
 
 	// Check stake removal queue
-	stakeRemovalQueue, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(s.ctx, delegatorAddr)
+	stakeRemovalQueue, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(s.ctx, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo, stakeRemovalQueue, "Stake removal queue should be equal to the set removal info")
 }

@@ -5696,79 +5696,79 @@ func (x *fastReflection_MsgSetGlobalFoundationTopicParamsResponse) ProtoMethods(
 	}
 }
 
-var _ protoreflect.List = (*_MsgSetWeights_2_list)(nil)
+var _ protoreflect.List = (*_MsgSetLosses_2_list)(nil)
 
-type _MsgSetWeights_2_list struct {
+type _MsgSetLosses_2_list struct {
 	list *[]*Weight
 }
 
-func (x *_MsgSetWeights_2_list) Len() int {
+func (x *_MsgSetLosses_2_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_MsgSetWeights_2_list) Get(i int) protoreflect.Value {
+func (x *_MsgSetLosses_2_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_MsgSetWeights_2_list) Set(i int, value protoreflect.Value) {
+func (x *_MsgSetLosses_2_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
 	concreteValue := valueUnwrapped.Interface().(*Weight)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_MsgSetWeights_2_list) Append(value protoreflect.Value) {
+func (x *_MsgSetLosses_2_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
 	concreteValue := valueUnwrapped.Interface().(*Weight)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_MsgSetWeights_2_list) AppendMutable() protoreflect.Value {
+func (x *_MsgSetLosses_2_list) AppendMutable() protoreflect.Value {
 	v := new(Weight)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_MsgSetWeights_2_list) Truncate(n int) {
+func (x *_MsgSetLosses_2_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_MsgSetWeights_2_list) NewElement() protoreflect.Value {
+func (x *_MsgSetLosses_2_list) NewElement() protoreflect.Value {
 	v := new(Weight)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_MsgSetWeights_2_list) IsValid() bool {
+func (x *_MsgSetLosses_2_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_MsgSetWeights         protoreflect.MessageDescriptor
-	fd_MsgSetWeights_sender  protoreflect.FieldDescriptor
-	fd_MsgSetWeights_weights protoreflect.FieldDescriptor
+	md_MsgSetLosses         protoreflect.MessageDescriptor
+	fd_MsgSetLosses_sender  protoreflect.FieldDescriptor
+	fd_MsgSetLosses_weights protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_state_v1_tx_proto_init()
-	md_MsgSetWeights = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetWeights")
-	fd_MsgSetWeights_sender = md_MsgSetWeights.Fields().ByName("sender")
-	fd_MsgSetWeights_weights = md_MsgSetWeights.Fields().ByName("weights")
+	md_MsgSetLosses = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetLosses")
+	fd_MsgSetLosses_sender = md_MsgSetLosses.Fields().ByName("sender")
+	fd_MsgSetLosses_weights = md_MsgSetLosses.Fields().ByName("weights")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgSetWeights)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgSetLosses)(nil)
 
-type fastReflection_MsgSetWeights MsgSetWeights
+type fastReflection_MsgSetLosses MsgSetLosses
 
-func (x *MsgSetWeights) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgSetWeights)(x)
+func (x *MsgSetLosses) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgSetLosses)(x)
 }
 
-func (x *MsgSetWeights) slowProtoReflect() protoreflect.Message {
+func (x *MsgSetLosses) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_state_v1_tx_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -5780,43 +5780,43 @@ func (x *MsgSetWeights) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgSetWeights_messageType fastReflection_MsgSetWeights_messageType
-var _ protoreflect.MessageType = fastReflection_MsgSetWeights_messageType{}
+var _fastReflection_MsgSetLosses_messageType fastReflection_MsgSetLosses_messageType
+var _ protoreflect.MessageType = fastReflection_MsgSetLosses_messageType{}
 
-type fastReflection_MsgSetWeights_messageType struct{}
+type fastReflection_MsgSetLosses_messageType struct{}
 
-func (x fastReflection_MsgSetWeights_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgSetWeights)(nil)
+func (x fastReflection_MsgSetLosses_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgSetLosses)(nil)
 }
-func (x fastReflection_MsgSetWeights_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgSetWeights)
+func (x fastReflection_MsgSetLosses_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgSetLosses)
 }
-func (x fastReflection_MsgSetWeights_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetWeights
+func (x fastReflection_MsgSetLosses_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetLosses
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgSetWeights) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetWeights
+func (x *fastReflection_MsgSetLosses) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetLosses
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgSetWeights) Type() protoreflect.MessageType {
-	return _fastReflection_MsgSetWeights_messageType
+func (x *fastReflection_MsgSetLosses) Type() protoreflect.MessageType {
+	return _fastReflection_MsgSetLosses_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgSetWeights) New() protoreflect.Message {
-	return new(fastReflection_MsgSetWeights)
+func (x *fastReflection_MsgSetLosses) New() protoreflect.Message {
+	return new(fastReflection_MsgSetLosses)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgSetWeights) Interface() protoreflect.ProtoMessage {
-	return (*MsgSetWeights)(x)
+func (x *fastReflection_MsgSetLosses) Interface() protoreflect.ProtoMessage {
+	return (*MsgSetLosses)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -5824,16 +5824,16 @@ func (x *fastReflection_MsgSetWeights) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgSetWeights) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgSetLosses) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Sender != "" {
 		value := protoreflect.ValueOfString(x.Sender)
-		if !f(fd_MsgSetWeights_sender, value) {
+		if !f(fd_MsgSetLosses_sender, value) {
 			return
 		}
 	}
 	if len(x.Weights) != 0 {
-		value := protoreflect.ValueOfList(&_MsgSetWeights_2_list{list: &x.Weights})
-		if !f(fd_MsgSetWeights_weights, value) {
+		value := protoreflect.ValueOfList(&_MsgSetLosses_2_list{list: &x.Weights})
+		if !f(fd_MsgSetLosses_weights, value) {
 			return
 		}
 	}
@@ -5850,17 +5850,17 @@ func (x *fastReflection_MsgSetWeights) Range(f func(protoreflect.FieldDescriptor
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgSetWeights) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgSetLosses) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetLosses.sender":
 		return x.Sender != ""
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		return len(x.Weights) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5870,17 +5870,17 @@ func (x *fastReflection_MsgSetWeights) Has(fd protoreflect.FieldDescriptor) bool
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeights) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgSetLosses) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetLosses.sender":
 		x.Sender = ""
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		x.Weights = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5890,22 +5890,22 @@ func (x *fastReflection_MsgSetWeights) Clear(fd protoreflect.FieldDescriptor) {
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgSetWeights) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLosses) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetLosses.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		if len(x.Weights) == 0 {
-			return protoreflect.ValueOfList(&_MsgSetWeights_2_list{})
+			return protoreflect.ValueOfList(&_MsgSetLosses_2_list{})
 		}
-		listValue := &_MsgSetWeights_2_list{list: &x.Weights}
+		listValue := &_MsgSetLosses_2_list{list: &x.Weights}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -5919,19 +5919,19 @@ func (x *fastReflection_MsgSetWeights) Get(descriptor protoreflect.FieldDescript
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeights) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgSetLosses) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetLosses.sender":
 		x.Sender = value.Interface().(string)
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		lv := value.List()
-		clv := lv.(*_MsgSetWeights_2_list)
+		clv := lv.(*_MsgSetLosses_2_list)
 		x.Weights = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -5945,49 +5945,49 @@ func (x *fastReflection_MsgSetWeights) Set(fd protoreflect.FieldDescriptor, valu
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeights) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLosses) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		if x.Weights == nil {
 			x.Weights = []*Weight{}
 		}
-		value := &_MsgSetWeights_2_list{list: &x.Weights}
+		value := &_MsgSetLosses_2_list{list: &x.Weights}
 		return protoreflect.ValueOfList(value)
-	case "emissions.state.v1.MsgSetWeights.sender":
-		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgSetWeights is not mutable"))
+	case "emissions.state.v1.MsgSetLosses.sender":
+		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgSetLosses is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgSetWeights) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLosses) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.state.v1.MsgSetWeights.sender":
+	case "emissions.state.v1.MsgSetLosses.sender":
 		return protoreflect.ValueOfString("")
-	case "emissions.state.v1.MsgSetWeights.weights":
+	case "emissions.state.v1.MsgSetLosses.weights":
 		list := []*Weight{}
-		return protoreflect.ValueOfList(&_MsgSetWeights_2_list{list: &list})
+		return protoreflect.ValueOfList(&_MsgSetLosses_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeights"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLosses"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeights does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLosses does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgSetWeights) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgSetLosses) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetWeights", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetLosses", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -5995,7 +5995,7 @@ func (x *fastReflection_MsgSetWeights) WhichOneof(d protoreflect.OneofDescriptor
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgSetWeights) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgSetLosses) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -6006,7 +6006,7 @@ func (x *fastReflection_MsgSetWeights) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeights) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgSetLosses) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -6018,7 +6018,7 @@ func (x *fastReflection_MsgSetWeights) SetUnknown(fields protoreflect.RawFields)
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgSetWeights) IsValid() bool {
+func (x *fastReflection_MsgSetLosses) IsValid() bool {
 	return x != nil
 }
 
@@ -6028,9 +6028,9 @@ func (x *fastReflection_MsgSetWeights) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgSetWeights) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgSetLosses) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgSetWeights)
+		x := input.Message.Interface().(*MsgSetLosses)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6062,7 +6062,7 @@ func (x *fastReflection_MsgSetWeights) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetWeights)
+		x := input.Message.Interface().(*MsgSetLosses)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6115,7 +6115,7 @@ func (x *fastReflection_MsgSetWeights) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetWeights)
+		x := input.Message.Interface().(*MsgSetLosses)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6147,10 +6147,10 @@ func (x *fastReflection_MsgSetWeights) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetWeights: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetLosses: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetWeights: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetLosses: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -6255,23 +6255,23 @@ func (x *fastReflection_MsgSetWeights) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_MsgSetWeightsResponse protoreflect.MessageDescriptor
+	md_MsgSetLossesResponse protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_emissions_state_v1_tx_proto_init()
-	md_MsgSetWeightsResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetWeightsResponse")
+	md_MsgSetLossesResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgSetLossesResponse")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgSetWeightsResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgSetLossesResponse)(nil)
 
-type fastReflection_MsgSetWeightsResponse MsgSetWeightsResponse
+type fastReflection_MsgSetLossesResponse MsgSetLossesResponse
 
-func (x *MsgSetWeightsResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgSetWeightsResponse)(x)
+func (x *MsgSetLossesResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgSetLossesResponse)(x)
 }
 
-func (x *MsgSetWeightsResponse) slowProtoReflect() protoreflect.Message {
+func (x *MsgSetLossesResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_state_v1_tx_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -6283,43 +6283,43 @@ func (x *MsgSetWeightsResponse) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgSetWeightsResponse_messageType fastReflection_MsgSetWeightsResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgSetWeightsResponse_messageType{}
+var _fastReflection_MsgSetLossesResponse_messageType fastReflection_MsgSetLossesResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgSetLossesResponse_messageType{}
 
-type fastReflection_MsgSetWeightsResponse_messageType struct{}
+type fastReflection_MsgSetLossesResponse_messageType struct{}
 
-func (x fastReflection_MsgSetWeightsResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgSetWeightsResponse)(nil)
+func (x fastReflection_MsgSetLossesResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgSetLossesResponse)(nil)
 }
-func (x fastReflection_MsgSetWeightsResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgSetWeightsResponse)
+func (x fastReflection_MsgSetLossesResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgSetLossesResponse)
 }
-func (x fastReflection_MsgSetWeightsResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetWeightsResponse
+func (x fastReflection_MsgSetLossesResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetLossesResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgSetWeightsResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetWeightsResponse
+func (x *fastReflection_MsgSetLossesResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetLossesResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgSetWeightsResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgSetWeightsResponse_messageType
+func (x *fastReflection_MsgSetLossesResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgSetLossesResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgSetWeightsResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgSetWeightsResponse)
+func (x *fastReflection_MsgSetLossesResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgSetLossesResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgSetWeightsResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgSetWeightsResponse)(x)
+func (x *fastReflection_MsgSetLossesResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgSetLossesResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -6327,7 +6327,7 @@ func (x *fastReflection_MsgSetWeightsResponse) Interface() protoreflect.ProtoMes
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgSetWeightsResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgSetLossesResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 }
 
 // Has reports whether a field is populated.
@@ -6341,13 +6341,13 @@ func (x *fastReflection_MsgSetWeightsResponse) Range(f func(protoreflect.FieldDe
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgSetWeightsResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgSetLossesResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6357,13 +6357,13 @@ func (x *fastReflection_MsgSetWeightsResponse) Has(fd protoreflect.FieldDescript
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeightsResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgSetLossesResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6373,13 +6373,13 @@ func (x *fastReflection_MsgSetWeightsResponse) Clear(fd protoreflect.FieldDescri
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgSetWeightsResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLossesResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -6393,13 +6393,13 @@ func (x *fastReflection_MsgSetWeightsResponse) Get(descriptor protoreflect.Field
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeightsResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgSetLossesResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -6413,36 +6413,36 @@ func (x *fastReflection_MsgSetWeightsResponse) Set(fd protoreflect.FieldDescript
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeightsResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLossesResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgSetWeightsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetLossesResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetWeightsResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgSetLossesResponse"))
 		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgSetWeightsResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.state.v1.MsgSetLossesResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgSetWeightsResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgSetLossesResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetWeightsResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgSetLossesResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -6450,7 +6450,7 @@ func (x *fastReflection_MsgSetWeightsResponse) WhichOneof(d protoreflect.OneofDe
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgSetWeightsResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgSetLossesResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -6461,7 +6461,7 @@ func (x *fastReflection_MsgSetWeightsResponse) GetUnknown() protoreflect.RawFiel
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetWeightsResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgSetLossesResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -6473,7 +6473,7 @@ func (x *fastReflection_MsgSetWeightsResponse) SetUnknown(fields protoreflect.Ra
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgSetWeightsResponse) IsValid() bool {
+func (x *fastReflection_MsgSetLossesResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -6483,9 +6483,9 @@ func (x *fastReflection_MsgSetWeightsResponse) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgSetWeightsResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgSetLossesResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgSetWeightsResponse)
+		x := input.Message.Interface().(*MsgSetLossesResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6507,7 +6507,7 @@ func (x *fastReflection_MsgSetWeightsResponse) ProtoMethods() *protoiface.Method
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetWeightsResponse)
+		x := input.Message.Interface().(*MsgSetLossesResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6537,7 +6537,7 @@ func (x *fastReflection_MsgSetWeightsResponse) ProtoMethods() *protoiface.Method
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetWeightsResponse)
+		x := input.Message.Interface().(*MsgSetLossesResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -6569,10 +6569,10 @@ func (x *fastReflection_MsgSetWeightsResponse) ProtoMethods() *protoiface.Method
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetWeightsResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetLossesResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetWeightsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetLossesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			default:
@@ -15376,1058 +15376,6 @@ func (x *fastReflection_MsgStartRemoveAllStakeResponse) ProtoMethods() *protoifa
 	}
 }
 
-var _ protoreflect.List = (*_MsgModifyStake_2_list)(nil)
-
-type _MsgModifyStake_2_list struct {
-	list *[]*StakePlacement
-}
-
-func (x *_MsgModifyStake_2_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_MsgModifyStake_2_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
-}
-
-func (x *_MsgModifyStake_2_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*StakePlacement)
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_MsgModifyStake_2_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*StakePlacement)
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_MsgModifyStake_2_list) AppendMutable() protoreflect.Value {
-	v := new(StakePlacement)
-	*x.list = append(*x.list, v)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgModifyStake_2_list) Truncate(n int) {
-	for i := n; i < len(*x.list); i++ {
-		(*x.list)[i] = nil
-	}
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_MsgModifyStake_2_list) NewElement() protoreflect.Value {
-	v := new(StakePlacement)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgModifyStake_2_list) IsValid() bool {
-	return x.list != nil
-}
-
-var _ protoreflect.List = (*_MsgModifyStake_3_list)(nil)
-
-type _MsgModifyStake_3_list struct {
-	list *[]*StakePlacement
-}
-
-func (x *_MsgModifyStake_3_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_MsgModifyStake_3_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
-}
-
-func (x *_MsgModifyStake_3_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*StakePlacement)
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_MsgModifyStake_3_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*StakePlacement)
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_MsgModifyStake_3_list) AppendMutable() protoreflect.Value {
-	v := new(StakePlacement)
-	*x.list = append(*x.list, v)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgModifyStake_3_list) Truncate(n int) {
-	for i := n; i < len(*x.list); i++ {
-		(*x.list)[i] = nil
-	}
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_MsgModifyStake_3_list) NewElement() protoreflect.Value {
-	v := new(StakePlacement)
-	return protoreflect.ValueOfMessage(v.ProtoReflect())
-}
-
-func (x *_MsgModifyStake_3_list) IsValid() bool {
-	return x.list != nil
-}
-
-var (
-	md_MsgModifyStake                   protoreflect.MessageDescriptor
-	fd_MsgModifyStake_sender            protoreflect.FieldDescriptor
-	fd_MsgModifyStake_placements_remove protoreflect.FieldDescriptor
-	fd_MsgModifyStake_placements_add    protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_emissions_state_v1_tx_proto_init()
-	md_MsgModifyStake = File_emissions_state_v1_tx_proto.Messages().ByName("MsgModifyStake")
-	fd_MsgModifyStake_sender = md_MsgModifyStake.Fields().ByName("sender")
-	fd_MsgModifyStake_placements_remove = md_MsgModifyStake.Fields().ByName("placements_remove")
-	fd_MsgModifyStake_placements_add = md_MsgModifyStake.Fields().ByName("placements_add")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgModifyStake)(nil)
-
-type fastReflection_MsgModifyStake MsgModifyStake
-
-func (x *MsgModifyStake) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgModifyStake)(x)
-}
-
-func (x *MsgModifyStake) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[27]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgModifyStake_messageType fastReflection_MsgModifyStake_messageType
-var _ protoreflect.MessageType = fastReflection_MsgModifyStake_messageType{}
-
-type fastReflection_MsgModifyStake_messageType struct{}
-
-func (x fastReflection_MsgModifyStake_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgModifyStake)(nil)
-}
-func (x fastReflection_MsgModifyStake_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgModifyStake)
-}
-func (x fastReflection_MsgModifyStake_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgModifyStake
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgModifyStake) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgModifyStake
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgModifyStake) Type() protoreflect.MessageType {
-	return _fastReflection_MsgModifyStake_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgModifyStake) New() protoreflect.Message {
-	return new(fastReflection_MsgModifyStake)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgModifyStake) Interface() protoreflect.ProtoMessage {
-	return (*MsgModifyStake)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgModifyStake) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Sender != "" {
-		value := protoreflect.ValueOfString(x.Sender)
-		if !f(fd_MsgModifyStake_sender, value) {
-			return
-		}
-	}
-	if len(x.PlacementsRemove) != 0 {
-		value := protoreflect.ValueOfList(&_MsgModifyStake_2_list{list: &x.PlacementsRemove})
-		if !f(fd_MsgModifyStake_placements_remove, value) {
-			return
-		}
-	}
-	if len(x.PlacementsAdd) != 0 {
-		value := protoreflect.ValueOfList(&_MsgModifyStake_3_list{list: &x.PlacementsAdd})
-		if !f(fd_MsgModifyStake_placements_add, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgModifyStake) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "emissions.state.v1.MsgModifyStake.sender":
-		return x.Sender != ""
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		return len(x.PlacementsRemove) != 0
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		return len(x.PlacementsAdd) != 0
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStake) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "emissions.state.v1.MsgModifyStake.sender":
-		x.Sender = ""
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		x.PlacementsRemove = nil
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		x.PlacementsAdd = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgModifyStake) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "emissions.state.v1.MsgModifyStake.sender":
-		value := x.Sender
-		return protoreflect.ValueOfString(value)
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		if len(x.PlacementsRemove) == 0 {
-			return protoreflect.ValueOfList(&_MsgModifyStake_2_list{})
-		}
-		listValue := &_MsgModifyStake_2_list{list: &x.PlacementsRemove}
-		return protoreflect.ValueOfList(listValue)
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		if len(x.PlacementsAdd) == 0 {
-			return protoreflect.ValueOfList(&_MsgModifyStake_3_list{})
-		}
-		listValue := &_MsgModifyStake_3_list{list: &x.PlacementsAdd}
-		return protoreflect.ValueOfList(listValue)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStake) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "emissions.state.v1.MsgModifyStake.sender":
-		x.Sender = value.Interface().(string)
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		lv := value.List()
-		clv := lv.(*_MsgModifyStake_2_list)
-		x.PlacementsRemove = *clv.list
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		lv := value.List()
-		clv := lv.(*_MsgModifyStake_3_list)
-		x.PlacementsAdd = *clv.list
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStake) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		if x.PlacementsRemove == nil {
-			x.PlacementsRemove = []*StakePlacement{}
-		}
-		value := &_MsgModifyStake_2_list{list: &x.PlacementsRemove}
-		return protoreflect.ValueOfList(value)
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		if x.PlacementsAdd == nil {
-			x.PlacementsAdd = []*StakePlacement{}
-		}
-		value := &_MsgModifyStake_3_list{list: &x.PlacementsAdd}
-		return protoreflect.ValueOfList(value)
-	case "emissions.state.v1.MsgModifyStake.sender":
-		panic(fmt.Errorf("field sender of message emissions.state.v1.MsgModifyStake is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgModifyStake) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "emissions.state.v1.MsgModifyStake.sender":
-		return protoreflect.ValueOfString("")
-	case "emissions.state.v1.MsgModifyStake.placements_remove":
-		list := []*StakePlacement{}
-		return protoreflect.ValueOfList(&_MsgModifyStake_2_list{list: &list})
-	case "emissions.state.v1.MsgModifyStake.placements_add":
-		list := []*StakePlacement{}
-		return protoreflect.ValueOfList(&_MsgModifyStake_3_list{list: &list})
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStake"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStake does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgModifyStake) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgModifyStake", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgModifyStake) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStake) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgModifyStake) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgModifyStake) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgModifyStake)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.Sender)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if len(x.PlacementsRemove) > 0 {
-			for _, e := range x.PlacementsRemove {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
-		if len(x.PlacementsAdd) > 0 {
-			for _, e := range x.PlacementsAdd {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgModifyStake)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.PlacementsAdd) > 0 {
-			for iNdEx := len(x.PlacementsAdd) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.PlacementsAdd[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0x1a
-			}
-		}
-		if len(x.PlacementsRemove) > 0 {
-			for iNdEx := len(x.PlacementsRemove) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.PlacementsRemove[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0x12
-			}
-		}
-		if len(x.Sender) > 0 {
-			i -= len(x.Sender)
-			copy(dAtA[i:], x.Sender)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Sender)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgModifyStake)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgModifyStake: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgModifyStake: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Sender = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PlacementsRemove", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PlacementsRemove = append(x.PlacementsRemove, &StakePlacement{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.PlacementsRemove[len(x.PlacementsRemove)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PlacementsAdd", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PlacementsAdd = append(x.PlacementsAdd, &StakePlacement{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.PlacementsAdd[len(x.PlacementsAdd)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
-	md_MsgModifyStakeResponse protoreflect.MessageDescriptor
-)
-
-func init() {
-	file_emissions_state_v1_tx_proto_init()
-	md_MsgModifyStakeResponse = File_emissions_state_v1_tx_proto.Messages().ByName("MsgModifyStakeResponse")
-}
-
-var _ protoreflect.Message = (*fastReflection_MsgModifyStakeResponse)(nil)
-
-type fastReflection_MsgModifyStakeResponse MsgModifyStakeResponse
-
-func (x *MsgModifyStakeResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgModifyStakeResponse)(x)
-}
-
-func (x *MsgModifyStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[28]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_MsgModifyStakeResponse_messageType fastReflection_MsgModifyStakeResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgModifyStakeResponse_messageType{}
-
-type fastReflection_MsgModifyStakeResponse_messageType struct{}
-
-func (x fastReflection_MsgModifyStakeResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgModifyStakeResponse)(nil)
-}
-func (x fastReflection_MsgModifyStakeResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgModifyStakeResponse)
-}
-func (x fastReflection_MsgModifyStakeResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgModifyStakeResponse
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_MsgModifyStakeResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgModifyStakeResponse
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgModifyStakeResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgModifyStakeResponse_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgModifyStakeResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgModifyStakeResponse)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgModifyStakeResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgModifyStakeResponse)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_MsgModifyStakeResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgModifyStakeResponse) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStakeResponse) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgModifyStakeResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStakeResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStakeResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgModifyStakeResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.MsgModifyStakeResponse"))
-		}
-		panic(fmt.Errorf("message emissions.state.v1.MsgModifyStakeResponse does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgModifyStakeResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.MsgModifyStakeResponse", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgModifyStakeResponse) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgModifyStakeResponse) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_MsgModifyStakeResponse) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgModifyStakeResponse) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgModifyStakeResponse)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgModifyStakeResponse)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgModifyStakeResponse)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgModifyStakeResponse: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgModifyStakeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
 var _ protoreflect.List = (*_MsgRequestInference_2_list)(nil)
 
 type _MsgRequestInference_2_list struct {
@@ -16501,7 +15449,7 @@ func (x *MsgRequestInference) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRequestInference) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[29]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17018,7 +15966,7 @@ func (x *RequestInferenceListItem) ProtoReflect() protoreflect.Message {
 }
 
 func (x *RequestInferenceListItem) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[30]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17746,7 +16694,7 @@ func (x *MsgRequestInferenceResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRequestInferenceResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[31]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18106,7 +17054,7 @@ func (x *MsgAddToWhitelistAdmin) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddToWhitelistAdmin) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[32]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18586,7 +17534,7 @@ func (x *MsgAddToWhitelistAdminResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddToWhitelistAdminResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[33]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18946,7 +17894,7 @@ func (x *MsgRemoveFromWhitelistAdmin) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveFromWhitelistAdmin) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[34]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19426,7 +18374,7 @@ func (x *MsgRemoveFromWhitelistAdminResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *MsgRemoveFromWhitelistAdminResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[35]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19786,7 +18734,7 @@ func (x *MsgAddToTopicCreationWhitelist) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddToTopicCreationWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[36]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20266,7 +19214,7 @@ func (x *MsgAddToTopicCreationWhitelistResponse) ProtoReflect() protoreflect.Mes
 }
 
 func (x *MsgAddToTopicCreationWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[37]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20626,7 +19574,7 @@ func (x *MsgRemoveFromTopicCreationWhitelist) ProtoReflect() protoreflect.Messag
 }
 
 func (x *MsgRemoveFromTopicCreationWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[38]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21106,7 +20054,7 @@ func (x *MsgRemoveFromTopicCreationWhitelistResponse) ProtoReflect() protoreflec
 }
 
 func (x *MsgRemoveFromTopicCreationWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[39]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21466,7 +20414,7 @@ func (x *MsgAddToWeightSettingWhitelist) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddToWeightSettingWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[40]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21946,7 +20894,7 @@ func (x *MsgAddToWeightSettingWhitelistResponse) ProtoReflect() protoreflect.Mes
 }
 
 func (x *MsgAddToWeightSettingWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[41]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22306,7 +21254,7 @@ func (x *MsgRemoveFromWeightSettingWhitelist) ProtoReflect() protoreflect.Messag
 }
 
 func (x *MsgRemoveFromWeightSettingWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[42]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22786,7 +21734,7 @@ func (x *MsgRemoveFromWeightSettingWhitelistResponse) ProtoReflect() protoreflec
 }
 
 func (x *MsgRemoveFromWeightSettingWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[43]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23146,7 +22094,7 @@ func (x *MsgAddToFoundationWhitelist) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgAddToFoundationWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[44]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23626,7 +22574,7 @@ func (x *MsgAddToFoundationWhitelistResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *MsgAddToFoundationWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[45]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23986,7 +22934,7 @@ func (x *MsgRemoveFromFoundationWhitelist) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgRemoveFromFoundationWhitelist) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[46]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24466,7 +23414,7 @@ func (x *MsgRemoveFromFoundationWhitelistResponse) ProtoReflect() protoreflect.M
 }
 
 func (x *MsgRemoveFromFoundationWhitelistResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[47]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24826,7 +23774,7 @@ func (x *MsgReactivateTopic) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgReactivateTopic) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[48]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -25292,7 +24240,7 @@ func (x *MsgReactivateTopicResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *MsgReactivateTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[49]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -25708,7 +24656,7 @@ func (x *MsgModifyTopicSubsidyAndFTreasury) ProtoReflect() protoreflect.Message 
 }
 
 func (x *MsgModifyTopicSubsidyAndFTreasury) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[50]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -26259,7 +25207,7 @@ func (x *MsgModifyTopicSubsidyAndFTreasuryResponse) ProtoReflect() protoreflect.
 }
 
 func (x *MsgModifyTopicSubsidyAndFTreasuryResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_tx_proto_msgTypes[51]
+	mi := &file_emissions_state_v1_tx_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -27128,8 +26076,8 @@ func (*MsgSetGlobalFoundationTopicParamsResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{6}
 }
 
-// MsgSetWeights sets the weights for a given validator.
-type MsgSetWeights struct {
+// MsgSetLosses sets the weights for a given validator.
+type MsgSetLosses struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -27138,8 +26086,8 @@ type MsgSetWeights struct {
 	Weights []*Weight `protobuf:"bytes,2,rep,name=weights,proto3" json:"weights,omitempty"`
 }
 
-func (x *MsgSetWeights) Reset() {
-	*x = MsgSetWeights{}
+func (x *MsgSetLosses) Reset() {
+	*x = MsgSetLosses{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_state_v1_tx_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -27147,39 +26095,39 @@ func (x *MsgSetWeights) Reset() {
 	}
 }
 
-func (x *MsgSetWeights) String() string {
+func (x *MsgSetLosses) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgSetWeights) ProtoMessage() {}
+func (*MsgSetLosses) ProtoMessage() {}
 
-// Deprecated: Use MsgSetWeights.ProtoReflect.Descriptor instead.
-func (*MsgSetWeights) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgSetLosses.ProtoReflect.Descriptor instead.
+func (*MsgSetLosses) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *MsgSetWeights) GetSender() string {
+func (x *MsgSetLosses) GetSender() string {
 	if x != nil {
 		return x.Sender
 	}
 	return ""
 }
 
-func (x *MsgSetWeights) GetWeights() []*Weight {
+func (x *MsgSetLosses) GetWeights() []*Weight {
 	if x != nil {
 		return x.Weights
 	}
 	return nil
 }
 
-type MsgSetWeightsResponse struct {
+type MsgSetLossesResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *MsgSetWeightsResponse) Reset() {
-	*x = MsgSetWeightsResponse{}
+func (x *MsgSetLossesResponse) Reset() {
+	*x = MsgSetLossesResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_state_v1_tx_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -27187,14 +26135,14 @@ func (x *MsgSetWeightsResponse) Reset() {
 	}
 }
 
-func (x *MsgSetWeightsResponse) String() string {
+func (x *MsgSetLossesResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgSetWeightsResponse) ProtoMessage() {}
+func (*MsgSetLossesResponse) ProtoMessage() {}
 
-// Deprecated: Use MsgSetWeightsResponse.ProtoReflect.Descriptor instead.
-func (*MsgSetWeightsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgSetLossesResponse.ProtoReflect.Descriptor instead.
+func (*MsgSetLossesResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{8}
 }
 
@@ -27945,83 +26893,6 @@ func (*MsgStartRemoveAllStakeResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{26}
 }
 
-type MsgModifyStake struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Sender           string            `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	PlacementsRemove []*StakePlacement `protobuf:"bytes,2,rep,name=placements_remove,json=placementsRemove,proto3" json:"placements_remove,omitempty"`
-	PlacementsAdd    []*StakePlacement `protobuf:"bytes,3,rep,name=placements_add,json=placementsAdd,proto3" json:"placements_add,omitempty"`
-}
-
-func (x *MsgModifyStake) Reset() {
-	*x = MsgModifyStake{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[27]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgModifyStake) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgModifyStake) ProtoMessage() {}
-
-// Deprecated: Use MsgModifyStake.ProtoReflect.Descriptor instead.
-func (*MsgModifyStake) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *MsgModifyStake) GetSender() string {
-	if x != nil {
-		return x.Sender
-	}
-	return ""
-}
-
-func (x *MsgModifyStake) GetPlacementsRemove() []*StakePlacement {
-	if x != nil {
-		return x.PlacementsRemove
-	}
-	return nil
-}
-
-func (x *MsgModifyStake) GetPlacementsAdd() []*StakePlacement {
-	if x != nil {
-		return x.PlacementsAdd
-	}
-	return nil
-}
-
-type MsgModifyStakeResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *MsgModifyStakeResponse) Reset() {
-	*x = MsgModifyStakeResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[28]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MsgModifyStakeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MsgModifyStakeResponse) ProtoMessage() {}
-
-// Deprecated: Use MsgModifyStakeResponse.ProtoReflect.Descriptor instead.
-func (*MsgModifyStakeResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{28}
-}
-
 type MsgRequestInference struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -28034,7 +26905,7 @@ type MsgRequestInference struct {
 func (x *MsgRequestInference) Reset() {
 	*x = MsgRequestInference{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[29]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28048,7 +26919,7 @@ func (*MsgRequestInference) ProtoMessage() {}
 
 // Deprecated: Use MsgRequestInference.ProtoReflect.Descriptor instead.
 func (*MsgRequestInference) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{29}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *MsgRequestInference) GetSender() string {
@@ -28082,7 +26953,7 @@ type RequestInferenceListItem struct {
 func (x *RequestInferenceListItem) Reset() {
 	*x = RequestInferenceListItem{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[30]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28096,7 +26967,7 @@ func (*RequestInferenceListItem) ProtoMessage() {}
 
 // Deprecated: Use RequestInferenceListItem.ProtoReflect.Descriptor instead.
 func (*RequestInferenceListItem) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{30}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *RequestInferenceListItem) GetNonce() uint64 {
@@ -28157,7 +27028,7 @@ type MsgRequestInferenceResponse struct {
 func (x *MsgRequestInferenceResponse) Reset() {
 	*x = MsgRequestInferenceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[31]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28171,7 +27042,7 @@ func (*MsgRequestInferenceResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRequestInferenceResponse.ProtoReflect.Descriptor instead.
 func (*MsgRequestInferenceResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{31}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{29}
 }
 
 type MsgAddToWhitelistAdmin struct {
@@ -28186,7 +27057,7 @@ type MsgAddToWhitelistAdmin struct {
 func (x *MsgAddToWhitelistAdmin) Reset() {
 	*x = MsgAddToWhitelistAdmin{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[32]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28200,7 +27071,7 @@ func (*MsgAddToWhitelistAdmin) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToWhitelistAdmin.ProtoReflect.Descriptor instead.
 func (*MsgAddToWhitelistAdmin) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{32}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *MsgAddToWhitelistAdmin) GetSender() string {
@@ -28226,7 +27097,7 @@ type MsgAddToWhitelistAdminResponse struct {
 func (x *MsgAddToWhitelistAdminResponse) Reset() {
 	*x = MsgAddToWhitelistAdminResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[33]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28240,7 +27111,7 @@ func (*MsgAddToWhitelistAdminResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToWhitelistAdminResponse.ProtoReflect.Descriptor instead.
 func (*MsgAddToWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{33}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{31}
 }
 
 type MsgRemoveFromWhitelistAdmin struct {
@@ -28255,7 +27126,7 @@ type MsgRemoveFromWhitelistAdmin struct {
 func (x *MsgRemoveFromWhitelistAdmin) Reset() {
 	*x = MsgRemoveFromWhitelistAdmin{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[34]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28269,7 +27140,7 @@ func (*MsgRemoveFromWhitelistAdmin) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromWhitelistAdmin.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromWhitelistAdmin) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{34}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *MsgRemoveFromWhitelistAdmin) GetSender() string {
@@ -28295,7 +27166,7 @@ type MsgRemoveFromWhitelistAdminResponse struct {
 func (x *MsgRemoveFromWhitelistAdminResponse) Reset() {
 	*x = MsgRemoveFromWhitelistAdminResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[35]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28309,7 +27180,7 @@ func (*MsgRemoveFromWhitelistAdminResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromWhitelistAdminResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{35}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{33}
 }
 
 type MsgAddToTopicCreationWhitelist struct {
@@ -28324,7 +27195,7 @@ type MsgAddToTopicCreationWhitelist struct {
 func (x *MsgAddToTopicCreationWhitelist) Reset() {
 	*x = MsgAddToTopicCreationWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[36]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28338,7 +27209,7 @@ func (*MsgAddToTopicCreationWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToTopicCreationWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgAddToTopicCreationWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{36}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *MsgAddToTopicCreationWhitelist) GetSender() string {
@@ -28364,7 +27235,7 @@ type MsgAddToTopicCreationWhitelistResponse struct {
 func (x *MsgAddToTopicCreationWhitelistResponse) Reset() {
 	*x = MsgAddToTopicCreationWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[37]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28378,7 +27249,7 @@ func (*MsgAddToTopicCreationWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToTopicCreationWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgAddToTopicCreationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{37}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{35}
 }
 
 type MsgRemoveFromTopicCreationWhitelist struct {
@@ -28393,7 +27264,7 @@ type MsgRemoveFromTopicCreationWhitelist struct {
 func (x *MsgRemoveFromTopicCreationWhitelist) Reset() {
 	*x = MsgRemoveFromTopicCreationWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[38]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28407,7 +27278,7 @@ func (*MsgRemoveFromTopicCreationWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromTopicCreationWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromTopicCreationWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{38}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *MsgRemoveFromTopicCreationWhitelist) GetSender() string {
@@ -28433,7 +27304,7 @@ type MsgRemoveFromTopicCreationWhitelistResponse struct {
 func (x *MsgRemoveFromTopicCreationWhitelistResponse) Reset() {
 	*x = MsgRemoveFromTopicCreationWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[39]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28447,7 +27318,7 @@ func (*MsgRemoveFromTopicCreationWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromTopicCreationWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromTopicCreationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{39}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{37}
 }
 
 type MsgAddToWeightSettingWhitelist struct {
@@ -28462,7 +27333,7 @@ type MsgAddToWeightSettingWhitelist struct {
 func (x *MsgAddToWeightSettingWhitelist) Reset() {
 	*x = MsgAddToWeightSettingWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[40]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28476,7 +27347,7 @@ func (*MsgAddToWeightSettingWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToWeightSettingWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgAddToWeightSettingWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{40}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *MsgAddToWeightSettingWhitelist) GetSender() string {
@@ -28502,7 +27373,7 @@ type MsgAddToWeightSettingWhitelistResponse struct {
 func (x *MsgAddToWeightSettingWhitelistResponse) Reset() {
 	*x = MsgAddToWeightSettingWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[41]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28516,7 +27387,7 @@ func (*MsgAddToWeightSettingWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToWeightSettingWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgAddToWeightSettingWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{41}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{39}
 }
 
 type MsgRemoveFromWeightSettingWhitelist struct {
@@ -28531,7 +27402,7 @@ type MsgRemoveFromWeightSettingWhitelist struct {
 func (x *MsgRemoveFromWeightSettingWhitelist) Reset() {
 	*x = MsgRemoveFromWeightSettingWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[42]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28545,7 +27416,7 @@ func (*MsgRemoveFromWeightSettingWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromWeightSettingWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromWeightSettingWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{42}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *MsgRemoveFromWeightSettingWhitelist) GetSender() string {
@@ -28571,7 +27442,7 @@ type MsgRemoveFromWeightSettingWhitelistResponse struct {
 func (x *MsgRemoveFromWeightSettingWhitelistResponse) Reset() {
 	*x = MsgRemoveFromWeightSettingWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[43]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28585,7 +27456,7 @@ func (*MsgRemoveFromWeightSettingWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromWeightSettingWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromWeightSettingWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{43}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{41}
 }
 
 type MsgAddToFoundationWhitelist struct {
@@ -28600,7 +27471,7 @@ type MsgAddToFoundationWhitelist struct {
 func (x *MsgAddToFoundationWhitelist) Reset() {
 	*x = MsgAddToFoundationWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[44]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28614,7 +27485,7 @@ func (*MsgAddToFoundationWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToFoundationWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgAddToFoundationWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{44}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *MsgAddToFoundationWhitelist) GetSender() string {
@@ -28640,7 +27511,7 @@ type MsgAddToFoundationWhitelistResponse struct {
 func (x *MsgAddToFoundationWhitelistResponse) Reset() {
 	*x = MsgAddToFoundationWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[45]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28654,7 +27525,7 @@ func (*MsgAddToFoundationWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgAddToFoundationWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgAddToFoundationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{45}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{43}
 }
 
 type MsgRemoveFromFoundationWhitelist struct {
@@ -28669,7 +27540,7 @@ type MsgRemoveFromFoundationWhitelist struct {
 func (x *MsgRemoveFromFoundationWhitelist) Reset() {
 	*x = MsgRemoveFromFoundationWhitelist{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[46]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28683,7 +27554,7 @@ func (*MsgRemoveFromFoundationWhitelist) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromFoundationWhitelist.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromFoundationWhitelist) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{46}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *MsgRemoveFromFoundationWhitelist) GetSender() string {
@@ -28709,7 +27580,7 @@ type MsgRemoveFromFoundationWhitelistResponse struct {
 func (x *MsgRemoveFromFoundationWhitelistResponse) Reset() {
 	*x = MsgRemoveFromFoundationWhitelistResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[47]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28723,7 +27594,7 @@ func (*MsgRemoveFromFoundationWhitelistResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgRemoveFromFoundationWhitelistResponse.ProtoReflect.Descriptor instead.
 func (*MsgRemoveFromFoundationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{47}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{45}
 }
 
 type MsgReactivateTopic struct {
@@ -28738,7 +27609,7 @@ type MsgReactivateTopic struct {
 func (x *MsgReactivateTopic) Reset() {
 	*x = MsgReactivateTopic{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[48]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28752,7 +27623,7 @@ func (*MsgReactivateTopic) ProtoMessage() {}
 
 // Deprecated: Use MsgReactivateTopic.ProtoReflect.Descriptor instead.
 func (*MsgReactivateTopic) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{48}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *MsgReactivateTopic) GetSender() string {
@@ -28780,7 +27651,7 @@ type MsgReactivateTopicResponse struct {
 func (x *MsgReactivateTopicResponse) Reset() {
 	*x = MsgReactivateTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[49]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28794,7 +27665,7 @@ func (*MsgReactivateTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgReactivateTopicResponse.ProtoReflect.Descriptor instead.
 func (*MsgReactivateTopicResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{49}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *MsgReactivateTopicResponse) GetSuccess() bool {
@@ -28818,7 +27689,7 @@ type MsgModifyTopicSubsidyAndFTreasury struct {
 func (x *MsgModifyTopicSubsidyAndFTreasury) Reset() {
 	*x = MsgModifyTopicSubsidyAndFTreasury{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[50]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28832,7 +27703,7 @@ func (*MsgModifyTopicSubsidyAndFTreasury) ProtoMessage() {}
 
 // Deprecated: Use MsgModifyTopicSubsidyAndFTreasury.ProtoReflect.Descriptor instead.
 func (*MsgModifyTopicSubsidyAndFTreasury) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{50}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *MsgModifyTopicSubsidyAndFTreasury) GetSender() string {
@@ -28874,7 +27745,7 @@ type MsgModifyTopicSubsidyAndFTreasuryResponse struct {
 func (x *MsgModifyTopicSubsidyAndFTreasuryResponse) Reset() {
 	*x = MsgModifyTopicSubsidyAndFTreasuryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_tx_proto_msgTypes[51]
+		mi := &file_emissions_state_v1_tx_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -28888,7 +27759,7 @@ func (*MsgModifyTopicSubsidyAndFTreasuryResponse) ProtoMessage() {}
 
 // Deprecated: Use MsgModifyTopicSubsidyAndFTreasuryResponse.ProtoReflect.Descriptor instead.
 func (*MsgModifyTopicSubsidyAndFTreasuryResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{51}
+	return file_emissions_state_v1_tx_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *MsgModifyTopicSubsidyAndFTreasuryResponse) GetSuccess() bool {
@@ -29026,138 +27897,123 @@ var file_emissions_state_v1_tx_proto_rawDesc = []byte{
 	0x54, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x22, 0x2b, 0x0a, 0x29, 0x4d, 0x73, 0x67, 0x53,
 	0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x6a, 0x0a, 0x0d, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x34,
-	0x0a, 0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x1a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07, 0x77, 0x65, 0x69,
-	0x67, 0x68, 0x74, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65,
-	0x72, 0x22, 0x17, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68,
-	0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x7a, 0x0a, 0x14, 0x4d, 0x73,
-	0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x69, 0x0a, 0x0c, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c,
+	0x6f, 0x73, 0x73, 0x65, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x34, 0x0a,
+	0x07, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a,
 	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06,
-	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1e, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f,
-	0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x76, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f,
-	0x63, 0x65, 0x73, 0x73, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x16, 0x0a,
-	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x3a, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
-	0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74,
-	0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1d,
-	0x0a, 0x1b, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x46, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xa5, 0x02,
-	0x0a, 0x0b, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x18, 0x0a,
-	0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70,
-	0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69,
-	0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69,
-	0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c,
-	0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1b, 0x0a, 0x09,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x04, 0x52,
-	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x12, 0x57, 0x0a, 0x0d, 0x69, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
-	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
-	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
-	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x74, 0x61,
-	0x6b, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28,
+	0x2e, 0x76, 0x31, 0x2e, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x52, 0x07, 0x77, 0x65, 0x69, 0x67,
+	0x68, 0x74, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
+	0x22, 0x16, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x7a, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x50,
+	0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x3d, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65,
+	0x6e, 0x64, 0x65, 0x72, 0x22, 0x1e, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65,
+	0x73, 0x73, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x76, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65,
+	0x73, 0x73, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x12, 0x3a, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73,
+	0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x3a,
+	0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1d, 0x0a, 0x1b,
+	0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73, 0x73, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xa5, 0x02, 0x0a, 0x0b,
+	0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x63,
+	0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70,
+	0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50,
+	0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75,
+	0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x74, 0x6f,
+	0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x04, 0x52, 0x08, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x12, 0x57, 0x0a, 0x0d, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
+	0x2a, 0x01, 0x52, 0x0c, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x73, 0x5f, 0x72, 0x65, 0x70,
+	0x75, 0x74, 0x65, 0x72, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73, 0x52, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65, 0x61,
+	0x74, 0x6f, 0x72, 0x22, 0x49, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75,
+	0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63,
+	0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0xd4,
+	0x01, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61,
+	0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74,
+	0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65,
+	0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b,
+	0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69,
+	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
+	0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x73, 0x5f, 0x72,
-	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x07, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73,
+	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73,
 	0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72,
-	0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x49, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07,
-	0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73,
-	0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
-	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
-	0x22, 0xd4, 0x01, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72,
-	0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65,
-	0x61, 0x74, 0x6f, 0x72, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f,
-	0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32,
-	0x70, 0x4b, 0x65, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c,
-	0x74, 0x69, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x73,
-	0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09,
-	0x69, 0x73, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x53, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x41, 0x64,
-	0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63,
-	0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65,
-	0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x79, 0x0a, 0x15,
-	0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12,
-	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x73,
-	0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09,
-	0x69, 0x73, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07,
-	0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x53, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63,
-	0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65,
-	0x73, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0xa1, 0x01, 0x0a,
-	0x0b, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06,
-	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55,
-	0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
-	0x12, 0x21, 0x0a, 0x0c, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72,
-	0x67, 0x65, 0x74, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
-	0x22, 0x15, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8b, 0x01, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x53,
-	0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12,
-	0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4f, 0x0a, 0x11, 0x70, 0x6c, 0x61, 0x63, 0x65,
-	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61,
-	0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x10, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e,
-	0x74, 0x73, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x1d, 0x0a, 0x1b, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72,
-	0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3c, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69,
-	0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a,
+	0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x53, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4e,
+	0x65, 0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x79, 0x0a, 0x15, 0x4d, 0x73,
+	0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x69, 0x73, 0x5f, 0x72,
+	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x69, 0x73,
+	0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x3a, 0x0c, 0x82, 0xe7, 0xb0, 0x2a, 0x07, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x53, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73,
+	0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0xa1, 0x01, 0x0a, 0x0b, 0x4d,
+	0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
+	0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64,
+	0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21,
+	0x0a, 0x0c, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x54, 0x61, 0x72, 0x67, 0x65,
+	0x74, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x15,
+	0x0a, 0x13, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8b, 0x01, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61,
+	0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a,
 	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64,
-	0x65, 0x72, 0x22, 0x1f, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d,
-	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x3d, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a,
-	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64,
-	0x65, 0x72, 0x22, 0x20, 0x0a, 0x1e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0xd1, 0x01, 0x0a, 0x0e, 0x4d, 0x73, 0x67, 0x4d, 0x6f, 0x64, 0x69,
-	0x66, 0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65,
-	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12,
-	0x4f, 0x0a, 0x11, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x5f, 0x72, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x10,
-	0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
-	0x12, 0x49, 0x0a, 0x0e, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x5f, 0x61,
-	0x64, 0x64, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x0d, 0x70, 0x6c,
-	0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x41, 0x64, 0x64, 0x3a, 0x0b, 0x82, 0xe7, 0xb0,
-	0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x18, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x4d,
-	0x6f, 0x64, 0x69, 0x66, 0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4f, 0x0a, 0x11, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65,
+	0x6e, 0x74, 0x73, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65,
+	0x6d, 0x65, 0x6e, 0x74, 0x52, 0x10, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x22, 0x1d, 0x0a, 0x1b, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52,
+	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x22, 0x3c, 0x0a, 0x15, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
+	0x22, 0x1f, 0x0a, 0x1d, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x3d, 0x0a, 0x16, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e,
+	0x64, 0x65, 0x72, 0x3a, 0x0b, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72,
+	0x22, 0x20, 0x0a, 0x1e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
 	0x73, 0x65, 0x22, 0x84, 0x01, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
 	0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
 	0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64,
@@ -29284,7 +28140,7 @@ var file_emissions_state_v1_tx_proto_rawDesc = []byte{
 	0x6f, 0x70, 0x69, 0x63, 0x53, 0x75, 0x62, 0x73, 0x69, 0x64, 0x79, 0x41, 0x6e, 0x64, 0x46, 0x54,
 	0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xaf, 0x15, 0x0a, 0x03, 0x4d, 0x73,
+	0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xcd, 0x14, 0x0a, 0x03, 0x4d, 0x73,
 	0x67, 0x12, 0x60, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x12, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
 	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
@@ -29305,172 +28161,166 @@ var file_emissions_state_v1_tx_proto_rawDesc = []byte{
 	0x73, 0x1a, 0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
 	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73,
 	0x73, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x5a, 0x0a, 0x0a, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x73,
-	0x12, 0x21, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x1a, 0x29, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x57,
-	0x65, 0x69, 0x67, 0x68, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x66,
-	0x0a, 0x0e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x12, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e,
-	0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x1a, 0x2d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x69, 0x0a, 0x0f, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69,
-	0x76, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x26, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
-	0x73, 0x67, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x1a, 0x2e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69,
-	0x76, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x54, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x1f, 0x2e,
+	0x73, 0x65, 0x12, 0x57, 0x0a, 0x09, 0x53, 0x65, 0x74, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12,
+	0x20, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x6f, 0x73, 0x73, 0x65,
+	0x73, 0x1a, 0x28, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
+	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x4c, 0x6f, 0x73,
+	0x73, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x66, 0x0a, 0x0e, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x25, 0x2e,
 	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x1a, 0x27,
+	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x1a, 0x2d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x69, 0x0a, 0x0f, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74,
+	0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x26, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52,
+	0x65, 0x61, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x1a, 0x2e,
 	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x72, 0x0a, 0x12, 0x41, 0x64, 0x64, 0x4e, 0x65,
-	0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x29, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x72, 0x0a, 0x12, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x12, 0x29, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
-	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x31, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x54, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x1f, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
-	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x27, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5d, 0x0a, 0x0b, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x12, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x4d, 0x6f, 0x64,
-	0x69, 0x66, 0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6c, 0x0a, 0x10, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b,
-	0x65, 0x1a, 0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x72, 0x0a, 0x12, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x29, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74,
-	0x61, 0x6b, 0x65, 0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66,
-	0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a, 0x13, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x2a, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76,
-	0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
-	0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c,
-	0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6c, 0x0a,
-	0x10, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x12, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x1a, 0x2f, 0x2e, 0x65, 0x6d, 0x69,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74,
+	0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x54,
+	0x0a, 0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x1f, 0x2e, 0x65, 0x6d, 0x69,
 	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
-	0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a, 0x13, 0x41,
-	0x64, 0x64, 0x54, 0x6f, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d,
-	0x69, 0x6e, 0x12, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
-	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f,
-	0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x1a, 0x32,
+	0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x1a, 0x27, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x72, 0x0a, 0x12, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x29, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64,
+	0x64, 0x4e, 0x65, 0x77, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x72, 0x0a, 0x12, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x29,
 	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x68, 0x69, 0x74,
-	0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x84, 0x01, 0x0a, 0x18, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f,
-	0x6d, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x12,
-	0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72,
-	0x6f, 0x6d, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e,
-	0x1a, 0x37, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46,
-	0x72, 0x6f, 0x6d, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69,
-	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8d, 0x01, 0x0a, 0x1b, 0x41, 0x64,
-	0x64, 0x54, 0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73,
 	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
-	0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3a, 0x2e,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73,
-	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x20, 0x52, 0x65,
-	0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x37,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f,
-	0x6d, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68,
-	0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
-	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43,
-	0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8d, 0x01, 0x0a, 0x1b, 0x41, 0x64, 0x64,
-	0x54, 0x6f, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x57,
-	0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x54, 0x0a, 0x08,
+	0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x1f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
 	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74,
-	0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x65,
+	0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d,
+	0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x6c, 0x0a, 0x10, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53,
+	0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a,
+	0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x72, 0x0a, 0x12, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x29, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
+	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72,
+	0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a, 0x13, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x2a, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41,
+	0x6c, 0x6c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x41, 0x6c, 0x6c, 0x53, 0x74,
+	0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6c, 0x0a, 0x10, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12,
+	0x27, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x1a, 0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
+	0x67, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x75, 0x0a, 0x13, 0x41, 0x64, 0x64,
+	0x54, 0x6f, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e,
+	0x12, 0x2a, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
+	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x68,
+	0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x1a, 0x32, 0x2e, 0x65,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
-	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74,
-	0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x20, 0x52, 0x65, 0x6d,
-	0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74,
-	0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x37, 0x2e,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c,
+	0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x84, 0x01, 0x0a, 0x18, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57,
+	0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x12, 0x2f, 0x2e,
 	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e,
 	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d,
+	0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x1a, 0x37,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f,
+	0x6d, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x41, 0x64, 0x6d, 0x69, 0x6e, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8d, 0x01, 0x0a, 0x1b, 0x41, 0x64, 0x64, 0x54,
+	0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68,
+	0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67,
+	0x41, 0x64, 0x64, 0x54, 0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72,
+	0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x20, 0x52, 0x65, 0x6d, 0x6f,
+	0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x37, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74,
+	0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x43, 0x72, 0x65,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x8d, 0x01, 0x0a, 0x1b, 0x41, 0x64, 0x64, 0x54, 0x6f,
 	0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69,
-	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53,
-	0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x84, 0x01, 0x0a, 0x18, 0x41, 0x64, 0x64, 0x54,
+	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41,
+	0x64, 0x64, 0x54, 0x6f, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e,
+	0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e,
+	0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65,
+	0x74, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x9c, 0x01, 0x0a, 0x20, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74, 0x69,
+	0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x37, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65,
+	0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x74,
+	0x74, 0x69, 0x6e, 0x67, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x84, 0x01, 0x0a, 0x18, 0x41, 0x64, 0x64, 0x54, 0x6f, 0x46,
+	0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69,
+	0x73, 0x74, 0x12, 0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
+	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54, 0x6f,
+	0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c,
+	0x69, 0x73, 0x74, 0x1a, 0x37, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x54,
 	0x6f, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65,
-	0x6c, 0x69, 0x73, 0x74, 0x12, 0x2f, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64,
-	0x54, 0x6f, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74,
-	0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x37, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64,
-	0x64, 0x54, 0x6f, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69,
-	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x93,
-	0x01, 0x0a, 0x1d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x46, 0x6f, 0x75,
-	0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74,
-	0x12, 0x34, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46,
-	0x72, 0x6f, 0x6d, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69,
-	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52,
-	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xde, 0x01, 0x0a, 0x16,
-	0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74,
-	0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
-	0x01, 0x5a, 0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61,
-	0x74, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca,
-	0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74,
-	0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
-	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x3a, 0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x93, 0x01, 0x0a,
+	0x1d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x46, 0x6f, 0x75, 0x6e, 0x64,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x12, 0x34,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f,
+	0x6d, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65,
+	0x6c, 0x69, 0x73, 0x74, 0x1a, 0x3c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d,
+	0x6f, 0x76, 0x65, 0x46, 0x72, 0x6f, 0x6d, 0x46, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xde, 0x01, 0x0a, 0x16, 0x63, 0x6f,
+	0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73, 0x74, 0x61, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
+	0x51, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x73, 0x74, 0x61, 0x74, 0x65,
+	0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x53, 0x58, 0xaa, 0x02, 0x12, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x5c,
+	0x56, 0x31, 0xe2, 0x02, 0x1e, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x53,
+	0x74, 0x61, 0x74, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a,
+	0x3a, 0x53, 0x74, 0x61, 0x74, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -29485,7 +28335,7 @@ func file_emissions_state_v1_tx_proto_rawDescGZIP() []byte {
 	return file_emissions_state_v1_tx_proto_rawDescData
 }
 
-var file_emissions_state_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 52)
+var file_emissions_state_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
 var file_emissions_state_v1_tx_proto_goTypes = []interface{}{
 	(*OptionalParams)(nil),                              // 0: emissions.state.v1.OptionalParams
 	(*MsgUpdateParams)(nil),                             // 1: emissions.state.v1.MsgUpdateParams
@@ -29494,8 +28344,8 @@ var file_emissions_state_v1_tx_proto_goTypes = []interface{}{
 	(*MsgCreateNewTopicResponse)(nil),                   // 4: emissions.state.v1.MsgCreateNewTopicResponse
 	(*MsgSetGlobalFoundationTopicParams)(nil),           // 5: emissions.state.v1.MsgSetGlobalFoundationTopicParams
 	(*MsgSetGlobalFoundationTopicParamsResponse)(nil),   // 6: emissions.state.v1.MsgSetGlobalFoundationTopicParamsResponse
-	(*MsgSetWeights)(nil),                               // 7: emissions.state.v1.MsgSetWeights
-	(*MsgSetWeightsResponse)(nil),                       // 8: emissions.state.v1.MsgSetWeightsResponse
+	(*MsgSetLosses)(nil),                                // 7: emissions.state.v1.MsgSetLosses
+	(*MsgSetLossesResponse)(nil),                        // 8: emissions.state.v1.MsgSetLossesResponse
 	(*MsgProcessInferences)(nil),                        // 9: emissions.state.v1.MsgProcessInferences
 	(*MsgProcessInferencesResponse)(nil),                // 10: emissions.state.v1.MsgProcessInferencesResponse
 	(*MsgProcessForecasts)(nil),                         // 11: emissions.state.v1.MsgProcessForecasts
@@ -29514,96 +28364,90 @@ var file_emissions_state_v1_tx_proto_goTypes = []interface{}{
 	(*MsgConfirmRemoveStakeResponse)(nil),               // 24: emissions.state.v1.MsgConfirmRemoveStakeResponse
 	(*MsgStartRemoveAllStake)(nil),                      // 25: emissions.state.v1.MsgStartRemoveAllStake
 	(*MsgStartRemoveAllStakeResponse)(nil),              // 26: emissions.state.v1.MsgStartRemoveAllStakeResponse
-	(*MsgModifyStake)(nil),                              // 27: emissions.state.v1.MsgModifyStake
-	(*MsgModifyStakeResponse)(nil),                      // 28: emissions.state.v1.MsgModifyStakeResponse
-	(*MsgRequestInference)(nil),                         // 29: emissions.state.v1.MsgRequestInference
-	(*RequestInferenceListItem)(nil),                    // 30: emissions.state.v1.RequestInferenceListItem
-	(*MsgRequestInferenceResponse)(nil),                 // 31: emissions.state.v1.MsgRequestInferenceResponse
-	(*MsgAddToWhitelistAdmin)(nil),                      // 32: emissions.state.v1.MsgAddToWhitelistAdmin
-	(*MsgAddToWhitelistAdminResponse)(nil),              // 33: emissions.state.v1.MsgAddToWhitelistAdminResponse
-	(*MsgRemoveFromWhitelistAdmin)(nil),                 // 34: emissions.state.v1.MsgRemoveFromWhitelistAdmin
-	(*MsgRemoveFromWhitelistAdminResponse)(nil),         // 35: emissions.state.v1.MsgRemoveFromWhitelistAdminResponse
-	(*MsgAddToTopicCreationWhitelist)(nil),              // 36: emissions.state.v1.MsgAddToTopicCreationWhitelist
-	(*MsgAddToTopicCreationWhitelistResponse)(nil),      // 37: emissions.state.v1.MsgAddToTopicCreationWhitelistResponse
-	(*MsgRemoveFromTopicCreationWhitelist)(nil),         // 38: emissions.state.v1.MsgRemoveFromTopicCreationWhitelist
-	(*MsgRemoveFromTopicCreationWhitelistResponse)(nil), // 39: emissions.state.v1.MsgRemoveFromTopicCreationWhitelistResponse
-	(*MsgAddToWeightSettingWhitelist)(nil),              // 40: emissions.state.v1.MsgAddToWeightSettingWhitelist
-	(*MsgAddToWeightSettingWhitelistResponse)(nil),      // 41: emissions.state.v1.MsgAddToWeightSettingWhitelistResponse
-	(*MsgRemoveFromWeightSettingWhitelist)(nil),         // 42: emissions.state.v1.MsgRemoveFromWeightSettingWhitelist
-	(*MsgRemoveFromWeightSettingWhitelistResponse)(nil), // 43: emissions.state.v1.MsgRemoveFromWeightSettingWhitelistResponse
-	(*MsgAddToFoundationWhitelist)(nil),                 // 44: emissions.state.v1.MsgAddToFoundationWhitelist
-	(*MsgAddToFoundationWhitelistResponse)(nil),         // 45: emissions.state.v1.MsgAddToFoundationWhitelistResponse
-	(*MsgRemoveFromFoundationWhitelist)(nil),            // 46: emissions.state.v1.MsgRemoveFromFoundationWhitelist
-	(*MsgRemoveFromFoundationWhitelistResponse)(nil),    // 47: emissions.state.v1.MsgRemoveFromFoundationWhitelistResponse
-	(*MsgReactivateTopic)(nil),                          // 48: emissions.state.v1.MsgReactivateTopic
-	(*MsgReactivateTopicResponse)(nil),                  // 49: emissions.state.v1.MsgReactivateTopicResponse
-	(*MsgModifyTopicSubsidyAndFTreasury)(nil),           // 50: emissions.state.v1.MsgModifyTopicSubsidyAndFTreasury
-	(*MsgModifyTopicSubsidyAndFTreasuryResponse)(nil),   // 51: emissions.state.v1.MsgModifyTopicSubsidyAndFTreasuryResponse
-	(*Weight)(nil),                                      // 52: emissions.state.v1.Weight
-	(*Inference)(nil),                                   // 53: emissions.state.v1.Inference
-	(*Forecast)(nil),                                    // 54: emissions.state.v1.Forecast
-	(*StakePlacement)(nil),                              // 55: emissions.state.v1.StakePlacement
+	(*MsgRequestInference)(nil),                         // 27: emissions.state.v1.MsgRequestInference
+	(*RequestInferenceListItem)(nil),                    // 28: emissions.state.v1.RequestInferenceListItem
+	(*MsgRequestInferenceResponse)(nil),                 // 29: emissions.state.v1.MsgRequestInferenceResponse
+	(*MsgAddToWhitelistAdmin)(nil),                      // 30: emissions.state.v1.MsgAddToWhitelistAdmin
+	(*MsgAddToWhitelistAdminResponse)(nil),              // 31: emissions.state.v1.MsgAddToWhitelistAdminResponse
+	(*MsgRemoveFromWhitelistAdmin)(nil),                 // 32: emissions.state.v1.MsgRemoveFromWhitelistAdmin
+	(*MsgRemoveFromWhitelistAdminResponse)(nil),         // 33: emissions.state.v1.MsgRemoveFromWhitelistAdminResponse
+	(*MsgAddToTopicCreationWhitelist)(nil),              // 34: emissions.state.v1.MsgAddToTopicCreationWhitelist
+	(*MsgAddToTopicCreationWhitelistResponse)(nil),      // 35: emissions.state.v1.MsgAddToTopicCreationWhitelistResponse
+	(*MsgRemoveFromTopicCreationWhitelist)(nil),         // 36: emissions.state.v1.MsgRemoveFromTopicCreationWhitelist
+	(*MsgRemoveFromTopicCreationWhitelistResponse)(nil), // 37: emissions.state.v1.MsgRemoveFromTopicCreationWhitelistResponse
+	(*MsgAddToWeightSettingWhitelist)(nil),              // 38: emissions.state.v1.MsgAddToWeightSettingWhitelist
+	(*MsgAddToWeightSettingWhitelistResponse)(nil),      // 39: emissions.state.v1.MsgAddToWeightSettingWhitelistResponse
+	(*MsgRemoveFromWeightSettingWhitelist)(nil),         // 40: emissions.state.v1.MsgRemoveFromWeightSettingWhitelist
+	(*MsgRemoveFromWeightSettingWhitelistResponse)(nil), // 41: emissions.state.v1.MsgRemoveFromWeightSettingWhitelistResponse
+	(*MsgAddToFoundationWhitelist)(nil),                 // 42: emissions.state.v1.MsgAddToFoundationWhitelist
+	(*MsgAddToFoundationWhitelistResponse)(nil),         // 43: emissions.state.v1.MsgAddToFoundationWhitelistResponse
+	(*MsgRemoveFromFoundationWhitelist)(nil),            // 44: emissions.state.v1.MsgRemoveFromFoundationWhitelist
+	(*MsgRemoveFromFoundationWhitelistResponse)(nil),    // 45: emissions.state.v1.MsgRemoveFromFoundationWhitelistResponse
+	(*MsgReactivateTopic)(nil),                          // 46: emissions.state.v1.MsgReactivateTopic
+	(*MsgReactivateTopicResponse)(nil),                  // 47: emissions.state.v1.MsgReactivateTopicResponse
+	(*MsgModifyTopicSubsidyAndFTreasury)(nil),           // 48: emissions.state.v1.MsgModifyTopicSubsidyAndFTreasury
+	(*MsgModifyTopicSubsidyAndFTreasuryResponse)(nil),   // 49: emissions.state.v1.MsgModifyTopicSubsidyAndFTreasuryResponse
+	(*Weight)(nil),                                      // 50: emissions.state.v1.Weight
+	(*Inference)(nil),                                   // 51: emissions.state.v1.Inference
+	(*Forecast)(nil),                                    // 52: emissions.state.v1.Forecast
+	(*StakePlacement)(nil),                              // 53: emissions.state.v1.StakePlacement
 }
 var file_emissions_state_v1_tx_proto_depIdxs = []int32{
 	0,  // 0: emissions.state.v1.MsgUpdateParams.params:type_name -> emissions.state.v1.OptionalParams
-	52, // 1: emissions.state.v1.MsgSetWeights.weights:type_name -> emissions.state.v1.Weight
-	53, // 2: emissions.state.v1.MsgProcessInferences.inferences:type_name -> emissions.state.v1.Inference
-	54, // 3: emissions.state.v1.MsgProcessForecasts.forecasts:type_name -> emissions.state.v1.Forecast
-	55, // 4: emissions.state.v1.MsgStartRemoveStake.placements_remove:type_name -> emissions.state.v1.StakePlacement
-	55, // 5: emissions.state.v1.MsgModifyStake.placements_remove:type_name -> emissions.state.v1.StakePlacement
-	55, // 6: emissions.state.v1.MsgModifyStake.placements_add:type_name -> emissions.state.v1.StakePlacement
-	30, // 7: emissions.state.v1.MsgRequestInference.requests:type_name -> emissions.state.v1.RequestInferenceListItem
-	1,  // 8: emissions.state.v1.Msg.UpdateParams:input_type -> emissions.state.v1.MsgUpdateParams
-	9,  // 9: emissions.state.v1.Msg.ProcessInferences:input_type -> emissions.state.v1.MsgProcessInferences
-	11, // 10: emissions.state.v1.Msg.ProcessForecasts:input_type -> emissions.state.v1.MsgProcessForecasts
-	7,  // 11: emissions.state.v1.Msg.SetWeights:input_type -> emissions.state.v1.MsgSetWeights
-	3,  // 12: emissions.state.v1.Msg.CreateNewTopic:input_type -> emissions.state.v1.MsgCreateNewTopic
-	48, // 13: emissions.state.v1.Msg.ReactivateTopic:input_type -> emissions.state.v1.MsgReactivateTopic
-	13, // 14: emissions.state.v1.Msg.Register:input_type -> emissions.state.v1.MsgRegister
-	15, // 15: emissions.state.v1.Msg.AddNewRegistration:input_type -> emissions.state.v1.MsgAddNewRegistration
-	17, // 16: emissions.state.v1.Msg.RemoveRegistration:input_type -> emissions.state.v1.MsgRemoveRegistration
-	19, // 17: emissions.state.v1.Msg.AddStake:input_type -> emissions.state.v1.MsgAddStake
-	27, // 18: emissions.state.v1.Msg.ModifyStake:input_type -> emissions.state.v1.MsgModifyStake
-	21, // 19: emissions.state.v1.Msg.StartRemoveStake:input_type -> emissions.state.v1.MsgStartRemoveStake
-	23, // 20: emissions.state.v1.Msg.ConfirmRemoveStake:input_type -> emissions.state.v1.MsgConfirmRemoveStake
-	25, // 21: emissions.state.v1.Msg.StartRemoveAllStake:input_type -> emissions.state.v1.MsgStartRemoveAllStake
-	29, // 22: emissions.state.v1.Msg.RequestInference:input_type -> emissions.state.v1.MsgRequestInference
-	32, // 23: emissions.state.v1.Msg.AddToWhitelistAdmin:input_type -> emissions.state.v1.MsgAddToWhitelistAdmin
-	34, // 24: emissions.state.v1.Msg.RemoveFromWhitelistAdmin:input_type -> emissions.state.v1.MsgRemoveFromWhitelistAdmin
-	36, // 25: emissions.state.v1.Msg.AddToTopicCreationWhitelist:input_type -> emissions.state.v1.MsgAddToTopicCreationWhitelist
-	38, // 26: emissions.state.v1.Msg.RemoveFromTopicCreationWhitelist:input_type -> emissions.state.v1.MsgRemoveFromTopicCreationWhitelist
-	40, // 27: emissions.state.v1.Msg.AddToWeightSettingWhitelist:input_type -> emissions.state.v1.MsgAddToWeightSettingWhitelist
-	42, // 28: emissions.state.v1.Msg.RemoveFromWeightSettingWhitelist:input_type -> emissions.state.v1.MsgRemoveFromWeightSettingWhitelist
-	44, // 29: emissions.state.v1.Msg.AddToFoundationWhitelist:input_type -> emissions.state.v1.MsgAddToFoundationWhitelist
-	46, // 30: emissions.state.v1.Msg.RemoveFromFoundationWhitelist:input_type -> emissions.state.v1.MsgRemoveFromFoundationWhitelist
-	2,  // 31: emissions.state.v1.Msg.UpdateParams:output_type -> emissions.state.v1.MsgUpdateParamsResponse
-	10, // 32: emissions.state.v1.Msg.ProcessInferences:output_type -> emissions.state.v1.MsgProcessInferencesResponse
-	12, // 33: emissions.state.v1.Msg.ProcessForecasts:output_type -> emissions.state.v1.MsgProcessForecastsResponse
-	8,  // 34: emissions.state.v1.Msg.SetWeights:output_type -> emissions.state.v1.MsgSetWeightsResponse
-	4,  // 35: emissions.state.v1.Msg.CreateNewTopic:output_type -> emissions.state.v1.MsgCreateNewTopicResponse
-	49, // 36: emissions.state.v1.Msg.ReactivateTopic:output_type -> emissions.state.v1.MsgReactivateTopicResponse
-	14, // 37: emissions.state.v1.Msg.Register:output_type -> emissions.state.v1.MsgRegisterResponse
-	16, // 38: emissions.state.v1.Msg.AddNewRegistration:output_type -> emissions.state.v1.MsgAddNewRegistrationResponse
-	18, // 39: emissions.state.v1.Msg.RemoveRegistration:output_type -> emissions.state.v1.MsgRemoveRegistrationResponse
-	20, // 40: emissions.state.v1.Msg.AddStake:output_type -> emissions.state.v1.MsgAddStakeResponse
-	28, // 41: emissions.state.v1.Msg.ModifyStake:output_type -> emissions.state.v1.MsgModifyStakeResponse
-	22, // 42: emissions.state.v1.Msg.StartRemoveStake:output_type -> emissions.state.v1.MsgStartRemoveStakeResponse
-	24, // 43: emissions.state.v1.Msg.ConfirmRemoveStake:output_type -> emissions.state.v1.MsgConfirmRemoveStakeResponse
-	26, // 44: emissions.state.v1.Msg.StartRemoveAllStake:output_type -> emissions.state.v1.MsgStartRemoveAllStakeResponse
-	31, // 45: emissions.state.v1.Msg.RequestInference:output_type -> emissions.state.v1.MsgRequestInferenceResponse
-	33, // 46: emissions.state.v1.Msg.AddToWhitelistAdmin:output_type -> emissions.state.v1.MsgAddToWhitelistAdminResponse
-	35, // 47: emissions.state.v1.Msg.RemoveFromWhitelistAdmin:output_type -> emissions.state.v1.MsgRemoveFromWhitelistAdminResponse
-	37, // 48: emissions.state.v1.Msg.AddToTopicCreationWhitelist:output_type -> emissions.state.v1.MsgAddToTopicCreationWhitelistResponse
-	39, // 49: emissions.state.v1.Msg.RemoveFromTopicCreationWhitelist:output_type -> emissions.state.v1.MsgRemoveFromTopicCreationWhitelistResponse
-	41, // 50: emissions.state.v1.Msg.AddToWeightSettingWhitelist:output_type -> emissions.state.v1.MsgAddToWeightSettingWhitelistResponse
-	43, // 51: emissions.state.v1.Msg.RemoveFromWeightSettingWhitelist:output_type -> emissions.state.v1.MsgRemoveFromWeightSettingWhitelistResponse
-	45, // 52: emissions.state.v1.Msg.AddToFoundationWhitelist:output_type -> emissions.state.v1.MsgAddToFoundationWhitelistResponse
-	47, // 53: emissions.state.v1.Msg.RemoveFromFoundationWhitelist:output_type -> emissions.state.v1.MsgRemoveFromFoundationWhitelistResponse
-	31, // [31:54] is the sub-list for method output_type
-	8,  // [8:31] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	50, // 1: emissions.state.v1.MsgSetLosses.weights:type_name -> emissions.state.v1.Weight
+	51, // 2: emissions.state.v1.MsgProcessInferences.inferences:type_name -> emissions.state.v1.Inference
+	52, // 3: emissions.state.v1.MsgProcessForecasts.forecasts:type_name -> emissions.state.v1.Forecast
+	53, // 4: emissions.state.v1.MsgStartRemoveStake.placements_remove:type_name -> emissions.state.v1.StakePlacement
+	28, // 5: emissions.state.v1.MsgRequestInference.requests:type_name -> emissions.state.v1.RequestInferenceListItem
+	1,  // 6: emissions.state.v1.Msg.UpdateParams:input_type -> emissions.state.v1.MsgUpdateParams
+	9,  // 7: emissions.state.v1.Msg.ProcessInferences:input_type -> emissions.state.v1.MsgProcessInferences
+	11, // 8: emissions.state.v1.Msg.ProcessForecasts:input_type -> emissions.state.v1.MsgProcessForecasts
+	7,  // 9: emissions.state.v1.Msg.SetLosses:input_type -> emissions.state.v1.MsgSetLosses
+	3,  // 10: emissions.state.v1.Msg.CreateNewTopic:input_type -> emissions.state.v1.MsgCreateNewTopic
+	46, // 11: emissions.state.v1.Msg.ReactivateTopic:input_type -> emissions.state.v1.MsgReactivateTopic
+	13, // 12: emissions.state.v1.Msg.Register:input_type -> emissions.state.v1.MsgRegister
+	15, // 13: emissions.state.v1.Msg.AddNewRegistration:input_type -> emissions.state.v1.MsgAddNewRegistration
+	17, // 14: emissions.state.v1.Msg.RemoveRegistration:input_type -> emissions.state.v1.MsgRemoveRegistration
+	19, // 15: emissions.state.v1.Msg.AddStake:input_type -> emissions.state.v1.MsgAddStake
+	21, // 16: emissions.state.v1.Msg.StartRemoveStake:input_type -> emissions.state.v1.MsgStartRemoveStake
+	23, // 17: emissions.state.v1.Msg.ConfirmRemoveStake:input_type -> emissions.state.v1.MsgConfirmRemoveStake
+	25, // 18: emissions.state.v1.Msg.StartRemoveAllStake:input_type -> emissions.state.v1.MsgStartRemoveAllStake
+	27, // 19: emissions.state.v1.Msg.RequestInference:input_type -> emissions.state.v1.MsgRequestInference
+	30, // 20: emissions.state.v1.Msg.AddToWhitelistAdmin:input_type -> emissions.state.v1.MsgAddToWhitelistAdmin
+	32, // 21: emissions.state.v1.Msg.RemoveFromWhitelistAdmin:input_type -> emissions.state.v1.MsgRemoveFromWhitelistAdmin
+	34, // 22: emissions.state.v1.Msg.AddToTopicCreationWhitelist:input_type -> emissions.state.v1.MsgAddToTopicCreationWhitelist
+	36, // 23: emissions.state.v1.Msg.RemoveFromTopicCreationWhitelist:input_type -> emissions.state.v1.MsgRemoveFromTopicCreationWhitelist
+	38, // 24: emissions.state.v1.Msg.AddToWeightSettingWhitelist:input_type -> emissions.state.v1.MsgAddToWeightSettingWhitelist
+	40, // 25: emissions.state.v1.Msg.RemoveFromWeightSettingWhitelist:input_type -> emissions.state.v1.MsgRemoveFromWeightSettingWhitelist
+	42, // 26: emissions.state.v1.Msg.AddToFoundationWhitelist:input_type -> emissions.state.v1.MsgAddToFoundationWhitelist
+	44, // 27: emissions.state.v1.Msg.RemoveFromFoundationWhitelist:input_type -> emissions.state.v1.MsgRemoveFromFoundationWhitelist
+	2,  // 28: emissions.state.v1.Msg.UpdateParams:output_type -> emissions.state.v1.MsgUpdateParamsResponse
+	10, // 29: emissions.state.v1.Msg.ProcessInferences:output_type -> emissions.state.v1.MsgProcessInferencesResponse
+	12, // 30: emissions.state.v1.Msg.ProcessForecasts:output_type -> emissions.state.v1.MsgProcessForecastsResponse
+	8,  // 31: emissions.state.v1.Msg.SetLosses:output_type -> emissions.state.v1.MsgSetLossesResponse
+	4,  // 32: emissions.state.v1.Msg.CreateNewTopic:output_type -> emissions.state.v1.MsgCreateNewTopicResponse
+	47, // 33: emissions.state.v1.Msg.ReactivateTopic:output_type -> emissions.state.v1.MsgReactivateTopicResponse
+	14, // 34: emissions.state.v1.Msg.Register:output_type -> emissions.state.v1.MsgRegisterResponse
+	16, // 35: emissions.state.v1.Msg.AddNewRegistration:output_type -> emissions.state.v1.MsgAddNewRegistrationResponse
+	18, // 36: emissions.state.v1.Msg.RemoveRegistration:output_type -> emissions.state.v1.MsgRemoveRegistrationResponse
+	20, // 37: emissions.state.v1.Msg.AddStake:output_type -> emissions.state.v1.MsgAddStakeResponse
+	22, // 38: emissions.state.v1.Msg.StartRemoveStake:output_type -> emissions.state.v1.MsgStartRemoveStakeResponse
+	24, // 39: emissions.state.v1.Msg.ConfirmRemoveStake:output_type -> emissions.state.v1.MsgConfirmRemoveStakeResponse
+	26, // 40: emissions.state.v1.Msg.StartRemoveAllStake:output_type -> emissions.state.v1.MsgStartRemoveAllStakeResponse
+	29, // 41: emissions.state.v1.Msg.RequestInference:output_type -> emissions.state.v1.MsgRequestInferenceResponse
+	31, // 42: emissions.state.v1.Msg.AddToWhitelistAdmin:output_type -> emissions.state.v1.MsgAddToWhitelistAdminResponse
+	33, // 43: emissions.state.v1.Msg.RemoveFromWhitelistAdmin:output_type -> emissions.state.v1.MsgRemoveFromWhitelistAdminResponse
+	35, // 44: emissions.state.v1.Msg.AddToTopicCreationWhitelist:output_type -> emissions.state.v1.MsgAddToTopicCreationWhitelistResponse
+	37, // 45: emissions.state.v1.Msg.RemoveFromTopicCreationWhitelist:output_type -> emissions.state.v1.MsgRemoveFromTopicCreationWhitelistResponse
+	39, // 46: emissions.state.v1.Msg.AddToWeightSettingWhitelist:output_type -> emissions.state.v1.MsgAddToWeightSettingWhitelistResponse
+	41, // 47: emissions.state.v1.Msg.RemoveFromWeightSettingWhitelist:output_type -> emissions.state.v1.MsgRemoveFromWeightSettingWhitelistResponse
+	43, // 48: emissions.state.v1.Msg.AddToFoundationWhitelist:output_type -> emissions.state.v1.MsgAddToFoundationWhitelistResponse
+	45, // 49: emissions.state.v1.Msg.RemoveFromFoundationWhitelist:output_type -> emissions.state.v1.MsgRemoveFromFoundationWhitelistResponse
+	28, // [28:50] is the sub-list for method output_type
+	6,  // [6:28] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_emissions_state_v1_tx_proto_init() }
@@ -29698,7 +28542,7 @@ func file_emissions_state_v1_tx_proto_init() {
 			}
 		}
 		file_emissions_state_v1_tx_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgSetWeights); i {
+			switch v := v.(*MsgSetLosses); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -29710,7 +28554,7 @@ func file_emissions_state_v1_tx_proto_init() {
 			}
 		}
 		file_emissions_state_v1_tx_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgSetWeightsResponse); i {
+			switch v := v.(*MsgSetLossesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -29938,30 +28782,6 @@ func file_emissions_state_v1_tx_proto_init() {
 			}
 		}
 		file_emissions_state_v1_tx_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgModifyStake); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_emissions_state_v1_tx_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgModifyStakeResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_emissions_state_v1_tx_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRequestInference); i {
 			case 0:
 				return &v.state
@@ -29973,7 +28793,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RequestInferenceListItem); i {
 			case 0:
 				return &v.state
@@ -29985,7 +28805,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRequestInferenceResponse); i {
 			case 0:
 				return &v.state
@@ -29997,7 +28817,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToWhitelistAdmin); i {
 			case 0:
 				return &v.state
@@ -30009,7 +28829,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToWhitelistAdminResponse); i {
 			case 0:
 				return &v.state
@@ -30021,7 +28841,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromWhitelistAdmin); i {
 			case 0:
 				return &v.state
@@ -30033,7 +28853,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromWhitelistAdminResponse); i {
 			case 0:
 				return &v.state
@@ -30045,7 +28865,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToTopicCreationWhitelist); i {
 			case 0:
 				return &v.state
@@ -30057,7 +28877,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToTopicCreationWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30069,7 +28889,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromTopicCreationWhitelist); i {
 			case 0:
 				return &v.state
@@ -30081,7 +28901,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromTopicCreationWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30093,7 +28913,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToWeightSettingWhitelist); i {
 			case 0:
 				return &v.state
@@ -30105,7 +28925,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToWeightSettingWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30117,7 +28937,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromWeightSettingWhitelist); i {
 			case 0:
 				return &v.state
@@ -30129,7 +28949,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromWeightSettingWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30141,7 +28961,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToFoundationWhitelist); i {
 			case 0:
 				return &v.state
@@ -30153,7 +28973,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgAddToFoundationWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30165,7 +28985,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromFoundationWhitelist); i {
 			case 0:
 				return &v.state
@@ -30177,7 +28997,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgRemoveFromFoundationWhitelistResponse); i {
 			case 0:
 				return &v.state
@@ -30189,7 +29009,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgReactivateTopic); i {
 			case 0:
 				return &v.state
@@ -30201,7 +29021,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgReactivateTopicResponse); i {
 			case 0:
 				return &v.state
@@ -30213,7 +29033,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgModifyTopicSubsidyAndFTreasury); i {
 			case 0:
 				return &v.state
@@ -30225,7 +29045,7 @@ func file_emissions_state_v1_tx_proto_init() {
 				return nil
 			}
 		}
-		file_emissions_state_v1_tx_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_emissions_state_v1_tx_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*MsgModifyTopicSubsidyAndFTreasuryResponse); i {
 			case 0:
 				return &v.state
@@ -30244,7 +29064,7 @@ func file_emissions_state_v1_tx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_state_v1_tx_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   52,
+			NumMessages:   50,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

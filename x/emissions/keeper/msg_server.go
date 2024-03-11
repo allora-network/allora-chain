@@ -160,35 +160,39 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*state.MsgSetWeightsResponse, error) {
-	// Check if the sender is in the weight setting whitelist
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isWeightSetter, err := ms.k.IsInWeightSettingWhitelist(ctx, sender)
-	if err != nil {
-		return nil, err
-	}
-	if !isWeightSetter {
-		return nil, state.ErrNotInWeightSettingWhitelist
-	}
+// Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
+func (ms msgServer) SetLosses(ctx context.Context, msg *state.MsgSetLosses) (*state.MsgSetLossesResponse, error) {
+	// throw error cuz not yet implemented
+	return nil, errors.New("not yet implemented")
 
-	// Iterate through the array and set the weights
-	for _, weightEntry := range msg.Weights {
+	// // Check if the sender is in the weight setting whitelist
+	// sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// isWeightSetter, err := ms.k.IsInWeightSettingWhitelist(ctx, sender)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if !isWeightSetter {
+	// 	return nil, state.ErrNotInWeightSettingWhitelist
+	// }
 
-		fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
+	// // Iterate through the array and set the weights
+	// for _, weightEntry := range msg.Weights {
 
-		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
-		workerAddr := sdk.AccAddress(weightEntry.Worker)
+	// 	fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
 
-		err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
-		if err != nil {
-			return nil, err
-		}
-	}
+	// 	reputerAddr := sdk.AccAddress(weightEntry.Reputer)
+	// 	workerAddr := sdk.AccAddress(weightEntry.Worker)
 
-	return &state.MsgSetWeightsResponse{}, nil
+	// 	err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// return &state.MsgSetLossesResponse{}, nil
 }
 
 // T1: a tx function that accepts a list of inferences and possibly returns an error
@@ -252,9 +256,9 @@ func (ms msgServer) ProcessForecasts(ctx context.Context, msg *state.MsgProcessF
 	return &state.MsgProcessForecastsResponse{}, nil
 }
 
-// ########################################
-// #           Node Registration          #
-// ########################################
+///
+/// NODE REGISTRATION
+///
 
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*state.MsgRegisterResponse, error) {
@@ -271,9 +275,13 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		return nil, err
 	}
 	// check user existing stake
-	addressExistingStake, err := ms.k.GetDelegatorStake(ctx, address)
-	if err != nil {
-		return nil, err
+	addressExistingStake := cosmosMath.NewUint(0)
+	for _, topicId := range msg.TopicIds {
+		addressExistingStakeInTopic, err := ms.k.GetStakeOnTopicFromReputer(ctx, topicId, address)
+		if err != nil {
+			return nil, err
+		}
+		addressExistingStake = addressExistingStake.Add(addressExistingStakeInTopic)
 	}
 	// check if the user has enough funds to register
 	totalAddressStake := addressExistingStake.Add(msg.GetInitialStake())
@@ -361,13 +369,13 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 	}
 
 	// copy overall staking power of the wallet to the topic stake
-	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, address)
+	totalAddressStake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, address)
 	if err != nil {
 		return nil, err
 	}
 
 	// add to topic stake
-	err = ms.k.AddStakeToTopics(ctx, []uint64{msg.GetTopicId()}, totalAddressStake)
+	err = ms.k.AddStake(ctx, msg.GetTopicId(), address, totalAddressStake)
 	if err != nil {
 		return nil, err
 	}
@@ -451,13 +459,13 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 	}
 
 	// remove overall staking power of the wallet to the topic stake
-	totalAddressStake, err := ms.k.GetStakePlacedUponTarget(ctx, address)
+	totalAddressStake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, address)
 	if err != nil {
 		return nil, err
 	}
 
 	// remove from topic stake
-	err = ms.k.RemoveStakeFromTopics(ctx, []uint64{msg.TopicId}, totalAddressStake)
+	err = ms.k.RemoveStake(ctx, msg.TopicId, address, totalAddressStake)
 	if err != nil {
 		return nil, err
 	}
@@ -519,116 +527,16 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 		return nil, err
 	}
 
-	// 6. update the stake data structures
-	err = ms.k.AddStake(ctx, TopicIds, msg.Sender, msg.StakeTarget, msg.Amount)
-	if err != nil {
-		return nil, err
+	// 6. update the stake data structures, spread the stake across all topics evenly
+	amountToStake := cosmosMath.NewUintFromBigInt(msg.Amount.BigInt()).Quo(cosmosMath.NewUint(uint64(len(TopicIds))))
+	for _, topicId := range TopicIds {
+		err = ms.k.AddStake(ctx, topicId, senderAddr, amountToStake)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &state.MsgAddStakeResponse{}, nil
-}
-
-func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) (*state.MsgModifyStakeResponse, error) {
-	// 1. check the sender is registered
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	// 2. For all stake befores, check the sum is less than or equal to this sender's existing stake
-	// 3. For all stake befores, check that the bond is greater than or equal to the amount being removed
-	senderTotalStake, err := ms.k.GetDelegatorStake(ctx, senderAddr)
-	if err != nil {
-		return nil, err
-	}
-	beforeSum := cosmosMath.NewUint(0)
-	for _, stakeBefore := range msg.PlacementsRemove {
-		beforeSum = beforeSum.Add(stakeBefore.Amount)
-		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
-		if err != nil {
-			return nil, err
-		}
-		bond, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-		if bond.LT(stakeBefore.Amount) {
-			return nil, state.ErrModifyStakeBeforeBondLessThanAmountModified
-		}
-	}
-	if senderTotalStake.LT(beforeSum) {
-		return nil, state.ErrModifyStakeBeforeSumGreaterThanSenderStake
-	}
-	// 4. For all stake afters, check that the target is a valid signed up participant
-	// 5. For all stake afters, check that the sum is equal to the sum of stake befores
-	afterSum := cosmosMath.NewUint(0)
-	for _, stakeAfter := range msg.PlacementsAdd {
-		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
-		if err != nil {
-			return nil, err
-		}
-		afterSum = afterSum.Add(stakeAfter.Amount)
-		err = checkNodeRegistered(ctx, ms, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if !afterSum.Equal(beforeSum) {
-		return nil, state.ErrModifyStakeSumBeforeNotEqualToSumAfter
-	}
-
-	// Update the stake data structures
-	// 6. For all stake befores, remove the stake
-	// 7. For all stake afters, add the stake to the existing stake position
-	for _, stakeBefore := range msg.PlacementsRemove {
-		targetAddr, err := sdk.AccAddressFromBech32(stakeBefore.Target)
-		if err != nil {
-			return nil, err
-		}
-		err = ms.k.SubStakePlacement(ctx, senderAddr, targetAddr, stakeBefore.Amount)
-		if err != nil {
-			return nil, err
-		}
-		err = ms.k.SubStakePlacedUponTarget(ctx, targetAddr, stakeBefore.Amount)
-		if err != nil {
-			return nil, err
-		}
-
-		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		err = ms.k.RemoveStakeFromTopics(ctx, TopicIds, stakeBefore.Amount)
-		if err != nil {
-			return nil, err
-		}
-	}
-	for _, stakeAfter := range msg.PlacementsAdd {
-		targetAddr, err := sdk.AccAddressFromBech32(stakeAfter.Target)
-		if err != nil {
-			return nil, err
-		}
-		err = ms.k.AddStakePlacement(ctx, senderAddr, targetAddr, stakeAfter.Amount)
-		if err != nil {
-			return nil, err
-		}
-		err = ms.k.AddStakePlacedUponTarget(ctx, targetAddr, stakeAfter.Amount)
-		if err != nil {
-			return nil, err
-		}
-
-		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		err = ms.k.AddStakeToTopics(ctx, TopicIds, stakeAfter.Amount)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return &state.MsgModifyStakeResponse{}, nil
 }
 
 // StartRemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
@@ -637,7 +545,7 @@ func (ms msgServer) ModifyStake(ctx context.Context, msg *state.MsgModifyStake) 
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRemoveStake) (*state.MsgStartRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// 1. check the sender is registered
+	// Check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -647,14 +555,8 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		Placements:              make([]*state.StakeRemovalPlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
-		// 2. check the target exists and is registered
-		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
-		if err != nil {
-			return nil, err
-		}
-
-		// 3. check the sender has enough stake already placed on the target to remove the stake
-		stakePlaced, err := ms.k.GetBond(ctx, senderAddr, targetAddr)
+		// Check the sender has enough stake already placed on the topic to remove the stake
+		stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, stakePlacement.TopicId, senderAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -662,33 +564,23 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 			return nil, state.ErrInsufficientStakeToRemove
 		}
 
-		// 4. get topics ids where the target is registered
-		TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
-		if err != nil {
-			return nil, err
-		}
-
-		// 6. If user is removing stake from themselves and he still registered in topics
-		//  check that the stake is greater than the minimum required
+		// If user is still registered in the topic check that the stake is greater than the minimum required
 		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
 		if err != nil {
 			return nil, err
 		}
-		if senderAddr.String() == targetAddr.String() &&
-			stakePlaced.Sub(stakePlacement.Amount).LT(requiredMinimumStake) &&
-			len(TopicIds) > 0 {
+		if stakePlaced.Sub(stakePlacement.Amount).LT(requiredMinimumStake) {
 			return nil, state.ErrInsufficientStakeAfterRemoval
 		}
 
-		// 7. push to the stake removal object
+		// Push to the stake removal object
 		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
-			TopicIds: TopicIds,
-			Target:   stakePlacement.Target,
-			Amount:   stakePlacement.Amount,
+			TopicId: stakePlacement.TopicId,
+			Amount:  stakePlacement.Amount,
 		})
 	}
-	// 8. if no errors have occured and the removal is valid, add the stake removal to the delayed queue
-	err = ms.k.SetStakeRemovalQueueForDelegator(ctx, senderAddr, stakeRemoval)
+	// If no errors have occured and the removal is valid, add the stake removal to the delayed queue
+	err = ms.k.SetStakeRemovalQueueForAddress(ctx, senderAddr, stakeRemoval)
 	if err != nil {
 		return nil, err
 	}
@@ -703,7 +595,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	if err != nil {
 		return nil, err
 	}
-	stakeRemoval, err := ms.k.GetStakeRemovalQueueForDelegator(ctx, senderAddr)
+	stakeRemoval, err := ms.k.GetStakeRemovalQueueByAddress(ctx, senderAddr)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, state.ErrConfirmRemoveStakeNoRemovalStarted
@@ -726,10 +618,6 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 	// the data should be valid because it was checked when the stake removal was started
 	// send the money
 	for _, stakePlacement := range stakeRemoval.Placements {
-		targetAddr, err := sdk.AccAddressFromBech32(stakePlacement.Target)
-		if err != nil {
-			return nil, err
-		}
 		// 5. check the module has enough funds to send back to the sender
 		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 		// 6. send the funds
@@ -738,7 +626,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
 
 		// 7. update the stake data structures
-		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicIds, senderAddr, targetAddr, stakePlacement.Amount)
+		err = ms.k.RemoveStake(ctx, stakePlacement.TopicId, senderAddr, stakePlacement.Amount)
 		if err != nil {
 			return nil, err
 		}
@@ -756,7 +644,7 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 	if err != nil {
 		return nil, err
 	}
-	targets, amounts, err := ms.k.GetAllBondsForDelegator(ctx, senderAddr)
+	stakePlacements, err := ms.k.GetStakePlacementsForReputer(ctx, senderAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -764,10 +652,10 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 		Sender:           msg.Sender,
 		PlacementsRemove: make([]*state.StakePlacement, 0),
 	}
-	for i, target := range targets {
+	for _, stakePlacement := range stakePlacements {
 		msgRemoveStake.PlacementsRemove = append(msgRemoveStake.PlacementsRemove, &state.StakePlacement{
-			Target: target.String(),
-			Amount: amounts[i],
+			TopicId: stakePlacement.TopicId,
+			Amount:  stakePlacement.Amount,
 		})
 	}
 	_, err = ms.StartRemoveStake(ctx, msgRemoveStake)
@@ -877,9 +765,9 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 	return &state.MsgRequestInferenceResponse{}, nil
 }
 
-// ########################################
-// #           Private Functions          #
-// ########################################
+///
+/// PRIVATE
+///
 
 // Making common interfaces available to protobuf messages
 func moveFundsAddStake(
@@ -895,15 +783,12 @@ func moveFundsAddStake(
 		return err
 	}
 
-	// for now we will force initial stake deposits to be placed upon oneself.
-	// add to total stake
-	// add to topic stake
-	// add to stakeOwnedByDelegator
-	// add to stakePlacement
-	// add to stakePlacedUponTarget
-	err = ms.k.AddStake(ctx, msg.GetTopicIds(), msg.GetCreator(), msg.GetCreator(), msg.GetInitialStake())
-	if err != nil {
-		return err
+	// add stake to each topic
+	for _, topicId := range msg.TopicIds {
+		err = ms.k.AddStake(ctx, topicId, nodeAddr, msg.GetInitialStake())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -955,7 +840,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 }
 
 ///
-/// FOUNDATION TOPIC MANAGEMENT FUNCTIONS
+/// FOUNDATION TOPIC MANAGEMENT
 ///
 
 // Modfies topic subsidy and f_treasury properties
@@ -986,7 +871,7 @@ func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModify
 }
 
 ///
-/// WHITELIST FUNCTIONS
+/// WHITELIST
 ///
 
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWhitelistAdmin) (*state.MsgAddToWhitelistAdminResponse, error) {

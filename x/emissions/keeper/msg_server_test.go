@@ -494,7 +494,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidAlreadyRegistered() {
 	require.ErrorIs(err, state.ErrAddressAlreadyRegisteredInATopic, "RegisterWorker should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgSetWeights() {
+func (s *KeeperTestSuite) TestMsgSetLosses() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -502,8 +502,8 @@ func (s *KeeperTestSuite) TestMsgSetWeights() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()).String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgSetWeights message
-	weightMsg := &state.MsgSetWeights{
+	// Create a MsgSetLosses message
+	weightMsg := &state.MsgSetLosses{
 		Sender: reputerAddr,
 		Weights: []*state.Weight{
 			{
@@ -519,7 +519,7 @@ func (s *KeeperTestSuite) TestMsgSetWeights() {
 	require.NoError(err, "SetWeights should not return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgSetWeightsInvalidUnauthorized() {
+func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -527,8 +527,8 @@ func (s *KeeperTestSuite) TestMsgSetWeightsInvalidUnauthorized() {
 	reputerAddr := nonAdminAccounts[0].String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgSetWeights message
-	weightMsg := &state.MsgSetWeights{
+	// Create a MsgSetLosses message
+	weightMsg := &state.MsgSetLosses{
 		Sender: reputerAddr,
 		Weights: []*state.Weight{
 			{
@@ -1201,7 +1201,7 @@ func (s *KeeperTestSuite) TestMsgStartRemoveStake() {
 
 	// check the state has changed appropriately after the removal
 	require.NoError(err, "StartRemoveStake should not return an error")
-	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
 	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
@@ -1244,7 +1244,7 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveStake() {
 	// rather than having to monkey patch the unix time, or some complicated mocking setup,
 	// lets just directly manipulate the removalInfo in the keeper store
 	timeNow := uint64(time.Now().UTC().Unix())
-	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+	err = s.emissionsKeeper.SetStakeRemovalQueueForAddress(ctx, reputerAddr, state.StakeRemoval{
 		TimestampRemovalStarted: timeNow - 1000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
@@ -1350,7 +1350,7 @@ func (s *KeeperTestSuite) TestMsgStartRemoveAllStake() {
 
 	// check the state has changed appropriately after the removal
 	require.NoError(err, "StartRemoveAllStake should not return an error")
-	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	removalInfo, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
 	require.GreaterOrEqual(removalInfo.TimestampRemovalStarted, timeBefore, "Time should be valid starting")
 	timeNow := uint64(time.Now().UTC().Unix())
@@ -1409,10 +1409,10 @@ func (s *KeeperTestSuite) TestMsgConfirmRemoveAllStake() {
 	require.NoError(err, "StartRemoveAllStake should not return an error")
 
 	// swap out the timestamp so it's valid for the confirmRemove
-	stakeRemoveInfo, err := s.emissionsKeeper.GetStakeRemovalQueueForDelegator(ctx, reputerAddr)
+	stakeRemoveInfo, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(ctx, reputerAddr)
 	require.NoError(err, "Stake removal queue should not be empty")
 	stakeRemoveInfo.TimestampRemovalStarted = uint64(time.Now().UTC().Unix()) - 1000
-	err = s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, stakeRemoveInfo)
+	err = s.emissionsKeeper.SetStakeRemovalQueueForAddress(ctx, reputerAddr, stakeRemoveInfo)
 	require.NoError(err, "Set stake removal queue should work")
 
 	confirmRemoveMsg := &state.MsgConfirmRemoveStake{
@@ -1576,7 +1576,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooEarly() {
 	// rather than having to monkey patch the unix time, or some complicated mocking setup,
 	// lets just directly manipulate the removalInfo in the keeper store
 	timeNow := uint64(time.Now().UTC().Unix())
-	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+	err := s.emissionsKeeper.SetStakeRemovalQueueForAddress(ctx, reputerAddr, state.StakeRemoval{
 		TimestampRemovalStarted: timeNow + 1000000,
 		Placements: []*state.StakeRemovalPlacement{
 			{
@@ -1610,7 +1610,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeInvalidTooLate() {
 	// the unix time set there is going to be in the future,
 	// rather than having to monkey patch the unix time, or some complicated mocking setup,
 	// lets just directly manipulate the removalInfo in the keeper store
-	err := s.emissionsKeeper.SetStakeRemovalQueueForDelegator(ctx, reputerAddr, state.StakeRemoval{
+	err := s.emissionsKeeper.SetStakeRemovalQueueForAddress(ctx, reputerAddr, state.StakeRemoval{
 		TimestampRemovalStarted: 0,
 		Placements: []*state.StakeRemovalPlacement{
 			{
