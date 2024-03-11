@@ -19,24 +19,25 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                          = "/emissions.state.v1.Query/Params"
-	Query_GetLastRewardsUpdate_FullMethodName            = "/emissions.state.v1.Query/GetLastRewardsUpdate"
-	Query_GetNextTopicId_FullMethodName                  = "/emissions.state.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                        = "/emissions.state.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                 = "/emissions.state.v1.Query/GetActiveTopics"
-	Query_GetAllTopics_FullMethodName                    = "/emissions.state.v1.Query/GetAllTopics"
-	Query_GetTopicsByCreator_FullMethodName              = "/emissions.state.v1.Query/GetTopicsByCreator"
-	Query_GetWeight_FullMethodName                       = "/emissions.state.v1.Query/GetWeight"
-	Query_GetExistingInferenceRequest_FullMethodName     = "/emissions.state.v1.Query/GetExistingInferenceRequest"
-	Query_GetAllExistingInferenceRequests_FullMethodName = "/emissions.state.v1.Query/GetAllExistingInferenceRequests"
-	Query_GetTopicUnmetDemand_FullMethodName             = "/emissions.state.v1.Query/GetTopicUnmetDemand"
-	Query_GetAllInferences_FullMethodName                = "/emissions.state.v1.Query/GetAllInferences"
-	Query_GetInferencesToScore_FullMethodName            = "/emissions.state.v1.Query/GetInferencesToScore"
-	Query_GetTotalStake_FullMethodName                   = "/emissions.state.v1.Query/GetTotalStake"
-	Query_GetAccountStakeList_FullMethodName             = "/emissions.state.v1.Query/GetAccountStakeList"
-	Query_GetWorkerNodeRegistration_FullMethodName       = "/emissions.state.v1.Query/GetWorkerNodeRegistration"
-	Query_GetWorkerAddressByP2PKey_FullMethodName        = "/emissions.state.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetRegisteredTopicIds_FullMethodName           = "/emissions.state.v1.Query/GetRegisteredTopicIds"
+	Query_Params_FullMethodName                            = "/emissions.state.v1.Query/Params"
+	Query_GetLastRewardsUpdate_FullMethodName              = "/emissions.state.v1.Query/GetLastRewardsUpdate"
+	Query_GetNextTopicId_FullMethodName                    = "/emissions.state.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                          = "/emissions.state.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                   = "/emissions.state.v1.Query/GetActiveTopics"
+	Query_GetAllTopics_FullMethodName                      = "/emissions.state.v1.Query/GetAllTopics"
+	Query_GetTopicsByCreator_FullMethodName                = "/emissions.state.v1.Query/GetTopicsByCreator"
+	Query_GetWeight_FullMethodName                         = "/emissions.state.v1.Query/GetWeight"
+	Query_GetExistingInferenceRequest_FullMethodName       = "/emissions.state.v1.Query/GetExistingInferenceRequest"
+	Query_GetAllExistingInferenceRequests_FullMethodName   = "/emissions.state.v1.Query/GetAllExistingInferenceRequests"
+	Query_GetTopicUnmetDemand_FullMethodName               = "/emissions.state.v1.Query/GetTopicUnmetDemand"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName = "/emissions.state.v1.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetAllInferences_FullMethodName                  = "/emissions.state.v1.Query/GetAllInferences"
+	Query_GetInferencesToScore_FullMethodName              = "/emissions.state.v1.Query/GetInferencesToScore"
+	Query_GetTotalStake_FullMethodName                     = "/emissions.state.v1.Query/GetTotalStake"
+	Query_GetAccountStakeList_FullMethodName               = "/emissions.state.v1.Query/GetAccountStakeList"
+	Query_GetWorkerNodeRegistration_FullMethodName         = "/emissions.state.v1.Query/GetWorkerNodeRegistration"
+	Query_GetWorkerAddressByP2PKey_FullMethodName          = "/emissions.state.v1.Query/GetWorkerAddressByP2PKey"
+	Query_GetRegisteredTopicIds_FullMethodName             = "/emissions.state.v1.Query/GetRegisteredTopicIds"
 )
 
 // QueryClient is the client API for Query service.
@@ -55,6 +56,7 @@ type QueryClient interface {
 	GetExistingInferenceRequest(ctx context.Context, in *QueryExistingInferenceRequest, opts ...grpc.CallOption) (*QueryExistingInferenceResponse, error)
 	GetAllExistingInferenceRequests(ctx context.Context, in *QueryAllExistingInferenceRequest, opts ...grpc.CallOption) (*QueryAllExistingInferenceResponse, error)
 	GetTopicUnmetDemand(ctx context.Context, in *QueryTopicUnmetDemandRequest, opts ...grpc.CallOption) (*QueryTopicUnmetDemandResponse, error)
+	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error)
 	GetAllInferences(ctx context.Context, in *QueryAllInferencesRequest, opts ...grpc.CallOption) (*QueryAllInferencesResponse, error)
 	GetInferencesToScore(ctx context.Context, in *QueryInferencesToScoreRequest, opts ...grpc.CallOption) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
@@ -171,6 +173,15 @@ func (c *queryClient) GetTopicUnmetDemand(ctx context.Context, in *QueryTopicUnm
 	return out, nil
 }
 
+func (c *queryClient) GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error) {
+	out := new(QueryWorkerLatestInferenceResponse)
+	err := c.cc.Invoke(ctx, Query_GetWorkerLatestInferenceByTopicId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetAllInferences(ctx context.Context, in *QueryAllInferencesRequest, opts ...grpc.CallOption) (*QueryAllInferencesResponse, error) {
 	out := new(QueryAllInferencesResponse)
 	err := c.cc.Invoke(ctx, Query_GetAllInferences_FullMethodName, in, out, opts...)
@@ -250,6 +261,7 @@ type QueryServer interface {
 	GetExistingInferenceRequest(context.Context, *QueryExistingInferenceRequest) (*QueryExistingInferenceResponse, error)
 	GetAllExistingInferenceRequests(context.Context, *QueryAllExistingInferenceRequest) (*QueryAllExistingInferenceResponse, error)
 	GetTopicUnmetDemand(context.Context, *QueryTopicUnmetDemandRequest) (*QueryTopicUnmetDemandResponse, error)
+	GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error)
 	GetAllInferences(context.Context, *QueryAllInferencesRequest) (*QueryAllInferencesResponse, error)
 	GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
@@ -296,6 +308,9 @@ func (UnimplementedQueryServer) GetAllExistingInferenceRequests(context.Context,
 }
 func (UnimplementedQueryServer) GetTopicUnmetDemand(context.Context, *QueryTopicUnmetDemandRequest) (*QueryTopicUnmetDemandResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicUnmetDemand not implemented")
+}
+func (UnimplementedQueryServer) GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerLatestInferenceByTopicId not implemented")
 }
 func (UnimplementedQueryServer) GetAllInferences(context.Context, *QueryAllInferencesRequest) (*QueryAllInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllInferences not implemented")
@@ -529,6 +544,24 @@ func _Query_GetTopicUnmetDemand_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetWorkerLatestInferenceByTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkerLatestInferenceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetWorkerLatestInferenceByTopicId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetWorkerLatestInferenceByTopicId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetWorkerLatestInferenceByTopicId(ctx, req.(*QueryWorkerLatestInferenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetAllInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryAllInferencesRequest)
 	if err := dec(in); err != nil {
@@ -705,6 +738,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicUnmetDemand",
 			Handler:    _Query_GetTopicUnmetDemand_Handler,
+		},
+		{
+			MethodName: "GetWorkerLatestInferenceByTopicId",
+			Handler:    _Query_GetWorkerLatestInferenceByTopicId_Handler,
 		},
 		{
 			MethodName: "GetAllInferences",

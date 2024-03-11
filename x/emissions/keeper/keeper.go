@@ -255,34 +255,36 @@ func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timesta
 	return &inferences, nil
 }
 
-func appendToInferences(inferencesSet *state.Inferences, newInference *state.Inference) state.Inferences {
-	if inferencesSet == nil || len(inferencesSet.Inferences) == 0 {
-		// If Inferences is nil or empty, create a new one with the new Inference
-		return state.Inferences{Inferences: []*state.Inference{newInference}}
-	}
-	// If Inferences is not empty, append the new Inference to the existing ones
-	return state.Inferences{Inferences: append(inferencesSet.Inferences, newInference)}
-}
-
-func (k *Keeper) InsertInference(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inference state.Inference) error {
-	key := collections.Join(topicId, timestamp)
-	inferences_set, err := k.allInferences.Get(ctx, key)
-	if err != nil {
-		inferences_set = state.Inferences{
-			Inferences: []*state.Inference{},
-		}
-	}
-	// inferences_new_set := append(inferences_set.Inferences, &inference)
-	inferences_new_set := appendToInferences(&inferences_set, &inference)
-	return k.allInferences.Set(ctx, key, inferences_new_set)
-}
-
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences state.Inferences) error {
-	key := collections.Join(topicId, timestamp)
-	err := k.allInferences.Set(ctx, key, inferences)
+	for _, inference := range inferences.Inferences {
+		// Update latests inferences for each worker
+		workerAcc, err := sdk.AccAddressFromBech32(inference.Worker)
+		if err != nil {
+			return err
+		}
+		key := collections.Join(topicId, workerAcc)
+		err = k.inferences.Set(ctx, key, *inference)
+		if err != nil {
+			return err
+		}
+		// Update the number of inferences in the reward epoch for each worker
+		err = k.IncrementNumInferencesInRewardEpoch(ctx, topicId, workerAcc)
+		if err != nil {
+			return err
+		}
+	}
 
-	return err
+	key := collections.Join(topicId, timestamp)
+	return k.allInferences.Set(ctx, key, inferences)
+}
+
+func (k *Keeper) GetWorkerLatestInferenceByTopicId(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	worker sdk.AccAddress) (state.Inference, error) {
+	key := collections.Join(topicId, worker)
+	return k.inferences.Get(ctx, key)
 }
 
 func (k *Keeper) GetStakePlacedUponTarget(ctx context.Context, target sdk.AccAddress) (Uint, error) {
@@ -1292,19 +1294,6 @@ func (k *Keeper) SetWeight(
 		return k.weights.Remove(ctx, key)
 	}
 	return k.weights.Set(ctx, key, weight)
-}
-
-func (k *Keeper) SetInference(
-	ctx context.Context,
-	topicId TOPIC_ID,
-	worker sdk.AccAddress,
-	inference state.Inference) error {
-	key := collections.Join(topicId, worker)
-	err := k.inferences.Set(ctx, key, inference)
-	if err != nil {
-		return err
-	}
-	return k.IncrementNumInferencesInRewardEpoch(ctx, topicId, worker)
 }
 
 // for a given delegator, get their stake removal information

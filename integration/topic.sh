@@ -37,7 +37,9 @@ $ALLORAD_BIN tx emissions push-topic \
   "$PT_INFERENCE_METHOD" \
   "$PT_INFERENCE_CADENCE" \
   "$PT_DEFAULT_ARG" \
-  --yes --keyring-backend=test --chain-id=demo --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
+  --yes --keyring-backend=test --chain-id=demo \
+  --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
+
 
 echo "Checking that the network has incremented the topic count"
 TOPIC_INCREMENTED=false

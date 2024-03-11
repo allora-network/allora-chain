@@ -68,6 +68,13 @@ service Query {
     option (google.api.http).get = "/emissions/state/v1/unmet_demand/{topic_id}";
   }
 
+  rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest)
+      returns (QueryWorkerLatestInferenceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/state/v1/topics/{topic_id}/"
+                                   "workers/{worker_address}/latest_inference";
+  }
+
   rpc GetAllInferences(QueryAllInferencesRequest) returns (QueryAllInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/state/v1/inferences/{topic_id}/{timestamp}";
@@ -227,6 +234,15 @@ message QueryAllInferencesResponse {
 
 message QueryInferencesToScoreRequest {
   uint64 topic_id = 1;
+}
+
+message QueryWorkerLatestInferenceRequest {
+  uint64 topic_id = 1;
+  string worker_address = 2;
+}
+
+message QueryWorkerLatestInferenceResponse {
+  Inference latest_inference = 1;
 }
 
 message QueryInferencesToScoreResponse {

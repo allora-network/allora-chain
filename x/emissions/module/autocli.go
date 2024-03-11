@@ -66,6 +66,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetWorkerLatestInferenceByTopicId",
+					Use:       "worker-latest-inference [topic_id] [worker_address]",
+					Short:     "Get the latest inference for a given worker and topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_address"},
+					},
+				},
+				{
 					RpcMethod: "GetAllInferences",
 					Use:       "inference [topic_id] [timestamp]",
 					Short:     "Get Latest Inference for a Topic in a timestamp",
@@ -249,15 +258,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-					},
-				},
-				{
-					RpcMethod: "SetInferences",
-					Use:       "set-inferences [sender] [inferences]",
-					Short:     "Set a batch of inferences on a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "inferences"},
 					},
 				},
 				{
