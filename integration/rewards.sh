@@ -154,27 +154,45 @@ if [[ ${#ALLORA_STAKING_ADDRESS} -ne 43 ]] || [[ $ALLORA_STAKING_ADDRESS != allo
 fi
 
 ALLORA_STAKING_0=$($ALLORAD_BIN query bank balances $ALLORA_STAKING_ADDRESS | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
-sleep 5
-ALLORA_STAKING_1=$($ALLORAD_BIN query bank balances $ALLORA_STAKING_ADDRESS | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
-
-ALLORA_STAKING_INCREASED=$(bc <<< "$ALLORA_STAKING_1 > $ALLORA_STAKING_0")
-if [[ $ALLORA_STAKING_INCREASED -ne 1 ]]; then
-    echo "Distribution of rewards to allora staking did not increase"
+ALLORA_STAKE_SUCCEED=false
+for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9 10
+do
+    ALLORA_STAKING_1=$($ALLORAD_BIN query bank balances $ALLORA_STAKING_ADDRESS | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
+    ALLORA_STAKING_INCREASED=$(bc <<< "$ALLORA_STAKING_1 > $ALLORA_STAKING_0")
+    if [[ $ALLORA_STAKING_INCREASED -ne 1 ]]; then
+        echo "Distribution of rewards to allora staking did not increase"
+        COUNT_SLEEP=$((COUNT_SLEEP+1))
+        sleep 1
+    else 
+        echo "Distribution of rewards to allora staking increased"
+        ALLORA_STAKE_SUCCEED=true
+    fi
+    sleep 1
+done
+if [ "$ALLORA_STAKE_SUCCEED" = false ]; then
+    echo "The network has not distributed rewards to allora staking as expected."
     exit 1
-else 
-    echo "Distribution of rewards to allora staking increased"
 fi
 
 echo "Checking that bob's stake is going up due to having non-zero weights"
 BOB_STAKE_POSITION_0=$($ALLORAD_BIN query emissions account-stake-list "$BOB_ADDRESS" | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
-sleep 6
-BOB_STAKE_POSITION_1=$($ALLORAD_BIN query emissions account-stake-list "$BOB_ADDRESS" | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
-BOB_STAKE_POSITION_INCREASED=$(bc <<< "$BOB_STAKE_POSITION_1 > $BOB_STAKE_POSITION_0")
-if [[ $BOB_STAKE_POSITION_INCREASED -ne 1 ]]; then
-    echo "Bob did not get rewards for staking"
+BOB_STAKE_SUCCEED=false
+for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9 10
+do
+    BOB_STAKE_POSITION_1=$($ALLORAD_BIN query emissions account-stake-list "$BOB_ADDRESS" | grep "amount" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
+    BOB_STAKE_POSITION_INCREASED=$(bc <<< "$BOB_STAKE_POSITION_1 > $BOB_STAKE_POSITION_0")
+    if [[ $BOB_STAKE_POSITION_INCREASED -ne 1 ]]; then
+        echo "Bob did not get rewards for staking"
+        COUNT_SLEEP=$((COUNT_SLEEP+1))
+        sleep 1
+    else 
+        echo "Bob got rewards for staking"
+        BOB_STAKE_SUCCEED=true
+    fi
+done
+if [ "$BOB_STAKE_SUCCEED" = false ]; then
+    echo "The network has not distributed rewards to bob as expected."
     exit 1
-else 
-    echo "Bob got rewards for staking"
 fi
 
 echo "Rewards checks complete"
