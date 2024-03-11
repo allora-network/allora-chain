@@ -125,27 +125,27 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	}
 
 	topic := state.Topic{
-		Id:               id,
-		Creator:          creator.String(),
-		Metadata:         msg.Metadata,
-		WeightLogic:      msg.WeightLogic,
-		WeightMethod:     msg.WeightMethod,
-		WeightCadence:    msg.WeightCadence,
-		WeightLastRan:    0,
-		InferenceLogic:   msg.InferenceLogic,
-		InferenceMethod:  msg.InferenceMethod,
-		InferenceCadence: msg.InferenceCadence,
-		InferenceLastRan: 0,
-		Active:           true,
-		DefaultArg:       msg.DefaultArg,
-		Pnorm:            msg.Pnorm,
-		AlphaRegret:      msg.AlphaRegret,
-		PrewardReputer:   msg.PrewardReputer,
-		PrewardInference: msg.PrewardInference,
-		PrewardForecast:  msg.PrewardForecast,
-		FTolerance:       msg.FTolerance,
-		Subsidy:          0, // default value. can later be updated by a Foundation member
-		FTreasury:        0, // default value. can later be updated by a Foundation member
+		Id:                     id,
+		Creator:                creator.String(),
+		Metadata:               msg.Metadata,
+		WeightLogic:            msg.WeightLogic,
+		WeightMethod:           msg.WeightMethod,
+		WeightCadence:          msg.WeightCadence,
+		WeightLastRan:          0,
+		InferenceLogic:         msg.InferenceLogic,
+		InferenceMethod:        msg.InferenceMethod,
+		InferenceCadence:       msg.InferenceCadence,
+		InferenceLastRan:       0,
+		Active:                 true,
+		DefaultArg:             msg.DefaultArg,
+		Pnorm:                  msg.Pnorm,
+		AlphaRegret:            msg.AlphaRegret,
+		PrewardReputer:         msg.PrewardReputer,
+		PrewardInference:       msg.PrewardInference,
+		PrewardForecast:        msg.PrewardForecast,
+		FTolerance:             msg.FTolerance,
+		Subsidy:                0, // default value. can later be updated by a Foundation member
+		SubsidizedRewardEpochs: 0, // default value. can later be updated by a Foundation member
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -843,9 +843,9 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 /// FOUNDATION TOPIC MANAGEMENT
 ///
 
-// Modfies topic subsidy and f_treasury properties
+// Modfies topic subsidy and subsidized_reward_epochs properties
 // Can only be called by a whitelisted foundation member
-func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModifyTopicSubsidyAndFTreasury) (*state.MsgModifyTopicSubsidyAndFTreasuryResponse, error) {
+func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochs) (*state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse, error) {
 	// Check that sender is in the foundation whitelist
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -863,11 +863,11 @@ func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModify
 	if err != nil {
 		return nil, err
 	}
-	err = ms.k.SetTopicFTreasury(ctx, msg.TopicId, msg.FTreasury)
+	err = ms.k.SetTopicSubsidizedRewardEpochs(ctx, msg.TopicId, msg.SubsidizedRewardEpochs)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgModifyTopicSubsidyAndFTreasuryResponse{Success: true}, nil
+	return &state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse{Success: true}, nil
 }
 
 ///

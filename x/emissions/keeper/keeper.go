@@ -1385,14 +1385,14 @@ func (k *Keeper) SetTopicSubsidy(ctx context.Context, topicId TOPIC_ID, subsidy 
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// Sets the subsidy for the topic within the topic struct
+// Sets the number of reward for the topic within the topic struct
 // Should only be called by a member of the foundation whitelist
-func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreasury float32) error {
+func (k *Keeper) SetTopicSubsidizedRewardEpochs(ctx context.Context, topicId TOPIC_ID, subsidizedRewardEpochs float32) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic.FTreasury = fTreasury
+	topic.SubsidizedRewardEpochs = subsidizedRewardEpochs
 	return k.topics.Set(ctx, topicId, topic)
 }
 

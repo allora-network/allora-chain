@@ -394,15 +394,15 @@ message MsgReactivateTopicResponse {
 /// Foundation Topic Management
 ///
 
-message MsgModifyTopicSubsidyAndFTreasury {
+message MsgModifyTopicSubsidyAndSubsidizedRewardEpochs {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   uint64 topic_id = 2;
   uint64 subsidy = 3;
-  float f_treasury = 4;
+  float subsidized_reward_epochs = 4;
 }
 
-message MsgModifyTopicSubsidyAndFTreasuryResponse {
+message MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse {
   bool success = 1;
 }
