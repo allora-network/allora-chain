@@ -159,12 +159,13 @@ func MaskWeightsIfInsufficientLiveness(
 	weights map[string]map[string]*Uint) (map[string]map[string]*Uint, error) {
 	maskedWeights := make(map[string]map[string]*Uint)
 	for reputer, workerWeights := range weights {
-
+		fmt.Println("Masking: ", reputer, " ", workerWeights)
 		if maskedWeights[reputer] == nil {
 			maskedWeights[reputer] = make(map[string]*Uint)
 		}
 
-		for worker := range workerWeights {
+		for worker, workerWeight := range workerWeights {
+			fmt.Println("masking: ", worker, " ", workerWeight)
 			// Get the topic => its inference cadence
 			topic, err := am.keeper.GetTopic(ctx, topicId)
 			if err != nil {
@@ -196,7 +197,7 @@ func MaskWeightsIfInsufficientLiveness(
 				maskedVal := cosmosMath.ZeroUint()
 				maskedWeights[reputer][worker] = &maskedVal
 			} else {
-				maskedWeights[reputer][worker] = weights[reputer][worker]
+				maskedWeights[reputer][worker] = workerWeight
 			}
 		}
 	}

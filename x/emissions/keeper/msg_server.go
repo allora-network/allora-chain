@@ -171,10 +171,16 @@ func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*
 
 		fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
 
-		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
-		workerAddr := sdk.AccAddress(weightEntry.Worker)
+		reputerAddr, err := sdk.AccAddressFromBech32(weightEntry.Reputer)
+		if err != nil {
+			return nil, err
+		}
+		workerAddr, err := sdk.AccAddressFromBech32(weightEntry.Worker)
+		if err != nil {
+			return nil, err
+		}
 
-		err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
+		err = ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
 		if err != nil {
 			return nil, err
 		}
@@ -185,9 +191,12 @@ func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*
 
 func (ms msgServer) SetInferences(ctx context.Context, msg *state.MsgSetInferences) (*state.MsgSetInferencesResponse, error) {
 	for _, inferenceEntry := range msg.Inferences {
-		workerAddr := sdk.AccAddress(inferenceEntry.Worker)
+		workerAddr, err := sdk.AccAddressFromBech32(inferenceEntry.Worker)
+		if err != nil {
+			return nil, err
+		}
 
-		err := ms.k.SetInference(ctx, inferenceEntry.TopicId, workerAddr, *inferenceEntry)
+		err = ms.k.SetInference(ctx, inferenceEntry.TopicId, workerAddr, *inferenceEntry)
 		if err != nil {
 			return nil, err
 		}

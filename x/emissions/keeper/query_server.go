@@ -130,8 +130,14 @@ func (qs queryServer) GetAccountStakeList(ctx context.Context, req *state.QueryA
 
 // GetWeight find out how much weight the reputer has placed upon the worker for a given topid ID, reputer and worker.
 func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightRequest) (*state.QueryWeightResponse, error) {
-	reputerAddr := sdk.AccAddress(req.Reputer)
-	workerAddr := sdk.AccAddress(req.Worker)
+	reputerAddr, err := sdk.AccAddressFromBech32(req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	workerAddr, err := sdk.AccAddressFromBech32(req.Worker)
+	if err != nil {
+		return nil, err
+	}
 
 	key := collections.Join3(req.TopicId, reputerAddr, workerAddr)
 	weight, err := qs.k.weights.Get(ctx, key)

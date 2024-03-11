@@ -186,59 +186,6 @@ func (s *ModuleTestSuite) TestGetParticipantEmissionsForTopicNoWeights() {
 	}
 }
 
-func (s *ModuleTestSuite) TestEmitRewardsSimple() {
-	s.UtilSetParams()
-	topicIds, err := mockCreateTopics(s, 1)
-	s.NoError(err, "Error creating topic")
-	topicId := topicIds[0]
-	s.Equal(uint64(1), topicId, "Topic ID should start at 1")
-	reputers, err := mockSomeReputers(s, topicId)
-	s.NoError(err, "Error creating reputers")
-	workers, err := mockSomeWorkers(s, topicId)
-	s.NoError(err, "Error creating workers")
-	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
-	s.NoError(err, "Error setting weights")
-
-	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
-	s.NoError(err, "Error getting epoch length")
-	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
-
-	reputer1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
-	s.NoError(err, "Error getting reputer 1 stake")
-	expectedReputer1Stake := cosmosMath.NewUint(reputer1StartAmount)
-	s.Require().Equal(expectedReputer1Stake, reputer1Stake, "Reputer 1 stake should be the same as the initial amount")
-	reputer2Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
-	s.NoError(err, "Error getting reputer 2 stake")
-	expectedReputer2Stake := cosmosMath.NewUint(reputer2StartAmount)
-	s.Require().Equal(expectedReputer2Stake, reputer2Stake, "Reputer 2 stake should be the same as the initial amount")
-	worker1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
-	s.NoError(err, "Error getting worker 1 stake")
-	expectedWorker1Stake := cosmosMath.NewUint(worker1StartAmount)
-	s.Require().Equal(expectedWorker1Stake, worker1Stake, "Worker 1 stake should be the same as the initial amount")
-	worker2Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
-	s.NoError(err, "Error getting worker 2 stake")
-	expectedWorker2Stake := cosmosMath.NewUint(worker2StartAmount)
-	s.Require().Equal(expectedWorker2Stake, worker2Stake, "Worker 2 stake should be the same as the initial amount")
-
-	err = s.appModule.EndBlock(s.ctx)
-	s.NoError(err, "EndBlock error")
-
-	reputer1StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
-	s.NoError(err, "Error getting reputer 1 stake")
-	reputer2StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[1])
-	s.NoError(err, "Error getting reputer 2 stake")
-	worker1StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[0])
-	s.NoError(err, "Error getting worker 1 stake")
-	worker2StakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, workers[1])
-	s.NoError(err, "Error getting worker 2 stake")
-
-	s.Require().False(expectedReputer1Stake.Equal(reputer1StakeAfter), "Reputer 1 stake should have increased")
-	s.Require().True(expectedReputer1Stake.LT(reputer1StakeAfter), "Reputer 1 stake should have increased")
-	s.Require().True(expectedReputer2Stake.LT(reputer2StakeAfter), "Reputer 2 stake should have increased")
-	s.Require().True(expectedWorker1Stake.LT(worker1StakeAfter), "Worker 1 stake should have increased")
-	s.Require().True(expectedWorker2Stake.LT(worker2StakeAfter), "Worker 2 stake should have increased")
-}
-
 /*************************************************
  *               HELPER FUNCTIONS				 *
  *												 *

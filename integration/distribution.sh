@@ -4,19 +4,12 @@
 
 set -e
 
-GENESIS=$HOME/.allorad/config/genesis.json
+source $(dirname $0)/common.sh
+
 # this script expects to be ran AFTER `scripts/init.sh`
 if ! test -f $GENESIS; then
   echo "Must run scripts/init.sh first."
   exit 1
-fi
-
-ALLORAD_BIN=$(which allorad)
-
-VALIDATOR_ADDRESS=$(cat $GENESIS | grep "validator_address" | cut -f 2 -d ":" | tr -d " " | tr -d "\"" | tr -d ",")
-if [[ ${#VALIDATOR_ADDRESS} -ne 50 ]] || [[ $VALIDATOR_ADDRESS != allovaloper* ]]; then
-    echo "Validator address not found in genesis file"
-    exit 1
 fi
 
 ALLORA_REWARDS_ADDRESS=$($ALLORAD_BIN query auth module-account "allorarewards" | grep "address: allo" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
