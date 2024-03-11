@@ -122,26 +122,26 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	}
 	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	fmt.Println("Found that ",
-		am.keeper.GetFeeCollectorName(),
-		" ",
-		feeCollectorAddress.String(),
-		" collected ",
-		feesCollectedAndEmissionsMintedLastBlock,
-		" rewards in ",
-		params.DefaultBondDenom,
-		" last block.",
-	)
+	// fmt.Println("Found that ",
+	// 	am.keeper.GetFeeCollectorName(),
+	// 	" ",
+	// 	feeCollectorAddress.String(),
+	// 	" collected ",
+	// 	feesCollectedAndEmissionsMintedLastBlock,
+	// 	" rewards in ",
+	// 	params.DefaultBondDenom,
+	// 	" last block.",
+	// )
 	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
-	fmt.Println(
-		"Moving ",
-		percentRewardsToReputersAndWorkers,
-		"percent of fees+minted emissions last block to reputer+worker rewards module ",
-		state.AlloraRewardsAccountName,
-		" This amounts to ",
-		reputerWorkerCut.String(),
-		` tokens.`,
-	)
+	// fmt.Println(
+	// 	"Moving ",
+	// 	percentRewardsToReputersAndWorkers,
+	// 	"percent of fees+minted emissions last block to reputer+worker rewards module ",
+	// 	state.AlloraRewardsAccountName,
+	// 	" This amounts to ",
+	// 	reputerWorkerCut.String(),
+	// 	` tokens.`,
+	// )
 	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		am.keeper.GetFeeCollectorName(),
