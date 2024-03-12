@@ -13,6 +13,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -104,7 +105,7 @@ func (s *ModuleTestSuite) SetupTest() {
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
+	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
