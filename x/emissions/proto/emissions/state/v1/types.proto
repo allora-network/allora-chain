@@ -89,6 +89,7 @@ message Topic {
   float f_tolerance = 19;
   uint64 subsidy = 20;
   float subsidized_reward_epochs = 21;
+  float f_treasury = 22;
 }
 
 message TopicList {

@@ -1396,6 +1396,17 @@ func (k *Keeper) SetTopicSubsidizedRewardEpochs(ctx context.Context, topicId TOP
 	return k.topics.Set(ctx, topicId, topic)
 }
 
+// Sets the number of reward for the topic within the topic struct
+// Should only be called by a member of the foundation whitelist
+func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreasury float32) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.FTreasury = fTreasury
+	return k.topics.Set(ctx, topicId, topic)
+}
+
 ///
 /// BANK KEEPER WRAPPERS
 ///

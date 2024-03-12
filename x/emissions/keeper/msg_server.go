@@ -144,8 +144,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		PrewardInference:       msg.PrewardInference,
 		PrewardForecast:        msg.PrewardForecast,
 		FTolerance:             msg.FTolerance,
-		Subsidy:                0, // default value. can later be updated by a Foundation member
-		SubsidizedRewardEpochs: 0, // default value. can later be updated by a Foundation member
+		Subsidy:                0,   // Can later be updated by a Foundation member
+		SubsidizedRewardEpochs: 0,   // Can later be updated by a Foundation member
+		FTreasury:              0.5, // Can later be updated by a Foundation member
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -868,6 +869,27 @@ func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModify
 		return nil, err
 	}
 	return &state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse{Success: true}, nil
+}
+
+func (ms msgServer) ModifyTopicFTreasury(ctx context.Context, msg *state.MsgModifyTopicFTreasury) (*state.MsgModifyTopicFTreasuryResponse, error) {
+	// Check that sender is in the foundation whitelist
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isAdmin, err := ms.k.IsInFoundationWhitelist(ctx, senderAddr)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, state.ErrNotWhitelistAdmin
+	}
+	// Modify the topic subsidy + F_treasury
+	err = ms.k.SetTopicFTreasury(ctx, msg.TopicId, float32(msg.FTreasury))
+	if err != nil {
+		return nil, err
+	}
+	return &state.MsgModifyTopicFTreasuryResponse{Success: true}, nil
 }
 
 ///

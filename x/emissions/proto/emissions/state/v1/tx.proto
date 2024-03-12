@@ -406,3 +406,15 @@ message MsgModifyTopicSubsidyAndSubsidizedRewardEpochs {
 message MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse {
   bool success = 1;
 }
+
+message MsgModifyTopicFTreasury {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  uint64 topic_id = 2;
+  uint64 f_treasury = 3;
+}
+
+message MsgModifyTopicFTreasuryResponse {
+  bool success = 1;
+}
