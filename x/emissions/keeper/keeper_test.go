@@ -9,27 +9,18 @@ import (
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+
+	"github.com/allora-network/allora-chain/app/params"
+	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-)
-
-var (
-	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(4)
-	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = sdk.ValAddress(Addr)
 )
 
 type KeeperTestSuite struct {
@@ -58,7 +49,7 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	s.ctx = ctx
 	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
+	s.msgServer = keeper.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key
 

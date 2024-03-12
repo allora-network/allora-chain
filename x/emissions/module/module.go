@@ -17,8 +17,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
 )
 
 var (
@@ -68,8 +66,8 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	state.RegisterMsgServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
-	state.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
+	state.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	state.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
 
 	// Register in place module state migration migrations
 	// m := keeper.NewMigrator(am.keeper)
