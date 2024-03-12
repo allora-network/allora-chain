@@ -192,8 +192,11 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *state.MsgSetLosses) (
 		if err != nil {
 			return nil, err
 		}
-
 	}
+
+	/**
+	 * TODO calculate eq14,15, and possibly ep9-11
+	 */
 
 	return &state.MsgSetLossesResponse{}, nil
 }
