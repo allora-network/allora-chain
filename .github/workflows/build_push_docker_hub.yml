@@ -1,0 +1,57 @@
+# This workflow will build and push a new container image to Amazon ECR,
+# and then will deploy a new task definition to Amazon ECS which will be run by Fargate when a release is created
+# This workflow will build and push a new container image to Docker Hub
+# when a release is created
+name: Build and Push docker image to Docker Hub
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - dev-latest
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-push:
+    name: Build and Push docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build, tag, and push image to Docker Hub
+        id: build-push-image
+        env:
+          DOCKERHUB_USERNAME: alloranetwork
+          DOCKERHUB_REPOSITORY: ${{github.event.repository.name}} 
+        run: |
+          #! Due to we trigger on push.tags GITHUB_REF - is the tag name
+          GIT_TAG="$(echo $GITHUB_REF| sed 's#refs/tags/##')"
+
+          IMAGE_TAG="${GITHUB_SHA:0:8}"
+          EXTRA_IMAGE_TAGS=$GIT_TAG
+
+          #! Add latest tag only if on named releases tag='v*'
+          if [[ ${GIT_TAG} == v* ]]; then
+            EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS};latest"
+          fi
+
+          # Build a docker container and push it to Docker Hub.
+          docker build --pull --build-arg "GH_TOKEN=${{ secrets.GH_READONLY_PAT }}" -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
+          docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG
+
+          # Build and PUSH additional tags
+          for tag in $(echo $EXTRA_IMAGE_TAGS| tr ";" "\n"); do
+            docker tag $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
+            docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
+          done
