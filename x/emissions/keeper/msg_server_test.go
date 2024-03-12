@@ -541,7 +541,7 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	}
 
 	_, err := msgServer.SetWeights(ctx, weightMsg)
-	require.ErrorIs(err, state.ErrNotInWeightSettingWhitelist, "SetWeights should return an error")
+	require.ErrorIs(err, state.ErrNotInReputerWhitelist, "SetWeights should return an error")
 }
 
 func (s *KeeperTestSuite) CreateOneTopic() {
@@ -566,7 +566,7 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 	require.NoError(err, "CreateTopic fails on first creation")
 }
 
-func (s *KeeperTestSuite) TestUpdateTopicWeightLastRan() {
+func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	ctx := s.ctx
 	require := s.Require()
 	s.CreateOneTopic()
@@ -575,8 +575,8 @@ func (s *KeeperTestSuite) TestUpdateTopicWeightLastRan() {
 	topicId := uint64(0)
 	inferenceTs := uint64(time.Now().UTC().Unix())
 
-	err := s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTs)
-	require.NoError(err, "UpdateTopicWeightLastRan should not return an error")
+	err := s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTs)
+	require.NoError(err, "UpdateTopicLossUpdateLastRan should not return an error")
 
 	result, err := s.emissionsKeeper.GetTopicWeightLastRan(s.ctx, topicId)
 	s.Require().NoError(err)
@@ -611,7 +611,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	var inferenceTimestamp = uint64(1500000000)
 
 	// _, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
-	err = s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTimestamp)
 	require.NoError(err, "Setting latest inference timestamp should not fail")
 
 	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(0))
@@ -626,7 +626,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	 */
 	inferenceTimestamp = math.MaxUint64
 
-	err = s.emissionsKeeper.UpdateTopicWeightLastRan(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTimestamp)
 	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
@@ -2419,7 +2419,7 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelistInvalidUnauthorize
 	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the topic creation whitelist")
 }
 
-func (s *KeeperTestSuite) TestAddToWeightSettingWhitelist() {
+func (s *KeeperTestSuite) TestAddToReputerWhitelist() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -2427,21 +2427,21 @@ func (s *KeeperTestSuite) TestAddToWeightSettingWhitelist() {
 	newAddr := nonAdminAccounts[0]
 
 	// Attempt to add newAddr to the weight setting whitelist by adminAddr
-	msg := &state.MsgAddToWeightSettingWhitelist{
+	msg := &state.MsgAddToReputerWhitelist{
 		Sender:  adminAddr.String(),
 		Address: newAddr.String(),
 	}
 
-	_, err := s.msgServer.AddToWeightSettingWhitelist(ctx, msg)
+	_, err := s.msgServer.AddToReputerWhitelist(ctx, msg)
 	require.NoError(err, "Adding to weight setting whitelist should succeed")
 
 	// Verify if newAddr is now in the weight setting whitelist
-	isInWhitelist, err := s.emissionsKeeper.IsInWeightSettingWhitelist(ctx, newAddr)
-	require.NoError(err, "IsInWeightSettingWhitelist check should not return an error")
+	isInWhitelist, err := s.emissionsKeeper.IsInReputerWhitelist(ctx, newAddr)
+	require.NoError(err, "IsInReputerWhitelist check should not return an error")
 	require.True(isInWhitelist, "newAddr should be in the weight setting whitelist")
 }
 
-func (s *KeeperTestSuite) TestAddToWeightSettingWhitelistInvalidUnauthorized() {
+func (s *KeeperTestSuite) TestAddToReputerWhitelistInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -2449,16 +2449,16 @@ func (s *KeeperTestSuite) TestAddToWeightSettingWhitelistInvalidUnauthorized() {
 	newAddr := nonAdminAccounts[1]
 
 	// Attempt to add addressToAdd to the weight setting whitelist by nonAdminAddr
-	msg := &state.MsgAddToWeightSettingWhitelist{
+	msg := &state.MsgAddToReputerWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: newAddr.String(),
 	}
 
-	_, err := s.msgServer.AddToWeightSettingWhitelist(ctx, msg)
+	_, err := s.msgServer.AddToReputerWhitelist(ctx, msg)
 	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the weight setting whitelist")
 }
 
-func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelist() {
+func (s *KeeperTestSuite) TestRemoveFromReputerWhitelist() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -2466,20 +2466,20 @@ func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelist() {
 	addressToRemove := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to remove addressToRemove from the weight setting whitelist by adminAddr
-	removeFromWhitelistMsg := &state.MsgRemoveFromWeightSettingWhitelist{
+	removeFromWhitelistMsg := &state.MsgRemoveFromReputerWhitelist{
 		Sender:  adminAddr.String(),
 		Address: addressToRemove.String(),
 	}
-	_, err := s.msgServer.RemoveFromWeightSettingWhitelist(ctx, removeFromWhitelistMsg)
+	_, err := s.msgServer.RemoveFromReputerWhitelist(ctx, removeFromWhitelistMsg)
 	require.NoError(err, "Removing from weight setting whitelist should succeed")
 
 	// Verify if addressToRemove is no longer in the weight setting whitelist
-	isInWhitelist, err := s.emissionsKeeper.IsInWeightSettingWhitelist(ctx, addressToRemove)
-	require.NoError(err, "IsInWeightSettingWhitelist check should not return an error")
+	isInWhitelist, err := s.emissionsKeeper.IsInReputerWhitelist(ctx, addressToRemove)
+	require.NoError(err, "IsInReputerWhitelist check should not return an error")
 	require.False(isInWhitelist, "addressToRemove should no longer be in the weight setting whitelist")
 }
 
-func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelistInvalidUnauthorized() {
+func (s *KeeperTestSuite) TestRemoveFromReputerWhitelistInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -2487,11 +2487,11 @@ func (s *KeeperTestSuite) TestRemoveFromWeightSettingWhitelistInvalidUnauthorize
 	addressToRemove := nonAdminAccounts[1]
 
 	// Attempt to remove addressToRemove from the weight setting whitelist by nonAdminAddr
-	msg := &state.MsgRemoveFromWeightSettingWhitelist{
+	msg := &state.MsgRemoveFromReputerWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: addressToRemove.String(),
 	}
 
-	_, err := s.msgServer.RemoveFromWeightSettingWhitelist(ctx, msg)
+	_, err := s.msgServer.RemoveFromReputerWhitelist(ctx, msg)
 	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the weight setting whitelist")
 }

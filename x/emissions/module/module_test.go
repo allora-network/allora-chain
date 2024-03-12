@@ -111,7 +111,7 @@ func (s *ModuleTestSuite) SetupTest() {
 	for _, addr := range addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToWeightSettingWhitelist(ctx, addr)
+		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 

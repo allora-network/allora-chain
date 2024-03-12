@@ -55,7 +55,7 @@ func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses 
 		}
 		k.AddWhitelistAdmin(ctx, accAddress)
 		k.AddToTopicCreationWhitelist(ctx, accAddress)
-		k.AddToWeightSettingWhitelist(ctx, accAddress)
+		k.AddToReputerWhitelist(ctx, accAddress)
 		k.AddToFoundationWhitelist(ctx, accAddress)
 	}
 

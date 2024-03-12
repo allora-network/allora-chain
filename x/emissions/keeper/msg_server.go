@@ -72,8 +72,8 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.MinRequestCadence) == 1 {
 		existingParams.MinRequestCadence = newParams.MinRequestCadence[0]
 	}
-	if len(newParams.MinWeightCadence) == 1 {
-		existingParams.MinWeightCadence = newParams.MinWeightCadence[0]
+	if len(newParams.MinLossCadence) == 1 {
+		existingParams.MinLossCadence = newParams.MinLossCadence[0]
 	}
 	if len(newParams.MaxInferenceRequestValidity) == 1 {
 		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
@@ -88,115 +88,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	return &state.MsgUpdateParamsResponse{}, nil
 }
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
-	fmt.Println("CreateNewTopic called with: ", msg)
-	// Check if the sender is in the topic creation whitelist
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return nil, err
-	}
-	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
-	if err != nil {
-		return nil, err
-	}
-	if !isTopicCreator {
-		return nil, state.ErrNotInTopicCreationWhitelist
-	}
-
-	id, err := ms.k.GetNumTopics(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	fastestCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if msg.InferenceCadence < fastestCadence {
-		return nil, state.ErrInferenceCadenceBelowMinimum
-	}
-
-	weightFastestCadence, err := ms.k.GetParamsMinWeightCadence(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if msg.WeightCadence < weightFastestCadence {
-		return nil, state.ErrWeightCadenceBelowMinimum
-	}
-
-	topic := state.Topic{
-		Id:                     id,
-		Creator:                creator.String(),
-		Metadata:               msg.Metadata,
-		WeightLogic:            msg.WeightLogic,
-		WeightMethod:           msg.WeightMethod,
-		WeightCadence:          msg.WeightCadence,
-		WeightLastRan:          0,
-		InferenceLogic:         msg.InferenceLogic,
-		InferenceMethod:        msg.InferenceMethod,
-		InferenceCadence:       msg.InferenceCadence,
-		InferenceLastRan:       0,
-		Active:                 true,
-		DefaultArg:             msg.DefaultArg,
-		Pnorm:                  msg.Pnorm,
-		AlphaRegret:            msg.AlphaRegret,
-		PrewardReputer:         msg.PrewardReputer,
-		PrewardInference:       msg.PrewardInference,
-		PrewardForecast:        msg.PrewardForecast,
-		FTolerance:             msg.FTolerance,
-		Subsidy:                0,   // Can later be updated by a Foundation member
-		SubsidizedRewardEpochs: 0,   // Can later be updated by a Foundation member
-		FTreasury:              0.5, // Can later be updated by a Foundation member
-	}
-	_, err = ms.k.IncrementTopicId(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
-		return nil, err
-	}
-	// Rather than set latest weight-adjustment timestamp of a topic to 0
-	// we do nothing, since no value in the map means zero
-
-	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
-}
-
-// Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
-func (ms msgServer) SetLosses(ctx context.Context, msg *state.MsgSetLosses) (*state.MsgSetLossesResponse, error) {
-	// throw error cuz not yet implemented
-	return nil, errors.New("not yet implemented")
-
-	// // Check if the sender is in the weight setting whitelist
-	// sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// isWeightSetter, err := ms.k.IsInWeightSettingWhitelist(ctx, sender)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if !isWeightSetter {
-	// 	return nil, state.ErrNotInWeightSettingWhitelist
-	// }
-
-	// // Iterate through the array and set the weights
-	// for _, weightEntry := range msg.Weights {
-
-	// 	fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
-
-	// 	reputerAddr := sdk.AccAddress(weightEntry.Reputer)
-	// 	workerAddr := sdk.AccAddress(weightEntry.Worker)
-
-	// 	err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	// return &state.MsgSetLossesResponse{}, nil
-}
-
-// T1: a tx function that accepts a list of inferences and possibly returns an error
+// A tx function that accepts a list of inferences and possibly returns an error
 func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcessInferences) (*state.MsgProcessInferencesResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -255,6 +147,55 @@ func (ms msgServer) ProcessForecasts(ctx context.Context, msg *state.MsgProcessF
 
 	// Return an empty response as the operation was successful
 	return &state.MsgProcessForecastsResponse{}, nil
+}
+
+// Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
+func (ms msgServer) InsertLosses(ctx context.Context, msg *state.MsgSetLosses) (*state.MsgSetLossesResponse, error) {
+	// Check if the sender is in the weight setting whitelist
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	isLossSetter, err := ms.k.IsInReputerWhitelist(ctx, sender)
+	if err != nil {
+		return nil, err
+	}
+	if !isLossSetter {
+		return nil, state.ErrNotInReputerWhitelist
+	}
+
+	// Iterate through the array to ensure each reputer is in the whitelist
+	// Group loss bundles by topicId - Create a map to store the grouped loss bundles
+	groupedBundles := make(map[uint64][]*state.LossBundle)
+	for _, lossBundle := range msg.LossBundles {
+		reputer, err := sdk.AccAddressFromBech32(lossBundle.Reputer)
+		if err != nil {
+			return nil, err
+		}
+		isLossSetter, err := ms.k.IsInReputerWhitelist(ctx, reputer)
+		if err != nil {
+			return nil, err
+		}
+		if isLossSetter {
+			groupedBundles[lossBundle.TopicId] = append(groupedBundles[lossBundle.TopicId], lossBundle)
+		}
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	actualTimestamp := uint64(sdkCtx.BlockTime().Unix())
+
+	for topicId, lossBundles := range groupedBundles {
+		bundles := &state.LossBundles{
+			LossBundles: lossBundles,
+		}
+		err = ms.k.InsertLossBudles(ctx, topicId, actualTimestamp, *bundles)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return &state.MsgSetLossesResponse{}, nil
 }
 
 ///
@@ -493,6 +434,10 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 	}, nil
 }
 
+///
+/// STAKE
+///
+
 // Function for reputers or workers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*state.MsgAddStakeResponse, error) {
 	// 1. check the sender is registered
@@ -666,6 +611,10 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 	return &state.MsgStartRemoveAllStakeResponse{}, nil
 }
 
+///
+/// REQUESTS
+///
+
 func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestInference) (*state.MsgRequestInferenceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -814,6 +763,83 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 		return nil
 	}
 	return state.ErrAddressNotRegistered
+}
+
+///
+/// TOPICS
+///
+
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
+	fmt.Println("CreateNewTopic called with: ", msg)
+	// Check if the sender is in the topic creation whitelist
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return nil, err
+	}
+	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
+	if err != nil {
+		return nil, err
+	}
+	if !isTopicCreator {
+		return nil, state.ErrNotInTopicCreationWhitelist
+	}
+
+	id, err := ms.k.GetNumTopics(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	fastestCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if msg.InferenceCadence < fastestCadence {
+		return nil, state.ErrInferenceCadenceBelowMinimum
+	}
+
+	weightFastestCadence, err := ms.k.GetParamsMinLossCadence(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if msg.LossCadence < weightFastestCadence {
+		return nil, state.ErrLossCadenceBelowMinimum
+	}
+
+	topic := state.Topic{
+		Id:                     id,
+		Creator:                creator.String(),
+		Metadata:               msg.Metadata,
+		LossLogic:              msg.LossLogic,
+		LossMethod:             msg.LossMethod,
+		LossCadence:            msg.LossCadence,
+		LossLastRan:            0,
+		InferenceLogic:         msg.InferenceLogic,
+		InferenceMethod:        msg.InferenceMethod,
+		InferenceCadence:       msg.InferenceCadence,
+		InferenceLastRan:       0,
+		Active:                 true,
+		DefaultArg:             msg.DefaultArg,
+		Pnorm:                  msg.Pnorm,
+		AlphaRegret:            msg.AlphaRegret,
+		PrewardReputer:         msg.PrewardReputer,
+		PrewardInference:       msg.PrewardInference,
+		PrewardForecast:        msg.PrewardForecast,
+		FTolerance:             msg.FTolerance,
+		Subsidy:                0,   // Can later be updated by a Foundation member
+		SubsidizedRewardEpochs: 0,   // Can later be updated by a Foundation member
+		FTreasury:              0.5, // Can later be updated by a Foundation member
+	}
+	_, err = ms.k.IncrementTopicId(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
+		return nil, err
+	}
+	// Rather than set latest weight-adjustment timestamp of a topic to 0
+	// we do nothing, since no value in the map means zero
+
+	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
 func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivateTopic) (*state.MsgReactivateTopicResponse, error) {
@@ -996,7 +1022,7 @@ func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *s
 	return &state.MsgRemoveFromTopicCreationWhitelistResponse{}, nil
 }
 
-func (ms msgServer) AddToWeightSettingWhitelist(ctx context.Context, msg *state.MsgAddToWeightSettingWhitelist) (*state.MsgAddToWeightSettingWhitelistResponse, error) {
+func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *state.MsgAddToReputerWhitelist) (*state.MsgAddToReputerWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -1014,14 +1040,14 @@ func (ms msgServer) AddToWeightSettingWhitelist(ctx context.Context, msg *state.
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
-	err = ms.k.AddToWeightSettingWhitelist(ctx, targetAddr)
+	err = ms.k.AddToReputerWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgAddToWeightSettingWhitelistResponse{}, nil
+	return &state.MsgAddToReputerWhitelistResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *state.MsgRemoveFromWeightSettingWhitelist) (*state.MsgRemoveFromWeightSettingWhitelistResponse, error) {
+func (ms msgServer) RemoveFromReputerWhitelist(ctx context.Context, msg *state.MsgRemoveFromReputerWhitelist) (*state.MsgRemoveFromReputerWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -1039,11 +1065,11 @@ func (ms msgServer) RemoveFromWeightSettingWhitelist(ctx context.Context, msg *s
 		return nil, state.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
-	err = ms.k.RemoveFromWeightSettingWhitelist(ctx, targetAddr)
+	err = ms.k.RemoveFromReputerWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveFromWeightSettingWhitelistResponse{}, nil
+	return &state.MsgRemoveFromReputerWhitelistResponse{}, nil
 }
 
 func (ms msgServer) AddToFoundationWhitelist(ctx context.Context, msg *state.MsgAddToFoundationWhitelist) (*state.MsgAddToFoundationWhitelistResponse, error) {

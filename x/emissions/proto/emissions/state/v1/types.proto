@@ -71,10 +71,10 @@ message Topic {
   uint64 id = 1;
   string creator = 2;
   string metadata = 3;
-  string weight_logic = 4;
-  string weight_method = 5;
-  uint64 weight_cadence = 6;
-  uint64 weight_last_ran = 7;
+  string loss_logic = 4;
+  string loss_method = 5;
+  uint64 loss_cadence = 6;
+  uint64 loss_last_ran = 7;
   string inference_logic = 8;
   string inference_method = 9;
   uint64 inference_cadence = 10;
@@ -96,13 +96,47 @@ message TopicList {
   repeated Topic topics = 1;
 }
 
-message Weight {
+message WorkerAttributedLoss {
+  option (gogoproto.equal) = true;
+
+  string worker = 1;
+  string value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  bytes extra_data = 3;
+}
+
+// eq13 in the litepaper
+message LossBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
   string reputer = 2;
-  string worker = 3;
-  string weight = 4 [
+  bytes extra_data = 3;
+  string network_loss = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated WorkerAttributedLoss inferer_losses = 5;
+  repeated WorkerAttributedLoss forcaster_losses = 6;
+  string naive_network_loss = 7 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated WorkerAttributedLoss one_out_network_losses = 8 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated WorkerAttributedLoss one_in_naive_network_losses = 9 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
@@ -110,8 +144,8 @@ message Weight {
   ];
 }
 
-message Weights {
-  repeated Weight weights = 1;
+message LossBundles {
+  repeated LossBundle loss_bundles = 1;
 }
 
 message Inference {

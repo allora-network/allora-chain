@@ -338,7 +338,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "AddToWeightSettingWhitelist",
+					RpcMethod: "AddToReputerWhitelist",
 					Use:       "add-to-weight-setting-whitelist [sender] [address]",
 					Short:     "add an address to the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -347,7 +347,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "RemoveFromWeightSettingWhitelist",
+					RpcMethod: "RemoveFromReputerWhitelist",
 					Use:       "remove-from-weight-setting-whitelist [sender] [address]",
 					Short:     "remove an address from the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{

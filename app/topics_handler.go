@@ -34,7 +34,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
 		for _, topic := range churnReadyTopics.Topics {
-			// Parallelize the inference and weight cadence checks
+			// Parallelize the inference and loss cadence checks
 			wg.Add(1)
 			go func(topic emissionstypes.Topic) {
 				defer wg.Done()
@@ -49,7 +49,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				}
 
 				// Check the cadence of weight calculations
-				if currentTime-topic.WeightLastRan >= topic.WeightCadence {
+				if currentTime-topic.LossLastRan >= topic.LossCadence {
 					fmt.Printf("Triggering Weight cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id,
 						topic.Metadata,
@@ -69,7 +69,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						return
 					}
 
-					go generateWeights(weights, inferences, topic.WeightLogic, topic.WeightMethod, topic.Id)
+					go generateWeights(weights, inferences, topic.LossLogic, topic.LossMethod, topic.Id)
 				}
 			}(*topic)
 		}

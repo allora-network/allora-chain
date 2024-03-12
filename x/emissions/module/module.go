@@ -184,17 +184,17 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 				}
 			}
 
-			// Check the cadence of weight calculations
-			if currentTime-topic.WeightLastRan >= topic.WeightCadence {
-				fmt.Printf("Weight cadence met for topic: %v metadata: %s default arg: %s \n",
+			// Check the cadence of loss calculations
+			if currentTime-topic.LossLastRan >= topic.LossCadence {
+				fmt.Printf("Loss cadence met for topic: %v metadata: %s default arg: %s \n",
 					topic.Id,
 					topic.Metadata, topic.
 						DefaultArg)
 
-				// Update the last weight ran
-				err = am.keeper.UpdateTopicWeightLastRan(sdkCtx, topic.Id, currentTime)
+				// Update the last loss update ran
+				err = am.keeper.UpdateTopicLossUpdateLastRan(sdkCtx, topic.Id, currentTime)
 				if err != nil {
-					fmt.Println("Error updating last weight ran: ", err)
+					fmt.Println("Error updating last loss update: ", err)
 				}
 			}
 		}(topic)

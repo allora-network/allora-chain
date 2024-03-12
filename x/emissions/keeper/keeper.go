@@ -111,8 +111,11 @@ type Keeper struct {
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
 
-	// map of (topic, timestamp, index) -> Inference
+	// map of (topic, timestamp, index) -> Forecast
 	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Forecasts]
+
+	// map of (topic, timestamp, index) -> LossBundle
+	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.LossBundles]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
@@ -120,7 +123,7 @@ type Keeper struct {
 
 	topicCreationWhitelist collections.KeySet[sdk.AccAddress]
 
-	weightSettingWhitelist collections.KeySet[sdk.AccAddress]
+	reputerWhitelist collections.KeySet[sdk.AccAddress]
 
 	foundationWhitelist collections.KeySet[sdk.AccAddress]
 }
@@ -134,41 +137,37 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:               cdc,
-		addressCodec:      addressCodec,
-		params:            collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
-		authKeeper:        ak,
-		bankKeeper:        bk,
-		totalStake:        collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
-		topicStake:        collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate: collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:       collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
-		topics:            collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
-		churnReadyTopics:  collections.NewItem(sb, state.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[state.TopicList](cdc)),
-		topicWorkers:      collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:     collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
-		topicReputers:     collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		// allTopicStakeSum:  collections.NewItem(sb, state.AllTopicStakeSumKey, "all_topic_stake_sum", UintValue),
-		// stakeOwnedByDelegator:      collections.NewMap(sb, state.DelegatorStakeKey, "delegator_stake", sdk.AccAddressKey, UintValue),
-		// stakePlacement:             collections.NewMap(sb, state.BondsKey, "bonds", collections.PairKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		// stakePlacedUponTarget:      collections.NewMap(sb, state.TargetStakeKey, "target_stake", sdk.AccAddressKey, UintValue),
-		stakeByReputerAndTopicId: collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		stakeRemovalQueue:        collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
-		mempool:                  collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
-		requestUnmetDemand:       collections.NewMap(sb, state.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
-		topicUnmetDemand:         collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
-		// weights:                    collections.NewMap(sb, state.WeightsKey, "weights", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		cdc:                        cdc,
+		addressCodec:               addressCodec,
+		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
+		authKeeper:                 ak,
+		bankKeeper:                 bk,
+		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
+		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
+		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
+		churnReadyTopics:           collections.NewItem(sb, state.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[state.TopicList](cdc)),
+		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
+		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		mempool:                    collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
+		requestUnmetDemand:         collections.NewMap(sb, state.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
+		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
 		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
 		forecasts:                  collections.NewMap(sb, state.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Forecast](cdc)),
 		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
 		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
 		allForecasts:               collections.NewMap(sb, state.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Forecasts](cdc)),
+		allLossBundles:             collections.NewMap(sb, state.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.LossBundles](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
-		weightSettingWhitelist:     collections.NewKeySet(sb, state.WeightSettingWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
+		reputerWhitelist:           collections.NewKeySet(sb, state.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		foundationWhitelist:        collections.NewKeySet(sb, state.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
 	}
 
@@ -265,12 +264,12 @@ func (k *Keeper) GetParamsMinRequestCadence(ctx context.Context) (uint64, error)
 	return params.MinRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsMinWeightCadence(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinLossCadence(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MinWeightCadence, nil
+	return params.MinLossCadence, nil
 }
 
 ///
@@ -333,6 +332,12 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 
 	key := collections.Join(topicId, timestamp)
 	return k.allForecasts.Set(ctx, key, forecasts)
+}
+
+// Insert a loss bundle for a topic/timestamp. Overwrites previous ones.
+func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles state.LossBundles) error {
+	key := collections.Join(topicId, timestamp)
+	return k.allLossBundles.Set(ctx, key, lossBundles)
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
@@ -927,7 +932,7 @@ func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (u
 	if err != nil {
 		return 0, err
 	}
-	ret := topic.WeightLastRan
+	ret := topic.LossLastRan
 	return ret, nil
 }
 
@@ -941,10 +946,10 @@ func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_
 		Id:               topic.Id,
 		Creator:          topic.Creator,
 		Metadata:         topic.Metadata,
-		WeightLogic:      topic.WeightLogic,
-		WeightMethod:     topic.WeightMethod,
-		WeightCadence:    topic.WeightCadence,
-		WeightLastRan:    topic.WeightLastRan,
+		LossLogic:        topic.LossLogic,
+		LossMethod:       topic.LossMethod,
+		LossCadence:      topic.LossCadence,
+		LossLastRan:      topic.LossLastRan,
 		InferenceLogic:   topic.InferenceLogic,
 		InferenceMethod:  topic.InferenceMethod,
 		InferenceCadence: topic.InferenceCadence,
@@ -955,13 +960,13 @@ func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_
 	return k.topics.Set(ctx, topicId, newTopic)
 }
 
-// UpdateTopicWeightLastRan updates the WeightLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
+// UpdateTopicLossUpdateLastRan updates the WeightLastRan timestamp for a given topic.
+func (k *Keeper) UpdateTopicLossUpdateLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic.WeightLastRan = lastRanTime
+	topic.LossLastRan = lastRanTime
 	return k.topics.Set(ctx, topicId, topic)
 }
 
@@ -1346,16 +1351,16 @@ func (k *Keeper) RemoveFromTopicCreationWhitelist(ctx context.Context, address s
 	return k.topicCreationWhitelist.Remove(ctx, address)
 }
 
-func (k *Keeper) IsInWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
-	return k.weightSettingWhitelist.Has(ctx, address)
+func (k *Keeper) IsInReputerWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
+	return k.reputerWhitelist.Has(ctx, address)
 }
 
-func (k *Keeper) AddToWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.weightSettingWhitelist.Set(ctx, address)
+func (k *Keeper) AddToReputerWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.reputerWhitelist.Set(ctx, address)
 }
 
-func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.weightSettingWhitelist.Remove(ctx, address)
+func (k *Keeper) RemoveFromReputerWhitelist(ctx context.Context, address sdk.AccAddress) error {
+	return k.reputerWhitelist.Remove(ctx, address)
 }
 
 func (k *Keeper) IsInFoundationWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {

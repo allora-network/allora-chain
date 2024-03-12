@@ -19,8 +19,6 @@ service Msg {
 
   rpc ProcessForecasts(MsgProcessForecasts) returns (MsgProcessForecastsResponse);
 
-  rpc SetLosses(MsgSetLosses) returns (MsgSetLossesResponse);
-
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
   rpc ReactivateTopic(MsgReactivateTopic) returns (MsgReactivateTopicResponse);
@@ -30,6 +28,8 @@ service Msg {
   rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
+
+  rpc InsertLosses(MsgSetLosses) returns (MsgSetLossesResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -50,10 +50,10 @@ service Msg {
   rpc RemoveFromTopicCreationWhitelist(MsgRemoveFromTopicCreationWhitelist)
       returns (MsgRemoveFromTopicCreationWhitelistResponse);
 
-  rpc AddToWeightSettingWhitelist(MsgAddToWeightSettingWhitelist) returns (MsgAddToWeightSettingWhitelistResponse);
+  rpc AddToReputerWhitelist(MsgAddToReputerWhitelist) returns (MsgAddToReputerWhitelistResponse);
 
-  rpc RemoveFromWeightSettingWhitelist(MsgRemoveFromWeightSettingWhitelist)
-      returns (MsgRemoveFromWeightSettingWhitelistResponse);
+  rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist)
+      returns (MsgRemoveFromReputerWhitelistResponse);
 
   rpc AddToFoundationWhitelist(MsgAddToFoundationWhitelist) returns (MsgAddToFoundationWhitelistResponse);
 
@@ -80,7 +80,7 @@ message OptionalParams {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+  ];  // total unmet demand for a topic < this => don't run inference solicatation or loss uploads
   repeated uint64 max_topics_per_block = 5;  // max number of topics to run cadence for per block
   repeated string min_request_unmet_demand = 6 [
     (cosmos_proto.scalar) = "cosmos.Uint",
@@ -97,7 +97,7 @@ message OptionalParams {
   ];                                              // minimum amount of tokens to send to stake as a reputer or worker
   repeated uint64 remove_stake_delay_window = 9;  // how long to wait before allowed to remove stake
   repeated uint64 min_request_cadence = 10;       // Fastest allowed cadence of a repeating inference request
-  repeated uint64 min_weight_cadence = 11;        // Fastest allowed cadence of uploading weights
+  repeated uint64 min_loss_cadence = 11;        // Fastest allowed cadence of uploading losses
   repeated uint64 max_inference_request_validity = 12;  // longest time a subscription is allowed to be valid
   repeated uint64 max_request_cadence = 13;  // slowest/largest amount of time subscription can take between inferences
 }
@@ -117,9 +117,9 @@ message MsgCreateNewTopic {
   string creator = 1;
 
   string metadata = 2;
-  string weight_logic = 3;
-  string weight_method = 4;
-  uint64 weight_cadence = 5;
+  string loss_logic = 3;
+  string loss_method = 4;
+  uint64 loss_cadence = 5;
   string inference_logic = 6;
   string inference_method = 7;
   uint64 inference_cadence = 8;
@@ -144,13 +144,13 @@ message MsgSetGlobalFoundationTopicParams {
 
 message MsgSetGlobalFoundationTopicParamsResponse {}
 
-// MsgSetLosses sets the weights for a given validator.
+// MsgSetLosses sets the losses from a given reputer
 message MsgSetLosses {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  repeated Weight weights = 2;
+  repeated LossBundle loss_bundles = 2;
 }
 
 message MsgSetLossesResponse {}
@@ -339,23 +339,23 @@ message MsgRemoveFromTopicCreationWhitelist {
 
 message MsgRemoveFromTopicCreationWhitelistResponse {}
 
-message MsgAddToWeightSettingWhitelist {
+message MsgAddToReputerWhitelist {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   string address = 2;
 }
 
-message MsgAddToWeightSettingWhitelistResponse {}
+message MsgAddToReputerWhitelistResponse {}
 
-message MsgRemoveFromWeightSettingWhitelist {
+message MsgRemoveFromReputerWhitelist {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   string address = 2;
 }
 
-message MsgRemoveFromWeightSettingWhitelistResponse {}
+message MsgRemoveFromReputerWhitelistResponse {}
 
 message MsgAddToFoundationWhitelist {
   option (cosmos.msg.v1.signer) = "sender";

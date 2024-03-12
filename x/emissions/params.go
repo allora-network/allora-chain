@@ -10,14 +10,14 @@ func DefaultParams() Params {
 		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
 		EpochLength:                 int64(600),                    // length of an "epoch" for rewards payouts in blocks
 		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:           uint64(2048),                  // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:       cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
 		MaxMissingInferencePercent:  uint64(20),                    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:        cosmosMath.NewUint(100),       // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:      uint64(60 * 60 * 24),          // 1 day in seconds
 		MinRequestCadence:           uint64(10),                    // 10 seconds
-		MinWeightCadence:            uint64(60 * 60),               // 1 hour in seconds
+		MinLossCadence:              uint64(60 * 60),               // 1 hour in seconds
 		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
 		MaxRequestCadence:           uint64(60 * 60 * 24 * 7 * 52), // 52 weeks approximately 1 year in seconds
 		Sharpness:                   uint64(20),                    // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
@@ -69,8 +69,8 @@ func DefaultParamsMinRequestCadence() uint64 {
 	return DefaultParams().MinRequestCadence
 }
 
-func DefaultParamsMinWeightCadence() uint64 {
-	return DefaultParams().MinWeightCadence
+func DefaultParamsMinLossCadence() uint64 {
+	return DefaultParams().MinLossCadence
 }
 
 func DefaultParamsMaxInferenceRequestValidity() uint64 {

@@ -22,7 +22,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 		RequiredMinimumStake:        cosmosMath.NewUint(1),         // minimum stake required to be a worker
 		RemoveStakeDelayWindow:      uint64(172800),                // 2 days in seconds
 		MinRequestCadence:           uint64(60),                    // 1 minute in seconds
-		MinWeightCadence:            uint64(10800),                 // 3 hours in seconds
+		MinLossCadence:              uint64(10800),                 // 3 hours in seconds
 		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
 		MaxRequestCadence:           uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
 	})
