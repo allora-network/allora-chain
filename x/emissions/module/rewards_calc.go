@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
+	params "github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -158,12 +159,11 @@ func MaskWeightsIfInsufficientLiveness(
 	weights map[string]map[string]*Uint) (map[string]map[string]*Uint, error) {
 	maskedWeights := make(map[string]map[string]*Uint)
 	for reputer, workerWeights := range weights {
-
 		if maskedWeights[reputer] == nil {
 			maskedWeights[reputer] = make(map[string]*Uint)
 		}
 
-		for worker := range workerWeights {
+		for worker, workerWeight := range workerWeights {
 			// Get the topic => its inference cadence
 			topic, err := am.keeper.GetTopic(ctx, topicId)
 			if err != nil {
@@ -183,19 +183,19 @@ func MaskWeightsIfInsufficientLiveness(
 			if err != nil {
 				return nil, err
 			}
-			expectedNumInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
-			// Allow for for 10% of inferences to be missing. Percent directly encoded as uint64, not float
+			maxPossibleInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
+			// Allow for for 10% of inferences to be missing. Percent directly encoded as cosmosMath.LegacyDec
 			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxMissingInferencePercent(ctx)
 			if err != nil {
 				return nil, err
 			}
-			expectedNumInferencesInRewardEpoch =
-				expectedNumInferencesInRewardEpoch - (expectedNumInferencesInRewardEpoch / maxAllowableMissingInferencePercent)
-			if numInferencesInRewardEpoch.LT(cosmosMath.NewUint(expectedNumInferencesInRewardEpoch)) {
+			expectedNumInferencesInRewardEpoch := cosmosMath.LegacyOneDec().Sub(maxAllowableMissingInferencePercent).MulInt(
+				cosmosMath.NewIntFromUint64(maxPossibleInferencesInRewardEpoch)).TruncateInt()
+			if numInferencesInRewardEpoch.LT(cosmosMath.NewUintFromBigInt(expectedNumInferencesInRewardEpoch.BigInt())) {
 				maskedVal := cosmosMath.ZeroUint()
 				maskedWeights[reputer][worker] = &maskedVal
 			} else {
-				maskedWeights[reputer][worker] = weights[reputer][worker]
+				maskedWeights[reputer][worker] = workerWeight
 			}
 		}
 	}
@@ -223,19 +223,9 @@ func emitRewards(ctx sdk.Context, am AppModule) error {
 		}
 		return nil
 	}
-
-	cumulativeEmissionInt, err := am.keeper.CalculateAccumulatedEmissions(ctx)
-	if err != nil {
-		fmt.Println("Error calculating accumulated emissions: ", err)
-		return err
-	}
-	// mint that many tokens to the module
-	err = am.keeper.MintRewardsCoins(ctx, cumulativeEmissionInt)
-	if err != nil {
-		fmt.Println("Error minting rewards coins: ", err)
-		return err
-	}
-	cumulativeEmission := cosmosMath.NewUintFromBigInt(cumulativeEmissionInt.BigInt())
+	emissionsAddress := am.keeper.AccountKeeper().GetModuleAddress(state.AlloraRewardsAccountName)
+	emissionsBalance := am.keeper.BankKeeper().GetBalance(ctx, emissionsAddress, params.DefaultBondDenom)
+	cumulativeEmission := cosmosMath.NewUintFromBigInt(emissionsBalance.Amount.BigInt())
 
 	// Save/set the above emissions to actually pay participants.
 	// Do this by increasing the stake of each worker by their due ServerEmission + ValidatorEmission
@@ -300,6 +290,8 @@ func emitRewardsToTopicParticipants(
 	for participant, reward := range rewards {
 		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
 		am.keeper.AddStake(ctx, []uint64{topic}, participant, participant, *reward)
+		rewardCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(reward.BigInt())))
+		am.keeper.BankKeeper().SendCoinsFromModuleToModule(ctx, state.AlloraRewardsAccountName, state.AlloraStakingAccountName, rewardCoins)
 	}
 	if len(rewards) == 0 {
 		fmt.Printf(" No rewards to emit for Topic %v \n", topic)

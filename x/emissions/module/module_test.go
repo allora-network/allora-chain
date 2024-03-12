@@ -57,14 +57,15 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                nil,
-		"mint":                         {"minter"},
-		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
+		"fee_collector":                 {"minter"},
+		"mint":                          {"minter"},
+		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		state.AlloraRewardsAccountName:  {"minter"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -99,7 +100,13 @@ func (s *ModuleTestSuite) SetupTest() {
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, accountKeeper, bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(
+		encCfg.Codec,
+		addressCodec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.FeeCollectorName)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)

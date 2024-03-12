@@ -130,11 +130,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetAccumulatedEpochRewards",
-					Use:       "accumulated-epoch-rewards",
-					Short:     "Get the accumlated rewards for the current epoch that have not yet been paid out to network participants",
-				},
-				{
 					RpcMethod: "GetLastRewardsUpdate",
 					Use:       "last-rewards-update",
 					Short:     "Get timestamp of the last rewards update",

@@ -65,37 +65,42 @@ service Msg {
 message OptionalParams {
   repeated string version = 1;      // version of the protocol should be in lockstep with github release tag version
   repeated int64 epoch_length = 2;  // length of an "epoch" for rewards payouts in blocks
-  repeated string emissions_per_epoch = 3 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // default amount of tokens to issue per epoch
-  repeated string min_topic_unmet_demand = 4 [
+  repeated string min_topic_unmet_demand = 3 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-  repeated uint64 max_topics_per_block = 5;  // max number of topics to run cadence for per block
-  repeated string min_request_unmet_demand = 6 [
+  repeated uint64 max_topics_per_block = 4;  // max number of topics to run cadence for per block
+  repeated string min_request_unmet_demand = 5 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                                  // delete requests if they have below this demand remaining
-  repeated uint64 max_missing_inference_percent = 7;  // if worker has this percentage inferences missing penalize them
-  repeated string required_minimum_stake = 8 [
+  ];  // delete requests if they have below this demand remaining
+  repeated string max_missing_inference_percent = 6 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // if worker has this percentage of inferences missing penalize them
+  repeated string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                                              // minimum amount of tokens to send to stake as a reputer or worker
-  repeated uint64 remove_stake_delay_window = 9;  // how long to wait before allowed to remove stake
-  repeated uint64 min_request_cadence = 10;       // Fastest allowed cadence of a repeating inference request
-  repeated uint64 min_weight_cadence = 11;        // Fastest allowed cadence of uploading weights
-  repeated uint64 max_inference_request_validity = 12;  // longest time a subscription is allowed to be valid
-  repeated uint64 max_request_cadence = 13;  // slowest/largest amount of time subscription can take between inferences
+  repeated uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
+  repeated uint64 min_request_cadence = 9;        // Fastest allowed cadence of a repeating inference request
+  repeated uint64 min_weight_cadence = 10;        // Fastest allowed cadence of uploading weights
+  repeated uint64 max_inference_request_validity = 11;  // longest time a subscription is allowed to be valid
+  repeated uint64 max_request_cadence = 12;  // slowest/largest amount of time subscription can take between inferences
+  repeated string percent_rewards_reputers_workers = 13 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
 }
 
 message MsgUpdateParams {

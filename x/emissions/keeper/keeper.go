@@ -13,7 +13,6 @@ import (
 	storetypes "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -35,8 +34,9 @@ type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	addressCodec address.Codec
+	cdc              codec.BinaryCodec
+	addressCodec     address.Codec
+	feeCollectorName string
 
 	// State management
 	schema     collections.Schema
@@ -167,12 +167,14 @@ func NewKeeper(
 	addressCodec address.Codec,
 	storeService storetypes.KVStoreService,
 	ak AccountKeeper,
-	bk BankKeeper) Keeper {
+	bk BankKeeper,
+	feeCollectorName string) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                        cdc,
 		addressCodec:               addressCodec,
+		feeCollectorName:           feeCollectorName,
 		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
 		authKeeper:                 ak,
 		bankKeeper:                 bk,
@@ -228,6 +230,10 @@ func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
 		return state.Params{}, err
 	}
 	return ret, nil
+}
+
+func (k *Keeper) GetFeeCollectorName() string {
+	return k.feeCollectorName
 }
 
 func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
@@ -338,32 +344,6 @@ func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return params.EpochLength, nil
-}
-
-// return how many new coins should be minted for the next emission
-func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.Int, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	blockNumber := sdkCtx.BlockHeight()
-	lastRewardsUpdate, err := k.GetLastRewardsUpdate(sdkCtx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
-	// number of epochs that have passed (if more than 1)
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.EpochLength)
-	// get emission amount
-	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
-}
-
-// mint new rewards coins to this module account
-func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	return k.bankKeeper.MintCoins(ctx, state.AlloraStakingModuleName, coins)
 }
 
 // for a given topic, returns every reputer node registered to it and their normalized stake
@@ -1451,10 +1431,10 @@ func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	return nil
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (cosmosMath.LegacyDec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return cosmosMath.LegacyZeroDec(), err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -1529,6 +1509,14 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error)
 		return 0, err
 	}
 	return params.MaxRequestCadence, nil
+}
+
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PercentRewardsReputersWorkers, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
@@ -1698,11 +1686,10 @@ func (k *Keeper) RemoveFromWeightSettingWhitelist(ctx context.Context, address s
 	return k.weightSettingWhitelist.Remove(ctx, address)
 }
 
-//
-// BANK KEEPER WRAPPERS
-//
+func (k *Keeper) AccountKeeper() AccountKeeper {
+	return k.authKeeper
+}
 
-// SendCoinsFromModuleToModule
-func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
-	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
+func (k *Keeper) BankKeeper() BankKeeper {
+	return k.bankKeeper
 }
