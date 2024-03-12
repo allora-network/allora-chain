@@ -133,7 +133,7 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *state.QueryR
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var stakePointers []*state.StakeInfo
+	var stakePointers []*state.StakePlacement
 	for _, stake := range stakes {
 		stakePointers = append(stakePointers, &stake)
 	}

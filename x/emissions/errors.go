@@ -58,4 +58,7 @@ var (
 	ErrTopicNotEnoughDemand                              = errors.Register(ModuleName, 53, "topic not enough demand")
 	ErrInvalidRequestId                                  = errors.Register(ModuleName, 54, "invalid request ID")
 	ErrInferenceRequestNotInMempool                      = errors.Register(ModuleName, 55, "inference request not in mempool")
+	ErrIntegerUnderflowStakeFromDelegator                = errors.Register(ModuleName, 56, "integer underflow for stake from delegator")
+	ErrIntegerUnderflowDelegatedStakePlacement           = errors.Register(ModuleName, 57, "integer underflow for delegated stake placement")
+	ErrIntegerUnderflowDelegatedStakeUponReputer         = errors.Register(ModuleName, 58, "integer underflow for delegated stake upon reputer")
 )

@@ -151,7 +151,7 @@ message QueryReputerStakeListRequest {
 }
 
 message QueryReputerStakeListResponse {
-  repeated StakeInfo stakes = 1;
+  repeated StakePlacement stakes = 1;
 }
 
 // Query the amount of rewards accumulated during this epoch

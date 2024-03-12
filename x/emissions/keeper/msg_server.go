@@ -441,7 +441,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 /// STAKE
 ///
 
-// Function for reputers or workers to call to add stake to an existing stake position.
+// Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*state.MsgAddStakeResponse, error) {
 	// 1. check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -501,7 +501,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 	}
 	stakeRemoval := state.StakeRemoval{
 		TimestampRemovalStarted: uint64(sdkCtx.BlockTime().Unix()),
-		Placements:              make([]*state.StakeRemovalPlacement, 0),
+		Placements:              make([]*state.StakePlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
 		// Check the sender has enough stake already placed on the topic to remove the stake
@@ -523,7 +523,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 		}
 
 		// Push to the stake removal object
-		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakeRemovalPlacement{
+		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.StakePlacement{
 			TopicId: stakePlacement.TopicId,
 			Amount:  stakePlacement.Amount,
 		})
@@ -536,7 +536,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *state.MsgStartRem
 	return &state.MsgStartRemoveStakeResponse{}, nil
 }
 
-// Function for reputers or workers to call to remove stake from an existing stake position.
+// Function for reputers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfirmRemoveStake) (*state.MsgConfirmRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// pull the stake removal from the delayed queue
@@ -612,6 +612,132 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *state.MsgStart
 		return nil, err
 	}
 	return &state.MsgStartRemoveAllStakeResponse{}, nil
+}
+
+// Delegates a stake to a reputer. Sender need not be registered to delegate stake.
+func (ms msgServer) DelegateStake(ctx context.Context, msg *state.MsgDelegateStake) (*state.MsgDelegateStakeResponse, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	// Check the target reputer exists and is registered
+	targetAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	err = checkNodeRegistered(ctx, ms, targetAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check the sender has enough funds to delegate the stake
+	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check here
+	// Send the funds
+	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingModuleName, coins)
+
+	// Update the stake data structures
+	err = ms.k.AddStake(ctx, msg.TopicId, targetAddr, msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.k.AddDelegatedStake(ctx, msg.TopicId, senderAddr, targetAddr, msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &state.MsgDelegateStakeResponse{}, nil
+}
+
+// StartRemoveDelegatedStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
+// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
+// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
+// and one must start the stake removal process again and wait the delay again.
+func (ms msgServer) StartRemoveDelegatedStake(ctx context.Context, msg *state.MsgStartRemoveDelegatedStake) (*state.MsgStartRemoveDelegatedStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// Check the sender is registered
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	stakeRemoval := state.DelegatedStakeRemoval{
+		TimestampRemovalStarted: uint64(sdkCtx.BlockTime().Unix()),
+		Placements:              make([]*state.DelegatedStakePlacement, 0),
+	}
+
+	for _, stakeAntiPlacement := range msg.PlacementsToRemove {
+		// Check the sender has enough stake already placed on the topic to remove the stake
+		stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, stakeAntiPlacement.TopicId, senderAddr)
+		if err != nil {
+			return nil, err
+		}
+		if stakePlaced.LT(stakeAntiPlacement.Amount) {
+			return nil, state.ErrInsufficientStakeToRemove
+		}
+
+		// Push to the stake removal object
+		stakeRemoval.Placements = append(stakeRemoval.Placements, &state.DelegatedStakePlacement{
+			TopicId: stakeAntiPlacement.TopicId,
+			Reputer: stakeAntiPlacement.Reputer,
+			Amount:  stakeAntiPlacement.Amount,
+		})
+
+		// If no errors have occured and the removal is valid, add the stake removal to the delayed queue
+		err = ms.k.SetDelegatedStakeRemovalQueueForAddress(ctx, senderAddr, stakeRemoval)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &state.MsgStartRemoveDelegatedStakeResponse{}, nil
+}
+
+// Function for delegators to call to remove stake from an existing delegated stake position.
+func (ms msgServer) ConfirmRemoveDelegatedStake(ctx context.Context, msg *state.MsgConfirmDelegatedRemoveStake) (*state.MsgConfirmRemoveDelegatedStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// Pull the stake removal from the delayed queue
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	stakeRemoval, err := ms.k.GetDelegatedStakeRemovalQueueByAddress(ctx, senderAddr)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, state.ErrConfirmRemoveStakeNoRemovalStarted
+		}
+		return nil, err
+	}
+	// check the timestamp is valid
+	timeNow := uint64(sdkCtx.BlockTime().Unix())
+	if stakeRemoval.TimestampRemovalStarted > timeNow {
+		return nil, state.ErrConfirmRemoveStakeTooEarly
+	}
+	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if stakeRemoval.TimestampRemovalStarted+delayWindow < timeNow {
+		return nil, state.ErrConfirmRemoveStakeTooLate
+	}
+	// Skip checking all the data is valid
+	// the data should be valid because it was checked when the stake removal was started
+	// send the money
+	for _, stakePlacement := range stakeRemoval.Placements {
+		// Check the module has enough funds to send back to the sender
+		// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
+		// Send the funds
+		amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
+
+		// Update the stake data structures
+		err = ms.k.RemoveDelegatedStake(ctx, stakePlacement.TopicId, senderAddr, sdk.AccAddress(stakePlacement.Reputer), stakePlacement.Amount)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &state.MsgConfirmRemoveDelegatedStakeResponse{}, nil
 }
 
 ///

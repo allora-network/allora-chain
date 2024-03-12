@@ -39,6 +39,10 @@ service Msg {
 
   rpc StartRemoveAllStake(MsgStartRemoveAllStake) returns (MsgStartRemoveAllStakeResponse);
 
+  rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
+
+  rpc StartRemoveDelegatedStake(MsgStartRemoveDelegatedStake) returns (MsgStartRemoveDelegatedStakeResponse);
+
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
 
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
@@ -270,6 +274,36 @@ message MsgStartRemoveAllStake {
 }
 
 message MsgStartRemoveAllStakeResponse {}
+
+message MsgDelegateStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message MsgDelegateStakeResponse {}
+
+message MsgStartRemoveDelegatedStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  repeated DelegatedStakePlacement placements_to_remove = 2;
+}
+
+message MsgStartRemoveDelegatedStakeResponse {}
+
+message MsgConfirmDelegatedRemoveStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+}
+
+message MsgConfirmRemoveDelegatedStakeResponse {}
 
 message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";

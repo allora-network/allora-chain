@@ -23,12 +23,9 @@ type Int = cosmosMath.Int
 
 type TOPIC_ID = uint64
 type LIB_P2P_KEY = string
-type ACC_ADDRESS = string
-type TARGET = sdk.AccAddress
-type TARGET_STR = string
 type DELEGATOR = sdk.AccAddress
+type WORKER = sdk.AccAddress
 type REPUTER = sdk.AccAddress
-type DELEGATOR_STR = string
 type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
@@ -74,6 +71,14 @@ type Keeper struct {
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TOPIC_ID, REPUTER], Uint]
 	// map of (reputer) -> removal information for that reputer
 	stakeRemovalQueue collections.Map[REPUTER, state.StakeRemoval]
+	// map of (delegator) -> removal information for that delegator
+	delegatedStakeRemovalQueue collections.Map[DELEGATOR, state.DelegatedStakeRemoval]
+	// map of (delegator) -> amount of stake that has been placed by that delegator
+	stakeFromDelegator collections.Map[collections.Pair[TOPIC_ID, DELEGATOR], Uint]
+	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
+	delegatedStakePlacement collections.Map[collections.Triple[TOPIC_ID, REPUTER, DELEGATOR], Uint]
+	// map of (target) -> amount of stake that has been placed on that target
+	stakeUponReputer collections.Map[collections.Pair[TOPIC_ID, REPUTER], Uint]
 
 	// ############################################
 	// #        INFERENCE REQUEST MEMPOOL         #
@@ -91,13 +96,13 @@ type Keeper struct {
 	// ############################################
 
 	// map of (topic, worker) -> inference
-	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
+	inferences collections.Map[collections.Pair[TOPIC_ID, WORKER], state.Inference]
 
 	// map of (topic, worker) -> forecast[]
-	forecasts collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Forecast]
+	forecasts collections.Map[collections.Pair[TOPIC_ID, WORKER], state.Forecast]
 
 	// map of (topic, worker) -> num_inferences_in_reward_epoch
-	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], Uint]
+	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, WORKER], Uint]
 
 	// map of worker id to node data about that worker
 	workers collections.Map[LIB_P2P_KEY, state.OffchainNode]
@@ -153,6 +158,10 @@ func NewKeeper(
 		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		stakeByReputerAndTopicId:   collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
+		delegatedStakeRemovalQueue: collections.NewMap(sb, state.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.DelegatedStakeRemoval](cdc)),
+		stakeFromDelegator:         collections.NewMap(sb, state.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		delegatedStakePlacement:    collections.NewMap(sb, state.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		stakeUponReputer:           collections.NewMap(sb, state.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		mempool:                    collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
 		requestUnmetDemand:         collections.NewMap(sb, state.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
 		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
@@ -629,6 +638,63 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TOPIC_ID, reputer sdk.Acc
 	return nil
 }
 
+func (k *Keeper) AddDelegatedStake(ctx context.Context, topicId TOPIC_ID, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
+	// Run checks to ensure that delegate stake can be added, and then update the state all at once, applying rollbacks if necessary
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
+
+	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	if err != nil {
+		return err
+	}
+	stakeFromDelegatorNew := stakeFromDelegator.Add(stake)
+
+	delegatedStakePlacement, err := k.GetDelegatedStakePlacement(ctx, topicId, delegator, reputer)
+	if err != nil {
+		return err
+	}
+	stakePlacementNew := delegatedStakePlacement.Add(stake)
+
+	stakeUponReputer, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	stakeUponReputerNew := stakeUponReputer.Add(stake)
+
+	// State updates -- done all at once after all checks
+
+	// Set new reputer stake in topic
+	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
+		return err
+	}
+
+	// Set new sum topic stake for all topics
+	if err := k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
+		fmt.Println("Setting topic stake failed -- rolling back stake from delegator")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	if err := k.SetDelegatedStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
+		fmt.Println("Setting total stake failed -- rolling back stake from delegator and delegated stake placement")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		err2 = k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, delegatedStakePlacement)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	return nil
+}
+
 // Removes stake to the system for a given topic and reputer
 func (k *Keeper) RemoveStake(
 	ctx context.Context,
@@ -651,7 +717,13 @@ func (k *Keeper) RemoveStake(
 			return err
 		}
 	}
-	if stake.GT(reputerStakeInTopic) {
+	delegatedStakeUponReputerInTopic, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	reputerStakeInTopicWithoutDelegatedStake := reputerStakeInTopic.Sub(delegatedStakeUponReputerInTopic)
+	// TODO Maybe we should check if reputerStakeInTopicWithoutDelegatedStake is zero and remove the key from the map
+	if stake.GT(reputerStakeInTopicWithoutDelegatedStake) {
 		return state.ErrIntegerUnderflowTopicReputerStake
 	}
 	reputerStakeNew := reputerStakeInTopic.Sub(stake)
@@ -703,7 +775,7 @@ func (k *Keeper) RemoveStake(
 	}
 
 	// Set total stake
-	err = k.totalStake.Set(ctx, totalStake.Sub(stake))
+	err = k.SetTotalStake(ctx, totalStake.Sub(stake))
 	if err != nil {
 		fmt.Println("Setting total stake failed -- rolling back topic-reputer and topic stake")
 		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
@@ -713,6 +785,83 @@ func (k *Keeper) RemoveStake(
 		err2 = k.topicStake.Set(ctx, topicId, topicStake)
 		if err2 != nil {
 			fmt.Println("Error rolling back topic stake")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// Removes delegated stake from the system for a given topic, delegator, and reputer
+func (k *Keeper) RemoveDelegatedStake(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	delegator sdk.AccAddress,
+	reputer sdk.AccAddress,
+	stake Uint) error {
+	// Run checks to ensure that the delegated stake can be removed, and then update the state all at once, applying rollbacks if necessary
+
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
+
+	// Check stakeFromDelegator >= stake
+	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakeFromDelegator) {
+		return state.ErrIntegerUnderflowStakeFromDelegator
+	}
+	stakeFromDelegatorNew := stakeFromDelegator.Sub(stake)
+
+	// Check stakePlacement >= stake
+	stakePlacement, err := k.GetDelegatedStakePlacement(ctx, topicId, delegator, reputer)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakePlacement) {
+		return state.ErrIntegerUnderflowDelegatedStakePlacement
+	}
+	stakePlacementNew := stakePlacement.Sub(stake)
+
+	// Check stakeUponReputer >= stake
+	stakeUponReputer, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakeUponReputer) {
+		return state.ErrIntegerUnderflowDelegatedStakeUponReputer
+	}
+	stakeUponReputerNew := stakeUponReputer.Sub(stake)
+
+	// State updates -- done all at once after all checks
+
+	// Set new stake from delegator
+	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
+		return err
+	}
+
+	// Set new delegated stake placement
+	if err := k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
+		fmt.Println("Setting delegated stake placement failed -- rolling back stake from delegator")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	// Set new delegated stake upon reputer
+	if err := k.SetDelegatedStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
+		fmt.Println("Setting delegated stake upon reputer failed -- rolling back stake from delegator and delegated stake placement")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		err2 = k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacement)
+		if err2 != nil {
+			return err2
 		}
 		return err
 	}
@@ -745,10 +894,10 @@ func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TO
 }
 
 // GetStakesForAccount returns the list of stakes for a given account address.
-func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.AccAddress) ([]state.StakeInfo, error) {
+func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.AccAddress) ([]state.StakePlacement, error) {
 	topicIds := make([]TOPIC_ID, 0)
 	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]state.StakeInfo, 0)
+	stakes := make([]state.StakePlacement, 0)
 	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -767,7 +916,7 @@ func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.A
 			if err != nil {
 				return nil, err
 			}
-			stakeInfo := state.StakeInfo{
+			stakeInfo := state.StakePlacement{
 				TopicId: kv.K1(),
 				Amount:  amount,
 			}
@@ -825,6 +974,72 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	// Total stake does not have a zero guard because totalStake is allowed to be zero
 	// It is initialized to zero at genesis anyways
 	return k.totalStake.Set(ctx, totalStake)
+}
+
+// Returns the amount of stake placed by a specific delegator.
+func (k *Keeper) GetStakeFromDelegator(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR) (Uint, error) {
+	key := collections.Join(topicId, delegator)
+	stake, err := k.stakeFromDelegator.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed by a specific delegator.
+func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, stake Uint) error {
+	key := collections.Join(topicId, delegator)
+	if stake.IsZero() {
+		return k.stakeFromDelegator.Remove(ctx, key)
+	}
+	return k.stakeFromDelegator.Set(ctx, key, stake)
+}
+
+// Returns the amount of stake placed by a specific delegator on a specific target.
+func (k *Keeper) GetDelegatedStakePlacement(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, target REPUTER) (Uint, error) {
+	key := collections.Join3(topicId, delegator, target)
+	stake, err := k.delegatedStakePlacement.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed by a specific delegator on a specific target.
+func (k *Keeper) SetDelegatedStakePlacement(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, target REPUTER, stake Uint) error {
+	key := collections.Join3(topicId, delegator, target)
+	if stake.IsZero() {
+		return k.delegatedStakePlacement.Remove(ctx, key)
+	}
+	return k.delegatedStakePlacement.Set(ctx, key, stake)
+}
+
+// Returns the amount of stake placed on a specific target.
+func (k *Keeper) GetDelegatedStakeUponReputer(ctx context.Context, topicId TOPIC_ID, target REPUTER) (Uint, error) {
+	key := collections.Join(topicId, target)
+	stake, err := k.stakeUponReputer.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed on a specific target.
+func (k *Keeper) SetDelegatedStakeUponReputer(ctx context.Context, topicId TOPIC_ID, target REPUTER, stake Uint) error {
+	key := collections.Join(topicId, target)
+	if stake.IsZero() {
+		return k.stakeUponReputer.Remove(ctx, key)
+	}
+	return k.stakeUponReputer.Set(ctx, key, stake)
 }
 
 ///
@@ -1081,7 +1296,7 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	return workerAddress, nil
 }
 
-// for a given address, get their stake removal information
+// For a given address, get their stake removal information
 func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (state.StakeRemoval, error) {
 	return k.stakeRemovalQueue.Get(ctx, address)
 }
@@ -1089,6 +1304,16 @@ func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 func (k *Keeper) SetStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo state.StakeRemoval) error {
 	return k.stakeRemovalQueue.Set(ctx, address, removalInfo)
+}
+
+// For a given address, get their stake removal information
+func (k *Keeper) GetDelegatedStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (state.DelegatedStakeRemoval, error) {
+	return k.delegatedStakeRemovalQueue.Get(ctx, address)
+}
+
+// For a given address, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo state.DelegatedStakeRemoval) error {
+	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
 }
 
 ///
