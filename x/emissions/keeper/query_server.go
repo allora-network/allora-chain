@@ -291,7 +291,8 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft})
+		inferenceRequestCopy := inferenceRequest
+		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
 	return &state.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
 }
