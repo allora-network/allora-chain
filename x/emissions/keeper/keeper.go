@@ -427,7 +427,7 @@ func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) er
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
 	var inferences []*state.InferenceSetForScoring
-	var latestTimestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
+	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
 	if err != nil {
 		latestTimestamp = 0
 	}
@@ -456,6 +456,41 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 	}
 	return inferences, nil
 }
+
+// A function that accepts a topicId and returns list of Forecasts or error
+func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.ForecastSetForScoring, error) {
+	var forecasts []*state.ForecastSetForScoring
+	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
+	if err != nil {
+		latestTimestamp = 0
+	}
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		StartInclusive(latestTimestamp).
+		Descending()
+
+	iter, err := k.allForecasts.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		key := kv.Key
+		value := kv.Value
+		forecastSet := &state.ForecastSetForScoring{
+			TopicId:   key.K1(),
+			Timestamp: key.K2(),
+			Forecasts: &value,
+		}
+		forecasts = append(forecasts, forecastSet)
+	}
+	return forecasts, nil
+}
+
+// A function that accepts a topicId and returns list of LossBu or error
 
 // GetTopicsByCreator returns a slice of all topics created by a given creator.
 func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*state.Topic, error) {
@@ -1142,7 +1177,7 @@ func (k *Keeper) GetTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID)
 	return topic.InferenceLastRan, nil
 }
 
-func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+func (k *Keeper) GetTopicLossCalcLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return 0, err

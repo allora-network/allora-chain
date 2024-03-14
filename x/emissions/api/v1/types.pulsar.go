@@ -10718,6 +10718,537 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 }
 
 var (
+	md_ForecastSetForScoring           protoreflect.MessageDescriptor
+	fd_ForecastSetForScoring_topic_id  protoreflect.FieldDescriptor
+	fd_ForecastSetForScoring_timestamp protoreflect.FieldDescriptor
+	fd_ForecastSetForScoring_forecasts protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_state_v1_types_proto_init()
+	md_ForecastSetForScoring = File_emissions_state_v1_types_proto.Messages().ByName("ForecastSetForScoring")
+	fd_ForecastSetForScoring_topic_id = md_ForecastSetForScoring.Fields().ByName("topic_id")
+	fd_ForecastSetForScoring_timestamp = md_ForecastSetForScoring.Fields().ByName("timestamp")
+	fd_ForecastSetForScoring_forecasts = md_ForecastSetForScoring.Fields().ByName("forecasts")
+}
+
+var _ protoreflect.Message = (*fastReflection_ForecastSetForScoring)(nil)
+
+type fastReflection_ForecastSetForScoring ForecastSetForScoring
+
+func (x *ForecastSetForScoring) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_ForecastSetForScoring)(x)
+}
+
+func (x *ForecastSetForScoring) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_state_v1_types_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_ForecastSetForScoring_messageType fastReflection_ForecastSetForScoring_messageType
+var _ protoreflect.MessageType = fastReflection_ForecastSetForScoring_messageType{}
+
+type fastReflection_ForecastSetForScoring_messageType struct{}
+
+func (x fastReflection_ForecastSetForScoring_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_ForecastSetForScoring)(nil)
+}
+func (x fastReflection_ForecastSetForScoring_messageType) New() protoreflect.Message {
+	return new(fastReflection_ForecastSetForScoring)
+}
+func (x fastReflection_ForecastSetForScoring_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_ForecastSetForScoring
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_ForecastSetForScoring) Descriptor() protoreflect.MessageDescriptor {
+	return md_ForecastSetForScoring
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_ForecastSetForScoring) Type() protoreflect.MessageType {
+	return _fastReflection_ForecastSetForScoring_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_ForecastSetForScoring) New() protoreflect.Message {
+	return new(fastReflection_ForecastSetForScoring)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_ForecastSetForScoring) Interface() protoreflect.ProtoMessage {
+	return (*ForecastSetForScoring)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_ForecastSetForScoring) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_ForecastSetForScoring_topic_id, value) {
+			return
+		}
+	}
+	if x.Timestamp != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Timestamp)
+		if !f(fd_ForecastSetForScoring_timestamp, value) {
+			return
+		}
+	}
+	if x.Forecasts != nil {
+		value := protoreflect.ValueOfMessage(x.Forecasts.ProtoReflect())
+		if !f(fd_ForecastSetForScoring_forecasts, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_ForecastSetForScoring) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		return x.Timestamp != uint64(0)
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		return x.Forecasts != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_ForecastSetForScoring) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		x.Timestamp = uint64(0)
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		x.Forecasts = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_ForecastSetForScoring) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		value := x.Timestamp
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		value := x.Forecasts
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_ForecastSetForScoring) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		x.Timestamp = value.Uint()
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		x.Forecasts = value.Message().Interface().(*Forecasts)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_ForecastSetForScoring) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		if x.Forecasts == nil {
+			x.Forecasts = new(Forecasts)
+		}
+		return protoreflect.ValueOfMessage(x.Forecasts.ProtoReflect())
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.state.v1.ForecastSetForScoring is not mutable"))
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		panic(fmt.Errorf("field timestamp of message emissions.state.v1.ForecastSetForScoring is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_ForecastSetForScoring) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.state.v1.ForecastSetForScoring.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.ForecastSetForScoring.timestamp":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.state.v1.ForecastSetForScoring.forecasts":
+		m := new(Forecasts)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.state.v1.ForecastSetForScoring"))
+		}
+		panic(fmt.Errorf("message emissions.state.v1.ForecastSetForScoring does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_ForecastSetForScoring) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.state.v1.ForecastSetForScoring", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_ForecastSetForScoring) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_ForecastSetForScoring) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_ForecastSetForScoring) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*ForecastSetForScoring)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		if x.Timestamp != 0 {
+			n += 1 + runtime.Sov(uint64(x.Timestamp))
+		}
+		if x.Forecasts != nil {
+			l = options.Size(x.Forecasts)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*ForecastSetForScoring)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Forecasts != nil {
+			encoded, err := options.Marshal(x.Forecasts)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if x.Timestamp != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Timestamp))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*ForecastSetForScoring)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: ForecastSetForScoring: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: ForecastSetForScoring: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
+				}
+				x.Timestamp = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Timestamp |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Forecasts", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Forecasts == nil {
+					x.Forecasts = &Forecasts{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Forecasts); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_StakePlacement          protoreflect.MessageDescriptor
 	fd_StakePlacement_topic_id protoreflect.FieldDescriptor
 	fd_StakePlacement_amount   protoreflect.FieldDescriptor
@@ -10739,7 +11270,7 @@ func (x *StakePlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakePlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[15]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11258,7 +11789,7 @@ func (x *StakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[16]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11751,7 +12282,7 @@ func (x *DelegatedStakePlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *DelegatedStakePlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[17]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12332,7 +12863,7 @@ func (x *DelegatedStakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *DelegatedStakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[18]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12837,7 +13368,7 @@ func (x *InferenceRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *InferenceRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_state_v1_types_proto_msgTypes[19]
+	mi := &file_emissions_state_v1_types_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14717,6 +15248,57 @@ func (x *InferenceSetForScoring) GetInferences() *Inferences {
 	return nil
 }
 
+type ForecastSetForScoring struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId   uint64     `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Timestamp uint64     `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Forecasts *Forecasts `protobuf:"bytes,3,opt,name=forecasts,proto3" json:"forecasts,omitempty"`
+}
+
+func (x *ForecastSetForScoring) Reset() {
+	*x = ForecastSetForScoring{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_state_v1_types_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ForecastSetForScoring) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ForecastSetForScoring) ProtoMessage() {}
+
+// Deprecated: Use ForecastSetForScoring.ProtoReflect.Descriptor instead.
+func (*ForecastSetForScoring) Descriptor() ([]byte, []int) {
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ForecastSetForScoring) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *ForecastSetForScoring) GetTimestamp() uint64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *ForecastSetForScoring) GetForecasts() *Forecasts {
+	if x != nil {
+		return x.Forecasts
+	}
+	return nil
+}
+
 type StakePlacement struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -14729,7 +15311,7 @@ type StakePlacement struct {
 func (x *StakePlacement) Reset() {
 	*x = StakePlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[15]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14743,7 +15325,7 @@ func (*StakePlacement) ProtoMessage() {}
 
 // Deprecated: Use StakePlacement.ProtoReflect.Descriptor instead.
 func (*StakePlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{15}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *StakePlacement) GetTopicId() uint64 {
@@ -14772,7 +15354,7 @@ type StakeRemoval struct {
 func (x *StakeRemoval) Reset() {
 	*x = StakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[16]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14786,7 +15368,7 @@ func (*StakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use StakeRemoval.ProtoReflect.Descriptor instead.
 func (*StakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{16}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *StakeRemoval) GetTimestampRemovalStarted() uint64 {
@@ -14816,7 +15398,7 @@ type DelegatedStakePlacement struct {
 func (x *DelegatedStakePlacement) Reset() {
 	*x = DelegatedStakePlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[17]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14830,7 +15412,7 @@ func (*DelegatedStakePlacement) ProtoMessage() {}
 
 // Deprecated: Use DelegatedStakePlacement.ProtoReflect.Descriptor instead.
 func (*DelegatedStakePlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{17}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DelegatedStakePlacement) GetTopicId() uint64 {
@@ -14866,7 +15448,7 @@ type DelegatedStakeRemoval struct {
 func (x *DelegatedStakeRemoval) Reset() {
 	*x = DelegatedStakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[18]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14880,7 +15462,7 @@ func (*DelegatedStakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use DelegatedStakeRemoval.ProtoReflect.Descriptor instead.
 func (*DelegatedStakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{18}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *DelegatedStakeRemoval) GetTimestampRemovalStarted() uint64 {
@@ -14918,7 +15500,7 @@ type InferenceRequest struct {
 func (x *InferenceRequest) Reset() {
 	*x = InferenceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_state_v1_types_proto_msgTypes[19]
+		mi := &file_emissions_state_v1_types_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14932,7 +15514,7 @@ func (*InferenceRequest) ProtoMessage() {}
 
 // Deprecated: Use InferenceRequest.ProtoReflect.Descriptor instead.
 func (*InferenceRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{19}
+	return file_emissions_state_v1_types_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *InferenceRequest) GetSender() string {
@@ -15265,7 +15847,16 @@ var file_emissions_state_v1_types_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x73,
 	0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x77,
+	0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x8d,
+	0x01, 0x0a, 0x15, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x53, 0x65, 0x74, 0x46, 0x6f,
+	0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
+	0x70, 0x12, 0x3b, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x73, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0x77,
 	0x0a, 0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74,
 	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x4a, 0x0a, 0x06, 0x61,
@@ -15358,7 +15949,7 @@ func file_emissions_state_v1_types_proto_rawDescGZIP() []byte {
 	return file_emissions_state_v1_types_proto_rawDescData
 }
 
-var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_emissions_state_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_emissions_state_v1_types_proto_goTypes = []interface{}{
 	(*Params)(nil),                  // 0: emissions.state.v1.Params
 	(*GenesisState)(nil),            // 1: emissions.state.v1.GenesisState
@@ -15375,11 +15966,12 @@ var file_emissions_state_v1_types_proto_goTypes = []interface{}{
 	(*OffchainNode)(nil),            // 12: emissions.state.v1.OffchainNode
 	(*OffchainNodes)(nil),           // 13: emissions.state.v1.OffchainNodes
 	(*InferenceSetForScoring)(nil),  // 14: emissions.state.v1.InferenceSetForScoring
-	(*StakePlacement)(nil),          // 15: emissions.state.v1.StakePlacement
-	(*StakeRemoval)(nil),            // 16: emissions.state.v1.StakeRemoval
-	(*DelegatedStakePlacement)(nil), // 17: emissions.state.v1.DelegatedStakePlacement
-	(*DelegatedStakeRemoval)(nil),   // 18: emissions.state.v1.DelegatedStakeRemoval
-	(*InferenceRequest)(nil),        // 19: emissions.state.v1.InferenceRequest
+	(*ForecastSetForScoring)(nil),   // 15: emissions.state.v1.ForecastSetForScoring
+	(*StakePlacement)(nil),          // 16: emissions.state.v1.StakePlacement
+	(*StakeRemoval)(nil),            // 17: emissions.state.v1.StakeRemoval
+	(*DelegatedStakePlacement)(nil), // 18: emissions.state.v1.DelegatedStakePlacement
+	(*DelegatedStakeRemoval)(nil),   // 19: emissions.state.v1.DelegatedStakeRemoval
+	(*InferenceRequest)(nil),        // 20: emissions.state.v1.InferenceRequest
 }
 var file_emissions_state_v1_types_proto_depIdxs = []int32{
 	0,  // 0: emissions.state.v1.GenesisState.params:type_name -> emissions.state.v1.Params
@@ -15394,13 +15986,14 @@ var file_emissions_state_v1_types_proto_depIdxs = []int32{
 	10, // 9: emissions.state.v1.Forecasts.forecasts:type_name -> emissions.state.v1.Forecast
 	7,  // 10: emissions.state.v1.OffchainNodes.offchain_node:type_name -> emissions.state.v1.Inference
 	8,  // 11: emissions.state.v1.InferenceSetForScoring.inferences:type_name -> emissions.state.v1.Inferences
-	15, // 12: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakePlacement
-	17, // 13: emissions.state.v1.DelegatedStakeRemoval.placements:type_name -> emissions.state.v1.DelegatedStakePlacement
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	11, // 12: emissions.state.v1.ForecastSetForScoring.forecasts:type_name -> emissions.state.v1.Forecasts
+	16, // 13: emissions.state.v1.StakeRemoval.placements:type_name -> emissions.state.v1.StakePlacement
+	18, // 14: emissions.state.v1.DelegatedStakeRemoval.placements:type_name -> emissions.state.v1.DelegatedStakePlacement
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_emissions_state_v1_types_proto_init() }
@@ -15590,7 +16183,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakePlacement); i {
+			switch v := v.(*ForecastSetForScoring); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15602,7 +16195,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakeRemoval); i {
+			switch v := v.(*StakePlacement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15614,7 +16207,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DelegatedStakePlacement); i {
+			switch v := v.(*StakeRemoval); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15626,7 +16219,7 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DelegatedStakeRemoval); i {
+			switch v := v.(*DelegatedStakePlacement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15638,6 +16231,18 @@ func file_emissions_state_v1_types_proto_init() {
 			}
 		}
 		file_emissions_state_v1_types_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DelegatedStakeRemoval); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_state_v1_types_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InferenceRequest); i {
 			case 0:
 				return &v.state
@@ -15656,7 +16261,7 @@ func file_emissions_state_v1_types_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_state_v1_types_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

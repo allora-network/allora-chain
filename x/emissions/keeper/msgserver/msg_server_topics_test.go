@@ -117,7 +117,7 @@ func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	err := s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTs)
 	require.NoError(err, "UpdateTopicLossUpdateLastRan should not return an error")
 
-	result, err := s.emissionsKeeper.GetTopicWeightLastRan(s.ctx, topicId)
+	result, err := s.emissionsKeeper.GetTopicLossCalcLastRan(s.ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, inferenceTs)
