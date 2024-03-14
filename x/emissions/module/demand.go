@@ -207,7 +207,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		fmt.Println("Error getting active topics: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
-
 	topicsActiveWithDemand := make([]state.Topic, 0)
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId][]state.InferenceRequest, 0)
@@ -248,7 +247,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		fmt.Println("Error resetting churn ready topics: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
-
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*state.Topic
@@ -294,7 +292,8 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			numRequestsServed++
 		}
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
-		topicsToSetChurn = append(topicsToSetChurn, &topic)
+		topicCopy := topic
+		topicsToSetChurn = append(topicsToSetChurn, &topicCopy)
 	}
 
 	// Set the topics as churn ready
