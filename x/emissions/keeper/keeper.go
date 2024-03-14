@@ -26,6 +26,7 @@ type LIB_P2P_KEY = string
 type DELEGATOR = sdk.AccAddress
 type WORKER = sdk.AccAddress
 type REPUTER = sdk.AccAddress
+type ACC_ADDRESS = string
 type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64

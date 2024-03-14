@@ -154,7 +154,7 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		return err
 	}
 	if blocksSinceLastUpdate >= epochLength {
-		err = emitRewards(sdkCtx, am)
+		// err = emitRewards(sdkCtx, am)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate
 		// and we can retroactively pay them out

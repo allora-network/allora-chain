@@ -121,7 +121,7 @@ message LossBundle {
     (amino.dont_omitempty) = true
   ];
   repeated WorkerAttributedLoss inferer_losses = 5;
-  repeated WorkerAttributedLoss forcaster_losses = 6;
+  repeated WorkerAttributedLoss forecaster_losses = 6;
   string naive_loss = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",

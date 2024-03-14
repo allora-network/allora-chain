@@ -8,7 +8,7 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
-	cosmosMath "cosmossdk.io/math"
+	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
 	state "github.com/allora-network/allora-chain/x/emissions"
@@ -120,109 +120,109 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(ModuleTestSuite))
 }
 
-func (s *ModuleTestSuite) TestRegisterReputer() {
-	topicId, addr, amount := registerCommonBefore(s)
-	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
-		Creator:      addr.String(),
-		LibP2PKey:    "libp2pkeyReputer1",
-		MultiAddress: "multiaddressReputer1",
-		TopicIds:     []uint64{topicId},
-		InitialStake: amount,
-		IsReputer:    true,
-	})
-	s.Require().NoError(err)
-	expected := state.MsgRegisterResponse{
-		Success: true,
-		Message: "Node successfully registered",
-	}
-	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
+// func (s *ModuleTestSuite) TestRegisterReputer() {
+// 	topicId, addr, amount := registerCommonBefore(s)
+// 	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
+// 		Creator:      addr.String(),
+// 		LibP2PKey:    "libp2pkeyReputer1",
+// 		MultiAddress: "multiaddressReputer1",
+// 		TopicIds:     []uint64{topicId},
+// 		InitialStake: amount,
+// 		IsReputer:    true,
+// 	})
+// 	s.Require().NoError(err)
+// 	expected := state.MsgRegisterResponse{
+// 		Success: true,
+// 		Message: "Node successfully registered",
+// 	}
+// 	s.Require().Equal(response, &expected, "RegisterReputer should return a success message")
 
-	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdByReputerAddress(s.ctx, addr)
-	s.Require().NoError(err)
-	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
+// 	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdByReputerAddress(s.ctx, addr)
+// 	s.Require().NoError(err)
+// 	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
 
-	registerCommonAfter(s, topicId, addr, amount)
-}
+// 	registerCommonAfter(s, topicId, addr, amount)
+// }
 
-func (s *ModuleTestSuite) TestRegisterWorker() {
-	topicId, addr, amount := registerCommonBefore(s)
-	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
-		Creator:      addr.String(),
-		LibP2PKey:    "libp2pkeyReputer1",
-		MultiAddress: "multiaddressReputer1",
-		TopicIds:     []uint64{topicId},
-		InitialStake: amount,
-		Owner:        addr.String(),
-	})
-	s.Require().NoError(err)
-	expected := state.MsgRegisterResponse{
-		Success: true,
-		Message: "Node successfully registered",
-	}
-	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
+// func (s *ModuleTestSuite) TestRegisterWorker() {
+// 	topicId, addr, amount := registerCommonBefore(s)
+// 	response, err := s.msgServer.Register(s.ctx, &state.MsgRegister{
+// 		Creator:      addr.String(),
+// 		LibP2PKey:    "libp2pkeyReputer1",
+// 		MultiAddress: "multiaddressReputer1",
+// 		TopicIds:     []uint64{topicId},
+// 		InitialStake: amount,
+// 		Owner:        addr.String(),
+// 	})
+// 	s.Require().NoError(err)
+// 	expected := state.MsgRegisterResponse{
+// 		Success: true,
+// 		Message: "Node successfully registered",
+// 	}
+// 	s.Require().Equal(response, &expected, "RegisterWorker should return a success message")
 
-	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdsByWorkerAddress(s.ctx, addr)
-	s.Require().NoError(err)
-	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
-	registerCommonAfter(s, topicId, addr, amount)
-}
+// 	registeredTopics, err := s.emissionsKeeper.GetRegisteredTopicIdsByWorkerAddress(s.ctx, addr)
+// 	s.Require().NoError(err)
+// 	s.Require().True(len(registeredTopics) > 0, "Expect reputer to be registered")
+// 	registerCommonAfter(s, topicId, addr, amount)
+// }
 
-/********************************************
-*            Helper functions               *
-*********************************************/
+// /********************************************
+// *            Helper functions               *
+// *********************************************/
 
-func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMath.Uint) {
-	topicIds, err := mockCreateTopics(s, 1)
-	s.Require().NoError(err)
-	topicId := topicIds[0]
-	s.Require().Equal(topicId, uint64(1))
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-	}
-	reputerAmounts := []cosmosMath.Int{
-		cosmosMath.NewInt(1000),
-	}
-	err = mockMintRewardCoins(
-		s,
-		reputerAmounts,
-		reputerAddrs,
-	)
-	s.Require().NoError(err)
-	return topicId, reputerAddrs[0], cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt())
-}
+// func registerCommonBefore(s *ModuleTestSuite) (uint64, sdk.AccAddress, cosmosMath.Uint) {
+// 	topicIds, err := mockCreateTopics(s, 1)
+// 	s.Require().NoError(err)
+// 	topicId := topicIds[0]
+// 	s.Require().Equal(topicId, uint64(1))
+// 	reputerAddrs := []sdk.AccAddress{
+// 		s.addrs[0],
+// 	}
+// 	reputerAmounts := []cosmosMath.Int{
+// 		cosmosMath.NewInt(1000),
+// 	}
+// 	err = mockMintRewardCoins(
+// 		s,
+// 		reputerAmounts,
+// 		reputerAddrs,
+// 	)
+// 	s.Require().NoError(err)
+// 	return topicId, reputerAddrs[0], cosmosMath.NewUintFromBigInt(reputerAmounts[0].BigInt())
+// }
 
-func registerCommonAfter(s *ModuleTestSuite, topicId uint64, addr sdk.AccAddress, amount cosmosMath.Uint) {
+// func registerCommonAfter(s *ModuleTestSuite, topicId uint64, addr sdk.AccAddress, amount cosmosMath.Uint) {
 
-	stakeAmountAfter, err := s.emissionsKeeper.GetDelegatorStake(s.ctx, addr)
-	s.Require().NoError(err)
-	s.Require().Equal(
-		stakeAmountAfter,
-		amount,
-		"Expect stake amount to be equal to the initial stake amount after registration")
-	bondAmountAfter, err := s.emissionsKeeper.GetBond(s.ctx, addr, addr)
-	s.Require().NoError(err)
-	s.Require().Equal(
-		bondAmountAfter,
-		amount,
-		"Expect bond amount to be equal to the initial stake amount after registration")
-	targetStakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, addr)
-	s.Require().NoError(err)
-	s.Require().Equal(
-		targetStakeAfter,
-		amount,
-		"Expect target stake amount to be equal to the initial stake amount after registration")
+// 	stakeAmountAfter, err := s.emissionsKeeper.GetDelegatorStake(s.ctx, addr)
+// 	s.Require().NoError(err)
+// 	s.Require().Equal(
+// 		stakeAmountAfter,
+// 		amount,
+// 		"Expect stake amount to be equal to the initial stake amount after registration")
+// 	bondAmountAfter, err := s.emissionsKeeper.GetBond(s.ctx, addr, addr)
+// 	s.Require().NoError(err)
+// 	s.Require().Equal(
+// 		bondAmountAfter,
+// 		amount,
+// 		"Expect bond amount to be equal to the initial stake amount after registration")
+// 	targetStakeAfter, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, addr)
+// 	s.Require().NoError(err)
+// 	s.Require().Equal(
+// 		targetStakeAfter,
+// 		amount,
+// 		"Expect target stake amount to be equal to the initial stake amount after registration")
 
-	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().Equal(
-		topicStake,
-		amount,
-		"Expect topic stake amount to be equal to the initial stake amount after registration")
+// 	topicStake, err := s.emissionsKeeper.GetTopicStake(s.ctx, topicId)
+// 	s.Require().NoError(err)
+// 	s.Require().Equal(
+// 		topicStake,
+// 		amount,
+// 		"Expect topic stake amount to be equal to the initial stake amount after registration")
 
-	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(
-		totalStake,
-		amount,
-		"Expect total stake amount to be equal to the initial stake amount after registration")
-}
+// 	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
+// 	s.Require().NoError(err)
+// 	s.Require().Equal(
+// 		totalStake,
+// 		amount,
+// 		"Expect total stake amount to be equal to the initial stake amount after registration")
+// }

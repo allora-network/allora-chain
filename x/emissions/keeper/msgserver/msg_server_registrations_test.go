@@ -89,7 +89,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		Sender: reputerAddr.String(),
 		PlacementsRemove: []*state.StakePlacement{
 			{
-				Target: reputerAddr.String(),
+				TopicId: 0,
 				Amount: registrationInitialStake.QuoUint64(2),
 			},
 		},

@@ -15,20 +15,38 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Create a MsgSetLosses message
-	weightMsg := &state.MsgSetLosses{
+	lossesMsg := &state.MsgSetLosses{
 		Sender: reputerAddr,
 		LossBundles: []*state.LossBundle{
 			{
 				TopicId: 1,
 				Reputer: reputerAddr,
-				Worker:  workerAddr,
-				Weight:  cosmosMath.NewUint(100),
+				CombinedLoss: cosmosMath.NewUint(100),
+				InfererLosses: []*state.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:   cosmosMath.NewUint(100),
+					},
+				},
+				ForecasterLosses: []*state.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:   cosmosMath.NewUint(100),
+					},
+				},
+				NaiveLoss: cosmosMath.NewUint(100),
+				OneOutLosses: []cosmosMath.Uint{
+					cosmosMath.NewUint(100),
+				},
+				OneInNaiveLosses: []cosmosMath.Uint{
+					cosmosMath.NewUint(100),
+				},
 			},
 		},
 	}
 
-	_, err := msgServer.SetWeights(ctx, weightMsg)
-	require.NoError(err, "SetWeights should not return an error")
+	_, err := msgServer.InsertLosses(ctx, lossesMsg)
+	require.NoError(err, "InsertLosses should not return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
@@ -40,18 +58,36 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Create a MsgSetLosses message
-	weightMsg := &state.MsgSetLosses{
+	lossesMsg := &state.MsgSetLosses{
 		Sender: reputerAddr,
-		Weights: []*state.Weight{
+		LossBundles: []*state.LossBundle{
 			{
 				TopicId: 1,
 				Reputer: reputerAddr,
-				Worker:  workerAddr,
-				Weight:  cosmosMath.NewUint(100),
+				CombinedLoss: cosmosMath.NewUint(100),
+				InfererLosses: []*state.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,	
+						Value:   cosmosMath.NewUint(100),
+					},
+				},
+				ForecasterLosses: []*state.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:   cosmosMath.NewUint(100),
+					},
+				},
+				NaiveLoss: cosmosMath.NewUint(100),
+				OneOutLosses: []cosmosMath.Uint{
+					cosmosMath.NewUint(100),
+				},
+				OneInNaiveLosses: []cosmosMath.Uint{
+					cosmosMath.NewUint(100),
+				},
 			},
 		},
 	}
 
-	_, err := msgServer.SetWeights(ctx, weightMsg)
-	require.ErrorIs(err, state.ErrNotInReputerWhitelist, "SetWeights should return an error")
+	_, err := msgServer.InsertLosses(ctx, lossesMsg)
+	require.ErrorIs(err, state.ErrNotInReputerWhitelist, "InsertLosses should return an error")
 }
