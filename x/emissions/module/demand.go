@@ -294,7 +294,8 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			numRequestsServed++
 		}
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
-		topicsToSetChurn = append(topicsToSetChurn, &topic)
+		topicCopy := topic
+		topicsToSetChurn = append(topicsToSetChurn, &topicCopy)
 	}
 
 	// Set the topics as churn ready

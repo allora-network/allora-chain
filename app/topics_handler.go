@@ -36,7 +36,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		for _, topic := range churnReadyTopics.Topics {
 			// Parallelize the inference and loss cadence checks
 			wg.Add(1)
-			go func(topic emissionstypes.Topic) {
+			go func(topic *emissionstypes.Topic) {
 				defer wg.Done()
 				// Check the cadence of inferences
 				if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
@@ -71,7 +71,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 					go generateWeights(weights, inferences, topic.LossLogic, topic.LossMethod, topic.Id)
 				}
-			}(*topic)
+			}(topic)
 		}
 		wg.Wait()
 		// Return the transactions as they came
