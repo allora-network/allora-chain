@@ -258,13 +258,14 @@ func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timesta
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences state.Inferences) error {
 	for _, inference := range inferences.Inferences {
+		inferenceCopy := *inference
 		// Update latests inferences for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(inference.Worker)
+		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Worker)
 		if err != nil {
 			return err
 		}
 		key := collections.Join(topicId, workerAcc)
-		err = k.inferences.Set(ctx, key, *inference)
+		err = k.inferences.Set(ctx, key, inferenceCopy)
 		if err != nil {
 			return err
 		}
@@ -1262,7 +1263,8 @@ func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*stat
 	for ; iterator.Valid(); iterator.Next() {
 		node, _ := iterator.Value()
 		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
-			nodes = append(nodes, &node)
+			nodeCopy := node
+			nodes = append(nodes, &nodeCopy)
 		}
 	}
 
