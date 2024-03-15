@@ -1,11 +1,11 @@
 package module
 
 import (
-	"fmt"
+	// "fmt"
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -24,126 +24,126 @@ type Number interface {
 // given the amount of new tokens scheduled to be emitted this epoch,
 // given the total amount of stake in the network,
 // return the amount of new tokens to be emitted to each partipicant in that topic
-func GetParticipantEmissionsForTopic(
-	ctx sdk.Context,
-	am AppModule,
-	topicId keeper.TOPIC_ID,
-	topicStake *Uint,
-	cumulativeEmission *Uint,
-	accumulatedMetDemand *Uint,
-	totalStake *Uint) (rewards map[string]*Uint, err error) {
-	// get total emission for topic
-	topicEmissionXStake := cumulativeEmission.Mul(*topicStake)
-	topicEmissions := topicEmissionXStake.Quo(*totalStake).Add(*accumulatedMetDemand)
+// func GetParticipantEmissionsForTopic(
+// 	ctx sdk.Context,
+// 	am AppModule,
+// 	topicId keeper.TOPIC_ID,
+// 	topicStake *Uint,
+// 	cumulativeEmission *Uint,
+// 	accumulatedMetDemand *Uint,
+// 	totalStake *Uint) (rewards map[string]*Uint, err error) {
+// 	// get total emission for topic
+// 	topicEmissionXStake := cumulativeEmission.Mul(*topicStake)
+// 	topicEmissions := topicEmissionXStake.Quo(*totalStake).Add(*accumulatedMetDemand)
 
-	// get all reputers in that topic
-	// get all normalized stakes of those reputers
-	topicStakeFloat := big.NewFloat(0).SetInt(topicStake.BigInt())
-	reputerStakeNorm, err := am.keeper.GetReputerNormalizedStake(ctx, topicId, topicStakeFloat)
-	if err != nil {
-		fmt.Println("Error getting reputer normalized stake: ", err)
-		return nil, err
-	}
+// 	// get all reputers in that topic
+// 	// get all normalized stakes of those reputers
+// 	topicStakeFloat := big.NewFloat(0).SetInt(topicStake.BigInt())
+// 	reputerStakeNorm, err := am.keeper.GetReputer(ctx, topicId, topicStakeFloat)
+// 	if err != nil {
+// 		fmt.Println("Error getting reputer normalized stake: ", err)
+// 		return nil, err
+// 	}
 
-	// Get Weights between nodes in topic
-	//    Weight_ij = reputer i -> worker j -> weight val
-	topicWeights, err := am.keeper.GetWeightsFromTopic(ctx, topicId)
-	if err != nil {
-		fmt.Println("Error getting weights from topic: ", err)
-		return nil, err
-	}
-	// Mask inferences if workers admit insufficient liveness
-	maskedTopicWeights, err := MaskWeightsIfInsufficientLiveness(ctx, am, topicId, topicWeights)
-	if err != nil {
-		fmt.Println("Error masking weights if insufficient liveness: ", err)
-		return nil, err
-	}
+// 	// Get Weights between nodes in topic
+// 	//    Weight_ij = reputer i -> worker j -> weight val
+// 	topicWeights, err := am.keeper.GetWeightsFromTopic(ctx, topicId)
+// 	if err != nil {
+// 		fmt.Println("Error getting weights from topic: ", err)
+// 		return nil, err
+// 	}
+// 	// Mask inferences if workers admit insufficient liveness
+// 	maskedTopicWeights, err := MaskWeightsIfInsufficientLiveness(ctx, am, topicId, topicWeights)
+// 	if err != nil {
+// 		fmt.Println("Error masking weights if insufficient liveness: ", err)
+// 		return nil, err
+// 	}
 
-	// Ranks = matmul Weights * NormalizedStake
-	// for i rows and j columns
-	// i.e. rank[j] = sum(j) + weight_ij * normalizedStake_i
-	ranks := matmul(maskedTopicWeights, reputerStakeNorm)
+// 	// Ranks = matmul Weights * NormalizedStake
+// 	// for i rows and j columns
+// 	// i.e. rank[j] = sum(j) + weight_ij * normalizedStake_i
+// 	ranks := matmul(maskedTopicWeights, reputerStakeNorm)
 
-	// Incentive = normalize(Ranks)
-	incentive, err := normalize(ranks)
-	if err != nil {
-		// if error is ErrDivideMapValuesByZero (e.g. because no workers were live => all weights masked) then return empty rewards
-		if err == state.ErrDivideMapValuesByZero {
-			return make(map[string]*Uint), nil
-		}
-		fmt.Println("Error normalizing ranks: ", err)
-		return nil, err
-	}
+// 	// Incentive = normalize(Ranks)
+// 	incentive, err := normalize(ranks)
+// 	if err != nil {
+// 		// if error is ErrDivideMapValuesByZero (e.g. because no workers were live => all weights masked) then return empty rewards
+// 		if err == state.ErrDivideMapValuesByZero {
+// 			return make(map[string]*Uint), nil
+// 		}
+// 		fmt.Println("Error normalizing ranks: ", err)
+// 		return nil, err
+// 	}
 
-	// BondDeltas using elementwise multiplication of the same vector for all rows of Weight matrix.
-	// i.e. For each row i: BondDelta_ij = Weights_ij x Stake_j
-	bondDeltas := elementWiseProduct(maskedTopicWeights, reputerStakeNorm)
+// 	// BondDeltas using elementwise multiplication of the same vector for all rows of Weight matrix.
+// 	// i.e. For each row i: BondDelta_ij = Weights_ij x Stake_j
+// 	bondDeltas := elementWiseProduct(maskedTopicWeights, reputerStakeNorm)
 
-	// Row-wise normalize BondDeltas
-	bondDeltasNorm, err := normalizeBondDeltas(bondDeltas)
-	if err != nil {
-		fmt.Println("Error normalizing bond deltas: ", err)
-		return nil, err
-	}
+// 	// Row-wise normalize BondDeltas
+// 	bondDeltasNorm, err := normalizeBondDeltas(bondDeltas)
+// 	if err != nil {
+// 		fmt.Println("Error normalizing bond deltas: ", err)
+// 		return nil, err
+// 	}
 
-	// Dividends = normalize(BondDeltas matmul Incentive)
-	dividends := matmul(bondDeltasNorm, incentive)
-	dividendsNorm, err := normalize(dividends)
-	if err != nil {
-		fmt.Println("Error normalizing dividends: ", err)
-		return nil, err
-	}
+// 	// Dividends = normalize(BondDeltas matmul Incentive)
+// 	dividends := matmul(bondDeltasNorm, incentive)
+// 	dividendsNorm, err := normalize(dividends)
+// 	if err != nil {
+// 		fmt.Println("Error normalizing dividends: ", err)
+// 		return nil, err
+// 	}
 
-	// EmissionSum = sum(Dividends) + sum(Incentives)
-	dividendsSum := sumMapValues(dividendsNorm)
-	incentivesSum := sumMapValues(incentive)
-	emissionSum := big.NewFloat(0).Add(&dividendsSum, &incentivesSum)
+// 	// EmissionSum = sum(Dividends) + sum(Incentives)
+// 	dividendsSum := sumMapValues(dividendsNorm)
+// 	incentivesSum := sumMapValues(incentive)
+// 	emissionSum := big.NewFloat(0).Add(&dividendsSum, &incentivesSum)
 
-	topicEmissionsFloat := big.NewFloat(0).SetInt(topicEmissions.BigInt())
+// 	topicEmissionsFloat := big.NewFloat(0).SetInt(topicEmissions.BigInt())
 
-	if big.NewFloat(0).SetInt64(0).Cmp(emissionSum) == 0 {
-		// If EmissionSum == 0 then set NormalizedReputerEmissions to normalized stake
-		reputerEmissionsNorm := reputerStakeNorm
+// 	if big.NewFloat(0).SetInt64(0).Cmp(emissionSum) == 0 {
+// 		// If EmissionSum == 0 then set NormalizedReputerEmissions to normalized stake
+// 		reputerEmissionsNorm := reputerStakeNorm
 
-		// ValidatorEmissions = scalar multiply topicEmissionsTotal x NormalizedReputerEmissions
-		rewards, err = scalarMultiply(reputerEmissionsNorm, topicEmissionsFloat)
-		if err != nil {
-			fmt.Println("Error scalar multiplying reputer emissions: ", err)
-			return nil, err
-		}
+// 		// ValidatorEmissions = scalar multiply topicEmissionsTotal x NormalizedReputerEmissions
+// 		rewards, err = scalarMultiply(reputerEmissionsNorm, topicEmissionsFloat)
+// 		if err != nil {
+// 			fmt.Println("Error scalar multiplying reputer emissions: ", err)
+// 			return nil, err
+// 		}
 
-	} else {
-		// NormalizedServerEmissions = Incentives scalar divide EmmissionSum
-		normalizedWorkerEmissions, err := divideMapValues(incentive, emissionSum)
-		if err != nil {
-			fmt.Println("Error dividing incentives by emission sum: ", err)
-			return nil, err
-		}
+// 	} else {
+// 		// NormalizedServerEmissions = Incentives scalar divide EmmissionSum
+// 		normalizedWorkerEmissions, err := divideMapValues(incentive, emissionSum)
+// 		if err != nil {
+// 			fmt.Println("Error dividing incentives by emission sum: ", err)
+// 			return nil, err
+// 		}
 
-		// NormalizedValidatorEmissions = Dividends scalar divide EmmissionSum
-		normalizedReputerEmissions, err := divideMapValues(dividends, emissionSum)
-		if err != nil {
-			fmt.Println("Error dividing dividends by emission sum: ", err)
-			return nil, err
-		}
+// 		// NormalizedValidatorEmissions = Dividends scalar divide EmmissionSum
+// 		normalizedReputerEmissions, err := divideMapValues(dividends, emissionSum)
+// 		if err != nil {
+// 			fmt.Println("Error dividing dividends by emission sum: ", err)
+// 			return nil, err
+// 		}
 
-		// ServerEmissions = scalar multiply topicEmissionsTotal x NormalizedServerEmissions
-		workerEmissions, err := scalarMultiply(normalizedWorkerEmissions, topicEmissionsFloat)
-		if err != nil {
-			fmt.Println("Error scalar multiplying worker emissions: ", err)
-			return nil, err
-		}
+// 		// ServerEmissions = scalar multiply topicEmissionsTotal x NormalizedServerEmissions
+// 		workerEmissions, err := scalarMultiply(normalizedWorkerEmissions, topicEmissionsFloat)
+// 		if err != nil {
+// 			fmt.Println("Error scalar multiplying worker emissions: ", err)
+// 			return nil, err
+// 		}
 
-		// ValidatorEmissions = scalar multiply topicEmissionsTotal x NormalizedValidatorEmissions
-		reputerEmissions, err := scalarMultiply(normalizedReputerEmissions, topicEmissionsFloat)
-		if err != nil {
-			fmt.Println("Error scalar multiplying reputer emissions: ", err)
-			return nil, err
-		}
-		rewards = mapAdd(reputerEmissions, workerEmissions)
-	}
-	return rewards, nil
-}
+// 		// ValidatorEmissions = scalar multiply topicEmissionsTotal x NormalizedValidatorEmissions
+// 		reputerEmissions, err := scalarMultiply(normalizedReputerEmissions, topicEmissionsFloat)
+// 		if err != nil {
+// 			fmt.Println("Error scalar multiplying reputer emissions: ", err)
+// 			return nil, err
+// 		}
+// 		rewards = mapAdd(reputerEmissions, workerEmissions)
+// 	}
+// 	return rewards, nil
+// }
 
 // This function checks topic weights and then masks them if not enough inferences were collected in that timestep
 // It should:
@@ -207,105 +207,105 @@ func MaskWeightsIfInsufficientLiveness(
 // ********************************************************
 
 // The function that performs the emission of new tokens
-func emitRewards(ctx sdk.Context, am AppModule) error {
-	// get total stake in network
-	totalStake, err := am.keeper.GetTotalStake(ctx)
-	if err != nil {
-		fmt.Println("Error getting total stake: ", err)
-		return err
-	}
-	// if no stake, no rewards to give away, do nothing
-	if totalStake.Equal(cosmosMath.ZeroUint()) {
-		err = am.keeper.SetLastRewardsUpdate(ctx, ctx.BlockHeight())
-		if err != nil {
-			fmt.Println("Error setting last rewards update: ", err)
-			return err
-		}
-		return nil
-	}
+// func emitRewards(ctx sdk.Context, am AppModule) error {
+// 	// get total stake in network
+// 	totalStake, err := am.keeper.GetTotalStake(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error getting total stake: ", err)
+// 		return err
+// 	}
+// 	// if no stake, no rewards to give away, do nothing
+// 	if totalStake.Equal(cosmosMath.ZeroUint()) {
+// 		err = am.keeper.SetLastRewardsUpdate(ctx, ctx.BlockHeight())
+// 		if err != nil {
+// 			fmt.Println("Error setting last rewards update: ", err)
+// 			return err
+// 		}
+// 		return nil
+// 	}
 
-	cumulativeEmissionInt, err := am.keeper.CalculateAccumulatedEmissions(ctx)
-	if err != nil {
-		fmt.Println("Error calculating accumulated emissions: ", err)
-		return err
-	}
-	// mint that many tokens to the module
-	err = am.keeper.MintRewardsCoins(ctx, cumulativeEmissionInt)
-	if err != nil {
-		fmt.Println("Error minting rewards coins: ", err)
-		return err
-	}
-	cumulativeEmission := cosmosMath.NewUintFromBigInt(cumulativeEmissionInt.BigInt())
+// 	cumulativeEmissionInt, err := am.keeper.CalculateAccumulatedEmissions(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error calculating accumulated emissions: ", err)
+// 		return err
+// 	}
+// 	// mint that many tokens to the module
+// 	err = am.keeper.MintRewardsCoins(ctx, cumulativeEmissionInt)
+// 	if err != nil {
+// 		fmt.Println("Error minting rewards coins: ", err)
+// 		return err
+// 	}
+// 	cumulativeEmission := cosmosMath.NewUintFromBigInt(cumulativeEmissionInt.BigInt())
 
-	// Save/set the above emissions to actually pay participants.
-	// Do this by increasing the stake of each worker by their due ServerEmission + ValidatorEmission
-	err = am.keeper.SetLastRewardsUpdate(ctx, ctx.BlockHeight())
-	if err != nil {
-		fmt.Println("Error setting last rewards update: ", err)
-		return err
-	}
+// 	// Save/set the above emissions to actually pay participants.
+// 	// Do this by increasing the stake of each worker by their due ServerEmission + ValidatorEmission
+// 	err = am.keeper.SetLastRewardsUpdate(ctx, ctx.BlockHeight())
+// 	if err != nil {
+// 		fmt.Println("Error setting last rewards update: ", err)
+// 		return err
+// 	}
 
-	// use anonymous function to iterate through each (topic, sumStakeForTopic)
-	funcEachTopic := func(topicId keeper.TOPIC_ID, topicStake Uint) (bool, error) {
-		accumulatedMetDemand, err := am.keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
-		if err != nil {
-			fmt.Println("Error getting accumulated met demand: ", err)
-			return true, err
-		}
-		// for each topic get percentage of total emissions
-		// then get each participant's percentage of that percentage
-		rewards, err := GetParticipantEmissionsForTopic(
-			ctx,
-			am,
-			topicId,
-			&topicStake,
-			&cumulativeEmission,
-			&accumulatedMetDemand,
-			&totalStake)
-		if err != nil {
-			fmt.Println("Error getting participant emissions for topic: ", err)
-			return true, err
-		}
-		// if no rewards to give, do nothing
-		if len(rewards) == 0 {
-			fmt.Printf(" No rewards to emit for Topic %v \n", topicId)
-			return false, nil
-		}
+// 	// use anonymous function to iterate through each (topic, sumStakeForTopic)
+// 	funcEachTopic := func(topicId keeper.TOPIC_ID, topicStake Uint) (bool, error) {
+// 		accumulatedMetDemand, err := am.keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
+// 		if err != nil {
+// 			fmt.Println("Error getting accumulated met demand: ", err)
+// 			return true, err
+// 		}
+// 		// for each topic get percentage of total emissions
+// 		// then get each participant's percentage of that percentage
+// 		rewards, err := GetParticipantEmissionsForTopic(
+// 			ctx,
+// 			am,
+// 			topicId,
+// 			&topicStake,
+// 			&cumulativeEmission,
+// 			&accumulatedMetDemand,
+// 			&totalStake)
+// 		if err != nil {
+// 			fmt.Println("Error getting participant emissions for topic: ", err)
+// 			return true, err
+// 		}
+// 		// if no rewards to give, do nothing
+// 		if len(rewards) == 0 {
+// 			fmt.Printf(" No rewards to emit for Topic %v \n", topicId)
+// 			return false, nil
+// 		}
 
-		// Mint new tokens to the participants of that topic
-		emitRewardsToTopicParticipants(ctx, am, topicId, rewards)
-		am.keeper.SetTopicAccumulatedMetDemand(ctx, topicId, cosmosMath.ZeroUint())
-		return false, nil
-	}
+// 		// Mint new tokens to the participants of that topic
+// 		emitRewardsToTopicParticipants(ctx, am, topicId, rewards)
+// 		am.keeper.SetTopicAccumulatedMetDemand(ctx, topicId, cosmosMath.ZeroUint())
+// 		return false, nil
+// 	}
 
-	// Iterate through each (topic, sumStakeForTopic) and run funcEachTopic for each topic
-	err = am.keeper.WalkAllTopicStake(ctx, funcEachTopic)
-	if err != nil {
-		fmt.Println("Error walking all topic stake: ", err)
-		return err
-	}
+// 	// Iterate through each (topic, sumStakeForTopic) and run funcEachTopic for each topic
+// 	err = am.keeper.WalkAllTopicStake(ctx, funcEachTopic)
+// 	if err != nil {
+// 		fmt.Println("Error walking all topic stake: ", err)
+// 		return err
+// 	}
 
-	return am.keeper.ResetNumInferencesInRewardEpoch(ctx)
-}
+// 	return am.keeper.ResetNumInferencesInRewardEpoch(ctx)
+// }
 
 // this function addStake to each participant of a topic according
 // to how much stake the reputer/workerEmissions maps say to add
-func emitRewardsToTopicParticipants(
-	ctx sdk.Context,
-	am AppModule,
-	topic keeper.TOPIC_ID,
-	rewards map[string]*Uint) {
-	// by default emissions are restaked, upon the person themselves.
-	fmt.Printf("\n---------------- Rewards for Topic %v ----------------\n", topic)
-	for participant, reward := range rewards {
-		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
-		am.keeper.AddStake(ctx, []uint64{topic}, participant, participant, *reward)
-	}
-	if len(rewards) == 0 {
-		fmt.Printf(" No rewards to emit for Topic %v \n", topic)
-	}
-	fmt.Println("\n-----------------------------------------")
-}
+// func emitRewardsToTopicParticipants(
+// 	ctx sdk.Context,
+// 	am AppModule,
+// 	topic keeper.TOPIC_ID,
+// 	rewards map[string]*Uint) {
+// 	// by default emissions are restaked, upon the person themselves.
+// 	fmt.Printf("\n---------------- Rewards for Topic %v ----------------\n", topic)
+// 	for participant, reward := range rewards {
+// 		fmt.Printf(" Emitting %suallo to %s \n", reward.String(), participant)
+// 		am.keeper.AddStake(ctx, []uint64{topic}, participant, participant, *reward)
+// 	}
+// 	if len(rewards) == 0 {
+// 		fmt.Printf(" No rewards to emit for Topic %v \n", topic)
+// 	}
+// 	fmt.Println("\n-----------------------------------------")
+// }
 
 // ********************************************************
 // *              PRIVATE HELPER FUNCTIONS                *
@@ -376,7 +376,7 @@ func divideMapValues(
 	a map[string]*Float,
 	divisor *Float) (map[string]*Float, error) {
 	if divisor.Cmp(big.NewFloat(0)) == 0 {
-		return nil, state.ErrDivideMapValuesByZero
+		return nil, types.ErrDivideMapValuesByZero
 	}
 	ret := make(map[keeper.ACC_ADDRESS]*Float)
 	for key, val := range a {
@@ -442,7 +442,7 @@ func scalarMultiply(
 	for key, val := range matrix {
 		val := big.NewFloat(0).Mul(val, scalar)
 		if val.Sign() == -1 {
-			return nil, state.ErrScalarMultiplyNegative
+			return nil, types.ErrScalarMultiplyNegative
 		}
 		valBigInt, _ := val.Int(nil)
 		valUint := cosmosMath.NewUintFromBigInt(valBigInt)

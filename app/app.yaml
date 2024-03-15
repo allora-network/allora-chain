@@ -53,7 +53,7 @@ modules:
       "@type": mint.module.v1.Module
   - name: emissions
     config:
-      "@type": emissions.state.module.v1.Module
+      "@type": emissions.module.v1.Module
   - name: distribution
     config:
       "@type": cosmos.distribution.module.v1.Module
