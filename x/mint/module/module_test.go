@@ -9,7 +9,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -59,8 +59,8 @@ func (s *MintModuleTestSuite) SetupTest() {
 	maccPerms := map[string][]string{
 		"fee_collector":                nil,
 		"mint":                         {"minter"},
-		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
+		emissionstypes.AlloraStakingModuleName:  {"burner", "minter", "staking"},
+		emissionstypes.AlloraRequestsModuleName: {"burner", "minter", "staking"},
 		"bonded_tokens_pool":           {"burner", "staking"},
 		"not_bonded_tokens_pool":       {"burner", "staking"},
 		multiPerm:                      {"burner", "minter", "staking"},

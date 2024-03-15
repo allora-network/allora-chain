@@ -152,8 +152,8 @@ func NewAlloraApp(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
 
-	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
-	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
+	// topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
+	// app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)
 
