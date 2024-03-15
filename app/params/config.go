@@ -33,7 +33,7 @@ var (
 	Bech32PrefixConsPub = Bech32PrefixAccAddr + "valconspub"
 )
 
-func init() {
+func InitSDKConfig() {
 	SetAddressPrefixes()
 	RegisterDenoms()
 }

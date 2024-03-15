@@ -7,11 +7,11 @@ modules:
       # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
       # NOTE: staking module is required if HistoricalEntries param > 0
       # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
-      begin_blockers: [emissions, distribution, staking, mint]
-      end_blockers: [staking, emissions]
+      begin_blockers: [capability, emissions, mint, distribution, staking, ibc, transfer, genutil, interchainaccounts, feeibc]
+      end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [auth, bank, distribution, staking, genutil, mint, emissions, allorastaking, allorarequests, allorarewards]
+      init_genesis: [capability, auth, bank, distribution, staking, mint, ibc, genutil, transfer, interchainaccounts, feeibc, params, upgrade, consensus, emissions, allorastaking, allorarequests, allorarewards]
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
@@ -31,6 +31,10 @@ modules:
         - account : allorarequests
         - account : distribution
         - account : allorarewards
+        - account: transfer
+          permissions: [minter, burner]
+        - account: feeibc
+        - account: interchainaccounts
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
@@ -57,4 +61,9 @@ modules:
   - name: distribution
     config:
       "@type": cosmos.distribution.module.v1.Module
-
+  - name: upgrade
+    config:
+      "@type": cosmos.upgrade.module.v1.Module
+  - name: params
+    config:
+      "@type": cosmos.params.module.v1.Module
