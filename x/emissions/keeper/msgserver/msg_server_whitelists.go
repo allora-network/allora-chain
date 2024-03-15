@@ -3,7 +3,7 @@ package msgserver
 import (
 	"context"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -11,7 +11,7 @@ import (
 /// WHITELIST
 ///
 
-func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *state.MsgAddToWhitelistAdmin) (*state.MsgAddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -26,17 +26,17 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *state.MsgAddTo
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
 	err = ms.k.AddWhitelistAdmin(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgAddToWhitelistAdminResponse{}, nil
+	return &types.MsgAddToWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *state.MsgRemoveFromWhitelistAdmin) (*state.MsgRemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.MsgRemoveFromWhitelistAdmin) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -51,17 +51,17 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *state.Msg
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
 	err = ms.k.RemoveWhitelistAdmin(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveFromWhitelistAdminResponse{}, nil
+	return &types.MsgRemoveFromWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *state.MsgAddToTopicCreationWhitelist) (*state.MsgAddToTopicCreationWhitelistResponse, error) {
+func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *types.MsgAddToTopicCreationWhitelist) (*types.MsgAddToTopicCreationWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -76,17 +76,17 @@ func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *state.
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
 	err = ms.k.AddToTopicCreationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgAddToTopicCreationWhitelistResponse{}, nil
+	return &types.MsgAddToTopicCreationWhitelistResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *state.MsgRemoveFromTopicCreationWhitelist) (*state.MsgRemoveFromTopicCreationWhitelistResponse, error) {
+func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *types.MsgRemoveFromTopicCreationWhitelist) (*types.MsgRemoveFromTopicCreationWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -101,17 +101,17 @@ func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *s
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
 	err = ms.k.RemoveFromTopicCreationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveFromTopicCreationWhitelistResponse{}, nil
+	return &types.MsgRemoveFromTopicCreationWhitelistResponse{}, nil
 }
 
-func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *state.MsgAddToReputerWhitelist) (*state.MsgAddToReputerWhitelistResponse, error) {
+func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *types.MsgAddToReputerWhitelist) (*types.MsgAddToReputerWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -126,17 +126,17 @@ func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *state.MsgAdd
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Add the address to the whitelist
 	err = ms.k.AddToReputerWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgAddToReputerWhitelistResponse{}, nil
+	return &types.MsgAddToReputerWhitelistResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromReputerWhitelist(ctx context.Context, msg *state.MsgRemoveFromReputerWhitelist) (*state.MsgRemoveFromReputerWhitelistResponse, error) {
+func (ms msgServer) RemoveFromReputerWhitelist(ctx context.Context, msg *types.MsgRemoveFromReputerWhitelist) (*types.MsgRemoveFromReputerWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -151,17 +151,17 @@ func (ms msgServer) RemoveFromReputerWhitelist(ctx context.Context, msg *state.M
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the whitelist
 	err = ms.k.RemoveFromReputerWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveFromReputerWhitelistResponse{}, nil
+	return &types.MsgRemoveFromReputerWhitelistResponse{}, nil
 }
 
-func (ms msgServer) AddToFoundationWhitelist(ctx context.Context, msg *state.MsgAddToFoundationWhitelist) (*state.MsgAddToFoundationWhitelistResponse, error) {
+func (ms msgServer) AddToFoundationWhitelist(ctx context.Context, msg *types.MsgAddToFoundationWhitelist) (*types.MsgAddToFoundationWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -176,17 +176,17 @@ func (ms msgServer) AddToFoundationWhitelist(ctx context.Context, msg *state.Msg
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Add the address to the foundation whitelist
 	err = ms.k.AddToFoundationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgAddToFoundationWhitelistResponse{}, nil
+	return &types.MsgAddToFoundationWhitelistResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromFoundationWhitelist(ctx context.Context, msg *state.MsgRemoveFromFoundationWhitelist) (*state.MsgRemoveFromFoundationWhitelistResponse, error) {
+func (ms msgServer) RemoveFromFoundationWhitelist(ctx context.Context, msg *types.MsgRemoveFromFoundationWhitelist) (*types.MsgRemoveFromFoundationWhitelistResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -201,12 +201,12 @@ func (ms msgServer) RemoveFromFoundationWhitelist(ctx context.Context, msg *stat
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Remove the address from the foundation whitelist
 	err = ms.k.RemoveFromFoundationWhitelist(ctx, targetAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgRemoveFromFoundationWhitelistResponse{}, nil
+	return &types.MsgRemoveFromFoundationWhitelistResponse{}, nil
 }

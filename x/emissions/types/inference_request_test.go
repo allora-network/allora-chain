@@ -1,4 +1,4 @@
-package emissions_test
+package types_test
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -15,7 +15,7 @@ func TestInferenceRequest_GetRequestId(t *testing.T) {
 	var Bech32PrefixAccAddr = "allo"
 	var Bech32PrefixAccPub = Bech32PrefixAccAddr + "pub"
 	config.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)
-	inferenceRequest := &emissions.InferenceRequest{
+	inferenceRequest := &types.InferenceRequest{
 		Sender:               "allo1m4ssnux4kh5pfmjzzkpde0hvxfg0d37mla0pdf",
 		Nonce:                0x31,
 		TopicId:              0x32,
@@ -52,7 +52,7 @@ func TestInferenceRequest_GetRequestIdDifferentHash(t *testing.T) {
 	var Bech32PrefixAccAddr = "allo"
 	var Bech32PrefixAccPub = Bech32PrefixAccAddr + "pub"
 	config.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)
-	inferenceRequest := &emissions.InferenceRequest{
+	inferenceRequest := &types.InferenceRequest{
 		Sender:               "allo1m4ssnux4kh5pfmjzzkpde0hvxfg0d37mla0pdf",
 		Nonce:                0x31,
 		TopicId:              0x32,
@@ -83,9 +83,9 @@ func TestIsValidRequestId(t *testing.T) {
 		"0xfeedfacecafebabedeadbeefbadd1e5f00ba5c0ffee1baddecafbeefbadd1e59",
 	}
 	for _, testCase := range testCasesInvalid {
-		require.False(t, emissions.IsValidRequestId(testCase))
+		require.False(t, types.IsValidRequestId(testCase))
 	}
 	for _, testCase := range testCasesValid {
-		require.True(t, emissions.IsValidRequestId(testCase))
+		require.True(t, types.IsValidRequestId(testCase))
 	}
 }

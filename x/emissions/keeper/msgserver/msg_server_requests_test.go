@@ -6,7 +6,7 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 )
@@ -18,13 +18,13 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -36,13 +36,13 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 			},
 		},
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsModuleName, initialStakeCoins)
 	response, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().Equal(&state.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
+	s.Require().Equal(&types.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
 
 	// Check updated stake for delegator
-	r0 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
+	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
@@ -69,14 +69,14 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	var initialStake int64 = 1000
 	var requestStake int64 = 500
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
 	requestStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(requestStake)))
-	r := state.MsgRequestInference{
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -97,14 +97,14 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 			},
 		},
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, requestStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, requestStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsModuleName, requestStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsModuleName, requestStakeCoins)
 	response, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().Equal(&state.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
+	s.Require().Equal(&types.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
 
 	// Check updated stake for delegator
-	r0 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
+	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
@@ -118,7 +118,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.Require().GreaterOrEqual(storedRequest.LastChecked, timeNow, "LastChecked should be greater than timeNow")
 	s.Require().Equal(r0.TimestampValidUntil, storedRequest.TimestampValidUntil, "Stored request timestamp valid until should match the request")
 	s.Require().Equal(r0.ExtraData, storedRequest.ExtraData, "Stored request extra data should match the request")
-	r1 := state.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[1])
+	r1 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[1])
 	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
@@ -137,9 +137,9 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 	timeNow := uint64(time.Now().UTC().Unix())
 	senderAddr := sdk.AccAddress(PKS[0].Address()).String()
-	r := state.MsgRequestInference{
+	r := types.MsgRequestInference{
 		Sender: senderAddr,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -152,7 +152,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInvalidTopicId, "RequestInference should return an error when the topic does not exist")
+	s.Require().ErrorIs(err, types.ErrInvalidTopicId, "RequestInference should return an error when the topic does not exist")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceSet() {
@@ -161,9 +161,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 	sender := senderAddr.String()
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
-	r := state.MsgRequestInference{
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -176,7 +176,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestBidAmountLessThanPrice, "RequestInference should return an error when the bid amount is less than the price")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestBidAmountLessThanPrice, "RequestInference should return an error when the bid amount is less than the price")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
@@ -186,13 +186,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -204,11 +204,11 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 			},
 		},
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, state.AlloraRequestsModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsModuleName, initialStakeCoins)
 	s.msgServer.RequestInference(s.ctx, &r)
 
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestAlreadyInMempool, "RequestInference should return an error when the request already exists")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestAlreadyInMempool, "RequestInference should return an error when the request already exists")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
@@ -218,13 +218,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -237,7 +237,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestTimestampValidUntilInPast, "RequestInference should return an error when the request timestamp is in the past")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestTimestampValidUntilInPast, "RequestInference should return an error when the request timestamp is in the past")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
@@ -246,13 +246,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -265,7 +265,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestTimestampValidUntilTooFarInFuture, "RequestInference should return an error when the request timestamp is too far in the future")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestTimestampValidUntilTooFarInFuture, "RequestInference should return an error when the request timestamp is too far in the future")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterNoLongerValid() {
@@ -275,13 +275,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -294,7 +294,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestWillNeverBeScheduled, "RequestInference should return an error when the request cadence happens after the request is no longer valid")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestWillNeverBeScheduled, "RequestInference should return an error when the request cadence happens after the request is no longer valid")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
@@ -304,13 +304,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -323,7 +323,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestCadenceTooFast, "RequestInference should return an error when the request cadence is too fast")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestCadenceTooFast, "RequestInference should return an error when the request cadence is too fast")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
@@ -333,13 +333,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -352,7 +352,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestCadenceTooSlow, "RequestInference should return an error when the request cadence is too slow")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestCadenceTooSlow, "RequestInference should return an error when the request cadence is too slow")
 }
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMinimum() {
@@ -362,13 +362,13 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, senderAddr, initialStakeCoins)
-	r := state.MsgRequestInference{
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, senderAddr, initialStakeCoins)
+	r := types.MsgRequestInference{
 		Sender: sender,
-		Requests: []*state.RequestInferenceListItem{
+		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
 				TopicId:              0,
@@ -381,5 +381,5 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, state.ErrInferenceRequestBidAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
+	s.Require().ErrorIs(err, types.ErrInferenceRequestBidAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
 }

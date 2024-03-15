@@ -5,7 +5,7 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
 )
@@ -19,7 +19,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 			cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
 
 	// Create Topic
-	newTopicMsg := &state.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          reputerAddr.String(),
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
@@ -33,7 +33,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Reputer
-	reputerRegMsg := &state.MsgRegister{
+	reputerRegMsg := &types.MsgRegister{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
@@ -41,12 +41,12 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingModuleName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
 	// Register Worker
-	workerRegMsg := &state.MsgRegister{
+	workerRegMsg := &types.MsgRegister{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InitialStake: registrationInitialStake,
 		Owner:        workerAddr.String(),
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, state.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, types.AlloraStakingModuleName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 }

@@ -6,7 +6,7 @@ import (
 
 	cosmoserrors "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -15,9 +15,9 @@ import (
 ///
 
 // Registers a new network participant to the network for the first time
-func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*state.MsgRegisterResponse, error) {
+func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
 	if msg.GetLibP2PKey() == "" {
-		return nil, state.ErrLibP2PKeyRequired
+		return nil, types.ErrLibP2PKeyRequired
 	}
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
@@ -40,7 +40,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 	// check if the user has enough funds to register
 	totalAddressStake := addressExistingStake.Add(msg.GetInitialStake())
 	if totalAddressStake.LT(requiredMinimumStake) {
-		return nil, cosmoserrors.Wrapf(state.ErrInsufficientStakeToRegister,
+		return nil, cosmoserrors.Wrapf(types.ErrInsufficientStakeToRegister,
 			"required minimum stake: %s, existing address stake: %s, initial stake: %s",
 			requiredMinimumStake, addressExistingStake, msg.GetInitialStake())
 	}
@@ -50,14 +50,14 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		return nil, err
 	}
 	if len(registeredTopicIds) > 0 {
-		return nil, state.ErrAddressAlreadyRegisteredInATopic
+		return nil, types.ErrAddressAlreadyRegisteredInATopic
 	}
 
 	for _, topicId := range msg.TopicIds {
 		// check if topic exists
 		topicExists, err := ms.k.TopicExists(ctx, topicId)
 		if !topicExists {
-			return nil, state.ErrTopicDoesNotExist
+			return nil, types.ErrTopicDoesNotExist
 		} else if err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 	// then add the stake to the total, topicTotal, and 3 staking tracking maps
 	moveFundsAddStake(ctx, ms, address, msg)
 
-	nodeInfo := state.OffchainNode{
+	nodeInfo := types.OffchainNode{
 		NodeAddress:  msg.Creator,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
@@ -81,7 +81,7 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		}
 	} else {
 		if msg.Owner == "" {
-			return nil, state.ErrOwnerCannotBeEmpty
+			return nil, types.ErrOwnerCannotBeEmpty
 		}
 		nodeInfo.Owner = msg.Owner
 		nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
@@ -94,14 +94,14 @@ func (ms msgServer) Register(ctx context.Context, msg *state.MsgRegister) (*stat
 		}
 	}
 
-	return &state.MsgRegisterResponse{
+	return &types.MsgRegisterResponse{
 		Success: true,
 		Message: "Node successfully registered",
 	}, nil
 }
 
 // Add additional topics after initial reputer or worker registration
-func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNewRegistration) (*state.MsgAddNewRegistrationResponse, error) {
+func (ms msgServer) AddNewRegistration(ctx context.Context, msg *types.MsgAddNewRegistration) (*types.MsgAddNewRegistrationResponse, error) {
 	// check if topics exists and if address is already registered in any of them
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
@@ -112,14 +112,14 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
-		return nil, state.ErrTopicDoesNotExist
+		return nil, types.ErrTopicDoesNotExist
 	}
 	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return nil, err
 	}
 	if len(registeredTopicIds) == 0 {
-		return nil, state.ErrAddressIsNotRegisteredInAnyTopic
+		return nil, types.ErrAddressIsNotRegisteredInAnyTopic
 	}
 
 	// copy overall staking power of the wallet to the topic stake
@@ -134,7 +134,7 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		return nil, err
 	}
 
-	nodeInfo := state.OffchainNode{
+	nodeInfo := types.OffchainNode{
 		NodeAddress:  msg.Creator,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
@@ -148,7 +148,7 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		}
 		for _, topicIdRegistered := range reputerRegisteredTopicIds {
 			if topicIdRegistered == msg.TopicId {
-				return nil, state.ErrReputerAlreadyRegisteredInTopic
+				return nil, types.ErrReputerAlreadyRegisteredInTopic
 			}
 		}
 
@@ -165,7 +165,7 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		}
 		for _, topicIdRegistered := range reputerRegisteredTopicIds {
 			if topicIdRegistered == msg.TopicId {
-				return nil, state.ErrReputerAlreadyRegisteredInTopic
+				return nil, types.ErrReputerAlreadyRegisteredInTopic
 			}
 		}
 
@@ -176,20 +176,20 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *state.MsgAddNew
 		}
 	}
 
-	return &state.MsgAddNewRegistrationResponse{
+	return &types.MsgAddNewRegistrationResponse{
 		Success: true,
 		Message: fmt.Sprintf("Node successfully registered in topic %d", msg.TopicId),
 	}, nil
 }
 
 // Remove registration from a topic
-func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemoveRegistration) (*state.MsgRemoveRegistrationResponse, error) {
+func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
 	// check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	} else if !topicExists {
-		return nil, state.ErrTopicDoesNotExist
+		return nil, types.ErrTopicDoesNotExist
 	}
 
 	// Check if the address is registered in the specified topic
@@ -209,7 +209,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 		}
 	}
 	if !isRegisteredInTopic {
-		return nil, state.ErrAddressIsNotRegisteredInThisTopic
+		return nil, types.ErrAddressIsNotRegisteredInThisTopic
 	}
 
 	// remove overall staking power of the wallet to the topic stake
@@ -240,7 +240,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *state.MsgRemove
 	}
 
 	// Return a successful response
-	return &state.MsgRemoveRegistrationResponse{
+	return &types.MsgRemoveRegistrationResponse{
 		Success: true,
 		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
 	}, nil
@@ -268,5 +268,5 @@ func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress)
 	if len(workerRegisteredTopicIds) > 0 {
 		return nil
 	}
-	return state.ErrAddressNotRegistered
+	return types.ErrAddressNotRegistered
 }

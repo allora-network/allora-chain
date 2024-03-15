@@ -6,7 +6,7 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	// "github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -251,8 +251,8 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 	}
 	for i, addr := range target {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount[i]))
-		s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, coins)
-		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, addr, coins)
+		s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, coins)
+		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, addr, coins)
 	}
 	return nil
 }
@@ -275,7 +275,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.msgServer.Register(s.ctx, &state.MsgRegister{
+	_, err = s.msgServer.Register(s.ctx, &types.MsgRegister{
 		Creator:      reputerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyReputer1",
 		MultiAddress: "multiaddressReputer1",
@@ -286,7 +286,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.msgServer.Register(s.ctx, &state.MsgRegister{
+	_, err = s.msgServer.Register(s.ctx, &types.MsgRegister{
 		Creator:      reputerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyReputer2",
 		MultiAddress: "multiaddressReputer2",
@@ -318,7 +318,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.msgServer.Register(s.ctx, &state.MsgRegister{
+	_, err = s.msgServer.Register(s.ctx, &types.MsgRegister{
 		Creator:      workerAddrs[0].String(),
 		LibP2PKey:    "libp2pkeyWorker1",
 		MultiAddress: "multiaddressWorker1",
@@ -329,7 +329,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.msgServer.Register(s.ctx, &state.MsgRegister{
+	_, err = s.msgServer.Register(s.ctx, &types.MsgRegister{
 		Creator:      workerAddrs[1].String(),
 		LibP2PKey:    "libp2pkeyWorker2",
 		MultiAddress: "multiaddressWorker2",

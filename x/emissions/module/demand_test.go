@@ -5,13 +5,13 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	// "github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 // 	"github.com/allora-network/allora-chain/x/emissions/module"
 // 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *ModuleTestSuite) UtilSetParams() {
-	s.emissionsKeeper.SetParams(s.ctx, state.Params{
+	s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
 		EpochLength:                 int64(5),                      // length of an "epoch" for rewards payouts in blocks
 		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch

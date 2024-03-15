@@ -3,7 +3,7 @@ package msgserver_test
 import (
 	"fmt"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -21,7 +21,7 @@ func (s *KeeperTestSuite) TestAddWhitelistAdmin() {
 	require.False(isWhitelistAdmin, "newAdminAddr should not be a whitelist admin")
 
 	// Attempt to add newAdminAddr to whitelist by adminAddr
-	msg := &state.MsgAddToWhitelistAdmin{
+	msg := &types.MsgAddToWhitelistAdmin{
 		Sender:  adminAddr.String(),
 		Address: newAdminAddr.String(),
 	}
@@ -43,13 +43,13 @@ func (s *KeeperTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	targetAddr := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to add targetAddr to whitelist by nonAdminAddr
-	msg := &state.MsgAddToWhitelistAdmin{
+	msg := &types.MsgAddToWhitelistAdmin{
 		Sender:  nonAdminAddr.String(),
 		Address: targetAddr.String(),
 	}
 
 	_, err := s.msgServer.AddToWhitelistAdmin(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Should fail due to unauthorized access")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Should fail due to unauthorized access")
 }
 
 func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
@@ -61,7 +61,7 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
 	adminToRemove := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to remove adminToRemove from the whitelist by adminAddr
-	removeMsg := &state.MsgRemoveFromWhitelistAdmin{
+	removeMsg := &types.MsgRemoveFromWhitelistAdmin{
 		Sender:  adminAddr.String(),
 		Address: adminToRemove.String(),
 	}
@@ -82,13 +82,13 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
 	nonAdminAddr := nonAdminAccounts[0]
 
 	// Attempt to remove an admin from whitelist by nonAdminAddr
-	msg := &state.MsgRemoveFromWhitelistAdmin{
+	msg := &types.MsgRemoveFromWhitelistAdmin{
 		Sender:  nonAdminAddr.String(),
 		Address: Addr.String(),
 	}
 
 	_, err := s.msgServer.RemoveFromWhitelistAdmin(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Should fail due to unauthorized access")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Should fail due to unauthorized access")
 }
 
 func (s *KeeperTestSuite) TestAddToTopicCreationWhitelist() {
@@ -99,7 +99,7 @@ func (s *KeeperTestSuite) TestAddToTopicCreationWhitelist() {
 	newAddr := nonAdminAccounts[0]
 
 	// Attempt to add newAddr to the topic creation whitelist by adminAddr
-	msg := &state.MsgAddToTopicCreationWhitelist{
+	msg := &types.MsgAddToTopicCreationWhitelist{
 		Sender:  adminAddr.String(),
 		Address: newAddr.String(),
 	}
@@ -121,13 +121,13 @@ func (s *KeeperTestSuite) TestAddToTopicCreationWhitelistInvalidUnauthorized() {
 	newAddr := nonAdminAccounts[1]
 
 	// Attempt to add addressToAdd to the topic creation whitelist by nonAdminAddr
-	msg := &state.MsgAddToTopicCreationWhitelist{
+	msg := &types.MsgAddToTopicCreationWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: newAddr.String(),
 	}
 
 	_, err := s.msgServer.AddToTopicCreationWhitelist(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the topic creation whitelist")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the topic creation whitelist")
 }
 
 func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelist() {
@@ -138,7 +138,7 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelist() {
 	addressToRemove := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to remove addressToRemove from the topic creation whitelist by adminAddr
-	removeFromWhitelistMsg := &state.MsgRemoveFromTopicCreationWhitelist{
+	removeFromWhitelistMsg := &types.MsgRemoveFromTopicCreationWhitelist{
 		Sender:  adminAddr.String(),
 		Address: addressToRemove.String(),
 	}
@@ -159,13 +159,13 @@ func (s *KeeperTestSuite) TestRemoveFromTopicCreationWhitelistInvalidUnauthorize
 	addressToRemove := nonAdminAccounts[1]
 
 	// Attempt to remove addressToRemove from the topic creation whitelist by nonAdminAddr
-	msg := &state.MsgRemoveFromTopicCreationWhitelist{
+	msg := &types.MsgRemoveFromTopicCreationWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: addressToRemove.String(),
 	}
 
 	_, err := s.msgServer.RemoveFromTopicCreationWhitelist(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the topic creation whitelist")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the topic creation whitelist")
 }
 
 func (s *KeeperTestSuite) TestAddToReputerWhitelist() {
@@ -176,7 +176,7 @@ func (s *KeeperTestSuite) TestAddToReputerWhitelist() {
 	newAddr := nonAdminAccounts[0]
 
 	// Attempt to add newAddr to the weight setting whitelist by adminAddr
-	msg := &state.MsgAddToReputerWhitelist{
+	msg := &types.MsgAddToReputerWhitelist{
 		Sender:  adminAddr.String(),
 		Address: newAddr.String(),
 	}
@@ -198,13 +198,13 @@ func (s *KeeperTestSuite) TestAddToReputerWhitelistInvalidUnauthorized() {
 	newAddr := nonAdminAccounts[1]
 
 	// Attempt to add addressToAdd to the weight setting whitelist by nonAdminAddr
-	msg := &state.MsgAddToReputerWhitelist{
+	msg := &types.MsgAddToReputerWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: newAddr.String(),
 	}
 
 	_, err := s.msgServer.AddToReputerWhitelist(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the weight setting whitelist")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Non-admin should not be able to add to the weight setting whitelist")
 }
 
 func (s *KeeperTestSuite) TestRemoveFromReputerWhitelist() {
@@ -215,7 +215,7 @@ func (s *KeeperTestSuite) TestRemoveFromReputerWhitelist() {
 	addressToRemove := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to remove addressToRemove from the weight setting whitelist by adminAddr
-	removeFromWhitelistMsg := &state.MsgRemoveFromReputerWhitelist{
+	removeFromWhitelistMsg := &types.MsgRemoveFromReputerWhitelist{
 		Sender:  adminAddr.String(),
 		Address: addressToRemove.String(),
 	}
@@ -236,11 +236,11 @@ func (s *KeeperTestSuite) TestRemoveFromReputerWhitelistInvalidUnauthorized() {
 	addressToRemove := nonAdminAccounts[1]
 
 	// Attempt to remove addressToRemove from the weight setting whitelist by nonAdminAddr
-	msg := &state.MsgRemoveFromReputerWhitelist{
+	msg := &types.MsgRemoveFromReputerWhitelist{
 		Sender:  nonAdminAddr.String(),
 		Address: addressToRemove.String(),
 	}
 
 	_, err := s.msgServer.RemoveFromReputerWhitelist(ctx, msg)
-	require.ErrorIs(err, state.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the weight setting whitelist")
+	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Non-admin should not be able to remove from the weight setting whitelist")
 }

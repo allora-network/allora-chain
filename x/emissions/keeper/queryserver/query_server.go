@@ -1,14 +1,14 @@
 package queryserver
 
 import (
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 )
 
-var _ state.QueryServer = queryServer{}
+var _ types.QueryServer = queryServer{}
 
 // NewQueryServerImpl returns an implementation of the module QueryServer.
-func NewQueryServerImpl(k keeper.Keeper) state.QueryServer {
+func NewQueryServerImpl(k keeper.Keeper) types.QueryServer {
 	return queryServer{k}
 }
 

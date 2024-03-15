@@ -2,7 +2,7 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -15,20 +15,20 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Create a MsgSetLosses message
-	lossesMsg := &state.MsgSetLosses{
+	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		LossBundles: []*state.LossBundle{
+		LossBundles: []*types.LossBundle{
 			{
 				TopicId: 1,
 				Reputer: reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*state.WorkerAttributedLoss{
+				InfererLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
 						Value:   cosmosMath.NewUint(100),
 					},
 				},
-				ForecasterLosses: []*state.WorkerAttributedLoss{
+				ForecasterLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
 						Value:   cosmosMath.NewUint(100),
@@ -58,20 +58,20 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Create a MsgSetLosses message
-	lossesMsg := &state.MsgSetLosses{
+	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		LossBundles: []*state.LossBundle{
+		LossBundles: []*types.LossBundle{
 			{
 				TopicId: 1,
 				Reputer: reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*state.WorkerAttributedLoss{
+				InfererLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,	
 						Value:   cosmosMath.NewUint(100),
 					},
 				},
-				ForecasterLosses: []*state.WorkerAttributedLoss{
+				ForecasterLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
 						Value:   cosmosMath.NewUint(100),
@@ -89,5 +89,5 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	}
 
 	_, err := msgServer.InsertLosses(ctx, lossesMsg)
-	require.ErrorIs(err, state.ErrNotInReputerWhitelist, "InsertLosses should return an error")
+	require.ErrorIs(err, types.ErrNotInReputerWhitelist, "InsertLosses should return an error")
 }

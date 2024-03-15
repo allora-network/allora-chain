@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -376,7 +376,7 @@ func divideMapValues(
 	a map[string]*Float,
 	divisor *Float) (map[string]*Float, error) {
 	if divisor.Cmp(big.NewFloat(0)) == 0 {
-		return nil, state.ErrDivideMapValuesByZero
+		return nil, types.ErrDivideMapValuesByZero
 	}
 	ret := make(map[keeper.ACC_ADDRESS]*Float)
 	for key, val := range a {
@@ -442,7 +442,7 @@ func scalarMultiply(
 	for key, val := range matrix {
 		val := big.NewFloat(0).Mul(val, scalar)
 		if val.Sign() == -1 {
-			return nil, state.ErrScalarMultiplyNegative
+			return nil, types.ErrScalarMultiplyNegative
 		}
 		valBigInt, _ := val.Int(nil)
 		valUint := cosmosMath.NewUintFromBigInt(valBigInt)

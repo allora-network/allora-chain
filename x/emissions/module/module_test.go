@@ -11,7 +11,7 @@ import (
 	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -43,7 +43,7 @@ type ModuleTestSuite struct {
 	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       state.MsgServer
+	msgServer       types.MsgServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -60,8 +60,8 @@ func (s *ModuleTestSuite) SetupTest() {
 	maccPerms := map[string][]string{
 		"fee_collector":                nil,
 		"mint":                         {"minter"},
-		state.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsModuleName: {"burner", "minter", "staking"},
+		types.AlloraStakingModuleName:  {"burner", "minter", "staking"},
+		types.AlloraRequestsModuleName: {"burner", "minter", "staking"},
 		"bonded_tokens_pool":           {"burner", "staking"},
 		"not_bonded_tokens_pool":       {"burner", "staking"},
 		multiPerm:                      {"burner", "minter", "staking"},

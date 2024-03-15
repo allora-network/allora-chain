@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type BlocklessRequest struct {
@@ -49,7 +49,7 @@ type WeightInferencePayload struct {
 
 func generateWeights(
 	weights map[string]map[string]*math.Uint,
-	inferences []*state.InferenceSetForScoring,
+	inferences []*emissionstypes.InferenceSetForScoring,
 	functionId string,
 	functionMethod string,
 	topicId uint64) {

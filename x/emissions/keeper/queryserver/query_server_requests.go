@@ -3,20 +3,20 @@ package queryserver
 import (
 	"context"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *state.QueryExistingInferenceRequest) (*state.QueryExistingInferenceResponse, error) {
-	valid := state.IsValidRequestId(req.RequestId)
+func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *types.QueryExistingInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
+	valid := types.IsValidRequestId(req.RequestId)
 	if !valid {
-		return nil, state.ErrInvalidRequestId
+		return nil, types.ErrInvalidRequestId
 	}
 	inMempool, err := qs.k.IsRequestInMempool(ctx, req.TopicId, req.RequestId)
 	if err != nil {
 		return nil, err
 	}
 	if !inMempool {
-		return nil, state.ErrInferenceRequestNotInMempool
+		return nil, types.ErrInferenceRequestNotInMempool
 	}
 	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.TopicId, req.RequestId)
 	if err != nil {
@@ -26,11 +26,11 @@ func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *stat
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
+	return &types.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
 }
 
-func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *state.QueryAllExistingInferenceRequest) (*state.QueryAllExistingInferenceResponse, error) {
-	ret := make([]*state.InferenceRequestAndDemandLeft, 0)
+func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *types.QueryAllExistingInferenceRequest) (*types.QueryAllExistingInferenceResponse, error) {
+	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
 	mempool, err := qs.k.GetMempool(ctx)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 			return nil, err
 		}
 		inferenceRequestCopy := inferenceRequest
-		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
+		ret = append(ret, &types.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
-	return &state.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
+	return &types.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
 }
 

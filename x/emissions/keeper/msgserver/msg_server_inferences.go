@@ -3,17 +3,17 @@ package msgserver
 import (
 	"context"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // A tx function that accepts a list of inferences and possibly returns an error
-func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcessInferences) (*state.MsgProcessInferencesResponse, error) {
+func (ms msgServer) ProcessInferences(ctx context.Context, msg *types.MsgProcessInferences) (*types.MsgProcessInferencesResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	inferences := msg.Inferences
 	// Group inferences by topicId - Create a map to store the grouped inferences
-	groupedInferences := make(map[uint64][]*state.Inference)
+	groupedInferences := make(map[uint64][]*types.Inference)
 
 	// Iterate through the array and group by topic_id
 	for _, inference := range inferences {
@@ -24,7 +24,7 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
-		inferences := &state.Inferences{
+		inferences := &types.Inferences{
 			Inferences: inferences,
 		}
 		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
@@ -34,5 +34,5 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 	}
 
 	// Return an empty response as the operation was successful
-	return &state.MsgProcessInferencesResponse{}, nil
+	return &types.MsgProcessInferencesResponse{}, nil
 }

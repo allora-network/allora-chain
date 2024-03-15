@@ -6,39 +6,39 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Get timestamp of the last rewards update
-func (qs queryServer) GetLastRewardsUpdate(ctx context.Context, req *state.QueryLastRewardsUpdateRequest) (*state.QueryLastRewardsUpdateResponse, error) {
+func (qs queryServer) GetLastRewardsUpdate(ctx context.Context, req *types.QueryLastRewardsUpdateRequest) (*types.QueryLastRewardsUpdateResponse, error) {
 	lastRewardsUpdate, err := qs.k.GetLastRewardsUpdate(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryLastRewardsUpdateResponse{LastRewardsUpdate: lastRewardsUpdate}, nil
+	return &types.QueryLastRewardsUpdateResponse{LastRewardsUpdate: lastRewardsUpdate}, nil
 }
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
-func (qs queryServer) GetTotalStake(ctx context.Context, req *state.QueryTotalStakeRequest) (*state.QueryTotalStakeResponse, error) {
+func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalStakeRequest) (*types.QueryTotalStakeResponse, error) {
 	totalStake, err := qs.k.GetTotalStake(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryTotalStakeResponse{Amount: totalStake}, nil
+	return &types.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
 // Get the amount of token rewards that have accumulated this epoch
-func (qs queryServer) GetAccumulatedEpochRewards(ctx context.Context, req *state.QueryAccumulatedEpochRewardsRequest) (*state.QueryAccumulatedEpochRewardsResponse, error) {
+func (qs queryServer) GetAccumulatedEpochRewards(ctx context.Context, req *types.QueryAccumulatedEpochRewardsRequest) (*types.QueryAccumulatedEpochRewardsResponse, error) {
 	emissions, err := qs.k.CalculateAccumulatedEmissions(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryAccumulatedEpochRewardsResponse{Amount: emissions}, nil
+	return &types.QueryAccumulatedEpochRewardsResponse{Amount: emissions}, nil
 }
 
 // GetReputerStakeList retrieves a list of stakes for a given account address.
-func (qs queryServer) GetReputerStakeList(ctx context.Context, req *state.QueryReputerStakeListRequest) (*state.QueryReputerStakeListResponse, error) {
+func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryReputerStakeListRequest) (*types.QueryReputerStakeListResponse, error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -53,10 +53,10 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *state.QueryR
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var stakePointers []*state.StakePlacement
+	var stakePointers []*types.StakePlacement
 	for _, stake := range stakes {
 		stakePointers = append(stakePointers, &stake)
 	}
 
-	return &state.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
+	return &types.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
 }

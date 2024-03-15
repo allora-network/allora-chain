@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -36,7 +36,7 @@ type KeeperTestSuite struct {
 	bankKeeper      *emissionstestutil.MockBankKeeper
 	authKeeper      *emissionstestutil.MockAccountKeeper
 	emissionsKeeper keeper.Keeper
-	msgServer       state.MsgServer
+	msgServer       types.MsgServer
 	mockCtrl        *gomock.Controller
 	key             *storetypes.KVStoreKey
 }
@@ -74,7 +74,7 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
-	newTopicMsg := &state.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
@@ -95,7 +95,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
-	newTopicMsg := &state.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",

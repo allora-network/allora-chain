@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: emissions/state/v1/query.proto
+// source: emissions/v1/query.proto
 
-package statev1
+package emissionsv1
 
 import (
 	context "context"
@@ -19,25 +19,25 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                            = "/emissions.state.v1.Query/Params"
-	Query_GetLastRewardsUpdate_FullMethodName              = "/emissions.state.v1.Query/GetLastRewardsUpdate"
-	Query_GetAccumulatedEpochRewards_FullMethodName        = "/emissions.state.v1.Query/GetAccumulatedEpochRewards"
-	Query_GetNextTopicId_FullMethodName                    = "/emissions.state.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                          = "/emissions.state.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                   = "/emissions.state.v1.Query/GetActiveTopics"
-	Query_GetAllTopics_FullMethodName                      = "/emissions.state.v1.Query/GetAllTopics"
-	Query_GetTopicsByCreator_FullMethodName                = "/emissions.state.v1.Query/GetTopicsByCreator"
-	Query_GetExistingInferenceRequest_FullMethodName       = "/emissions.state.v1.Query/GetExistingInferenceRequest"
-	Query_GetAllExistingInferenceRequests_FullMethodName   = "/emissions.state.v1.Query/GetAllExistingInferenceRequests"
-	Query_GetTopicUnmetDemand_FullMethodName               = "/emissions.state.v1.Query/GetTopicUnmetDemand"
-	Query_GetWorkerLatestInferenceByTopicId_FullMethodName = "/emissions.state.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetAllInferences_FullMethodName                  = "/emissions.state.v1.Query/GetAllInferences"
-	Query_GetInferencesToScore_FullMethodName              = "/emissions.state.v1.Query/GetInferencesToScore"
-	Query_GetTotalStake_FullMethodName                     = "/emissions.state.v1.Query/GetTotalStake"
-	Query_GetReputerStakeList_FullMethodName               = "/emissions.state.v1.Query/GetReputerStakeList"
-	Query_GetWorkerNodeRegistration_FullMethodName         = "/emissions.state.v1.Query/GetWorkerNodeRegistration"
-	Query_GetWorkerAddressByP2PKey_FullMethodName          = "/emissions.state.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetRegisteredTopicIds_FullMethodName             = "/emissions.state.v1.Query/GetRegisteredTopicIds"
+	Query_Params_FullMethodName                            = "/emissions.v1.Query/Params"
+	Query_GetLastRewardsUpdate_FullMethodName              = "/emissions.v1.Query/GetLastRewardsUpdate"
+	Query_GetAccumulatedEpochRewards_FullMethodName        = "/emissions.v1.Query/GetAccumulatedEpochRewards"
+	Query_GetNextTopicId_FullMethodName                    = "/emissions.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                          = "/emissions.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                   = "/emissions.v1.Query/GetActiveTopics"
+	Query_GetAllTopics_FullMethodName                      = "/emissions.v1.Query/GetAllTopics"
+	Query_GetTopicsByCreator_FullMethodName                = "/emissions.v1.Query/GetTopicsByCreator"
+	Query_GetExistingInferenceRequest_FullMethodName       = "/emissions.v1.Query/GetExistingInferenceRequest"
+	Query_GetAllExistingInferenceRequests_FullMethodName   = "/emissions.v1.Query/GetAllExistingInferenceRequests"
+	Query_GetTopicUnmetDemand_FullMethodName               = "/emissions.v1.Query/GetTopicUnmetDemand"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetAllInferences_FullMethodName                  = "/emissions.v1.Query/GetAllInferences"
+	Query_GetInferencesToScore_FullMethodName              = "/emissions.v1.Query/GetInferencesToScore"
+	Query_GetTotalStake_FullMethodName                     = "/emissions.v1.Query/GetTotalStake"
+	Query_GetReputerStakeList_FullMethodName               = "/emissions.v1.Query/GetReputerStakeList"
+	Query_GetWorkerNodeRegistration_FullMethodName         = "/emissions.v1.Query/GetWorkerNodeRegistration"
+	Query_GetWorkerAddressByP2PKey_FullMethodName          = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
+	Query_GetRegisteredTopicIds_FullMethodName             = "/emissions.v1.Query/GetRegisteredTopicIds"
 )
 
 // QueryClient is the client API for Query service.
@@ -692,7 +692,7 @@ func _Query_GetRegisteredTopicIds_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Query_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.state.v1.Query",
+	ServiceName: "emissions.v1.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -773,5 +773,5 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/state/v1/query.proto",
+	Metadata: "emissions/v1/query.proto",
 }

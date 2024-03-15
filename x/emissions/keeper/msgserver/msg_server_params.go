@@ -3,11 +3,11 @@ package msgserver
 import (
 	"context"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams) (*state.MsgUpdateParamsResponse, error) {
+func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	existingParams, err := ms.k.GetParams(ctx)
 	if err != nil {
@@ -68,5 +68,5 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgUpdateParamsResponse{}, nil
+	return &types.MsgUpdateParamsResponse{}, nil
 }

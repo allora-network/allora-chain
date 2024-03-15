@@ -1,4 +1,4 @@
-package emissions
+package types
 
 import (
 	"crypto/sha256"

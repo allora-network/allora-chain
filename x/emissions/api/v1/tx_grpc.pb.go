@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: emissions/state/v1/tx.proto
+// source: emissions/v1/tx.proto
 
-package statev1
+package emissionsv1
 
 import (
 	context "context"
@@ -19,30 +19,30 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName                     = "/emissions.state.v1.Msg/UpdateParams"
-	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
-	Msg_ProcessForecasts_FullMethodName                 = "/emissions.state.v1.Msg/ProcessForecasts"
-	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
-	Msg_ReactivateTopic_FullMethodName                  = "/emissions.state.v1.Msg/ReactivateTopic"
-	Msg_Register_FullMethodName                         = "/emissions.state.v1.Msg/Register"
-	Msg_AddNewRegistration_FullMethodName               = "/emissions.state.v1.Msg/AddNewRegistration"
-	Msg_RemoveRegistration_FullMethodName               = "/emissions.state.v1.Msg/RemoveRegistration"
-	Msg_InsertLosses_FullMethodName                     = "/emissions.state.v1.Msg/InsertLosses"
-	Msg_AddStake_FullMethodName                         = "/emissions.state.v1.Msg/AddStake"
-	Msg_StartRemoveStake_FullMethodName                 = "/emissions.state.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.state.v1.Msg/ConfirmRemoveStake"
-	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.state.v1.Msg/StartRemoveAllStake"
-	Msg_DelegateStake_FullMethodName                    = "/emissions.state.v1.Msg/DelegateStake"
-	Msg_StartRemoveDelegatedStake_FullMethodName        = "/emissions.state.v1.Msg/StartRemoveDelegatedStake"
-	Msg_RequestInference_FullMethodName                 = "/emissions.state.v1.Msg/RequestInference"
-	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.state.v1.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.state.v1.Msg/RemoveFromWhitelistAdmin"
-	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToTopicCreationWhitelist"
-	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromTopicCreationWhitelist"
-	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.state.v1.Msg/AddToReputerWhitelist"
-	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.state.v1.Msg/RemoveFromReputerWhitelist"
-	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.state.v1.Msg/AddToFoundationWhitelist"
-	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.state.v1.Msg/RemoveFromFoundationWhitelist"
+	Msg_UpdateParams_FullMethodName                     = "/emissions.v1.Msg/UpdateParams"
+	Msg_ProcessInferences_FullMethodName                = "/emissions.v1.Msg/ProcessInferences"
+	Msg_ProcessForecasts_FullMethodName                 = "/emissions.v1.Msg/ProcessForecasts"
+	Msg_CreateNewTopic_FullMethodName                   = "/emissions.v1.Msg/CreateNewTopic"
+	Msg_ReactivateTopic_FullMethodName                  = "/emissions.v1.Msg/ReactivateTopic"
+	Msg_Register_FullMethodName                         = "/emissions.v1.Msg/Register"
+	Msg_AddNewRegistration_FullMethodName               = "/emissions.v1.Msg/AddNewRegistration"
+	Msg_RemoveRegistration_FullMethodName               = "/emissions.v1.Msg/RemoveRegistration"
+	Msg_InsertLosses_FullMethodName                     = "/emissions.v1.Msg/InsertLosses"
+	Msg_AddStake_FullMethodName                         = "/emissions.v1.Msg/AddStake"
+	Msg_StartRemoveStake_FullMethodName                 = "/emissions.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.v1.Msg/ConfirmRemoveStake"
+	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.v1.Msg/StartRemoveAllStake"
+	Msg_DelegateStake_FullMethodName                    = "/emissions.v1.Msg/DelegateStake"
+	Msg_StartRemoveDelegatedStake_FullMethodName        = "/emissions.v1.Msg/StartRemoveDelegatedStake"
+	Msg_RequestInference_FullMethodName                 = "/emissions.v1.Msg/RequestInference"
+	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.v1.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
+	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.v1.Msg/AddToTopicCreationWhitelist"
+	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist"
+	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.v1.Msg/AddToReputerWhitelist"
+	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.v1.Msg/RemoveFromReputerWhitelist"
+	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.v1.Msg/AddToFoundationWhitelist"
+	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.v1.Msg/RemoveFromFoundationWhitelist"
 )
 
 // MsgClient is the client API for Msg service.
@@ -855,7 +855,7 @@ func _Msg_RemoveFromFoundationWhitelist_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.state.v1.Msg",
+	ServiceName: "emissions.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -956,5 +956,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/state/v1/tx.proto",
+	Metadata: "emissions/v1/tx.proto",
 }

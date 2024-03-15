@@ -10,7 +10,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -39,7 +39,7 @@ type KeeperTestSuite struct {
 	bankKeeper      *emissionstestutil.MockBankKeeper
 	authKeeper      *emissionstestutil.MockAccountKeeper
 	emissionsKeeper keeper.Keeper
-	msgServer       state.MsgServer
+	msgServer       types.MsgServer
 	mockCtrl        *gomock.Controller
 	key             *storetypes.KVStoreKey
 }
@@ -601,7 +601,7 @@ func (s *KeeperTestSuite) TestSetRequestDemand() {
 func (s *KeeperTestSuite) TestAddToMempool() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	inferenceRequest := state.InferenceRequest{
+	inferenceRequest := types.InferenceRequest{
 		Sender:               sdk.AccAddress(PKS[0].Address()).String(),
 		Nonce:                1,
 		TopicId:              1,
@@ -629,9 +629,9 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	var i uint64
-	var inferenceRequestMap = make(map[string]state.InferenceRequest)
+	var inferenceRequestMap = make(map[string]types.InferenceRequest)
 	for i = 0; i < 10; i++ {
-		inferenceRequest := state.InferenceRequest{
+		inferenceRequest := types.InferenceRequest{
 			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
 			Nonce:                i,
 			TopicId:              1,
@@ -664,9 +664,9 @@ func (s *KeeperTestSuite) TestGetMempoolSimple() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	var i uint64
-	var inferenceRequestMap = make(map[string]state.InferenceRequest)
+	var inferenceRequestMap = make(map[string]types.InferenceRequest)
 	for i = 0; i < 10; i++ {
-		inferenceRequest := state.InferenceRequest{
+		inferenceRequest := types.InferenceRequest{
 			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
 			Nonce:                i,
 			TopicId:              i,
@@ -699,7 +699,7 @@ func (s *KeeperTestSuite) TestGetMempoolSimple() {
 func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	params := state.Params{
+	params := types.Params{
 		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
 		MaxTopicsPerBlock:           1000,
 		MinRequestUnmetDemand:       cosmosMath.NewUint(1),

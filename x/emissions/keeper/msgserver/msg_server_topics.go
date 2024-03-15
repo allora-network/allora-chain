@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -12,7 +12,7 @@ import (
 /// TOPICS
 ///
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewTopic) (*state.MsgCreateNewTopicResponse, error) {
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
 	fmt.Println("CreateNewTopic called with: ", msg)
 	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
@@ -24,7 +24,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 	if !isTopicCreator {
-		return nil, state.ErrNotInTopicCreationWhitelist
+		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
 	id, err := ms.k.GetNumTopics(ctx)
@@ -37,7 +37,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 	if msg.InferenceCadence < fastestCadence {
-		return nil, state.ErrInferenceCadenceBelowMinimum
+		return nil, types.ErrInferenceCadenceBelowMinimum
 	}
 
 	weightFastestCadence, err := ms.k.GetParamsMinLossCadence(ctx)
@@ -45,10 +45,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 		return nil, err
 	}
 	if msg.LossCadence < weightFastestCadence {
-		return nil, state.ErrLossCadenceBelowMinimum
+		return nil, types.ErrLossCadenceBelowMinimum
 	}
 
-	topic := state.Topic{
+	topic := types.Topic{
 		Id:                     id,
 		Creator:                creator.String(),
 		Metadata:               msg.Metadata,
@@ -82,10 +82,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *state.MsgCreateNewT
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
-	return &state.MsgCreateNewTopicResponse{TopicId: id}, nil
+	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivateTopic) (*state.MsgReactivateTopicResponse, error) {
+func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivateTopic) (*types.MsgReactivateTopicResponse, error) {
 	// Check that the topic has enough demand to be reactivated
 	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, msg.TopicId)
 	if err != nil {
@@ -98,7 +98,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 	}
 	// If the topic does not have enough demand, return an error
 	if unmetDemand.LT(minTopicUnmentDemand) {
-		return nil, state.ErrTopicNotEnoughDemand
+		return nil, types.ErrTopicNotEnoughDemand
 	}
 
 	// If the topic has enough demand, reactivate it
@@ -106,7 +106,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgReactivateTopicResponse{Success: true}, nil
+	return &types.MsgReactivateTopicResponse{Success: true}, nil
 }
 
 ///
@@ -115,7 +115,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *state.MsgReactivat
 
 // Modfies topic subsidy and subsidized_reward_epochs properties
 // Can only be called by a whitelisted foundation member
-func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochs) (*state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse, error) {
+func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochs) (*types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse, error) {
 	// Check that sender is in the foundation whitelist
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -126,7 +126,7 @@ func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModify
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Modify the topic subsidy + F_treasury
 	err = ms.k.SetTopicSubsidy(ctx, msg.TopicId, msg.Subsidy)
@@ -137,10 +137,10 @@ func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *state.MsgModify
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse{Success: true}, nil
+	return &types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse{Success: true}, nil
 }
 
-func (ms msgServer) ModifyTopicFTreasury(ctx context.Context, msg *state.MsgModifyTopicFTreasury) (*state.MsgModifyTopicFTreasuryResponse, error) {
+func (ms msgServer) ModifyTopicFTreasury(ctx context.Context, msg *types.MsgModifyTopicFTreasury) (*types.MsgModifyTopicFTreasuryResponse, error) {
 	// Check that sender is in the foundation whitelist
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -151,12 +151,12 @@ func (ms msgServer) ModifyTopicFTreasury(ctx context.Context, msg *state.MsgModi
 		return nil, err
 	}
 	if !isAdmin {
-		return nil, state.ErrNotWhitelistAdmin
+		return nil, types.ErrNotWhitelistAdmin
 	}
 	// Modify the topic subsidy + F_treasury
 	err = ms.k.SetTopicFTreasury(ctx, msg.TopicId, float32(msg.FTreasury))
 	if err != nil {
 		return nil, err
 	}
-	return &state.MsgModifyTopicFTreasuryResponse{Success: true}, nil
+	return &types.MsgModifyTopicFTreasuryResponse{Success: true}, nil
 }

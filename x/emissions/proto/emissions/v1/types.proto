@@ -1,7 +1,7 @@
 syntax = "proto3";
-package emissions.state.v1;
+package emissions.v1;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions";
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
@@ -48,13 +48,6 @@ message Params {
   float learning_rate = 18; // speed of gradient descent
   float max_gradient_threshold = 19; // gradient descent stops when gradient falls below this
   float min_stake_fraction = 20; // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-}
-
-// GenesisState is the state that must be provided at genesis.
-message GenesisState {
-  // params defines all the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false];
-  repeated string core_team_addresses = 2;
 }
 
 ///

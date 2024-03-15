@@ -4,7 +4,7 @@ import (
 	"math"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -14,14 +14,14 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	s.CreateOneTopic()
 
 	// Mock setup for inferences
-	inferences := []*state.Inference{
+	inferences := []*types.Inference{
 		{TopicId: 0, Worker: sdk.AccAddress(PKS[0].Address()).String(), Value: cosmosMath.NewUint(2200)},
 		{TopicId: 0, Worker: sdk.AccAddress(PKS[1].Address()).String(), Value: cosmosMath.NewUint(2100)},
 		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: cosmosMath.NewUint(12)},
 	}
 
 	// Call the ProcessInferences function to test writes
-	processInferencesMsg := &state.MsgProcessInferences{
+	processInferencesMsg := &types.MsgProcessInferences{
 		Inferences: inferences,
 	}
 	_, err := msgServer.ProcessInferences(ctx, processInferencesMsg)

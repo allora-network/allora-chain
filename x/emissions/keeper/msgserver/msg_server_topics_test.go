@@ -4,7 +4,7 @@ import (
 	"time"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,7 +17,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	require := s.Require()
 
 	// Create a MsgCreateNewTopic message
-	newTopicMsg := &state.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
@@ -42,7 +42,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 	require := s.Require()
 
 	// Create a MsgCreateNewTopic message
-	newTopicMsg := &state.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          nonAdminAccounts[0].String(),
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.ErrorIs(err, state.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
+	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgReactivateTopic() {
@@ -71,7 +71,7 @@ func (s *KeeperTestSuite) TestMsgReactivateTopic() {
 	s.emissionsKeeper.SetTopicUnmetDemand(ctx, 0, cosmosMath.NewUint(100))
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &state.MsgReactivateTopic{
+	reactivateTopicMsg := &types.MsgReactivateTopic{
 		Sender:  topicCreator,
 		TopicId: 0,
 	}
@@ -96,13 +96,13 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 	s.emissionsKeeper.InactivateTopic(ctx, 0)
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &state.MsgReactivateTopic{
+	reactivateTopicMsg := &types.MsgReactivateTopic{
 		Sender:  topicCreator,
 		TopicId: 0,
 	}
 
 	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.ErrorIs(err, state.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
+	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {

@@ -8,53 +8,53 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
-func (qs queryServer) GetNextTopicId(ctx context.Context, req *state.QueryNextTopicIdRequest) (*state.QueryNextTopicIdResponse, error) {
+func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTopicIdRequest) (*types.QueryNextTopicIdResponse, error) {
 	nextTopicId, err := qs.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryNextTopicIdResponse{NextTopicId: nextTopicId}, nil
+	return &types.QueryNextTopicIdResponse{NextTopicId: nextTopicId}, nil
 }
 
 // Topics defines the handler for the Query/Topics RPC method.
-func (qs queryServer) GetTopic(ctx context.Context, req *state.QueryTopicRequest) (*state.QueryTopicResponse, error) {
+func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return &state.QueryTopicResponse{Topic: &topic}, nil
+			return &types.QueryTopicResponse{Topic: &topic}, nil
 		}
 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &state.QueryTopicResponse{Topic: &topic}, nil
+	return &types.QueryTopicResponse{Topic: &topic}, nil
 }
 
 // GetActiveTopics retrieves a list of active topics.
-func (qs queryServer) GetActiveTopics(ctx context.Context, req *state.QueryActiveTopicsRequest) (*state.QueryActiveTopicsResponse, error) {
+func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
 	activeTopics, err := qs.k.GetActiveTopics(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &state.QueryActiveTopicsResponse{Topics: activeTopics}, nil
+	return &types.QueryActiveTopicsResponse{Topics: activeTopics}, nil
 }
 
-func (qs queryServer) GetAllTopics(ctx context.Context, req *state.QueryAllTopicsRequest) (*state.QueryAllTopicsResponse, error) {
+func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopicsRequest) (*types.QueryAllTopicsResponse, error) {
 	topics, err := qs.k.GetAllTopics(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &state.QueryAllTopicsResponse{Topics: topics}, nil
+	return &types.QueryAllTopicsResponse{Topics: topics}, nil
 }
 
 // GetTopicsByCreator retrieves a list of topics created by a given address.
-func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *state.QueryGetTopicsByCreatorRequest) (*state.QueryGetTopicsByCreatorResponse, error) {
+func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *types.QueryGetTopicsByCreatorRequest) (*types.QueryGetTopicsByCreatorResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -64,13 +64,13 @@ func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *state.QueryGe
 		return nil, err
 	}
 
-	return &state.QueryGetTopicsByCreatorResponse{Topics: topics}, nil
+	return &types.QueryGetTopicsByCreatorResponse{Topics: topics}, nil
 }
 
-func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *state.QueryTopicUnmetDemandRequest) (*state.QueryTopicUnmetDemandResponse, error) {
+func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {
 	unmetDemand, err := qs.k.GetTopicUnmetDemand(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
-	return &state.QueryTopicUnmetDemandResponse{DemandLeft: unmetDemand}, nil
+	return &types.QueryTopicUnmetDemandResponse{DemandLeft: unmetDemand}, nil
 }

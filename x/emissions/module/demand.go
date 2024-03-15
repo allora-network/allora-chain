@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -30,18 +30,18 @@ type PriceAndReturn = struct {
 }
 
 type Demand struct {
-	Requests      []state.InferenceRequest
+	Requests      []types.InferenceRequest
 	FeesGenerated cosmosMath.Uint
 }
 
 // Sorts the given slice of topics in descending order according to their corresponding return, using randomness as tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
-func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []state.Topic, weights map[TopicId]PriceAndReturn, randSeed uint64) []state.Topic {
+func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weights map[TopicId]PriceAndReturn, randSeed uint64) []types.Topic {
 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
 	r := rand.New(rand.NewSource(int64(randSeed)))
-	items := make([]SortableItem[state.Topic], len(valsToSort))
+	items := make([]SortableItem[types.Topic], len(valsToSort))
 	for i, topic := range valsToSort {
-		items[i] = SortableItem[state.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Float64()}
+		items[i] = SortableItem[types.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Float64()}
 	}
 
 	// Sort the slice of SortableItems
@@ -54,7 +54,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []state.Topic, weight
 	})
 
 	// Extract and print the sorted values to demonstrate the sorting
-	sortedValues := make([]state.Topic, len(valsToSort))
+	sortedValues := make([]types.Topic, len(valsToSort))
 	for i, item := range items {
 		sortedValues[i] = item.Value
 	}
@@ -70,7 +70,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []state.Topic, weight
 func IsValidAtPrice(
 	ctx sdk.Context,
 	k keeper.Keeper,
-	req state.InferenceRequest,
+	req types.InferenceRequest,
 	price cosmosMath.Uint,
 	currentTime uint64) (bool, error) {
 	reqId, err := req.GetRequestId()
@@ -99,8 +99,8 @@ func IsValidAtPrice(
 
 // Inactivates topics with below keeper.MIN_TOPIC_UNMET_DEMAND demand
 // returns a list of topics that are still active after this operation
-func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingActiveTopics []*state.Topic, err error) {
-	remainingActiveTopics = make([]*state.Topic, 0)
+func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingActiveTopics []*types.Topic, err error) {
+	remainingActiveTopics = make([]*types.Topic, 0)
 	topicsActive, err := k.GetActiveTopics(ctx)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
@@ -138,16 +138,16 @@ func GetRequestsThatMaxFees(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	currentTime uint64,
-	requestsForGivenTopic []state.InferenceRequest) (
+	requestsForGivenTopic []types.InferenceRequest) (
 	bestPrice cosmosMath.Uint,
 	maxFees cosmosMath.Uint,
-	requests []state.InferenceRequest,
+	requests []types.InferenceRequest,
 	err error) {
 	// Initialize a map of request price to map of valid requests
 	// map must be of type string, because the complex type of a Uint
 	// will not work for the map, equality test tests the pointer not the value
 	demandCurve := make(map[string]Demand)
-	requests = make([]state.InferenceRequest, 0)
+	requests = make([]types.InferenceRequest, 0)
 	maxFees = cosmosMath.NewUint(0)
 	bestPrice = cosmosMath.NewUint(0)
 	// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
@@ -169,7 +169,7 @@ func GetRequestsThatMaxFees(
 				continue
 			}
 			demandCurve[priceStr] = Demand{
-				Requests:      make([]state.InferenceRequest, 0),
+				Requests:      make([]types.InferenceRequest, 0),
 				FeesGenerated: cosmosMath.ZeroUint()}
 
 			for _, req2 := range requestsForGivenTopic {
@@ -201,16 +201,16 @@ func GetRequestsThatMaxFees(
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
-func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) ([]state.Topic, cosmosMath.Uint, error) {
+func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) ([]types.Topic, cosmosMath.Uint, error) {
 	topicsActive, err := InactivateLowDemandTopics(ctx, k)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
 
-	topicsActiveWithDemand := make([]state.Topic, 0)
+	topicsActiveWithDemand := make([]types.Topic, 0)
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
-	requestsToDrawDemandFrom := make(map[TopicId][]state.InferenceRequest, 0)
+	requestsToDrawDemandFrom := make(map[TopicId][]types.InferenceRequest, 0)
 	for _, topic := range topicsActive {
 		inferenceRequests, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id)
 		if err != nil {
@@ -251,7 +251,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
-	var topicsToSetChurn []*state.Topic
+	var topicsToSetChurn []*types.Topic
 	for _, topic := range topTopicsByReturn {
 		// Log the accumulated met demand for each topic
 		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
@@ -299,7 +299,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	}
 
 	// Set the topics as churn ready
-	err = k.SetChurnReadyTopics(ctx, state.TopicList{Topics: topicsToSetChurn})
+	err = k.SetChurnReadyTopics(ctx, types.TopicList{Topics: topicsToSetChurn})
 	if err != nil {
 		fmt.Println("Error setting churn ready topic: ", err)
 		return nil, cosmosMath.Uint{}, err

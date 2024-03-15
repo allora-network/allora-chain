@@ -5,12 +5,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *state.QueryWorkerLatestInferenceRequest) (*state.QueryWorkerLatestInferenceResponse, error) {
+func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *types.QueryWorkerLatestInferenceRequest) (*types.QueryWorkerLatestInferenceResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
@@ -32,10 +32,10 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
-	return &state.QueryWorkerLatestInferenceResponse{LatestInference: &inference}, nil
+	return &types.QueryWorkerLatestInferenceResponse{LatestInference: &inference}, nil
 }
 
-func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.QueryInferencesToScoreRequest) (*state.QueryInferencesToScoreResponse, error) {
+func (qs queryServer) GetInferencesToScore(ctx context.Context, req *types.QueryInferencesToScoreRequest) (*types.QueryInferencesToScoreResponse, error) {
 	// Defers implementation to the function in the Keeper
 	topicId := req.TopicId
 	inferences, err := qs.k.GetLatestInferencesFromTopic(ctx, topicId)
@@ -43,11 +43,11 @@ func (qs queryServer) GetInferencesToScore(ctx context.Context, req *state.Query
 		return nil, err
 	}
 
-	response := &state.QueryInferencesToScoreResponse{Inferences: inferences}
+	response := &types.QueryInferencesToScoreResponse{Inferences: inferences}
 	return response, nil
 }
 
-func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryAllInferencesRequest) (*state.QueryAllInferencesResponse, error) {
+func (qs queryServer) GetAllInferences(ctx context.Context, req *types.QueryAllInferencesRequest) (*types.QueryAllInferencesResponse, error) {
 	// Defers implementation to the function in the Keeper
 	topicId := req.TopicId
 	timestamp := req.Timestamp
@@ -56,5 +56,5 @@ func (qs queryServer) GetAllInferences(ctx context.Context, req *state.QueryAllI
 		return nil, err
 	}
 
-	return &state.QueryAllInferencesResponse{Inferences: inferences}, nil
+	return &types.QueryAllInferencesResponse{Inferences: inferences}, nil
 }

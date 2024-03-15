@@ -1,4 +1,4 @@
-package emissions
+package types
 
 import "cosmossdk.io/collections"
 
