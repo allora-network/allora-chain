@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -23,12 +23,10 @@ type Int = cosmosMath.Int
 
 type TOPIC_ID = uint64
 type LIB_P2P_KEY = string
-type ACC_ADDRESS = string
-type TARGET = sdk.AccAddress
-type TARGET_STR = string
 type DELEGATOR = sdk.AccAddress
+type WORKER = sdk.AccAddress
 type REPUTER = sdk.AccAddress
-type DELEGATOR_STR = string
+type ACC_ADDRESS = string
 type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
@@ -39,22 +37,22 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	addressCodec address.Codec
 
-	// State management
+	// types management
 	schema     collections.Schema
-	params     collections.Item[state.Params]
+	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
 
 	// ############################################
-	// #             TOPIC STATE:                 #
+	// #             TOPIC types:                 #
 	// ############################################
 
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
-	topics collections.Map[TOPIC_ID, state.Topic]
+	topics collections.Map[TOPIC_ID, types.Topic]
 	// every topics that has been churned and ready to get inferences in the block
-	churnReadyTopics collections.Item[state.TopicList]
+	churnReadyTopics collections.Item[types.TopicList]
 	// for a topic, what is every worker node that has registered to it?
 	topicWorkers collections.KeySet[collections.Pair[TOPIC_ID, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
@@ -73,14 +71,22 @@ type Keeper struct {
 	// amount of stake a reputer has placed in a topic, signalling their authority on the topic
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TOPIC_ID, REPUTER], Uint]
 	// map of (reputer) -> removal information for that reputer
-	stakeRemovalQueue collections.Map[REPUTER, state.StakeRemoval]
+	stakeRemovalQueue collections.Map[REPUTER, types.StakeRemoval]
+	// map of (delegator) -> removal information for that delegator
+	delegatedStakeRemovalQueue collections.Map[DELEGATOR, types.DelegatedStakeRemoval]
+	// map of (delegator) -> amount of stake that has been placed by that delegator
+	stakeFromDelegator collections.Map[collections.Pair[TOPIC_ID, DELEGATOR], Uint]
+	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
+	delegatedStakePlacement collections.Map[collections.Triple[TOPIC_ID, REPUTER, DELEGATOR], Uint]
+	// map of (target) -> amount of stake that has been placed on that target
+	stakeUponReputer collections.Map[collections.Pair[TOPIC_ID, REPUTER], Uint]
 
 	// ############################################
 	// #        INFERENCE REQUEST MEMPOOL         #
 	// ############################################
 
 	// map of (topic, request_id) -> full InferenceRequest information for that request
-	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], state.InferenceRequest]
+	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], types.InferenceRequest]
 	// amount of money available for an inference request id that has been placed in the mempool but has not yet been fully satisfied
 	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
@@ -91,31 +97,31 @@ type Keeper struct {
 	// ############################################
 
 	// map of (topic, worker) -> inference
-	inferences collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Inference]
+	inferences collections.Map[collections.Pair[TOPIC_ID, WORKER], types.Inference]
 
 	// map of (topic, worker) -> forecast[]
-	forecasts collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], state.Forecast]
+	forecasts collections.Map[collections.Pair[TOPIC_ID, WORKER], types.Forecast]
 
 	// map of (topic, worker) -> num_inferences_in_reward_epoch
-	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], Uint]
+	numInferencesInRewardEpoch collections.Map[collections.Pair[TOPIC_ID, WORKER], Uint]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[LIB_P2P_KEY, state.OffchainNode]
+	workers collections.Map[LIB_P2P_KEY, types.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[LIB_P2P_KEY, state.OffchainNode]
+	reputers collections.Map[LIB_P2P_KEY, types.OffchainNode]
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
 	// map of (topic, timestamp, index) -> Inference
-	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Inferences]
+	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Inferences]
 
 	// map of (topic, timestamp, index) -> Forecast
-	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.Forecasts]
+	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Forecasts]
 
 	// map of (topic, timestamp, index) -> LossBundle
-	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], state.LossBundles]
+	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
@@ -139,36 +145,40 @@ func NewKeeper(
 	k := Keeper{
 		cdc:                        cdc,
 		addressCodec:               addressCodec,
-		params:                     collections.NewItem(sb, state.ParamsKey, "params", codec.CollValue[state.Params](cdc)),
+		params:                     collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                 ak,
 		bankKeeper:                 bk,
-		totalStake:                 collections.NewItem(sb, state.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                 collections.NewMap(sb, state.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate:          collections.NewItem(sb, state.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:                collections.NewSequence(sb, state.NextTopicIdKey, "next_topic_id"),
-		topics:                     collections.NewMap(sb, state.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[state.Topic](cdc)),
-		churnReadyTopics:           collections.NewItem(sb, state.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[state.TopicList](cdc)),
-		topicWorkers:               collections.NewKeySet(sb, state.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:              collections.NewMap(sb, state.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
-		topicReputers:              collections.NewKeySet(sb, state.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		stakeRemovalQueue:          collections.NewMap(sb, state.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[state.StakeRemoval](cdc)),
-		mempool:                    collections.NewMap(sb, state.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[state.InferenceRequest](cdc)),
-		requestUnmetDemand:         collections.NewMap(sb, state.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
-		topicUnmetDemand:           collections.NewMap(sb, state.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
-		inferences:                 collections.NewMap(sb, state.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Inference](cdc)),
-		forecasts:                  collections.NewMap(sb, state.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[state.Forecast](cdc)),
-		workers:                    collections.NewMap(sb, state.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
-		reputers:                   collections.NewMap(sb, state.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[state.OffchainNode](cdc)),
-		allInferences:              collections.NewMap(sb, state.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Inferences](cdc)),
-		allForecasts:               collections.NewMap(sb, state.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.Forecasts](cdc)),
-		allLossBundles:             collections.NewMap(sb, state.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[state.LossBundles](cdc)),
-		accumulatedMetDemand:       collections.NewMap(sb, state.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
-		numInferencesInRewardEpoch: collections.NewMap(sb, state.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		whitelistAdmins:            collections.NewKeySet(sb, state.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
-		topicCreationWhitelist:     collections.NewKeySet(sb, state.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
-		reputerWhitelist:           collections.NewKeySet(sb, state.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
-		foundationWhitelist:        collections.NewKeySet(sb, state.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
+		totalStake:                 collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
+		topicStake:                 collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		lastRewardsUpdate:          collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		nextTopicId:                collections.NewSequence(sb, types.NextTopicIdKey, "next_topic_id"),
+		topics:                     collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
+		churnReadyTopics:           collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
+		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
+		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
+		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
+		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		delegatedStakePlacement:    collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		stakeUponReputer:           collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		mempool:                    collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
+		requestUnmetDemand:         collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
+		topicUnmetDemand:           collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		inferences:                 collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
+		forecasts:                  collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
+		workers:                    collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		reputers:                   collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Forecasts](cdc)),
+		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundles](cdc)),
+		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
+		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		topicCreationWhitelist:     collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
+		reputerWhitelist:           collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
+		foundationWhitelist:        collections.NewKeySet(sb, types.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
 	}
 
 	schema, err := sb.Build()
@@ -185,17 +195,17 @@ func NewKeeper(
 /// PARAMETERS
 ///
 
-func (k *Keeper) SetParams(ctx context.Context, params state.Params) error {
+func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
 }
 
-func (k *Keeper) GetParams(ctx context.Context) (state.Params, error) {
+func (k *Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	ret, err := k.params.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return state.DefaultParams(), nil
+			return types.DefaultParams(), nil
 		}
-		return state.Params{}, err
+		return types.Params{}, err
 	}
 	return ret, nil
 }
@@ -276,7 +286,7 @@ func (k *Keeper) GetParamsMinLossCadence(ctx context.Context) (uint64, error) {
 /// INFERENCES
 ///
 
-func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*state.Inferences, error) {
+func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.Inferences, error) {
 	// pair := collections.Join(topicId, timestamp, index)
 	key := collections.Join(topicId, timestamp)
 	inferences, err := k.allInferences.Get(ctx, key)
@@ -287,7 +297,7 @@ func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timesta
 }
 
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences state.Inferences) error {
+func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences types.Inferences) error {
 	for _, inference := range inferences.Inferences {
 		// Update latests inferences for each worker
 		workerAcc, err := sdk.AccAddressFromBech32(inference.Worker)
@@ -311,7 +321,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 }
 
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestamp uint64, forecasts state.Forecasts) error {
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestamp uint64, forecasts types.Forecasts) error {
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
 		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
@@ -335,7 +345,7 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 }
 
 // Insert a loss bundle for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles state.LossBundles) error {
+func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
 	key := collections.Join(topicId, timestamp)
 	return k.allLossBundles.Set(ctx, key, lossBundles)
 }
@@ -343,7 +353,7 @@ func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timesta
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TOPIC_ID,
-	worker sdk.AccAddress) (state.Inference, error) {
+	worker sdk.AccAddress) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
 }
@@ -364,7 +374,7 @@ func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 // Set the last block height at which rewards emissions were updated
 func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) error {
 	if blockHeight < 0 {
-		return state.ErrBlockHeightNegative
+		return types.ErrBlockHeightNegative
 	}
 	previousBlockHeight, err := k.lastRewardsUpdate.Get(ctx)
 	if err != nil {
@@ -375,7 +385,7 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 		}
 	}
 	if blockHeight < previousBlockHeight {
-		return state.ErrBlockHeightLessThanPrevious
+		return types.ErrBlockHeightLessThanPrevious
 	}
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
@@ -412,13 +422,13 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 // mint new rewards coins to this module account
 func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	return k.bankKeeper.MintCoins(ctx, state.AlloraStakingModuleName, coins)
+	return k.bankKeeper.MintCoins(ctx, types.AlloraStakingModuleName, coins)
 }
 
 // A function that accepts a topicId and returns list of Inferences or error
-func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*state.InferenceSetForScoring, error) {
-	var inferences []*state.InferenceSetForScoring
-	var latestTimestamp, err = k.GetTopicWeightLastRan(ctx, topicId)
+func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.InferenceSetForScoring, error) {
+	var inferences []*types.InferenceSetForScoring
+	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
 	if err != nil {
 		latestTimestamp = 0
 	}
@@ -438,7 +448,7 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 		}
 		key := kv.Key
 		value := kv.Value
-		inferenceSet := &state.InferenceSetForScoring{
+		inferenceSet := &types.InferenceSetForScoring{
 			TopicId:    key.K1(),
 			Timestamp:  key.K2(),
 			Inferences: &value,
@@ -448,11 +458,46 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 	return inferences, nil
 }
 
-// GetTopicsByCreator returns a slice of all topics created by a given creator.
-func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*state.Topic, error) {
-	var topicsByCreator []*state.Topic
+// A function that accepts a topicId and returns list of Forecasts or error
+func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.ForecastSetForScoring, error) {
+	var forecasts []*types.ForecastSetForScoring
+	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
+	if err != nil {
+		latestTimestamp = 0
+	}
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		StartInclusive(latestTimestamp).
+		Descending()
 
-	err := k.topics.Walk(ctx, nil, func(id TOPIC_ID, topic state.Topic) (bool, error) {
+	iter, err := k.allForecasts.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		key := kv.Key
+		value := kv.Value
+		forecastSet := &types.ForecastSetForScoring{
+			TopicId:   key.K1(),
+			Timestamp: key.K2(),
+			Forecasts: &value,
+		}
+		forecasts = append(forecasts, forecastSet)
+	}
+	return forecasts, nil
+}
+
+// A function that accepts a topicId and returns list of LossBu or error
+
+// GetTopicsByCreator returns a slice of all topics created by a given creator.
+func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
+	var topicsByCreator []*types.Topic
+
+	err := k.topics.Walk(ctx, nil, func(id TOPIC_ID, topic types.Topic) (bool, error) {
 		if topic.Creator == creator {
 			topicsByCreator = append(topicsByCreator, &topic)
 		}
@@ -562,7 +607,7 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TOPIC_ID, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that the stake can be added, and then update the state all at once, applying rollbacks if necessary
+	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
 	if stake.IsZero() {
 		return errors.New("stake must be greater than zero")
 	}
@@ -629,13 +674,70 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TOPIC_ID, reputer sdk.Acc
 	return nil
 }
 
+func (k *Keeper) AddDelegatedStake(ctx context.Context, topicId TOPIC_ID, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
+	// Run checks to ensure that delegate stake can be added, and then update the types all at once, applying rollbacks if necessary
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
+
+	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	if err != nil {
+		return err
+	}
+	stakeFromDelegatorNew := stakeFromDelegator.Add(stake)
+
+	delegatedStakePlacement, err := k.GetDelegatedStakePlacement(ctx, topicId, delegator, reputer)
+	if err != nil {
+		return err
+	}
+	stakePlacementNew := delegatedStakePlacement.Add(stake)
+
+	stakeUponReputer, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	stakeUponReputerNew := stakeUponReputer.Add(stake)
+
+	// types updates -- done all at once after all checks
+
+	// Set new reputer stake in topic
+	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
+		return err
+	}
+
+	// Set new sum topic stake for all topics
+	if err := k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
+		fmt.Println("Setting topic stake failed -- rolling back stake from delegator")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	if err := k.SetDelegatedStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
+		fmt.Println("Setting total stake failed -- rolling back stake from delegator and delegated stake placement")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		err2 = k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, delegatedStakePlacement)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	return nil
+}
+
 // Removes stake to the system for a given topic and reputer
 func (k *Keeper) RemoveStake(
 	ctx context.Context,
 	topicId TOPIC_ID,
 	reputer sdk.AccAddress,
 	stake Uint) error {
-	// Run checks to ensure that the stake can be removed, and then update the state all at once, applying rollbacks if necessary
+	// Run checks to ensure that the stake can be removed, and then update the types all at once, applying rollbacks if necessary
 
 	if stake.IsZero() {
 		return errors.New("stake must be greater than zero")
@@ -646,13 +748,19 @@ func (k *Keeper) RemoveStake(
 	reputerStakeInTopic, err := k.stakeByReputerAndTopicId.Get(ctx, topicReputerKey)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return state.ErrTopicReputerStakeDoesNotExist
+			return types.ErrTopicReputerStakeDoesNotExist
 		} else {
 			return err
 		}
 	}
-	if stake.GT(reputerStakeInTopic) {
-		return state.ErrIntegerUnderflowTopicReputerStake
+	delegatedStakeUponReputerInTopic, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	reputerStakeInTopicWithoutDelegatedStake := reputerStakeInTopic.Sub(delegatedStakeUponReputerInTopic)
+	// TODO Maybe we should check if reputerStakeInTopicWithoutDelegatedStake is zero and remove the key from the map
+	if stake.GT(reputerStakeInTopicWithoutDelegatedStake) {
+		return types.ErrIntegerUnderflowTopicReputerStake
 	}
 	reputerStakeNew := reputerStakeInTopic.Sub(stake)
 
@@ -662,7 +770,7 @@ func (k *Keeper) RemoveStake(
 		return err
 	}
 	if stake.GT(topicStake) {
-		return state.ErrIntegerUnderflowTopicStake
+		return types.ErrIntegerUnderflowTopicStake
 	}
 	topicStakeNew := topicStake.Sub(stake)
 
@@ -672,10 +780,10 @@ func (k *Keeper) RemoveStake(
 		return err
 	}
 	if stake.GT(totalStake) {
-		return state.ErrIntegerUnderflowTotalStake
+		return types.ErrIntegerUnderflowTotalStake
 	}
 
-	// State updates -- done all at once after all checks
+	// types updates -- done all at once after all checks
 
 	// Set topic-reputer stake
 	if reputerStakeNew.IsZero() {
@@ -703,7 +811,7 @@ func (k *Keeper) RemoveStake(
 	}
 
 	// Set total stake
-	err = k.totalStake.Set(ctx, totalStake.Sub(stake))
+	err = k.SetTotalStake(ctx, totalStake.Sub(stake))
 	if err != nil {
 		fmt.Println("Setting total stake failed -- rolling back topic-reputer and topic stake")
 		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
@@ -713,6 +821,83 @@ func (k *Keeper) RemoveStake(
 		err2 = k.topicStake.Set(ctx, topicId, topicStake)
 		if err2 != nil {
 			fmt.Println("Error rolling back topic stake")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// Removes delegated stake from the system for a given topic, delegator, and reputer
+func (k *Keeper) RemoveDelegatedStake(
+	ctx context.Context,
+	topicId TOPIC_ID,
+	delegator sdk.AccAddress,
+	reputer sdk.AccAddress,
+	stake Uint) error {
+	// Run checks to ensure that the delegated stake can be removed, and then update the types all at once, applying rollbacks if necessary
+
+	if stake.IsZero() {
+		return errors.New("stake must be greater than zero")
+	}
+
+	// Check stakeFromDelegator >= stake
+	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakeFromDelegator) {
+		return types.ErrIntegerUnderflowStakeFromDelegator
+	}
+	stakeFromDelegatorNew := stakeFromDelegator.Sub(stake)
+
+	// Check stakePlacement >= stake
+	stakePlacement, err := k.GetDelegatedStakePlacement(ctx, topicId, delegator, reputer)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakePlacement) {
+		return types.ErrIntegerUnderflowDelegatedStakePlacement
+	}
+	stakePlacementNew := stakePlacement.Sub(stake)
+
+	// Check stakeUponReputer >= stake
+	stakeUponReputer, err := k.GetDelegatedStakeUponReputer(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	if stake.GT(stakeUponReputer) {
+		return types.ErrIntegerUnderflowDelegatedStakeUponReputer
+	}
+	stakeUponReputerNew := stakeUponReputer.Sub(stake)
+
+	// types updates -- done all at once after all checks
+
+	// Set new stake from delegator
+	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
+		return err
+	}
+
+	// Set new delegated stake placement
+	if err := k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
+		fmt.Println("Setting delegated stake placement failed -- rolling back stake from delegator")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		return err
+	}
+
+	// Set new delegated stake upon reputer
+	if err := k.SetDelegatedStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
+		fmt.Println("Setting delegated stake upon reputer failed -- rolling back stake from delegator and delegated stake placement")
+		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
+		if err2 != nil {
+			return err2
+		}
+		err2 = k.SetDelegatedStakePlacement(ctx, topicId, delegator, reputer, stakePlacement)
+		if err2 != nil {
+			return err2
 		}
 		return err
 	}
@@ -745,10 +930,10 @@ func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TO
 }
 
 // GetStakesForAccount returns the list of stakes for a given account address.
-func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.AccAddress) ([]state.StakeInfo, error) {
+func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
 	topicIds := make([]TOPIC_ID, 0)
 	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]state.StakeInfo, 0)
+	stakes := make([]types.StakePlacement, 0)
 	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -767,7 +952,7 @@ func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.A
 			if err != nil {
 				return nil, err
 			}
-			stakeInfo := state.StakeInfo{
+			stakeInfo := types.StakePlacement{
 				TopicId: kv.K1(),
 				Amount:  amount,
 			}
@@ -777,7 +962,7 @@ func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.A
 		}
 	}
 	if len(topicIds) != len(amounts) {
-		return nil, state.ErrIterationLengthDoesNotMatch
+		return nil, types.ErrIterationLengthDoesNotMatch
 	}
 
 	return stakes, nil
@@ -827,6 +1012,72 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	return k.totalStake.Set(ctx, totalStake)
 }
 
+// Returns the amount of stake placed by a specific delegator.
+func (k *Keeper) GetStakeFromDelegator(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR) (Uint, error) {
+	key := collections.Join(topicId, delegator)
+	stake, err := k.stakeFromDelegator.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed by a specific delegator.
+func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, stake Uint) error {
+	key := collections.Join(topicId, delegator)
+	if stake.IsZero() {
+		return k.stakeFromDelegator.Remove(ctx, key)
+	}
+	return k.stakeFromDelegator.Set(ctx, key, stake)
+}
+
+// Returns the amount of stake placed by a specific delegator on a specific target.
+func (k *Keeper) GetDelegatedStakePlacement(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, target REPUTER) (Uint, error) {
+	key := collections.Join3(topicId, delegator, target)
+	stake, err := k.delegatedStakePlacement.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed by a specific delegator on a specific target.
+func (k *Keeper) SetDelegatedStakePlacement(ctx context.Context, topicId TOPIC_ID, delegator DELEGATOR, target REPUTER, stake Uint) error {
+	key := collections.Join3(topicId, delegator, target)
+	if stake.IsZero() {
+		return k.delegatedStakePlacement.Remove(ctx, key)
+	}
+	return k.delegatedStakePlacement.Set(ctx, key, stake)
+}
+
+// Returns the amount of stake placed on a specific target.
+func (k *Keeper) GetDelegatedStakeUponReputer(ctx context.Context, topicId TOPIC_ID, target REPUTER) (Uint, error) {
+	key := collections.Join(topicId, target)
+	stake, err := k.stakeUponReputer.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return stake, nil
+}
+
+// Sets the amount of stake placed on a specific target.
+func (k *Keeper) SetDelegatedStakeUponReputer(ctx context.Context, topicId TOPIC_ID, target REPUTER, stake Uint) error {
+	key := collections.Join(topicId, target)
+	if stake.IsZero() {
+		return k.stakeUponReputer.Remove(ctx, key)
+	}
+	return k.stakeUponReputer.Set(ctx, key, stake)
+}
+
 ///
 /// TOPICS
 ///
@@ -869,19 +1120,19 @@ func (k *Keeper) IncrementTopicId(ctx context.Context) (TOPIC_ID, error) {
 }
 
 // Gets topic by topicId
-func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (state.Topic, error) {
+func (k *Keeper) GetTopic(ctx context.Context, topicId TOPIC_ID) (types.Topic, error) {
 	return k.topics.Get(ctx, topicId)
 }
 
 // Sets a topic config on a topicId
-func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic state.Topic) error {
+func (k *Keeper) SetTopic(ctx context.Context, topicId TOPIC_ID, topic types.Topic) error {
 	return k.topics.Set(ctx, topicId, topic)
 }
 
 // Gets every topic
-func (k *Keeper) GetAllTopics(ctx context.Context) ([]*state.Topic, error) {
-	var allTopics []*state.Topic
-	err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic state.Topic) (bool, error) {
+func (k *Keeper) GetAllTopics(ctx context.Context) ([]*types.Topic, error) {
+	var allTopics []*types.Topic
+	err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic types.Topic) (bool, error) {
 		allTopics = append(allTopics, &topic)
 		return false, nil
 	})
@@ -902,9 +1153,9 @@ func (k *Keeper) GetNumTopics(ctx context.Context) (TOPIC_ID, error) {
 }
 
 // GetActiveTopics returns a slice of all active topics.
-func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*state.Topic, error) {
-	var activeTopics []*state.Topic
-	if err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic state.Topic) (bool, error) {
+func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
+	var activeTopics []*types.Topic
+	if err := k.topics.Walk(ctx, nil, func(topicId TOPIC_ID, topic types.Topic) (bool, error) {
 		if topic.Active { // Check if the topic is marked as active
 			activeTopics = append(activeTopics, &topic)
 		}
@@ -927,7 +1178,7 @@ func (k *Keeper) GetTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID)
 	return topic.InferenceLastRan, nil
 }
 
-func (k *Keeper) GetTopicWeightLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+func (k *Keeper) GetTopicLossCalcLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return 0, err
@@ -942,7 +1193,7 @@ func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_
 	if err != nil {
 		return err
 	}
-	var newTopic state.Topic = state.Topic{
+	var newTopic types.Topic = types.Topic{
 		Id:               topic.Id,
 		Creator:          topic.Creator,
 		Metadata:         topic.Metadata,
@@ -971,7 +1222,7 @@ func (k *Keeper) UpdateTopicLossUpdateLastRan(ctx context.Context, topicId TOPIC
 }
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo state.OffchainNode) error {
+func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TOPIC_ID, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
 	for _, topicId := range TopicIds {
 		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
 		err := k.topicReputers.Set(ctx, topicKey)
@@ -1023,7 +1274,7 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TOPIC_ID, workerAddr 
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TOPIC_ID, worker sdk.AccAddress, workerInfo state.OffchainNode) error {
+func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TOPIC_ID, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
 	for _, topicId := range TopicIds {
 		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
 		err := k.topicWorkers.Set(ctx, topickey)
@@ -1042,8 +1293,8 @@ func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TOPIC_ID, worker s
 	return nil
 }
 
-func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*state.OffchainNode, error) {
-	var nodes []*state.OffchainNode
+func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
+	var nodes []*types.OffchainNode
 	var nodeIdParts = strings.Split(nodeId, "|")
 
 	if len(nodeIdParts) < 2 {
@@ -1081,14 +1332,24 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	return workerAddress, nil
 }
 
-// for a given address, get their stake removal information
-func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (state.StakeRemoval, error) {
+// For a given address, get their stake removal information
+func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.StakeRemoval, error) {
 	return k.stakeRemovalQueue.Get(ctx, address)
 }
 
 // For a given address, adds their stake removal information to the removal queue for delay waiting
-func (k *Keeper) SetStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo state.StakeRemoval) error {
+func (k *Keeper) SetStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.StakeRemoval) error {
 	return k.stakeRemovalQueue.Set(ctx, address, removalInfo)
+}
+
+// For a given address, get their stake removal information
+func (k *Keeper) GetDelegatedStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.DelegatedStakeRemoval, error) {
+	return k.delegatedStakeRemovalQueue.Get(ctx, address)
+}
+
+// For a given address, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.DelegatedStakeRemoval) error {
+	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
 }
 
 ///
@@ -1110,7 +1371,7 @@ func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt co
 		return err
 	}
 	if amt.GT(topicUnmetDemand) {
-		return state.ErrIntegerUnderflowUnmetDemand
+		return types.ErrIntegerUnderflowUnmetDemand
 	}
 	topicUnmetDemand = topicUnmetDemand.Sub(amt)
 	return k.SetTopicUnmetDemand(ctx, topicId, topicUnmetDemand)
@@ -1135,7 +1396,7 @@ func (k *Keeper) GetTopicUnmetDemand(ctx context.Context, topicId TOPIC_ID) (Uin
 	return topicUnmetDemand, nil
 }
 
-func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceRequest) error {
+func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceRequest) error {
 	requestId, err := request.GetRequestId()
 	if err != nil {
 		return err
@@ -1149,7 +1410,7 @@ func (k *Keeper) AddToMempool(ctx context.Context, request state.InferenceReques
 	return k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
 }
 
-func (k *Keeper) RemoveFromMempool(ctx context.Context, request state.InferenceRequest) error {
+func (k *Keeper) RemoveFromMempool(ctx context.Context, request types.InferenceRequest) error {
 	requestId, err := request.GetRequestId()
 	if err != nil {
 		return err
@@ -1167,12 +1428,12 @@ func (k *Keeper) IsRequestInMempool(ctx context.Context, topicId TOPIC_ID, reque
 	return k.mempool.Has(ctx, collections.Join(topicId, requestId))
 }
 
-func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOPIC_ID, requestId string) (state.InferenceRequest, error) {
+func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TOPIC_ID, requestId string) (types.InferenceRequest, error) {
 	return k.mempool.Get(ctx, collections.Join(topicId, requestId))
 }
 
-func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TOPIC_ID) ([]state.InferenceRequest, error) {
-	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
+func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TOPIC_ID) ([]types.InferenceRequest, error) {
+	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
 	rng := collections.NewPrefixedPairRange[TOPIC_ID, REQUEST_ID](topicId)
 	iter, err := k.mempool.Iterate(ctx, rng)
 	if err != nil {
@@ -1196,8 +1457,8 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error)
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetMempool(ctx context.Context) ([]state.InferenceRequest, error) {
-	var ret []state.InferenceRequest = make([]state.InferenceRequest, 0)
+func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
+	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
 	iter, err := k.mempool.Iterate(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -1285,18 +1546,18 @@ func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 }
 
 // Set a topic as churn ready
-func (k *Keeper) SetChurnReadyTopics(ctx context.Context, topicList state.TopicList) error {
+func (k *Keeper) SetChurnReadyTopics(ctx context.Context, topicList types.TopicList) error {
 	return k.churnReadyTopics.Set(ctx, topicList)
 }
 
 // Get all churn ready topics
-func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (state.TopicList, error) {
+func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, error) {
 	topicList, err := k.churnReadyTopics.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return state.TopicList{}, nil
+			return types.TopicList{}, nil
 		}
-		return state.TopicList{}, err
+		return types.TopicList{}, err
 	}
 	return topicList, nil
 }
@@ -1419,4 +1680,14 @@ func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreas
 // SendCoinsFromModuleToModule
 func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
+}
+
+// SendCoinsFromModuleToAccount
+func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
+}
+
+// SendCoinsFromAccountToModule
+func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }

@@ -4,17 +4,17 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
-func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) error {
+func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
 
 	// ensure the module account exists
-	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingModuleName)
+	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraStakingModuleName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsModuleName)
+	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRequestsModuleName)
 	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
@@ -36,13 +36,13 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 }
 
 // ExportGenesis exports the module state to a genesis state.
-func (k *Keeper) ExportGenesis(ctx context.Context) (*state.GenesisState, error) {
+func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &state.GenesisState{
+	return &types.GenesisState{
 		Params: params,
 	}, nil
 }

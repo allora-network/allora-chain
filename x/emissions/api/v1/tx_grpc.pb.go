@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: emissions/state/v1/tx.proto
+// source: emissions/v1/tx.proto
 
-package statev1
+package emissionsv1
 
 import (
 	context "context"
@@ -19,28 +19,30 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName                     = "/emissions.state.v1.Msg/UpdateParams"
-	Msg_ProcessInferences_FullMethodName                = "/emissions.state.v1.Msg/ProcessInferences"
-	Msg_ProcessForecasts_FullMethodName                 = "/emissions.state.v1.Msg/ProcessForecasts"
-	Msg_CreateNewTopic_FullMethodName                   = "/emissions.state.v1.Msg/CreateNewTopic"
-	Msg_ReactivateTopic_FullMethodName                  = "/emissions.state.v1.Msg/ReactivateTopic"
-	Msg_Register_FullMethodName                         = "/emissions.state.v1.Msg/Register"
-	Msg_AddNewRegistration_FullMethodName               = "/emissions.state.v1.Msg/AddNewRegistration"
-	Msg_RemoveRegistration_FullMethodName               = "/emissions.state.v1.Msg/RemoveRegistration"
-	Msg_InsertLosses_FullMethodName                     = "/emissions.state.v1.Msg/InsertLosses"
-	Msg_AddStake_FullMethodName                         = "/emissions.state.v1.Msg/AddStake"
-	Msg_StartRemoveStake_FullMethodName                 = "/emissions.state.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.state.v1.Msg/ConfirmRemoveStake"
-	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.state.v1.Msg/StartRemoveAllStake"
-	Msg_RequestInference_FullMethodName                 = "/emissions.state.v1.Msg/RequestInference"
-	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.state.v1.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.state.v1.Msg/RemoveFromWhitelistAdmin"
-	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.state.v1.Msg/AddToTopicCreationWhitelist"
-	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.state.v1.Msg/RemoveFromTopicCreationWhitelist"
-	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.state.v1.Msg/AddToReputerWhitelist"
-	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.state.v1.Msg/RemoveFromReputerWhitelist"
-	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.state.v1.Msg/AddToFoundationWhitelist"
-	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.state.v1.Msg/RemoveFromFoundationWhitelist"
+	Msg_UpdateParams_FullMethodName                     = "/emissions.v1.Msg/UpdateParams"
+	Msg_ProcessInferences_FullMethodName                = "/emissions.v1.Msg/ProcessInferences"
+	Msg_ProcessForecasts_FullMethodName                 = "/emissions.v1.Msg/ProcessForecasts"
+	Msg_CreateNewTopic_FullMethodName                   = "/emissions.v1.Msg/CreateNewTopic"
+	Msg_ReactivateTopic_FullMethodName                  = "/emissions.v1.Msg/ReactivateTopic"
+	Msg_Register_FullMethodName                         = "/emissions.v1.Msg/Register"
+	Msg_AddNewRegistration_FullMethodName               = "/emissions.v1.Msg/AddNewRegistration"
+	Msg_RemoveRegistration_FullMethodName               = "/emissions.v1.Msg/RemoveRegistration"
+	Msg_InsertLosses_FullMethodName                     = "/emissions.v1.Msg/InsertLosses"
+	Msg_AddStake_FullMethodName                         = "/emissions.v1.Msg/AddStake"
+	Msg_StartRemoveStake_FullMethodName                 = "/emissions.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.v1.Msg/ConfirmRemoveStake"
+	Msg_StartRemoveAllStake_FullMethodName              = "/emissions.v1.Msg/StartRemoveAllStake"
+	Msg_DelegateStake_FullMethodName                    = "/emissions.v1.Msg/DelegateStake"
+	Msg_StartRemoveDelegatedStake_FullMethodName        = "/emissions.v1.Msg/StartRemoveDelegatedStake"
+	Msg_RequestInference_FullMethodName                 = "/emissions.v1.Msg/RequestInference"
+	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.v1.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
+	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.v1.Msg/AddToTopicCreationWhitelist"
+	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist"
+	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.v1.Msg/AddToReputerWhitelist"
+	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.v1.Msg/RemoveFromReputerWhitelist"
+	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.v1.Msg/AddToFoundationWhitelist"
+	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.v1.Msg/RemoveFromFoundationWhitelist"
 )
 
 // MsgClient is the client API for Msg service.
@@ -60,6 +62,8 @@ type MsgClient interface {
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveAllStake, opts ...grpc.CallOption) (*MsgStartRemoveAllStakeResponse, error)
+	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
+	StartRemoveDelegatedStake(ctx context.Context, in *MsgStartRemoveDelegatedStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegatedStakeResponse, error)
 	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -196,6 +200,24 @@ func (c *msgClient) StartRemoveAllStake(ctx context.Context, in *MsgStartRemoveA
 	return out, nil
 }
 
+func (c *msgClient) DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error) {
+	out := new(MsgDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_DelegateStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) StartRemoveDelegatedStake(ctx context.Context, in *MsgStartRemoveDelegatedStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegatedStakeResponse, error) {
+	out := new(MsgStartRemoveDelegatedStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_StartRemoveDelegatedStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error) {
 	out := new(MsgRequestInferenceResponse)
 	err := c.cc.Invoke(ctx, Msg_RequestInference_FullMethodName, in, out, opts...)
@@ -294,6 +316,8 @@ type MsgServer interface {
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error)
+	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
+	StartRemoveDelegatedStake(context.Context, *MsgStartRemoveDelegatedStake) (*MsgStartRemoveDelegatedStakeResponse, error)
 	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -348,6 +372,12 @@ func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRem
 }
 func (UnimplementedMsgServer) StartRemoveAllStake(context.Context, *MsgStartRemoveAllStake) (*MsgStartRemoveAllStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveAllStake not implemented")
+}
+func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelegateStake not implemented")
+}
+func (UnimplementedMsgServer) StartRemoveDelegatedStake(context.Context, *MsgStartRemoveDelegatedStake) (*MsgStartRemoveDelegatedStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveDelegatedStake not implemented")
 }
 func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
@@ -623,6 +653,42 @@ func _Msg_StartRemoveAllStake_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_DelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDelegateStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DelegateStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_DelegateStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DelegateStake(ctx, req.(*MsgDelegateStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_StartRemoveDelegatedStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgStartRemoveDelegatedStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).StartRemoveDelegatedStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_StartRemoveDelegatedStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).StartRemoveDelegatedStake(ctx, req.(*MsgStartRemoveDelegatedStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgRequestInference)
 	if err := dec(in); err != nil {
@@ -789,7 +855,7 @@ func _Msg_RemoveFromFoundationWhitelist_Handler(srv interface{}, ctx context.Con
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.state.v1.Msg",
+	ServiceName: "emissions.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -845,6 +911,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_StartRemoveAllStake_Handler,
 		},
 		{
+			MethodName: "DelegateStake",
+			Handler:    _Msg_DelegateStake_Handler,
+		},
+		{
+			MethodName: "StartRemoveDelegatedStake",
+			Handler:    _Msg_StartRemoveDelegatedStake_Handler,
+		},
+		{
 			MethodName: "RequestInference",
 			Handler:    _Msg_RequestInference_Handler,
 		},
@@ -882,5 +956,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/state/v1/tx.proto",
+	Metadata: "emissions/v1/tx.proto",
 }
