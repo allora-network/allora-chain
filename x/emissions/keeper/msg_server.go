@@ -206,10 +206,10 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
-		inferences := &state.Inferences{
+		topicInferences := &state.Inferences{
 			Inferences: inferences,
 		}
-		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
+		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *topicInferences)
 		if err != nil {
 			return nil, err
 		}
