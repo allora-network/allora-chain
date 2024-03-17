@@ -94,7 +94,7 @@ func (x *_OptionalParams_2_list) Append(value protoreflect.Value) {
 }
 
 func (x *_OptionalParams_2_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field EpochLength as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field RewardCadence as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_2_list) Truncate(n int) {
@@ -722,8 +722,8 @@ func (x *fastReflection_OptionalParams) Range(f func(protoreflect.FieldDescripto
 			return
 		}
 	}
-	if len(x.EpochLength) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_2_list{list: &x.EpochLength})
+	if len(x.RewardCadence) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_2_list{list: &x.RewardCadence})
 		if !f(fd_OptionalParams_epoch_length, value) {
 			return
 		}
@@ -812,7 +812,7 @@ func (x *fastReflection_OptionalParams) Has(fd protoreflect.FieldDescriptor) boo
 	case "emissions.v1.OptionalParams.version":
 		return len(x.Version) != 0
 	case "emissions.v1.OptionalParams.epoch_length":
-		return len(x.EpochLength) != 0
+		return len(x.RewardCadence) != 0
 	case "emissions.v1.OptionalParams.emissions_per_epoch":
 		return len(x.EmissionsPerEpoch) != 0
 	case "emissions.v1.OptionalParams.min_topic_unmet_demand":
@@ -854,7 +854,7 @@ func (x *fastReflection_OptionalParams) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.v1.OptionalParams.version":
 		x.Version = nil
 	case "emissions.v1.OptionalParams.epoch_length":
-		x.EpochLength = nil
+		x.RewardCadence = nil
 	case "emissions.v1.OptionalParams.emissions_per_epoch":
 		x.EmissionsPerEpoch = nil
 	case "emissions.v1.OptionalParams.min_topic_unmet_demand":
@@ -900,10 +900,10 @@ func (x *fastReflection_OptionalParams) Get(descriptor protoreflect.FieldDescrip
 		listValue := &_OptionalParams_1_list{list: &x.Version}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.epoch_length":
-		if len(x.EpochLength) == 0 {
+		if len(x.RewardCadence) == 0 {
 			return protoreflect.ValueOfList(&_OptionalParams_2_list{})
 		}
-		listValue := &_OptionalParams_2_list{list: &x.EpochLength}
+		listValue := &_OptionalParams_2_list{list: &x.RewardCadence}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.emissions_per_epoch":
 		if len(x.EmissionsPerEpoch) == 0 {
@@ -998,7 +998,7 @@ func (x *fastReflection_OptionalParams) Set(fd protoreflect.FieldDescriptor, val
 	case "emissions.v1.OptionalParams.epoch_length":
 		lv := value.List()
 		clv := lv.(*_OptionalParams_2_list)
-		x.EpochLength = *clv.list
+		x.RewardCadence = *clv.list
 	case "emissions.v1.OptionalParams.emissions_per_epoch":
 		lv := value.List()
 		clv := lv.(*_OptionalParams_3_list)
@@ -1070,10 +1070,10 @@ func (x *fastReflection_OptionalParams) Mutable(fd protoreflect.FieldDescriptor)
 		value := &_OptionalParams_1_list{list: &x.Version}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.epoch_length":
-		if x.EpochLength == nil {
-			x.EpochLength = []int64{}
+		if x.RewardCadence == nil {
+			x.RewardCadence = []int64{}
 		}
-		value := &_OptionalParams_2_list{list: &x.EpochLength}
+		value := &_OptionalParams_2_list{list: &x.RewardCadence}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.emissions_per_epoch":
 		if x.EmissionsPerEpoch == nil {
@@ -1268,9 +1268,9 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
-		if len(x.EpochLength) > 0 {
+		if len(x.RewardCadence) > 0 {
 			l = 0
-			for _, e := range x.EpochLength {
+			for _, e := range x.RewardCadence {
 				l += runtime.Sov(uint64(e))
 			}
 			n += 1 + runtime.Sov(uint64(l)) + l
@@ -1553,14 +1553,14 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				dAtA[i] = 0x1a
 			}
 		}
-		if len(x.EpochLength) > 0 {
+		if len(x.RewardCadence) > 0 {
 			var pksize16 int
-			for _, num := range x.EpochLength {
+			for _, num := range x.RewardCadence {
 				pksize16 += runtime.Sov(uint64(num))
 			}
 			i -= pksize16
 			j15 := i
-			for _, num1 := range x.EpochLength {
+			for _, num1 := range x.RewardCadence {
 				num := uint64(num1)
 				for num >= 1<<7 {
 					dAtA[j15] = uint8(uint64(num)&0x7f | 0x80)
@@ -1681,7 +1681,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 							break
 						}
 					}
-					x.EpochLength = append(x.EpochLength, v)
+					x.RewardCadence = append(x.RewardCadence, v)
 				} else if wireType == 2 {
 					var packedLen int
 					for shift := uint(0); ; shift += 7 {
@@ -1716,8 +1716,8 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 						}
 					}
 					elementCount = count
-					if elementCount != 0 && len(x.EpochLength) == 0 {
-						x.EpochLength = make([]int64, 0, elementCount)
+					if elementCount != 0 && len(x.RewardCadence) == 0 {
+						x.RewardCadence = make([]int64, 0, elementCount)
 					}
 					for iNdEx < postIndex {
 						var v int64
@@ -1735,10 +1735,10 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 								break
 							}
 						}
-						x.EpochLength = append(x.EpochLength, v)
+						x.RewardCadence = append(x.RewardCadence, v)
 					}
 				} else {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EpochLength", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RewardCadence", wireType)
 				}
 			case 3:
 				if wireType != 2 {
@@ -29190,7 +29190,7 @@ type OptionalParams struct {
 	unknownFields protoimpl.UnknownFields
 
 	Version                     []string `protobuf:"bytes,1,rep,name=version,proto3" json:"version,omitempty"`                                                                                         // version of the protocol should be in lockstep with github release tag version
-	EpochLength                 []int64  `protobuf:"varint,2,rep,packed,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`                                                      // length of an "epoch" for rewards payouts in blocks
+	RewardCadence                 []int64  `protobuf:"varint,2,rep,packed,name=epoch_length,json=rewardCadence,proto3" json:"epoch_length,omitempty"`                                                      // length of an "epoch" for rewards payouts in blocks
 	EmissionsPerEpoch           []string `protobuf:"bytes,3,rep,name=emissions_per_epoch,json=emissionsPerEpoch,proto3" json:"emissions_per_epoch,omitempty"`                                          // default amount of tokens to issue per epoch
 	MinTopicUnmetDemand         []string `protobuf:"bytes,4,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                  // total unmet demand for a topic < this => don't run inference solicatation or loss uploads
 	MaxTopicsPerBlock           []uint64 `protobuf:"varint,5,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                // max number of topics to run cadence for per block
@@ -29233,7 +29233,7 @@ func (x *OptionalParams) GetVersion() []string {
 
 func (x *OptionalParams) GetEpochLength() []int64 {
 	if x != nil {
-		return x.EpochLength
+		return x.RewardCadence
 	}
 	return nil
 }

@@ -10,7 +10,7 @@ import "gogoproto/gogo.proto";
 // Params defines the parameters of the module.
 message Params {
   string version = 1;      // version of the protocol should be in lockstep with github release tag version
-  int64 epoch_length = 2;  // length of an "epoch" for rewards payouts in blocks
+  int64 reward_cadence = 2;  // length of an "epoch" for rewards payouts in blocks
   string emissions_per_epoch = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",

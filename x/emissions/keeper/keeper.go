@@ -391,12 +391,12 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 }
 
 // return epoch length
-func (k *Keeper) GetParamsEpochLength(ctx context.Context) (int64, error) {
+func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.EpochLength, nil
+	return params.RewardCadence, nil
 }
 
 // return how many new coins should be minted for the next emission
@@ -414,7 +414,7 @@ func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.
 	if err != nil {
 		return cosmosMath.Int{}, err
 	}
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.EpochLength)
+	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.RewardCadence)
 	// get emission amount
 	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
 }

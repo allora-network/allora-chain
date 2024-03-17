@@ -6,14 +6,14 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	// "github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-// 	"github.com/allora-network/allora-chain/x/emissions/module"
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
+	// "github.com/allora-network/allora-chain/x/emissions/module"
+	// sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *ModuleTestSuite) UtilSetParams() {
 	s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
-		EpochLength:                 int64(5),                      // length of an "epoch" for rewards payouts in blocks
+		RewardCadence:               int64(5),                      // length of an "epoch" for rewards payouts in blocks
 		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
 		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
 		MaxTopicsPerBlock:           uint64(1000),                  // max number of topics to run cadence for per block
@@ -441,7 +441,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	var initialStake int64 = 1100
 // 	var requestStake0 int64 = 500
 // 	var requestStake1 int64 = 600
-// 	// the default EpochLength and insufficient number of inferences will ensure worker weights are masked
+// 	// the default RewardCadence and insufficient number of inferences will ensure worker weights are masked
 // 	// due to lack of liveness => should invoke a div by 0 error that gets caught and empty rewards returned
 // 	// => EndBlock should run without doing much by way of rewards
 // 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -485,9 +485,9 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 		requestsModuleBalanceBefore.Amount,
 // 		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
 
-// 	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+// 	rewardCadence, err := s.emissionsKeeper.GetParamsRewardCadence(s.ctx)
 // 	s.Require().NoError(err)
-// 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
+// 	s.ctx = s.ctx.WithBlockHeight(rewardCadence + 1)
 
 // 	// make a messaging channel that can pass between threads
 // 	done := make(chan bool)
@@ -556,9 +556,9 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	lastInferenceRanTopic1Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
 // 	s.Require().NoError(err)
 
-// 	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+// 	rewardCadence, err := s.emissionsKeeper.GetParamsRewardCadence(s.ctx)
 // 	s.Require().NoError(err)
-// 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
+// 	s.ctx = s.ctx.WithBlockHeight(rewardCadence + 1)
 
 // 	// make a messaging channel that can pass between threads
 // 	done := make(chan bool)
@@ -627,9 +627,9 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.Require().NoError(err)
 // 	s.Require().Len(mempool, 1, "Mempool should have exactly 1 request")
 
-// 	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+// 	rewardCadence, err := s.emissionsKeeper.GetParamsRewardCadence(s.ctx)
 // 	s.Require().NoError(err)
-// 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
+// 	s.ctx = s.ctx.WithBlockHeight(rewardCadence + 1)
 // 	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(time.Second * 61))
 
 // 	// make a messaging channel that can pass between threads

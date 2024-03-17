@@ -31,7 +31,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // Params defines the parameters of the module.
 type Params struct {
 	Version                     string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	EpochLength                 int64                  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	RewardCadence                 int64                  `protobuf:"varint,2,opt,name=reward_cadence,json=rewardCadence,proto3" json:"reward_cadence,omitempty"`
 	EmissionsPerEpoch           cosmossdk_io_math.Int  `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3,customtype=cosmossdk.io/math.Int" json:"emissions_per_epoch"`
 	MinTopicUnmetDemand         cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
 	MaxTopicsPerBlock           uint64                 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
@@ -93,7 +93,7 @@ func (m *Params) GetVersion() string {
 
 func (m *Params) GetEpochLength() int64 {
 	if m != nil {
-		return m.EpochLength
+		return m.RewardCadence
 	}
 	return 0
 }
@@ -1930,8 +1930,8 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	if m.EpochLength != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.EpochLength))
+	if m.RewardCadence != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.RewardCadence))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -3048,8 +3048,8 @@ func (m *Params) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	if m.EpochLength != 0 {
-		n += 1 + sovTypes(uint64(m.EpochLength))
+	if m.RewardCadence != 0 {
+		n += 1 + sovTypes(uint64(m.RewardCadence))
 	}
 	l = m.EmissionsPerEpoch.Size()
 	n += 1 + l + sovTypes(uint64(l))
@@ -3636,9 +3636,9 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EpochLength", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardCadence", wireType)
 			}
-			m.EpochLength = 0
+			m.RewardCadence = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -3648,7 +3648,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EpochLength |= int64(b&0x7F) << shift
+				m.RewardCadence |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

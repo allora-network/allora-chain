@@ -7,6 +7,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+
 	// "github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -199,9 +200,9 @@ func getConstZeroWeights() [2][4]uint64 {
 // 	err = mockSetWeights(s, topicId, reputers, workers, getConstWeights())
 // 	s.NoError(err, "Error setting weights")
 
-// 	epochLength, err := s.emissionsKeeper.GetParamsEpochLength(s.ctx)
+// 	rewardCadence, err := s.emissionsKeeper.GetParamsRewardCadence(s.ctx)
 // 	s.NoError(err, "Error getting epoch length")
-// 	s.ctx = s.ctx.WithBlockHeight(epochLength + 1)
+// 	s.ctx = s.ctx.WithBlockHeight(rewardCadence + 1)
 
 // 	reputer1Stake, err := s.emissionsKeeper.GetStakePlacedUponTarget(s.ctx, reputers[0])
 // 	s.NoError(err, "Error getting reputer 1 stake")
