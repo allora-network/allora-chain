@@ -123,6 +123,9 @@ type Keeper struct {
 	// map of (topic, timestamp, index) -> LossBundle
 	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
 
+	// map of (topic, timestamp, index) -> LossBundle (1 network wide bundle per timestep)
+	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundle]
+
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
 	whitelistAdmins collections.KeySet[sdk.AccAddress]
@@ -173,6 +176,7 @@ func NewKeeper(
 		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Inferences](cdc)),
 		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Forecasts](cdc)),
 		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundles](cdc)),
+		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundle](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
