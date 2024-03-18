@@ -2,8 +2,8 @@
 set -exu
 
 NETWORK="${NETWORK:-edgenet}"
-GENESIS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/genesis.json"
-PEERS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/peers.txt"
+GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
+PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
 BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.edgenet.allora.network:8443}"               #! Replace with your blockless API URL
 
 
