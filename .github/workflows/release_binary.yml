@@ -28,7 +28,6 @@ jobs:
         uses: ignite/cli/actions/release/vars@main
 
       - name: Issue Release Assets
-        uses: ignite/cli/actions/cli@main
         if: ${{ steps.vars.outputs.should_release == 'true' }}
         run: |
           GOOS=darwin GOARCH=arm64 go build -o release/darwin_arm64/allorad cmd/allorad/main.go
