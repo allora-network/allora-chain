@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	nativeDenom            = "UALLO"
+	nativeDenom            = params.DefaultBondDenom
 	ibcTransferAmount      = math.NewInt(100_000)
 	genesisWalletAmount, _ = math.NewIntFromString("10000000000000000000")
 )
