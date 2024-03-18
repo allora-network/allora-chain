@@ -30,8 +30,13 @@ jobs:
       - name: Issue Release Assets
         uses: ignite/cli/actions/cli@main
         if: ${{ steps.vars.outputs.should_release == 'true' }}
-        with:
-          args: chain build --release --release.prefix ${{ steps.vars.outputs.tarball_prefix }} -t linux:amd64 -t darwin:amd64 -t darwin:arm64
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -o release/darwin_arm64/allorad cmd/allorad/main.go
+          GOOS=darwin GOARCH=amd64 go build -o release/darwin_amd64/allorad cmd/allorad/main.go
+          GOOS=linux GOARCH=arm64 go build -o release/linux_arm64/allorad cmd/allorad/main.go
+          GOOS=linux GOARCH=amd64 go build -o release/linux_amd64/allorad cmd/allorad/main.go
+          GOOS=windows GOARCH=arm64 go build -o release/windows_arm64/allorad.exe cmd/allorad/main.go
+          GOOS=windows GOARCH=amd64 go build -o release/windows_amd64/allorad.exe cmd/allorad/main.go
 
       - name: Delete the "latest" Release
         uses: dev-drprasad/delete-tag-and-release@v0.2.1
