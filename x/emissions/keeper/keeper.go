@@ -1283,22 +1283,8 @@ func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_
 	if err != nil {
 		return err
 	}
-	var newTopic types.Topic = types.Topic{
-		Id:               topic.Id,
-		Creator:          topic.Creator,
-		Metadata:         topic.Metadata,
-		LossLogic:        topic.LossLogic,
-		LossMethod:       topic.LossMethod,
-		LossCadence:      topic.LossCadence,
-		LossLastRan:      topic.LossLastRan,
-		InferenceLogic:   topic.InferenceLogic,
-		InferenceMethod:  topic.InferenceMethod,
-		InferenceCadence: topic.InferenceCadence,
-		InferenceLastRan: lastRanTime,
-		Active:           topic.Active,
-		DefaultArg:       topic.DefaultArg,
-	}
-	return k.topics.Set(ctx, topicId, newTopic)
+	topic.InferenceLastRan = lastRanTime
+	return k.topics.Set(ctx, topicId, topic)
 }
 
 // UpdateTopicLossUpdateLastRan updates the WeightLastRan timestamp for a given topic.
