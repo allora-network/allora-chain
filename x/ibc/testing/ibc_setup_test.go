@@ -63,7 +63,7 @@ func (s *IBCTestSuite) SetupTest() {
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in allora
 	sdk.DefaultBondDenom = nativeDenom
 	ibctesting.DefaultTestingAppInit = alloraAppInitializer
-	params.InitSDKConfig()
+	//params.InitSDKConfig()
 
 	s.coordinator = ibctesting.NewCoordinator(s.T(), 2)
 	s.alloraChain = s.coordinator.GetChain(ibctesting.GetChainID(1))
