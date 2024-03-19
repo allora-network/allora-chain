@@ -2,6 +2,10 @@ package app
 
 import (
 	_ "embed"
+	"github.com/allora-network/allora-chain/x/emissions"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,7 +17,7 @@ import (
 	"cosmossdk.io/log"
 
 	storetypes "cosmossdk.io/store/types"
-	emissions "github.com/allora-network/allora-chain/x/emissions"
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -34,10 +38,22 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
+	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
+	_ "cosmossdk.io/x/upgrade"
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/allora-network/allora-chain/x/mint/module" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"                  // import for side-effects
@@ -45,6 +61,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/bank"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/params"                // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
 )
 
@@ -77,6 +94,22 @@ type AlloraApp struct {
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
 	EmissionsKeeper       emissionsKeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	UpgradeKeeper         *upgradekeeper.Keeper
+
+	// IBC
+	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	CapabilityKeeper    *capabilitykeeper.Keeper
+	IBCFeeKeeper        ibcfeekeeper.Keeper
+	ICAControllerKeeper icacontrollerkeeper.Keeper
+	ICAHostKeeper       icahostkeeper.Keeper
+	TransferKeeper      ibctransferkeeper.Keeper
+
+	// Scoped IBC
+	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
+	ScopedIBCTransferKeeper   capabilitykeeper.ScopedKeeper
+	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
+	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 
 	// simulation manager
 	sm *module.SimulationManager
@@ -138,11 +171,16 @@ func NewAlloraApp(
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
 		&app.EmissionsKeeper,
+		&app.UpgradeKeeper,
+		&app.ParamsKeeper,
 	); err != nil {
 		return nil, err
 	}
 
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
+
+	// Register legacy modules
+	app.registerIBCModules()
 
 	// register streaming services
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
@@ -151,16 +189,28 @@ func NewAlloraApp(
 
 	/****  Module Options ****/
 
-	//  begin_blockers: [emissions, distribution, staking, mint]
-	//  end_blockers: [staking, emissions]
+	//begin_blockers: [capability, emissions, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
+	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
 	app.ModuleManager.SetOrderBeginBlockers(
+		capabilitytypes.ModuleName,
 		emissions.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		minttypes.ModuleName,
+		ibcexported.ModuleName,
+		ibctransfertypes.ModuleName,
+		genutiltypes.ModuleName,
+		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
 	)
 	app.ModuleManager.SetOrderEndBlockers(
 		stakingtypes.ModuleName,
+		ibcexported.ModuleName,
+		ibctransfertypes.ModuleName,
+		capabilitytypes.ModuleName,
+		genutiltypes.ModuleName,
+		icatypes.ModuleName,
+		ibcfeetypes.ModuleName,
 		emissions.ModuleName,
 	)
 
@@ -186,6 +236,14 @@ func (app *AlloraApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
+// AppCodec returns App's app codec.
+//
+// NOTE: This is solely to be used for testing purposes as it may be desirable
+// for modules to register their own custom testing types.
+func (app *AlloraApp) AppCodec() codec.Codec {
+	return app.appCodec
+}
+
 // GetKey returns the KVStoreKey for the provided store key.
 func (app *AlloraApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	sk := app.UnsafeFindStoreKey(storeKey)
@@ -194,6 +252,16 @@ func (app *AlloraApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 		return nil
 	}
 	return kvStoreKey
+}
+
+// GetMemKey returns the MemoryStoreKey for the provided store key.
+func (app *AlloraApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
+	key, ok := app.UnsafeFindStoreKey(storeKey).(*storetypes.MemoryStoreKey)
+	if !ok {
+		return nil
+	}
+
+	return key
 }
 
 func (app *AlloraApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
@@ -205,6 +273,22 @@ func (app *AlloraApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 	}
 
 	return keys
+}
+
+// GetSubspace returns a param subspace for a given module name.
+func (app *AlloraApp) GetSubspace(moduleName string) paramstypes.Subspace {
+	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
+	return subspace
+}
+
+// GetIBCKeeper returns the IBC keeper.
+func (app *AlloraApp) GetIBCKeeper() *ibckeeper.Keeper {
+	return app.IBCKeeper
+}
+
+// GetCapabilityScopedKeeper returns the capability scoped keeper.
+func (app *AlloraApp) GetCapabilityScopedKeeper(moduleName string) capabilitykeeper.ScopedKeeper {
+	return app.CapabilityKeeper.ScopeToModule(moduleName)
 }
 
 // SimulationManager implements the SimulationApp interface
@@ -220,4 +304,34 @@ func (app *AlloraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 	if err := server.RegisterSwaggerAPI(apiSvr.ClientCtx, apiSvr.Router, apiConfig.Swagger); err != nil {
 		panic(err)
 	}
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) GetBaseApp() *baseapp.BaseApp {
+	return app.App.BaseApp
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) GetStakingKeeper() ibctestingtypes.StakingKeeper {
+	return app.StakingKeeper
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+	return app.ScopedIBCKeeper
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) GetTxConfig() client.TxConfig {
+	return app.txConfig
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) LastCommitID() storetypes.CommitID {
+	return app.BaseApp.LastCommitID()
+}
+
+// ibctesting.TestingApp compatibility
+func (app *AlloraApp) LastBlockHeight() int64 {
+	return app.BaseApp.LastBlockHeight()
 }
