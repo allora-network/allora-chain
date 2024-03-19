@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	//params.InitSDKConfig()
 
 	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
