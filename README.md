@@ -45,7 +45,9 @@ allorad start
 ```
 docker compose pull
 docker compose up
-```, add `-d` to run detached.
+```
+
+run `docker compose up -d` to run detached.
 
 *NOTE:* Don't forget to pull the images first, to ensure that you're using the latest images.
 
