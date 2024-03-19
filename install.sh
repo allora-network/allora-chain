@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the base URL and application name
-BASE_URL="https://github.com/allora-network/allora-chain/releases/download/v0.0.3"
+BASE_URL="https://github.com/allora-network/allora-chain/releases/download/v0.0.9"
 APP_NAME="allorad"
 
 # Determine the operating system and architecture
