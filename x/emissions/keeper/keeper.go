@@ -120,7 +120,7 @@ type Keeper struct {
 	// map of (topic, timestamp, index) -> Forecast
 	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Forecasts]
 
-	// map of (topic, timestamp, index) -> LossBundle
+	// map of (topic, timestamp, index) -> LossBundles (1 per reputer active at that time)
 	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
 
 	// map of (topic, timestamp, index) -> LossBundle (1 network wide bundle per timestep)
@@ -348,10 +348,36 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
-// Insert a loss bundle for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
+// Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
+func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
 	key := collections.Join(topicId, timestamp)
 	return k.allLossBundles.Set(ctx, key, lossBundles)
+}
+
+// Return a list of lists of loss bundles for a topic with a timestep at or after the passed value.
+// The list is ordered by timestamp in descending order.
+// Each list contains all loss bundles for a given timestamp across all reputers.
+// Each loss bundle comes from a reputer at a particular timestep.
+func (k *Keeper) GetLossBundlesAtOrAfterTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) ([]types.LossBundles, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		EndInclusive(timestamp).
+		Descending()
+
+	iter, err := k.allLossBundles.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	var lossBundles []types.LossBundles
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		lossBundle := kv.Value
+		lossBundles = append(lossBundles, lossBundle)
+	}
+	return lossBundles, nil
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
@@ -495,7 +521,27 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 	return forecasts, nil
 }
 
-// A function that accepts a topicId and returns list of LossBu or error
+// A function that accepts a topicId and returns the latest Network LossBundle or error
+func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
+	// Parse networkLossBundles for the topicId in descending time order and take the first one
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		Descending()
+
+	iter, err := k.networkLossBundles.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	if !iter.Valid() {
+		// Return empty loss bundle if no loss bundle is found
+		return &types.LossBundle{}, nil
+	}
+	kv, err := iter.KeyValue()
+	if err != nil {
+		return nil, err
+	}
+	return &kv.Value, nil
+}
 
 // GetTopicsByCreator returns a slice of all topics created by a given creator.
 func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
@@ -934,7 +980,7 @@ func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TO
 }
 
 // GetStakesForAccount returns the list of stakes for a given account address.
-func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
+func (k *Keeper) GetStakePlacementsByReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
 	topicIds := make([]TOPIC_ID, 0)
 	amounts := make([]cosmosMath.Uint, 0)
 	stakes := make([]types.StakePlacement, 0)
@@ -959,6 +1005,7 @@ func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.A
 			stakeInfo := types.StakePlacement{
 				TopicId: kv.K1(),
 				Amount:  amount,
+				Reputer: reputerKey.String(),
 			}
 			stakes = append(stakes, stakeInfo)
 			topicIds = append(topicIds, kv.K1())
@@ -966,6 +1013,45 @@ func (k *Keeper) GetStakePlacementsForReputer(ctx context.Context, reputer sdk.A
 		}
 	}
 	if len(topicIds) != len(amounts) {
+		return nil, types.ErrIterationLengthDoesNotMatch
+	}
+
+	return stakes, nil
+}
+
+func (k *Keeper) GetStakePlacementsByTopic(ctx context.Context, topicId TOPIC_ID) ([]types.StakePlacement, error) {
+	reputers := make([]REPUTER, 0)
+	amounts := make([]cosmosMath.Uint, 0)
+	stakes := make([]types.StakePlacement, 0)
+	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// iterate over all keys in stakePlacements
+	kvs, err := iter.Keys()
+	if err != nil {
+		return nil, err
+	}
+	for _, kv := range kvs {
+		topicKey := kv.K1()
+		// if the topic key matches the topic we're looking for
+		if topicKey == topicId {
+			amount, err := k.stakeByReputerAndTopicId.Get(ctx, kv)
+			if err != nil {
+				return nil, err
+			}
+			stakeInfo := types.StakePlacement{
+				TopicId: topicKey,
+				Amount:  amount,
+				Reputer: kv.K2().String(),
+			}
+			stakes = append(stakes, stakeInfo)
+			reputers = append(reputers, kv.K2())
+			amounts = append(amounts, amount)
+		}
+	}
+	if len(reputers) != len(amounts) {
 		return nil, types.ErrIterationLengthDoesNotMatch
 	}
 
