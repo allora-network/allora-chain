@@ -162,7 +162,7 @@ func NewKeeper(
 		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicId, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
@@ -351,32 +351,6 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
 	key := collections.Join(topicId, timestamp)
 	return k.allLossBundles.Set(ctx, key, lossBundles)
-}
-
-// Return a list of lists of loss bundles for a topic with a timestep at or after the passed value.
-// The list is ordered by timestamp in descending order.
-// Each list contains all loss bundles for a given timestamp across all reputers.
-// Each loss bundle comes from a reputer at a particular timestep.
-func (k *Keeper) GetLossBundlesAtOrAfterTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) ([]types.LossBundles, error) {
-	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		EndInclusive(timestamp).
-		Descending()
-
-	iter, err := k.allLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	var lossBundles []types.LossBundles
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		lossBundle := kv.Value
-		lossBundles = append(lossBundles, lossBundle)
-	}
-	return lossBundles, nil
 }
 
 // Get loss bundles for a topic/timestamp
