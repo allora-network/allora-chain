@@ -102,7 +102,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 		reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddr)
 		s.NoError(err, "Error getting reputerStake")
 
-		reputerStakeFloat, _ := reputerStake.BigInt().Float64()
+		reputerStakeFloat := float64(reputerStake.BigInt().Int64())
 		reputersStakes = append(reputersStakes, reputerStakeFloat)
 		for _, workerLoss := range lossBundle.InfererLosses {
 			if workerLoss.Worker == workers[0].String() {

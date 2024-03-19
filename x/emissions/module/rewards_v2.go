@@ -12,6 +12,7 @@ func GetWorkerScore(losses, lossesCut float64) float64 {
 }
 
 // GetStakeWeightedLoss calculates the stake-weighted average loss.
+// L_i / L_ij / L_ik / L_i- / L_il- / L_ik+
 func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
 		return 0, fmt.Errorf("slices must have the same length")
