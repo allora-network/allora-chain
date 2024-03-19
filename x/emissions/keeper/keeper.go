@@ -157,7 +157,7 @@ func NewKeeper(
 		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicId, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
@@ -348,6 +348,16 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 func (k *Keeper) InsertLossBudles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
 	key := collections.Join(topicId, timestamp)
 	return k.allLossBundles.Set(ctx, key, lossBundles)
+}
+
+// Get loss bundles for a topic/timestamp
+func(k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
+	key := collections.Join(topicId, timestamp)
+	lossBundles, err := k.allLossBundles.Get(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return &lossBundles, nil
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(

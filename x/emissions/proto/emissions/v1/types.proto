@@ -106,8 +106,14 @@ message LossBundle {
 
   uint64 topic_id = 1;
   string reputer = 2;
-  bytes extra_data = 3;
+  bytes extra_data = 3 ;
   string combined_loss = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string naive_loss = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
@@ -115,24 +121,8 @@ message LossBundle {
   ];
   repeated WorkerAttributedLoss inferer_losses = 5;
   repeated WorkerAttributedLoss forecaster_losses = 6;
-  string naive_loss = 7 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  repeated WorkerAttributedLoss one_out_losses = 8 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  repeated WorkerAttributedLoss one_in_naive_losses = 9 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated WorkerAttributedLoss one_out_losses = 8;
+  repeated WorkerAttributedLoss one_in_naive_losses = 9;
 }
 
 message LossBundles {

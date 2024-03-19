@@ -376,26 +376,26 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 // 	return nil
 // }
 
-// // create a topic
-// func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
-// 	ret := make([]uint64, 0)
-// 	var i uint64
-// 	for i = 0; i < numToCreate; i++ {
-// 		topicMessage := state.MsgCreateNewTopic{
-// 			Creator:          s.addrsStr[0],
-// 			Metadata:         "metadata",
-// 			WeightLogic:      "logic",
-// 			WeightMethod:     "whatever",
-// 			WeightCadence:    10800,
-// 			InferenceLogic:   "morelogic",
-// 			InferenceMethod:  "whatever2",
-// 			InferenceCadence: 60,
-// 		}
-// 		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		ret = append(ret, response.TopicId)
-// 	}
-// 	return ret, nil
-// }
+// create a topic
+func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
+	ret := make([]uint64, 0)
+	var i uint64
+	for i = 0; i < numToCreate; i++ {
+		topicMessage := types.MsgCreateNewTopic{
+			Creator:          s.addrsStr[0],
+			Metadata:         "metadata",
+			LossLogic:      "logic",
+			LossMethod:     "whatever",
+			LossCadence:    10800,
+			InferenceLogic:   "morelogic",
+			InferenceMethod:  "whatever2",
+			InferenceCadence: 60,
+		}
+		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, response.TopicId)
+	}
+	return ret, nil
+}
