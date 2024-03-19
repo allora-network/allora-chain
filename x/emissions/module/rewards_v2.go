@@ -6,13 +6,14 @@ import (
 )
 
 // GetWorkerScore calculates the worker score based on the losses and lossesCut.
+// T_ij / T_ik / T^-_ik / T^+_ik
 func GetWorkerScore(losses, lossesCut float64) float64 {
 	deltaLogLoss := math.Log10(lossesCut) - math.Log10(losses)
 	return deltaLogLoss
 }
 
 // GetStakeWeightedLoss calculates the stake-weighted average loss.
-// L_i / L_ij / L_ik / L_i- / L_il- / L_ik+
+// L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
 func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
 		return 0, fmt.Errorf("slices must have the same length")
@@ -27,16 +28,14 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 		return 0, fmt.Errorf("total stake cannot be zero")
 	}
 
-	var totalWeightedLoss float64 = 0
+	var stakeWeightedLoss float64 = 0
 	for i, loss := range reputersReportedLosses {
 		if loss <= 0 {
 			return 0, fmt.Errorf("loss values must be greater than zero")
 		}
 		weightedLoss := (reputersStakes[i] / totalStake) * math.Log10(loss)
-		totalWeightedLoss += weightedLoss
+		stakeWeightedLoss += weightedLoss
 	}
-
-	stakeWeightedLoss := math.Pow(10, totalWeightedLoss)
 
 	return stakeWeightedLoss, nil
 }

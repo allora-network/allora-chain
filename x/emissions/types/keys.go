@@ -43,4 +43,5 @@ var (
 	ReputerWhitelistKey           = collections.NewPrefix(32)
 	ChurnReadyTopicsKey           = collections.NewPrefix(33)
 	FoundationWhitelistKey        = collections.NewPrefix(34)
+	NetworkLossBundlesKey         = collections.NewPrefix(35)
 )
