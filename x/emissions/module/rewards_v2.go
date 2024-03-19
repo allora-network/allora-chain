@@ -6,6 +6,7 @@ import (
 )
 
 // GetWorkerScore calculates the worker score based on the losses and lossesCut.
+// Consider the staked weighted inference loss and one-out loss to calculate the worker score.
 // T_ij / T_ik / T^-_ik / T^+_ik
 func GetWorkerScore(losses, lossesCut float64) float64 {
 	deltaLogLoss := math.Log10(lossesCut) - math.Log10(losses)
@@ -13,6 +14,8 @@ func GetWorkerScore(losses, lossesCut float64) float64 {
 }
 
 // GetStakeWeightedLoss calculates the stake-weighted average loss.
+// Consider the losses and the stake of each reputer to calculate the stake-weighted loss.
+// The stake weighted loss is used to calculate the network-wide losses.
 // L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
 func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
