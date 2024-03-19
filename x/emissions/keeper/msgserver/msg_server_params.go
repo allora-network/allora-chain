@@ -28,8 +28,8 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Version) == 1 {
 		existingParams.Version = newParams.Version[0]
 	}
-	if len(newParams.EpochLength) == 1 {
-		existingParams.EpochLength = newParams.EpochLength[0]
+	if len(newParams.RewardCadence) == 1 {
+		existingParams.RewardCadence = newParams.RewardCadence[0]
 	}
 	if len(newParams.EmissionsPerEpoch) == 1 {
 		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]

@@ -72,7 +72,7 @@ service Msg {
 // same as if the field was not set
 message OptionalParams {
   repeated string version = 1;      // version of the protocol should be in lockstep with github release tag version
-  repeated int64 epoch_length = 2;  // length of an "epoch" for rewards payouts in blocks
+  repeated int64 reward_cadence = 2;  // length of an "epoch" for rewards payouts in blocks
   repeated string emissions_per_epoch = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",

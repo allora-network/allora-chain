@@ -8,7 +8,7 @@ import (
 func DefaultParams() Params {
 	return Params{
 		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
-		EpochLength:                 int64(600),                    // length of an "epoch" for rewards payouts in blocks
+		RewardCadence:               int64(600),                    // length of an "epoch" for rewards payouts in blocks
 		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
 		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:           uint64(2048),                  // max number of topics to run cadence for per block
@@ -34,7 +34,7 @@ func DefaultParamsVersion() string {
 }
 
 func DefaultParamsEpochLength() int64 {
-	return DefaultParams().EpochLength
+	return DefaultParams().RewardCadence
 }
 
 func DefaultParamsEmissionsPerEpoch() cosmosMath.Int {

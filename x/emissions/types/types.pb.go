@@ -31,7 +31,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // Params defines the parameters of the module.
 type Params struct {
 	Version                     string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	EpochLength                 int64                  `protobuf:"varint,2,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	RewardCadence               int64                  `protobuf:"varint,2,opt,name=reward_cadence,json=rewardCadence,proto3" json:"reward_cadence,omitempty"`
 	EmissionsPerEpoch           cosmossdk_io_math.Int  `protobuf:"bytes,3,opt,name=emissions_per_epoch,json=emissionsPerEpoch,proto3,customtype=cosmossdk.io/math.Int" json:"emissions_per_epoch"`
 	MinTopicUnmetDemand         cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
 	MaxTopicsPerBlock           uint64                 `protobuf:"varint,5,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
@@ -91,9 +91,9 @@ func (m *Params) GetVersion() string {
 	return ""
 }
 
-func (m *Params) GetEpochLength() int64 {
+func (m *Params) GetRewardCadence() int64 {
 	if m != nil {
-		return m.EpochLength
+		return m.RewardCadence
 	}
 	return 0
 }
@@ -1157,7 +1157,8 @@ func (m *ForecastSetForScoring) GetForecasts() *Forecasts {
 
 type StakePlacement struct {
 	TopicId uint64                 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Amount  cosmossdk_io_math.Uint `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+	Reputer string                 `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Amount  cosmossdk_io_math.Uint `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 
 func (m *StakePlacement) Reset()         { *m = StakePlacement{} }
@@ -1198,6 +1199,13 @@ func (m *StakePlacement) GetTopicId() uint64 {
 		return m.TopicId
 	}
 	return 0
+}
+
+func (m *StakePlacement) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
 }
 
 type StakeRemoval struct {
@@ -1253,9 +1261,10 @@ func (m *StakeRemoval) GetPlacements() []*StakePlacement {
 }
 
 type DelegatedStakePlacement struct {
-	TopicId uint64                 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Reputer string                 `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
-	Amount  cosmossdk_io_math.Uint `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+	TopicId   uint64                 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer   string                 `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator string                 `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount    cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 
 func (m *DelegatedStakePlacement) Reset()         { *m = DelegatedStakePlacement{} }
@@ -1301,6 +1310,13 @@ func (m *DelegatedStakePlacement) GetTopicId() uint64 {
 func (m *DelegatedStakePlacement) GetReputer() string {
 	if m != nil {
 		return m.Reputer
+	}
+	return ""
+}
+
+func (m *DelegatedStakePlacement) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
 	}
 	return ""
 }
@@ -1944,8 +1960,8 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x1a
-	if m.EpochLength != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.EpochLength))
+	if m.RewardCadence != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.RewardCadence))
 		i--
 		dAtA[i] = 0x10
 	}
@@ -2821,7 +2837,14 @@ func (m *StakePlacement) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x12
+	dAtA[i] = 0x1a
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
 	if m.TopicId != 0 {
 		i = encodeVarintTypes(dAtA, i, uint64(m.TopicId))
 		i--
@@ -2901,7 +2924,14 @@ func (m *DelegatedStakePlacement) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x1a
+	dAtA[i] = 0x22
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x1a
+	}
 	if len(m.Reputer) > 0 {
 		i -= len(m.Reputer)
 		copy(dAtA[i:], m.Reputer)
@@ -3062,8 +3092,8 @@ func (m *Params) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	if m.EpochLength != 0 {
-		n += 1 + sovTypes(uint64(m.EpochLength))
+	if m.RewardCadence != 0 {
+		n += 1 + sovTypes(uint64(m.RewardCadence))
 	}
 	l = m.EmissionsPerEpoch.Size()
 	n += 1 + l + sovTypes(uint64(l))
@@ -3486,6 +3516,10 @@ func (m *StakePlacement) Size() (n int) {
 	if m.TopicId != 0 {
 		n += 1 + sovTypes(uint64(m.TopicId))
 	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
 	l = m.Amount.Size()
 	n += 1 + l + sovTypes(uint64(l))
 	return n
@@ -3519,6 +3553,10 @@ func (m *DelegatedStakePlacement) Size() (n int) {
 		n += 1 + sovTypes(uint64(m.TopicId))
 	}
 	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Delegator)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
@@ -3650,9 +3688,9 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EpochLength", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardCadence", wireType)
 			}
-			m.EpochLength = 0
+			m.RewardCadence = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -3662,7 +3700,7 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.EpochLength |= int64(b&0x7F) << shift
+				m.RewardCadence |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -6470,6 +6508,38 @@ func (m *StakePlacement) Unmarshal(dAtA []byte) error {
 			}
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
 			var stringLen uint64
@@ -6707,6 +6777,38 @@ func (m *DelegatedStakePlacement) Unmarshal(dAtA []byte) error {
 			m.Reputer = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}

@@ -48,7 +48,7 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryR
 		return nil, err
 	}
 
-	stakes, err := qs.k.GetStakePlacementsForReputer(ctx, address)
+	stakes, err := qs.k.GetStakePlacementsByReputer(ctx, address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -59,4 +59,23 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryR
 	}
 
 	return &types.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
+}
+
+// Retrieves a list of stakes for a given topic.
+func (qs queryServer) GetTopicStakeList(ctx context.Context, req *types.QueryTopicStakeListRequest) (*types.QueryTopicStakeListResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
+	}
+
+	stakes, err := qs.k.GetStakePlacementsByTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	var stakePointers []*types.StakePlacement
+	for _, stake := range stakes {
+		stakePointers = append(stakePointers, &stake)
+	}
+
+	return &types.QueryTopicStakeListResponse{Stakes: stakePointers}, nil
 }

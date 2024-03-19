@@ -9,16 +9,16 @@ import (
 	"cosmossdk.io/core/appmodule"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
 )
 
 var (
@@ -149,11 +149,11 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	epochLength, err := am.keeper.GetParamsEpochLength(ctx)
+	rewardCadence, err := am.keeper.GetParamsRewardCadence(ctx)
 	if err != nil {
 		return err
 	}
-	if blocksSinceLastUpdate >= epochLength {
+	if blocksSinceLastUpdate >= rewardCadence {
 		// err = emitRewards(sdkCtx, am)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate

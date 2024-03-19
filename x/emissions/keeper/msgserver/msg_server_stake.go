@@ -167,7 +167,7 @@ func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *types.MsgStart
 	if err != nil {
 		return nil, err
 	}
-	stakePlacements, err := ms.k.GetStakePlacementsForReputer(ctx, senderAddr)
+	stakePlacements, err := ms.k.GetStakePlacementsByReputer(ctx, senderAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -342,4 +342,3 @@ func moveFundsAddStake(
 
 	return nil
 }
-

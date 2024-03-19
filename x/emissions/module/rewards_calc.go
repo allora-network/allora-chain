@@ -5,8 +5,8 @@ import (
 	"math/big"
 
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -179,11 +179,11 @@ func MaskWeightsIfInsufficientLiveness(
 				return nil, err
 			}
 			// If number of inferences in the reward epoch < amount that should be there by too much, then mask the weight
-			epochLength, err := am.keeper.GetParamsEpochLength(ctx)
+			rewardCadence, err := am.keeper.GetParamsRewardCadence(ctx)
 			if err != nil {
 				return nil, err
 			}
-			expectedNumInferencesInRewardEpoch := uint64(epochLength) / topic.InferenceCadence
+			expectedNumInferencesInRewardEpoch := uint64(rewardCadence) / topic.InferenceCadence
 			// Allow for for 10% of inferences to be missing. Percent directly encoded as uint64, not float
 			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxMissingInferencePercent(ctx)
 			if err != nil {
