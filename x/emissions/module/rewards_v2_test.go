@@ -81,7 +81,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer2LossBundle)
 
-	err = s.emissionsKeeper.InsertLossBudles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
+	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
 	s.NoError(err, "Error adding lossBundle for worker")
 
 	// Get LossBundles
@@ -172,7 +172,7 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 		newLossBundles = append(newLossBundles, &lossBundle)
 	}
 
-	err = s.emissionsKeeper.InsertLossBudles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: newLossBundles})
+	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: newLossBundles})
 	s.NoError(err, "Error adding lossBundle for reputer")
 
 	var reputersStakes []float64
