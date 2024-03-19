@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -44,6 +45,18 @@ func (qs queryServer) GetInferencesToScore(ctx context.Context, req *types.Query
 	}
 
 	response := &types.QueryInferencesToScoreResponse{Inferences: inferences}
+	return response, nil
+}
+
+func (qs queryServer) GetForecastsToScore(ctx context.Context, req *types.QueryForecastsToScoreRequest) (*types.QueryForecastsToScoreResponse, error) {
+	// Defers implementation to the function in the Keeper
+	topicId := req.TopicId
+	forecasts, err := qs.k.GetLatestForecastsFromTopic(ctx, topicId)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &types.QueryForecastsToScoreResponse{Forecasts: forecasts}
 	return response, nil
 }
 

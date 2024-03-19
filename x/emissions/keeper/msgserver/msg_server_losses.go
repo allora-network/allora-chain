@@ -46,7 +46,7 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 		bundles := &types.LossBundles{
 			LossBundles: lossBundles,
 		}
-		err = ms.k.InsertLossBudles(ctx, topicId, actualTimestamp, *bundles)
+		err = ms.k.InsertLossBundles(ctx, topicId, actualTimestamp, *bundles)
 		if err != nil {
 			return nil, err
 		}
