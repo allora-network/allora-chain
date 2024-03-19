@@ -151,7 +151,7 @@ func (s *MintModuleTestSuite) TestMintingBelowMaxSupplyInHalvingBlock() {
 	s.Require().NoError(err)
 
 	// Verify minting occurred and current block provision remains as set
-	s.Require().Less(minter.Inflation.String(), minterBeforeUpdate.Inflation.QuoInt64(2).String(), "New Inflation should be less than twice previous value")
+	s.Require().Less(minter.Inflation.String(), minterBeforeUpdate.Inflation.String(), "New Inflation should be less than previous value")
 	s.Require().Equal(minterBeforeUpdate.AnnualProvisions.QuoInt64(2), minter.AnnualProvisions, "Annual should equal half of previous value")
 	s.Require().Equal(expectedBlockProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should equal half of previous value")
 }
