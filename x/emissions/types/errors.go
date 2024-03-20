@@ -66,4 +66,7 @@ var (
 	ErrLnToThePExponentiationIsInfinity                  = errors.Register(ModuleName, 62, "exponentiation overflow")
 	ErrPhiInvalidInput                                   = errors.Register(ModuleName, 64, "phi: invalid input")
 	ErrPhiResultIsNaN                                    = errors.Register(ModuleName, 65, "phi: result is NaN")
+	ErrAdjustedStakeInvalidSliceLength                   = errors.Register(ModuleName, 66, "adjusted stake: invalid slice length")
+	ErrAdjustedStakeIsInfinity                           = errors.Register(ModuleName, 67, "adjusted stake: is infinity")
+	ErrAdjustedStakeIsNaN                                = errors.Register(ModuleName, 68, "adjusted stake: is NaN")
 )
