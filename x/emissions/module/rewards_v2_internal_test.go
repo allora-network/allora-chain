@@ -98,3 +98,17 @@ func (s *MathTestSuite) TestAdjustedStakeSimple() {
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
 }
+
+func (s *MathTestSuite) TestExponentialMovingAverageSimple() {
+	alpha := 0.1
+	var current float64 = 300
+	var previous float64 = 200
+
+	// 0.1*300 + (1-0.1)*200
+	// 30 + 180 = 210
+	var expected float64 = 210
+
+	result, err := exponentialMovingAverage(alpha, current, previous)
+	s.Require().NoError(err)
+	s.Require().InDelta(expected, result, 0.0001)
+}

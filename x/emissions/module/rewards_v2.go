@@ -135,3 +135,30 @@ func adjustedStake(
 	}
 	return ret, nil
 }
+
+// Used by Rewards fraction functions,
+// all the exponential moving average functions take the form
+// x_average=α*x_current + (1-α)*x_previous
+func exponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
+	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
+		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
+	}
+	if math.IsNaN(current) || math.IsInf(current, 0) {
+		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "current: %f", current)
+	}
+	if math.IsNaN(previous) || math.IsInf(previous, 0) {
+		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "previous: %f", previous)
+	}
+
+	// THE ONLY LINE OF CODE IN THIS FUNCTION
+	// THAT ISN'T ERROR CHECKING IS HERE
+	ret := alpha*current + (1-alpha)*previous
+
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrExponentialMovingAverageIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrExponentialMovingAverageIsNaN
+	}
+	return ret, nil
+}

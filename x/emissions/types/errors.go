@@ -69,4 +69,7 @@ var (
 	ErrAdjustedStakeInvalidSliceLength                   = errors.Register(ModuleName, 66, "adjusted stake: invalid slice length")
 	ErrAdjustedStakeIsInfinity                           = errors.Register(ModuleName, 67, "adjusted stake: is infinity")
 	ErrAdjustedStakeIsNaN                                = errors.Register(ModuleName, 68, "adjusted stake: is NaN")
+	ErrExponentialMovingAverageIsNaN                     = errors.Register(ModuleName, 69, "exponential moving average: is NaN")
+	ErrExponentialMovingAverageIsInfinity                = errors.Register(ModuleName, 70, "exponential moving average: is infinity")
+	ErrExponentialMovingAverageInvalidInput              = errors.Register(ModuleName, 71, "exponential moving average: invalid input")
 )
