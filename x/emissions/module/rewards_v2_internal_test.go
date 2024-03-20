@@ -1,4 +1,4 @@
-package equations
+package module
 
 import (
 	"math"
