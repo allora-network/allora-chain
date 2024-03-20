@@ -30,12 +30,12 @@ jobs:
       - name: Issue Release Assets
         if: ${{ steps.vars.outputs.should_release == 'true' }}
         run: |
-          GOOS=darwin GOARCH=arm64 go build -o release/darwin_arm64/allorad cmd/allorad/main.go
-          GOOS=darwin GOARCH=amd64 go build -o release/darwin_amd64/allorad cmd/allorad/main.go
-          GOOS=linux GOARCH=arm64 go build -o release/linux_arm64/allorad cmd/allorad/main.go
-          GOOS=linux GOARCH=amd64 go build -o release/linux_amd64/allorad cmd/allorad/main.go
-          GOOS=windows GOARCH=arm64 go build -o release/windows_arm64/allorad.exe cmd/allorad/main.go
-          GOOS=windows GOARCH=amd64 go build -o release/windows_amd64/allorad.exe cmd/allorad/main.go
+          GOOS=darwin GOARCH=arm64 go build -o release/allorad_darwin_arm64 cmd/allorad/main.go
+          GOOS=darwin GOARCH=amd64 go build -o release/allorad_darwin_amd64 cmd/allorad/main.go
+          GOOS=linux GOARCH=arm64 go build -o release/allorad_linux_arm64 cmd/allorad/main.go
+          GOOS=linux GOARCH=amd64 go build -o release/allorad_linux_amd64 cmd/allorad/main.go
+          GOOS=windows GOARCH=arm64 go build -o release/allorad_windows_arm64.exe cmd/allorad/main.go
+          GOOS=windows GOARCH=amd64 go build -o release/allorad_windows_amd64.exe cmd/allorad/main.go
 
       - name: Delete the "latest" Release
         uses: dev-drprasad/delete-tag-and-release@v0.2.1

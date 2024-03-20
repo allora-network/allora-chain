@@ -16,6 +16,16 @@ For the latest documentation, please go to https://docs.allora.network/
 
 ## Allorad Install
 
+Binary can be Installed for Linux or Mac (check releases for Windows)
+
+```bash
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash
+```
+
+Ensure `~/.local/bin` is in your PATH.
+
+`allorad` will be available.
+
 ```sh
 git clone -b <latest-release-tag> https://github.com/allora-network/allora-chain.git
 cd allora-chain && make install
