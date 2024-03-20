@@ -139,6 +139,11 @@ func adjustedStake(
 // Used by Rewards fraction functions,
 // all the exponential moving average functions take the form
 // x_average=α*x_current + (1-α)*x_previous
+//
+// this covers the equations
+// Uij = αUij + (1 − α)Ui−1,j
+// ̃Vik = αVik + (1 − α)Vi−1,k
+// ̃Wim = αWim + (1 − α)Wi−1,m
 func exponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
 	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
 		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
@@ -159,6 +164,99 @@ func exponentialMovingAverage(alpha float64, current float64, previous float64) 
 	}
 	if math.IsNaN(ret) {
 		return 0, emissions.ErrExponentialMovingAverageIsNaN
+	}
+	return ret, nil
+}
+
+// f_ij, f_ik, and f_im are all reward fractions
+// that require computing the ratio of one participant to all participants
+// yes this is extremely simple math
+// yes we write a separate function for it anyway. The compiler can inline it if necessary
+// normalizeToArray = value / sum(allValues)
+// this covers equations
+// f_ij =  (̃U_ij) / ∑_j(̃Uij)
+// f_ik = (̃Vik) / ∑_k(̃Vik)
+// fim =  (̃Wim) / ∑_m(̃Wim)
+func normalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
+	if len(allValues) == 0 {
+		return 0, emissions.ErrFractionInvalidSliceLength
+	}
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0, errors.Wrapf(emissions.ErrFractionInvalidInput, "value: %f", value)
+	}
+	sumValues := 0.0
+	for i, v := range allValues {
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return 0, errors.Wrapf(emissions.ErrFractionInvalidInput, "allValues[%d]: %f", i, v)
+		}
+		sumValues += v
+	}
+	if sumValues == 0 {
+		return 0, emissions.ErrFractionDivideByZero
+	}
+	ret := value / sumValues
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrFractionIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrFractionIsNaN
+	}
+
+	return ret, nil
+}
+
+// We define a modified entropy for each class
+// ({F_i, G_i, H_i} for the inference, forecasting, and reputer tasks, respectively
+// Fi = - ∑_j( f_ij * ln(f_ij) * (N_{i,eff} / N_i)^β )
+// Gi = - ∑_k( f_ik * ln(f_ik) * (N_{f,eff} / N_f)^β )
+// Hi = - ∑_m( f_im * ln(f_im) * (N_{r,eff} / N_r)^β )
+// we use beta = 0.25 as a fiducial value
+func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float64) (float64, error) {
+	if math.IsInf(N_eff, 0) ||
+		math.IsNaN(N_eff) ||
+		math.IsInf(numParticipants, 0) ||
+		math.IsNaN(numParticipants) ||
+		math.IsInf(beta, 0) ||
+		math.IsNaN(beta) {
+		return 0, errors.Wrapf(
+			emissions.ErrEntropyInvalidInput,
+			"N_eff: %f, numParticipants: %f, beta: %f",
+			N_eff,
+			numParticipants,
+			beta,
+		)
+	}
+	// simple variable rename to look more like the equations,
+	// hopefully compiler is smart enough to inline it
+	N := numParticipants
+
+	multiplier := N_eff / N
+	multiplier = math.Pow(multiplier, beta)
+
+	sum := 0.0
+	for i, f := range allFs {
+		if math.IsInf(f, 0) || math.IsNaN(f) {
+			return 0, errors.Wrapf(emissions.ErrEntropyInvalidInput, "allFs[%d]: %f", i, f)
+		}
+		sum += f * math.Log(f)
+	}
+
+	ret := -1 * sum * multiplier
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrEntropyIsInfinity,
+			"sum of f: %f, multiplier: %f",
+			sum,
+			multiplier,
+		)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(
+			emissions.ErrEntropyIsNaN,
+			"sum of f: %f, multiplier: %f",
+			sum,
+			multiplier,
+		)
 	}
 	return ret, nil
 }

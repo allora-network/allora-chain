@@ -112,3 +112,28 @@ func (s *MathTestSuite) TestExponentialMovingAverageSimple() {
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
 }
+
+func (s *MathTestSuite) TestNormalizeAgainstSlice() {
+	v := 2.0
+	a := []float64{2.0, 3.0, 5.0}
+	expected := 0.2
+
+	result, err := normalizeAgainstSlice(v, a)
+
+	s.Require().NoError(err)
+	s.Require().InDelta(expected, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestEntropySimple() {
+	f_ij := []float64{0.2, 0.3, 0.5}
+	N_i_eff := 0.75
+	N_i := 3.0
+	beta := 0.25
+
+	// using wolfram alpha to get a sample result
+	// https://www.wolframalpha.com/input?i2d=true&i=-Power%5B%5C%2840%29Divide%5B0.75%2C3%5D%5C%2841%29%2C0.25%5D*%5C%2840%290.2*ln%5C%2840%290.2%5C%2841%29+%2B+0.3*ln%5C%2840%290.3%5C%2841%29+%2B+0.5*ln%5C%2840%290.5%5C%2841%29%5C%2841%29
+	expected := 0.7280746285142275338742683350155248011115920866691059016669
+	result, err := entropy(f_ij, N_i_eff, N_i, beta)
+	s.Require().NoError(err)
+	s.Require().InDelta(expected, result, 0.0001)
+}
