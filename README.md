@@ -93,7 +93,7 @@ cat > stake-validator.json << EOF
 {
     "pubkey": $(allorad --home=$APP_HOME comet show-validator),
     "amount": "1000000uallo",
-    "moniker": "myvalidator",
+    "moniker": "validator0",
     "commission-rate": "0.1",
     "commission-max-rate": "0.2",
     "commission-max-change-rate": "0.01",
@@ -105,12 +105,12 @@ EOF
 Stake the validator
 ```bash
 allorad tx staking create-validator ./stake-validator.json \
-    --chain-id=edgenet \
+    --chain-id=testnet \
     --home="$APP_HOME" \
     --keyring-backend=test \
     --from=validator0
 ```
-The command will output tx hash, you can check its status in the explorer: `https://explorer.edgenet.allora.network:8443/allora-edgenet/tx/$TX_HASH`
+The command will output tx hash, you can check its status in the explorer: `https://explorer.testnet.allora.network:8443/allora-testnet/tx/$TX_HASH`
 
 
 5. Verify validator setup
