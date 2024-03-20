@@ -35,6 +35,10 @@ func phi(p float64, x float64) (float64, error) {
 	if math.IsInf(result, 0) {
 		return 0, emissions.ErrLnToThePExponentiationIsInfinity
 	}
+	// should theoretically never be possible with the above checks
+	if math.IsNaN(result) {
+		return 0, emissions.ErrPhiResultIsNaN
+	}
 	return result, nil
 }
 
