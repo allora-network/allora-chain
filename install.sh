@@ -1,8 +1,13 @@
 #!/bin/bash
 
-# Define the base URL and application name
-BASE_URL="https://github.com/allora-network/allora-chain/releases/download/v0.0.9"
+# Define the application name
 APP_NAME="allorad"
+
+# Check for a version argument, otherwise set a default version
+VERSION=${1:-"v0.0.9"}
+
+# Define the base URL using the specified or default version
+BASE_URL="https://github.com/allora-network/allora-chain/releases/download/$VERSION"
 
 # Determine the operating system and architecture
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
