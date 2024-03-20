@@ -64,5 +64,6 @@ var (
 	ErrEToTheXExponentiationIsInfinity                   = errors.Register(ModuleName, 59, "exponentiation overflow")
 	ErrNaturalLogarithmIsInfinity                        = errors.Register(ModuleName, 60, "natural logarithm overflow")
 	ErrLnToThePExponentiationIsInfinity                  = errors.Register(ModuleName, 62, "exponentiation overflow")
-	ErrPhiInvalidInput                                   = errors.Register(ModuleName, 64, "invalid input")
+	ErrPhiInvalidInput                                   = errors.Register(ModuleName, 64, "phi: invalid input")
+	ErrPhiResultIsNaN                                    = errors.Register(ModuleName, 65, "phi: result is NaN")
 )
