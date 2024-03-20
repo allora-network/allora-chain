@@ -61,4 +61,8 @@ var (
 	ErrIntegerUnderflowStakeFromDelegator                = errors.Register(ModuleName, 56, "integer underflow for stake from delegator")
 	ErrIntegerUnderflowDelegatedStakePlacement           = errors.Register(ModuleName, 57, "integer underflow for delegated stake placement")
 	ErrIntegerUnderflowDelegatedStakeUponReputer         = errors.Register(ModuleName, 58, "integer underflow for delegated stake upon reputer")
+	ErrEToTheXExponentiationIsInfinity                   = errors.Register(ModuleName, 59, "exponentiation overflow")
+	ErrNaturalLogarithmIsInfinity                        = errors.Register(ModuleName, 60, "natural logarithm overflow")
+	ErrLnToThePExponentiationIsInfinity                  = errors.Register(ModuleName, 62, "exponentiation overflow")
+	ErrPhiInvalidInput                                   = errors.Register(ModuleName, 64, "invalid input")
 )
