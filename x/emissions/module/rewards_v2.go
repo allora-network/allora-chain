@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	errors "cosmossdk.io/errors"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -61,15 +62,12 @@ func phi(p float64, x float64) (float64, error) {
 		return 0, emissions.ErrPhiInvalidInput
 	}
 	eToTheX := math.Exp(x)
-	fmt.Println(eToTheX)
 	onePlusEToTheX := 1 + eToTheX
 	if math.IsInf(onePlusEToTheX, 0) {
 		return 0, emissions.ErrEToTheXExponentiationIsInfinity
 	}
 	naturalLog := math.Log(onePlusEToTheX)
-	fmt.Println(naturalLog)
 	result := math.Pow(naturalLog, p)
-	fmt.Println(result)
 	if math.IsInf(result, 0) {
 		return 0, emissions.ErrLnToThePExponentiationIsInfinity
 	}
@@ -81,9 +79,59 @@ func phi(p float64, x float64) (float64, error) {
 }
 
 // Adjusted stake for calculating consensus S hat
-// ^S_im = 1 - ϕ_1^−1(η) * ϕ1[ −η * (((N_r * a_im * S_im) / (Σ_m * a_im * S_im)) − 1 )]
-// we use eta = 20
+// ^S_im = 1 - ϕ_1^−1(η) * ϕ1[ −η * (((N_r * a_im * S_im) / (Σ_m(a_im * S_im))) − 1 )]
+// we use eta = 20 as the fiducial value decided in the paper
 // phi_1 refers to the phi function with p = 1
-func adjustedStake(stake float64, listeningCoefficient float64, numReputers float64) (float64, error) {
-	return 0, nil
+// INPUTS:
+// This function expects that allStakes
+// and allListeningCoefficients are slices of the same length
+// and the index to each slice corresponds to the same reputer
+func adjustedStake(
+	stake float64,
+	allStakes []float64,
+	listeningCoefficient float64,
+	allListeningCoefficients []float64,
+	numReputers float64,
+) (float64, error) {
+	if len(allStakes) != len(allListeningCoefficients) ||
+		len(allStakes) == 0 ||
+		len(allListeningCoefficients) == 0 {
+		return 0, emissions.ErrAdjustedStakeInvalidSliceLength
+	}
+	// renaming variables just to be more legible with the formula
+	S_im := stake
+	a_im := listeningCoefficient
+	N_r := numReputers
+
+	denominator := 0.0
+	for i, s := range allStakes {
+		a := allListeningCoefficients[i]
+		denominator += (a * s)
+	}
+	numerator := N_r * a_im * S_im
+	stakeFraction := numerator / denominator
+	stakeFraction = stakeFraction - 1
+	stakeFraction = stakeFraction * -20 // eta = 20
+
+	phi_1_stakeFraction, err := phi(1, stakeFraction)
+	if err != nil {
+		return 0, err
+	}
+	phi_1_Eta, err := phi(1, 20)
+	if err != nil {
+		return 0, err
+	}
+	// phi_1_Eta is taken to the -1 power
+	// and then multiplied by phi_1_stakeFraction
+	// so we can just treat it as phi_1_stakeFraction / phi_1_Eta
+	phiVal := phi_1_stakeFraction / phi_1_Eta
+	ret := 1 - phiVal
+
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(emissions.ErrAdjustedStakeIsInfinity, "stake: %f", stake)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(emissions.ErrAdjustedStakeIsNaN, "stake: %f", stake)
+	}
+	return ret, nil
 }
