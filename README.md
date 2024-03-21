@@ -16,6 +16,18 @@ For the latest documentation, please go to https://docs.allora.network/
 
 ## Allorad Install
 
+Binary can be Installed for Linux or Mac (check releases for Windows)
+
+Specify a version to install if desired. 
+
+```bash
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.0.8
+```
+
+Ensure `~/.local/bin` is in your PATH.
+
+`allorad` will be available.
+
 ```sh
 git clone -b <latest-release-tag> https://github.com/allora-network/allora-chain.git
 cd allora-chain && make install
@@ -64,11 +76,13 @@ With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up
 
 ## Run a validator
 
-1. run and sync a full allorad node, follow [the instructions]()
+You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/docs/running-a-full-node) and [staking a validator](https://docs.allora.network/docs/stake-a-validator).
+
+1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/docs/running-a-full-node).
 
 2. Wait until the node is fully synced
 
-Verify that your node has finished synching and it is caught up with the network
+Verify that your node has finished synching and it is caught up with the network:
 
 `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up`
 Wait until you see the output: "false"
@@ -77,7 +91,7 @@ Wait until you see the output: "false"
 
 `l1_node.sh` script generates keys, you can find created account information in `data/*.account_info`. Get the address from the file and fund, on testnets you can use faucet `https://faucet.${NETWORK}.allora.network`.
 
-4. Stake validator
+4. Stake validator (detailled instructions [here](https://docs.allora.network/docs/stake-a-validator))
 
 Here's an example with Values which starts with a stake of 10000000uallo.
 
@@ -93,7 +107,7 @@ cat > stake-validator.json << EOF
 {
     "pubkey": $(allorad --home=$APP_HOME comet show-validator),
     "amount": "1000000uallo",
-    "moniker": "myvalidator",
+    "moniker": "validator0",
     "commission-rate": "0.1",
     "commission-max-rate": "0.2",
     "commission-max-change-rate": "0.01",
@@ -105,12 +119,12 @@ EOF
 Stake the validator
 ```bash
 allorad tx staking create-validator ./stake-validator.json \
-    --chain-id=edgenet \
+    --chain-id=testnet \
     --home="$APP_HOME" \
     --keyring-backend=test \
     --from=validator0
 ```
-The command will output tx hash, you can check its status in the explorer: `https://explorer.edgenet.allora.network:8443/allora-edgenet/tx/$TX_HASH`
+The command will output tx hash, you can check its status in the explorer: `https://explorer.testnet.allora.network:8443/allora-testnet/tx/$TX_HASH`
 
 
 5. Verify validator setup

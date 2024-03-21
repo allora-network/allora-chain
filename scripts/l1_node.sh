@@ -1,7 +1,7 @@
 #!/bin/bash
 set -exu
 
-NETWORK="${NETWORK:-edgenet}"
+NETWORK="${NETWORK:-testnet}"
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
 BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.${NETWORK}.allora.network}"               #! Replace with your blockless API URL
