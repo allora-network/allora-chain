@@ -260,3 +260,33 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 	}
 	return ret, nil
 }
+
+// The number ratio term captures the number of participants in the network
+// to prevent sybil attacks in the rewards distribution
+// This function captures
+// N_{i,eff} = 1 / ∑_j( f_ij^2 )
+// N_{f,eff} = 1 / ∑_k( f_ik^2 )
+// N_{r,eff} = 1 / ∑_m( f_im^2 )
+func numberRatio(rewardFractions []float64) (float64, error) {
+	if len(rewardFractions) == 0 {
+		return 0, emissions.ErrNumberRatioInvalidSliceLength
+	}
+	sum := 0.0
+	for i, f := range rewardFractions {
+		if math.IsNaN(f) || math.IsInf(f, 0) {
+			return 0, errors.Wrapf(emissions.ErrNumberRatioInvalidInput, "rewardFractions[%d]: %f", i, f)
+		}
+		sum += f * f
+	}
+	if sum == 0 {
+		return 0, emissions.ErrNumberRatioDivideByZero
+	}
+	ret := 1 / sum
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrNumberRatioIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrNumberRatioIsNaN
+	}
+	return ret, nil
+}

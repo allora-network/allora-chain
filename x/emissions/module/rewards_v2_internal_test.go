@@ -137,3 +137,123 @@ func (s *MathTestSuite) TestEntropySimple() {
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
 }
+
+func (s *MathTestSuite) TestEntropyInvalidInput() {
+	testCases := []struct {
+		name            string
+		N_eff           float64
+		numParticipants float64
+		beta            float64
+	}{
+		{
+			name:            "N_eff is Inf",
+			N_eff:           math.Inf(0),
+			numParticipants: 10,
+			beta:            0.5,
+		},
+		{
+			name:            "N_eff is NaN",
+			N_eff:           math.NaN(),
+			numParticipants: 10,
+			beta:            0.5,
+		},
+		{
+			name:            "numParticipants is Inf",
+			N_eff:           100,
+			numParticipants: math.Inf(0),
+			beta:            0.5,
+		},
+		{
+			name:            "numParticipants is NaN",
+			N_eff:           100,
+			numParticipants: math.NaN(),
+			beta:            0.5,
+		},
+		{
+			name:            "beta is Inf",
+			N_eff:           100,
+			numParticipants: 10,
+			beta:            math.Inf(0),
+		},
+		{
+			name:            "beta is NaN",
+			N_eff:           100,
+			numParticipants: 10,
+			beta:            math.NaN(),
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			_, err := entropy(nil, tc.N_eff, tc.numParticipants, tc.beta)
+			s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
+		})
+	}
+}
+
+func (s *MathTestSuite) TestEntropyInvalidInputAllFsInf() {
+	allFs := []float64{1, 2, math.Inf(0), 4}
+	_, err := entropy(allFs, 100, 10, 0.5)
+	s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
+}
+
+func (s *MathTestSuite) TestEntropyInvalidInputAllFsNan() {
+	allFs := []float64{1, 2, math.NaN(), 4}
+	_, err := entropy(allFs, 100, 10, 0.5)
+	s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
+}
+
+func (s *MathTestSuite) TestEntropyInfinity() {
+	allFs := []float64{0.1, 0.2, 0.3, 0.4}
+
+	_, err := entropy(allFs, 100, 10, math.MaxFloat64)
+	s.Require().ErrorIs(err, emissions.ErrEntropyIsInfinity)
+}
+
+func (s *MathTestSuite) TestEntropyNaN() {
+	allFs := []float64{0, 0, 0, 0}
+
+	_, err := entropy(allFs, 100, 10, 0)
+	s.Require().ErrorIs(err, emissions.ErrEntropyIsNaN)
+}
+
+func (s *MathTestSuite) TestNumberRatio() {
+	rewardFractions := []float64{0.2, 0.3, 0.4, 0.5, 0.6, 0.7}
+
+	// 1 / (0.2 *0.2 + 0.3*0.3 + 0.4*0.4 + 0.5*0.5 + 0.6*0.6 + 0.7*0.7)
+	// 1 / (0.04 + 0.09 + 0.16 + 0.25 + 0.36 + 0.49)
+	// 1 / 1.39 = 0.719424460431654676259005145797598627787307032590051458
+	expected := 0.7194244604316546762589928057553956834532374100
+
+	result, err := numberRatio(rewardFractions)
+	s.Require().NoError(err, "Error calculating number ratio")
+	s.Require().InDelta(expected, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestNumberRatioZeroFractions() {
+	zeroFractions := []float64{0.0}
+
+	_, err := numberRatio(zeroFractions)
+	s.Require().ErrorIs(err, emissions.ErrNumberRatioDivideByZero)
+}
+
+func (s *MathTestSuite) TestNumberRatioEmptyList() {
+	emptyFractions := []float64{}
+
+	_, err := numberRatio(emptyFractions)
+	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidSliceLength)
+}
+
+func (s *MathTestSuite) TestNumberRatioNaNFractions() {
+	invalidFractions := []float64{0.2, math.NaN(), 0.5}
+	_, err := numberRatio(invalidFractions)
+	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidInput)
+}
+
+func (s *MathTestSuite) TestNumberRatioInfiniteFractions() {
+
+	infFractions := []float64{0.2, math.Inf(1), 0.5}
+
+	_, err := numberRatio(infFractions)
+	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidInput)
+}
