@@ -49,11 +49,8 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.RemoveStakeDelayWindow) == 1 {
 		existingParams.RemoveStakeDelayWindow = newParams.RemoveStakeDelayWindow[0]
 	}
-	if len(newParams.MinRequestCadence) == 1 {
-		existingParams.MinRequestCadence = newParams.MinRequestCadence[0]
-	}
-	if len(newParams.MinLossCadence) == 1 {
-		existingParams.MinLossCadence = newParams.MinLossCadence[0]
+	if len(newParams.MinEpochLength) == 1 {
+		existingParams.MinEpochLength = newParams.MinEpochLength[0]
 	}
 	if len(newParams.MaxInferenceRequestValidity) == 1 {
 		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
@@ -63,6 +60,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.PercentRewardsReputersWorkers) == 1 {
 		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
+	}
+	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
+		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
+	}
+	if len(newParams.MaxReputersPerTopicRequest) == 1 {
+		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

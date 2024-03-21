@@ -182,7 +182,7 @@ func MaskWeightsIfInsufficientLiveness(
 			if err != nil {
 				return nil, err
 			}
-			maxPossibleInferencesInRewardEpoch := uint64(rewardCadence) / topic.InferenceCadence
+			maxPossibleInferencesInRewardEpoch := uint64(rewardCadence) / topic.EpochLength
 			// Allow for for 10% of inferences to be missing. Percent directly encoded as cosmosMath.LegacyDec
 			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxMissingInferencePercent(ctx)
 			if err != nil {
