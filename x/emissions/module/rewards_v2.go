@@ -8,11 +8,23 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// GetfUniqueAgg calculates the unique value or impact of each forecaster.
+// f^+
+func GetfUniqueAgg(numForecasters float64) float64 {
+	return  1.0 / math.Pow(2.0, (numForecasters - 1.0))
+}
+
+// GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
+// T_ik
+func GetFinalWorkerScoreForecastTask(scoreOneIn, scoreOneOut, fUniqueAgg float64) float64 {
+	return fUniqueAgg*scoreOneIn + (1-fUniqueAgg)*scoreOneOut
+}
+
 // GetWorkerScore calculates the worker score based on the losses and lossesCut.
 // Consider the staked weighted inference loss and one-out loss to calculate the worker score.
-// T_ij / T_ik / T^-_ik / T^+_ik
-func GetWorkerScore(losses, lossesCut float64) float64 {
-	deltaLogLoss := math.Log10(lossesCut) - math.Log10(losses)
+// T_ij / T^-_ik / T^+_ik
+func GetWorkerScore(losses, lossesOneOut float64) float64 {
+	deltaLogLoss := math.Log10(lossesOneOut) - math.Log10(losses)
 	return deltaLogLoss
 }
 
@@ -39,7 +51,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 		if loss <= 0 {
 			return 0, fmt.Errorf("loss values must be greater than zero")
 		}
-		weightedLoss := (reputersStakes[i] / totalStake) * math.Log10(loss)
+		weightedLoss := (reputersStakes[i] * math.Log10(loss)) / totalStake
 		stakeWeightedLoss += weightedLoss
 	}
 
