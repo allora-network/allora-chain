@@ -49,4 +49,3 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 	}
 	return &types.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
 }
-

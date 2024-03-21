@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func TestTopicIdListValueCodec_Encode(t *testing.T) {
