@@ -18,8 +18,10 @@ For the latest documentation, please go to https://docs.allora.network/
 
 Binary can be Installed for Linux or Mac (check releases for Windows)
 
+Specify a version to install if desired. 
+
 ```bash
-curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.0.8
 ```
 
 Ensure `~/.local/bin` is in your PATH.
