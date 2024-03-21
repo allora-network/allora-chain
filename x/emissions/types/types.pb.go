@@ -44,11 +44,12 @@ type Params struct {
 	MaxRequestCadence             uint64                      `protobuf:"varint,12,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
 	PercentRewardsReputersWorkers cosmossdk_io_math.LegacyDec `protobuf:"bytes,13,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"percent_rewards_reputers_workers"`
 	Sharpness                     uint64                      `protobuf:"varint,15,opt,name=sharpness,proto3" json:"sharpness,omitempty"`
-	BetaEntropy                   float32                     `protobuf:"fixed32,16,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`
-	DcoefAbs                      float32                     `protobuf:"fixed32,17,opt,name=dcoef_abs,json=dcoefAbs,proto3" json:"dcoef_abs,omitempty"`
-	LearningRate                  float32                     `protobuf:"fixed32,18,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`
-	MaxGradientThreshold          float32                     `protobuf:"fixed32,19,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`
-	MinStakeFraction              float32                     `protobuf:"fixed32,20,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`
+	// above-average stake holders at high values
+	BetaEntropy          float32 `protobuf:"fixed32,16,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`
+	DcoefAbs             float32 `protobuf:"fixed32,17,opt,name=dcoef_abs,json=dcoefAbs,proto3" json:"dcoef_abs,omitempty"`
+	LearningRate         float32 `protobuf:"fixed32,18,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`
+	MaxGradientThreshold float32 `protobuf:"fixed32,19,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`
+	MinStakeFraction     float32 `protobuf:"fixed32,20,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }

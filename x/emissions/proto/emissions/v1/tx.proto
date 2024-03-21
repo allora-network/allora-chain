@@ -134,11 +134,11 @@ message MsgCreateNewTopic {
   uint64 inference_cadence = 8;
   string default_arg = 9;
   uint64 pnorm = 10;
-  float alpha_regret = 11;
-  float preward_reputer = 12;
-  float preward_inference = 13;
-  float preward_forecast = 14;
-  float f_tolerance = 15;
+  string alpha_regret = 11;
+  string preward_reputer = 12;
+  string preward_inference = 13;
+  string preward_forecast = 14;
+  string f_tolerance = 15;
 }
 
 message MsgCreateNewTopicResponse {

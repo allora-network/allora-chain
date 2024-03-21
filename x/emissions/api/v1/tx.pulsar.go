@@ -3398,32 +3398,32 @@ func (x *fastReflection_MsgCreateNewTopic) Range(f func(protoreflect.FieldDescri
 			return
 		}
 	}
-	if x.AlphaRegret != float32(0) || math.Signbit(float64(x.AlphaRegret)) {
-		value := protoreflect.ValueOfFloat32(x.AlphaRegret)
+	if x.AlphaRegret != "" {
+		value := protoreflect.ValueOfString(x.AlphaRegret)
 		if !f(fd_MsgCreateNewTopic_alpha_regret, value) {
 			return
 		}
 	}
-	if x.PrewardReputer != float32(0) || math.Signbit(float64(x.PrewardReputer)) {
-		value := protoreflect.ValueOfFloat32(x.PrewardReputer)
+	if x.PrewardReputer != "" {
+		value := protoreflect.ValueOfString(x.PrewardReputer)
 		if !f(fd_MsgCreateNewTopic_preward_reputer, value) {
 			return
 		}
 	}
-	if x.PrewardInference != float32(0) || math.Signbit(float64(x.PrewardInference)) {
-		value := protoreflect.ValueOfFloat32(x.PrewardInference)
+	if x.PrewardInference != "" {
+		value := protoreflect.ValueOfString(x.PrewardInference)
 		if !f(fd_MsgCreateNewTopic_preward_inference, value) {
 			return
 		}
 	}
-	if x.PrewardForecast != float32(0) || math.Signbit(float64(x.PrewardForecast)) {
-		value := protoreflect.ValueOfFloat32(x.PrewardForecast)
+	if x.PrewardForecast != "" {
+		value := protoreflect.ValueOfString(x.PrewardForecast)
 		if !f(fd_MsgCreateNewTopic_preward_forecast, value) {
 			return
 		}
 	}
-	if x.FTolerance != float32(0) || math.Signbit(float64(x.FTolerance)) {
-		value := protoreflect.ValueOfFloat32(x.FTolerance)
+	if x.FTolerance != "" {
+		value := protoreflect.ValueOfString(x.FTolerance)
 		if !f(fd_MsgCreateNewTopic_f_tolerance, value) {
 			return
 		}
@@ -3464,15 +3464,15 @@ func (x *fastReflection_MsgCreateNewTopic) Has(fd protoreflect.FieldDescriptor) 
 	case "emissions.v1.MsgCreateNewTopic.pnorm":
 		return x.Pnorm != uint64(0)
 	case "emissions.v1.MsgCreateNewTopic.alpha_regret":
-		return x.AlphaRegret != float32(0) || math.Signbit(float64(x.AlphaRegret))
+		return x.AlphaRegret != ""
 	case "emissions.v1.MsgCreateNewTopic.preward_reputer":
-		return x.PrewardReputer != float32(0) || math.Signbit(float64(x.PrewardReputer))
+		return x.PrewardReputer != ""
 	case "emissions.v1.MsgCreateNewTopic.preward_inference":
-		return x.PrewardInference != float32(0) || math.Signbit(float64(x.PrewardInference))
+		return x.PrewardInference != ""
 	case "emissions.v1.MsgCreateNewTopic.preward_forecast":
-		return x.PrewardForecast != float32(0) || math.Signbit(float64(x.PrewardForecast))
+		return x.PrewardForecast != ""
 	case "emissions.v1.MsgCreateNewTopic.f_tolerance":
-		return x.FTolerance != float32(0) || math.Signbit(float64(x.FTolerance))
+		return x.FTolerance != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgCreateNewTopic"))
@@ -3510,15 +3510,15 @@ func (x *fastReflection_MsgCreateNewTopic) Clear(fd protoreflect.FieldDescriptor
 	case "emissions.v1.MsgCreateNewTopic.pnorm":
 		x.Pnorm = uint64(0)
 	case "emissions.v1.MsgCreateNewTopic.alpha_regret":
-		x.AlphaRegret = float32(0)
+		x.AlphaRegret = ""
 	case "emissions.v1.MsgCreateNewTopic.preward_reputer":
-		x.PrewardReputer = float32(0)
+		x.PrewardReputer = ""
 	case "emissions.v1.MsgCreateNewTopic.preward_inference":
-		x.PrewardInference = float32(0)
+		x.PrewardInference = ""
 	case "emissions.v1.MsgCreateNewTopic.preward_forecast":
-		x.PrewardForecast = float32(0)
+		x.PrewardForecast = ""
 	case "emissions.v1.MsgCreateNewTopic.f_tolerance":
-		x.FTolerance = float32(0)
+		x.FTolerance = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgCreateNewTopic"))
@@ -3567,19 +3567,19 @@ func (x *fastReflection_MsgCreateNewTopic) Get(descriptor protoreflect.FieldDesc
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.v1.MsgCreateNewTopic.alpha_regret":
 		value := x.AlphaRegret
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfString(value)
 	case "emissions.v1.MsgCreateNewTopic.preward_reputer":
 		value := x.PrewardReputer
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfString(value)
 	case "emissions.v1.MsgCreateNewTopic.preward_inference":
 		value := x.PrewardInference
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfString(value)
 	case "emissions.v1.MsgCreateNewTopic.preward_forecast":
 		value := x.PrewardForecast
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfString(value)
 	case "emissions.v1.MsgCreateNewTopic.f_tolerance":
 		value := x.FTolerance
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgCreateNewTopic"))
@@ -3621,15 +3621,15 @@ func (x *fastReflection_MsgCreateNewTopic) Set(fd protoreflect.FieldDescriptor, 
 	case "emissions.v1.MsgCreateNewTopic.pnorm":
 		x.Pnorm = value.Uint()
 	case "emissions.v1.MsgCreateNewTopic.alpha_regret":
-		x.AlphaRegret = float32(value.Float())
+		x.AlphaRegret = value.Interface().(string)
 	case "emissions.v1.MsgCreateNewTopic.preward_reputer":
-		x.PrewardReputer = float32(value.Float())
+		x.PrewardReputer = value.Interface().(string)
 	case "emissions.v1.MsgCreateNewTopic.preward_inference":
-		x.PrewardInference = float32(value.Float())
+		x.PrewardInference = value.Interface().(string)
 	case "emissions.v1.MsgCreateNewTopic.preward_forecast":
-		x.PrewardForecast = float32(value.Float())
+		x.PrewardForecast = value.Interface().(string)
 	case "emissions.v1.MsgCreateNewTopic.f_tolerance":
-		x.FTolerance = float32(value.Float())
+		x.FTolerance = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgCreateNewTopic"))
@@ -3714,15 +3714,15 @@ func (x *fastReflection_MsgCreateNewTopic) NewField(fd protoreflect.FieldDescrip
 	case "emissions.v1.MsgCreateNewTopic.pnorm":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.MsgCreateNewTopic.alpha_regret":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfString("")
 	case "emissions.v1.MsgCreateNewTopic.preward_reputer":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfString("")
 	case "emissions.v1.MsgCreateNewTopic.preward_inference":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfString("")
 	case "emissions.v1.MsgCreateNewTopic.preward_forecast":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfString("")
 	case "emissions.v1.MsgCreateNewTopic.f_tolerance":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgCreateNewTopic"))
@@ -3829,20 +3829,25 @@ func (x *fastReflection_MsgCreateNewTopic) ProtoMethods() *protoiface.Methods {
 		if x.Pnorm != 0 {
 			n += 1 + runtime.Sov(uint64(x.Pnorm))
 		}
-		if x.AlphaRegret != 0 || math.Signbit(float64(x.AlphaRegret)) {
-			n += 5
+		l = len(x.AlphaRegret)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.PrewardReputer != 0 || math.Signbit(float64(x.PrewardReputer)) {
-			n += 5
+		l = len(x.PrewardReputer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.PrewardInference != 0 || math.Signbit(float64(x.PrewardInference)) {
-			n += 5
+		l = len(x.PrewardInference)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.PrewardForecast != 0 || math.Signbit(float64(x.PrewardForecast)) {
-			n += 5
+		l = len(x.PrewardForecast)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.FTolerance != 0 || math.Signbit(float64(x.FTolerance)) {
-			n += 5
+		l = len(x.FTolerance)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -3873,35 +3878,40 @@ func (x *fastReflection_MsgCreateNewTopic) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.FTolerance != 0 || math.Signbit(float64(x.FTolerance)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.FTolerance))))
+		if len(x.FTolerance) > 0 {
+			i -= len(x.FTolerance)
+			copy(dAtA[i:], x.FTolerance)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FTolerance)))
 			i--
-			dAtA[i] = 0x7d
+			dAtA[i] = 0x7a
 		}
-		if x.PrewardForecast != 0 || math.Signbit(float64(x.PrewardForecast)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.PrewardForecast))))
+		if len(x.PrewardForecast) > 0 {
+			i -= len(x.PrewardForecast)
+			copy(dAtA[i:], x.PrewardForecast)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardForecast)))
 			i--
-			dAtA[i] = 0x75
+			dAtA[i] = 0x72
 		}
-		if x.PrewardInference != 0 || math.Signbit(float64(x.PrewardInference)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.PrewardInference))))
+		if len(x.PrewardInference) > 0 {
+			i -= len(x.PrewardInference)
+			copy(dAtA[i:], x.PrewardInference)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardInference)))
 			i--
-			dAtA[i] = 0x6d
+			dAtA[i] = 0x6a
 		}
-		if x.PrewardReputer != 0 || math.Signbit(float64(x.PrewardReputer)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.PrewardReputer))))
+		if len(x.PrewardReputer) > 0 {
+			i -= len(x.PrewardReputer)
+			copy(dAtA[i:], x.PrewardReputer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardReputer)))
 			i--
-			dAtA[i] = 0x65
+			dAtA[i] = 0x62
 		}
-		if x.AlphaRegret != 0 || math.Signbit(float64(x.AlphaRegret)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.AlphaRegret))))
+		if len(x.AlphaRegret) > 0 {
+			i -= len(x.AlphaRegret)
+			copy(dAtA[i:], x.AlphaRegret)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AlphaRegret)))
 			i--
-			dAtA[i] = 0x5d
+			dAtA[i] = 0x5a
 		}
 		if x.Pnorm != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.Pnorm))
@@ -4298,60 +4308,165 @@ func (x *fastReflection_MsgCreateNewTopic) ProtoMethods() *protoiface.Methods {
 					}
 				}
 			case 11:
-				if wireType != 5 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AlphaRegret", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.AlphaRegret = float32(math.Float32frombits(v))
+				x.AlphaRegret = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			case 12:
-				if wireType != 5 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardReputer", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.PrewardReputer = float32(math.Float32frombits(v))
+				x.PrewardReputer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			case 13:
-				if wireType != 5 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardInference", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.PrewardInference = float32(math.Float32frombits(v))
+				x.PrewardInference = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			case 14:
-				if wireType != 5 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardForecast", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.PrewardForecast = float32(math.Float32frombits(v))
+				x.PrewardForecast = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			case 15:
-				if wireType != 5 {
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FTolerance", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.FTolerance = float32(math.Float32frombits(v))
+				x.FTolerance = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -29334,21 +29449,21 @@ type MsgCreateNewTopic struct {
 	unknownFields protoimpl.UnknownFields
 
 	// creator is the message sender.
-	Creator          string  `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Metadata         string  `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	LossLogic        string  `protobuf:"bytes,3,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
-	LossMethod       string  `protobuf:"bytes,4,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
-	LossCadence      uint64  `protobuf:"varint,5,opt,name=loss_cadence,json=lossCadence,proto3" json:"loss_cadence,omitempty"`
-	InferenceLogic   string  `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
-	InferenceMethod  string  `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
-	InferenceCadence uint64  `protobuf:"varint,8,opt,name=inference_cadence,json=inferenceCadence,proto3" json:"inference_cadence,omitempty"`
-	DefaultArg       string  `protobuf:"bytes,9,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
-	Pnorm            uint64  `protobuf:"varint,10,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
-	AlphaRegret      float32 `protobuf:"fixed32,11,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
-	PrewardReputer   float32 `protobuf:"fixed32,12,opt,name=preward_reputer,json=prewardReputer,proto3" json:"preward_reputer,omitempty"`
-	PrewardInference float32 `protobuf:"fixed32,13,opt,name=preward_inference,json=prewardInference,proto3" json:"preward_inference,omitempty"`
-	PrewardForecast  float32 `protobuf:"fixed32,14,opt,name=preward_forecast,json=prewardForecast,proto3" json:"preward_forecast,omitempty"`
-	FTolerance       float32 `protobuf:"fixed32,15,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
+	Creator          string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Metadata         string `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	LossLogic        string `protobuf:"bytes,3,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
+	LossMethod       string `protobuf:"bytes,4,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	LossCadence      uint64 `protobuf:"varint,5,opt,name=loss_cadence,json=lossCadence,proto3" json:"loss_cadence,omitempty"`
+	InferenceLogic   string `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
+	InferenceMethod  string `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
+	InferenceCadence uint64 `protobuf:"varint,8,opt,name=inference_cadence,json=inferenceCadence,proto3" json:"inference_cadence,omitempty"`
+	DefaultArg       string `protobuf:"bytes,9,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
+	Pnorm            uint64 `protobuf:"varint,10,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
+	AlphaRegret      string `protobuf:"bytes,11,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
+	PrewardReputer   string `protobuf:"bytes,12,opt,name=preward_reputer,json=prewardReputer,proto3" json:"preward_reputer,omitempty"`
+	PrewardInference string `protobuf:"bytes,13,opt,name=preward_inference,json=prewardInference,proto3" json:"preward_inference,omitempty"`
+	PrewardForecast  string `protobuf:"bytes,14,opt,name=preward_forecast,json=prewardForecast,proto3" json:"preward_forecast,omitempty"`
+	FTolerance       string `protobuf:"bytes,15,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
 }
 
 func (x *MsgCreateNewTopic) Reset() {
@@ -29441,39 +29556,39 @@ func (x *MsgCreateNewTopic) GetPnorm() uint64 {
 	return 0
 }
 
-func (x *MsgCreateNewTopic) GetAlphaRegret() float32 {
+func (x *MsgCreateNewTopic) GetAlphaRegret() string {
 	if x != nil {
 		return x.AlphaRegret
 	}
-	return 0
+	return ""
 }
 
-func (x *MsgCreateNewTopic) GetPrewardReputer() float32 {
+func (x *MsgCreateNewTopic) GetPrewardReputer() string {
 	if x != nil {
 		return x.PrewardReputer
 	}
-	return 0
+	return ""
 }
 
-func (x *MsgCreateNewTopic) GetPrewardInference() float32 {
+func (x *MsgCreateNewTopic) GetPrewardInference() string {
 	if x != nil {
 		return x.PrewardInference
 	}
-	return 0
+	return ""
 }
 
-func (x *MsgCreateNewTopic) GetPrewardForecast() float32 {
+func (x *MsgCreateNewTopic) GetPrewardForecast() string {
 	if x != nil {
 		return x.PrewardForecast
 	}
-	return 0
+	return ""
 }
 
-func (x *MsgCreateNewTopic) GetFTolerance() float32 {
+func (x *MsgCreateNewTopic) GetFTolerance() string {
 	if x != nil {
 		return x.FTolerance
 	}
-	return 0
+	return ""
 }
 
 type MsgCreateNewTopicResponse struct {
@@ -31687,17 +31802,17 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x41, 0x72,
 	0x67, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x6e, 0x6f, 0x72, 0x6d, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x05, 0x70, 0x6e, 0x6f, 0x72, 0x6d, 0x12, 0x21, 0x0a, 0x0c, 0x61, 0x6c, 0x70, 0x68, 0x61,
-	0x5f, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0b, 0x61,
+	0x5f, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x61,
 	0x6c, 0x70, 0x68, 0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x72,
 	0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x0c, 0x20,
-	0x01, 0x28, 0x02, 0x52, 0x0e, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x70, 0x75,
+	0x01, 0x28, 0x09, 0x52, 0x0e, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x70, 0x75,
 	0x74, 0x65, 0x72, 0x12, 0x2b, 0x0a, 0x11, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x02, 0x52, 0x10,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x52, 0x10,
 	0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
 	0x12, 0x29, 0x0a, 0x10, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0f, 0x70, 0x72, 0x65, 0x77,
+	0x63, 0x61, 0x73, 0x74, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x70, 0x72, 0x65, 0x77,
 	0x61, 0x72, 0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x66,
-	0x5f, 0x74, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x02,
+	0x5f, 0x74, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x0a, 0x66, 0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x3a, 0x0c, 0x82, 0xe7,
 	0xb0, 0x2a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x22, 0x36, 0x0a, 0x19, 0x4d, 0x73,
 	0x67, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x65, 0x77, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52,
