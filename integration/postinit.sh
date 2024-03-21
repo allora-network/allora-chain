@@ -23,5 +23,5 @@ mv $GENESIS.tmp $GENESIS
 
 
 echo "Starting allorad daemon and sleep for 3 seconds to let it start"
-#$ALLORAD_BIN start & disown;
-#sleep 3
+$ALLORAD_BIN start & disown;
+sleep 3
