@@ -8,13 +8,14 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
+
 	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -58,26 +59,15 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-<<<<<<< HEAD
-		"fee_collector":                nil,
-		"mint":                         {"minter"},
-		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
-=======
 		"fee_collector":                 {"minter"},
 		"mint":                          {"minter"},
-		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		state.AlloraRewardsAccountName:  {"minter"},
+		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:  {"minter"},
 		"bonded_tokens_pool":            {"burner", "staking"},
 		"not_bonded_tokens_pool":        {"burner", "staking"},
 		multiPerm:                       {"burner", "minter", "staking"},
 		randomPerm:                      {"random"},
->>>>>>> 17af8bb4762f7cc228ee0c578d2c14e3f7c4c1fd
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
