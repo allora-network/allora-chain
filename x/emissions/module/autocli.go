@@ -48,21 +48,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetAccountStakeList",
-					Use:       "account-stake-list [address]",
+					RpcMethod: "GetReputerStakeList",
+					Use:       "reputer-stake-list [address]",
 					Short:     "Get Account Stake List",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "GetWeight",
-					Use:       "weight [topic_id] [reputer] [worker]",
-					Short:     "Get Weight From a Reputer to a Worker for a Topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-						{ProtoField: "reputer"},
-						{ProtoField: "worker"},
 					},
 				},
 				{
@@ -164,18 +154,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [default_arg]",
+					Use:       "push-topic [creator] [metadata] [loss_logic] [loss_method] [loss_cadence] [inference_logic] [inference_method] [inference_cadence] [default_arg]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "weight_logic"},
-						{ProtoField: "weight_method"},
-						{ProtoField: "weight_cadence"},
+						{ProtoField: "loss_logic"},
+						{ProtoField: "loss_method"},
+						{ProtoField: "loss_cadence"},
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
 						{ProtoField: "inference_cadence"},
 						{ProtoField: "default_arg"},
+						{ProtoField: "pnorm"},
+						{ProtoField: "alpha_regret"},
+						{ProtoField: "preward_reputer"},
+						{ProtoField: "preward_inference"},
+						{ProtoField: "preward_forecast"},
+						{ProtoField: "f_tolerance"},
 					},
 				},
 				{
@@ -226,16 +222,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "ModifyStake",
-					Use:       "modify-stake [sender] [placements_remove] [placements_add]",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
-						{ProtoField: "placements_add"},
-					},
-				},
-				{
 					RpcMethod: "StartRemoveStake",
 					Use:       "start-remove-stake [sender] [placements_remove]",
 					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove]",
@@ -267,15 +253,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "inferences"},
-					},
-				},
-				{
-					RpcMethod: "SetWeights",
-					Use:       "set-weights [sender] [weights]",
-					Short:     "Set a batch of weights",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "weights"},
 					},
 				},
 				{
