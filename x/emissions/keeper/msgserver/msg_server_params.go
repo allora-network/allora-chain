@@ -31,9 +31,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.RewardCadence) == 1 {
 		existingParams.RewardCadence = newParams.RewardCadence[0]
 	}
-	if len(newParams.EmissionsPerEpoch) == 1 {
-		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]
-	}
 	if len(newParams.MinTopicUnmetDemand) == 1 {
 		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
 	}
@@ -63,6 +60,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MaxRequestCadence) == 1 {
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
+	}
+	if len(newParams.PercentRewardsReputersWorkers) == 1 {
+		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

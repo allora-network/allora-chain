@@ -187,6 +187,7 @@ func getConstZeroWeights() [2][4]uint64 {
 // 	}
 // }
 
+<<<<<<< HEAD
 // func (s *ModuleTestSuite) TestEmitRewardsSimple() {
 // 	s.UtilSetParams()
 // 	topicIds, err := mockCreateTopics(s, 1)
@@ -240,6 +241,8 @@ func getConstZeroWeights() [2][4]uint64 {
 // 	s.Require().True(expectedWorker2Stake.LT(worker2StakeAfter), "Worker 2 stake should have increased")
 // }
 
+=======
+>>>>>>> 17af8bb4762f7cc228ee0c578d2c14e3f7c4c1fd
 /*************************************************
  *               HELPER FUNCTIONS				 *
  *												 *
@@ -252,8 +255,13 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 	}
 	for i, addr := range target {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount[i]))
-		s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingModuleName, coins)
-		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingModuleName, addr, coins)
+<<<<<<< HEAD
+		s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, coins)
+		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, addr, coins)
+=======
+		s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, coins)
+		s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, addr, coins)
+>>>>>>> 17af8bb4762f7cc228ee0c578d2c14e3f7c4c1fd
 	}
 	return nil
 }

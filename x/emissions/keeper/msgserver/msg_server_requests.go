@@ -94,7 +94,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 		}
 		amountInt := cosmosMath.NewIntFromBigInt(request.BidAmount.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-		err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraRequestsModuleName, coins)
+		err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraRequestsAccountName, coins)
 		if err != nil {
 			return nil, err
 		}

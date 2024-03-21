@@ -9,7 +9,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -19,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -57,14 +57,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                nil,
-		"mint":                         {"minter"},
-		emissionstypes.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		emissionstypes.AlloraRequestsModuleName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
+		"fee_collector":                     nil,
+		"mint":                              {"minter"},
+		emissions.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		emissions.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		"bonded_tokens_pool":                {"burner", "staking"},
+		"not_bonded_tokens_pool":            {"burner", "staking"},
+		multiPerm:                           {"burner", "minter", "staking"},
+		randomPerm:                          {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(

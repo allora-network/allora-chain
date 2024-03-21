@@ -10,10 +10,10 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -57,7 +57,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.authKeeper = emissionstestutil.NewMockAccountKeeper(ctrl)
 
 	s.ctx = ctx
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper, "fee_collector")
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key
@@ -700,15 +700,18 @@ func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	params := types.Params{
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
-		MaxTopicsPerBlock:           1000,
-		MinRequestUnmetDemand:       cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:  10,
-		RequiredMinimumStake:        cosmosMath.NewUint(1),
-		RemoveStakeDelayWindow:      172800,
-		MinRequestCadence:           60,
-		MaxInferenceRequestValidity: 60 * 60 * 24 * 7 * 24,
-		MaxRequestCadence:           60 * 60 * 24 * 7 * 24,
+		Version:                       "v1.0.0",
+		RewardCadence:                 60 * 60 * 24 * 7 * 24,
+		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
+		MaxTopicsPerBlock:             1000,
+		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
+		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("10"),
+		RequiredMinimumStake:          cosmosMath.NewUint(1),
+		RemoveStakeDelayWindow:        172800,
+		MinRequestCadence:             60,
+		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
+		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
+		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("50"),
 	}
 
 	// Set params
@@ -719,6 +722,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	paramsFromKeeper, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
+	s.Require().Equal(params.RewardCadence, paramsFromKeeper.RewardCadence, "Params should be equal to the set params: EpochLength")
 	s.Require().True(params.MinTopicUnmetDemand.Equal(paramsFromKeeper.MinTopicUnmetDemand), "Params should be equal to the set params: MinTopicUnmetDemand")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
 	s.Require().True(params.MinRequestUnmetDemand.Equal(paramsFromKeeper.MinRequestUnmetDemand), "Params should be equal to the set params: MinRequestUnmetDemand")
@@ -728,5 +732,5 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.MinRequestCadence, paramsFromKeeper.MinRequestCadence, "Params should be equal to the set params: MinRequestCadence")
 	s.Require().Equal(params.MaxInferenceRequestValidity, paramsFromKeeper.MaxInferenceRequestValidity, "Params should be equal to the set params: MaxInferenceRequestValidity")
 	s.Require().Equal(params.MaxRequestCadence, paramsFromKeeper.MaxRequestCadence, "Params should be equal to the set params: MaxRequestCadence")
-
+	s.Require().Equal(params.PercentRewardsReputersWorkers, paramsFromKeeper.PercentRewardsReputersWorkers, "Params should be equal to the set params: PercentRewardsReputersWorkers")
 }
