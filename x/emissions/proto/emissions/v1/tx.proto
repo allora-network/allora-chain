@@ -56,12 +56,12 @@ service Msg {
 
   rpc AddToReputerWhitelist(MsgAddToReputerWhitelist) returns (MsgAddToReputerWhitelistResponse);
 
-  rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist)
-      returns (MsgRemoveFromReputerWhitelistResponse);
+  rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist) returns (MsgRemoveFromReputerWhitelistResponse);
 
   rpc AddToFoundationWhitelist(MsgAddToFoundationWhitelist) returns (MsgAddToFoundationWhitelistResponse);
 
-  rpc RemoveFromFoundationWhitelist(MsgRemoveFromFoundationWhitelist) returns (MsgRemoveFromFoundationWhitelistResponse);
+  rpc RemoveFromFoundationWhitelist(MsgRemoveFromFoundationWhitelist)
+      returns (MsgRemoveFromFoundationWhitelistResponse);
 }
 
 // Because gocosmos, grpc-gateway, and go-pulsar do not support optional fields
@@ -71,7 +71,7 @@ service Msg {
 // optional field and if the repeated field is empty, it is considered to be the
 // same as if the field was not set
 message OptionalParams {
-  repeated string version = 1;      // version of the protocol should be in lockstep with github release tag version
+  repeated string version = 1;        // version of the protocol should be in lockstep with github release tag version
   repeated int64 reward_cadence = 2;  // length of an "epoch" for rewards payouts in blocks
   repeated string min_topic_unmet_demand = 3 [
     (cosmos_proto.scalar) = "cosmos.Uint",
@@ -100,7 +100,7 @@ message OptionalParams {
   ];                                              // minimum amount of tokens to send to stake as a reputer or worker
   repeated uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
   repeated uint64 min_request_cadence = 9;        // Fastest allowed cadence of a repeating inference request
-  repeated uint64 min_loss_cadence = 10;        // Fastest allowed cadence of uploading losses
+  repeated uint64 min_loss_cadence = 10;          // Fastest allowed cadence of uploading losses
   repeated uint64 max_inference_request_validity = 11;  // longest time a subscription is allowed to be valid
   repeated uint64 max_request_cadence = 12;  // slowest/largest amount of time subscription can take between inferences
   repeated string percent_rewards_reputers_workers = 13 [
