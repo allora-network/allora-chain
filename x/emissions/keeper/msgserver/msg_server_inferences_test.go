@@ -35,7 +35,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	var inferenceTimestamp = uint64(1500000000)
 
 	// _, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
-	err = s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
 	require.NoError(err, "Setting latest inference timestamp should not fail")
 
 	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(0))
@@ -50,7 +50,7 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	 */
 	inferenceTimestamp = math.MaxUint64
 
-	err = s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
 	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))
