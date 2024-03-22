@@ -1,8 +1,8 @@
 package queryserver
 
 import (
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 var _ types.QueryServer = queryServer{}

@@ -5,13 +5,11 @@ import (
 	"os"
 
 	"github.com/allora-network/allora-chain/app"
-	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/cmd/allorad/cmd"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 )
 
 func main() {
-	params.SetAddressPrefixes()
 
 	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {

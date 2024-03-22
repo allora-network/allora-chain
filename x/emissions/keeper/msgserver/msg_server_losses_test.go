@@ -19,19 +19,19 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 		Sender: reputerAddr,
 		LossBundles: []*types.LossBundle{
 			{
-				TopicId: 1,
-				Reputer: reputerAddr,
+				TopicId:      1,
+				Reputer:      reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
 				InfererLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
-						Value:   cosmosMath.NewUint(100),
+						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				ForecasterLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
-						Value:   cosmosMath.NewUint(100),
+						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),
@@ -68,19 +68,19 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 		Sender: reputerAddr,
 		LossBundles: []*types.LossBundle{
 			{
-				TopicId: 1,
-				Reputer: reputerAddr,
+				TopicId:      1,
+				Reputer:      reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
 				InfererLosses: []*types.WorkerAttributedLoss{
 					{
-						Worker: workerAddr,	
-						Value:   cosmosMath.NewUint(100),
+						Worker: workerAddr,
+						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				ForecasterLosses: []*types.WorkerAttributedLoss{
 					{
 						Worker: workerAddr,
-						Value:   cosmosMath.NewUint(100),
+						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),

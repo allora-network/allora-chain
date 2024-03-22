@@ -2,17 +2,13 @@
 
 set -e
 
-GENESIS=$HOME/.allorad/config/genesis.json
+source $(dirname $0)/common.sh
+
 # this script expects to be ran AFTER `scripts/init.sh`
 if ! test -f $GENESIS; then
   echo "Must run scripts/init.sh first."
   exit 1
 fi
-
-ALLORAD_BIN=$(which allorad)
-
-ALICE_ADDRESS=$($ALLORAD_BIN keys show alice | head -n 1 | cut -f 2 -d ":" | tr -d " ")
-BOB_ADDRESS=$($ALLORAD_BIN keys show bob | head -n 1 | cut -f 2 -d ":" | tr -d " ")
 
 echo "Checking that the network is starting from topic 0"
 NEXT_TOPIC_ID=$($ALLORAD_BIN query emissions next-topic-id | head -n 1 | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
@@ -24,24 +20,53 @@ fi
 echo "Creating topic 1"
 PT_CREATOR="$ALICE_ADDRESS"
 PT_METADATA="ETH 24h Prediction"
-PT_WEIGHT_LOGIC="bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq"
-PT_WEIGHT_METHOD="eth-price-weights-calc.wasm"
-PT_WEIGHT_CADENCE="10800"
+PT_LOSS_LOGIC="bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq"
+PT_LOSS_METHOD="eth-price-weights-calc.wasm"
+PT_LOSS_CADENCE="10800"
 PT_INFERENCE_LOGIC="bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm"
 PT_INFERENCE_METHOD="allora-inference-function.wasm"
 PT_INFERENCE_CADENCE="61"
 PT_DEFAULT_ARG="ETH"
-$ALLORAD_BIN tx emissions push-topic \
+PT_PNORM="2"
+PT_ALPHA_REGRET="3.14"
+PT_PREREWARD_REPUTER="6.2"
+PT_PREREWARD_INFERENCE="7.3"
+PT_PREREWARD_FORECAST="8.4"
+PT_F_TOLERANCE="5.5"
+$ALLORAD_BIN tx emissions create-topic \
   "$PT_CREATOR" \
   "$PT_METADATA" \
-  "$PT_WEIGHT_LOGIC" \
-  "$PT_WEIGHT_METHOD" \
-  "$PT_WEIGHT_CADENCE" \
+  "$PT_LOSS_LOGIC" \
+  "$PT_LOSS_METHOD" \
+  "$PT_LOSS_CADENCE" \
   "$PT_INFERENCE_LOGIC" \
   "$PT_INFERENCE_METHOD" \
   "$PT_INFERENCE_CADENCE" \
   "$PT_DEFAULT_ARG" \
-  --yes --keyring-backend=test --chain-id=demo;
+  "$PT_PNORM" \
+  "$PT_ALPHA_REGRET" \
+  "$PT_PREREWARD_REPUTER" \
+  "$PT_PREREWARD_INFERENCE" \
+  "$PT_PREREWARD_FORECAST" \
+  "$PT_F_TOLERANCE" \
+  --yes --keyring-backend=test --chain-id=demo \
+  --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
+#  --from="$PT_CREATOR" \
+#  --metadata="$PT_METADATA" \
+#  --loss-logic="$PT_LOSS_LOGIC" \
+#  --loss-method="$PT_LOSS_METHOD" \
+#  --loss-cadence="$PT_LOSS_CADENCE" \
+#  --inference-logic="$PT_INFERENCE_LOGIC" \
+#  --inference-method="$PT_INFERENCE_METHOD" \
+#  --inference-cadence="$PT_INFERENCE_CADENCE" \
+#  --default-arg="$PT_DEFAULT_ARG" \
+#  --pnorm="$PT_PNORM" \
+#  --alpha-regret="$PT_ALPHA_REGRET" \
+#  --preward-reputer="$PT_PREREWARD_REPUTER" \
+#  --preward-inference="$PT_PREREWARD_INFERENCE" \
+#  --preward-forecast="$PT_PREREWARD_FORECAST" \
+#  --f-tolerance="$PT_F_TOLERANCE" \
+
 
 echo "Checking that the network has incremented the topic count"
 TOPIC_INCREMENTED=false
@@ -63,47 +88,4 @@ if [ "$TOPIC_INCREMENTED" = false ]; then
   exit 1
 fi
 
-echo
-echo "Creating a request for inference on topic 1"
-
-RI_CREATOR="$BOB_ADDRESS"
-RI_NONCE="1"
-RI_TOPIC_ID="1"
-RI_CADENCE="60"
-RI_MAX_PRICE_PER_INFERENCE="1"
-RI_BID_AMOUNT="10000"
-RI_TIMESTAMP_VALID_UNTIL=$(($(date +%s)+60*60*24))
-$ALLORAD_BIN tx emissions request-inference \
-  $RI_CREATOR \
-  "{\"nonce\": \"$RI_NONCE\",\"topic_id\":\"$RI_TOPIC_ID\",\"cadence\":\"$RI_CADENCE\",\"max_price_per_inference\":\"$RI_MAX_PRICE_PER_INFERENCE\",\"bid_amount\":\"$RI_BID_AMOUNT\",\"timestamp_valid_until\":\"$RI_TIMESTAMP_VALID_UNTIL\"}" \
-  --yes --keyring-backend=test --chain-id=demo;
-
-echo "Checking the inference request was made correctly"
-
-echo $MEMPOOL
-MEMPOOL_INCREMENTED=false
-for COUNT_SLEEP in 1 2 3 4 5
-do
-  MEMPOOL=$($ALLORAD_BIN query emissions all-inference-requests)
-  if [ "$MEMPOOL" == "{}" ]; then
-    echo "MEMPOOL is empty, transaction may not have mined yet, count sleep $COUNT_SLEEP seconds"
-    COUNT_SLEEP=$((COUNT_SLEEP+1))
-    sleep 1
-  else
-    echo "The network has appears to have something in the mempool, inference request probably created successfully"
-    MEMPOOL_INCREMENTED=true
-    break
-  fi
-done
-if [ "$MEMPOOL_INCREMENTED" = false ]; then
-  echo "The network failed to mine the inference request"
-  exit 1
-fi
-
-echo
-echo "reactivating the topic so the request will fire"
-
-$ALLORAD_BIN tx emissions reactivate-topic $RI_CREATOR 1 --yes;
-echo "not waiting for reactivate-topic"
-
-echo "Initial state setup complete"
+echo "Topic 1 created"

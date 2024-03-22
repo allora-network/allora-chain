@@ -12,19 +12,19 @@ import (
 
 func (s *ModuleTestSuite) UtilSetParams() {
 	s.emissionsKeeper.SetParams(s.ctx, types.Params{
-		Version:                     "0.0.3",                       // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:               int64(5),                      // length of an "epoch" for rewards payouts in blocks
-		EmissionsPerEpoch:           cosmosMath.NewInt(1000),       // default amount of tokens to issue per epoch
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),       // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-		MaxTopicsPerBlock:           uint64(1000),                  // max number of topics to run cadence for per block
-		MinRequestUnmetDemand:       cosmosMath.NewUint(1),         // delete requests if they have below this demand remaining
-		MaxMissingInferencePercent:  uint64(10),                    // if a worker has this percentage of inferences missing, they are penalized
-		RequiredMinimumStake:        cosmosMath.NewUint(1),         // minimum stake required to be a worker
-		RemoveStakeDelayWindow:      uint64(172800),                // 2 days in seconds
-		MinRequestCadence:           uint64(60),                    // 1 minute in seconds
-		MinLossCadence:              uint64(10800),                 // 3 hours in seconds
-		MaxInferenceRequestValidity: uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
-		MaxRequestCadence:           uint64(60 * 60 * 24 * 7 * 24), // 24 weeks approximately 6 months in seconds
+		Version:                       "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
+		RewardCadence:                 int64(5),                                  // length of an "epoch" for rewards payouts in blocks
+		MinTopicUnmetDemand:           cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+		MaxTopicsPerBlock:             uint64(1000),                              // max number of topics to run cadence for per block
+		MinRequestUnmetDemand:         cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
+		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("0.1"), // if a worker has this percentage of inferences missing, they are penalized
+		RequiredMinimumStake:          cosmosMath.NewUint(1),                     // minimum stake required to be a worker
+		RemoveStakeDelayWindow:        uint64(172800),                            // 2 days in seconds
+		MinRequestCadence:             uint64(60),                                // 1 minute in seconds
+		MinLossCadence:                uint64(10800),                             // 3 hours in seconds
+		MaxInferenceRequestValidity:   uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
+		MaxRequestCadence:             uint64(60 * 60 * 24 * 7 * 24),             // 24 weeks approximately 6 months in seconds
+		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("0.5"), // 50% of rewards go to workers and reputers, 50% to cosmos validators
 	})
 }
 
@@ -400,8 +400,8 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	var requestStake0 int64 = 500
 // 	var requestStake1 int64 = 600
 // 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
+// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, initialStakeCoins)
+// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
 // 	r := state.MsgRequestInference{
 // 		Sender: s.addrsStr[0],
 // 		Requests: []*state.RequestInferenceListItem{
@@ -427,63 +427,62 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	}
 // 	_, err = s.msgServer.RequestInference(s.ctx, &r)
 // 	s.Require().NoError(err)
-
 // 	topics, demand, err := module.ChurnRequestsGetActiveTopicsAndDemand(s.ctx, s.emissionsKeeper, timeNow+20)
 // 	s.Require().NoError(err, "ChurnRequestsGetActiveTopicsAndDemand should not throw an error")
 // 	s.Require().Len(topics, 2, "ChurnRequestsGetActiveTopicsAndDemand should return 2 topics")
 // 	s.Require().Greater(demand.Uint64(), uint64(0), "ChurnRequestsGetActiveTopicsAndDemand should return greater than 0 demand")
 // }
 
-// func (s *ModuleTestSuite) TestDemandFlowEndBlockWhenInsufficientWorkerLiveness() {
-// 	createdTopicIds, err := mockCreateTopics(s, 2)
-// 	s.Require().NoError(err)
-// 	timeNow := uint64(time.Now().UTC().Unix())
-// 	var initialStake int64 = 1100
-// 	var requestStake0 int64 = 500
-// 	var requestStake1 int64 = 600
-// 	// the default RewardCadence and insufficient number of inferences will ensure worker weights are masked
-// 	// due to lack of liveness => should invoke a div by 0 error that gets caught and empty rewards returned
-// 	// => EndBlock should run without doing much by way of rewards
-// 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
-// 	r := state.MsgRequestInference{
-// 		Sender: s.addrsStr[0],
-// 		Requests: []*state.RequestInferenceListItem{
-// 			{
-// 				Nonce:                0,
-// 				TopicId:              createdTopicIds[0],
-// 				Cadence:              0,
-// 				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
-// 				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
-// 				TimestampValidUntil:  timeNow + 100,
-// 				ExtraData:            []byte("Test"),
-// 			},
-// 			{
-// 				Nonce:                1,
-// 				TopicId:              createdTopicIds[1],
-// 				Cadence:              0,
-// 				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake1)),
-// 				BidAmount:            cosmosMath.NewUint(uint64(requestStake1)),
-// 				TimestampValidUntil:  timeNow + 400,
-// 				ExtraData:            nil,
-// 			},
-// 		},
-// 	}
-// 	_, err = s.msgServer.RequestInference(s.ctx, &r)
-// 	s.Require().NoError(err)
-// 	reputers, err := mockSomeReputers(s, createdTopicIds[0])
-// 	s.NoError(err)
-// 	workers, err := mockSomeWorkers(s, createdTopicIds[0])
-// 	s.NoError(err)
-// 	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
-// 	s.NoError(err, "Error setting weights")
-// 	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
-// 	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
-// 	s.Require().Equal(
-// 		initialStakeCoins.AmountOf(params.DefaultBondDenom),
-// 		requestsModuleBalanceBefore.Amount,
-// 		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
+//func (s *ModuleTestSuite) TestDemandFlowEndBlockWhenInsufficientWorkerLiveness() {
+//	createdTopicIds, err := mockCreateTopics(s, 2)
+//	s.Require().NoError(err)
+//	timeNow := uint64(time.Now().UTC().Unix())
+//	var initialStake int64 = 1100
+//	var requestStake0 int64 = 500
+//	var requestStake1 int64 = 600
+//	// the default EpochLength and insufficient number of inferences will ensure worker weights are masked
+//	// due to lack of liveness => should invoke a div by 0 error that gets caught and empty rewards returned
+//	// => EndBlock should run without doing much by way of rewards
+//	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+//	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, initialStakeCoins)
+//	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
+//	r := state.MsgRequestInference{
+//		Sender: s.addrsStr[0],
+//		Requests: []*state.RequestInferenceListItem{
+//			{
+//				Nonce:                0,
+//				TopicId:              createdTopicIds[0],
+//				Cadence:              0,
+//				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
+//				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
+//				TimestampValidUntil:  timeNow + 100,
+//				ExtraData:            []byte("Test"),
+//			},
+//			{
+//				Nonce:                1,
+//				TopicId:              createdTopicIds[1],
+//				Cadence:              0,
+//				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake1)),
+//				BidAmount:            cosmosMath.NewUint(uint64(requestStake1)),
+//				TimestampValidUntil:  timeNow + 400,
+//				ExtraData:            nil,
+//			},
+//		},
+//	}
+//	_, err = s.msgServer.RequestInference(s.ctx, &r)
+//	s.Require().NoError(err)
+//	reputers, err := mockSomeReputers(s, createdTopicIds[0])
+//	s.NoError(err)
+//	workers, err := mockSomeWorkers(s, createdTopicIds[0])
+//	s.NoError(err)
+//	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
+//	s.NoError(err, "Error setting weights")
+//	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsAccountName)
+//	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+//	s.Require().Equal(
+//		initialStakeCoins.AmountOf(params.DefaultBondDenom),
+//		requestsModuleBalanceBefore.Amount,
+//		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
 
 // 	rewardCadence, err := s.emissionsKeeper.GetParamsRewardCadence(s.ctx)
 // 	s.Require().NoError(err)
@@ -511,8 +510,8 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	var requestStake1 int64 = 600
 // 	s.UtilSetParams()
 // 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
+// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, initialStakeCoins)
+// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
 // 	r := state.MsgRequestInference{
 // 		Sender: s.addrsStr[0],
 // 		Requests: []*state.RequestInferenceListItem{
@@ -544,13 +543,13 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.NoError(err)
 // 	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
 // 	s.NoError(err, "Error setting weights")
-// 	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
+// 	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsAccountName)
 // 	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
 // 	s.Require().Equal(
 // 		initialStakeCoins.AmountOf(params.DefaultBondDenom),
 // 		requestsModuleBalanceBefore.Amount,
 // 		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
-
+//
 // 	lastInferenceRanTopic0Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[0])
 // 	s.Require().NoError(err)
 // 	lastInferenceRanTopic1Before, err := s.emissionsKeeper.GetTopicInferenceLastRan(s.ctx, createdTopicIds[1])
@@ -584,44 +583,44 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.Require().Equal(cosmosMath.ZeroInt(), requestsModuleBalanceAfter.Amount, "Balance should be zero after inferences are processed")
 // }
 
-// func (s *ModuleTestSuite) TestDemandFlowEndBlockConsumesSubscriptionLeavesDust() {
-// 	createdTopicIds, err := mockCreateTopics(s, 2)
-// 	s.Require().NoError(err)
-// 	timeNow := uint64(time.Now().UTC().Unix())
-// 	var initialStake int64 = 500
-// 	var requestStake0 int64 = 500
-// 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, initialStakeCoins)
-// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, s.addrs[0], initialStakeCoins)
-// 	s.UtilSetParams()
-// 	r := state.MsgRequestInference{
-// 		Sender: s.addrsStr[0],
-// 		Requests: []*state.RequestInferenceListItem{
-// 			{
-// 				Nonce:                0,
-// 				TopicId:              createdTopicIds[0],
-// 				Cadence:              61,
-// 				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
-// 				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
-// 				TimestampValidUntil:  timeNow + 100,
-// 				ExtraData:            []byte("Test"),
-// 			},
-// 		},
-// 	}
-// 	_, err = s.msgServer.RequestInference(s.ctx, &r)
-// 	s.Require().NoError(err)
-// 	reputers, err := mockSomeReputers(s, createdTopicIds[0])
-// 	s.NoError(err)
-// 	workers, err := mockSomeWorkers(s, createdTopicIds[0])
-// 	s.NoError(err)
-// 	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
-// 	s.NoError(err, "Error setting weights")
-// 	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsModuleName)
-// 	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
-// 	s.Require().Equal(
-// 		initialStakeCoins.AmountOf(params.DefaultBondDenom),
-// 		requestsModuleBalanceBefore.Amount,
-// 		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
+//func (s *ModuleTestSuite) TestDemandFlowEndBlockConsumesSubscriptionLeavesDust() {
+//	createdTopicIds, err := mockCreateTopics(s, 2)
+//	s.Require().NoError(err)
+//	timeNow := uint64(time.Now().UTC().Unix())
+//	var initialStake int64 = 500
+//	var requestStake0 int64 = 500
+//	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+//	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, initialStakeCoins)
+//	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
+//	s.UtilSetParams()
+//	r := state.MsgRequestInference{
+//		Sender: s.addrsStr[0],
+//		Requests: []*state.RequestInferenceListItem{
+//			{
+//				Nonce:                0,
+//				TopicId:              createdTopicIds[0],
+//				Cadence:              61,
+//				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake0)),
+//				BidAmount:            cosmosMath.NewUint(uint64(requestStake0)),
+//				TimestampValidUntil:  timeNow + 100,
+//				ExtraData:            []byte("Test"),
+//			},
+//		},
+//	}
+//	_, err = s.msgServer.RequestInference(s.ctx, &r)
+//	s.Require().NoError(err)
+//	reputers, err := mockSomeReputers(s, createdTopicIds[0])
+//	s.NoError(err)
+//	workers, err := mockSomeWorkers(s, createdTopicIds[0])
+//	s.NoError(err)
+//	err = mockSetWeights(s, createdTopicIds[0], reputers, workers, getConstWeights())
+//	s.NoError(err, "Error setting weights")
+//	requestsModuleAccAddr := s.accountKeeper.GetModuleAddress(state.AlloraRequestsAccountName)
+//	requestsModuleBalanceBefore := s.bankKeeper.GetBalance(s.ctx, requestsModuleAccAddr, params.DefaultBondDenom)
+//	s.Require().Equal(
+//		initialStakeCoins.AmountOf(params.DefaultBondDenom),
+//		requestsModuleBalanceBefore.Amount,
+//		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
 
 // 	mempool, err := s.emissionsKeeper.GetMempool(s.ctx)
 // 	s.Require().NoError(err)

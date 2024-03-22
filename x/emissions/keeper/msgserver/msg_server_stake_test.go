@@ -41,7 +41,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InitialStake: registrationInitialStake,
 		Owner:        workerAddr.String(),
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, types.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 }
@@ -79,7 +79,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -167,7 +167,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err = msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -229,7 +229,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 // 	require.NoError(err, "StartRemoveStake should not return an error")
 
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, stakeAmountCoins)
 // 	_, err = msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
 // 		Sender: reputerAddr.String(),
 // 	})
@@ -332,7 +332,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: reputerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err = msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -394,7 +394,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 // 	require.NoError(err, "StartRemoveStake should not return an error")
 
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, stakeAmountCoins)
 // 	_, err = msgServer.ConfirmRemoveStake(ctx, &state.MsgConfirmRemoveStake{
 // 		Sender: reputerAddr.String(),
 // 	})
@@ -467,7 +467,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	// Scenario 1: Edge Case - Stake Amount Zero
 // 	stakeAmountZero := cosmosMath.NewUint(0)
 // 	stakeAmountZeroCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmountZero.BigInt())))
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountZeroCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountZeroCoins)
 // 	_, err := msgServer.AddStake(ctx, &state.MsgAddStake{
 // 		Sender:      reputerAddr.String(),
 // 		StakeTarget: workerAddr.String(),
@@ -516,7 +516,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -570,7 +570,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -593,7 +593,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	confirmRemoveStakeMsg := &state.MsgConfirmRemoveStake{
 // 		Sender: reputerAddr.String(),
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, removalAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, removalAmountCoins)
 // 	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
 // 	require.NoError(err, "ConfirmRemoveStake should not return an error")
 
@@ -662,7 +662,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -720,7 +720,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: workerAddr.String(),
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err := msgServer.AddStake(ctx, addStakeMsg)
 // 	require.NoError(err, "AddStake should not return an error")
 
@@ -753,8 +753,8 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	confirmRemoveMsg := &state.MsgConfirmRemoveStake{
 // 		Sender: reputerAddr.String(),
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins)
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, registrationInitialStakeCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, stakeAmountCoins)
 // 	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveMsg)
 // 	require.NoError(err, "RemoveAllStake should not return an error")
 
@@ -1125,10 +1125,10 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	s.commonStakingSetup(s.ctx, reputerAddr, workerAddr1, registrationInitialStake)
 
 // 	registrationInitialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.Int(registrationInitialStake)))
-// 	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingModuleName, registrationInitialStakeCoins)
-// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingModuleName, registrationInitialStakeCoins)
-// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins)
-// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins)
+// 	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), state.AlloraStakingAccountName, registrationInitialStakeCoins)
+// 	s.bankKeeper.MintCoins(s.ctx, state.AlloraStakingAccountName, registrationInitialStakeCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), state.AlloraStakingAccountName, reputerAddr, registrationInitialStakeCoins)
+// 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, reputerAddr, registrationInitialStakeCoins)
 // 	// Register Reputer
 // 	worker2RegMsg := &state.MsgRegister{
 // 		Creator:      worker2,
@@ -1138,7 +1138,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		InitialStake: registrationInitialStake,
 // 		Owner:        worker2,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr2, state.AlloraStakingModuleName, registrationInitialStakeCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr2, state.AlloraStakingAccountName, registrationInitialStakeCoins)
 // 	_, err := s.msgServer.Register(s.ctx, worker2RegMsg)
 // 	s.Require().NoError(err, "Registering worker2 should not return an error")
 
@@ -1150,7 +1150,7 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 		StakeTarget: worker2,
 // 		Amount:      stakeAmount,
 // 	}
-// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingModuleName, stakeAmountCoins)
+// 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, state.AlloraStakingAccountName, stakeAmountCoins)
 // 	_, err = s.msgServer.AddStake(s.ctx, addStakeMsg)
 // 	s.Require().NoError(err, "AddStake should not return an error")
 // 	bond, err := s.emissionsKeeper.GetBond(s.ctx, reputerAddr, workerAddr2)

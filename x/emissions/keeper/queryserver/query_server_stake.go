@@ -28,15 +28,6 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 	return &types.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
-// Get the amount of token rewards that have accumulated this epoch
-func (qs queryServer) GetAccumulatedEpochRewards(ctx context.Context, req *types.QueryAccumulatedEpochRewardsRequest) (*types.QueryAccumulatedEpochRewardsResponse, error) {
-	emissions, err := qs.k.CalculateAccumulatedEmissions(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &types.QueryAccumulatedEpochRewardsResponse{Amount: emissions}, nil
-}
-
 // GetReputerStakeList retrieves a list of stakes for a given account address.
 func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryReputerStakeListRequest) (*types.QueryReputerStakeListResponse, error) {
 	if req == nil {

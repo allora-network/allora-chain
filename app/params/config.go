@@ -34,6 +34,10 @@ var (
 )
 
 func init() {
+	InitSDKConfig()
+}
+
+func InitSDKConfig() {
 	SetAddressPrefixes()
 	RegisterDenoms()
 }

@@ -1,8 +1,8 @@
 package msgserver
 
 import (
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type msgServer struct {

@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingModuleName, registrationInitialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err := msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
@@ -90,14 +90,14 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		PlacementsRemove: []*types.StakePlacement{
 			{
 				TopicId: 0,
-				Amount: registrationInitialStake.QuoUint64(2),
+				Amount:  registrationInitialStake.QuoUint64(2),
 			},
 		},
 	}
 	_, err = msgServer.StartRemoveStake(ctx, removeStakeMsg)
 	require.NoError(err, "StartRemoveStake should not return an error")
 
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingModuleName, reputerAddr, registrationInitialStakeCoins.QuoInt(cosmosMath.NewInt(2)))
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, reputerAddr, registrationInitialStakeCoins.QuoInt(cosmosMath.NewInt(2)))
 	_, err = msgServer.ConfirmRemoveStake(ctx, &types.MsgConfirmRemoveStake{
 		Sender: reputerAddr.String(),
 	})
@@ -208,7 +208,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(
 		gomock.Any(),
 		reputerAddr,
-		types.AlloraStakingModuleName,
+		types.AlloraStakingAccountName,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.DefaultBondDenom,
@@ -293,7 +293,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(
 		gomock.Any(),
 		workerAddr,
-		types.AlloraStakingModuleName,
+		types.AlloraStakingAccountName,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.DefaultBondDenom,

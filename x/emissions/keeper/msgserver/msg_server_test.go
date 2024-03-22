@@ -10,15 +10,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 )
 
 var (
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.authKeeper = emissionstestutil.NewMockAccountKeeper(ctrl)
 
 	s.ctx = ctx
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper, "fee_collector")
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
 	s.mockCtrl = ctrl
 	s.key = key
