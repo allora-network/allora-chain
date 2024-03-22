@@ -3,12 +3,38 @@ package module
 import (
 	"fmt"
 	"math"
+
+	errors "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
+// W_im
+func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]float64, error) {
+	if len(stakes) != len(scores) {
+		return nil, fmt.Errorf("stakes and scores must have the same length")
+	}
+
+	// Calculate (stakes * scores)^preward and sum of all fractions
+	var totalFraction float64
+	fractions := make([]float64, len(stakes))
+	for i, stake := range stakes {
+		fractions[i] = math.Pow(stake*scores[i], preward)
+		totalFraction += fractions[i]
+	}
+
+	// Normalize fractions
+	for i := range fractions {
+		fractions[i] /= totalFraction
+	}
+
+	return fractions, nil
+}
+
 // GetfUniqueAgg calculates the unique value or impact of each forecaster.
-// f^+
+// ƒ^+
 func GetfUniqueAgg(numForecasters float64) float64 {
-	return  1.0 / math.Pow(2.0, (numForecasters - 1.0))
+	return 1.0 / math.Pow(2.0, (numForecasters-1.0))
 }
 
 // GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
@@ -31,16 +57,12 @@ func GetWorkerScore(losses, lossesOneOut float64) float64 {
 // L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
 func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
-		return 0, fmt.Errorf("slices must have the same length")
+		return 0, types.ErrInvalidSliceLength
 	}
 
 	totalStake := 0.0
 	for _, stake := range reputersStakes {
 		totalStake += stake
-	}
-
-	if totalStake == 0 {
-		return 0, fmt.Errorf("total stake cannot be zero")
 	}
 
 	var stakeWeightedLoss float64 = 0
@@ -53,4 +75,283 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 	}
 
 	return stakeWeightedLoss, nil
+}
+
+// log10Slice applies log10 to each element in a slice.
+func log10Slice(s []float64) []float64 {
+	logs := make([]float64, len(s))
+	for i, v := range s {
+		logs[i] = math.Log10(v)
+	}
+	return logs
+}
+
+// GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
+// Consider the all reported losses and the adjusted stake of each reputer
+// L_i - consensus loss vector
+func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, error) {
+	// Calculate the total stake
+	totalStake := 0.0
+	for _, stake := range reputersAdjustedStakes {
+		totalStake += stake
+	}
+
+	// Normalize the stakes
+	normalizedStakes := make([]float64, len(reputersAdjustedStakes))
+	for i, stake := range reputersAdjustedStakes {
+		normalizedStakes[i] = stake / totalStake
+	}
+
+	// Perform weighted sum of log10 of losses
+	stakeWeightedLoss := make([]float64, len(reputersReportedLosses))
+
+	for j := 0; j < len(reputersReportedLosses); j++ {
+		for i := 0; i < len(reputersAdjustedStakes); i++ {
+			stakeWeightedLoss[j] += normalizedStakes[i] * math.Log10(reputersReportedLosses[j][i])
+		}
+	}
+
+	return stakeWeightedLoss, nil
+}
+
+// GetConsensusScore calculates the proximity to consensus score for a reputer.
+// T_im
+func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error) {
+	fTolerance := 0.01
+	if len(reputerLosses) != len(consensusLosses) {
+		return 0, types.ErrInvalidSliceLength
+	}
+
+	var sumLogConsensusSquared float64
+	for _, cLoss := range consensusLosses {
+		sumLogConsensusSquared += math.Pow(math.Log10(cLoss), 2)
+	}
+	consensusNorm := math.Sqrt(sumLogConsensusSquared)
+
+	var distanceSquared float64
+	for i, rLoss := range reputerLosses {
+		distanceSquared += math.Pow(math.Log10(rLoss/consensusLosses[i]), 2)
+	}
+	distance := math.Sqrt(distanceSquared)
+
+	score := 1 / (distance/consensusNorm + fTolerance)
+	return score, nil
+}
+
+// Placeholder for getAllConsensusScores, needs actual implementation.
+func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
+	// Get adjusted stakes
+	var adjustedStakes []float64
+	for i, reputerStake := range stakes {
+		adjustedStake, err := GetAdjustedStake(reputerStake, stakes, allListeningCoefficients[i], allListeningCoefficients, float64(numReputers))
+		if err != nil {
+			return nil, err
+		}
+		adjustedStakes = append(adjustedStakes, adjustedStake)
+	}
+
+	// Get consensus loss vector
+	consensus, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get reputers scores
+	scores := make([]float64, numReputers)
+	for i := 0; i < numReputers; i++ {
+		losses := allLosses[i]
+        scores[i], err = GetConsensusScore(losses, consensus)
+		if err != nil {
+			return nil, err
+		}
+	} 
+	
+	return scores, nil
+}
+
+func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores []float64, initialCoefficients []float64, numReputers int, enableListening bool) ([]float64, []float64, error) {
+	learningRate := 0.01
+	coefficients := make([]float64, len(initialCoefficients))
+	copy(coefficients, initialCoefficients)
+	scores := make([]float64, numReputers)
+
+	if enableListening {
+		oldCoefficients := make([]float64, numReputers)
+		maxGradientThreshold := 0.001
+		imax := int(math.Round(1.0 / learningRate))
+		minStakeFraction := 0.5
+		var i int
+		var maxGradient float64 = 1
+
+		for maxGradient > maxGradientThreshold && i < imax {
+			i++
+			copy(oldCoefficients, coefficients)
+			gradient := make([]float64, numReputers)
+
+			for l := range coefficients {
+				dcoeff := 0.001
+				if coefficients[l] == 1 {
+					dcoeff = -0.001
+				}
+				coeffs := make([]float64, len(coefficients))
+				copy(coeffs, coefficients)
+
+				scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
+				if err != nil {
+					return nil, nil, err
+				}
+				coeffs2 := make([]float64, len(coeffs))
+				copy(coeffs2, coeffs)
+				coeffs2[l] += dcoeff
+				
+				scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
+				if err != nil {
+					return nil, nil, err
+				}
+				gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
+			}
+
+			newCoefficients := make([]float64, len(coefficients))
+			for j := range coefficients {
+				newCoefficients[j] = math.Min(math.Max(coefficients[j]+learningRate*gradient[j], 0), 1)
+			}
+
+			listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
+			listenedStakeFraction := sumWeighted(coefficients, stakes) / sum(stakes)
+			if listenedStakeFraction < minStakeFraction {
+				for l := range coefficients {
+					coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
+				}
+			}
+			maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
+		}
+		return scores, coefficients, nil
+	} else {
+		coefficients = initialCoefficients
+        scores, err := GetAllConsensusScores(allLosses, stakes, coefficients, numReputers)
+		if err != nil {
+			return nil, nil, err
+		}
+		return scores, coefficients, nil
+	}
+}
+
+func sum(slice []float64) float64 {
+	total := 0.0
+	for _, v := range slice {
+		total += v
+	}
+	return total
+}
+
+// sumWeighted calculates the weighted sum of values based on the given weights.
+// The length of weights and values must be the same.
+func sumWeighted(weights, values []float64) float64 {
+	var sum float64
+	for i, weight := range weights {
+		sum += weight * values[i]
+	}
+
+	return sum
+}
+
+func maxAbsDifference(a, b []float64) float64 {
+	maxDiff := 0.0
+	for i := range a {
+		diff := math.Abs(a[i] - b[i])
+		if diff > maxDiff {
+			maxDiff = diff
+		}
+	}
+	return maxDiff
+}
+
+// Implements the potential function phi for the module
+// this is equation 6 from the litepaper:
+// ϕ_p(x) = (ln(1 + e^x))^p
+//
+// error handling:
+// float Inf can be generated for values greater than 1.7976931348623157e+308
+// e^x can create Inf
+// ln(blah)^p can create Inf for sufficiently large ln result
+// NaN is impossible as 1+e^x is always positive no matter the value of x
+// and pow only produces NaN for NaN input
+// therefore we only return one type of error and that is if phi overflows.
+func phi(p float64, x float64) (float64, error) {
+	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
+		return 0, types.ErrPhiInvalidInput
+	}
+	eToTheX := math.Exp(x)
+	onePlusEToTheX := 1 + eToTheX
+	if math.IsInf(onePlusEToTheX, 0) {
+		return 0, types.ErrEToTheXExponentiationIsInfinity
+	}
+	naturalLog := math.Log(onePlusEToTheX)
+	result := math.Pow(naturalLog, p)
+	if math.IsInf(result, 0) {
+		return 0, types.ErrLnToThePExponentiationIsInfinity
+	}
+	// should theoretically never be possible with the above checks
+	if math.IsNaN(result) {
+		return 0, types.ErrPhiResultIsNaN
+	}
+	return result, nil
+}
+
+// Adjusted stake for calculating consensus S hat
+// ^S_im = 1 - ϕ_1^−1(η) * ϕ1[ −η * (((N_r * a_im * S_im) / (Σ_m(a_im * S_im))) − 1 )]
+// we use eta = 20 as the fiducial value decided in the paper
+// phi_1 refers to the phi function with p = 1
+// INPUTS:
+// This function expects that allStakes
+// and allListeningCoefficients are slices of the same length
+// and the index to each slice corresponds to the same reputer
+func GetAdjustedStake(
+	stake float64,
+	allStakes []float64,
+	listeningCoefficient float64,
+	allListeningCoefficients []float64,
+	numReputers float64,
+) (float64, error) {
+	if len(allStakes) != len(allListeningCoefficients) ||
+		len(allStakes) == 0 ||
+		len(allListeningCoefficients) == 0 {
+		return 0, types.ErrAdjustedStakeInvalidSliceLength
+	}
+	// renaming variables just to be more legible with the formula
+	S_im := stake
+	a_im := listeningCoefficient
+	N_r := numReputers
+
+	denominator := 0.0
+	for i, s := range allStakes {
+		a := allListeningCoefficients[i]
+		denominator += (a * s)
+	}
+	numerator := N_r * a_im * S_im
+	stakeFraction := numerator / denominator
+	stakeFraction = stakeFraction - 1
+	stakeFraction = stakeFraction * -20 // eta = 20
+
+	phi_1_stakeFraction, err := phi(1, stakeFraction)
+	if err != nil {
+		return 0, err
+	}
+	phi_1_Eta, err := phi(1, 20)
+	if err != nil {
+		return 0, err
+	}
+	// phi_1_Eta is taken to the -1 power
+	// and then multiplied by phi_1_stakeFraction
+	// so we can just treat it as phi_1_stakeFraction / phi_1_Eta
+	phiVal := phi_1_stakeFraction / phi_1_Eta
+	ret := 1 - phiVal
+
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(types.ErrAdjustedStakeIsInfinity, "stake: %f", stake)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(types.ErrAdjustedStakeIsNaN, "stake: %f", stake)
+	}
+	return ret, nil
 }

@@ -10,6 +10,89 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+func (s *ModuleTestSuite) TestGetReputerScore() {
+	// Mock data with 2 reputers reporting loss of 2 workers
+	// [0] - Reputer 1
+	// [1] - Reputer 2
+	reputersReportedCombinedLosses := []float64{85, 80}
+	reputersReportedNaiveLosses := []float64{100, 90}
+	reputersWorker1ReportedInferenceLosses := []float64{90, 90}
+	reputersWorker2ReportedInferenceLosses := []float64{100, 100}
+	reputersWorker1ReportedForecastLosses := []float64{90, 85}
+	reputersWorker2ReportedForecastLosses := []float64{100, 100}
+	reputersWorker1ReportedOneOutLosses := []float64{115, 120}
+	reputersWorker2ReportedOneOutLosses := []float64{100, 100}
+	reputersWorker1ReportedOneInNaiveLosses := []float64{90, 85}
+	reputersWorker2ReportedOneInNaiveLosses := []float64{100, 100}
+
+	// Matrix for reported losses
+	reportedLossesMatrix := [][]float64{
+		reputersReportedCombinedLosses,
+		reputersReportedNaiveLosses,
+		reputersWorker1ReportedInferenceLosses,
+		reputersWorker2ReportedInferenceLosses,
+		reputersWorker1ReportedForecastLosses,
+		reputersWorker2ReportedForecastLosses,
+		reputersWorker1ReportedOneOutLosses,
+		reputersWorker2ReportedOneOutLosses,
+		reputersWorker1ReportedOneInNaiveLosses,
+		reputersWorker2ReportedOneInNaiveLosses,
+	}
+
+	allReputersStakes := []float64{50, 150}
+
+	// TODO: Implement get listening coefficients function
+	// Get listening coefficients
+	listeningCoefficient := 0.18
+	allListeningCoefficients := []float64{listeningCoefficient, 0.63}
+
+	// Get adjusted stakes
+	var adjustedStakes []float64
+	for _, reputerStake := range allReputersStakes {
+		adjustedStake, err := module.GetAdjustedStake(reputerStake, allReputersStakes, listeningCoefficient, allListeningCoefficients, float64(2))
+		s.NoError(err, "Error getting adjustedStake")
+		adjustedStakes = append(adjustedStakes, adjustedStake)
+	}
+
+	// Get consensus loss vector
+	consensus, err := module.GetStakeWeightedLossMatrix(adjustedStakes, reportedLossesMatrix)
+	s.NoError(err, "Error getting consensus")
+
+	// Get reputer scores
+	reputer1AllReportedLosses := []float64{
+		reputersReportedCombinedLosses[0],
+		reputersReportedNaiveLosses[0],
+		reputersWorker1ReportedInferenceLosses[0],
+		reputersWorker2ReportedInferenceLosses[0],
+		reputersWorker1ReportedForecastLosses[0],
+		reputersWorker2ReportedForecastLosses[0],
+		reputersWorker1ReportedOneOutLosses[0],
+		reputersWorker2ReportedOneOutLosses[0],
+		reputersWorker1ReportedOneInNaiveLosses[0],
+		reputersWorker2ReportedOneInNaiveLosses[0],
+	}
+	reputer1Score, err := module.GetConsensusScore(reputer1AllReportedLosses, consensus)
+	s.NoError(err, "Error getting reputer1Score")
+	s.NotEqual(0, reputer1Score, "Expected reputer1Score to be non-zero")
+
+	reputer2AllReportedLosses := []float64{
+		reputersReportedCombinedLosses[1],
+		reputersReportedNaiveLosses[1],
+		reputersWorker1ReportedInferenceLosses[1],
+		reputersWorker2ReportedInferenceLosses[1],
+		reputersWorker1ReportedForecastLosses[1],
+		reputersWorker2ReportedForecastLosses[1],
+		reputersWorker1ReportedOneOutLosses[1],
+		reputersWorker2ReportedOneOutLosses[1],
+		reputersWorker1ReportedOneInNaiveLosses[1],
+		reputersWorker2ReportedOneInNaiveLosses[1],
+	}
+	
+	reputer2Score, err := module.GetConsensusScore(reputer2AllReportedLosses, consensus)
+	s.NoError(err, "Error getting reputer2Score")
+	s.NotEqual(0, reputer2Score, "Expected reputer2Score to be non-zero")
+}
+
 func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	timeNow := uint64(time.Now().UTC().Unix())
 
