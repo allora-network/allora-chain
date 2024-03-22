@@ -33,21 +33,31 @@ func StdDev(data []float64) float64 {
 	return sd
 }
 
+func flatten(arr [][]float64) []float64 {
+	var flat []float64
+	for _, row := range arr {
+		flat = append(flat, row...)
+	}
+	return flat
+}
+
 // GetWorkerRewardFractions calculates the reward fractions for workers for forecast and inference tasks
 // U_ij / V_ik
 func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, error) {
-	var lastScores []float64
-	for _, workerScores := range scores {
-		if len(workerScores) > 10 {
-			workerScores = workerScores[len(workerScores)-10:]
+	lastScores := make([][]float64, len(scores))
+	for i, workerScores := range scores {
+		end := len(workerScores)
+		start := end - 10
+		if start < 0 {
+			start = 0
 		}
-		lastScores = append(lastScores, workerScores[len(workerScores)-1])
+		lastScores[i] = workerScores[start:end]
 	}
 
-	stdDev := StdDev(lastScores)
+	stdDev := StdDev(flatten(lastScores))
 	var normalizedScores []float64
 	for _, score := range lastScores {
-		normalizedScores = append(normalizedScores, score/stdDev)
+		normalizedScores = append(normalizedScores, score[len(score)-1]/stdDev)
 	}
 
 	smoothedScores, err := SmoothAbsoluteX(normalizedScores, preward)
@@ -212,12 +222,12 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 	scores := make([]float64, numReputers)
 	for i := 0; i < numReputers; i++ {
 		losses := allLosses[i]
-        scores[i], err = GetConsensusScore(losses, consensus)
+		scores[i], err = GetConsensusScore(losses, consensus)
 		if err != nil {
 			return nil, err
 		}
-	} 
-	
+	}
+
 	return scores, nil
 }
 
@@ -255,7 +265,7 @@ func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores 
 				coeffs2 := make([]float64, len(coeffs))
 				copy(coeffs2, coeffs)
 				coeffs2[l] += dcoeff
-				
+
 				scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
 				if err != nil {
 					return nil, nil, err
@@ -280,7 +290,7 @@ func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores 
 		return scores, coefficients, nil
 	} else {
 		coefficients = initialCoefficients
-        scores, err := GetAllConsensusScores(allLosses, stakes, coefficients, numReputers)
+		scores, err := GetAllConsensusScores(allLosses, stakes, coefficients, numReputers)
 		if err != nil {
 			return nil, nil, err
 		}

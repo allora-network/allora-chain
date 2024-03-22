@@ -13,19 +13,115 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// TestGetReputerRewardFractions tests the GetReputerRewardFractions function with various inputs.
-func TestGetReputerRewardFractions(t *testing.T) {
+func TestStdDev(t *testing.T) {
 	tests := []struct {
-		name       string
-		stakes     []float64
-		scores     []float64
-		preward    float64
-		want       []float64
-		wantErr    bool
+		name string
+		data []float64
+		want float64
+	}{
+		{
+			name: "basic",
+			data: []float64{-0.00675, -0.00622, -0.01502, -0.01214, 0.00392, 0.00559, 0.0438, 0.04304, 0.09719, 0.09675},
+			want: 0.041014924273483966,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := module.StdDev(tt.data); math.Abs(got-tt.want) > 1e-5 {
+				t.Errorf("StdDev() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSmoothAbsoluteX(t *testing.T) {
+	tests := []struct {
+		name    string
+		x       []float64
+		p       float64
+		want    []float64
+		wantErr bool
 	}{
 		{
 			name:    "basic",
-			stakes:  []float64{1178377.89152,  385287.87376, 395488.13091, 208201.11762, 369044.55988},
+			x:       []float64{-0.16249, -0.3617, 0.09441, 1.05498, 2.34107},
+			p:       1.5,
+			want:    []float64{0.48253, 0.38428, 0.63846, 1.5751, 3.79488},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := module.SmoothAbsoluteX(tt.x, tt.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SmoothAbsoluteX() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for i, g := range got {
+				if math.Abs(g-tt.want[i]) > 1e-5 {
+					t.Errorf("SmoothAbsoluteX() got = %v, want %v", got, tt.want)
+					break
+				}
+			}
+		})
+	}
+}
+
+func TestGetWorkerRewardFractions(t *testing.T) {
+	tests := []struct {
+		name    string
+		scores  [][]float64
+		preward float64
+		want    []float64
+		wantErr bool
+	}{
+		{
+			name: "basic",
+			scores: [][]float64{
+				{-0.00675, -0.00622, -0.00388},
+				{-0.01502, -0.01214, -0.01554},
+				{0.00392, 0.00559, 0.00545},
+				{0.0438, 0.04304, 0.03906},
+				{0.09719, 0.09675, 0.09418},
+			},
+			preward: 1.5,
+			want:    []float64{0.07671, 0.05531, 0.09829, 0.21537, 0.55432},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := module.GetWorkerRewardFractions(tt.scores, tt.preward)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetWorkerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for i, g := range got {
+				if math.Abs(g-tt.want[i]) > 1e-4 {
+					t.Errorf("GetWorkerRewardFractions() got = %v, want %v", got, tt.want)
+					break
+				}
+			}
+		})
+	}
+}
+
+// TestGetReputerRewardFractions tests the GetReputerRewardFractions function with various inputs.
+func TestGetReputerRewardFractions(t *testing.T) {
+	tests := []struct {
+		name    string
+		stakes  []float64
+		scores  []float64
+		preward float64
+		want    []float64
+		wantErr bool
+	}{
+		{
+			name:    "basic",
+			stakes:  []float64{1178377.89152, 385287.87376, 395488.13091, 208201.11762, 369044.55988},
 			scores:  []float64{17.53839, 22.63517, 26.28035, 13.51383, 15.08629},
 			preward: 1,
 			want:    []float64{0.42911, 0.18108, 0.2158, 0.05842, 0.1156},
@@ -128,7 +224,7 @@ func (s *ModuleTestSuite) TestGetReputerScore() {
 		reputersWorker1ReportedOneInNaiveLosses[1],
 		reputersWorker2ReportedOneInNaiveLosses[1],
 	}
-	
+
 	reputer2Score, err := module.GetConsensusScore(reputer2AllReportedLosses, consensus)
 	s.NoError(err, "Error getting reputer2Score")
 	s.NotEqual(0, reputer2Score, "Expected reputer2Score to be non-zero")
@@ -153,17 +249,17 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	// Add a lossBundle for each reputer
 	var reputersLossBundles []*types.LossBundle
 	reputer1LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[0].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[0].String(),
 		CombinedLoss: cosmosMath.NewUint(85),
 		ForecasterLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(90),
+				Value:  cosmosMath.NewUint(90),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		NaiveLoss: cosmosMath.NewUint(100),
@@ -171,37 +267,37 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(115),
+				Value:  cosmosMath.NewUint(115),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		OneInNaiveLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(90),
+				Value:  cosmosMath.NewUint(90),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
 	reputer2LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[1].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[1].String(),
 		CombinedLoss: cosmosMath.NewUint(80),
 		ForecasterLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(85),
+				Value:  cosmosMath.NewUint(85),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		NaiveLoss: cosmosMath.NewUint(90),
@@ -209,21 +305,21 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(120),
+				Value:  cosmosMath.NewUint(120),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		OneInNaiveLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(85),
+				Value:  cosmosMath.NewUint(85),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
@@ -348,35 +444,35 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	// Add a lossBundle for each reputer
 	var reputersLossBundles []*types.LossBundle
 	reputer1LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[0].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[0].String(),
 		CombinedLoss: cosmosMath.NewUint(85),
 		// Increased loss when removing for worker 1
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(115),
+				Value:  cosmosMath.NewUint(115),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
 	reputer2LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[1].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[1].String(),
 		CombinedLoss: cosmosMath.NewUint(80),
 		// Increased loss when removing for worker 1
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(120),
+				Value:  cosmosMath.NewUint(120),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
@@ -444,9 +540,9 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 
 	// Create a topic
 	topicIds, err := mockCreateTopics(s, 1)
+	fmt.Println("topicId", topicIds)
 	s.NoError(err, "Error creating topic")
 	topicId := topicIds[0]
-
 	// Create and register 2 reputers in topic
 	reputers, err := mockSomeReputers(s, topicId)
 	s.NoError(err, "Error creating reputers")

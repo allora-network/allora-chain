@@ -66,5 +66,5 @@ var (
 	ErrAdjustedStakeInvalidSliceLength                   = errors.Register(ModuleName, 66, "adjusted stake: invalid slice length")
 	ErrAdjustedStakeIsInfinity                           = errors.Register(ModuleName, 67, "adjusted stake: is infinity")
 	ErrAdjustedStakeIsNaN                                = errors.Register(ModuleName, 68, "adjusted stake: is NaN")
-	ErrInvalidSliceLength     					         = errors.Register(ModuleName, 69, "invalid slice length")
+	ErrInvalidSliceLength                                = errors.Register(ModuleName, 69, "invalid slice length")
 )
