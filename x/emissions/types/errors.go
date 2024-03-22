@@ -91,4 +91,7 @@ var (
 	ErrReputerRewardsInvalidInput                        = errors.Register(ModuleName, 91, "reputer rewards: invalid input")
 	ErrReputerRewardsIsNaN                               = errors.Register(ModuleName, 92, "reputer rewards: is NaN")
 	ErrReputerRewardsIsInfinity                          = errors.Register(ModuleName, 93, "reputer rewards: is infinity")
+	ErrForecastingPerformanceScoreInvalidInput           = errors.Register(ModuleName, 94, "forecasting performance score: invalid input")
+	ErrForecastingPerformanceScoreIsNaN                  = errors.Register(ModuleName, 95, "forecasting performance score: is NaN")
+	ErrForecastingPerformanceScoreIsInfinity             = errors.Register(ModuleName, 96, "forecasting performance score: is infinity")
 )

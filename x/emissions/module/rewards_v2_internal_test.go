@@ -489,3 +489,42 @@ func (s *MathTestSuite) TestReputerRewardZero() {
 	s.Require().NoError(err)
 	s.Require().InDelta(0, result, 0.0001)
 }
+
+func (s *MathTestSuite) TestForecastingPerformanceScoreSimple() {
+	networkInferenceLoss := 100.0
+	naiveNetworkInferenceLoss := 1000.0
+	score, err := forecastingPerformanceScore(naiveNetworkInferenceLoss, networkInferenceLoss)
+	s.Require().NoError(err)
+	s.Require().InDelta(1, score, 0.0001)
+}
+
+func (s *MathTestSuite) TestForecastingPerformanceScoreInvalidInput() {
+
+	_, err := forecastingPerformanceScore(math.NaN(), 100)
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+
+	_, err = forecastingPerformanceScore(100, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+
+	_, err = forecastingPerformanceScore(math.Inf(1), 100)
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+
+	_, err = forecastingPerformanceScore(100, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+
+	_, err = forecastingPerformanceScore(math.Inf(-1), 100)
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+
+	_, err = forecastingPerformanceScore(100, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
+}
+
+func (s *MathTestSuite) TestForecastingPerformanceScoreInfinity() {
+	_, err := forecastingPerformanceScore(0, 100)
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreIsInfinity)
+}
+
+func (s *MathTestSuite) TestForecastingPerformanceScoreNaN() {
+	_, err := forecastingPerformanceScore(0, 0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreIsNaN)
+}

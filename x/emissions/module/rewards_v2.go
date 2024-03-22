@@ -407,3 +407,35 @@ func reputerRewards(
 	}
 	return ret, nil
 }
+
+// The performance score of the entire forecasting task T_i
+// is positive if the removal of the forecasting task would
+// increase the network loss, and is negative if its removal
+// would decrease the network loss
+// We subtract the log-loss of the complete network inference
+// (L_i) from that of the naive network (L_i^-), which is
+// obtained by omitting all forecast-implied inferences
+// T_i = log L_i^- - log L_i
+func forecastingPerformanceScore(
+	naiveNetworkInferenceLoss float64,
+	networkInferenceLoss float64,
+) (float64, error) {
+	if math.IsNaN(networkInferenceLoss) || math.IsInf(networkInferenceLoss, 0) ||
+		math.IsNaN(naiveNetworkInferenceLoss) || math.IsInf(naiveNetworkInferenceLoss, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrForecastingPerformanceScoreInvalidInput,
+			"networkInferenceLoss: %f, naiveNetworkInferenceLoss: %f",
+			networkInferenceLoss,
+			naiveNetworkInferenceLoss,
+		)
+	}
+	ret := math.Log10(naiveNetworkInferenceLoss) - math.Log10(networkInferenceLoss)
+
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrForecastingPerformanceScoreIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrForecastingPerformanceScoreIsNaN
+	}
+	return ret, nil
+}
