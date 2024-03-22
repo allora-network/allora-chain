@@ -77,15 +77,6 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 	return stakeWeightedLoss, nil
 }
 
-// log10Slice applies log10 to each element in a slice.
-func log10Slice(s []float64) []float64 {
-	logs := make([]float64, len(s))
-	for i, v := range s {
-		logs[i] = math.Log10(v)
-	}
-	return logs
-}
-
 // GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
 // Consider the all reported losses and the adjusted stake of each reputer
 // L_i - consensus loss vector
