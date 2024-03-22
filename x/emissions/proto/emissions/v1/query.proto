@@ -23,11 +23,6 @@ service Query {
     option (google.api.http).get = "/emissions/v1/last_rewards_update";
   }
 
-  rpc GetAccumulatedEpochRewards(QueryAccumulatedEpochRewardsRequest) returns (QueryAccumulatedEpochRewardsResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/accumulated_epoch_rewards";
-  }
-
   rpc GetNextTopicId(QueryNextTopicIdRequest) returns (QueryNextTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/next_topic_id";
@@ -183,19 +178,6 @@ message QueryLatestNetworkLossBundleRequest {
 
 message QueryLatestNetworkLossBundleResponse {
   LossBundle loss_bundle = 1;
-}
-
-// Query the amount of rewards accumulated during this epoch
-message QueryAccumulatedEpochRewardsRequest {}
-
-message QueryAccumulatedEpochRewardsResponse {
-  option (gogoproto.equal) = true;
-  string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 }
 
 message QueryNextTopicIdRequest {}

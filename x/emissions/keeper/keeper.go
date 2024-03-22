@@ -13,7 +13,6 @@ import (
 	storetypes "cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -34,8 +33,9 @@ type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
 type Keeper struct {
-	cdc          codec.BinaryCodec
-	addressCodec address.Codec
+	cdc              codec.BinaryCodec
+	addressCodec     address.Codec
+	feeCollectorName string
 
 	// types management
 	schema     collections.Schema
@@ -142,12 +142,14 @@ func NewKeeper(
 	addressCodec address.Codec,
 	storeService storetypes.KVStoreService,
 	ak AccountKeeper,
-	bk BankKeeper) Keeper {
+	bk BankKeeper,
+	feeCollectorName string) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                        cdc,
 		addressCodec:               addressCodec,
+		feeCollectorName:           feeCollectorName,
 		params:                     collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                 ak,
 		bankKeeper:                 bk,
@@ -160,7 +162,7 @@ func NewKeeper(
 		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicId, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
@@ -214,10 +216,14 @@ func (k *Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	return ret, nil
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetFeeCollectorName() string {
+	return k.feeCollectorName
+}
+
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (cosmosMath.LegacyDec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return cosmosMath.LegacyDec{}, err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -303,13 +309,14 @@ func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timesta
 // Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences types.Inferences) error {
 	for _, inference := range inferences.Inferences {
+		inferenceCopy := *inference
 		// Update latests inferences for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(inference.Worker)
+		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Worker)
 		if err != nil {
 			return err
 		}
 		key := collections.Join(topicId, workerAcc)
-		err = k.inferences.Set(ctx, key, *inference)
+		err = k.inferences.Set(ctx, key, inferenceCopy)
 		if err != nil {
 			return err
 		}
@@ -381,7 +388,7 @@ func (k *Keeper) GetLossBundlesAtOrAfterTimestamp(ctx context.Context, topicId T
 }
 
 // Get loss bundles for a topic/timestamp
-func(k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
+func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
 	key := collections.Join(topicId, timestamp)
 	lossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
@@ -439,30 +446,23 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 	return params.RewardCadence, nil
 }
 
-// return how many new coins should be minted for the next emission
-func (k *Keeper) CalculateAccumulatedEmissions(ctx context.Context) (cosmosMath.Int, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	blockNumber := sdkCtx.BlockHeight()
-	lastRewardsUpdate, err := k.GetLastRewardsUpdate(sdkCtx)
+// Gets the total sum of all stake in the network across all topics
+func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
+	ret, err := k.totalStake.Get(ctx)
 	if err != nil {
-		return cosmosMath.Int{}, err
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
 	}
-	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
-	// number of epochs that have passed (if more than 1)
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	epochsPassed := cosmosMath.NewInt(blocksSinceLastUpdate / params.RewardCadence)
-	// get emission amount
-	return epochsPassed.Mul(params.EmissionsPerEpoch), nil
+	return ret, nil
 }
 
-// mint new rewards coins to this module account
-func (k *Keeper) MintRewardsCoins(ctx context.Context, amount cosmosMath.Int) error {
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	return k.bankKeeper.MintCoins(ctx, types.AlloraStakingModuleName, coins)
+// Sets the total sum of all stake in the network across all topics
+func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
+	// total stake does not have a zero guard because totalStake is allowed to be zero
+	// it is initialized to zero at genesis anyways.
+	return k.totalStake.Set(ctx, totalStake)
 }
 
 // A function that accepts a topicId and returns list of Inferences or error
@@ -1068,18 +1068,6 @@ func (k *Keeper) GetStakePlacementsByTopic(ctx context.Context, topicId TOPIC_ID
 	return stakes, nil
 }
 
-// Gets the total sum of all stake in the network across all topics
-func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
-	ret, err := k.totalStake.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return ret, nil
-}
-
 // Gets the stake in the network for a given topic
 func (k *Keeper) GetTopicStake(ctx context.Context, topicId TOPIC_ID) (Uint, error) {
 	ret, err := k.topicStake.Get(ctx, topicId)
@@ -1102,14 +1090,6 @@ func (k *Keeper) GetStakeOnTopicFromReputer(ctx context.Context, topicId TOPIC_I
 		return cosmosMath.Uint{}, err
 	}
 	return stake, nil
-}
-
-// Sets the total sum of all stake in the network across all topics
-// Should just be used at genesis
-func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
-	// Total stake does not have a zero guard because totalStake is allowed to be zero
-	// It is initialized to zero at genesis anyways
-	return k.totalStake.Set(ctx, totalStake)
 }
 
 // Returns the amount of stake placed by a specific delegator.
@@ -1397,7 +1377,8 @@ func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*type
 	for ; iterator.Valid(); iterator.Next() {
 		node, _ := iterator.Value()
 		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
-			nodes = append(nodes, &node)
+			nodeCopy := node
+			nodes = append(nodes, &nodeCopy)
 		}
 	}
 
@@ -1541,6 +1522,14 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error)
 		return 0, err
 	}
 	return params.MaxRequestCadence, nil
+}
+
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PercentRewardsReputersWorkers, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
@@ -1764,8 +1753,12 @@ func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreas
 ///
 
 // SendCoinsFromModuleToModule
-func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
-	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
+func (k *Keeper) AccountKeeper() AccountKeeper {
+	return k.authKeeper
+}
+
+func (k *Keeper) BankKeeper() BankKeeper {
+	return k.bankKeeper
 }
 
 // SendCoinsFromModuleToAccount

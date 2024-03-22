@@ -52,7 +52,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		}
 
 		// Recalculate the inflation rate based on the updated circulating supply and provisions.
-		calculatedInflationRate := minter.NextInflationRate(totalCirculatingSupply, cosmosMath.LegacyMustNewDecFromStr(currentBlockProvision.String()), params.BlocksPerYear)
+		calculatedInflationRate := minter.NextInflationRate(newTotalCirculatingSupply, cosmosMath.LegacyMustNewDecFromStr(currentBlockProvision.String()), params.BlocksPerYear)
 		params.InflationRateChange = calculatedInflationRate
 		minter.Inflation = calculatedInflationRate
 

@@ -2,19 +2,14 @@
 
 set -e
 
-GENESIS=$HOME/.allorad/config/genesis.json
+source $(dirname $0)/common.sh
+
 # this script expects to be ran AFTER `scripts/init.sh`
 if ! test -f $GENESIS; then
   echo "Must run scripts/init.sh first."
   exit 1
 fi
 
-ALLORAD_BIN=$(which allorad)
-
-ALICE_ADDRESS=$($ALLORAD_BIN keys show alice | head -n 1 | cut -f 2 -d ":" | tr -d " ")
-BOB_ADDRESS=$($ALLORAD_BIN keys show bob | head -n 1 | cut -f 2 -d ":" | tr -d " ")
-echo "Got test keys pub address: $ALICE_ADDRESS and $BOB_ADDRESS"
-echo
 
 echo "Putting alice and bob in the whitelisted core team list"
 GENESIS_TOTAL_LINES=$(wc -l $GENESIS | cut -f 1 -d " ")

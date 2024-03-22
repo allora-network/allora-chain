@@ -8,13 +8,14 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
+
 	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -58,14 +59,15 @@ func (s *ModuleTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                nil,
-		"mint":                         {"minter"},
-		types.AlloraStakingModuleName:  {"burner", "minter", "staking"},
-		types.AlloraRequestsModuleName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":           {"burner", "staking"},
-		"not_bonded_tokens_pool":       {"burner", "staking"},
-		multiPerm:                      {"burner", "minter", "staking"},
-		randomPerm:                     {"random"},
+		"fee_collector":                 {"minter"},
+		"mint":                          {"minter"},
+		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:  {"minter"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -100,7 +102,13 @@ func (s *ModuleTestSuite) SetupTest() {
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, accountKeeper, bankKeeper)
+	s.emissionsKeeper = keeper.NewKeeper(
+		encCfg.Codec,
+		addressCodec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.FeeCollectorName)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)

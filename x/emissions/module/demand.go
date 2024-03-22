@@ -8,8 +8,8 @@ import (
 	"sort"
 
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -248,7 +248,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 		fmt.Println("Error resetting churn ready topics: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
-
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*types.Topic

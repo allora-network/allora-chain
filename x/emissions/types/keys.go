@@ -3,8 +3,9 @@ package types
 import "cosmossdk.io/collections"
 
 const ModuleName = "emissions"
-const AlloraStakingModuleName = "allorastaking"
-const AlloraRequestsModuleName = "allorarequests"
+const AlloraStakingAccountName = "allorastaking"
+const AlloraRequestsAccountName = "allorarequests"
+const AlloraRewardsAccountName = "allorarewards"
 
 var (
 	ParamsKey                     = collections.NewPrefix(0)
@@ -43,4 +44,5 @@ var (
 	ChurnReadyTopicsKey           = collections.NewPrefix(33)
 	FoundationWhitelistKey        = collections.NewPrefix(34)
 	NetworkLossBundlesKey         = collections.NewPrefix(35)
+	StakeByReputerAndTopicIdKey   = collections.NewPrefix(36)
 )
