@@ -29,17 +29,17 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	// Add a lossBundle for each reputer
 	var reputersLossBundles []*types.LossBundle
 	reputer1LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[0].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[0].String(),
 		CombinedLoss: cosmosMath.NewUint(85),
 		ForecasterLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(90),
+				Value:  cosmosMath.NewUint(90),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		NaiveLoss: cosmosMath.NewUint(100),
@@ -47,37 +47,37 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(115),
+				Value:  cosmosMath.NewUint(115),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		OneInNaiveLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(90),
+				Value:  cosmosMath.NewUint(90),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
 	reputer2LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[1].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[1].String(),
 		CombinedLoss: cosmosMath.NewUint(80),
 		ForecasterLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(85),
+				Value:  cosmosMath.NewUint(85),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		NaiveLoss: cosmosMath.NewUint(90),
@@ -85,21 +85,21 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(120),
+				Value:  cosmosMath.NewUint(120),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 		OneInNaiveLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(85),
+				Value:  cosmosMath.NewUint(85),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
@@ -224,35 +224,35 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	// Add a lossBundle for each reputer
 	var reputersLossBundles []*types.LossBundle
 	reputer1LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[0].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[0].String(),
 		CombinedLoss: cosmosMath.NewUint(85),
 		// Increased loss when removing for worker 1
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(115),
+				Value:  cosmosMath.NewUint(115),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
 	reputer2LossBundle := types.LossBundle{
-		TopicId: topicId,
-		Reputer: reputers[1].String(),
+		TopicId:      topicId,
+		Reputer:      reputers[1].String(),
 		CombinedLoss: cosmosMath.NewUint(80),
 		// Increased loss when removing for worker 1
 		OneOutLosses: []*types.WorkerAttributedLoss{
 			{
 				Worker: workers[0].String(),
-				Value: cosmosMath.NewUint(120),
+				Value:  cosmosMath.NewUint(120),
 			},
 			{
 				Worker: workers[1].String(),
-				Value: cosmosMath.NewUint(100),
+				Value:  cosmosMath.NewUint(100),
 			},
 		},
 	}
