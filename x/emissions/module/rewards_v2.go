@@ -8,11 +8,72 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// SmoothAbsoluteX calculates the smooth absolute function.
+func SmoothAbsoluteX(x []float64, p float64) ([]float64, error) {
+	result := make([]float64, len(x))
+	for i, v := range x {
+		expV := math.Exp(v)
+		logExpV := math.Log(1 + expV)
+		result[i] = math.Pow(logExpV, p)
+	}
+	return result, nil
+}
+
+// StdDev calculates the standard deviation of a slice of float64.
+func StdDev(data []float64) float64 {
+	var mean, sd float64
+	for _, v := range data {
+		mean += v
+	}
+	mean /= float64(len(data))
+	for _, v := range data {
+		sd += math.Pow(v-mean, 2)
+	}
+	sd = math.Sqrt(sd / float64(len(data)))
+	return sd
+}
+
+// GetWorkerRewardFractions calculates the reward fractions for workers for forecast and inference tasks
+// U_ij / V_ik
+func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, error) {
+	var lastScores []float64
+	for _, workerScores := range scores {
+		if len(workerScores) > 10 {
+			workerScores = workerScores[len(workerScores)-10:]
+		}
+		lastScores = append(lastScores, workerScores[len(workerScores)-1])
+	}
+
+	stdDev := StdDev(lastScores)
+	var normalizedScores []float64
+	for _, score := range lastScores {
+		normalizedScores = append(normalizedScores, score/stdDev)
+	}
+
+	smoothedScores, err := SmoothAbsoluteX(normalizedScores, preward)
+	if err != nil {
+		return nil, err
+	}
+
+	total := 0.0
+	for _, score := range smoothedScores {
+		total += score
+	}
+
+	var rewardFractions []float64
+	for _, score := range smoothedScores {
+		rewardFraction := score / total
+		rewardFractions = append(rewardFractions, rewardFraction)
+	}
+
+	return rewardFractions, nil
+}
+
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
 // W_im
 func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]float64, error) {
 	if len(stakes) != len(scores) {
-		return nil, fmt.Errorf("stakes and scores must have the same length")
+		return nil, types.ErrInvalidSliceLength
 	}
 
 	// Calculate (stakes * scores)^preward and sum of all fractions

@@ -1,6 +1,9 @@
 package module_test
 
 import (
+	"fmt"
+	"math"
+	"testing"
 	"time"
 
 	cosmosMath "cosmossdk.io/math"
@@ -9,6 +12,44 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// TestGetReputerRewardFractions tests the GetReputerRewardFractions function with various inputs.
+func TestGetReputerRewardFractions(t *testing.T) {
+	tests := []struct {
+		name       string
+		stakes     []float64
+		scores     []float64
+		preward    float64
+		want       []float64
+		wantErr    bool
+	}{
+		{
+			name:    "basic",
+			stakes:  []float64{1178377.89152,  385287.87376, 395488.13091, 208201.11762, 369044.55988},
+			scores:  []float64{17.53839, 22.63517, 26.28035, 13.51383, 15.08629},
+			preward: 1,
+			want:    []float64{0.42911, 0.18108, 0.2158, 0.05842, 0.1156},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := module.GetReputerRewardFractions(tt.stakes, tt.scores, tt.preward)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetReputerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			for i, g := range got {
+				fmt.Println(g, tt.want[i])
+				if math.Abs(g-tt.want[i]) > 1e-5 {
+					t.Errorf("GetReputerRewardFractions() = %v, want %v", got, tt.want)
+					break
+				}
+			}
+		})
+	}
+}
 
 func (s *ModuleTestSuite) TestGetReputerScore() {
 	// Mock data with 2 reputers reporting loss of 2 workers
