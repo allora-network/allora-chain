@@ -40,9 +40,9 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
@@ -64,8 +64,8 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/params"                // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/slashing"              // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/slashing"               // import for side-effects
 )
 
 // DefaultNodeHome default home directories for the application daemon
