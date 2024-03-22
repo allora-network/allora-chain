@@ -257,3 +257,235 @@ func (s *MathTestSuite) TestNumberRatioInfiniteFractions() {
 	_, err := numberRatio(infFractions)
 	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidInput)
 }
+
+func (s *MathTestSuite) TestInferenceRewardsSimple() {
+	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
+	// U_i = 0.5 * 8 / 8
+	// U_i = 0.5
+	infRewards, err := inferenceRewards(
+		0.5,
+		2.0,
+		2.0,
+		2.0,
+		4.0,
+		2.0,
+	)
+	s.Require().NoError(err)
+	s.Require().InDelta(0.5, infRewards, 0.0001)
+}
+
+func (s *MathTestSuite) TestInferenceRewardsInvalidInput() {
+	_, err := inferenceRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+
+	_, err = inferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
+}
+
+func (s *MathTestSuite) TestInferenceRewardsInfinity() {
+	_, err := inferenceRewards(math.MaxFloat64, math.MaxFloat64, math.MaxFloat64, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsIsInfinity)
+}
+
+func (s *MathTestSuite) TestInferenceRewardsNaN() {
+	_, err := inferenceRewards(0.5, 2.0, 0, 0, 0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsIsNaN)
+}
+
+func (s *MathTestSuite) TestInferenceRewardsZero() {
+	result, err := inferenceRewards(1, 2.0, 10, 20, 30, 2.0)
+	s.Require().NoError(err)
+	s.Require().InDelta(0, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestForecastRewardsSimple() {
+	// V_i = (2 * 3 * 4 * 5) / (6 + 4 + 10)
+	// V_i = 120 / 20
+	// V_i = 6
+	result, err := forecastingRewards(2.0, 3.0, 6.0, 4.0, 10.0, 5.0)
+	s.Require().NoError(err)
+	s.Require().InDelta(6.0, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestForecastRewardsInvalidInput() {
+	_, err := forecastingRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+
+	_, err = forecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
+}
+
+func (s *MathTestSuite) TestForecastRewardsInfinity() {
+	_, err := forecastingRewards(math.MaxFloat64, 3.0, 4.0, 5.0, 6.0, 10.0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsIsInfinity)
+}
+
+func (s *MathTestSuite) TestForecastRewardsNaN() {
+	_, err := forecastingRewards(2.0, 3.0, 0, 0, 0, 0)
+	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsIsNaN)
+}
+
+func (s *MathTestSuite) TestForecastRewardsZero() {
+	result, err := forecastingRewards(0, 3.0, 4.0, 5.0, 6.0, 10.0)
+	s.Require().NoError(err)
+	s.Require().InDelta(0, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestReputerRewardSimple() {
+	// W_i = (2 * 2) / (4 + 2 + 2)
+	// W_i = 4 / 8
+	// W_i = 0.5
+	result, err := reputerRewards(4.0, 2.0, 2.0, 2.0)
+	s.Require().NoError(err)
+	s.Require().InDelta(0.5, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestReputerRewardInvalidInput() {
+	_, err := reputerRewards(math.NaN(), 2.0, 4.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, math.NaN(), 4.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, math.NaN(), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, 4.0, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(math.Inf(1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(math.Inf(-1), 2.0, 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, math.Inf(1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, math.Inf(-1), 2.0, 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, math.Inf(1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, math.Inf(-1), 2.0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, 2.0, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+
+	_, err = reputerRewards(0.5, 2.0, 2.0, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
+}
+
+func (s *MathTestSuite) TestReputerRewardInfinity() {
+	_, err := reputerRewards(2.0, 2.0, 2.0, math.MaxFloat64)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsIsInfinity)
+}
+
+func (s *MathTestSuite) TestReputerRewardNaN() {
+	_, err := reputerRewards(0, 0, 0, 0)
+	s.Require().ErrorIs(err, emissions.ErrReputerRewardsIsNaN)
+}
+
+func (s *MathTestSuite) TestReputerRewardZero() {
+	result, err := reputerRewards(2, 2.0, 2.0, 0)
+	s.Require().NoError(err)
+	s.Require().InDelta(0, result, 0.0001)
+}

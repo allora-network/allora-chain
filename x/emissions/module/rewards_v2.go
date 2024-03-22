@@ -11,7 +11,7 @@ import (
 // GetfUniqueAgg calculates the unique value or impact of each forecaster.
 // f^+
 func GetfUniqueAgg(numForecasters float64) float64 {
-	return  1.0 / math.Pow(2.0, (numForecasters - 1.0))
+	return 1.0 / math.Pow(2.0, (numForecasters-1.0))
 }
 
 // GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
@@ -299,6 +299,111 @@ func numberRatio(rewardFractions []float64) (float64, error) {
 	}
 	if math.IsNaN(ret) {
 		return 0, emissions.ErrNumberRatioIsNaN
+	}
+	return ret, nil
+}
+
+// inference rewards calculation
+// U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
+func inferenceRewards(
+	chi float64,
+	gamma float64,
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
+		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
+		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrInferenceRewardsInvalidInput,
+			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			chi,
+			gamma,
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := ((1 - chi) * gamma * entropyInference * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrInferenceRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrInferenceRewardsIsNaN
+	}
+	return ret, nil
+}
+
+// forecaster rewards calculation
+// V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
+func forecastingRewards(
+	chi float64,
+	gamma float64,
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
+		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
+		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrForecastingRewardsInvalidInput,
+			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			chi,
+			gamma,
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := (chi * gamma * entropyForecasting * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrForecastingRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrForecastingRewardsIsNaN
+	}
+	return ret, nil
+}
+
+// reputer rewards calculation
+// W_i = (H_i * E_i) / (F_i + G_i + H_i)
+func reputerRewards(
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrReputerRewardsInvalidInput,
+			"entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := (entropyReputer * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrReputerRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrReputerRewardsIsNaN
 	}
 	return ret, nil
 }
