@@ -99,7 +99,8 @@ message OptionalParams {
     (amino.dont_omitempty) = true
   ];                                              // minimum amount of tokens to send to stake as a reputer or worker
   repeated uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
-  repeated uint64 min_epoch_length = 9;        // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
+  repeated uint64 min_epoch_length =
+      9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
   repeated uint64 max_inference_request_validity = 10;  // longest time a subscription is allowed to be valid
   repeated uint64 max_request_cadence = 11;  // slowest/largest amount of time subscription can take between inferences
   repeated string percent_rewards_reputers_workers = 12 [
@@ -108,8 +109,10 @@ message OptionalParams {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-  repeated uint64 max_workers_per_topic_request = 13;  // max number of workers whose inference will be used and compensated per request
-  repeated uint64 max_reputers_per_topic_request = 14;  // max number of reputers to solicit losses from per loss request
+  repeated uint64 max_workers_per_topic_request =
+      13;  // max number of workers whose inference will be used and compensated per request
+  repeated uint64 max_reputers_per_topic_request =
+      14;  // max number of reputers to solicit losses from per loss request
 }
 
 message MsgUpdateParams {
