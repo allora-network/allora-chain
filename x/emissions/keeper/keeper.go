@@ -276,20 +276,12 @@ func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint
 	return params.MaxInferenceRequestValidity, nil
 }
 
-func (k *Keeper) GetParamsMinRequestCadence(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MinRequestCadence, nil
-}
-
-func (k *Keeper) GetParamsMinLossCadence(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MinLossCadence, nil
+	return params.MinEpochLength, nil
 }
 
 ///
@@ -458,7 +450,7 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.InferenceSetForScoring, error) {
 	var inferences []*types.InferenceSetForScoring
-	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
+	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
 		latestTimestamp = 0
 	}
@@ -491,7 +483,7 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 // A function that accepts a topicId and returns list of Forecasts or error
 func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.ForecastSetForScoring, error) {
 	var forecasts []*types.ForecastSetForScoring
-	var latestTimestamp, err = k.GetTopicLossCalcLastRan(ctx, topicId)
+	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
 		latestTimestamp = 0
 	}
@@ -1236,44 +1228,22 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	return activeTopics, nil
 }
 
-// Get the last time an inference was ran for a given topic
-func (k *Keeper) GetTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID) (lastRanTime uint64, err error) {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil
-		}
-		return 0, err
-	}
-	return topic.InferenceLastRan, nil
-}
-
-func (k *Keeper) GetTopicLossCalcLastRan(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return 0, err
 	}
-	ret := topic.LossLastRan
+	ret := topic.EpochLastEnded
 	return ret, nil
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicInferenceLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
+func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID, epochLastEnded uint64) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic.InferenceLastRan = lastRanTime
-	return k.topics.Set(ctx, topicId, topic)
-}
-
-// UpdateTopicLossUpdateLastRan updates the WeightLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicLossUpdateLastRan(ctx context.Context, topicId TOPIC_ID, lastRanTime uint64) error {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	topic.LossLastRan = lastRanTime
+	topic.EpochLastEnded = epochLastEnded
 	return k.topics.Set(ctx, topicId, topic)
 }
 

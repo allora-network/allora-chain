@@ -33,20 +33,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	fastestCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
+	fastestCadence, err := ms.k.GetParamsMinEpochLength(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if msg.InferenceCadence < fastestCadence {
-		return nil, types.ErrInferenceCadenceBelowMinimum
-	}
-
-	weightFastestCadence, err := ms.k.GetParamsMinLossCadence(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if msg.LossCadence < weightFastestCadence {
-		return nil, types.ErrLossCadenceBelowMinimum
+	if msg.EpochLength < fastestCadence {
+		return nil, types.ErrTopicCadenceBelowMinimum
 	}
 
 	alphaRegret, err := strconv.ParseFloat(msg.AlphaRegret, 32)
@@ -76,12 +68,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		Metadata:               msg.Metadata,
 		LossLogic:              msg.LossLogic,
 		LossMethod:             msg.LossMethod,
-		LossCadence:            msg.LossCadence,
-		LossLastRan:            0,
 		InferenceLogic:         msg.InferenceLogic,
 		InferenceMethod:        msg.InferenceMethod,
-		InferenceCadence:       msg.InferenceCadence,
-		InferenceLastRan:       0,
+		EpochLastEnded:         0,
+		EpochLength:            msg.EpochLength,
+		GroundTruthLag:         msg.GroundTruthLag,
 		Active:                 true,
 		DefaultArg:             msg.DefaultArg,
 		Pnorm:                  msg.Pnorm,
