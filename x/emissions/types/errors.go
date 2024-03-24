@@ -102,4 +102,5 @@ var (
 	ErrNormalizationFactorInvalidInput                   = errors.Register(ModuleName, 97, "normalization factor: invalid input")
 	ErrNormalizationFactorIsNaN                          = errors.Register(ModuleName, 98, "normalization factor: is NaN")
 	ErrNormalizationFactorIsInfinity                     = errors.Register(ModuleName, 99, "normalization factor: is infinity")
+	ErrSumWeightsLessThanEta                             = errors.Register(ModuleName, 100, "sum weights less than eta")
 )

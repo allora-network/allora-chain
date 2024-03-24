@@ -217,6 +217,16 @@ message ForecastSetForScoring {
   Forecasts forecasts = 3;
 }
 
+message WorkerRegret {
+  string worker = 1;
+  float inference_regret = 2;
+  float forecast_regret = 3;
+}
+
+message WorkerRegrets {
+  repeated WorkerRegret worker_regrets = 1;
+}
+
 ///
 /// STAKE
 ///

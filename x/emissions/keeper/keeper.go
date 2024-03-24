@@ -106,17 +106,20 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
-	// map of (topic, timestamp, index) -> Inference
+	// map of (topic, timestamp) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Inferences]
 
-	// map of (topic, timestamp, index) -> Forecast
+	// map of (topic, timestamp) -> Forecast
 	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Forecasts]
 
-	// map of (topic, timestamp, index) -> LossBundles (1 per reputer active at that time)
+	// map of (topic, timestamp) -> LossBundles (1 per reputer active at that time)
 	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
 
-	// map of (topic, timestamp, index) -> LossBundle (1 network wide bundle per timestep)
+	// map of (topic, timestamp) -> LossBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundle]
+
+	// map of (topic, worker, timestamp) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
+	networkRegrets collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.WorkerRegrets]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
@@ -173,6 +176,7 @@ func NewKeeper(
 		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Forecasts](cdc)),
 		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundles](cdc)),
 		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundle](cdc)),
+		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.WorkerRegrets](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
@@ -548,6 +552,27 @@ func (k *Keeper) GetNetworkLossBundleAtOrBeforeTime(ctx context.Context, topicId
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
 		return &types.LossBundle{}, nil
+	}
+	kv, err := iter.KeyValue()
+	if err != nil {
+		return nil, err
+	}
+	return &kv.Value, nil
+}
+
+func (k *Keeper) GetNetworkRegretsAtOrBeforeTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.WorkerRegrets, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		StartInclusive(timestamp).
+		Descending()
+
+	iter, err := k.networkRegrets.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	if !iter.Valid() {
+		// Return empty loss bundle if no loss bundle is found
+		return &types.WorkerRegrets{}, nil
 	}
 	kv, err := iter.KeyValue()
 	if err != nil {
