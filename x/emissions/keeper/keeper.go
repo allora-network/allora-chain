@@ -106,12 +106,6 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
-	// map of topic -> timestamp when latest response from worker request was received
-	topicWorkerResponseLastReceived collections.Map[TOPIC_ID, UNIX_TIMESTAMP]
-
-	// map of topic -> timestamp when latest response from reputer request was received
-	topicReputerResponseLastReceived collections.Map[TOPIC_ID, UNIX_TIMESTAMP]
-
 	// map of (topic, timestamp, index) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Inferences]
 
