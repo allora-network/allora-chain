@@ -15,8 +15,7 @@ func DefaultParams() Params {
 		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("0.2"), // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:          cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:        uint64(60 * 60 * 24),                      // 1 day in seconds
-		MinRequestCadence:             uint64(10),                                // 10 seconds
-		MinLossCadence:                uint64(60 * 60),                           // 1 hour in seconds
+		MinEpochLength:                uint64(10),                                // 10 seconds, approximately 1 block
 		MaxInferenceRequestValidity:   uint64(60 * 60 * 24 * 7 * 52),             // 52 weeks approximately 1 year in seconds
 		MaxRequestCadence:             uint64(60 * 60 * 24 * 7 * 52),             // 52 weeks approximately 1 year in seconds
 		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("0.5"), // 50% of rewards go to workers and reputers, 50% to cosmos validators
@@ -26,6 +25,8 @@ func DefaultParams() Params {
 		LearningRate:                  float32(0.05),                             // speed of gradient descent
 		MaxGradientThreshold:          float32(0.001),                            // gradient descent stops when gradient falls below this
 		MinStakeFraction:              float32(0.5),                              // minimum fraction of stake that should be listened to when setting consensus listening coefficients
+		MaxWorkersPerTopicRequest:     uint64(20),                                // maximum number of workers that can be assigned to a single inference request
+		MaxReputersPerTopicRequest:    uint64(20),                                // maximum number of reputers that can be assigned to a single loss request
 	}
 }
 
@@ -61,12 +62,8 @@ func DefaultParamsRemoveStakeDelayWindow() uint64 {
 	return DefaultParams().RemoveStakeDelayWindow
 }
 
-func DefaultParamsMinRequestCadence() uint64 {
-	return DefaultParams().MinRequestCadence
-}
-
-func DefaultParamsMinLossCadence() uint64 {
-	return DefaultParams().MinLossCadence
+func DefaultParamsMinEpochLength() uint64 {
+	return DefaultParams().MinEpochLength
 }
 
 func DefaultParamsMaxInferenceRequestValidity() uint64 {
@@ -99,6 +96,14 @@ func DefaultParamsMaxGradientThreshold() float32 {
 
 func DefaultParamsMinStakeFraction() float32 {
 	return DefaultParams().MinStakeFraction
+}
+
+func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
+	return DefaultParams().MaxWorkersPerTopicRequest
+}
+
+func DefaultParamsMaxReputersPerTopicRequest() uint64 {
+	return DefaultParams().MaxReputersPerTopicRequest
 }
 
 // Validate does the sanity check on the params.
