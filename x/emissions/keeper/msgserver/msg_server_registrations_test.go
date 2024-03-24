@@ -169,13 +169,12 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          reputerAddr.String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
+		Creator:         reputerAddr.String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
@@ -255,13 +254,12 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          workerAddr.String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
+		Creator:         workerAddr.String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
 	}
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")

@@ -439,3 +439,94 @@ func forecastingPerformanceScore(
 	}
 	return ret, nil
 }
+
+// sigmoid function
+// σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
+func sigmoid(x float64) (float64, error) {
+	if math.IsNaN(x) || math.IsInf(x, 0) {
+		return 0, emissions.ErrSigmoidInvalidInput
+	}
+	ret := math.Exp(x) / (1 + math.Exp(x))
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrSigmoidIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrSigmoidIsNaN
+	}
+	return ret, nil
+}
+
+// we apply a utility function to the forecasting performance score
+// to let the forecasting task utility range from the interval [0.1, 0.5]
+// χ = 0.1 + 0.4σ(a*T_i − b)
+// sigma is the sigmoid function
+// a has fiduciary value of 8
+// b has fiduciary value of 0.5
+func forecastingUtility(forecastingPerformanceScore float64, a float64, b float64) (float64, error) {
+	if math.IsNaN(forecastingPerformanceScore) || math.IsInf(forecastingPerformanceScore, 0) ||
+		math.IsNaN(a) || math.IsInf(a, 0) ||
+		math.IsNaN(b) || math.IsInf(b, 0) {
+		return 0, emissions.ErrForecastingUtilityInvalidInput
+	}
+	ret, err := sigmoid(a*forecastingPerformanceScore - b)
+	if err != nil {
+		return 0, err
+	}
+	ret = 0.1 + 0.4*ret
+	if math.IsInf(ret, 0) {
+		return 0, emissions.ErrForecastingUtilityIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, emissions.ErrForecastingUtilityIsNaN
+	}
+	return ret, nil
+}
+
+// renormalize with a factor γ to ensure that the
+// total reward allocated to workers (Ui + Vi)
+// remains constant (otherwise, this would go at the expense of reputers)
+// γ = (F_i + G_i) / ( (1 − χ)*F_i + χ*G_i)
+func normalizationFactor(
+	entropyInference float64,
+	entropyForecasting float64,
+	forecastingUtility float64,
+) (float64, error) {
+	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(forecastingUtility) || math.IsInf(forecastingUtility, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrNormalizationFactorInvalidInput,
+			"entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+	numerator := entropyInference + entropyForecasting
+	denominator := (1-forecastingUtility)*entropyInference + forecastingUtility*entropyForecasting
+	ret := numerator / denominator
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(
+			emissions.ErrNormalizationFactorIsInfinity,
+			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			numerator,
+			denominator,
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(
+			emissions.ErrNormalizationFactorIsNaN,
+			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			numerator,
+			denominator,
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+
+	return ret, nil
+}
