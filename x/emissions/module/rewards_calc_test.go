@@ -7,6 +7,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+
 	// "github.com/allora-network/allora-chain/x/emissions/module"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -384,12 +385,18 @@ func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) 
 		topicMessage := types.MsgCreateNewTopic{
 			Creator:          s.addrsStr[0],
 			Metadata:         "metadata",
-			LossLogic:      "logic",
-			LossMethod:     "whatever",
-			LossCadence:    10800,
+			LossLogic:        "logic",
+			LossMethod:       "whatever",
 			InferenceLogic:   "morelogic",
 			InferenceMethod:  "whatever2",
-			InferenceCadence: 60,
+			EpochLength:      10800,
+			DefaultArg:       "default",
+			Pnorm:            2,
+			AlphaRegret:      "0.1",
+			PrewardReputer:   "0.1",
+			PrewardInference: "0.1",
+			PrewardForecast:  "0.1",
+			FTolerance:       "0.1",
 		}
 		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
 		if err != nil {
