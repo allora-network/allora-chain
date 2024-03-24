@@ -528,3 +528,129 @@ func (s *MathTestSuite) TestForecastingPerformanceScoreNaN() {
 	_, err := forecastingPerformanceScore(0, 0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreIsNaN)
 }
+
+func (s *MathTestSuite) TestSigmoidSimple() {
+	x := 0.5
+	result, err := sigmoid(x)
+	s.Require().NoError(err)
+	s.Require().InDelta(0.6224593312018546, result, 0.0001)
+}
+func (s *MathTestSuite) TestSigmoidInvalidInput() {
+	_, err := sigmoid(math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
+}
+func (s *MathTestSuite) TestSigmoidInfinity() {
+	_, err := sigmoid(math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
+}
+
+func (s *MathTestSuite) TestSigmoidNaN() {
+	_, err := sigmoid(math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
+}
+
+func (s *MathTestSuite) TestForecastingUtilitySimple() {
+	a := 8.0
+	b := 0.5
+	forecastingPerformanceScore := .125
+	// 0.1 + 0.4 * sigma(8 * .125 - 0.5)
+	// 0.1 + 0.4 * sigma(0.5)
+	// 0.1 + 0.4 * 0.6224593312018546
+	// 0.34898373248074184
+
+	ret, err := forecastingUtility(forecastingPerformanceScore, a, b)
+	s.Require().NoError(err)
+	s.Require().InDelta(0.34898373248074184, ret, 0.0001)
+}
+
+func (s *MathTestSuite) TestForecastingUtilityInvalidInput() {
+	_, err := forecastingUtility(math.NaN(), 0.5, 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, math.NaN(), 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, 0.5, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(math.Inf(1), 0.5, 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, math.Inf(1), 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, 0.5, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(math.Inf(-1), 0.5, 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, math.Inf(-1), 0.5)
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+
+	_, err = forecastingUtility(0.5, 0.5, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
+}
+
+func (s *MathTestSuite) TestForecastingUtilityInfinity() {
+	// todo, not sure if actually reachable code given that sigma will throw first
+}
+
+func (s *MathTestSuite) TestForecastingUtilityNaN() {
+	// todo, not sure if actually reachable code given that sigma will throw first
+}
+
+func (s *MathTestSuite) TestNormalizationFactorSimple() {
+	entropyInference := 4.0
+	entropyForecasting := 6.0
+	chi := 0.5
+
+	// (4+6) / (1-0.5)*4 + 0.5*6
+	// 10 / 2 + 3
+	// 10 / 5
+	// 2
+
+	result, err := normalizationFactor(entropyInference, entropyForecasting, chi)
+	s.Require().NoError(err)
+
+	s.Require().InDelta(2.0, result, 0.0001)
+}
+
+func (s *MathTestSuite) TestNormalizationFactorInvalidInput() {
+	_, err := normalizationFactor(math.NaN(), 1, 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, math.NaN(), 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, 1, math.NaN())
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(math.Inf(1), 1, 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, math.Inf(1), 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, 1, math.Inf(1))
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(math.Inf(-1), 1, 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, math.Inf(-1), 1)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+
+	_, err = normalizationFactor(1, 1, math.Inf(-1))
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
+}
+
+func (s *MathTestSuite) TestNormalizationFactorInfinity() {
+	_, err := normalizationFactor(math.MaxFloat64, math.MaxFloat64, 0.2)
+	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorIsInfinity)
+}
+
+func (s *MathTestSuite) TestNormalizationFactorNaN() {
+	// todo, don't think this code path is actually possible
+	// given that emissions.ErrNormilazationFactorInvalidInput will be thrown first
+}
