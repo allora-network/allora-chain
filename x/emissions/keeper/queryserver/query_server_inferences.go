@@ -60,11 +60,11 @@ func (qs queryServer) GetForecastsToScore(ctx context.Context, req *types.QueryF
 	return response, nil
 }
 
-func (qs queryServer) GetAllInferences(ctx context.Context, req *types.QueryAllInferencesRequest) (*types.QueryAllInferencesResponse, error) {
+func (qs queryServer) GetInferencesAtTime(ctx context.Context, req *types.QueryAllInferencesRequest) (*types.QueryAllInferencesResponse, error) {
 	// Defers implementation to the function in the Keeper
 	topicId := req.TopicId
 	timestamp := req.Timestamp
-	inferences, err := qs.k.GetAllInferences(ctx, topicId, timestamp)
+	inferences, err := qs.k.GetInferencesAtTime(ctx, topicId, timestamp)
 	if err != nil {
 		return nil, err
 	}
