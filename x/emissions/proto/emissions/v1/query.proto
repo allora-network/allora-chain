@@ -70,7 +70,7 @@ service Query {
                                    "workers/{worker_address}/latest_inference";
   }
 
-  rpc GetAllInferences(QueryAllInferencesRequest) returns (QueryAllInferencesResponse) {
+  rpc GetInferencesAtTime(QueryAllInferencesRequest) returns (QueryAllInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{timestamp}";
   }
