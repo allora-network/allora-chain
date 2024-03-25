@@ -1,7 +1,6 @@
 package module
 
 import (
-	"fmt"
 	"math"
 
 	errors "cosmossdk.io/errors"
@@ -138,9 +137,6 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 
 	var stakeWeightedLoss float64 = 0
 	for i, loss := range reputersReportedLosses {
-		if loss <= 0 {
-			return 0, fmt.Errorf("loss values must be greater than zero")
-		}
 		weightedLoss := (reputersStakes[i] * math.Log10(loss)) / totalStake
 		stakeWeightedLoss += weightedLoss
 	}
@@ -152,7 +148,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 // L_i - consensus loss vector
 func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, error) {
 	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
-		return nil, fmt.Errorf("stakes and losses must not be empty")
+		return nil, types.ErrInvalidSliceLength
 	}
 
 	// Calculate total stake for normalization
