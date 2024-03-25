@@ -398,6 +398,7 @@ func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) 
 			PrewardForecast:  "0.1",
 			FTolerance:       "0.1",
 		}
+
 		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
 		if err != nil {
 			return nil, err
