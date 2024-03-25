@@ -149,28 +149,26 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 }
 
 // GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
-// Consider the all reported losses and the adjusted stake of each reputer
 // L_i - consensus loss vector
 func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, error) {
-	// Calculate the total stake
+	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
+		return nil, fmt.Errorf("stakes and losses must not be empty")
+	}
+
+	// Calculate total stake for normalization
 	totalStake := 0.0
 	for _, stake := range reputersAdjustedStakes {
 		totalStake += stake
 	}
 
-	// Normalize the stakes
-	normalizedStakes := make([]float64, len(reputersAdjustedStakes))
-	for i, stake := range reputersAdjustedStakes {
-		normalizedStakes[i] = stake / totalStake
-	}
-
-	// Perform weighted sum of log10 of losses
-	stakeWeightedLoss := make([]float64, len(reputersReportedLosses))
-
-	for j := 0; j < len(reputersReportedLosses); j++ {
-		for i := 0; i < len(reputersAdjustedStakes); i++ {
-			stakeWeightedLoss[j] += normalizedStakes[i] * math.Log10(reputersReportedLosses[j][i])
+	// Ensure every loss array is non-empty and calculate geometric mean
+	stakeWeightedLoss := make([]float64, len(reputersReportedLosses[0]))
+	for j := 0; j < len(reputersReportedLosses[0]); j++ {
+		logSum := 0.0
+		for i, losses := range reputersReportedLosses {
+			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
 		}
+		stakeWeightedLoss[j] = logSum
 	}
 
 	return stakeWeightedLoss, nil
@@ -186,7 +184,7 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 
 	var sumLogConsensusSquared float64
 	for _, cLoss := range consensusLosses {
-		sumLogConsensusSquared += math.Pow(math.Log10(cLoss), 2)
+		sumLogConsensusSquared += math.Pow(cLoss, 2) //!
 	}
 	consensusNorm := math.Sqrt(sumLogConsensusSquared)
 
@@ -200,7 +198,11 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 	return score, nil
 }
 
-// Placeholder for getAllConsensusScores, needs actual implementation.
+// GetAllConsensusScores calculates the proximity to consensus score for all reputers.
+// calculates:
+// T_i - stake weighted total consensus
+// returns:
+// T_im - reputer score (proximity to consensus)
 func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
 	// Get adjusted stakes
 	var adjustedStakes []float64
@@ -231,11 +233,16 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 	return scores, nil
 }
 
-func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores []float64, initialCoefficients []float64, numReputers int, enableListening bool) ([]float64, []float64, error) {
+// GetAllReputersOutput calculates the final scores and adjusted listening coefficients for all reputers.
+// This function iteratively adjusts the listening coefficients based on a gradient descent method to minimize
+// the difference between each reputer's losses and the consensus losses, taking into account each reputer's stake.
+// returns:
+// T_im - reputer score (proximity to consensus)
+// a_im - listening coefficients
+func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int, enableListening bool) ([]float64, []float64, error) {
 	learningRate := 0.01
 	coefficients := make([]float64, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
-	scores := make([]float64, numReputers)
 
 	if enableListening {
 		oldCoefficients := make([]float64, numReputers)
@@ -244,11 +251,13 @@ func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores 
 		minStakeFraction := 0.5
 		var i int
 		var maxGradient float64 = 1
+		finalScores := make([]float64, numReputers)
 
 		for maxGradient > maxGradientThreshold && i < imax {
 			i++
 			copy(oldCoefficients, coefficients)
 			gradient := make([]float64, numReputers)
+			newScores := make([]float64, numReputers)
 
 			for l := range coefficients {
 				dcoeff := 0.001
@@ -271,6 +280,7 @@ func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores 
 					return nil, nil, err
 				}
 				gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
+				copy(newScores, scores)
 			}
 
 			newCoefficients := make([]float64, len(coefficients))
@@ -279,15 +289,20 @@ func GetOutputReputers(allLosses [][]float64, stakes []float64, consensusScores 
 			}
 
 			listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
-			listenedStakeFraction := sumWeighted(coefficients, stakes) / sum(stakes)
+			listenedStakeFraction := sumWeighted(newCoefficients, stakes) / sum(stakes)
 			if listenedStakeFraction < minStakeFraction {
 				for l := range coefficients {
 					coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
 				}
+			} else {
+				coefficients = newCoefficients
 			}
 			maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
+
+			copy(finalScores, newScores)
 		}
-		return scores, coefficients, nil
+
+		return finalScores, coefficients, nil
 	} else {
 		coefficients = initialCoefficients
 		scores, err := GetAllConsensusScores(allLosses, stakes, coefficients, numReputers)
