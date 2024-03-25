@@ -107,7 +107,7 @@ fi
 echo "Setting epoch length to one block"
 $ALLORAD_BIN tx emissions update-params \
     $ALICE_ADDRESS \
-    '{"reward_cadence": ["1"], "max_inference_request_validity":[],"max_missing_inference_percent":[],"max_request_cadence":[],"max_topics_per_block":[],"min_request_cadence":[],"min_request_unmet_demand":[],"min_topic_unmet_demand":[],"min_loss_cadence":[],"percent_rewards_reputers_workers":[],"remove_stake_delay_window":[],"required_minimum_stake":[],"version":[] }' \
+    '{"version":[],"reward_cadence": ["1"],"min_topic_unmet_demand":[],"max_topics_per_block":[], "min_request_unmet_demand":[],"max_missing_inference_percent":[],"required_minimum_stake":[],"remove_stake_delay_window":[],"min_epoch_length": [],"max_inference_request_validity":[],"max_request_cadence":[],"percent_rewards_reputers_workers":[],"max_workers_per_topic_request":[],"max_reputers_per_topic_request":[]}' \
     --yes --keyring-backend=test --chain-id=demo \
     --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
 sleep 5
