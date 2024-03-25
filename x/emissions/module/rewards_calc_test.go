@@ -390,6 +390,7 @@ func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) 
 			InferenceMethod:  "whatever2",
 			DefaultArg:       "default",
 			Pnorm:            2,
+			EpochLength:      10800,
 			AlphaRegret:      "0.1",
 			PrewardReputer:   "0.1",
 			PrewardInference: "0.1",
