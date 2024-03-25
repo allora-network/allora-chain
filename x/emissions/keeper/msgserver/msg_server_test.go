@@ -75,14 +75,13 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:         metadata,
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
-		DefaultArg:       "ETH",
+		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:        metadata,
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -96,14 +95,13 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:         metadata,
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
-		DefaultArg:       "ETH",
+		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:        metadata,
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)

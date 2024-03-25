@@ -57,7 +57,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 		}
 		if request.Cadence != 0 {
 			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
-			minFastestAllowedCadence, err := ms.k.GetParamsMinRequestCadence(ctx)
+			minFastestAllowedCadence, err := ms.k.GetParamsMinEpochLength(ctx)
 			if err != nil {
 				return nil, err
 			}

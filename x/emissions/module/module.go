@@ -194,30 +194,16 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if currentTime-topic.InferenceLastRan >= topic.InferenceCadence {
+			if currentTime-topic.EpochLastEnded >= topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
 
 				// Update the last inference ran
-				err = am.keeper.UpdateTopicInferenceLastRan(sdkCtx, topic.Id, currentTime)
+				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, currentTime)
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
-				}
-			}
-
-			// Check the cadence of loss calculations
-			if currentTime-topic.LossLastRan >= topic.LossCadence {
-				fmt.Printf("Loss cadence met for topic: %v metadata: %s default arg: %s \n",
-					topic.Id,
-					topic.Metadata, topic.
-						DefaultArg)
-
-				// Update the last loss update ran
-				err = am.keeper.UpdateTopicLossUpdateLastRan(sdkCtx, topic.Id, currentTime)
-				if err != nil {
-					fmt.Println("Error updating last loss update: ", err)
 				}
 			}
 		}(topic)

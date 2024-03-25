@@ -18,14 +18,13 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
-		DefaultArg:       "ETH",
+		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -43,14 +42,13 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          nonAdminAccounts[0].String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossCadence:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		InferenceCadence: 60,
-		DefaultArg:       "ETH",
+		Creator:         nonAdminAccounts[0].String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
@@ -114,10 +112,10 @@ func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	topicId := uint64(0)
 	inferenceTs := uint64(time.Now().UTC().Unix())
 
-	err := s.emissionsKeeper.UpdateTopicLossUpdateLastRan(ctx, topicId, inferenceTs)
-	require.NoError(err, "UpdateTopicLossUpdateLastRan should not return an error")
+	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
+	require.NoError(err, "UpdateTopicEpochLastEnded should not return an error")
 
-	result, err := s.emissionsKeeper.GetTopicLossCalcLastRan(s.ctx, topicId)
+	result, err := s.emissionsKeeper.GetTopicEpochLastEnded(s.ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(result, inferenceTs)
