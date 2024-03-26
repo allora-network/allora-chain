@@ -36,37 +36,6 @@ func TestStdDev(t *testing.T) {
 	}
 }
 
-func TestSmoothAbsoluteX(t *testing.T) {
-	tests := []struct {
-		name    string
-		x       []float64
-		p       float64
-		want    []float64
-		wantErr bool
-	}{
-		{
-			name:    "basic",
-			x:       []float64{-0.16249, -0.3617, 0.09441, 1.05498, 2.34107},
-			p:       1.5,
-			want:    []float64{0.48253, 0.38428, 0.63846, 1.5751, 3.79488},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.SmoothAbsoluteX(tt.x, tt.p)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("SmoothAbsoluteX() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !slicesAreApproxEqual(got, tt.want, 1e-5) {
-				t.Errorf("SmoothAbsoluteX() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetWorkerRewardFractions(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -309,7 +278,6 @@ func TestGetAllReputersOutput(t *testing.T) {
 		consensusScores     []float64
 		initialCoefficients []float64
 		numReputers         int
-		enableListening     bool
 		wantScores          []float64
 		wantCoefficients    []float64
 		wantErr             bool
@@ -326,7 +294,6 @@ func TestGetAllReputersOutput(t *testing.T) {
 			stakes:              []float64{1176644.37627, 384623.3607, 394676.13226, 207999.66194, 368582.76542},
 			initialCoefficients: []float64{1.0, 1.0, 1.0, 1.0, 1.0},
 			numReputers:         5,
-			enableListening:     true,
 			wantScores:          []float64{17.53436, 20.29489, 24.26994, 11.36754, 15.21749},
 			wantCoefficients:    []float64{0.99942, 1.0, 1.0, 0.96574, 0.95346},
 			wantErr:             false,
@@ -335,7 +302,7 @@ func TestGetAllReputersOutput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotScores, gotCoefficients, err := module.GetAllReputersOutput(tt.allLosses, tt.stakes, tt.initialCoefficients, tt.numReputers, tt.enableListening)
+			gotScores, gotCoefficients, err := module.GetAllReputersOutput(tt.allLosses, tt.stakes, tt.initialCoefficients, tt.numReputers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllReputersOutput() error = %v, wantErr %v", err, tt.wantErr)
 				return
