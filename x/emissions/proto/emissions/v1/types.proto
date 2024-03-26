@@ -58,6 +58,18 @@ message Params {
   uint64 max_workers_per_topic_request =
       19;  // max number of workers whose inference will be used and compensated per request
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
+  string epsilon = 21 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // small number to prevent division by zero
+  string p_inference_synthesis = 22 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
 /// TOPICS

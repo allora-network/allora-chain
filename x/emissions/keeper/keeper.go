@@ -295,6 +295,22 @@ func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (co
 	return params.PercentRewardsReputersWorkers, nil
 }
 
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.Epsilon, nil
+}
+
+func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PInferenceSynthesis, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Inferences, error) {

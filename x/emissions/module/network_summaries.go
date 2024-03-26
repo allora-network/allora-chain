@@ -16,10 +16,6 @@ import (
  * into current network losses and regrets.
  */
 
-const p = 2.0
-
-const epsilon = 1
-
 // Implements function phi prime from litepaper
 // φ'_p(x) = p * (ln(1 + e^x))^(p-1) * e^x / (1 + e^x)
 func gradient(p float64, x float64) (float64, error) {
@@ -55,7 +51,9 @@ func CalcForcastImpliedInferencesAtTime(
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
-	networkLossBundle *emissions.LossBundle) ([]emissions.Inference, error) {
+	networkLossBundle *emissions.LossBundle,
+	epsilon float64,
+	pInferenceSynthesis float64) ([]emissions.Inference, error) {
 	// Map each worker to the inference they submitted
 	inferenceByWorker := make(map[string]*emissions.Inference)
 	for _, inference := range inferences.Inferences {
@@ -64,7 +62,8 @@ func CalcForcastImpliedInferencesAtTime(
 	// Possibly add a small value to previous network loss avoid infinite logarithm
 	networkCombinedLoss := networkLossBundle.CombinedLoss.Uint64()
 	if networkCombinedLoss == 0 {
-		networkCombinedLoss = epsilon
+		// Take max of epsilon and 1 to avoid division by 0
+		networkCombinedLoss = uint64(math.Max(epsilon, 1))
 	}
 
 	// "k" here is the index of the forecaster's report among many reports
@@ -100,9 +99,9 @@ func CalcForcastImpliedInferencesAtTime(
 			}
 
 			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
-			for j, _ := range forecastElementsWithInferences {
-				R_ik[j] = R_ik[j] / maxjRijk       // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
-				w_ijk, err := gradient(p, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
+			for j := range forecastElementsWithInferences {
+				R_ik[j] = R_ik[j] / maxjRijk                         // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
+				w_ijk, err := gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 				if err != nil {
 					fmt.Println("Error calculating gradient: ", err)
 					return nil, err
@@ -155,7 +154,19 @@ func GetAndCalcForcastImpliedInferencesAtBlock(
 		return nil, err
 	}
 
-	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkLossBundle)
+	epsilon, err := k.GetParamsEpsilon(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return nil, err
+	}
+
+	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return nil, err
+	}
+
+	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkLossBundle, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
 }
 
 // Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
@@ -169,7 +180,9 @@ func CalcNetworkCombinedInference(
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	forecastImpliedInferences []emissions.Inference,
-	regrets *emissions.WorkerRegrets) (float64, error) {
+	regrets *emissions.WorkerRegrets,
+	epsilon float64,
+	pInferenceSynthesis float64) (float64, error) {
 	// Map each worker to their inference
 	inferenceByWorker := make(map[string]*emissions.Inference)
 	for _, inference := range inferences.Inferences {
@@ -185,11 +198,11 @@ func CalcNetworkCombinedInference(
 	maxPreviousRegret := float32(epsilon) // averts div by 0 error
 	for _, regret := range regrets.WorkerRegrets {
 		// If inference regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.InferenceRegret && regret.InferenceRegret > epsilon {
+		if maxPreviousRegret < regret.InferenceRegret && float64(regret.InferenceRegret) > epsilon {
 			maxPreviousRegret = regret.InferenceRegret
 		}
 		// If forecast regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.ForecastRegret && regret.InferenceRegret > epsilon {
+		if maxPreviousRegret < regret.ForecastRegret && float64(regret.ForecastRegret) > epsilon {
 			maxPreviousRegret = regret.ForecastRegret
 		}
 	}
@@ -199,7 +212,7 @@ func CalcNetworkCombinedInference(
 	sumWeights := 0.0
 	for _, regret := range regrets.WorkerRegrets {
 		// normalize worker regret then calculate gradient => weight per worker for network combined inference
-		weight, err := gradient(p, float64(regret.InferenceRegret/maxPreviousRegret))
+		weight, err := gradient(pInferenceSynthesis, float64(regret.InferenceRegret/maxPreviousRegret))
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
 			return float64(0), err
@@ -242,5 +255,17 @@ func GetAndCalcNetworkCombinedInference(
 		return float64(0), err
 	}
 
-	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets)
+	epsilon, err := k.GetParamsEpsilon(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return float64(0), err
+	}
+
+	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return float64(0), err
+	}
+
+	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
 }

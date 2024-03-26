@@ -113,6 +113,18 @@ message OptionalParams {
       13;  // max number of workers whose inference will be used and compensated per request
   repeated uint64 max_reputers_per_topic_request =
       14;  // max number of reputers to solicit losses from per loss request
+  repeated string epsilon = 15 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // small number to prevent division by zero
+  repeated string p_inference_synthesis = 16 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
 message MsgUpdateParams {

@@ -67,6 +67,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxReputersPerTopicRequest) == 1 {
 		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
+	if len(newParams.Epsilon) == 1 {
+		existingParams.Epsilon = newParams.Epsilon[0]
+	}
+	if len(newParams.PInferenceSynthesis) == 1 {
+		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
+	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err
