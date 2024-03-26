@@ -29,7 +29,6 @@ type ACC_ADDRESS = string
 type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
-type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
 type Keeper struct {
@@ -106,20 +105,20 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
-	// map of (topic, timestamp) -> Inference
-	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Inferences]
+	// map of (topic, block_number) -> Inference
+	allInferences collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Inferences]
 
-	// map of (topic, timestamp) -> Forecast
-	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Forecasts]
+	// map of (topic, block_number) -> Forecast
+	allForecasts collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Forecasts]
 
-	// map of (topic, timestamp) -> LossBundles (1 per reputer active at that time)
-	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
+	// map of (topic, block_number) -> LossBundles (1 per reputer active at that time)
+	allLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundles]
 
-	// map of (topic, timestamp) -> LossBundle (1 network wide bundle per timestep)
-	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundle]
+	// map of (topic, block_number) -> LossBundle (1 network wide bundle per timestep)
+	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundle]
 
-	// map of (topic, worker, timestamp) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
-	networkRegrets collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.WorkerRegrets]
+	// map of (topic, worker, block_number) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
+	networkRegrets collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.WorkerRegrets]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
@@ -172,11 +171,11 @@ func NewKeeper(
 		forecasts:                  collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                    collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                   collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundles](cdc)),
-		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundle](cdc)),
-		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.WorkerRegrets](cdc)),
+		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
+		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundles](cdc)),
+		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundle](cdc)),
+		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.WorkerRegrets](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
@@ -256,7 +255,7 @@ func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error
 	return params.RequiredMinimumStake, nil
 }
 
-func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -264,7 +263,7 @@ func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, e
 	return params.RemoveStakeDelayWindow, nil
 }
 
-func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -272,7 +271,7 @@ func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint
 	return params.MaxInferenceRequestValidity, nil
 }
 
-func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -280,10 +279,26 @@ func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (uint64, error) {
 	return params.MinEpochLength, nil
 }
 
+func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BLOCK_NUMBER, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxRequestCadence, nil
+}
+
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PercentRewardsReputersWorkers, nil
+}
+
 /// INFERENCES, FORECASTS
 
-func (k *Keeper) GetInferencesAtTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.Inferences, error) {
-	key := collections.Join(topicId, timestamp)
+func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Inferences, error) {
+	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
 		return nil, err
@@ -291,10 +306,10 @@ func (k *Keeper) GetInferencesAtTime(ctx context.Context, topicId TOPIC_ID, time
 	return &inferences, nil
 }
 
-func (k *Keeper) GetInferencesAtOrAfterTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.Inferences, error) {
+func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Inferences, error) {
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		EndInclusive(timestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(block).
 		Descending()
 
 	inferencesToReturn := types.Inferences{}
@@ -313,10 +328,10 @@ func (k *Keeper) GetInferencesAtOrAfterTime(ctx context.Context, topicId TOPIC_I
 	return &inferencesToReturn, nil
 }
 
-func (k *Keeper) GetForecastsAtOrAfterTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.Forecasts, error) {
+func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Forecasts, error) {
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		EndInclusive(timestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(block).
 		Descending()
 
 	forecastsToReturn := types.Forecasts{}
@@ -335,8 +350,8 @@ func (k *Keeper) GetForecastsAtOrAfterTime(ctx context.Context, topicId TOPIC_ID
 	return &forecastsToReturn, nil
 }
 
-// Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences types.Inferences) error {
+// Insert a complete set of inferences for a topic/block. Overwrites previous ones.
+func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, inferences types.Inferences) error {
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
 		// Update latests inferences for each worker
@@ -356,12 +371,12 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 		}
 	}
 
-	key := collections.Join(topicId, timestamp)
+	key := collections.Join(topicId, block)
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
-// Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestamp uint64, forecasts types.Forecasts) error {
+// Insert a complete set of inferences for a topic/block. Overwrites previous ones.
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, forecasts types.Forecasts) error {
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
 		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
@@ -380,7 +395,7 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 		// }
 	}
 
-	key := collections.Join(topicId, timestamp)
+	key := collections.Join(topicId, block)
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
@@ -436,13 +451,13 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.InferenceSetForScoring, error) {
 	var inferences []*types.InferenceSetForScoring
-	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
+	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
-		latestTimestamp = 0
+		latestBlock = 0
 	}
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latestTimestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(latestBlock).
 		Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
@@ -457,9 +472,9 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 		key := kv.Key
 		value := kv.Value
 		inferenceSet := &types.InferenceSetForScoring{
-			TopicId:    key.K1(),
-			Timestamp:  key.K2(),
-			Inferences: &value,
+			TopicId:     key.K1(),
+			BlockHeight: key.K2(),
+			Inferences:  &value,
 		}
 		inferences = append(inferences, inferenceSet)
 	}
@@ -469,13 +484,13 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 // A function that accepts a topicId and returns list of Forecasts or error
 func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.ForecastSetForScoring, error) {
 	var forecasts []*types.ForecastSetForScoring
-	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
+	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
-		latestTimestamp = 0
+		latestBlock = 0
 	}
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latestTimestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(latestBlock).
 		Descending()
 
 	iter, err := k.allForecasts.Iterate(ctx, rng)
@@ -490,9 +505,9 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 		key := kv.Key
 		value := kv.Value
 		forecastSet := &types.ForecastSetForScoring{
-			TopicId:   key.K1(),
-			Timestamp: key.K2(),
-			Forecasts: &value,
+			TopicId:     key.K1(),
+			BlockHeight: key.K2(),
+			Forecasts:   &value,
 		}
 		forecasts = append(forecasts, forecastSet)
 	}
@@ -502,14 +517,14 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 /// LOSS BUNDLES, REGRETS
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
-	key := collections.Join(topicId, timestamp)
+func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundles types.LossBundles) error {
+	key := collections.Join(topicId, block)
 	return k.allLossBundles.Set(ctx, key, lossBundles)
 }
 
 // Get loss bundles for a topic/timestamp
-func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
-	key := collections.Join(topicId, timestamp)
+func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundles, error) {
+	key := collections.Join(topicId, block)
 	lossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
 		return nil, err
@@ -521,7 +536,7 @@ func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp
 func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		Descending()
 
 	iter, err := k.networkLossBundles.Iterate(ctx, rng)
@@ -539,10 +554,10 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_I
 	return &kv.Value, nil
 }
 
-func (k *Keeper) GetNetworkLossBundleAtOrBeforeTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundle, error) {
+func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundle, error) {
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(timestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(block).
 		Descending()
 
 	iter, err := k.networkLossBundles.Iterate(ctx, rng)
@@ -560,10 +575,10 @@ func (k *Keeper) GetNetworkLossBundleAtOrBeforeTime(ctx context.Context, topicId
 	return &kv.Value, nil
 }
 
-func (k *Keeper) GetNetworkRegretsAtOrBeforeTime(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.WorkerRegrets, error) {
+func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.WorkerRegrets, error) {
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(timestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(block).
 		Descending()
 
 	iter, err := k.networkRegrets.Iterate(ctx, rng)
@@ -1201,7 +1216,7 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	return activeTopics, nil
 }
 
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (BLOCK_NUMBER, error) {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return 0, err
@@ -1211,7 +1226,7 @@ func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID, epochLastEnded uint64) error {
+func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID, epochLastEnded BLOCK_NUMBER) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
@@ -1533,22 +1548,6 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicI
 		ret = append(ret, value)
 	}
 	return ret, nil
-}
-
-func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxRequestCadence, nil
-}
-
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.LegacyZeroDec(), err
-	}
-	return params.PercentRewardsReputersWorkers, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
