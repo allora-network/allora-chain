@@ -377,26 +377,33 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 // 	return nil
 // }
 
-// // create a topic
-// func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
-// 	ret := make([]uint64, 0)
-// 	var i uint64
-// 	for i = 0; i < numToCreate; i++ {
-// 		topicMessage := state.MsgCreateNewTopic{
-// 			Creator:          s.addrsStr[0],
-// 			Metadata:         "metadata",
-// 			WeightLogic:      "logic",
-// 			WeightMethod:     "whatever",
-// 			WeightCadence:    10800,
-// 			InferenceLogic:   "morelogic",
-// 			InferenceMethod:  "whatever2",
-// 			InferenceCadence: 60,
-// 		}
-// 		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		ret = append(ret, response.TopicId)
-// 	}
-// 	return ret, nil
-// }
+// create a topic
+func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
+	ret := make([]uint64, 0)
+	var i uint64
+	for i = 0; i < numToCreate; i++ {
+		topicMessage := types.MsgCreateNewTopic{
+			Creator:          s.addrsStr[0],
+			Metadata:         "metadata",
+			LossLogic:        "logic",
+			LossMethod:       "whatever",
+			InferenceLogic:   "morelogic",
+			InferenceMethod:  "whatever2",
+			EpochLength:      10800,
+			DefaultArg:       "default",
+			Pnorm:            2,
+			AlphaRegret:      "0.1",
+			PrewardReputer:   "0.1",
+			PrewardInference: "0.1",
+			PrewardForecast:  "0.1",
+			FTolerance:       "0.1",
+		}
+
+		response, err := s.msgServer.CreateNewTopic(s.ctx, &topicMessage)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, response.TopicId)
+	}
+	return ret, nil
+}

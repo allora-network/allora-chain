@@ -35,11 +35,17 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []cosmosMath.Uint{
-					cosmosMath.NewUint(100),
+				OneOutLosses: []*types.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:  cosmosMath.NewUint(100),
+					},
 				},
-				OneInNaiveLosses: []cosmosMath.Uint{
-					cosmosMath.NewUint(100),
+				OneInNaiveLosses: []*types.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:  cosmosMath.NewUint(100),
+					},
 				},
 			},
 		},
@@ -78,11 +84,17 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []cosmosMath.Uint{
-					cosmosMath.NewUint(100),
+				OneOutLosses: []*types.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:  cosmosMath.NewUint(100),
+					},
 				},
-				OneInNaiveLosses: []cosmosMath.Uint{
-					cosmosMath.NewUint(100),
+				OneInNaiveLosses: []*types.WorkerAttributedLoss{
+					{
+						Worker: workerAddr,
+						Value:  cosmosMath.NewUint(100),
+					},
 				},
 			},
 		},

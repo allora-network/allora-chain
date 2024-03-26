@@ -22,10 +22,9 @@ PT_CREATOR="$ALICE_ADDRESS"
 PT_METADATA="ETH 24h Prediction"
 PT_LOSS_LOGIC="bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq"
 PT_LOSS_METHOD="eth-price-weights-calc.wasm"
-PT_LOSS_CADENCE="10800"
 PT_INFERENCE_LOGIC="bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm"
 PT_INFERENCE_METHOD="allora-inference-function.wasm"
-PT_INFERENCE_CADENCE="61"
+PT_EPOCH_LENGTH="10800"
 PT_DEFAULT_ARG="ETH"
 PT_PNORM="2"
 PT_ALPHA_REGRET="3.14"
@@ -38,10 +37,9 @@ $ALLORAD_BIN tx emissions create-topic \
   "$PT_METADATA" \
   "$PT_LOSS_LOGIC" \
   "$PT_LOSS_METHOD" \
-  "$PT_LOSS_CADENCE" \
   "$PT_INFERENCE_LOGIC" \
   "$PT_INFERENCE_METHOD" \
-  "$PT_INFERENCE_CADENCE" \
+  "$PT_EPOCH_LENGTH" \
   "$PT_DEFAULT_ARG" \
   "$PT_PNORM" \
   "$PT_ALPHA_REGRET" \
@@ -51,21 +49,6 @@ $ALLORAD_BIN tx emissions create-topic \
   "$PT_F_TOLERANCE" \
   --yes --keyring-backend=test --chain-id=demo \
   --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
-#  --from="$PT_CREATOR" \
-#  --metadata="$PT_METADATA" \
-#  --loss-logic="$PT_LOSS_LOGIC" \
-#  --loss-method="$PT_LOSS_METHOD" \
-#  --loss-cadence="$PT_LOSS_CADENCE" \
-#  --inference-logic="$PT_INFERENCE_LOGIC" \
-#  --inference-method="$PT_INFERENCE_METHOD" \
-#  --inference-cadence="$PT_INFERENCE_CADENCE" \
-#  --default-arg="$PT_DEFAULT_ARG" \
-#  --pnorm="$PT_PNORM" \
-#  --alpha-regret="$PT_ALPHA_REGRET" \
-#  --preward-reputer="$PT_PREREWARD_REPUTER" \
-#  --preward-inference="$PT_PREREWARD_INFERENCE" \
-#  --preward-forecast="$PT_PREREWARD_FORECAST" \
-#  --f-tolerance="$PT_F_TOLERANCE" \
 
 
 echo "Checking that the network has incremented the topic count"

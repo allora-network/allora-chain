@@ -379,6 +379,16 @@ func (k *Keeper) GetLossBundlesAtOrAfterTimestamp(ctx context.Context, topicId T
 	return lossBundles, nil
 }
 
+// Get loss bundles for a topic/timestamp
+func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
+	key := collections.Join(topicId, timestamp)
+	lossBundles, err := k.allLossBundles.Get(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return &lossBundles, nil
+}
+
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TOPIC_ID,

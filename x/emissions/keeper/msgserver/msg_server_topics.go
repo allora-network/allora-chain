@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -14,7 +13,6 @@ import (
 ///
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
-	fmt.Println("CreateNewTopic called with: ", msg)
 	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {

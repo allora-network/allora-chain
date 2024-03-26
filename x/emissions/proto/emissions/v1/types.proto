@@ -47,11 +47,11 @@ message Params {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                                  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-  uint64 sharpness = 13;              // controls going from stake-weighted consensus at low values to majority vote of
+  double sharpness = 13;              // controls going from stake-weighted consensus at low values to majority vote of
                                       // above-average stake holders at high values
   float beta_entropy = 14;            // controls resilience of reward payouts against copycat workers
   float dcoef_abs = 15;               // delta for numerical differentiation
-  float learning_rate = 16;           // speed of gradient descent
+  double learning_rate = 16;          // speed of gradient descent
   float max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
   float min_stake_fraction =
       18;  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
@@ -135,19 +135,9 @@ message LossBundle {
     (amino.dont_omitempty) = true
   ];
   // L^-_lim
-  repeated WorkerAttributedLoss one_out_losses = 8 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated WorkerAttributedLoss one_out_losses = 8;
   // L^+_kim
-  repeated WorkerAttributedLoss one_in_naive_losses = 9 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated WorkerAttributedLoss one_in_naive_losses = 9;
 }
 
 message LossBundles {
