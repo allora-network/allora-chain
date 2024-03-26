@@ -51,7 +51,7 @@ message Params {
                                       // above-average stake holders at high values
   float beta_entropy = 14;            // controls resilience of reward payouts against copycat workers
   float dcoef_abs = 15;               // delta for numerical differentiation
-  double learning_rate = 16;           // speed of gradient descent
+  double learning_rate = 16;          // speed of gradient descent
   float max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
   float min_stake_fraction =
       18;  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
