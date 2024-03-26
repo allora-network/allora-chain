@@ -68,4 +68,5 @@ var (
 	ErrAdjustedStakeIsNaN                                = errors.Register(ModuleName, 68, "adjusted stake: is NaN")
 	ErrInvalidSliceLength                                = errors.Register(ModuleName, 69, "invalid slice length")
 	ErrTopicCadenceBelowMinimum                          = errors.Register(ModuleName, 70, "topic cadence must be at least 60 seconds (1 minute)")
+	ErrPhiCannotBeZero                                   = errors.Register(ModuleName, 71, "phi: cannot be zero")
 )

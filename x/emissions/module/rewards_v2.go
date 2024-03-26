@@ -7,18 +7,9 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// SmoothAbsoluteX calculates the smooth absolute function.
-func SmoothAbsoluteX(x []float64, p float64) ([]float64, error) {
-	result := make([]float64, len(x))
-	for i, v := range x {
-		expV := math.Exp(v)
-		logExpV := math.Log(1 + expV)
-		result[i] = math.Pow(logExpV, p)
-	}
-	return result, nil
-}
-
 // StdDev calculates the standard deviation of a slice of float64.
+// stdDev = sqrt((Σ(x - μ))^2/ N)
+// where μ is mean and N is number of elements
 func StdDev(data []float64) float64 {
 	var mean, sd float64
 	for _, v := range data {
@@ -32,6 +23,7 @@ func StdDev(data []float64) float64 {
 	return sd
 }
 
+// flatten converts a double slice of float64 to a single slice of float64
 func flatten(arr [][]float64) []float64 {
 	var flat []float64
 	for _, row := range arr {
@@ -59,9 +51,13 @@ func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, e
 		normalizedScores = append(normalizedScores, score[len(score)-1]/stdDev)
 	}
 
-	smoothedScores, err := SmoothAbsoluteX(normalizedScores, preward)
-	if err != nil {
-		return nil, err
+	smoothedScores := make([]float64, len(normalizedScores))
+	for i, v := range normalizedScores {
+		res, err := phi(preward, v)
+		if err != nil {
+			return nil, err
+		}
+		smoothedScores[i] = res
 	}
 
 	total := 0.0
@@ -180,7 +176,7 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 
 	var sumLogConsensusSquared float64
 	for _, cLoss := range consensusLosses {
-		sumLogConsensusSquared += math.Pow(cLoss, 2) //!
+		sumLogConsensusSquared += math.Pow(cLoss, 2)
 	}
 	consensusNorm := math.Sqrt(sumLogConsensusSquared)
 
@@ -235,78 +231,69 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 // returns:
 // T_im - reputer score (proximity to consensus)
 // a_im - listening coefficients
-func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int, enableListening bool) ([]float64, []float64, error) {
-	learningRate := 0.01
+func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int) ([]float64, []float64, error) {
+	learningRate := types.DefaultParamsLearningRate()
 	coefficients := make([]float64, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
-	if enableListening {
-		oldCoefficients := make([]float64, numReputers)
-		maxGradientThreshold := 0.001
-		imax := int(math.Round(1.0 / learningRate))
-		minStakeFraction := 0.5
-		var i int
-		var maxGradient float64 = 1
-		finalScores := make([]float64, numReputers)
+	oldCoefficients := make([]float64, numReputers)
+	maxGradientThreshold := 0.001
+	imax := int(math.Round(1.0 / learningRate))
+	minStakeFraction := 0.5
+	var i int
+	var maxGradient float64 = 1
+	finalScores := make([]float64, numReputers)
 
-		for maxGradient > maxGradientThreshold && i < imax {
-			i++
-			copy(oldCoefficients, coefficients)
-			gradient := make([]float64, numReputers)
-			newScores := make([]float64, numReputers)
+	for maxGradient > maxGradientThreshold && i < imax {
+		i++
+		copy(oldCoefficients, coefficients)
+		gradient := make([]float64, numReputers)
+		newScores := make([]float64, numReputers)
 
+		for l := range coefficients {
+			dcoeff := 0.001
+			if coefficients[l] == 1 {
+				dcoeff = -0.001
+			}
+			coeffs := make([]float64, len(coefficients))
+			copy(coeffs, coefficients)
+
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
+			if err != nil {
+				return nil, nil, err
+			}
+			coeffs2 := make([]float64, len(coeffs))
+			copy(coeffs2, coeffs)
+			coeffs2[l] += dcoeff
+
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
+			if err != nil {
+				return nil, nil, err
+			}
+			gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
+			copy(newScores, scores)
+		}
+
+		newCoefficients := make([]float64, len(coefficients))
+		for j := range coefficients {
+			newCoefficients[j] = math.Min(math.Max(coefficients[j]+learningRate*gradient[j], 0), 1)
+		}
+
+		listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
+		listenedStakeFraction := sumWeighted(newCoefficients, stakes) / sum(stakes)
+		if listenedStakeFraction < minStakeFraction {
 			for l := range coefficients {
-				dcoeff := 0.001
-				if coefficients[l] == 1 {
-					dcoeff = -0.001
-				}
-				coeffs := make([]float64, len(coefficients))
-				copy(coeffs, coefficients)
-
-				scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
-				if err != nil {
-					return nil, nil, err
-				}
-				coeffs2 := make([]float64, len(coeffs))
-				copy(coeffs2, coeffs)
-				coeffs2[l] += dcoeff
-
-				scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
-				if err != nil {
-					return nil, nil, err
-				}
-				gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
-				copy(newScores, scores)
+				coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
 			}
-
-			newCoefficients := make([]float64, len(coefficients))
-			for j := range coefficients {
-				newCoefficients[j] = math.Min(math.Max(coefficients[j]+learningRate*gradient[j], 0), 1)
-			}
-
-			listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
-			listenedStakeFraction := sumWeighted(newCoefficients, stakes) / sum(stakes)
-			if listenedStakeFraction < minStakeFraction {
-				for l := range coefficients {
-					coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
-				}
-			} else {
-				coefficients = newCoefficients
-			}
-			maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
-
-			copy(finalScores, newScores)
+		} else {
+			coefficients = newCoefficients
 		}
+		maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
 
-		return finalScores, coefficients, nil
-	} else {
-		coefficients = initialCoefficients
-		scores, err := GetAllConsensusScores(allLosses, stakes, coefficients, numReputers)
-		if err != nil {
-			return nil, nil, err
-		}
-		return scores, coefficients, nil
+		copy(finalScores, newScores)
 	}
+
+	return finalScores, coefficients, nil
 }
 
 func sum(slice []float64) float64 {
@@ -376,8 +363,8 @@ func phi(p float64, x float64) (float64, error) {
 // we use eta = 20 as the fiducial value decided in the paper
 // phi_1 refers to the phi function with p = 1
 // INPUTS:
-// This function expects that allStakes
-// and allListeningCoefficients are slices of the same length
+// This function expects that allStakes (S_im)
+// and allListeningCoefficients are slices of the same length (a_im)
 // and the index to each slice corresponds to the same reputer
 func GetAdjustedStake(
 	stake float64,
@@ -391,28 +378,23 @@ func GetAdjustedStake(
 		len(allListeningCoefficients) == 0 {
 		return 0, types.ErrAdjustedStakeInvalidSliceLength
 	}
-	// renaming variables just to be more legible with the formula
-	S_im := stake
-	a_im := listeningCoefficient
-	N_r := numReputers
-
-	denominator := 0.0
-	for i, s := range allStakes {
-		a := allListeningCoefficients[i]
-		denominator += (a * s)
-	}
-	numerator := N_r * a_im * S_im
+	eta := types.DefaultParamsSharpness()
+	denominator := sumWeighted(allListeningCoefficients, allStakes)
+	numerator := numReputers * listeningCoefficient * stake
 	stakeFraction := numerator / denominator
 	stakeFraction = stakeFraction - 1
-	stakeFraction = stakeFraction * -20 // eta = 20
+	stakeFraction = stakeFraction * -eta
 
 	phi_1_stakeFraction, err := phi(1, stakeFraction)
 	if err != nil {
 		return 0, err
 	}
-	phi_1_Eta, err := phi(1, 20)
+	phi_1_Eta, err := phi(1, eta)
 	if err != nil {
 		return 0, err
+	}
+	if phi_1_Eta == 0 {
+		return 0, types.ErrPhiCannotBeZero
 	}
 	// phi_1_Eta is taken to the -1 power
 	// and then multiplied by phi_1_stakeFraction
