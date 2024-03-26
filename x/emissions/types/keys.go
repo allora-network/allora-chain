@@ -43,6 +43,6 @@ var (
 	ReputerWhitelistKey           = collections.NewPrefix(32)
 	ChurnReadyTopicsKey           = collections.NewPrefix(33)
 	FoundationWhitelistKey        = collections.NewPrefix(34)
-	StakeByReputerAndTopicIdKey   = collections.NewPrefix(35)
-	NetworkLossBundlesKey         = collections.NewPrefix(36)
+	NetworkLossBundlesKey         = collections.NewPrefix(35)
+	StakeByReputerAndTopicIdKey   = collections.NewPrefix(36)
 )

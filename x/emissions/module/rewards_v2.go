@@ -410,3 +410,386 @@ func GetAdjustedStake(
 	}
 	return ret, nil
 }
+
+// Used by Rewards fraction functions,
+// all the exponential moving average functions take the form
+// x_average=α*x_current + (1-α)*x_previous
+//
+// this covers the equations
+// Uij = αUij + (1 − α)Ui−1,j
+// ̃Vik = αVik + (1 − α)Vi−1,k
+// ̃Wim = αWim + (1 − α)Wi−1,m
+func exponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
+	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
+	}
+	if math.IsNaN(current) || math.IsInf(current, 0) {
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "current: %f", current)
+	}
+	if math.IsNaN(previous) || math.IsInf(previous, 0) {
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "previous: %f", previous)
+	}
+
+	// THE ONLY LINE OF CODE IN THIS FUNCTION
+	// THAT ISN'T ERROR CHECKING IS HERE
+	ret := alpha*current + (1-alpha)*previous
+
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrExponentialMovingAverageIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrExponentialMovingAverageIsNaN
+	}
+	return ret, nil
+}
+
+// f_ij, f_ik, and f_im are all reward fractions
+// that require computing the ratio of one participant to all participants
+// yes this is extremely simple math
+// yes we write a separate function for it anyway. The compiler can inline it if necessary
+// normalizeToArray = value / sum(allValues)
+// this covers equations
+// f_ij =  (̃U_ij) / ∑_j(̃Uij)
+// f_ik = (̃Vik) / ∑_k(̃Vik)
+// fim =  (̃Wim) / ∑_m(̃Wim)
+func normalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
+	if len(allValues) == 0 {
+		return 0, types.ErrFractionInvalidSliceLength
+	}
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0, errors.Wrapf(types.ErrFractionInvalidInput, "value: %f", value)
+	}
+	sumValues := 0.0
+	for i, v := range allValues {
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return 0, errors.Wrapf(types.ErrFractionInvalidInput, "allValues[%d]: %f", i, v)
+		}
+		sumValues += v
+	}
+	if sumValues == 0 {
+		return 0, types.ErrFractionDivideByZero
+	}
+	ret := value / sumValues
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrFractionIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrFractionIsNaN
+	}
+
+	return ret, nil
+}
+
+// We define a modified entropy for each class
+// ({F_i, G_i, H_i} for the inference, forecasting, and reputer tasks, respectively
+// Fi = - ∑_j( f_ij * ln(f_ij) * (N_{i,eff} / N_i)^β )
+// Gi = - ∑_k( f_ik * ln(f_ik) * (N_{f,eff} / N_f)^β )
+// Hi = - ∑_m( f_im * ln(f_im) * (N_{r,eff} / N_r)^β )
+// we use beta = 0.25 as a fiducial value
+func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float64) (float64, error) {
+	if math.IsInf(N_eff, 0) ||
+		math.IsNaN(N_eff) ||
+		math.IsInf(numParticipants, 0) ||
+		math.IsNaN(numParticipants) ||
+		math.IsInf(beta, 0) ||
+		math.IsNaN(beta) {
+		return 0, errors.Wrapf(
+			types.ErrEntropyInvalidInput,
+			"N_eff: %f, numParticipants: %f, beta: %f",
+			N_eff,
+			numParticipants,
+			beta,
+		)
+	}
+	// simple variable rename to look more like the equations,
+	// hopefully compiler is smart enough to inline it
+	N := numParticipants
+
+	multiplier := N_eff / N
+	multiplier = math.Pow(multiplier, beta)
+
+	sum := 0.0
+	for i, f := range allFs {
+		if math.IsInf(f, 0) || math.IsNaN(f) {
+			return 0, errors.Wrapf(types.ErrEntropyInvalidInput, "allFs[%d]: %f", i, f)
+		}
+		sum += f * math.Log(f)
+	}
+
+	ret := -1 * sum * multiplier
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(
+			types.ErrEntropyIsInfinity,
+			"sum of f: %f, multiplier: %f",
+			sum,
+			multiplier,
+		)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(
+			types.ErrEntropyIsNaN,
+			"sum of f: %f, multiplier: %f",
+			sum,
+			multiplier,
+		)
+	}
+	return ret, nil
+}
+
+// The number ratio term captures the number of participants in the network
+// to prevent sybil attacks in the rewards distribution
+// This function captures
+// N_{i,eff} = 1 / ∑_j( f_ij^2 )
+// N_{f,eff} = 1 / ∑_k( f_ik^2 )
+// N_{r,eff} = 1 / ∑_m( f_im^2 )
+func numberRatio(rewardFractions []float64) (float64, error) {
+	if len(rewardFractions) == 0 {
+		return 0, types.ErrNumberRatioInvalidSliceLength
+	}
+	sum := 0.0
+	for i, f := range rewardFractions {
+		if math.IsNaN(f) || math.IsInf(f, 0) {
+			return 0, errors.Wrapf(types.ErrNumberRatioInvalidInput, "rewardFractions[%d]: %f", i, f)
+		}
+		sum += f * f
+	}
+	if sum == 0 {
+		return 0, types.ErrNumberRatioDivideByZero
+	}
+	ret := 1 / sum
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrNumberRatioIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrNumberRatioIsNaN
+	}
+	return ret, nil
+}
+
+// inference rewards calculation
+// U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
+func inferenceRewards(
+	chi float64,
+	gamma float64,
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
+		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
+		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			types.ErrInferenceRewardsInvalidInput,
+			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			chi,
+			gamma,
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := ((1 - chi) * gamma * entropyInference * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrInferenceRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrInferenceRewardsIsNaN
+	}
+	return ret, nil
+}
+
+// forecaster rewards calculation
+// V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
+func forecastingRewards(
+	chi float64,
+	gamma float64,
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
+		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
+		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			types.ErrForecastingRewardsInvalidInput,
+			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			chi,
+			gamma,
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := (chi * gamma * entropyForecasting * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrForecastingRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrForecastingRewardsIsNaN
+	}
+	return ret, nil
+}
+
+// reputer rewards calculation
+// W_i = (H_i * E_i) / (F_i + G_i + H_i)
+func reputerRewards(
+	entropyInference float64,
+	entropyForecasting float64,
+	entropyReputer float64,
+	timeStep float64,
+) (float64, error) {
+	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
+		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
+		return 0, errors.Wrapf(
+			types.ErrReputerRewardsInvalidInput,
+			"entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
+			entropyInference,
+			entropyForecasting,
+			entropyReputer,
+			timeStep,
+		)
+	}
+	ret := (entropyReputer * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrReputerRewardsIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrReputerRewardsIsNaN
+	}
+	return ret, nil
+}
+
+// The performance score of the entire forecasting task T_i
+// is positive if the removal of the forecasting task would
+// increase the network loss, and is negative if its removal
+// would decrease the network loss
+// We subtract the log-loss of the complete network inference
+// (L_i) from that of the naive network (L_i^-), which is
+// obtained by omitting all forecast-implied inferences
+// T_i = log L_i^- - log L_i
+func forecastingPerformanceScore(
+	naiveNetworkInferenceLoss float64,
+	networkInferenceLoss float64,
+) (float64, error) {
+	if math.IsNaN(networkInferenceLoss) || math.IsInf(networkInferenceLoss, 0) ||
+		math.IsNaN(naiveNetworkInferenceLoss) || math.IsInf(naiveNetworkInferenceLoss, 0) {
+		return 0, errors.Wrapf(
+			types.ErrForecastingPerformanceScoreInvalidInput,
+			"networkInferenceLoss: %f, naiveNetworkInferenceLoss: %f",
+			networkInferenceLoss,
+			naiveNetworkInferenceLoss,
+		)
+	}
+	ret := math.Log10(naiveNetworkInferenceLoss) - math.Log10(networkInferenceLoss)
+
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrForecastingPerformanceScoreIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrForecastingPerformanceScoreIsNaN
+	}
+	return ret, nil
+}
+
+// sigmoid function
+// σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
+func sigmoid(x float64) (float64, error) {
+	if math.IsNaN(x) || math.IsInf(x, 0) {
+		return 0, types.ErrSigmoidInvalidInput
+	}
+	ret := math.Exp(x) / (1 + math.Exp(x))
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrSigmoidIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrSigmoidIsNaN
+	}
+	return ret, nil
+}
+
+// we apply a utility function to the forecasting performance score
+// to let the forecasting task utility range from the interval [0.1, 0.5]
+// χ = 0.1 + 0.4σ(a*T_i − b)
+// sigma is the sigmoid function
+// a has fiduciary value of 8
+// b has fiduciary value of 0.5
+func forecastingUtility(forecastingPerformanceScore float64, a float64, b float64) (float64, error) {
+	if math.IsNaN(forecastingPerformanceScore) || math.IsInf(forecastingPerformanceScore, 0) ||
+		math.IsNaN(a) || math.IsInf(a, 0) ||
+		math.IsNaN(b) || math.IsInf(b, 0) {
+		return 0, types.ErrForecastingUtilityInvalidInput
+	}
+	ret, err := sigmoid(a*forecastingPerformanceScore - b)
+	if err != nil {
+		return 0, err
+	}
+	ret = 0.1 + 0.4*ret
+	if math.IsInf(ret, 0) {
+		return 0, types.ErrForecastingUtilityIsInfinity
+	}
+	if math.IsNaN(ret) {
+		return 0, types.ErrForecastingUtilityIsNaN
+	}
+	return ret, nil
+}
+
+// renormalize with a factor γ to ensure that the
+// total reward allocated to workers (Ui + Vi)
+// remains constant (otherwise, this would go at the expense of reputers)
+// γ = (F_i + G_i) / ( (1 − χ)*F_i + χ*G_i)
+func normalizationFactor(
+	entropyInference float64,
+	entropyForecasting float64,
+	forecastingUtility float64,
+) (float64, error) {
+	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
+		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
+		math.IsNaN(forecastingUtility) || math.IsInf(forecastingUtility, 0) {
+		return 0, errors.Wrapf(
+			types.ErrNormalizationFactorInvalidInput,
+			"entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+	numerator := entropyInference + entropyForecasting
+	denominator := (1-forecastingUtility)*entropyInference + forecastingUtility*entropyForecasting
+	ret := numerator / denominator
+	if math.IsInf(ret, 0) {
+		return 0, errors.Wrapf(
+			types.ErrNormalizationFactorIsInfinity,
+			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			numerator,
+			denominator,
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+	if math.IsNaN(ret) {
+		return 0, errors.Wrapf(
+			types.ErrNormalizationFactorIsNaN,
+			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
+			numerator,
+			denominator,
+			entropyInference,
+			entropyForecasting,
+			forecastingUtility,
+		)
+	}
+
+	return ret, nil
+}
