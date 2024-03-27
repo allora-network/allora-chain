@@ -39,14 +39,12 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 		}
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	actualTimestamp := uint64(sdkCtx.BlockTime().Unix())
-
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	for topicId, lossBundles := range groupedBundles {
 		bundles := &types.LossBundles{
 			LossBundles: lossBundles,
 		}
-		err = ms.k.InsertLossBundles(ctx, topicId, actualTimestamp, *bundles)
+		err = ms.k.InsertLossBundles(ctx, topicId, blockHeight, *bundles)
 		if err != nil {
 			return nil, err
 		}

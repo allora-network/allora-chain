@@ -97,12 +97,12 @@ message OptionalParams {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                              // minimum amount of tokens to send to stake as a reputer or worker
-  repeated uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
-  repeated uint64 min_epoch_length =
+  ];                                             // minimum amount of tokens to send to stake as a reputer or worker
+  repeated int64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
+  repeated int64 min_epoch_length =
       9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-  repeated uint64 max_inference_request_validity = 10;  // longest time a subscription is allowed to be valid
-  repeated uint64 max_request_cadence = 11;  // slowest/largest amount of time subscription can take between inferences
+  repeated int64 max_inference_request_validity = 10;  // longest time a subscription is allowed to be valid
+  repeated int64 max_request_cadence = 11;  // slowest/largest amount of time subscription can take between inferences
   repeated string percent_rewards_reputers_workers = 12 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
@@ -113,6 +113,18 @@ message OptionalParams {
       13;  // max number of workers whose inference will be used and compensated per request
   repeated uint64 max_reputers_per_topic_request =
       14;  // max number of reputers to solicit losses from per loss request
+  repeated string epsilon = 15 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // small number to prevent division by zero
+  repeated string p_inference_synthesis = 16 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
 message MsgUpdateParams {
@@ -134,8 +146,8 @@ message MsgCreateNewTopic {
   string loss_method = 4;
   string inference_logic = 5;
   string inference_method = 6;
-  uint64 epoch_length = 7;
-  uint64 ground_truth_lag = 8;
+  int64 epoch_length = 7;
+  int64 ground_truth_lag = 8;
   string default_arg = 9;
   uint64 pnorm = 10;
   string alpha_regret = 11;
@@ -323,7 +335,7 @@ message MsgRequestInference {
 message RequestInferenceListItem {
   uint64 nonce = 1;
   uint64 topic_id = 2;
-  uint64 cadence = 3;  // time in seconds between inferences, zero means oneshot inference
+  int64 cadence = 3;  // blocks between inferences, zero means oneshot inference
   string max_price_per_inference = 4 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -336,7 +348,7 @@ message RequestInferenceListItem {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // how many funds to send from alice with this Inference Request
-  uint64 timestamp_valid_until = 6;
+  int64 block_valid_until = 6;
   bytes extra_data = 7;
 }
 
