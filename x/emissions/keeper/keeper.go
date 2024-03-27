@@ -120,9 +120,6 @@ type Keeper struct {
 	// map of (topic, worker, block_number) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
 	networkRegrets collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.WorkerRegrets]
 
-	// map of (topic, worker, timestamp) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
-	networkRegrets collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.WorkerRegrets]
-
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
 
 	/// WHITELISTS
