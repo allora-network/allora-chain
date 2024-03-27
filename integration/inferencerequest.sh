@@ -25,7 +25,7 @@ echo "Checking the inference request was made correctly"
 
 echo $MEMPOOL
 MEMPOOL_INCREMENTED=false
-for COUNT_SLEEP in 1 2 3 4 5
+for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9
 do
   MEMPOOL=$($ALLORAD_BIN query emissions all-inference-requests)
   if [ "$MEMPOOL" == "{}" ]; then
