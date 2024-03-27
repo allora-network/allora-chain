@@ -45,8 +45,8 @@ func CreateNewInferenceRequestFromListItem(sender string, item *RequestInference
 		Cadence:              item.Cadence,
 		MaxPricePerInference: item.MaxPricePerInference,
 		BidAmount:            item.BidAmount,
-		TimestampValidUntil:  item.TimestampValidUntil,
-		LastChecked:          0,
+		BlockValidUntil:      item.BlockValidUntil,
+		BlockLastChecked:     0,
 		ExtraData:            item.ExtraData,
 	}
 	return newInferenceRequest

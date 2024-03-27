@@ -1,8 +1,6 @@
 package msgserver_test
 
 import (
-	"time"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -110,7 +108,7 @@ func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 
 	// Mock setup for topic
 	topicId := uint64(0)
-	inferenceTs := uint64(time.Now().UTC().Unix())
+	inferenceTs := int64(0x0)
 
 	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
 	require.NoError(err, "UpdateTopicEpochLastEnded should not return an error")

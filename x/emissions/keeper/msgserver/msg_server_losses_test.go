@@ -17,31 +17,31 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	// Create a MsgSetLosses message
 	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		LossBundles: []*types.LossBundle{
+		ValueBundles: []*types.ValueBundle{
 			{
 				TopicId:      1,
 				Reputer:      reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*types.WorkerAttributedLoss{
+				InfererLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
-				ForecasterLosses: []*types.WorkerAttributedLoss{
+				ForecasterLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []*types.WorkerAttributedLoss{
+				OneOutLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
-				OneInNaiveLosses: []*types.WorkerAttributedLoss{
+				OneInNaiveLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
@@ -66,31 +66,31 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	// Create a MsgSetLosses message
 	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		LossBundles: []*types.LossBundle{
+		ValueBundles: []*types.ValueBundle{
 			{
 				TopicId:      1,
 				Reputer:      reputerAddr,
 				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*types.WorkerAttributedLoss{
+				InfererLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
-				ForecasterLosses: []*types.WorkerAttributedLoss{
+				ForecasterLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
 				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []*types.WorkerAttributedLoss{
+				OneOutLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),
 					},
 				},
-				OneInNaiveLosses: []*types.WorkerAttributedLoss{
+				OneInNaiveLosses: []*types.WorkerAttributedValue{
 					{
 						Worker: workerAddr,
 						Value:  cosmosMath.NewUint(100),

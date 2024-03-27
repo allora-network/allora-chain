@@ -11,10 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-///
-/// STAKE
-///
-
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
 	// 1. check the sender is registered
@@ -74,8 +70,8 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		return nil, err
 	}
 	stakeRemoval := types.StakeRemoval{
-		TimestampRemovalStarted: uint64(sdkCtx.BlockTime().Unix()),
-		Placements:              make([]*types.StakePlacement, 0),
+		BlockRemovalStarted: sdkCtx.BlockHeight(),
+		Placements:          make([]*types.StakePlacement, 0),
 	}
 	for _, stakePlacement := range msg.PlacementsRemove {
 		// Check the sender has enough stake already placed on the topic to remove the stake
@@ -126,15 +122,15 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 		return nil, err
 	}
 	// check the timestamp is valid
-	timeNow := uint64(sdkCtx.BlockTime().Unix())
-	if stakeRemoval.TimestampRemovalStarted > timeNow {
+	currentBlock := sdkCtx.BlockHeight()
+	if stakeRemoval.BlockRemovalStarted > currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.TimestampRemovalStarted+delayWindow < timeNow {
+	if stakeRemoval.BlockRemovalStarted+delayWindow < currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooLate
 	}
 	// skip checking all the data is valid
@@ -237,8 +233,8 @@ func (ms msgServer) StartRemoveDelegatedStake(ctx context.Context, msg *types.Ms
 		return nil, err
 	}
 	stakeRemoval := types.DelegatedStakeRemoval{
-		TimestampRemovalStarted: uint64(sdkCtx.BlockTime().Unix()),
-		Placements:              make([]*types.DelegatedStakePlacement, 0),
+		BlockRemovalStarted: sdkCtx.BlockHeight(),
+		Placements:          make([]*types.DelegatedStakePlacement, 0),
 	}
 
 	for _, stakeAntiPlacement := range msg.PlacementsToRemove {
@@ -282,16 +278,16 @@ func (ms msgServer) ConfirmRemoveDelegatedStake(ctx context.Context, msg *types.
 		}
 		return nil, err
 	}
-	// check the timestamp is valid
-	timeNow := uint64(sdkCtx.BlockTime().Unix())
-	if stakeRemoval.TimestampRemovalStarted > timeNow {
+	// check the block it should start is valid
+	currentBlock := sdkCtx.BlockHeight()
+	if stakeRemoval.BlockRemovalStarted > currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.TimestampRemovalStarted+delayWindow < timeNow {
+	if stakeRemoval.BlockRemovalStarted+delayWindow < currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooLate
 	}
 	// Skip checking all the data is valid
