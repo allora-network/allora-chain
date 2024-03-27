@@ -3,7 +3,6 @@
 BINARY=./allorad
 CHAIN_DIR=./data
 CHAINID=allora_demo
-RLY_MNEMONIC="alley afraid soup fall idea toss can goose become valve initial strong forward bright dish figure check leopard decide warfare hub unusual join cart"
 P2PPORT=16656
 RPCPORT=16657
 RESTPORT=1316
@@ -29,6 +28,7 @@ $BINARY config set client chain-id $CHAINID
 $BINARY config set client keyring-backend test
 $BINARY keys add alice  --home $CHAIN_DIR/$CHAINID
 $BINARY keys add bob --home $CHAIN_DIR/$CHAINID
+$BINARY keys add relayer --home $CHAIN_DIR/$CHAINID
 
 echo "Initializing $CHAINID..."
 $BINARY init test --home $CHAIN_DIR/$CHAINID --chain-id $CHAINID --default-denom uallo
@@ -37,6 +37,7 @@ echo "Adding genesis accounts..."
 
 $BINARY genesis add-genesis-account alice 10000000allo --keyring-backend test --home $CHAIN_DIR/$CHAINID
 $BINARY genesis add-genesis-account bob 1000allo --keyring-backend test --home $CHAIN_DIR/$CHAINID
+$BINARY genesis add-genesis-account allorarelayer 1000allo --keyring-backend test --home $CHAIN_DIR/$CHAINID
 $BINARY genesis add-genesis-account allo1m4ssnux4kh5pfmjzzkpde0hvxfg0d37mla0pdf 10000000allo --home $CHAIN_DIR/$CHAINID
 $BINARY genesis add-genesis-account allo1m8m7u5wygh8f0m55m7aj957yts44fsqdzryjmc 10000000allo --home $CHAIN_DIR/$CHAINID
 $BINARY genesis add-genesis-account allo18kq56ckavhacjjxwc7lajspfgn6zf78srfx3lk 10000000allo --home $CHAIN_DIR/$CHAINID

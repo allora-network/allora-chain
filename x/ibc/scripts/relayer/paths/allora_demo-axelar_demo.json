@@ -1,14 +1,14 @@
 {
   "src":
     {
-      "chain-id":"hackatom",
+      "chain-id":"allora_demo",
       "client-id":"",
       "connection-id":"",
       "channel-id":""
     },
   "dst":
     {
-      "chain-id":"seoul",
+      "chain-id":"axelar_demo",
       "client-id":"",
       "connection-id":"",
       "channel-id":""

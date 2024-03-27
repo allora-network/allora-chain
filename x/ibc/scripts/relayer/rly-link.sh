@@ -13,4 +13,4 @@ if ! [ -x "$(command -v $BINARY)" ]; then
 fi
 
 echo "Linking both chains"
-$BINARY tx link alloard-axelar --home $CHAIN_DIR/$RELAYER_DIR
+$BINARY tx link allora_demo-axelar_demo --home $CHAIN_DIR/$RELAYER_DIR
