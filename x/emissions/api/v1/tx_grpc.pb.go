@@ -41,8 +41,6 @@ const (
 	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist"
 	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.v1.Msg/AddToReputerWhitelist"
 	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.v1.Msg/RemoveFromReputerWhitelist"
-	Msg_AddToFoundationWhitelist_FullMethodName         = "/emissions.v1.Msg/AddToFoundationWhitelist"
-	Msg_RemoveFromFoundationWhitelist_FullMethodName    = "/emissions.v1.Msg/RemoveFromFoundationWhitelist"
 )
 
 // MsgClient is the client API for Msg service.
@@ -71,8 +69,6 @@ type MsgClient interface {
 	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error)
 	RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error)
-	AddToFoundationWhitelist(ctx context.Context, in *MsgAddToFoundationWhitelist, opts ...grpc.CallOption) (*MsgAddToFoundationWhitelistResponse, error)
-	RemoveFromFoundationWhitelist(ctx context.Context, in *MsgRemoveFromFoundationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromFoundationWhitelistResponse, error)
 }
 
 type msgClient struct {
@@ -281,24 +277,6 @@ func (c *msgClient) RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemov
 	return out, nil
 }
 
-func (c *msgClient) AddToFoundationWhitelist(ctx context.Context, in *MsgAddToFoundationWhitelist, opts ...grpc.CallOption) (*MsgAddToFoundationWhitelistResponse, error) {
-	out := new(MsgAddToFoundationWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_AddToFoundationWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RemoveFromFoundationWhitelist(ctx context.Context, in *MsgRemoveFromFoundationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromFoundationWhitelistResponse, error) {
-	out := new(MsgRemoveFromFoundationWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveFromFoundationWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -325,8 +303,6 @@ type MsgServer interface {
 	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToReputerWhitelist(context.Context, *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error)
 	RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error)
-	AddToFoundationWhitelist(context.Context, *MsgAddToFoundationWhitelist) (*MsgAddToFoundationWhitelistResponse, error)
-	RemoveFromFoundationWhitelist(context.Context, *MsgRemoveFromFoundationWhitelist) (*MsgRemoveFromFoundationWhitelistResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -399,12 +375,6 @@ func (UnimplementedMsgServer) AddToReputerWhitelist(context.Context, *MsgAddToRe
 }
 func (UnimplementedMsgServer) RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromReputerWhitelist not implemented")
-}
-func (UnimplementedMsgServer) AddToFoundationWhitelist(context.Context, *MsgAddToFoundationWhitelist) (*MsgAddToFoundationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToFoundationWhitelist not implemented")
-}
-func (UnimplementedMsgServer) RemoveFromFoundationWhitelist(context.Context, *MsgRemoveFromFoundationWhitelist) (*MsgRemoveFromFoundationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromFoundationWhitelist not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -815,42 +785,6 @@ func _Msg_RemoveFromReputerWhitelist_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddToFoundationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToFoundationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddToFoundationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_AddToFoundationWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToFoundationWhitelist(ctx, req.(*MsgAddToFoundationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RemoveFromFoundationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromFoundationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromFoundationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_RemoveFromFoundationWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromFoundationWhitelist(ctx, req.(*MsgRemoveFromFoundationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -945,14 +879,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromReputerWhitelist",
 			Handler:    _Msg_RemoveFromReputerWhitelist_Handler,
-		},
-		{
-			MethodName: "AddToFoundationWhitelist",
-			Handler:    _Msg_AddToFoundationWhitelist_Handler,
-		},
-		{
-			MethodName: "RemoveFromFoundationWhitelist",
-			Handler:    _Msg_RemoveFromFoundationWhitelist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

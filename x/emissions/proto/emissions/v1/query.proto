@@ -85,7 +85,8 @@ service Query {
     option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}";
   }
 
-  rpc GetLatestNetworkLossBundle(QueryLatestNetworkLossBundleRequest) returns (QueryLatestNetworkLossBundleResponse) {
+  rpc GetLatestNetworkValueBundle(QueryLatestNetworkValueBundleRequest)
+      returns (QueryLatestNetworkValueBundleResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_loss/{topic_id}";
   }
@@ -172,12 +173,12 @@ message QueryTopicStakeListResponse {
   repeated StakePlacement stakes = 1;
 }
 
-message QueryLatestNetworkLossBundleRequest {
+message QueryLatestNetworkValueBundleRequest {
   uint64 topic_id = 1;
 }
 
-message QueryLatestNetworkLossBundleResponse {
-  LossBundle loss_bundle = 1;
+message QueryLatestNetworkValueBundleResponse {
+  ValueBundle value_bundle = 1;
 }
 
 message QueryNextTopicIdRequest {}

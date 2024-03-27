@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,7 +42,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
 	if len(newParams.MaxMissingInferencePercent) == 1 {
-		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
+		maxMissingInferencePercent, err := strconv.ParseFloat(newParams.MaxMissingInferencePercent[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.MaxMissingInferencePercent = maxMissingInferencePercent
 	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
@@ -59,7 +64,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	if len(newParams.PercentRewardsReputersWorkers) == 1 {
-		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
+		percentRewardsReputersWorkers, err := strconv.ParseFloat(newParams.PercentRewardsReputersWorkers[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.PercentRewardsReputersWorkers = percentRewardsReputersWorkers
 	}
 	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
 		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
@@ -68,10 +77,18 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	if len(newParams.Epsilon) == 1 {
-		existingParams.Epsilon = newParams.Epsilon[0]
+		epsilon, err := strconv.ParseFloat(newParams.Epsilon[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.Epsilon = epsilon
 	}
 	if len(newParams.PInferenceSynthesis) == 1 {
-		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
+		pInferenceSynthesis, err := strconv.ParseFloat(newParams.PInferenceSynthesis[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.PInferenceSynthesis = pInferenceSynthesis
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

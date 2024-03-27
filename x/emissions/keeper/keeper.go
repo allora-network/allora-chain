@@ -111,11 +111,11 @@ type Keeper struct {
 	// map of (topic, block_number) -> Forecast
 	allForecasts collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Forecasts]
 
-	// map of (topic, block_number) -> LossBundles (1 per reputer active at that time)
-	allLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundles]
+	// map of (topic, block_number) -> ReputerValueBundles (1 per reputer active at that time)
+	allLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.ReputerValueBundles]
 
-	// map of (topic, block_number) -> LossBundle (1 network wide bundle per timestep)
-	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundle]
+	// map of (topic, block_number) -> ValueBundle (1 network wide bundle per timestep)
+	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.ValueBundle]
 
 	// map of (topic, worker, block_number) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
 	networkRegrets collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.WorkerRegrets]
@@ -173,8 +173,8 @@ func NewKeeper(
 		reputers:                   collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
 		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundles](cdc)),
-		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundle](cdc)),
+		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
+		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.WorkerRegrets](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
@@ -215,10 +215,10 @@ func (k *Keeper) GetFeeCollectorName() string {
 	return k.feeCollectorName
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (float64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyDec{}, err
+		return 0, err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -287,26 +287,26 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BLOCK_NUMBER, 
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (float64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyZeroDec(), err
+		return 0, err
 	}
 	return params.PercentRewardsReputersWorkers, nil
 }
 
-func (k *Keeper) GetParamsEpsilon(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (float64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyZeroDec(), err
+		return 0, err
 	}
 	return params.Epsilon, nil
 }
 
-func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyZeroDec(), err
+		return 0, err
 	}
 	return params.PInferenceSynthesis, nil
 }
@@ -533,23 +533,23 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 /// LOSS BUNDLES, REGRETS
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundles types.LossBundles) error {
+func (k *Keeper) InsertValueBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, valueBundles types.ReputerValueBundles) error {
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, lossBundles)
+	return k.allLossBundles.Set(ctx, key, valueBundles)
 }
 
 // Get loss bundles for a topic/timestamp
-func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundles, error) {
+func (k *Keeper) GetValueBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.ReputerValueBundles, error) {
 	key := collections.Join(topicId, block)
-	lossBundles, err := k.allLossBundles.Get(ctx, key)
+	valueBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-	return &lossBundles, nil
+	return &valueBundles, nil
 }
 
-// A function that accepts a topicId and returns the latest Network LossBundle or error
-func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
+// A function that accepts a topicId and returns the latest Network ValueBundle or error
+func (k *Keeper) GetLatestNetworkValueBundle(ctx context.Context, topicId TOPIC_ID) (*types.ValueBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
@@ -561,7 +561,7 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_I
 	}
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
-		return &types.LossBundle{}, nil
+		return &types.ValueBundle{}, nil
 	}
 	kv, err := iter.KeyValue()
 	if err != nil {
@@ -570,7 +570,7 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_I
 	return &kv.Value, nil
 }
 
-func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundle, error) {
+func (k *Keeper) GetNetworkValueBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.ValueBundle, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		StartInclusive(block).
@@ -582,7 +582,7 @@ func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicI
 	}
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
-		return &types.LossBundle{}, nil
+		return &types.ValueBundle{}, nil
 	}
 	kv, err := iter.KeyValue()
 	if err != nil {
@@ -1741,41 +1741,6 @@ func (k *Keeper) AddToFoundationWhitelist(ctx context.Context, address sdk.AccAd
 
 func (k *Keeper) RemoveFromFoundationWhitelist(ctx context.Context, address sdk.AccAddress) error {
 	return k.foundationWhitelist.Remove(ctx, address)
-}
-
-/// TREASURY
-
-// Sets the subsidy for the topic within the topic struct
-// Should only be called by a member of the foundation whitelist
-func (k *Keeper) SetTopicSubsidy(ctx context.Context, topicId TOPIC_ID, subsidy uint64) error {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	topic.Subsidy = subsidy
-	return k.topics.Set(ctx, topicId, topic)
-}
-
-// Sets the number of reward for the topic within the topic struct
-// Should only be called by a member of the foundation whitelist
-func (k *Keeper) SetTopicSubsidizedRewardEpochs(ctx context.Context, topicId TOPIC_ID, subsidizedRewardEpochs float32) error {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	topic.SubsidizedRewardEpochs = subsidizedRewardEpochs
-	return k.topics.Set(ctx, topicId, topic)
-}
-
-// Sets the number of reward for the topic within the topic struct
-// Should only be called by a member of the foundation whitelist
-func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreasury float32) error {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	topic.FTreasury = fTreasury
-	return k.topics.Set(ctx, topicId, topic)
 }
 
 /// BANK KEEPER WRAPPERS

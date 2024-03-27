@@ -57,27 +57,24 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	topic := types.Topic{
-		Id:                     id,
-		Creator:                creator.String(),
-		Metadata:               msg.Metadata,
-		LossLogic:              msg.LossLogic,
-		LossMethod:             msg.LossMethod,
-		InferenceLogic:         msg.InferenceLogic,
-		InferenceMethod:        msg.InferenceMethod,
-		EpochLastEnded:         0,
-		EpochLength:            msg.EpochLength,
-		GroundTruthLag:         msg.GroundTruthLag,
-		Active:                 true,
-		DefaultArg:             msg.DefaultArg,
-		Pnorm:                  msg.Pnorm,
-		AlphaRegret:            float32(alphaRegret),
-		PrewardReputer:         float32(prewardReputer),
-		PrewardInference:       float32(prewardInference),
-		PrewardForecast:        float32(prewardForecast),
-		FTolerance:             float32(fTolerance),
-		Subsidy:                0,   // Can later be updated by a Foundation member
-		SubsidizedRewardEpochs: 0,   // Can later be updated by a Foundation member
-		FTreasury:              0.5, // Can later be updated by a Foundation member
+		Id:               id,
+		Creator:          creator.String(),
+		Metadata:         msg.Metadata,
+		LossLogic:        msg.LossLogic,
+		LossMethod:       msg.LossMethod,
+		InferenceLogic:   msg.InferenceLogic,
+		InferenceMethod:  msg.InferenceMethod,
+		EpochLastEnded:   0,
+		EpochLength:      msg.EpochLength,
+		GroundTruthLag:   msg.GroundTruthLag,
+		Active:           true,
+		DefaultArg:       msg.DefaultArg,
+		Pnorm:            msg.Pnorm,
+		AlphaRegret:      alphaRegret,
+		PrewardReputer:   prewardReputer,
+		PrewardInference: prewardInference,
+		PrewardForecast:  prewardForecast,
+		FTolerance:       fTolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -114,56 +111,4 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, err
 	}
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
-}
-
-///
-/// FOUNDATION TOPIC MANAGEMENT
-///
-
-// Modfies topic subsidy and subsidized_reward_epochs properties
-// Can only be called by a whitelisted foundation member
-func (ms msgServer) ModifyTopicSubsidy(ctx context.Context, msg *types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochs) (*types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse, error) {
-	// Check that sender is in the foundation whitelist
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isAdmin, err := ms.k.IsInFoundationWhitelist(ctx, senderAddr)
-	if err != nil {
-		return nil, err
-	}
-	if !isAdmin {
-		return nil, types.ErrNotWhitelistAdmin
-	}
-	// Modify the topic subsidy + F_treasury
-	err = ms.k.SetTopicSubsidy(ctx, msg.TopicId, msg.Subsidy)
-	if err != nil {
-		return nil, err
-	}
-	err = ms.k.SetTopicSubsidizedRewardEpochs(ctx, msg.TopicId, msg.SubsidizedRewardEpochs)
-	if err != nil {
-		return nil, err
-	}
-	return &types.MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse{Success: true}, nil
-}
-
-func (ms msgServer) ModifyTopicFTreasury(ctx context.Context, msg *types.MsgModifyTopicFTreasury) (*types.MsgModifyTopicFTreasuryResponse, error) {
-	// Check that sender is in the foundation whitelist
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isAdmin, err := ms.k.IsInFoundationWhitelist(ctx, senderAddr)
-	if err != nil {
-		return nil, err
-	}
-	if !isAdmin {
-		return nil, types.ErrNotWhitelistAdmin
-	}
-	// Modify the topic subsidy + F_treasury
-	err = ms.k.SetTopicFTreasury(ctx, msg.TopicId, float32(msg.FTreasury))
-	if err != nil {
-		return nil, err
-	}
-	return &types.MsgModifyTopicFTreasuryResponse{Success: true}, nil
 }

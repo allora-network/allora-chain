@@ -57,11 +57,6 @@ service Msg {
   rpc AddToReputerWhitelist(MsgAddToReputerWhitelist) returns (MsgAddToReputerWhitelistResponse);
 
   rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist) returns (MsgRemoveFromReputerWhitelistResponse);
-
-  rpc AddToFoundationWhitelist(MsgAddToFoundationWhitelist) returns (MsgAddToFoundationWhitelistResponse);
-
-  rpc RemoveFromFoundationWhitelist(MsgRemoveFromFoundationWhitelist)
-      returns (MsgRemoveFromFoundationWhitelistResponse);
 }
 
 // Because gocosmos, grpc-gateway, and go-pulsar do not support optional fields
@@ -86,12 +81,8 @@ message OptionalParams {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // delete requests if they have below this demand remaining
-  repeated string max_missing_inference_percent = 6 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // if worker has this percentage of inferences missing penalize them
+  repeated string max_missing_inference_percent =
+      6;  // if worker has this percentage of inferences missing penalize them
   repeated string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -103,29 +94,18 @@ message OptionalParams {
       9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
   repeated int64 max_inference_request_validity = 10;  // longest time a subscription is allowed to be valid
   repeated int64 max_request_cadence = 11;  // slowest/largest amount of time subscription can take between inferences
-  repeated string percent_rewards_reputers_workers = 12 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
+  repeated string percent_rewards_reputers_workers =
+      12;  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
   repeated uint64 max_workers_per_topic_request =
       13;  // max number of workers whose inference will be used and compensated per request
   repeated uint64 max_reputers_per_topic_request =
-      14;  // max number of reputers to solicit losses from per loss request
-  repeated string epsilon = 15 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // small number to prevent division by zero
-  repeated string p_inference_synthesis = 16 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+      14;                        // max number of reputers to solicit losses from per loss request
+  repeated string epsilon = 15;  // small number to prevent division by zero
+  repeated string p_inference_synthesis =
+      16;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
+
+/// PARAMS
 
 message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "sender";
@@ -134,6 +114,8 @@ message MsgUpdateParams {
 }
 
 message MsgUpdateParamsResponse {}
+
+/// TOPICS
 
 message MsgCreateNewTopic {
   option (cosmos.msg.v1.signer) = "creator";
@@ -161,21 +143,13 @@ message MsgCreateNewTopicResponse {
   uint64 topic_id = 1;
 }
 
-message MsgSetGlobalFoundationTopicParams {
-  uint64 topic_id = 1;
-  uint64 subsidy = 2;
-  float f_treasury = 3;
-}
-
-message MsgSetGlobalFoundationTopicParamsResponse {}
-
 // MsgSetLosses sets the losses from a given reputer
 message MsgSetLosses {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  repeated LossBundle loss_bundles = 2;
+  repeated ReputerValueBundle reputer_value_bundles = 2;
 }
 
 message MsgSetLossesResponse {}
@@ -200,9 +174,7 @@ message MsgProcessForecasts {
 
 message MsgProcessForecastsResponse {}
 
-///
 ///  Inference Node Registration
-///
 
 message MsgRegister {
   option (cosmos.msg.v1.signer) = "creator";
@@ -255,9 +227,8 @@ message MsgRemoveRegistrationResponse {
   string message = 2;
 }
 
-///
 ///  Staking
-///
+
 message MsgAddStake {
   option (cosmos.msg.v1.signer) = "sender";
 
@@ -354,9 +325,7 @@ message RequestInferenceListItem {
 
 message MsgRequestInferenceResponse {}
 
-///
 ///  Whitelist
-///
 
 message MsgAddToWhitelistAdmin {
   option (cosmos.msg.v1.signer) = "sender";
@@ -430,9 +399,7 @@ message MsgRemoveFromFoundationWhitelist {
 
 message MsgRemoveFromFoundationWhitelistResponse {}
 
-///
 /// Topic Management
-///
 
 message MsgReactivateTopic {
   option (cosmos.msg.v1.signer) = "sender";
@@ -442,34 +409,5 @@ message MsgReactivateTopic {
 }
 
 message MsgReactivateTopicResponse {
-  bool success = 1;
-}
-
-///
-/// Foundation Topic Management
-///
-
-message MsgModifyTopicSubsidyAndSubsidizedRewardEpochs {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  uint64 topic_id = 2;
-  uint64 subsidy = 3;
-  float subsidized_reward_epochs = 4;
-}
-
-message MsgModifyTopicSubsidyAndSubsidizedRewardEpochsResponse {
-  bool success = 1;
-}
-
-message MsgModifyTopicFTreasury {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  uint64 topic_id = 2;
-  uint64 f_treasury = 3;
-}
-
-message MsgModifyTopicFTreasuryResponse {
   bool success = 1;
 }

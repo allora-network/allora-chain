@@ -32,6 +32,9 @@ var (
 // ConsensusVersion defines the current module consensus version.
 const ConsensusVersion = 1
 
+// Precision used to convert any float or double to an integer during arithmetic operations
+const Precision = 1000000
+
 type AppModule struct {
 	cdc    codec.Codec
 	keeper keeper.Keeper
@@ -124,7 +127,10 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	}
 	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
+	reputerWorkerCut := cosmosMath.
+		NewInt(int64(percentRewardsToReputersAndWorkers * Precision)).
+		Mul(feesCollectedAndEmissionsMintedLastBlock.Amount).
+		Quo(cosmosMath.NewInt(Precision))
 	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		am.keeper.GetFeeCollectorName(),
