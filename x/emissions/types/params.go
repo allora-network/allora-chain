@@ -21,10 +21,10 @@ func DefaultParams() Params {
 		MaxInferenceRequestValidity:   int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		MaxRequestCadence:             int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("0.5"), // 50% of rewards go to workers and reputers, 50% to cosmos validators
-		Sharpness:                     uint64(20),                                // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
+		Sharpness:                     20.0,                                      // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                   float32(0.25),                             // controls resilience of reward payouts against copycat workers
 		DcoefAbs:                      float32(0.001),                            // delta for numerical differentiation
-		LearningRate:                  float32(0.05),                             // speed of gradient descent
+		LearningRate:                  0.01,                                      // speed of gradient descent
 		MaxGradientThreshold:          float32(0.001),                            // gradient descent stops when gradient falls below this
 		MinStakeFraction:              float32(0.5),                              // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:     uint64(20),                                // maximum number of workers that can be assigned to a single inference request
@@ -76,7 +76,7 @@ func DefaultParamsMaxRequestCadence() BLOCK_NUMBER {
 	return DefaultParams().MaxRequestCadence
 }
 
-func DefaultParamsSharpness() uint64 {
+func DefaultParamsSharpness() float64 {
 	return DefaultParams().Sharpness
 }
 
@@ -88,7 +88,7 @@ func DefaultParamsDcoefAbs() float32 {
 	return DefaultParams().DcoefAbs
 }
 
-func DefaultParamsLearningRate() float32 {
+func DefaultParamsLearningRate() float64 {
 	return DefaultParams().LearningRate
 }
 

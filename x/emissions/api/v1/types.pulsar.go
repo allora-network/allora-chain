@@ -207,8 +207,8 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.Sharpness != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.Sharpness)
+	if x.Sharpness != float64(0) || math.Signbit(x.Sharpness) {
+		value := protoreflect.ValueOfFloat64(x.Sharpness)
 		if !f(fd_Params_sharpness, value) {
 			return
 		}
@@ -225,8 +225,8 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.LearningRate != float32(0) || math.Signbit(float64(x.LearningRate)) {
-		value := protoreflect.ValueOfFloat32(x.LearningRate)
+	if x.LearningRate != float64(0) || math.Signbit(x.LearningRate) {
+		value := protoreflect.ValueOfFloat64(x.LearningRate)
 		if !f(fd_Params_learning_rate, value) {
 			return
 		}
@@ -307,13 +307,13 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		return x.PercentRewardsReputersWorkers != ""
 	case "emissions.v1.Params.sharpness":
-		return x.Sharpness != uint64(0)
+		return x.Sharpness != float64(0) || math.Signbit(x.Sharpness)
 	case "emissions.v1.Params.beta_entropy":
 		return x.BetaEntropy != float32(0) || math.Signbit(float64(x.BetaEntropy))
 	case "emissions.v1.Params.dcoef_abs":
 		return x.DcoefAbs != float32(0) || math.Signbit(float64(x.DcoefAbs))
 	case "emissions.v1.Params.learning_rate":
-		return x.LearningRate != float32(0) || math.Signbit(float64(x.LearningRate))
+		return x.LearningRate != float64(0) || math.Signbit(x.LearningRate)
 	case "emissions.v1.Params.max_gradient_threshold":
 		return x.MaxGradientThreshold != float32(0) || math.Signbit(float64(x.MaxGradientThreshold))
 	case "emissions.v1.Params.min_stake_fraction":
@@ -367,13 +367,13 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		x.PercentRewardsReputersWorkers = ""
 	case "emissions.v1.Params.sharpness":
-		x.Sharpness = uint64(0)
+		x.Sharpness = float64(0)
 	case "emissions.v1.Params.beta_entropy":
 		x.BetaEntropy = float32(0)
 	case "emissions.v1.Params.dcoef_abs":
 		x.DcoefAbs = float32(0)
 	case "emissions.v1.Params.learning_rate":
-		x.LearningRate = float32(0)
+		x.LearningRate = float64(0)
 	case "emissions.v1.Params.max_gradient_threshold":
 		x.MaxGradientThreshold = float32(0)
 	case "emissions.v1.Params.min_stake_fraction":
@@ -440,7 +440,7 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfString(value)
 	case "emissions.v1.Params.sharpness":
 		value := x.Sharpness
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfFloat64(value)
 	case "emissions.v1.Params.beta_entropy":
 		value := x.BetaEntropy
 		return protoreflect.ValueOfFloat32(value)
@@ -449,7 +449,7 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfFloat32(value)
 	case "emissions.v1.Params.learning_rate":
 		value := x.LearningRate
-		return protoreflect.ValueOfFloat32(value)
+		return protoreflect.ValueOfFloat64(value)
 	case "emissions.v1.Params.max_gradient_threshold":
 		value := x.MaxGradientThreshold
 		return protoreflect.ValueOfFloat32(value)
@@ -513,13 +513,13 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		x.PercentRewardsReputersWorkers = value.Interface().(string)
 	case "emissions.v1.Params.sharpness":
-		x.Sharpness = value.Uint()
+		x.Sharpness = value.Float()
 	case "emissions.v1.Params.beta_entropy":
 		x.BetaEntropy = float32(value.Float())
 	case "emissions.v1.Params.dcoef_abs":
 		x.DcoefAbs = float32(value.Float())
 	case "emissions.v1.Params.learning_rate":
-		x.LearningRate = float32(value.Float())
+		x.LearningRate = value.Float()
 	case "emissions.v1.Params.max_gradient_threshold":
 		x.MaxGradientThreshold = float32(value.Float())
 	case "emissions.v1.Params.min_stake_fraction":
@@ -634,13 +634,13 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.sharpness":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfFloat64(float64(0))
 	case "emissions.v1.Params.beta_entropy":
 		return protoreflect.ValueOfFloat32(float32(0))
 	case "emissions.v1.Params.dcoef_abs":
 		return protoreflect.ValueOfFloat32(float32(0))
 	case "emissions.v1.Params.learning_rate":
-		return protoreflect.ValueOfFloat32(float32(0))
+		return protoreflect.ValueOfFloat64(float64(0))
 	case "emissions.v1.Params.max_gradient_threshold":
 		return protoreflect.ValueOfFloat32(float32(0))
 	case "emissions.v1.Params.min_stake_fraction":
@@ -764,8 +764,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.Sharpness != 0 {
-			n += 1 + runtime.Sov(uint64(x.Sharpness))
+		if x.Sharpness != 0 || math.Signbit(x.Sharpness) {
+			n += 9
 		}
 		if x.BetaEntropy != 0 || math.Signbit(float64(x.BetaEntropy)) {
 			n += 5
@@ -773,8 +773,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.DcoefAbs != 0 || math.Signbit(float64(x.DcoefAbs)) {
 			n += 5
 		}
-		if x.LearningRate != 0 || math.Signbit(float64(x.LearningRate)) {
-			n += 6
+		if x.LearningRate != 0 || math.Signbit(x.LearningRate) {
+			n += 10
 		}
 		if x.MaxGradientThreshold != 0 || math.Signbit(float64(x.MaxGradientThreshold)) {
 			n += 6
@@ -873,13 +873,13 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x8d
 		}
-		if x.LearningRate != 0 || math.Signbit(float64(x.LearningRate)) {
-			i -= 4
-			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.LearningRate))))
+		if x.LearningRate != 0 || math.Signbit(x.LearningRate) {
+			i -= 8
+			binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(x.LearningRate))))
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0x85
+			dAtA[i] = 0x81
 		}
 		if x.DcoefAbs != 0 || math.Signbit(float64(x.DcoefAbs)) {
 			i -= 4
@@ -893,10 +893,11 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x75
 		}
-		if x.Sharpness != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.Sharpness))
+		if x.Sharpness != 0 || math.Signbit(x.Sharpness) {
+			i -= 8
+			binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(x.Sharpness))))
 			i--
-			dAtA[i] = 0x68
+			dAtA[i] = 0x69
 		}
 		if len(x.PercentRewardsReputersWorkers) > 0 {
 			i -= len(x.PercentRewardsReputersWorkers)
@@ -1326,24 +1327,16 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				x.PercentRewardsReputersWorkers = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 13:
-				if wireType != 0 {
+				if wireType != 1 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sharpness", wireType)
 				}
-				x.Sharpness = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.Sharpness |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
+				var v uint64
+				if (iNdEx + 8) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
+				v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+				iNdEx += 8
+				x.Sharpness = float64(math.Float64frombits(v))
 			case 14:
 				if wireType != 5 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BetaEntropy", wireType)
@@ -1367,16 +1360,16 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				iNdEx += 4
 				x.DcoefAbs = float32(math.Float32frombits(v))
 			case 16:
-				if wireType != 5 {
+				if wireType != 1 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LearningRate", wireType)
 				}
-				var v uint32
-				if (iNdEx + 4) > l {
+				var v uint64
+				if (iNdEx + 8) > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
-				iNdEx += 4
-				x.LearningRate = float32(math.Float32frombits(v))
+				v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+				iNdEx += 8
+				x.LearningRate = float64(math.Float64frombits(v))
 			case 17:
 				if wireType != 5 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxGradientThreshold", wireType)
@@ -14916,23 +14909,23 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version                       string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                       // version of the protocol should be in lockstep with github release tag version
-	RewardCadence                 int64  `protobuf:"varint,2,opt,name=reward_cadence,json=rewardCadence,proto3" json:"reward_cadence,omitempty"`                                                     // length of an "epoch" for rewards payouts in blocks
-	MinTopicUnmetDemand           string `protobuf:"bytes,3,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-	MaxTopicsPerBlock             uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                     // max number of topics to run cadence for per block
-	MinRequestUnmetDemand         string `protobuf:"bytes,5,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                          // delete requests if they have below this demand remaining
-	MaxMissingInferencePercent    string `protobuf:"bytes,6,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`           // if a worker has this percentage of inferences missing, penalize them
-	RequiredMinimumStake          string `protobuf:"bytes,7,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                               // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow        int64  `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                      // how long to wait before allowed to remove stake
-	MinEpochLength                int64  `protobuf:"varint,9,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-	MaxInferenceRequestValidity   int64  `protobuf:"varint,10,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`      // longest time a subscription of inferences is allowed to be valid
-	MaxRequestCadence             int64  `protobuf:"varint,11,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                      // slowest (largest) amount of time a subscription can take between inferences
-	PercentRewardsReputersWorkers string `protobuf:"bytes,12,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"` // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-	Sharpness                     uint64 `protobuf:"varint,13,opt,name=sharpness,proto3" json:"sharpness,omitempty"`                                                                                 // controls going from stake-weighted consensus at low values to majority vote of
+	Version                       string  `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                       // version of the protocol should be in lockstep with github release tag version
+	RewardCadence                 int64   `protobuf:"varint,2,opt,name=reward_cadence,json=rewardCadence,proto3" json:"reward_cadence,omitempty"`                                                     // length of an "epoch" for rewards payouts in blocks
+	MinTopicUnmetDemand           string  `protobuf:"bytes,3,opt,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
+	MaxTopicsPerBlock             uint64  `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                     // max number of topics to run cadence for per block
+	MinRequestUnmetDemand         string  `protobuf:"bytes,5,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                          // delete requests if they have below this demand remaining
+	MaxMissingInferencePercent    string  `protobuf:"bytes,6,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`           // if a worker has this percentage of inferences missing, penalize them
+	RequiredMinimumStake          string  `protobuf:"bytes,7,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                               // minimum amount of tokens to send to stake as a reputer or worker
+	RemoveStakeDelayWindow        int64   `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                      // how long to wait before allowed to remove stake
+	MinEpochLength                int64   `protobuf:"varint,9,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
+	MaxInferenceRequestValidity   int64   `protobuf:"varint,10,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`      // longest time a subscription of inferences is allowed to be valid
+	MaxRequestCadence             int64   `protobuf:"varint,11,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                      // slowest (largest) amount of time a subscription can take between inferences
+	PercentRewardsReputersWorkers string  `protobuf:"bytes,12,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"` // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
+	Sharpness                     float64 `protobuf:"fixed64,13,opt,name=sharpness,proto3" json:"sharpness,omitempty"`                                                                                // controls going from stake-weighted consensus at low values to majority vote of
 	// above-average stake holders at high values
 	BetaEntropy                float32 `protobuf:"fixed32,14,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                                                   // controls resilience of reward payouts against copycat workers
 	DcoefAbs                   float32 `protobuf:"fixed32,15,opt,name=dcoef_abs,json=dcoefAbs,proto3" json:"dcoef_abs,omitempty"`                                                            // delta for numerical differentiation
-	LearningRate               float32 `protobuf:"fixed32,16,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                                                // speed of gradient descent
+	LearningRate               float64 `protobuf:"fixed64,16,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                                                // speed of gradient descent
 	MaxGradientThreshold       float32 `protobuf:"fixed32,17,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`                      // gradient descent stops when gradient falls below this
 	MinStakeFraction           float32 `protobuf:"fixed32,18,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`                                  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 	MaxWorkersPerTopicRequest  uint64  `protobuf:"varint,19,opt,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`    // max number of workers whose inference will be used and compensated per request
@@ -15045,7 +15038,7 @@ func (x *Params) GetPercentRewardsReputersWorkers() string {
 	return ""
 }
 
-func (x *Params) GetSharpness() uint64 {
+func (x *Params) GetSharpness() float64 {
 	if x != nil {
 		return x.Sharpness
 	}
@@ -15066,7 +15059,7 @@ func (x *Params) GetDcoefAbs() float32 {
 	return 0
 }
 
-func (x *Params) GetLearningRate() float32 {
+func (x *Params) GetLearningRate() float64 {
 	if x != nil {
 		return x.LearningRate
 	}
@@ -16439,13 +16432,13 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x52, 0x1d, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73,
 	0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x12,
 	0x1c, 0x0a, 0x09, 0x73, 0x68, 0x61, 0x72, 0x70, 0x6e, 0x65, 0x73, 0x73, 0x18, 0x0d, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x09, 0x73, 0x68, 0x61, 0x72, 0x70, 0x6e, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a,
+	0x28, 0x01, 0x52, 0x09, 0x73, 0x68, 0x61, 0x72, 0x70, 0x6e, 0x65, 0x73, 0x73, 0x12, 0x21, 0x0a,
 	0x0c, 0x62, 0x65, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x6f, 0x70, 0x79, 0x18, 0x0e, 0x20,
 	0x01, 0x28, 0x02, 0x52, 0x0b, 0x62, 0x65, 0x74, 0x61, 0x45, 0x6e, 0x74, 0x72, 0x6f, 0x70, 0x79,
 	0x12, 0x1b, 0x0a, 0x09, 0x64, 0x63, 0x6f, 0x65, 0x66, 0x5f, 0x61, 0x62, 0x73, 0x18, 0x0f, 0x20,
 	0x01, 0x28, 0x02, 0x52, 0x08, 0x64, 0x63, 0x6f, 0x65, 0x66, 0x41, 0x62, 0x73, 0x12, 0x23, 0x0a,
 	0x0d, 0x6c, 0x65, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x10,
-	0x20, 0x01, 0x28, 0x02, 0x52, 0x0c, 0x6c, 0x65, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x52, 0x61,
+	0x20, 0x01, 0x28, 0x01, 0x52, 0x0c, 0x6c, 0x65, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x52, 0x61,
 	0x74, 0x65, 0x12, 0x34, 0x0a, 0x16, 0x6d, 0x61, 0x78, 0x5f, 0x67, 0x72, 0x61, 0x64, 0x69, 0x65,
 	0x6e, 0x74, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x18, 0x11, 0x20, 0x01,
 	0x28, 0x02, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x47, 0x72, 0x61, 0x64, 0x69, 0x65, 0x6e, 0x74, 0x54,

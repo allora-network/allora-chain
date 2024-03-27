@@ -1,15 +1,104 @@
 package module
 
 import (
-	"fmt"
 	"math"
 
 	errors "cosmossdk.io/errors"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// StdDev calculates the standard deviation of a slice of float64.
+// stdDev = sqrt((Σ(x - μ))^2/ N)
+// where μ is mean and N is number of elements
+func StdDev(data []float64) float64 {
+	var mean, sd float64
+	for _, v := range data {
+		mean += v
+	}
+	mean /= float64(len(data))
+	for _, v := range data {
+		sd += math.Pow(v-mean, 2)
+	}
+	sd = math.Sqrt(sd / float64(len(data)))
+	return sd
+}
+
+// flatten converts a double slice of float64 to a single slice of float64
+func flatten(arr [][]float64) []float64 {
+	var flat []float64
+	for _, row := range arr {
+		flat = append(flat, row...)
+	}
+	return flat
+}
+
+// GetWorkerRewardFractions calculates the reward fractions for workers for forecast and inference tasks
+// U_ij / V_ik
+func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, error) {
+	lastScores := make([][]float64, len(scores))
+	for i, workerScores := range scores {
+		end := len(workerScores)
+		start := end - 10
+		if start < 0 {
+			start = 0
+		}
+		lastScores[i] = workerScores[start:end]
+	}
+
+	stdDev := StdDev(flatten(lastScores))
+	var normalizedScores []float64
+	for _, score := range lastScores {
+		normalizedScores = append(normalizedScores, score[len(score)-1]/stdDev)
+	}
+
+	smoothedScores := make([]float64, len(normalizedScores))
+	for i, v := range normalizedScores {
+		res, err := phi(preward, v)
+		if err != nil {
+			return nil, err
+		}
+		smoothedScores[i] = res
+	}
+
+	total := 0.0
+	for _, score := range smoothedScores {
+		total += score
+	}
+
+	var rewardFractions []float64
+	for _, score := range smoothedScores {
+		rewardFraction := score / total
+		rewardFractions = append(rewardFractions, rewardFraction)
+	}
+
+	return rewardFractions, nil
+}
+
+// GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
+// W_im
+func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]float64, error) {
+	if len(stakes) != len(scores) {
+		return nil, types.ErrInvalidSliceLength
+	}
+
+	// Calculate (stakes * scores)^preward and sum of all fractions
+	var totalFraction float64
+	fractions := make([]float64, len(stakes))
+	for i, stake := range stakes {
+		fractions[i] = math.Pow(stake*scores[i], preward)
+		totalFraction += fractions[i]
+	}
+
+	// Normalize fractions
+	for i := range fractions {
+		fractions[i] /= totalFraction
+	}
+
+	return fractions, nil
+}
+
 // GetfUniqueAgg calculates the unique value or impact of each forecaster.
-// f^+
+// ƒ^+
 func GetfUniqueAgg(numForecasters float64) float64 {
 	return 1.0 / math.Pow(2.0, (numForecasters-1.0))
 }
@@ -34,7 +123,7 @@ func GetWorkerScore(losses, lossesOneOut float64) float64 {
 // L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
 func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
-		return 0, fmt.Errorf("slices must have the same length")
+		return 0, types.ErrInvalidSliceLength
 	}
 
 	totalStake := 0.0
@@ -42,20 +131,199 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 		totalStake += stake
 	}
 
-	if totalStake == 0 {
-		return 0, fmt.Errorf("total stake cannot be zero")
-	}
-
 	var stakeWeightedLoss float64 = 0
 	for i, loss := range reputersReportedLosses {
-		if loss <= 0 {
-			return 0, fmt.Errorf("loss values must be greater than zero")
-		}
 		weightedLoss := (reputersStakes[i] * math.Log10(loss)) / totalStake
 		stakeWeightedLoss += weightedLoss
 	}
 
 	return stakeWeightedLoss, nil
+}
+
+// GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
+// L_i - consensus loss vector
+func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, error) {
+	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
+		return nil, types.ErrInvalidSliceLength
+	}
+
+	// Calculate total stake for normalization
+	totalStake := 0.0
+	for _, stake := range reputersAdjustedStakes {
+		totalStake += stake
+	}
+
+	// Ensure every loss array is non-empty and calculate geometric mean
+	stakeWeightedLoss := make([]float64, len(reputersReportedLosses[0]))
+	for j := 0; j < len(reputersReportedLosses[0]); j++ {
+		logSum := 0.0
+		for i, losses := range reputersReportedLosses {
+			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
+		}
+		stakeWeightedLoss[j] = logSum
+	}
+
+	return stakeWeightedLoss, nil
+}
+
+// GetConsensusScore calculates the proximity to consensus score for a reputer.
+// T_im
+func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error) {
+	fTolerance := 0.01
+	if len(reputerLosses) != len(consensusLosses) {
+		return 0, types.ErrInvalidSliceLength
+	}
+
+	var sumLogConsensusSquared float64
+	for _, cLoss := range consensusLosses {
+		sumLogConsensusSquared += math.Pow(cLoss, 2)
+	}
+	consensusNorm := math.Sqrt(sumLogConsensusSquared)
+
+	var distanceSquared float64
+	for i, rLoss := range reputerLosses {
+		distanceSquared += math.Pow(math.Log10(rLoss/consensusLosses[i]), 2)
+	}
+	distance := math.Sqrt(distanceSquared)
+
+	score := 1 / (distance/consensusNorm + fTolerance)
+	return score, nil
+}
+
+// GetAllConsensusScores calculates the proximity to consensus score for all reputers.
+// calculates:
+// T_i - stake weighted total consensus
+// returns:
+// T_im - reputer score (proximity to consensus)
+func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
+	// Get adjusted stakes
+	var adjustedStakes []float64
+	for i, reputerStake := range stakes {
+		adjustedStake, err := GetAdjustedStake(reputerStake, stakes, allListeningCoefficients[i], allListeningCoefficients, float64(numReputers))
+		if err != nil {
+			return nil, err
+		}
+		adjustedStakes = append(adjustedStakes, adjustedStake)
+	}
+
+	// Get consensus loss vector
+	consensus, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get reputers scores
+	scores := make([]float64, numReputers)
+	for i := 0; i < numReputers; i++ {
+		losses := allLosses[i]
+		scores[i], err = GetConsensusScore(losses, consensus)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scores, nil
+}
+
+// GetAllReputersOutput calculates the final scores and adjusted listening coefficients for all reputers.
+// This function iteratively adjusts the listening coefficients based on a gradient descent method to minimize
+// the difference between each reputer's losses and the consensus losses, taking into account each reputer's stake.
+// returns:
+// T_im - reputer score (proximity to consensus)
+// a_im - listening coefficients
+func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int) ([]float64, []float64, error) {
+	learningRate := types.DefaultParamsLearningRate()
+	coefficients := make([]float64, len(initialCoefficients))
+	copy(coefficients, initialCoefficients)
+
+	oldCoefficients := make([]float64, numReputers)
+	maxGradientThreshold := 0.001
+	imax := int(math.Round(1.0 / learningRate))
+	minStakeFraction := 0.5
+	var i int
+	var maxGradient float64 = 1
+	finalScores := make([]float64, numReputers)
+
+	for maxGradient > maxGradientThreshold && i < imax {
+		i++
+		copy(oldCoefficients, coefficients)
+		gradient := make([]float64, numReputers)
+		newScores := make([]float64, numReputers)
+
+		for l := range coefficients {
+			dcoeff := 0.001
+			if coefficients[l] == 1 {
+				dcoeff = -0.001
+			}
+			coeffs := make([]float64, len(coefficients))
+			copy(coeffs, coefficients)
+
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
+			if err != nil {
+				return nil, nil, err
+			}
+			coeffs2 := make([]float64, len(coeffs))
+			copy(coeffs2, coeffs)
+			coeffs2[l] += dcoeff
+
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
+			if err != nil {
+				return nil, nil, err
+			}
+			gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
+			copy(newScores, scores)
+		}
+
+		newCoefficients := make([]float64, len(coefficients))
+		for j := range coefficients {
+			newCoefficients[j] = math.Min(math.Max(coefficients[j]+learningRate*gradient[j], 0), 1)
+		}
+
+		listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
+		listenedStakeFraction := sumWeighted(newCoefficients, stakes) / sum(stakes)
+		if listenedStakeFraction < minStakeFraction {
+			for l := range coefficients {
+				coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
+			}
+		} else {
+			coefficients = newCoefficients
+		}
+		maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
+
+		copy(finalScores, newScores)
+	}
+
+	return finalScores, coefficients, nil
+}
+
+func sum(slice []float64) float64 {
+	total := 0.0
+	for _, v := range slice {
+		total += v
+	}
+	return total
+}
+
+// sumWeighted calculates the weighted sum of values based on the given weights.
+// The length of weights and values must be the same.
+func sumWeighted(weights, values []float64) float64 {
+	var sum float64
+	for i, weight := range weights {
+		sum += weight * values[i]
+	}
+
+	return sum
+}
+
+func maxAbsDifference(a, b []float64) float64 {
+	maxDiff := 0.0
+	for i := range a {
+		diff := math.Abs(a[i] - b[i])
+		if diff > maxDiff {
+			maxDiff = diff
+		}
+	}
+	return maxDiff
 }
 
 // Implements the potential function phi for the module
@@ -71,21 +339,21 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 // therefore we only return one type of error and that is if phi overflows.
 func phi(p float64, x float64) (float64, error) {
 	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
-		return 0, emissions.ErrPhiInvalidInput
+		return 0, types.ErrPhiInvalidInput
 	}
 	eToTheX := math.Exp(x)
 	onePlusEToTheX := 1 + eToTheX
 	if math.IsInf(onePlusEToTheX, 0) {
-		return 0, emissions.ErrEToTheXExponentiationIsInfinity
+		return 0, types.ErrEToTheXExponentiationIsInfinity
 	}
 	naturalLog := math.Log(onePlusEToTheX)
 	result := math.Pow(naturalLog, p)
 	if math.IsInf(result, 0) {
-		return 0, emissions.ErrLnToThePExponentiationIsInfinity
+		return 0, types.ErrLnToThePExponentiationIsInfinity
 	}
 	// should theoretically never be possible with the above checks
 	if math.IsNaN(result) {
-		return 0, emissions.ErrPhiResultIsNaN
+		return 0, types.ErrPhiResultIsNaN
 	}
 	return result, nil
 }
@@ -95,10 +363,10 @@ func phi(p float64, x float64) (float64, error) {
 // we use eta = 20 as the fiducial value decided in the paper
 // phi_1 refers to the phi function with p = 1
 // INPUTS:
-// This function expects that allStakes
-// and allListeningCoefficients are slices of the same length
+// This function expects that allStakes (S_im)
+// and allListeningCoefficients are slices of the same length (a_im)
 // and the index to each slice corresponds to the same reputer
-func adjustedStake(
+func GetAdjustedStake(
 	stake float64,
 	allStakes []float64,
 	listeningCoefficient float64,
@@ -108,30 +376,25 @@ func adjustedStake(
 	if len(allStakes) != len(allListeningCoefficients) ||
 		len(allStakes) == 0 ||
 		len(allListeningCoefficients) == 0 {
-		return 0, emissions.ErrAdjustedStakeInvalidSliceLength
+		return 0, types.ErrAdjustedStakeInvalidSliceLength
 	}
-	// renaming variables just to be more legible with the formula
-	S_im := stake
-	a_im := listeningCoefficient
-	N_r := numReputers
-
-	denominator := 0.0
-	for i, s := range allStakes {
-		a := allListeningCoefficients[i]
-		denominator += (a * s)
-	}
-	numerator := N_r * a_im * S_im
+	eta := types.DefaultParamsSharpness()
+	denominator := sumWeighted(allListeningCoefficients, allStakes)
+	numerator := numReputers * listeningCoefficient * stake
 	stakeFraction := numerator / denominator
 	stakeFraction = stakeFraction - 1
-	stakeFraction = stakeFraction * -20 // eta = 20
+	stakeFraction = stakeFraction * -eta
 
 	phi_1_stakeFraction, err := phi(1, stakeFraction)
 	if err != nil {
 		return 0, err
 	}
-	phi_1_Eta, err := phi(1, 20)
+	phi_1_Eta, err := phi(1, eta)
 	if err != nil {
 		return 0, err
+	}
+	if phi_1_Eta == 0 {
+		return 0, types.ErrPhiCannotBeZero
 	}
 	// phi_1_Eta is taken to the -1 power
 	// and then multiplied by phi_1_stakeFraction
@@ -140,10 +403,10 @@ func adjustedStake(
 	ret := 1 - phiVal
 
 	if math.IsInf(ret, 0) {
-		return 0, errors.Wrapf(emissions.ErrAdjustedStakeIsInfinity, "stake: %f", stake)
+		return 0, errors.Wrapf(types.ErrAdjustedStakeIsInfinity, "stake: %f", stake)
 	}
 	if math.IsNaN(ret) {
-		return 0, errors.Wrapf(emissions.ErrAdjustedStakeIsNaN, "stake: %f", stake)
+		return 0, errors.Wrapf(types.ErrAdjustedStakeIsNaN, "stake: %f", stake)
 	}
 	return ret, nil
 }
@@ -158,13 +421,13 @@ func adjustedStake(
 // ̃Wim = αWim + (1 − α)Wi−1,m
 func exponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
 	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
-		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
 	}
 	if math.IsNaN(current) || math.IsInf(current, 0) {
-		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "current: %f", current)
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "current: %f", current)
 	}
 	if math.IsNaN(previous) || math.IsInf(previous, 0) {
-		return 0, errors.Wrapf(emissions.ErrExponentialMovingAverageInvalidInput, "previous: %f", previous)
+		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "previous: %f", previous)
 	}
 
 	// THE ONLY LINE OF CODE IN THIS FUNCTION
@@ -172,10 +435,10 @@ func exponentialMovingAverage(alpha float64, current float64, previous float64) 
 	ret := alpha*current + (1-alpha)*previous
 
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrExponentialMovingAverageIsInfinity
+		return 0, types.ErrExponentialMovingAverageIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrExponentialMovingAverageIsNaN
+		return 0, types.ErrExponentialMovingAverageIsNaN
 	}
 	return ret, nil
 }
@@ -191,27 +454,27 @@ func exponentialMovingAverage(alpha float64, current float64, previous float64) 
 // fim =  (̃Wim) / ∑_m(̃Wim)
 func normalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
 	if len(allValues) == 0 {
-		return 0, emissions.ErrFractionInvalidSliceLength
+		return 0, types.ErrFractionInvalidSliceLength
 	}
 	if math.IsNaN(value) || math.IsInf(value, 0) {
-		return 0, errors.Wrapf(emissions.ErrFractionInvalidInput, "value: %f", value)
+		return 0, errors.Wrapf(types.ErrFractionInvalidInput, "value: %f", value)
 	}
 	sumValues := 0.0
 	for i, v := range allValues {
 		if math.IsNaN(v) || math.IsInf(v, 0) {
-			return 0, errors.Wrapf(emissions.ErrFractionInvalidInput, "allValues[%d]: %f", i, v)
+			return 0, errors.Wrapf(types.ErrFractionInvalidInput, "allValues[%d]: %f", i, v)
 		}
 		sumValues += v
 	}
 	if sumValues == 0 {
-		return 0, emissions.ErrFractionDivideByZero
+		return 0, types.ErrFractionDivideByZero
 	}
 	ret := value / sumValues
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrFractionIsInfinity
+		return 0, types.ErrFractionIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrFractionIsNaN
+		return 0, types.ErrFractionIsNaN
 	}
 
 	return ret, nil
@@ -231,7 +494,7 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 		math.IsInf(beta, 0) ||
 		math.IsNaN(beta) {
 		return 0, errors.Wrapf(
-			emissions.ErrEntropyInvalidInput,
+			types.ErrEntropyInvalidInput,
 			"N_eff: %f, numParticipants: %f, beta: %f",
 			N_eff,
 			numParticipants,
@@ -248,7 +511,7 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 	sum := 0.0
 	for i, f := range allFs {
 		if math.IsInf(f, 0) || math.IsNaN(f) {
-			return 0, errors.Wrapf(emissions.ErrEntropyInvalidInput, "allFs[%d]: %f", i, f)
+			return 0, errors.Wrapf(types.ErrEntropyInvalidInput, "allFs[%d]: %f", i, f)
 		}
 		sum += f * math.Log(f)
 	}
@@ -256,7 +519,7 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 	ret := -1 * sum * multiplier
 	if math.IsInf(ret, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrEntropyIsInfinity,
+			types.ErrEntropyIsInfinity,
 			"sum of f: %f, multiplier: %f",
 			sum,
 			multiplier,
@@ -264,7 +527,7 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 	}
 	if math.IsNaN(ret) {
 		return 0, errors.Wrapf(
-			emissions.ErrEntropyIsNaN,
+			types.ErrEntropyIsNaN,
 			"sum of f: %f, multiplier: %f",
 			sum,
 			multiplier,
@@ -281,24 +544,24 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 // N_{r,eff} = 1 / ∑_m( f_im^2 )
 func numberRatio(rewardFractions []float64) (float64, error) {
 	if len(rewardFractions) == 0 {
-		return 0, emissions.ErrNumberRatioInvalidSliceLength
+		return 0, types.ErrNumberRatioInvalidSliceLength
 	}
 	sum := 0.0
 	for i, f := range rewardFractions {
 		if math.IsNaN(f) || math.IsInf(f, 0) {
-			return 0, errors.Wrapf(emissions.ErrNumberRatioInvalidInput, "rewardFractions[%d]: %f", i, f)
+			return 0, errors.Wrapf(types.ErrNumberRatioInvalidInput, "rewardFractions[%d]: %f", i, f)
 		}
 		sum += f * f
 	}
 	if sum == 0 {
-		return 0, emissions.ErrNumberRatioDivideByZero
+		return 0, types.ErrNumberRatioDivideByZero
 	}
 	ret := 1 / sum
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrNumberRatioIsInfinity
+		return 0, types.ErrNumberRatioIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrNumberRatioIsNaN
+		return 0, types.ErrNumberRatioIsNaN
 	}
 	return ret, nil
 }
@@ -320,7 +583,7 @@ func inferenceRewards(
 		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
 		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrInferenceRewardsInvalidInput,
+			types.ErrInferenceRewardsInvalidInput,
 			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
 			chi,
 			gamma,
@@ -332,10 +595,10 @@ func inferenceRewards(
 	}
 	ret := ((1 - chi) * gamma * entropyInference * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrInferenceRewardsIsInfinity
+		return 0, types.ErrInferenceRewardsIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrInferenceRewardsIsNaN
+		return 0, types.ErrInferenceRewardsIsNaN
 	}
 	return ret, nil
 }
@@ -357,7 +620,7 @@ func forecastingRewards(
 		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
 		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrForecastingRewardsInvalidInput,
+			types.ErrForecastingRewardsInvalidInput,
 			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
 			chi,
 			gamma,
@@ -369,10 +632,10 @@ func forecastingRewards(
 	}
 	ret := (chi * gamma * entropyForecasting * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrForecastingRewardsIsInfinity
+		return 0, types.ErrForecastingRewardsIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrForecastingRewardsIsNaN
+		return 0, types.ErrForecastingRewardsIsNaN
 	}
 	return ret, nil
 }
@@ -390,7 +653,7 @@ func reputerRewards(
 		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
 		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrReputerRewardsInvalidInput,
+			types.ErrReputerRewardsInvalidInput,
 			"entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
 			entropyInference,
 			entropyForecasting,
@@ -400,10 +663,10 @@ func reputerRewards(
 	}
 	ret := (entropyReputer * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrReputerRewardsIsInfinity
+		return 0, types.ErrReputerRewardsIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrReputerRewardsIsNaN
+		return 0, types.ErrReputerRewardsIsNaN
 	}
 	return ret, nil
 }
@@ -423,7 +686,7 @@ func forecastingPerformanceScore(
 	if math.IsNaN(networkInferenceLoss) || math.IsInf(networkInferenceLoss, 0) ||
 		math.IsNaN(naiveNetworkInferenceLoss) || math.IsInf(naiveNetworkInferenceLoss, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrForecastingPerformanceScoreInvalidInput,
+			types.ErrForecastingPerformanceScoreInvalidInput,
 			"networkInferenceLoss: %f, naiveNetworkInferenceLoss: %f",
 			networkInferenceLoss,
 			naiveNetworkInferenceLoss,
@@ -432,10 +695,10 @@ func forecastingPerformanceScore(
 	ret := math.Log10(naiveNetworkInferenceLoss) - math.Log10(networkInferenceLoss)
 
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrForecastingPerformanceScoreIsInfinity
+		return 0, types.ErrForecastingPerformanceScoreIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrForecastingPerformanceScoreIsNaN
+		return 0, types.ErrForecastingPerformanceScoreIsNaN
 	}
 	return ret, nil
 }
@@ -444,14 +707,14 @@ func forecastingPerformanceScore(
 // σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
 func sigmoid(x float64) (float64, error) {
 	if math.IsNaN(x) || math.IsInf(x, 0) {
-		return 0, emissions.ErrSigmoidInvalidInput
+		return 0, types.ErrSigmoidInvalidInput
 	}
 	ret := math.Exp(x) / (1 + math.Exp(x))
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrSigmoidIsInfinity
+		return 0, types.ErrSigmoidIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrSigmoidIsNaN
+		return 0, types.ErrSigmoidIsNaN
 	}
 	return ret, nil
 }
@@ -466,7 +729,7 @@ func forecastingUtility(forecastingPerformanceScore float64, a float64, b float6
 	if math.IsNaN(forecastingPerformanceScore) || math.IsInf(forecastingPerformanceScore, 0) ||
 		math.IsNaN(a) || math.IsInf(a, 0) ||
 		math.IsNaN(b) || math.IsInf(b, 0) {
-		return 0, emissions.ErrForecastingUtilityInvalidInput
+		return 0, types.ErrForecastingUtilityInvalidInput
 	}
 	ret, err := sigmoid(a*forecastingPerformanceScore - b)
 	if err != nil {
@@ -474,10 +737,10 @@ func forecastingUtility(forecastingPerformanceScore float64, a float64, b float6
 	}
 	ret = 0.1 + 0.4*ret
 	if math.IsInf(ret, 0) {
-		return 0, emissions.ErrForecastingUtilityIsInfinity
+		return 0, types.ErrForecastingUtilityIsInfinity
 	}
 	if math.IsNaN(ret) {
-		return 0, emissions.ErrForecastingUtilityIsNaN
+		return 0, types.ErrForecastingUtilityIsNaN
 	}
 	return ret, nil
 }
@@ -495,7 +758,7 @@ func normalizationFactor(
 		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
 		math.IsNaN(forecastingUtility) || math.IsInf(forecastingUtility, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrNormalizationFactorInvalidInput,
+			types.ErrNormalizationFactorInvalidInput,
 			"entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
 			entropyInference,
 			entropyForecasting,
@@ -507,7 +770,7 @@ func normalizationFactor(
 	ret := numerator / denominator
 	if math.IsInf(ret, 0) {
 		return 0, errors.Wrapf(
-			emissions.ErrNormalizationFactorIsInfinity,
+			types.ErrNormalizationFactorIsInfinity,
 			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
 			numerator,
 			denominator,
@@ -518,7 +781,7 @@ func normalizationFactor(
 	}
 	if math.IsNaN(ret) {
 		return 0, errors.Wrapf(
-			emissions.ErrNormalizationFactorIsNaN,
+			types.ErrNormalizationFactorIsNaN,
 			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
 			numerator,
 			denominator,
