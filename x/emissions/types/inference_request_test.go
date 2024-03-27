@@ -22,7 +22,8 @@ func TestInferenceRequest_GetRequestId(t *testing.T) {
 		Cadence:              0x33,
 		MaxPricePerInference: cosmosMath.NewUint(0x34),
 		BidAmount:            cosmosMath.NewUint(0x35),
-		TimestampValidUntil:  0x36,
+		BlockValidUntil:      0x36,
+		BlockLastChecked:     0x0,
 		ExtraData:            []byte("B"),
 	}
 
@@ -59,7 +60,8 @@ func TestInferenceRequest_GetRequestIdDifferentHash(t *testing.T) {
 		Cadence:              0x33,
 		MaxPricePerInference: cosmosMath.NewUint(0x34),
 		BidAmount:            cosmosMath.NewUint(0x35),
-		TimestampValidUntil:  0x37,
+		BlockValidUntil:      0x37,
+		BlockLastChecked:     0x0,
 		ExtraData:            []byte("B"),
 	}
 	expectedRequestId := "0x2babfffe58eb0fdad2830d9b1c4c4a97db9f0682c5530230305daa5967857f37"

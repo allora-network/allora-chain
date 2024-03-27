@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"testing"
-	"time"
 
 	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -406,7 +405,6 @@ func (s *ModuleTestSuite) TestGetReputerScore() {
 }
 
 func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
-	timeNow := uint64(time.Now().UTC().Unix())
 
 	// Create a topic
 	topicIds, err := mockCreateTopics(s, 1)
@@ -499,6 +497,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer2LossBundle)
+	timeNow := s.ctx.BlockHeight()
 
 	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
 	s.NoError(err, "Error adding lossBundles")
@@ -601,7 +600,6 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 }
 
 func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
-	timeNow := uint64(time.Now().UTC().Unix())
 
 	// Create a topic
 	topicIds, err := mockCreateTopics(s, 1)
@@ -652,6 +650,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 		},
 	}
 	reputersLossBundles = append(reputersLossBundles, &reputer2LossBundle)
+	timeNow := s.ctx.BlockHeight()
 
 	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
 	s.NoError(err, "Error adding lossBundle for worker")
@@ -711,7 +710,6 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 }
 
 func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
-	timeNow := uint64(time.Now().UTC().Unix())
 
 	// Create a topic
 	topicIds, err := mockCreateTopics(s, 1)
@@ -732,6 +730,8 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 		}
 		newLossBundles = append(newLossBundles, &lossBundle)
 	}
+
+	timeNow := s.ctx.BlockHeight()
 
 	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: newLossBundles})
 	s.NoError(err, "Error adding lossBundle for reputer")
