@@ -182,14 +182,14 @@ func MaskWeightsIfInsufficientLiveness(
 			if err != nil {
 				return nil, err
 			}
-			maxPossibleInferencesInRewardEpoch := uint64(rewardCadence) / topic.EpochLength
+			maxPossibleInferencesInRewardEpoch := rewardCadence / topic.EpochLength
 			// Allow for for 10% of inferences to be missing. Percent directly encoded as cosmosMath.LegacyDec
 			maxAllowableMissingInferencePercent, err := am.keeper.GetParamsMaxMissingInferencePercent(ctx)
 			if err != nil {
 				return nil, err
 			}
 			expectedNumInferencesInRewardEpoch := cosmosMath.LegacyOneDec().Sub(maxAllowableMissingInferencePercent).MulInt(
-				cosmosMath.NewIntFromUint64(maxPossibleInferencesInRewardEpoch)).TruncateInt()
+				cosmosMath.NewInt(maxPossibleInferencesInRewardEpoch)).TruncateInt()
 			if numInferencesInRewardEpoch.LT(cosmosMath.NewUintFromBigInt(expectedNumInferencesInRewardEpoch.BigInt())) {
 				maskedVal := cosmosMath.ZeroUint()
 				maskedWeights[reputer][worker] = &maskedVal

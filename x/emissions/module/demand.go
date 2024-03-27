@@ -21,7 +21,7 @@ type SortableItem[T any] struct {
 }
 
 type RequestId = string
-
+type BlockHeight = int64
 type TopicId = uint64
 
 type PriceAndReturn = struct {
@@ -36,9 +36,9 @@ type Demand struct {
 
 // Sorts the given slice of topics in descending order according to their corresponding return, using randomness as tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
-func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weights map[TopicId]PriceAndReturn, randSeed uint64) []types.Topic {
+func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weights map[TopicId]PriceAndReturn, randSeed BlockHeight) []types.Topic {
 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
-	r := rand.New(rand.NewSource(int64(randSeed)))
+	r := rand.New(rand.NewSource(randSeed))
 	items := make([]SortableItem[types.Topic], len(valsToSort))
 	for i, topic := range valsToSort {
 		items[i] = SortableItem[types.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Float64()}
@@ -72,7 +72,7 @@ func IsValidAtPrice(
 	k keeper.Keeper,
 	req types.InferenceRequest,
 	price cosmosMath.Uint,
-	currentTime uint64) (bool, error) {
+	currentBlock BlockHeight) (bool, error) {
 	reqId, err := req.GetRequestId()
 	if err != nil {
 		fmt.Println("Error getting request id: ", err)
@@ -90,8 +90,8 @@ func IsValidAtPrice(
 		fmt.Println("req.MaxPricePerInference.GTE(price)", req.MaxPricePerInference.GTE(price))
 	*/
 	res :=
-		req.LastChecked+req.Cadence <= currentTime &&
-			req.TimestampValidUntil > currentTime &&
+		req.BlockLastChecked+req.Cadence <= currentBlock &&
+			req.BlockValidUntil > currentBlock &&
 			reqUnmetDemand.GTE(price) &&
 			req.MaxPricePerInference.GTE(price)
 	return res, nil
@@ -137,7 +137,7 @@ func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingA
 func GetRequestsThatMaxFees(
 	ctx sdk.Context,
 	k keeper.Keeper,
-	currentTime uint64,
+	currentBlock BlockHeight,
 	requestsForGivenTopic []types.InferenceRequest) (
 	bestPrice cosmosMath.Uint,
 	maxFees cosmosMath.Uint,
@@ -153,7 +153,7 @@ func GetRequestsThatMaxFees(
 	// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
 	for _, req := range requestsForGivenTopic {
 		// Check validity of current request at its own price
-		isValidAtPrice, err := IsValidAtPrice(ctx, k, req, req.MaxPricePerInference, currentTime)
+		isValidAtPrice, err := IsValidAtPrice(ctx, k, req, req.MaxPricePerInference, currentBlock)
 		if err != nil {
 			fmt.Println("Error checking if request is valid at price: ", err)
 			return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
@@ -173,7 +173,7 @@ func GetRequestsThatMaxFees(
 				FeesGenerated: cosmosMath.ZeroUint()}
 
 			for _, req2 := range requestsForGivenTopic {
-				isValidAtPrice, err := IsValidAtPrice(ctx, k, req2, price, currentTime)
+				isValidAtPrice, err := IsValidAtPrice(ctx, k, req2, price, currentBlock)
 				if err != nil {
 					fmt.Println("Error checking if request is valid at price: ", err)
 					return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
@@ -201,7 +201,7 @@ func GetRequestsThatMaxFees(
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
-func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentTime uint64) ([]types.Topic, cosmosMath.Uint, error) {
+func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentBlock BlockHeight) ([]types.Topic, cosmosMath.Uint, error) {
 	topicsActive, err := InactivateLowDemandTopics(ctx, k)
 	if err != nil {
 		fmt.Println("Error getting active topics: ", err)
@@ -218,7 +218,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			return nil, cosmosMath.Uint{}, err
 		}
 
-		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentTime, inferenceRequests)
+		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentBlock, inferenceRequests)
 		if err != nil {
 			fmt.Println("Error getting requests that maximize fees: ", err)
 			return nil, cosmosMath.Uint{}, err
@@ -230,7 +230,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	}
 
 	// Sort topics by topicBestPrices
-	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentTime)
+	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentBlock)
 
 	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
 	if err != nil {

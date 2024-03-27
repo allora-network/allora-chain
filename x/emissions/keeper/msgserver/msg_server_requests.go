@@ -9,10 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-///
-/// REQUESTS
-///
-
 func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestInference) (*types.MsgRequestInferenceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -42,18 +38,18 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 		if request.BidAmount.LT(request.MaxPricePerInference) {
 			return nil, types.ErrInferenceRequestBidAmountLessThanPrice
 		}
-		// 4. Check the timestamp valid until is in the future
-		timeNow := uint64(sdkCtx.BlockTime().Unix())
-		if request.TimestampValidUntil < timeNow {
-			return nil, types.ErrInferenceRequestTimestampValidUntilInPast
+		// 4. Check the block valid until is in the future
+		currentBlock := sdkCtx.BlockHeight()
+		if request.BlockValidUntil < currentBlock {
+			return nil, types.ErrInferenceRequestBlockValidUntilInPast
 		}
-		// 5. Check the timestamp validity is no more than the maximum allowed time in the future
+		// 5. Check the block validity is no more than the maximum allowed time in the future
 		maxInferenceRequestValidity, err := ms.k.GetParamsMaxInferenceRequestValidity(ctx)
 		if err != nil {
 			return nil, err
 		}
-		if request.TimestampValidUntil > timeNow+maxInferenceRequestValidity {
-			return nil, types.ErrInferenceRequestTimestampValidUntilTooFarInFuture
+		if request.BlockValidUntil > currentBlock+maxInferenceRequestValidity {
+			return nil, types.ErrInferenceRequestBlockValidUntilTooFarInFuture
 		}
 		if request.Cadence != 0 {
 			// 6. Check the cadence is either 0, or greater than the minimum fastest cadence allowed
@@ -73,8 +69,8 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 				return nil, types.ErrInferenceRequestCadenceTooSlow
 			}
 		}
-		// 8. Check the cadence is not greater than the timestamp valid until
-		if timeNow+request.Cadence > request.TimestampValidUntil {
+		// 8. Check the cadence is not greater than the block valid until
+		if currentBlock+request.Cadence > request.BlockValidUntil {
 			return nil, types.ErrInferenceRequestWillNeverBeScheduled
 		}
 		MinRequestUnmetDemand, err := ms.k.GetParamsMinRequestUnmetDemand(ctx)
@@ -104,7 +100,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 			return nil, err
 		}
 		// 12. Write request state into the mempool state
-		request.LastChecked = timeNow
+		request.BlockLastChecked = currentBlock
 		err = ms.k.AddToMempool(ctx, *request)
 		if err != nil {
 			return nil, err

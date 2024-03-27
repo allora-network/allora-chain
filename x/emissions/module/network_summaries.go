@@ -11,16 +11,13 @@ import (
 )
 
 /**
- * This file contains the logic from Section 3 of the litepaper,
- * which churns current inferences, forecasts, previous losses and regrets
- * into current network losses and regrets
+ * This file contains the logic from the Inference Synthesis Section of the litepaper,
+ * which combine current inferences, forecasts, previous losses and regrets
+ * into current network losses and regrets.
  */
 
-const p = 2.0
-
-const eta = 1
-
-// Implements function phi prime from litepaper eq7
+// Implements function phi prime from litepaper
+// φ'_p(x) = p * (ln(1 + e^x))^(p-1) * e^x / (1 + e^x)
 func gradient(p float64, x float64) (float64, error) {
 	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
 		return 0, emissions.ErrPhiInvalidInput
@@ -43,18 +40,20 @@ func gradient(p float64, x float64) (float64, error) {
 	return result, nil
 }
 
-// Calculate the forecast-implied inferences at a given time using eq3-8 from the litepaper
-// and the given inferences, forecasts and network losses.
+// Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
+// Calculates R_ijk, w_ijk, and I_ik for each forecast k and forecast element (forcast of worker loss) j
 //
-// Forecast without inference => eq3,9 weight set to 0. Use latest available regret R_i-1,l
-// Inference without forecast => eq3 weight only set to 0
+// Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
+// Inference without forecast => only weight in calculation of I_ik set to 0
 func CalcForcastImpliedInferencesAtTime(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
-	networkLossBundle *emissions.LossBundle) ([]emissions.Inference, error) {
+	networkLossBundle *emissions.LossBundle,
+	epsilon float64,
+	pInferenceSynthesis float64) ([]emissions.Inference, error) {
 	// Map each worker to the inference they submitted
 	inferenceByWorker := make(map[string]*emissions.Inference)
 	for _, inference := range inferences.Inferences {
@@ -63,16 +62,17 @@ func CalcForcastImpliedInferencesAtTime(
 	// Possibly add a small value to previous network loss avoid infinite logarithm
 	networkCombinedLoss := networkLossBundle.CombinedLoss.Uint64()
 	if networkCombinedLoss == 0 {
-		networkCombinedLoss = eta
+		// Take max of epsilon and 1 to avoid division by 0
+		networkCombinedLoss = uint64(math.Max(epsilon, 1))
 	}
 
 	// "k" here is the index of the forecaster's report among many reports
-	// Forecast-implied inferences per forecaster; litepaper eq3
+	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	I_i := make([]emissions.Inference, len(forecasts.Forecasts))
 	for k, forecast := range forecasts.Forecasts {
 		if len(forecast.ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
-			// Will effectively set weight in eq3 and eq9 to 0 for forecasts without inferences
+			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			forecastElementsWithInferences := make([]*emissions.ForecastElement, 0)
 			// Track workers with inferences => We only add the first forecast element per forecast per inferer
 			inferenceWorkers := make(map[string]bool)
@@ -92,16 +92,16 @@ func CalcForcastImpliedInferencesAtTime(
 			maxjRijk := float64(forecastElementsWithInferences[0].Value.Uint64())
 			for j, el := range forecastElementsWithInferences {
 				// Calculate the approximate forecast regret of the network inference
-				R_ik[j] = math.Log10(float64(networkCombinedLoss / el.Value.Uint64())) // eq4
+				R_ik[j] = math.Log10(float64(networkCombinedLoss / el.Value.Uint64())) // forecasted regrets R_ijk = log10(L_i / L_ijk)
 				if R_ik[j] > maxjRijk {
 					maxjRijk = R_ik[j]
 				}
 			}
 
-			// Calculate normalized regrets per forecaster then weights per forecaster
-			for j, _ := range forecastElementsWithInferences {
-				R_ik[j] = R_ik[j] / maxjRijk       // eq8
-				w_ijk, err := gradient(p, R_ik[j]) // eq5
+			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
+			for j := range forecastElementsWithInferences {
+				R_ik[j] = R_ik[j] / maxjRijk                         // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
+				w_ijk, err := gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 				if err != nil {
 					fmt.Println("Error calculating gradient: ", err)
 					return nil, err
@@ -109,11 +109,10 @@ func CalcForcastImpliedInferencesAtTime(
 				w_ik[j] = w_ijk
 			}
 
-			// Calculate the forecast implied inferences; eq3
+			// Calculate the forecast-implied inferences I_ik
 			weightSum := 0.0
 			weightInferenceDotProduct := 0.0
 			for j, w_ijk := range w_ik {
-				// Calculate the forecast implied inferences
 				weightInferenceDotProduct += w_ijk * float64(inferenceByWorker[forecast.ForecastElements[j].Inferer].Value.Uint64())
 				weightSum += w_ijk
 			}
@@ -128,44 +127,62 @@ func CalcForcastImpliedInferencesAtTime(
 	return I_i, nil
 }
 
-// Calculate the forecast-implied inferences at a given time using eq3-8 from the litepaper,
-// inferences and forecasts from the worker update at or just after the given time, and
+// Gathers inferences and forecasts from the worker update at or just after the given time, and
 // losses from the loss update just before the given time.
-func GetAndCalcForcastImpliedInferencesAtTime(
+// Then invokes calculation of the forecast-implied inferences using the Inference Synthesis formula from the litepaper.
+func GetAndCalcForcastImpliedInferencesAtBlock(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	time uint64) ([]emissions.Inference, error) {
+	blockHeight BlockHeight) ([]emissions.Inference, error) {
 	// Get inferences from worker update at or just after the given time
-	inferences, err := k.GetInferencesAtOrAfterTime(ctx, topicId, time)
+	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting inferences: ", err)
 		return nil, err
 	}
 	// Get forecasts from worker update at or just after the given time
-	forecasts, err := k.GetForecastsAtOrAfterTime(ctx, topicId, time)
+	forecasts, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting forecasts: ", err)
 		return nil, err
 	}
 	// Get losses from loss update just before the given time
-	networkLossBundle, err := k.GetNetworkLossBundleAtOrBeforeTime(ctx, topicId, time)
+	networkLossBundle, err := k.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting network losses: ", err)
 		return nil, err
 	}
 
-	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkLossBundle)
+	epsilon, err := k.GetParamsEpsilon(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return nil, err
+	}
+
+	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return nil, err
+	}
+
+	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkLossBundle, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
 }
 
-// Calculates eq9-11 from the litepaper using the given inferences, forecast-implied inferences, and network regrets
+// Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
+// I_i = Σ_l w_il I_il / Σ_l w_il
+// w_il = φ'_p(\hatR_i-1,l)
+// \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
+// given inferences, forecast-implied inferences, and network regrets
 func CalcNetworkCombinedInference(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	forecastImpliedInferences []emissions.Inference,
-	regrets *emissions.WorkerRegrets) (float64, error) {
+	regrets *emissions.WorkerRegrets,
+	epsilon float64,
+	pInferenceSynthesis float64) (float64, error) {
 	// Map each worker to their inference
 	inferenceByWorker := make(map[string]*emissions.Inference)
 	for _, inference := range inferences.Inferences {
@@ -177,72 +194,78 @@ func CalcNetworkCombinedInference(
 		forecastImpliedInferenceByWorker[inference.Worker] = &inference
 	}
 
-	// Find the maximum regret admitted by any worker for an inference or forecast task; used in eq11
-	maxPreviousRegret := float32(eta) // averts div by 0 error
+	// Find the maximum regret admitted by any worker for an inference or forecast task; used in calculating the network combined inference
+	maxPreviousRegret := float32(epsilon) // averts div by 0 error
 	for _, regret := range regrets.WorkerRegrets {
 		// If inference regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.InferenceRegret && regret.InferenceRegret > eta {
+		if maxPreviousRegret < regret.InferenceRegret && float64(regret.InferenceRegret) > epsilon {
 			maxPreviousRegret = regret.InferenceRegret
 		}
 		// If forecast regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.ForecastRegret && regret.InferenceRegret > eta {
+		if maxPreviousRegret < regret.ForecastRegret && float64(regret.ForecastRegret) > epsilon {
 			maxPreviousRegret = regret.ForecastRegret
 		}
 	}
 
-	// Calculate the network combined inference; eq9-11
+	// Calculate the network combined inference and network worker regrets
 	unnormalizedI_i := float64(0)
 	sumWeights := 0.0
 	for _, regret := range regrets.WorkerRegrets {
-		weight, err := gradient(p, float64(regret.InferenceRegret/maxPreviousRegret)) // eq11 then eq10
+		// normalize worker regret then calculate gradient => weight per worker for network combined inference
+		weight, err := gradient(pInferenceSynthesis, float64(regret.InferenceRegret/maxPreviousRegret))
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
 			return float64(0), err
 		}
-		unnormalizedI_i += weight * float64(inferenceByWorker[regret.Worker].Value.Uint64()) // pt1/2 of eq9
-		sumWeights += weight
-
-		weight, err = gradient(p, float64(regret.InferenceRegret/maxPreviousRegret)) // eq11 then eq10
-		if err != nil {
-			fmt.Println("Error calculating gradient: ", err)
-			return float64(0), err
-		}
-		unnormalizedI_i += weight * float64(forecastImpliedInferenceByWorker[regret.Worker].Value.Uint64()) // pt1/2 of eq9
+		unnormalizedI_i += weight * float64(inferenceByWorker[regret.Worker].Value.Uint64()) // numerator of network combined inference calculation
 		sumWeights += weight
 	}
 
 	// Normalize the network combined inference
-	if sumWeights < eta {
+	if sumWeights < epsilon {
 		return 0, emissions.ErrSumWeightsLessThanEta
 	}
-	return unnormalizedI_i / sumWeights, nil // pt2/2 of eq9
+	return unnormalizedI_i / sumWeights, nil // divide numerator by denominator to get network combined inference
 }
 
-// Calculates eq9-11 from the litepaper using the forecast-implied inferences as of the given time
-// and the network regrets admitted by workers at or just before the given time.
+// Gathers inferences, forecast-implied inferences as of the given block
+// and the network regrets admitted by workers at or just before the given time,
+// then invokes calculation of network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper.
 func GetAndCalcNetworkCombinedInference(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	time uint64) (float64, error) {
-	// Get inferences from worker update at or just after the given time
-	inferences, err := k.GetInferencesAtOrAfterTime(ctx, topicId, time)
+	blockHeight BlockHeight) (float64, error) {
+	// Get inferences from worker update at or just after the given block
+	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting inferences: ", err)
 		return float64(0), err
 	}
-	// Get regrets admitted by workers just before the given time
-	regrets, err := k.GetNetworkRegretsAtOrBeforeTime(ctx, topicId, time)
+	// Get regrets admitted by workers just before the given block
+	regrets, err := k.GetNetworkRegretsAtOrBeforeBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting network regrets: ", err)
 		return float64(0), err
 	}
-	// Get forecast-implied inferences at the given time
-	forecastImpliedInferences, err := GetAndCalcForcastImpliedInferencesAtTime(ctx, k, topicId, time)
+	// Get forecast-implied inferences at the given block
+	forecastImpliedInferences, err := GetAndCalcForcastImpliedInferencesAtBlock(ctx, k, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting forecast implied inferences: ", err)
 		return float64(0), err
 	}
 
-	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets)
+	epsilon, err := k.GetParamsEpsilon(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return float64(0), err
+	}
+
+	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+	if err != nil {
+		fmt.Println("Error getting epsilon: ", err)
+		return float64(0), err
+	}
+
+	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
 }

@@ -35,12 +35,12 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                     // minimum amount of tokens to send to stake as a reputer or worker
-  uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
-  uint64 min_epoch_length =
+  ];                                    // minimum amount of tokens to send to stake as a reputer or worker
+  int64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
+  int64 min_epoch_length =
       9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-  uint64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
-  uint64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
+  int64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
+  int64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
   string percent_rewards_reputers_workers = 12 [
     (cosmos_proto.scalar) = "cosmos.Dec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
@@ -58,11 +58,21 @@ message Params {
   uint64 max_workers_per_topic_request =
       19;  // max number of workers whose inference will be used and compensated per request
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
+  string epsilon = 21 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // small number to prevent division by zero
+  string p_inference_synthesis = 22 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
-///
 /// TOPICS
-///
 
 message Topic {
   uint64 id = 1;
@@ -72,9 +82,9 @@ message Topic {
   string loss_method = 5;
   string inference_logic = 6;
   string inference_method = 7;
-  uint64 epoch_last_ended = 8;
-  uint64 epoch_length = 9;
-  uint64 ground_truth_lag = 10;
+  int64 epoch_last_ended = 8;
+  int64 epoch_length = 9;
+  int64 ground_truth_lag = 10;
   bool active = 11;
   string default_arg = 12;
   uint64 pnorm = 13;
@@ -92,9 +102,7 @@ message TopicList {
   repeated Topic topics = 1;
 }
 
-///
 /// REPUTERS
-///
 
 message WorkerAttributedLoss {
   option (gogoproto.equal) = true;
@@ -109,7 +117,7 @@ message WorkerAttributedLoss {
   bytes extra_data = 3;
 }
 
-// eq13 in the litepaper
+// These losses are calculated per reputer or by the network
 message LossBundle {
   option (gogoproto.equal) = true;
 
@@ -144,9 +152,7 @@ message LossBundles {
   repeated LossBundle loss_bundles = 1;
 }
 
-///
 /// WORKERS
-///
 
 message Inference {
   option (gogoproto.equal) = true;
@@ -207,13 +213,13 @@ message OffchainNodes {
 
 message InferenceSetForScoring {
   uint64 topic_id = 1;
-  uint64 timestamp = 2;
+  int64 block_height = 2;
   Inferences inferences = 3;
 }
 
 message ForecastSetForScoring {
   uint64 topic_id = 1;
-  uint64 timestamp = 2;
+  int64 block_height = 2;
   Forecasts forecasts = 3;
 }
 
@@ -227,9 +233,7 @@ message WorkerRegrets {
   repeated WorkerRegret worker_regrets = 1;
 }
 
-///
 /// STAKE
-///
 
 message StakePlacement {
   uint64 topic_id = 1;
@@ -243,7 +247,7 @@ message StakePlacement {
 }
 
 message StakeRemoval {
-  uint64 timestamp_removal_started = 1;
+  int64 block_removal_started = 1;
   repeated StakePlacement placements = 2;
 }
 
@@ -260,13 +264,11 @@ message DelegatedStakePlacement {
 }
 
 message DelegatedStakeRemoval {
-  uint64 timestamp_removal_started = 1;
+  int64 block_removal_started = 1;
   repeated DelegatedStakePlacement placements = 2;
 }
 
-///
 /// INFERENCE REQUEST
-///
 
 // num_inference_possible = bid_amount / max_price_per_inference,
 // length of time this inference repeats for =  num_inference_possible * cadence
@@ -274,7 +276,7 @@ message InferenceRequest {
   string sender = 1;
   uint64 nonce = 2;
   uint64 topic_id = 3;
-  uint64 cadence = 4;  // time in seconds between inferences, zero means oneshot inference
+  int64 cadence = 4;  // blocks between inferences, zero means oneshot inference
   string max_price_per_inference = 5 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -286,8 +288,8 @@ message InferenceRequest {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                        // how many funds to send from alice with this Inference Request
-  uint64 last_checked = 7;  // the last time the inference was checked and was possibly drawn from
-  uint64 timestamp_valid_until = 8;
+  ];                             // how many funds to send from alice with this Inference Request
+  int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
+  int64 block_valid_until = 8;
   bytes extra_data = 9;
 }
