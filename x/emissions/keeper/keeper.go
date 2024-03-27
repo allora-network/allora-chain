@@ -161,7 +161,7 @@ func NewKeeper(
 		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicId, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
