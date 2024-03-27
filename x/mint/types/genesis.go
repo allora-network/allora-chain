@@ -11,8 +11,9 @@ func NewGenesisState(minter Minter, params Params) *GenesisState {
 // DefaultGenesisState creates a default GenesisState object
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Minter: DefaultInitialMinter(),
-		Params: DefaultParams(),
+		Minter:         DefaultInitialMinter(),
+		Params:         DefaultParams(),
+		PreviousReward: DefaultPreviousReward(),
 	}
 }
 

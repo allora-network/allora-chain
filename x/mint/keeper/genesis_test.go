@@ -73,6 +73,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		uint64(25246080),
 		math.NewUintFromString("2831000000000000000000"),
 	)
+	genesisState.PreviousReward = math.NewInt(0)
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
 
@@ -86,6 +87,10 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 
 	params, err := s.keeper.Params.Get(s.sdkCtx)
 	s.Require().Equal(genesisState.Params, params)
+	s.Require().NoError(err)
+
+	previousRewardsPerUnitStake, err := s.keeper.PreviousReward.Get(s.sdkCtx)
+	s.Require().Equal(genesisState.PreviousReward, previousRewardsPerUnitStake)
 	s.Require().NoError(err)
 
 	genesisState2 := s.keeper.ExportGenesis(s.sdkCtx)
