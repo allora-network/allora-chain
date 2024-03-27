@@ -20,14 +20,12 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *types.MsgProcess
 		groupedInferences[inference.TopicId] = append(groupedInferences[inference.TopicId], inference)
 	}
 
-	actualTimestamp := uint64(sdkCtx.BlockTime().Unix())
-
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
 		topicInferences := &types.Inferences{
 			Inferences: inferences,
 		}
-		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *topicInferences)
+		err := ms.k.InsertInferences(ctx, topicId, sdkCtx.BlockHeight(), *topicInferences)
 		if err != nil {
 			return nil, err
 		}

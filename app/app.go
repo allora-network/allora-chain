@@ -41,6 +41,8 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -63,6 +65,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/params"                // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/slashing"              // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
 )
 
@@ -97,6 +100,7 @@ type AlloraApp struct {
 	EmissionsKeeper       emissionsKeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
+	SlashingKeeper        slashingkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -174,6 +178,7 @@ func NewAlloraApp(
 		&app.EmissionsKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
+		&app.SlashingKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -196,6 +201,7 @@ func NewAlloraApp(
 		capabilitytypes.ModuleName,
 		emissions.ModuleName,
 		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
 		stakingtypes.ModuleName,
 		minttypes.ModuleName,
 		ibcexported.ModuleName,

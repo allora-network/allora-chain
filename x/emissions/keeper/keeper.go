@@ -29,7 +29,6 @@ type ACC_ADDRESS = string
 type WORKERS = string
 type REPUTERS = string
 type BLOCK_NUMBER = int64
-type UNIX_TIMESTAMP = uint64
 type REQUEST_ID = string
 
 type Keeper struct {
@@ -37,15 +36,13 @@ type Keeper struct {
 	addressCodec     address.Codec
 	feeCollectorName string
 
-	// types management
+	/// TYPES
 	schema     collections.Schema
 	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
 
-	// ############################################
-	// #             TOPIC types:                 #
-	// ############################################
+	/// TOPIC
 
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
@@ -60,9 +57,7 @@ type Keeper struct {
 	// for an address, what are all the topics that it's registered for?
 	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
-	// ############################################
-	// #                STAKING                   #
-	// ############################################
+	/// STAKING
 
 	// total sum stake of all stakers on the network
 	totalStake collections.Item[Uint]
@@ -81,9 +76,7 @@ type Keeper struct {
 	// map of (target) -> amount of stake that has been placed on that target
 	stakeUponReputer collections.Map[collections.Pair[TOPIC_ID, REPUTER], Uint]
 
-	// ############################################
-	// #        INFERENCE REQUEST MEMPOOL         #
-	// ############################################
+	/// INFERENCE REQUEST MEMPOOL
 
 	// map of (topic, request_id) -> full InferenceRequest information for that request
 	mempool collections.Map[collections.Pair[TOPIC_ID, REQUEST_ID], types.InferenceRequest]
@@ -92,9 +85,7 @@ type Keeper struct {
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
 	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
 
-	// ############################################
-	// #            MISC GLOBAL STATE:            #
-	// ############################################
+	/// MISC GLOBAL STATE
 
 	// map of (topic, worker) -> inference
 	inferences collections.Map[collections.Pair[TOPIC_ID, WORKER], types.Inference]
@@ -114,19 +105,24 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_NUMBER]
 
-	// map of (topic, timestamp, index) -> Inference
-	allInferences collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Inferences]
+	// map of (topic, block_number) -> Inference
+	allInferences collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Inferences]
 
-	// map of (topic, timestamp, index) -> Forecast
-	allForecasts collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.Forecasts]
+	// map of (topic, block_number) -> Forecast
+	allForecasts collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Forecasts]
 
-	// map of (topic, timestamp, index) -> LossBundles (1 per reputer active at that time)
-	allLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundles]
+	// map of (topic, block_number) -> LossBundles (1 per reputer active at that time)
+	allLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundles]
 
-	// map of (topic, timestamp, index) -> LossBundle (1 network wide bundle per timestep)
-	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, UNIX_TIMESTAMP], types.LossBundle]
+	// map of (topic, block_number) -> LossBundle (1 network wide bundle per timestep)
+	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.LossBundle]
+
+	// map of (topic, worker, block_number) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
+	networkRegrets collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.WorkerRegrets]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
+
+	/// WHITELISTS
 
 	whitelistAdmins collections.KeySet[sdk.AccAddress]
 
@@ -175,10 +171,11 @@ func NewKeeper(
 		forecasts:                  collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                    collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                   collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundles](cdc)),
-		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), codec.CollValue[types.LossBundle](cdc)),
+		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
+		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "loss_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundles](cdc)),
+		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "loss_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.LossBundle](cdc)),
+		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.WorkerRegrets](cdc)),
 		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
 		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
@@ -197,9 +194,7 @@ func NewKeeper(
 	return k
 }
 
-///
 /// PARAMETERS
-///
 
 func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
@@ -260,7 +255,7 @@ func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error
 	return params.RequiredMinimumStake, nil
 }
 
-func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -268,7 +263,7 @@ func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (uint64, e
 	return params.RemoveStakeDelayWindow, nil
 }
 
-func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -276,7 +271,7 @@ func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (uint
 	return params.MaxInferenceRequestValidity, nil
 }
 
-func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BLOCK_NUMBER, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -284,13 +279,42 @@ func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (uint64, error) {
 	return params.MinEpochLength, nil
 }
 
-///
-/// INFERENCES
-///
+func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BLOCK_NUMBER, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxRequestCadence, nil
+}
 
-func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.Inferences, error) {
-	// pair := collections.Join(topicId, timestamp, index)
-	key := collections.Join(topicId, timestamp)
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PercentRewardsReputersWorkers, nil
+}
+
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.Epsilon, nil
+}
+
+func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyZeroDec(), err
+	}
+	return params.PInferenceSynthesis, nil
+}
+
+/// INFERENCES, FORECASTS
+
+func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Inferences, error) {
+	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
 		return nil, err
@@ -298,8 +322,52 @@ func (k *Keeper) GetAllInferences(ctx context.Context, topicId TOPIC_ID, timesta
 	return &inferences, nil
 }
 
-// Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timestamp uint64, inferences types.Inferences) error {
+func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Inferences, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(block).
+		Descending()
+
+	inferencesToReturn := types.Inferences{}
+	iter, err := k.allInferences.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		inferencesToReturn = kv.Value
+	}
+
+	return &inferencesToReturn, nil
+}
+
+func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.Forecasts, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(block).
+		Descending()
+
+	forecastsToReturn := types.Forecasts{}
+	iter, err := k.allForecasts.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		kv, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		forecastsToReturn = kv.Value
+	}
+
+	return &forecastsToReturn, nil
+}
+
+// Insert a complete set of inferences for a topic/block. Overwrites previous ones.
+func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, inferences types.Inferences) error {
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
 		// Update latests inferences for each worker
@@ -319,12 +387,12 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TOPIC_ID, timesta
 		}
 	}
 
-	key := collections.Join(topicId, timestamp)
+	key := collections.Join(topicId, block)
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
-// Insert a complete set of inferences for a topic/timestamp. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestamp uint64, forecasts types.Forecasts) error {
+// Insert a complete set of inferences for a topic/block. Overwrites previous ones.
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, forecasts types.Forecasts) error {
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
 		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
@@ -343,50 +411,8 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TOPIC_ID, timestam
 		// }
 	}
 
-	key := collections.Join(topicId, timestamp)
+	key := collections.Join(topicId, block)
 	return k.allForecasts.Set(ctx, key, forecasts)
-}
-
-// Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64, lossBundles types.LossBundles) error {
-	key := collections.Join(topicId, timestamp)
-	return k.allLossBundles.Set(ctx, key, lossBundles)
-}
-
-// Return a list of lists of loss bundles for a topic with a timestep at or after the passed value.
-// The list is ordered by timestamp in descending order.
-// Each list contains all loss bundles for a given timestamp across all reputers.
-// Each loss bundle comes from a reputer at a particular timestep.
-func (k *Keeper) GetLossBundlesAtOrAfterTimestamp(ctx context.Context, topicId TOPIC_ID, timestamp uint64) ([]types.LossBundles, error) {
-	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		EndInclusive(timestamp).
-		Descending()
-
-	iter, err := k.allLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	var lossBundles []types.LossBundles
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		lossBundle := kv.Value
-		lossBundles = append(lossBundles, lossBundle)
-	}
-	return lossBundles, nil
-}
-
-// Get loss bundles for a topic/timestamp
-func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, timestamp uint64) (*types.LossBundles, error) {
-	key := collections.Join(topicId, timestamp)
-	lossBundles, err := k.allLossBundles.Get(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-	return &lossBundles, nil
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
@@ -438,35 +464,16 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 	return params.RewardCadence, nil
 }
 
-// Gets the total sum of all stake in the network across all topics
-func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
-	ret, err := k.totalStake.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return ret, nil
-}
-
-// Sets the total sum of all stake in the network across all topics
-func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
-	// total stake does not have a zero guard because totalStake is allowed to be zero
-	// it is initialized to zero at genesis anyways.
-	return k.totalStake.Set(ctx, totalStake)
-}
-
 // A function that accepts a topicId and returns list of Inferences or error
 func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.InferenceSetForScoring, error) {
 	var inferences []*types.InferenceSetForScoring
-	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
+	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
-		latestTimestamp = 0
+		latestBlock = 0
 	}
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latestTimestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(latestBlock).
 		Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
@@ -481,9 +488,9 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 		key := kv.Key
 		value := kv.Value
 		inferenceSet := &types.InferenceSetForScoring{
-			TopicId:    key.K1(),
-			Timestamp:  key.K2(),
-			Inferences: &value,
+			TopicId:     key.K1(),
+			BlockHeight: key.K2(),
+			Inferences:  &value,
 		}
 		inferences = append(inferences, inferenceSet)
 	}
@@ -493,13 +500,13 @@ func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TOPIC
 // A function that accepts a topicId and returns list of Forecasts or error
 func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_ID) ([]*types.ForecastSetForScoring, error) {
 	var forecasts []*types.ForecastSetForScoring
-	var latestTimestamp, err = k.GetTopicEpochLastEnded(ctx, topicId)
+	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
 	if err != nil {
-		latestTimestamp = 0
+		latestBlock = 0
 	}
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
-		StartInclusive(latestTimestamp).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(latestBlock).
 		Descending()
 
 	iter, err := k.allForecasts.Iterate(ctx, rng)
@@ -514,20 +521,38 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 		key := kv.Key
 		value := kv.Value
 		forecastSet := &types.ForecastSetForScoring{
-			TopicId:   key.K1(),
-			Timestamp: key.K2(),
-			Forecasts: &value,
+			TopicId:     key.K1(),
+			BlockHeight: key.K2(),
+			Forecasts:   &value,
 		}
 		forecasts = append(forecasts, forecastSet)
 	}
 	return forecasts, nil
 }
 
+/// LOSS BUNDLES, REGRETS
+
+// Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
+func (k *Keeper) InsertLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundles types.LossBundles) error {
+	key := collections.Join(topicId, block)
+	return k.allLossBundles.Set(ctx, key, lossBundles)
+}
+
+// Get loss bundles for a topic/timestamp
+func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundles, error) {
+	key := collections.Join(topicId, block)
+	lossBundles, err := k.allLossBundles.Get(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return &lossBundles, nil
+}
+
 // A function that accepts a topicId and returns the latest Network LossBundle or error
 func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
 	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, UNIX_TIMESTAMP](topicId).
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		Descending()
 
 	iter, err := k.networkLossBundles.Iterate(ctx, rng)
@@ -545,117 +570,49 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_I
 	return &kv.Value, nil
 }
 
-// GetTopicsByCreator returns a slice of all topics created by a given creator.
-func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
-	var topicsByCreator []*types.Topic
+func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.LossBundle, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(block).
+		Descending()
 
-	err := k.topics.Walk(ctx, nil, func(id TOPIC_ID, topic types.Topic) (bool, error) {
-		if topic.Creator == creator {
-			topicsByCreator = append(topicsByCreator, &topic)
-		}
-		return false, nil // Continue iterating
-	})
-
+	iter, err := k.networkLossBundles.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
-
-	return topicsByCreator, nil
-}
-
-// AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
-func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
+	if !iter.Valid() {
+		// Return empty loss bundle if no loss bundle is found
+		return &types.LossBundle{}, nil
 	}
-
-	topicSet := make(map[uint64]bool)
-	for _, topic := range currentTopics {
-		topicSet[topic] = true
-	}
-
-	for _, newTopic := range newTopics {
-		if _, exists := topicSet[newTopic]; !exists {
-			currentTopics = append(currentTopics, newTopic)
-		}
-	}
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, currentTopics)
-}
-
-// RemoveAddressTopic removes a specified topic from the address's list of topics.
-func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-
-	// Find and remove the specified topic
-	filteredTopics := make([]uint64, 0)
-	for _, topic := range currentTopics {
-		if topic != topicToRemove {
-			filteredTopics = append(filteredTopics, topic)
-		}
-	}
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, filteredTopics)
-}
-
-// GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
-func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
-	topics, err := k.addressTopics.Get(ctx, address)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return an empty slice if the address is not found, or handle it differently if needed.
-			return []uint64{}, nil
-		}
-		return nil, err
-	}
-	return topics, nil
-}
-
-// GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
-func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
-	var topicsByAddress []uint64
-
-	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
+	kv, err := iter.KeyValue()
 	if err != nil {
 		return nil, err
 	}
-
-	return topicsByAddress, nil
+	return &kv.Value, nil
 }
 
-// GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
-func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
-	var topicsByAddress []uint64
+func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER) (*types.WorkerRegrets, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		StartInclusive(block).
+		Descending()
 
-	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
+	iter, err := k.networkRegrets.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
-
-	return topicsByAddress, nil
+	if !iter.Valid() {
+		// Return empty loss bundle if no loss bundle is found
+		return &types.WorkerRegrets{}, nil
+	}
+	kv, err := iter.KeyValue()
+	if err != nil {
+		return nil, err
+	}
+	return &kv.Value, nil
 }
 
-///
 /// STAKING
-///
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TOPIC_ID, reputer sdk.AccAddress, stake Uint) error {
@@ -957,6 +914,25 @@ func (k *Keeper) RemoveDelegatedStake(
 	return nil
 }
 
+// Gets the total sum of all stake in the network across all topics
+func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
+	ret, err := k.totalStake.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return ret, nil
+}
+
+// Sets the total sum of all stake in the network across all topics
+func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
+	// total stake does not have a zero guard because totalStake is allowed to be zero
+	// it is initialized to zero at genesis anyways.
+	return k.totalStake.Set(ctx, totalStake)
+}
+
 func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
 	rng := collections.Range[uint64]{}
 	rng.StartInclusive(0)
@@ -1150,9 +1126,27 @@ func (k *Keeper) SetDelegatedStakeUponReputer(ctx context.Context, topicId TOPIC
 	return k.stakeUponReputer.Set(ctx, key, stake)
 }
 
-///
+// For a given address, get their stake removal information
+func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.StakeRemoval, error) {
+	return k.stakeRemovalQueue.Get(ctx, address)
+}
+
+// For a given address, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.StakeRemoval) error {
+	return k.stakeRemovalQueue.Set(ctx, address, removalInfo)
+}
+
+// For a given address, get their stake removal information
+func (k *Keeper) GetDelegatedStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.DelegatedStakeRemoval, error) {
+	return k.delegatedStakeRemovalQueue.Get(ctx, address)
+}
+
+// For a given address, adds their stake removal information to the removal queue for delay waiting
+func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.DelegatedStakeRemoval) error {
+	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
+}
+
 /// TOPICS
-///
 
 func (k *Keeper) InactivateTopic(ctx context.Context, topicId TOPIC_ID) error {
 	topic, err := k.topics.Get(ctx, topicId)
@@ -1238,7 +1232,7 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	return activeTopics, nil
 }
 
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (uint64, error) {
+func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (BLOCK_NUMBER, error) {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return 0, err
@@ -1248,7 +1242,7 @@ func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID) (
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID, epochLastEnded uint64) error {
+func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TOPIC_ID, epochLastEnded BLOCK_NUMBER) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
@@ -1369,29 +1363,115 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	return workerAddress, nil
 }
 
-// For a given address, get their stake removal information
-func (k *Keeper) GetStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.StakeRemoval, error) {
-	return k.stakeRemovalQueue.Get(ctx, address)
+// GetTopicsByCreator returns a slice of all topics created by a given creator.
+func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
+	var topicsByCreator []*types.Topic
+
+	err := k.topics.Walk(ctx, nil, func(id TOPIC_ID, topic types.Topic) (bool, error) {
+		if topic.Creator == creator {
+			topicsByCreator = append(topicsByCreator, &topic)
+		}
+		return false, nil // Continue iterating
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByCreator, nil
 }
 
-// For a given address, adds their stake removal information to the removal queue for delay waiting
-func (k *Keeper) SetStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.StakeRemoval) error {
-	return k.stakeRemovalQueue.Set(ctx, address, removalInfo)
+// AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
+func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
+	// Get the current list of topics for the address
+	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	topicSet := make(map[uint64]bool)
+	for _, topic := range currentTopics {
+		topicSet[topic] = true
+	}
+
+	for _, newTopic := range newTopics {
+		if _, exists := topicSet[newTopic]; !exists {
+			currentTopics = append(currentTopics, newTopic)
+		}
+	}
+
+	// Set the updated list of topics for the address
+	return k.addressTopics.Set(ctx, address, currentTopics)
 }
 
-// For a given address, get their stake removal information
-func (k *Keeper) GetDelegatedStakeRemovalQueueByAddress(ctx context.Context, address sdk.AccAddress) (types.DelegatedStakeRemoval, error) {
-	return k.delegatedStakeRemovalQueue.Get(ctx, address)
+// RemoveAddressTopic removes a specified topic from the address's list of topics.
+func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
+	// Get the current list of topics for the address
+	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
+	if err != nil {
+		return err
+	}
+
+	// Find and remove the specified topic
+	filteredTopics := make([]uint64, 0)
+	for _, topic := range currentTopics {
+		if topic != topicToRemove {
+			filteredTopics = append(filteredTopics, topic)
+		}
+	}
+
+	// Set the updated list of topics for the address
+	return k.addressTopics.Set(ctx, address, filteredTopics)
 }
 
-// For a given address, adds their stake removal information to the removal queue for delay waiting
-func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, address sdk.AccAddress, removalInfo types.DelegatedStakeRemoval) error {
-	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
+// GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
+func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	topics, err := k.addressTopics.Get(ctx, address)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			// Return an empty slice if the address is not found, or handle it differently if needed.
+			return []uint64{}, nil
+		}
+		return nil, err
+	}
+	return topics, nil
 }
 
-///
+// GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
+func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	var topicsByAddress []uint64
+
+	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
+		if pair.K2().String() == address.String() {
+			topicsByAddress = append(topicsByAddress, pair.K1())
+		}
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByAddress, nil
+}
+
+// GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
+func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+	var topicsByAddress []uint64
+
+	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TOPIC_ID, sdk.AccAddress]) (bool, error) {
+		if pair.K2().String() == address.String() {
+			topicsByAddress = append(topicsByAddress, pair.K1())
+		}
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return topicsByAddress, nil
+}
+
 /// MEMPOOL & INFERENCE REQUESTS
-///
 
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TOPIC_ID, amt cosmosMath.Uint) error {
 	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
@@ -1484,22 +1564,6 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicI
 		ret = append(ret, value)
 	}
 	return ret, nil
-}
-
-func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxRequestCadence, nil
-}
-
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (cosmosMath.LegacyDec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.LegacyZeroDec(), err
-	}
-	return params.PercentRewardsReputersWorkers, nil
 }
 
 func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
@@ -1629,9 +1693,7 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	return nil
 }
 
-///
 /// WHITELISTS
-///
 
 func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
 	return k.whitelistAdmins.Has(ctx, admin)
@@ -1681,9 +1743,7 @@ func (k *Keeper) RemoveFromFoundationWhitelist(ctx context.Context, address sdk.
 	return k.foundationWhitelist.Remove(ctx, address)
 }
 
-///
 /// TREASURY
-///
 
 // Sets the subsidy for the topic within the topic struct
 // Should only be called by a member of the foundation whitelist
@@ -1718,9 +1778,7 @@ func (k *Keeper) SetTopicFTreasury(ctx context.Context, topicId TOPIC_ID, fTreas
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-///
 /// BANK KEEPER WRAPPERS
-///
 
 // SendCoinsFromModuleToModule
 func (k *Keeper) AccountKeeper() AccountKeeper {
