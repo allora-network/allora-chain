@@ -19,17 +19,20 @@ import (
 type Keeper struct {
 	cdc              codec.BinaryCodec
 	storeService     storetypes.KVStoreService
+	accountKeeper    types.AccountKeeper
 	stakingKeeper    types.StakingKeeper
 	bankKeeper       types.BankKeeper
+	emissionsKeeper  types.EmissionsKeeper
 	feeCollectorName string
 
 	// the address capable of executing a MsgUpdateParams message. Typically, this
 	// should be the x/gov module account.
 	authority string
 
-	Schema collections.Schema
-	Params collections.Item[types.Params]
-	Minter collections.Item[types.Minter]
+	Schema         collections.Schema
+	Params         collections.Item[types.Params]
+	Minter         collections.Item[types.Minter]
+	PreviousReward collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -39,6 +42,7 @@ func NewKeeper(
 	sk types.StakingKeeper,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
+	ek types.EmissionsKeeper,
 	feeCollectorName string,
 	authority string,
 ) Keeper {
@@ -52,11 +56,14 @@ func NewKeeper(
 		cdc:              cdc,
 		storeService:     storeService,
 		stakingKeeper:    sk,
+		accountKeeper:    ak,
 		bankKeeper:       bk,
+		emissionsKeeper:  ek,
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		Minter:           collections.NewItem(sb, types.MinterKey, "minter", codec.CollValue[types.Minter](cdc)),
+		PreviousReward:   collections.NewItem(sb, types.PreviousEmissionPerTokenKey, "previous_emission_per_token", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()

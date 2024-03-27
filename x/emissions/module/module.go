@@ -142,13 +142,12 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	// Ensure that enough blocks have passed to hit an epoch.
 	// If not, skip rewards calculation
 	blockNumber := sdkCtx.BlockHeight()
-	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	lastRewardsUpdate, err := am.keeper.GetLastRewardsUpdate(sdkCtx)
 	if err != nil {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, currentTime)
+	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, blockNumber)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
@@ -194,14 +193,14 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if currentTime-topic.EpochLastEnded >= topic.EpochLength {
+			if blockNumber-topic.EpochLastEnded >= topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
 
 				// Update the last inference ran
-				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, currentTime)
+				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockNumber)
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
 				}

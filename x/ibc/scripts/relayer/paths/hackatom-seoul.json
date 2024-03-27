@@ -1,0 +1,22 @@
+{
+  "src":
+    {
+      "chain-id":"hackatom",
+      "client-id":"",
+      "connection-id":"",
+      "channel-id":""
+    },
+  "dst":
+    {
+      "chain-id":"seoul",
+      "client-id":"",
+      "connection-id":"",
+      "channel-id":""
+    },
+    "src-channel-filter": {
+      "rule": "",
+      "channel-list": []
+    }
+}
+
+

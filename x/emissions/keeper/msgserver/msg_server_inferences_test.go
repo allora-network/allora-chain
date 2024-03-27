@@ -32,10 +32,10 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	 */
 	// Ensure low ts for topic 1
 	var topicId = uint64(0)
-	var inferenceTimestamp = uint64(1500000000)
+	inferenceBlock := int64(0x16)
 
 	// _, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
-	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceBlock)
 	require.NoError(err, "Setting latest inference timestamp should not fail")
 
 	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(0))
@@ -48,9 +48,9 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	/*
 	 * Inferences under threshold should not be returned
 	 */
-	inferenceTimestamp = math.MaxUint64
+	inferenceBlock = math.MaxInt64
 
-	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceBlock)
 	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))

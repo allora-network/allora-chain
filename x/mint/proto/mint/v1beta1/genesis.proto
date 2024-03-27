@@ -3,6 +3,7 @@ package mint.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "mint/v1beta1/types.proto";
+import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/mint/types";
@@ -14,4 +15,11 @@ message GenesisState {
 
   // params defines all the parameters of the module.
   Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // previous target emission rewards per unit staked token
+  string previous_reward = 3 [
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false];
 }

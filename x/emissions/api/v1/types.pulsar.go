@@ -39,6 +39,8 @@ var (
 	fd_Params_min_stake_fraction               protoreflect.FieldDescriptor
 	fd_Params_max_workers_per_topic_request    protoreflect.FieldDescriptor
 	fd_Params_max_reputers_per_topic_request   protoreflect.FieldDescriptor
+	fd_Params_epsilon                          protoreflect.FieldDescriptor
+	fd_Params_p_inference_synthesis            protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -64,6 +66,8 @@ func init() {
 	fd_Params_min_stake_fraction = md_Params.Fields().ByName("min_stake_fraction")
 	fd_Params_max_workers_per_topic_request = md_Params.Fields().ByName("max_workers_per_topic_request")
 	fd_Params_max_reputers_per_topic_request = md_Params.Fields().ByName("max_reputers_per_topic_request")
+	fd_Params_epsilon = md_Params.Fields().ByName("epsilon")
+	fd_Params_p_inference_synthesis = md_Params.Fields().ByName("p_inference_synthesis")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -173,26 +177,26 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.RemoveStakeDelayWindow != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.RemoveStakeDelayWindow)
+	if x.RemoveStakeDelayWindow != int64(0) {
+		value := protoreflect.ValueOfInt64(x.RemoveStakeDelayWindow)
 		if !f(fd_Params_remove_stake_delay_window, value) {
 			return
 		}
 	}
-	if x.MinEpochLength != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MinEpochLength)
+	if x.MinEpochLength != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MinEpochLength)
 		if !f(fd_Params_min_epoch_length, value) {
 			return
 		}
 	}
-	if x.MaxInferenceRequestValidity != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxInferenceRequestValidity)
+	if x.MaxInferenceRequestValidity != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MaxInferenceRequestValidity)
 		if !f(fd_Params_max_inference_request_validity, value) {
 			return
 		}
 	}
-	if x.MaxRequestCadence != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxRequestCadence)
+	if x.MaxRequestCadence != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MaxRequestCadence)
 		if !f(fd_Params_max_request_cadence, value) {
 			return
 		}
@@ -251,6 +255,18 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.Epsilon != "" {
+		value := protoreflect.ValueOfString(x.Epsilon)
+		if !f(fd_Params_epsilon, value) {
+			return
+		}
+	}
+	if x.PInferenceSynthesis != "" {
+		value := protoreflect.ValueOfString(x.PInferenceSynthesis)
+		if !f(fd_Params_p_inference_synthesis, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -281,13 +297,13 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.v1.Params.required_minimum_stake":
 		return x.RequiredMinimumStake != ""
 	case "emissions.v1.Params.remove_stake_delay_window":
-		return x.RemoveStakeDelayWindow != uint64(0)
+		return x.RemoveStakeDelayWindow != int64(0)
 	case "emissions.v1.Params.min_epoch_length":
-		return x.MinEpochLength != uint64(0)
+		return x.MinEpochLength != int64(0)
 	case "emissions.v1.Params.max_inference_request_validity":
-		return x.MaxInferenceRequestValidity != uint64(0)
+		return x.MaxInferenceRequestValidity != int64(0)
 	case "emissions.v1.Params.max_request_cadence":
-		return x.MaxRequestCadence != uint64(0)
+		return x.MaxRequestCadence != int64(0)
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		return x.PercentRewardsReputersWorkers != ""
 	case "emissions.v1.Params.sharpness":
@@ -306,6 +322,10 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxWorkersPerTopicRequest != uint64(0)
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		return x.MaxReputersPerTopicRequest != uint64(0)
+	case "emissions.v1.Params.epsilon":
+		return x.Epsilon != ""
+	case "emissions.v1.Params.p_inference_synthesis":
+		return x.PInferenceSynthesis != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -337,13 +357,13 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = ""
 	case "emissions.v1.Params.remove_stake_delay_window":
-		x.RemoveStakeDelayWindow = uint64(0)
+		x.RemoveStakeDelayWindow = int64(0)
 	case "emissions.v1.Params.min_epoch_length":
-		x.MinEpochLength = uint64(0)
+		x.MinEpochLength = int64(0)
 	case "emissions.v1.Params.max_inference_request_validity":
-		x.MaxInferenceRequestValidity = uint64(0)
+		x.MaxInferenceRequestValidity = int64(0)
 	case "emissions.v1.Params.max_request_cadence":
-		x.MaxRequestCadence = uint64(0)
+		x.MaxRequestCadence = int64(0)
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		x.PercentRewardsReputersWorkers = ""
 	case "emissions.v1.Params.sharpness":
@@ -362,6 +382,10 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxWorkersPerTopicRequest = uint64(0)
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		x.MaxReputersPerTopicRequest = uint64(0)
+	case "emissions.v1.Params.epsilon":
+		x.Epsilon = ""
+	case "emissions.v1.Params.p_inference_synthesis":
+		x.PInferenceSynthesis = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -401,16 +425,16 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfString(value)
 	case "emissions.v1.Params.remove_stake_delay_window":
 		value := x.RemoveStakeDelayWindow
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Params.min_epoch_length":
 		value := x.MinEpochLength
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Params.max_inference_request_validity":
 		value := x.MaxInferenceRequestValidity
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Params.max_request_cadence":
 		value := x.MaxRequestCadence
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		value := x.PercentRewardsReputersWorkers
 		return protoreflect.ValueOfString(value)
@@ -438,6 +462,12 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		value := x.MaxReputersPerTopicRequest
 		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.Params.epsilon":
+		value := x.Epsilon
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.p_inference_synthesis":
+		value := x.PInferenceSynthesis
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -473,13 +503,13 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	case "emissions.v1.Params.required_minimum_stake":
 		x.RequiredMinimumStake = value.Interface().(string)
 	case "emissions.v1.Params.remove_stake_delay_window":
-		x.RemoveStakeDelayWindow = value.Uint()
+		x.RemoveStakeDelayWindow = value.Int()
 	case "emissions.v1.Params.min_epoch_length":
-		x.MinEpochLength = value.Uint()
+		x.MinEpochLength = value.Int()
 	case "emissions.v1.Params.max_inference_request_validity":
-		x.MaxInferenceRequestValidity = value.Uint()
+		x.MaxInferenceRequestValidity = value.Int()
 	case "emissions.v1.Params.max_request_cadence":
-		x.MaxRequestCadence = value.Uint()
+		x.MaxRequestCadence = value.Int()
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		x.PercentRewardsReputersWorkers = value.Interface().(string)
 	case "emissions.v1.Params.sharpness":
@@ -498,6 +528,10 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxWorkersPerTopicRequest = value.Uint()
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		x.MaxReputersPerTopicRequest = value.Uint()
+	case "emissions.v1.Params.epsilon":
+		x.Epsilon = value.Interface().(string)
+	case "emissions.v1.Params.p_inference_synthesis":
+		x.PInferenceSynthesis = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -558,6 +592,10 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field max_workers_per_topic_request of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		panic(fmt.Errorf("field max_reputers_per_topic_request of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.epsilon":
+		panic(fmt.Errorf("field epsilon of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.p_inference_synthesis":
+		panic(fmt.Errorf("field p_inference_synthesis of message emissions.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -586,13 +624,13 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.required_minimum_stake":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.remove_stake_delay_window":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Params.min_epoch_length":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Params.max_inference_request_validity":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Params.max_request_cadence":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Params.percent_rewards_reputers_workers":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.sharpness":
@@ -611,6 +649,10 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.Params.max_reputers_per_topic_request":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.Params.epsilon":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.p_inference_synthesis":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -746,6 +788,14 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.MaxReputersPerTopicRequest != 0 {
 			n += 2 + runtime.Sov(uint64(x.MaxReputersPerTopicRequest))
 		}
+		l = len(x.Epsilon)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PInferenceSynthesis)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -774,6 +824,24 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.PInferenceSynthesis) > 0 {
+			i -= len(x.PInferenceSynthesis)
+			copy(dAtA[i:], x.PInferenceSynthesis)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PInferenceSynthesis)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xb2
+		}
+		if len(x.Epsilon) > 0 {
+			i -= len(x.Epsilon)
+			copy(dAtA[i:], x.Epsilon)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Epsilon)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xaa
 		}
 		if x.MaxReputersPerTopicRequest != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxReputersPerTopicRequest))
@@ -1164,7 +1232,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.RemoveStakeDelayWindow |= uint64(b&0x7F) << shift
+					x.RemoveStakeDelayWindow |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1183,7 +1251,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MinEpochLength |= uint64(b&0x7F) << shift
+					x.MinEpochLength |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1202,7 +1270,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxInferenceRequestValidity |= uint64(b&0x7F) << shift
+					x.MaxInferenceRequestValidity |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1221,7 +1289,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxRequestCadence |= uint64(b&0x7F) << shift
+					x.MaxRequestCadence |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1362,6 +1430,70 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			case 21:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epsilon", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Epsilon = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 22:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PInferenceSynthesis", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PInferenceSynthesis = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1555,20 +1687,20 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
-	if x.EpochLastEnded != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.EpochLastEnded)
+	if x.EpochLastEnded != int64(0) {
+		value := protoreflect.ValueOfInt64(x.EpochLastEnded)
 		if !f(fd_Topic_epoch_last_ended, value) {
 			return
 		}
 	}
-	if x.EpochLength != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.EpochLength)
+	if x.EpochLength != int64(0) {
+		value := protoreflect.ValueOfInt64(x.EpochLength)
 		if !f(fd_Topic_epoch_length, value) {
 			return
 		}
 	}
-	if x.GroundTruthLag != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.GroundTruthLag)
+	if x.GroundTruthLag != int64(0) {
+		value := protoreflect.ValueOfInt64(x.GroundTruthLag)
 		if !f(fd_Topic_ground_truth_lag, value) {
 			return
 		}
@@ -1669,11 +1801,11 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.v1.Topic.inference_method":
 		return x.InferenceMethod != ""
 	case "emissions.v1.Topic.epoch_last_ended":
-		return x.EpochLastEnded != uint64(0)
+		return x.EpochLastEnded != int64(0)
 	case "emissions.v1.Topic.epoch_length":
-		return x.EpochLength != uint64(0)
+		return x.EpochLength != int64(0)
 	case "emissions.v1.Topic.ground_truth_lag":
-		return x.GroundTruthLag != uint64(0)
+		return x.GroundTruthLag != int64(0)
 	case "emissions.v1.Topic.active":
 		return x.Active != false
 	case "emissions.v1.Topic.default_arg":
@@ -1727,11 +1859,11 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.v1.Topic.inference_method":
 		x.InferenceMethod = ""
 	case "emissions.v1.Topic.epoch_last_ended":
-		x.EpochLastEnded = uint64(0)
+		x.EpochLastEnded = int64(0)
 	case "emissions.v1.Topic.epoch_length":
-		x.EpochLength = uint64(0)
+		x.EpochLength = int64(0)
 	case "emissions.v1.Topic.ground_truth_lag":
-		x.GroundTruthLag = uint64(0)
+		x.GroundTruthLag = int64(0)
 	case "emissions.v1.Topic.active":
 		x.Active = false
 	case "emissions.v1.Topic.default_arg":
@@ -1793,13 +1925,13 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 		return protoreflect.ValueOfString(value)
 	case "emissions.v1.Topic.epoch_last_ended":
 		value := x.EpochLastEnded
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Topic.epoch_length":
 		value := x.EpochLength
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Topic.ground_truth_lag":
 		value := x.GroundTruthLag
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Topic.active":
 		value := x.Active
 		return protoreflect.ValueOfBool(value)
@@ -1868,11 +2000,11 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 	case "emissions.v1.Topic.inference_method":
 		x.InferenceMethod = value.Interface().(string)
 	case "emissions.v1.Topic.epoch_last_ended":
-		x.EpochLastEnded = value.Uint()
+		x.EpochLastEnded = value.Int()
 	case "emissions.v1.Topic.epoch_length":
-		x.EpochLength = value.Uint()
+		x.EpochLength = value.Int()
 	case "emissions.v1.Topic.ground_truth_lag":
-		x.GroundTruthLag = value.Uint()
+		x.GroundTruthLag = value.Int()
 	case "emissions.v1.Topic.active":
 		x.Active = value.Bool()
 	case "emissions.v1.Topic.default_arg":
@@ -1985,11 +2117,11 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 	case "emissions.v1.Topic.inference_method":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Topic.epoch_last_ended":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Topic.epoch_length":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Topic.ground_truth_lag":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Topic.active":
 		return protoreflect.ValueOfBool(false)
 	case "emissions.v1.Topic.default_arg":
@@ -2597,7 +2729,7 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.EpochLastEnded |= uint64(b&0x7F) << shift
+					x.EpochLastEnded |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -2616,7 +2748,7 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.EpochLength |= uint64(b&0x7F) << shift
+					x.EpochLength |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -2635,7 +2767,7 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.GroundTruthLag |= uint64(b&0x7F) << shift
+					x.GroundTruthLag |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -9635,17 +9767,17 @@ func (x *fastReflection_OffchainNodes) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_InferenceSetForScoring            protoreflect.MessageDescriptor
-	fd_InferenceSetForScoring_topic_id   protoreflect.FieldDescriptor
-	fd_InferenceSetForScoring_timestamp  protoreflect.FieldDescriptor
-	fd_InferenceSetForScoring_inferences protoreflect.FieldDescriptor
+	md_InferenceSetForScoring              protoreflect.MessageDescriptor
+	fd_InferenceSetForScoring_topic_id     protoreflect.FieldDescriptor
+	fd_InferenceSetForScoring_block_height protoreflect.FieldDescriptor
+	fd_InferenceSetForScoring_inferences   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_types_proto_init()
 	md_InferenceSetForScoring = File_emissions_v1_types_proto.Messages().ByName("InferenceSetForScoring")
 	fd_InferenceSetForScoring_topic_id = md_InferenceSetForScoring.Fields().ByName("topic_id")
-	fd_InferenceSetForScoring_timestamp = md_InferenceSetForScoring.Fields().ByName("timestamp")
+	fd_InferenceSetForScoring_block_height = md_InferenceSetForScoring.Fields().ByName("block_height")
 	fd_InferenceSetForScoring_inferences = md_InferenceSetForScoring.Fields().ByName("inferences")
 }
 
@@ -9720,9 +9852,9 @@ func (x *fastReflection_InferenceSetForScoring) Range(f func(protoreflect.FieldD
 			return
 		}
 	}
-	if x.Timestamp != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.Timestamp)
-		if !f(fd_InferenceSetForScoring_timestamp, value) {
+	if x.BlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockHeight)
+		if !f(fd_InferenceSetForScoring_block_height, value) {
 			return
 		}
 	}
@@ -9749,8 +9881,8 @@ func (x *fastReflection_InferenceSetForScoring) Has(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		return x.Timestamp != uint64(0)
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		return x.BlockHeight != int64(0)
 	case "emissions.v1.InferenceSetForScoring.inferences":
 		return x.Inferences != nil
 	default:
@@ -9771,8 +9903,8 @@ func (x *fastReflection_InferenceSetForScoring) Clear(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		x.Timestamp = uint64(0)
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		x.BlockHeight = int64(0)
 	case "emissions.v1.InferenceSetForScoring.inferences":
 		x.Inferences = nil
 	default:
@@ -9794,9 +9926,9 @@ func (x *fastReflection_InferenceSetForScoring) Get(descriptor protoreflect.Fiel
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		value := x.Timestamp
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		value := x.BlockHeight
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.InferenceSetForScoring.inferences":
 		value := x.Inferences
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
@@ -9822,8 +9954,8 @@ func (x *fastReflection_InferenceSetForScoring) Set(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		x.Timestamp = value.Uint()
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		x.BlockHeight = value.Int()
 	case "emissions.v1.InferenceSetForScoring.inferences":
 		x.Inferences = value.Message().Interface().(*Inferences)
 	default:
@@ -9853,8 +9985,8 @@ func (x *fastReflection_InferenceSetForScoring) Mutable(fd protoreflect.FieldDes
 		return protoreflect.ValueOfMessage(x.Inferences.ProtoReflect())
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v1.InferenceSetForScoring is not mutable"))
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		panic(fmt.Errorf("field timestamp of message emissions.v1.InferenceSetForScoring is not mutable"))
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v1.InferenceSetForScoring is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.InferenceSetForScoring"))
@@ -9870,8 +10002,8 @@ func (x *fastReflection_InferenceSetForScoring) NewField(fd protoreflect.FieldDe
 	switch fd.FullName() {
 	case "emissions.v1.InferenceSetForScoring.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.InferenceSetForScoring.timestamp":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.InferenceSetForScoring.block_height":
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.InferenceSetForScoring.inferences":
 		m := new(Inferences)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
@@ -9947,8 +10079,8 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 		if x.TopicId != 0 {
 			n += 1 + runtime.Sov(uint64(x.TopicId))
 		}
-		if x.Timestamp != 0 {
-			n += 1 + runtime.Sov(uint64(x.Timestamp))
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
 		}
 		if x.Inferences != nil {
 			l = options.Size(x.Inferences)
@@ -9997,8 +10129,8 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 			i--
 			dAtA[i] = 0x1a
 		}
-		if x.Timestamp != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.Timestamp))
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -10077,9 +10209,9 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 				}
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
 				}
-				x.Timestamp = 0
+				x.BlockHeight = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -10089,7 +10221,7 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.Timestamp |= uint64(b&0x7F) << shift
+					x.BlockHeight |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -10166,17 +10298,17 @@ func (x *fastReflection_InferenceSetForScoring) ProtoMethods() *protoiface.Metho
 }
 
 var (
-	md_ForecastSetForScoring           protoreflect.MessageDescriptor
-	fd_ForecastSetForScoring_topic_id  protoreflect.FieldDescriptor
-	fd_ForecastSetForScoring_timestamp protoreflect.FieldDescriptor
-	fd_ForecastSetForScoring_forecasts protoreflect.FieldDescriptor
+	md_ForecastSetForScoring              protoreflect.MessageDescriptor
+	fd_ForecastSetForScoring_topic_id     protoreflect.FieldDescriptor
+	fd_ForecastSetForScoring_block_height protoreflect.FieldDescriptor
+	fd_ForecastSetForScoring_forecasts    protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_types_proto_init()
 	md_ForecastSetForScoring = File_emissions_v1_types_proto.Messages().ByName("ForecastSetForScoring")
 	fd_ForecastSetForScoring_topic_id = md_ForecastSetForScoring.Fields().ByName("topic_id")
-	fd_ForecastSetForScoring_timestamp = md_ForecastSetForScoring.Fields().ByName("timestamp")
+	fd_ForecastSetForScoring_block_height = md_ForecastSetForScoring.Fields().ByName("block_height")
 	fd_ForecastSetForScoring_forecasts = md_ForecastSetForScoring.Fields().ByName("forecasts")
 }
 
@@ -10251,9 +10383,9 @@ func (x *fastReflection_ForecastSetForScoring) Range(f func(protoreflect.FieldDe
 			return
 		}
 	}
-	if x.Timestamp != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.Timestamp)
-		if !f(fd_ForecastSetForScoring_timestamp, value) {
+	if x.BlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockHeight)
+		if !f(fd_ForecastSetForScoring_block_height, value) {
 			return
 		}
 	}
@@ -10280,8 +10412,8 @@ func (x *fastReflection_ForecastSetForScoring) Has(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		return x.Timestamp != uint64(0)
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		return x.BlockHeight != int64(0)
 	case "emissions.v1.ForecastSetForScoring.forecasts":
 		return x.Forecasts != nil
 	default:
@@ -10302,8 +10434,8 @@ func (x *fastReflection_ForecastSetForScoring) Clear(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		x.Timestamp = uint64(0)
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		x.BlockHeight = int64(0)
 	case "emissions.v1.ForecastSetForScoring.forecasts":
 		x.Forecasts = nil
 	default:
@@ -10325,9 +10457,9 @@ func (x *fastReflection_ForecastSetForScoring) Get(descriptor protoreflect.Field
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		value := x.Timestamp
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		value := x.BlockHeight
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.ForecastSetForScoring.forecasts":
 		value := x.Forecasts
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
@@ -10353,8 +10485,8 @@ func (x *fastReflection_ForecastSetForScoring) Set(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		x.Timestamp = value.Uint()
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		x.BlockHeight = value.Int()
 	case "emissions.v1.ForecastSetForScoring.forecasts":
 		x.Forecasts = value.Message().Interface().(*Forecasts)
 	default:
@@ -10384,8 +10516,8 @@ func (x *fastReflection_ForecastSetForScoring) Mutable(fd protoreflect.FieldDesc
 		return protoreflect.ValueOfMessage(x.Forecasts.ProtoReflect())
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v1.ForecastSetForScoring is not mutable"))
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		panic(fmt.Errorf("field timestamp of message emissions.v1.ForecastSetForScoring is not mutable"))
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v1.ForecastSetForScoring is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.ForecastSetForScoring"))
@@ -10401,8 +10533,8 @@ func (x *fastReflection_ForecastSetForScoring) NewField(fd protoreflect.FieldDes
 	switch fd.FullName() {
 	case "emissions.v1.ForecastSetForScoring.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.ForecastSetForScoring.timestamp":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.ForecastSetForScoring.block_height":
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.ForecastSetForScoring.forecasts":
 		m := new(Forecasts)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
@@ -10478,8 +10610,8 @@ func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Method
 		if x.TopicId != 0 {
 			n += 1 + runtime.Sov(uint64(x.TopicId))
 		}
-		if x.Timestamp != 0 {
-			n += 1 + runtime.Sov(uint64(x.Timestamp))
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
 		}
 		if x.Forecasts != nil {
 			l = options.Size(x.Forecasts)
@@ -10528,8 +10660,8 @@ func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Method
 			i--
 			dAtA[i] = 0x1a
 		}
-		if x.Timestamp != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.Timestamp))
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -10608,9 +10740,9 @@ func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Method
 				}
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
 				}
-				x.Timestamp = 0
+				x.BlockHeight = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -10620,7 +10752,7 @@ func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Method
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.Timestamp |= uint64(b&0x7F) << shift
+					x.BlockHeight |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -10697,6 +10829,1002 @@ func (x *fastReflection_ForecastSetForScoring) ProtoMethods() *protoiface.Method
 }
 
 var (
+	md_WorkerRegret                  protoreflect.MessageDescriptor
+	fd_WorkerRegret_worker           protoreflect.FieldDescriptor
+	fd_WorkerRegret_inference_regret protoreflect.FieldDescriptor
+	fd_WorkerRegret_forecast_regret  protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v1_types_proto_init()
+	md_WorkerRegret = File_emissions_v1_types_proto.Messages().ByName("WorkerRegret")
+	fd_WorkerRegret_worker = md_WorkerRegret.Fields().ByName("worker")
+	fd_WorkerRegret_inference_regret = md_WorkerRegret.Fields().ByName("inference_regret")
+	fd_WorkerRegret_forecast_regret = md_WorkerRegret.Fields().ByName("forecast_regret")
+}
+
+var _ protoreflect.Message = (*fastReflection_WorkerRegret)(nil)
+
+type fastReflection_WorkerRegret WorkerRegret
+
+func (x *WorkerRegret) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_WorkerRegret)(x)
+}
+
+func (x *WorkerRegret) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v1_types_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_WorkerRegret_messageType fastReflection_WorkerRegret_messageType
+var _ protoreflect.MessageType = fastReflection_WorkerRegret_messageType{}
+
+type fastReflection_WorkerRegret_messageType struct{}
+
+func (x fastReflection_WorkerRegret_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_WorkerRegret)(nil)
+}
+func (x fastReflection_WorkerRegret_messageType) New() protoreflect.Message {
+	return new(fastReflection_WorkerRegret)
+}
+func (x fastReflection_WorkerRegret_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_WorkerRegret
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_WorkerRegret) Descriptor() protoreflect.MessageDescriptor {
+	return md_WorkerRegret
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_WorkerRegret) Type() protoreflect.MessageType {
+	return _fastReflection_WorkerRegret_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_WorkerRegret) New() protoreflect.Message {
+	return new(fastReflection_WorkerRegret)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_WorkerRegret) Interface() protoreflect.ProtoMessage {
+	return (*WorkerRegret)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_WorkerRegret) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Worker != "" {
+		value := protoreflect.ValueOfString(x.Worker)
+		if !f(fd_WorkerRegret_worker, value) {
+			return
+		}
+	}
+	if x.InferenceRegret != float32(0) || math.Signbit(float64(x.InferenceRegret)) {
+		value := protoreflect.ValueOfFloat32(x.InferenceRegret)
+		if !f(fd_WorkerRegret_inference_regret, value) {
+			return
+		}
+	}
+	if x.ForecastRegret != float32(0) || math.Signbit(float64(x.ForecastRegret)) {
+		value := protoreflect.ValueOfFloat32(x.ForecastRegret)
+		if !f(fd_WorkerRegret_forecast_regret, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_WorkerRegret) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		return x.Worker != ""
+	case "emissions.v1.WorkerRegret.inference_regret":
+		return x.InferenceRegret != float32(0) || math.Signbit(float64(x.InferenceRegret))
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		return x.ForecastRegret != float32(0) || math.Signbit(float64(x.ForecastRegret))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegret) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		x.Worker = ""
+	case "emissions.v1.WorkerRegret.inference_regret":
+		x.InferenceRegret = float32(0)
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		x.ForecastRegret = float32(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_WorkerRegret) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		value := x.Worker
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.WorkerRegret.inference_regret":
+		value := x.InferenceRegret
+		return protoreflect.ValueOfFloat32(value)
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		value := x.ForecastRegret
+		return protoreflect.ValueOfFloat32(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegret) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		x.Worker = value.Interface().(string)
+	case "emissions.v1.WorkerRegret.inference_regret":
+		x.InferenceRegret = float32(value.Float())
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		x.ForecastRegret = float32(value.Float())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegret) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		panic(fmt.Errorf("field worker of message emissions.v1.WorkerRegret is not mutable"))
+	case "emissions.v1.WorkerRegret.inference_regret":
+		panic(fmt.Errorf("field inference_regret of message emissions.v1.WorkerRegret is not mutable"))
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		panic(fmt.Errorf("field forecast_regret of message emissions.v1.WorkerRegret is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_WorkerRegret) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegret.worker":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.WorkerRegret.inference_regret":
+		return protoreflect.ValueOfFloat32(float32(0))
+	case "emissions.v1.WorkerRegret.forecast_regret":
+		return protoreflect.ValueOfFloat32(float32(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegret"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegret does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_WorkerRegret) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.WorkerRegret", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_WorkerRegret) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegret) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_WorkerRegret) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_WorkerRegret) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*WorkerRegret)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Worker)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.InferenceRegret != 0 || math.Signbit(float64(x.InferenceRegret)) {
+			n += 5
+		}
+		if x.ForecastRegret != 0 || math.Signbit(float64(x.ForecastRegret)) {
+			n += 5
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*WorkerRegret)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.ForecastRegret != 0 || math.Signbit(float64(x.ForecastRegret)) {
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.ForecastRegret))))
+			i--
+			dAtA[i] = 0x1d
+		}
+		if x.InferenceRegret != 0 || math.Signbit(float64(x.InferenceRegret)) {
+			i -= 4
+			binary.LittleEndian.PutUint32(dAtA[i:], uint32(math.Float32bits(float32(x.InferenceRegret))))
+			i--
+			dAtA[i] = 0x15
+		}
+		if len(x.Worker) > 0 {
+			i -= len(x.Worker)
+			copy(dAtA[i:], x.Worker)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Worker)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*WorkerRegret)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: WorkerRegret: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: WorkerRegret: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Worker = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 5 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InferenceRegret", wireType)
+				}
+				var v uint32
+				if (iNdEx + 4) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				x.InferenceRegret = float32(math.Float32frombits(v))
+			case 3:
+				if wireType != 5 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ForecastRegret", wireType)
+				}
+				var v uint32
+				if (iNdEx + 4) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				v = uint32(binary.LittleEndian.Uint32(dAtA[iNdEx:]))
+				iNdEx += 4
+				x.ForecastRegret = float32(math.Float32frombits(v))
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_WorkerRegrets_1_list)(nil)
+
+type _WorkerRegrets_1_list struct {
+	list *[]*WorkerRegret
+}
+
+func (x *_WorkerRegrets_1_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_WorkerRegrets_1_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_WorkerRegrets_1_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*WorkerRegret)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_WorkerRegrets_1_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*WorkerRegret)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_WorkerRegrets_1_list) AppendMutable() protoreflect.Value {
+	v := new(WorkerRegret)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_WorkerRegrets_1_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_WorkerRegrets_1_list) NewElement() protoreflect.Value {
+	v := new(WorkerRegret)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_WorkerRegrets_1_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_WorkerRegrets                protoreflect.MessageDescriptor
+	fd_WorkerRegrets_worker_regrets protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v1_types_proto_init()
+	md_WorkerRegrets = File_emissions_v1_types_proto.Messages().ByName("WorkerRegrets")
+	fd_WorkerRegrets_worker_regrets = md_WorkerRegrets.Fields().ByName("worker_regrets")
+}
+
+var _ protoreflect.Message = (*fastReflection_WorkerRegrets)(nil)
+
+type fastReflection_WorkerRegrets WorkerRegrets
+
+func (x *WorkerRegrets) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_WorkerRegrets)(x)
+}
+
+func (x *WorkerRegrets) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v1_types_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_WorkerRegrets_messageType fastReflection_WorkerRegrets_messageType
+var _ protoreflect.MessageType = fastReflection_WorkerRegrets_messageType{}
+
+type fastReflection_WorkerRegrets_messageType struct{}
+
+func (x fastReflection_WorkerRegrets_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_WorkerRegrets)(nil)
+}
+func (x fastReflection_WorkerRegrets_messageType) New() protoreflect.Message {
+	return new(fastReflection_WorkerRegrets)
+}
+func (x fastReflection_WorkerRegrets_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_WorkerRegrets
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_WorkerRegrets) Descriptor() protoreflect.MessageDescriptor {
+	return md_WorkerRegrets
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_WorkerRegrets) Type() protoreflect.MessageType {
+	return _fastReflection_WorkerRegrets_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_WorkerRegrets) New() protoreflect.Message {
+	return new(fastReflection_WorkerRegrets)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_WorkerRegrets) Interface() protoreflect.ProtoMessage {
+	return (*WorkerRegrets)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_WorkerRegrets) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if len(x.WorkerRegrets) != 0 {
+		value := protoreflect.ValueOfList(&_WorkerRegrets_1_list{list: &x.WorkerRegrets})
+		if !f(fd_WorkerRegrets_worker_regrets, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_WorkerRegrets) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		return len(x.WorkerRegrets) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegrets) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		x.WorkerRegrets = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_WorkerRegrets) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		if len(x.WorkerRegrets) == 0 {
+			return protoreflect.ValueOfList(&_WorkerRegrets_1_list{})
+		}
+		listValue := &_WorkerRegrets_1_list{list: &x.WorkerRegrets}
+		return protoreflect.ValueOfList(listValue)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegrets) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		lv := value.List()
+		clv := lv.(*_WorkerRegrets_1_list)
+		x.WorkerRegrets = *clv.list
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegrets) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		if x.WorkerRegrets == nil {
+			x.WorkerRegrets = []*WorkerRegret{}
+		}
+		value := &_WorkerRegrets_1_list{list: &x.WorkerRegrets}
+		return protoreflect.ValueOfList(value)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_WorkerRegrets) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v1.WorkerRegrets.worker_regrets":
+		list := []*WorkerRegret{}
+		return protoreflect.ValueOfList(&_WorkerRegrets_1_list{list: &list})
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.WorkerRegrets"))
+		}
+		panic(fmt.Errorf("message emissions.v1.WorkerRegrets does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_WorkerRegrets) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.WorkerRegrets", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_WorkerRegrets) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_WorkerRegrets) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_WorkerRegrets) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_WorkerRegrets) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*WorkerRegrets)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if len(x.WorkerRegrets) > 0 {
+			for _, e := range x.WorkerRegrets {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*WorkerRegrets)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.WorkerRegrets) > 0 {
+			for iNdEx := len(x.WorkerRegrets) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.WorkerRegrets[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0xa
+			}
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*WorkerRegrets)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: WorkerRegrets: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: WorkerRegrets: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field WorkerRegrets", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.WorkerRegrets = append(x.WorkerRegrets, &WorkerRegret{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.WorkerRegrets[len(x.WorkerRegrets)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_StakePlacement          protoreflect.MessageDescriptor
 	fd_StakePlacement_topic_id protoreflect.FieldDescriptor
 	fd_StakePlacement_reputer  protoreflect.FieldDescriptor
@@ -10720,7 +11848,7 @@ func (x *StakePlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakePlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v1_types_proto_msgTypes[15]
+	mi := &file_emissions_v1_types_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11280,15 +12408,15 @@ func (x *_StakeRemoval_2_list) IsValid() bool {
 }
 
 var (
-	md_StakeRemoval                           protoreflect.MessageDescriptor
-	fd_StakeRemoval_timestamp_removal_started protoreflect.FieldDescriptor
-	fd_StakeRemoval_placements                protoreflect.FieldDescriptor
+	md_StakeRemoval                       protoreflect.MessageDescriptor
+	fd_StakeRemoval_block_removal_started protoreflect.FieldDescriptor
+	fd_StakeRemoval_placements            protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_types_proto_init()
 	md_StakeRemoval = File_emissions_v1_types_proto.Messages().ByName("StakeRemoval")
-	fd_StakeRemoval_timestamp_removal_started = md_StakeRemoval.Fields().ByName("timestamp_removal_started")
+	fd_StakeRemoval_block_removal_started = md_StakeRemoval.Fields().ByName("block_removal_started")
 	fd_StakeRemoval_placements = md_StakeRemoval.Fields().ByName("placements")
 }
 
@@ -11301,7 +12429,7 @@ func (x *StakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *StakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v1_types_proto_msgTypes[16]
+	mi := &file_emissions_v1_types_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11357,9 +12485,9 @@ func (x *fastReflection_StakeRemoval) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_StakeRemoval) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TimestampRemovalStarted != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TimestampRemovalStarted)
-		if !f(fd_StakeRemoval_timestamp_removal_started, value) {
+	if x.BlockRemovalStarted != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockRemovalStarted)
+		if !f(fd_StakeRemoval_block_removal_started, value) {
 			return
 		}
 	}
@@ -11384,8 +12512,8 @@ func (x *fastReflection_StakeRemoval) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_StakeRemoval) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		return x.TimestampRemovalStarted != uint64(0)
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		return x.BlockRemovalStarted != int64(0)
 	case "emissions.v1.StakeRemoval.placements":
 		return len(x.Placements) != 0
 	default:
@@ -11404,8 +12532,8 @@ func (x *fastReflection_StakeRemoval) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_StakeRemoval) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		x.TimestampRemovalStarted = uint64(0)
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		x.BlockRemovalStarted = int64(0)
 	case "emissions.v1.StakeRemoval.placements":
 		x.Placements = nil
 	default:
@@ -11424,9 +12552,9 @@ func (x *fastReflection_StakeRemoval) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_StakeRemoval) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		value := x.TimestampRemovalStarted
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		value := x.BlockRemovalStarted
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.StakeRemoval.placements":
 		if len(x.Placements) == 0 {
 			return protoreflect.ValueOfList(&_StakeRemoval_2_list{})
@@ -11453,8 +12581,8 @@ func (x *fastReflection_StakeRemoval) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_StakeRemoval) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		x.TimestampRemovalStarted = value.Uint()
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		x.BlockRemovalStarted = value.Int()
 	case "emissions.v1.StakeRemoval.placements":
 		lv := value.List()
 		clv := lv.(*_StakeRemoval_2_list)
@@ -11485,8 +12613,8 @@ func (x *fastReflection_StakeRemoval) Mutable(fd protoreflect.FieldDescriptor) p
 		}
 		value := &_StakeRemoval_2_list{list: &x.Placements}
 		return protoreflect.ValueOfList(value)
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		panic(fmt.Errorf("field timestamp_removal_started of message emissions.v1.StakeRemoval is not mutable"))
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		panic(fmt.Errorf("field block_removal_started of message emissions.v1.StakeRemoval is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakeRemoval"))
@@ -11500,8 +12628,8 @@ func (x *fastReflection_StakeRemoval) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_StakeRemoval) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.StakeRemoval.timestamp_removal_started":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.StakeRemoval.block_removal_started":
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.StakeRemoval.placements":
 		list := []*StakePlacement{}
 		return protoreflect.ValueOfList(&_StakeRemoval_2_list{list: &list})
@@ -11574,8 +12702,8 @@ func (x *fastReflection_StakeRemoval) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.TimestampRemovalStarted != 0 {
-			n += 1 + runtime.Sov(uint64(x.TimestampRemovalStarted))
+		if x.BlockRemovalStarted != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockRemovalStarted))
 		}
 		if len(x.Placements) > 0 {
 			for _, e := range x.Placements {
@@ -11628,8 +12756,8 @@ func (x *fastReflection_StakeRemoval) ProtoMethods() *protoiface.Methods {
 				dAtA[i] = 0x12
 			}
 		}
-		if x.TimestampRemovalStarted != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TimestampRemovalStarted))
+		if x.BlockRemovalStarted != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockRemovalStarted))
 			i--
 			dAtA[i] = 0x8
 		}
@@ -11684,9 +12812,9 @@ func (x *fastReflection_StakeRemoval) ProtoMethods() *protoiface.Methods {
 			switch fieldNum {
 			case 1:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TimestampRemovalStarted", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockRemovalStarted", wireType)
 				}
-				x.TimestampRemovalStarted = 0
+				x.BlockRemovalStarted = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -11696,7 +12824,7 @@ func (x *fastReflection_StakeRemoval) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.TimestampRemovalStarted |= uint64(b&0x7F) << shift
+					x.BlockRemovalStarted |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -11796,7 +12924,7 @@ func (x *DelegatedStakePlacement) ProtoReflect() protoreflect.Message {
 }
 
 func (x *DelegatedStakePlacement) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v1_types_proto_msgTypes[17]
+	mi := &file_emissions_v1_types_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12418,15 +13546,15 @@ func (x *_DelegatedStakeRemoval_2_list) IsValid() bool {
 }
 
 var (
-	md_DelegatedStakeRemoval                           protoreflect.MessageDescriptor
-	fd_DelegatedStakeRemoval_timestamp_removal_started protoreflect.FieldDescriptor
-	fd_DelegatedStakeRemoval_placements                protoreflect.FieldDescriptor
+	md_DelegatedStakeRemoval                       protoreflect.MessageDescriptor
+	fd_DelegatedStakeRemoval_block_removal_started protoreflect.FieldDescriptor
+	fd_DelegatedStakeRemoval_placements            protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_types_proto_init()
 	md_DelegatedStakeRemoval = File_emissions_v1_types_proto.Messages().ByName("DelegatedStakeRemoval")
-	fd_DelegatedStakeRemoval_timestamp_removal_started = md_DelegatedStakeRemoval.Fields().ByName("timestamp_removal_started")
+	fd_DelegatedStakeRemoval_block_removal_started = md_DelegatedStakeRemoval.Fields().ByName("block_removal_started")
 	fd_DelegatedStakeRemoval_placements = md_DelegatedStakeRemoval.Fields().ByName("placements")
 }
 
@@ -12439,7 +13567,7 @@ func (x *DelegatedStakeRemoval) ProtoReflect() protoreflect.Message {
 }
 
 func (x *DelegatedStakeRemoval) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v1_types_proto_msgTypes[18]
+	mi := &file_emissions_v1_types_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12495,9 +13623,9 @@ func (x *fastReflection_DelegatedStakeRemoval) Interface() protoreflect.ProtoMes
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_DelegatedStakeRemoval) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TimestampRemovalStarted != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TimestampRemovalStarted)
-		if !f(fd_DelegatedStakeRemoval_timestamp_removal_started, value) {
+	if x.BlockRemovalStarted != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockRemovalStarted)
+		if !f(fd_DelegatedStakeRemoval_block_removal_started, value) {
 			return
 		}
 	}
@@ -12522,8 +13650,8 @@ func (x *fastReflection_DelegatedStakeRemoval) Range(f func(protoreflect.FieldDe
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_DelegatedStakeRemoval) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		return x.TimestampRemovalStarted != uint64(0)
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		return x.BlockRemovalStarted != int64(0)
 	case "emissions.v1.DelegatedStakeRemoval.placements":
 		return len(x.Placements) != 0
 	default:
@@ -12542,8 +13670,8 @@ func (x *fastReflection_DelegatedStakeRemoval) Has(fd protoreflect.FieldDescript
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_DelegatedStakeRemoval) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		x.TimestampRemovalStarted = uint64(0)
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		x.BlockRemovalStarted = int64(0)
 	case "emissions.v1.DelegatedStakeRemoval.placements":
 		x.Placements = nil
 	default:
@@ -12562,9 +13690,9 @@ func (x *fastReflection_DelegatedStakeRemoval) Clear(fd protoreflect.FieldDescri
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_DelegatedStakeRemoval) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		value := x.TimestampRemovalStarted
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		value := x.BlockRemovalStarted
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.DelegatedStakeRemoval.placements":
 		if len(x.Placements) == 0 {
 			return protoreflect.ValueOfList(&_DelegatedStakeRemoval_2_list{})
@@ -12591,8 +13719,8 @@ func (x *fastReflection_DelegatedStakeRemoval) Get(descriptor protoreflect.Field
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_DelegatedStakeRemoval) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		x.TimestampRemovalStarted = value.Uint()
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		x.BlockRemovalStarted = value.Int()
 	case "emissions.v1.DelegatedStakeRemoval.placements":
 		lv := value.List()
 		clv := lv.(*_DelegatedStakeRemoval_2_list)
@@ -12623,8 +13751,8 @@ func (x *fastReflection_DelegatedStakeRemoval) Mutable(fd protoreflect.FieldDesc
 		}
 		value := &_DelegatedStakeRemoval_2_list{list: &x.Placements}
 		return protoreflect.ValueOfList(value)
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		panic(fmt.Errorf("field timestamp_removal_started of message emissions.v1.DelegatedStakeRemoval is not mutable"))
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		panic(fmt.Errorf("field block_removal_started of message emissions.v1.DelegatedStakeRemoval is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegatedStakeRemoval"))
@@ -12638,8 +13766,8 @@ func (x *fastReflection_DelegatedStakeRemoval) Mutable(fd protoreflect.FieldDesc
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_DelegatedStakeRemoval) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.DelegatedStakeRemoval.timestamp_removal_started":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.DelegatedStakeRemoval.block_removal_started":
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.DelegatedStakeRemoval.placements":
 		list := []*DelegatedStakePlacement{}
 		return protoreflect.ValueOfList(&_DelegatedStakeRemoval_2_list{list: &list})
@@ -12712,8 +13840,8 @@ func (x *fastReflection_DelegatedStakeRemoval) ProtoMethods() *protoiface.Method
 		var n int
 		var l int
 		_ = l
-		if x.TimestampRemovalStarted != 0 {
-			n += 1 + runtime.Sov(uint64(x.TimestampRemovalStarted))
+		if x.BlockRemovalStarted != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockRemovalStarted))
 		}
 		if len(x.Placements) > 0 {
 			for _, e := range x.Placements {
@@ -12766,8 +13894,8 @@ func (x *fastReflection_DelegatedStakeRemoval) ProtoMethods() *protoiface.Method
 				dAtA[i] = 0x12
 			}
 		}
-		if x.TimestampRemovalStarted != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TimestampRemovalStarted))
+		if x.BlockRemovalStarted != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockRemovalStarted))
 			i--
 			dAtA[i] = 0x8
 		}
@@ -12822,9 +13950,9 @@ func (x *fastReflection_DelegatedStakeRemoval) ProtoMethods() *protoiface.Method
 			switch fieldNum {
 			case 1:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TimestampRemovalStarted", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockRemovalStarted", wireType)
 				}
-				x.TimestampRemovalStarted = 0
+				x.BlockRemovalStarted = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -12834,7 +13962,7 @@ func (x *fastReflection_DelegatedStakeRemoval) ProtoMethods() *protoiface.Method
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.TimestampRemovalStarted |= uint64(b&0x7F) << shift
+					x.BlockRemovalStarted |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -12916,8 +14044,8 @@ var (
 	fd_InferenceRequest_cadence                 protoreflect.FieldDescriptor
 	fd_InferenceRequest_max_price_per_inference protoreflect.FieldDescriptor
 	fd_InferenceRequest_bid_amount              protoreflect.FieldDescriptor
-	fd_InferenceRequest_last_checked            protoreflect.FieldDescriptor
-	fd_InferenceRequest_timestamp_valid_until   protoreflect.FieldDescriptor
+	fd_InferenceRequest_block_last_checked      protoreflect.FieldDescriptor
+	fd_InferenceRequest_block_valid_until       protoreflect.FieldDescriptor
 	fd_InferenceRequest_extra_data              protoreflect.FieldDescriptor
 )
 
@@ -12930,8 +14058,8 @@ func init() {
 	fd_InferenceRequest_cadence = md_InferenceRequest.Fields().ByName("cadence")
 	fd_InferenceRequest_max_price_per_inference = md_InferenceRequest.Fields().ByName("max_price_per_inference")
 	fd_InferenceRequest_bid_amount = md_InferenceRequest.Fields().ByName("bid_amount")
-	fd_InferenceRequest_last_checked = md_InferenceRequest.Fields().ByName("last_checked")
-	fd_InferenceRequest_timestamp_valid_until = md_InferenceRequest.Fields().ByName("timestamp_valid_until")
+	fd_InferenceRequest_block_last_checked = md_InferenceRequest.Fields().ByName("block_last_checked")
+	fd_InferenceRequest_block_valid_until = md_InferenceRequest.Fields().ByName("block_valid_until")
 	fd_InferenceRequest_extra_data = md_InferenceRequest.Fields().ByName("extra_data")
 }
 
@@ -12944,7 +14072,7 @@ func (x *InferenceRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *InferenceRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v1_types_proto_msgTypes[19]
+	mi := &file_emissions_v1_types_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13018,8 +14146,8 @@ func (x *fastReflection_InferenceRequest) Range(f func(protoreflect.FieldDescrip
 			return
 		}
 	}
-	if x.Cadence != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.Cadence)
+	if x.Cadence != int64(0) {
+		value := protoreflect.ValueOfInt64(x.Cadence)
 		if !f(fd_InferenceRequest_cadence, value) {
 			return
 		}
@@ -13036,15 +14164,15 @@ func (x *fastReflection_InferenceRequest) Range(f func(protoreflect.FieldDescrip
 			return
 		}
 	}
-	if x.LastChecked != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.LastChecked)
-		if !f(fd_InferenceRequest_last_checked, value) {
+	if x.BlockLastChecked != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockLastChecked)
+		if !f(fd_InferenceRequest_block_last_checked, value) {
 			return
 		}
 	}
-	if x.TimestampValidUntil != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.TimestampValidUntil)
-		if !f(fd_InferenceRequest_timestamp_valid_until, value) {
+	if x.BlockValidUntil != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockValidUntil)
+		if !f(fd_InferenceRequest_block_valid_until, value) {
 			return
 		}
 	}
@@ -13076,15 +14204,15 @@ func (x *fastReflection_InferenceRequest) Has(fd protoreflect.FieldDescriptor) b
 	case "emissions.v1.InferenceRequest.topic_id":
 		return x.TopicId != uint64(0)
 	case "emissions.v1.InferenceRequest.cadence":
-		return x.Cadence != uint64(0)
+		return x.Cadence != int64(0)
 	case "emissions.v1.InferenceRequest.max_price_per_inference":
 		return x.MaxPricePerInference != ""
 	case "emissions.v1.InferenceRequest.bid_amount":
 		return x.BidAmount != ""
-	case "emissions.v1.InferenceRequest.last_checked":
-		return x.LastChecked != uint64(0)
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		return x.TimestampValidUntil != uint64(0)
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		return x.BlockLastChecked != int64(0)
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		return x.BlockValidUntil != int64(0)
 	case "emissions.v1.InferenceRequest.extra_data":
 		return len(x.ExtraData) != 0
 	default:
@@ -13110,15 +14238,15 @@ func (x *fastReflection_InferenceRequest) Clear(fd protoreflect.FieldDescriptor)
 	case "emissions.v1.InferenceRequest.topic_id":
 		x.TopicId = uint64(0)
 	case "emissions.v1.InferenceRequest.cadence":
-		x.Cadence = uint64(0)
+		x.Cadence = int64(0)
 	case "emissions.v1.InferenceRequest.max_price_per_inference":
 		x.MaxPricePerInference = ""
 	case "emissions.v1.InferenceRequest.bid_amount":
 		x.BidAmount = ""
-	case "emissions.v1.InferenceRequest.last_checked":
-		x.LastChecked = uint64(0)
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		x.TimestampValidUntil = uint64(0)
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		x.BlockLastChecked = int64(0)
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		x.BlockValidUntil = int64(0)
 	case "emissions.v1.InferenceRequest.extra_data":
 		x.ExtraData = nil
 	default:
@@ -13148,19 +14276,19 @@ func (x *fastReflection_InferenceRequest) Get(descriptor protoreflect.FieldDescr
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.v1.InferenceRequest.cadence":
 		value := x.Cadence
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.InferenceRequest.max_price_per_inference":
 		value := x.MaxPricePerInference
 		return protoreflect.ValueOfString(value)
 	case "emissions.v1.InferenceRequest.bid_amount":
 		value := x.BidAmount
 		return protoreflect.ValueOfString(value)
-	case "emissions.v1.InferenceRequest.last_checked":
-		value := x.LastChecked
-		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		value := x.TimestampValidUntil
-		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		value := x.BlockLastChecked
+		return protoreflect.ValueOfInt64(value)
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		value := x.BlockValidUntil
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.InferenceRequest.extra_data":
 		value := x.ExtraData
 		return protoreflect.ValueOfBytes(value)
@@ -13191,15 +14319,15 @@ func (x *fastReflection_InferenceRequest) Set(fd protoreflect.FieldDescriptor, v
 	case "emissions.v1.InferenceRequest.topic_id":
 		x.TopicId = value.Uint()
 	case "emissions.v1.InferenceRequest.cadence":
-		x.Cadence = value.Uint()
+		x.Cadence = value.Int()
 	case "emissions.v1.InferenceRequest.max_price_per_inference":
 		x.MaxPricePerInference = value.Interface().(string)
 	case "emissions.v1.InferenceRequest.bid_amount":
 		x.BidAmount = value.Interface().(string)
-	case "emissions.v1.InferenceRequest.last_checked":
-		x.LastChecked = value.Uint()
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		x.TimestampValidUntil = value.Uint()
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		x.BlockLastChecked = value.Int()
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		x.BlockValidUntil = value.Int()
 	case "emissions.v1.InferenceRequest.extra_data":
 		x.ExtraData = value.Bytes()
 	default:
@@ -13234,10 +14362,10 @@ func (x *fastReflection_InferenceRequest) Mutable(fd protoreflect.FieldDescripto
 		panic(fmt.Errorf("field max_price_per_inference of message emissions.v1.InferenceRequest is not mutable"))
 	case "emissions.v1.InferenceRequest.bid_amount":
 		panic(fmt.Errorf("field bid_amount of message emissions.v1.InferenceRequest is not mutable"))
-	case "emissions.v1.InferenceRequest.last_checked":
-		panic(fmt.Errorf("field last_checked of message emissions.v1.InferenceRequest is not mutable"))
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		panic(fmt.Errorf("field timestamp_valid_until of message emissions.v1.InferenceRequest is not mutable"))
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		panic(fmt.Errorf("field block_last_checked of message emissions.v1.InferenceRequest is not mutable"))
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		panic(fmt.Errorf("field block_valid_until of message emissions.v1.InferenceRequest is not mutable"))
 	case "emissions.v1.InferenceRequest.extra_data":
 		panic(fmt.Errorf("field extra_data of message emissions.v1.InferenceRequest is not mutable"))
 	default:
@@ -13260,15 +14388,15 @@ func (x *fastReflection_InferenceRequest) NewField(fd protoreflect.FieldDescript
 	case "emissions.v1.InferenceRequest.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.InferenceRequest.cadence":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.InferenceRequest.max_price_per_inference":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.InferenceRequest.bid_amount":
 		return protoreflect.ValueOfString("")
-	case "emissions.v1.InferenceRequest.last_checked":
-		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.InferenceRequest.timestamp_valid_until":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.InferenceRequest.block_last_checked":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v1.InferenceRequest.block_valid_until":
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.InferenceRequest.extra_data":
 		return protoreflect.ValueOfBytes(nil)
 	default:
@@ -13361,11 +14489,11 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.LastChecked != 0 {
-			n += 1 + runtime.Sov(uint64(x.LastChecked))
+		if x.BlockLastChecked != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockLastChecked))
 		}
-		if x.TimestampValidUntil != 0 {
-			n += 1 + runtime.Sov(uint64(x.TimestampValidUntil))
+		if x.BlockValidUntil != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockValidUntil))
 		}
 		l = len(x.ExtraData)
 		if l > 0 {
@@ -13407,13 +14535,13 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x4a
 		}
-		if x.TimestampValidUntil != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TimestampValidUntil))
+		if x.BlockValidUntil != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockValidUntil))
 			i--
 			dAtA[i] = 0x40
 		}
-		if x.LastChecked != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.LastChecked))
+		if x.BlockLastChecked != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockLastChecked))
 			i--
 			dAtA[i] = 0x38
 		}
@@ -13586,7 +14714,7 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.Cadence |= uint64(b&0x7F) << shift
+					x.Cadence |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -13657,9 +14785,9 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 7:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastChecked", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockLastChecked", wireType)
 				}
-				x.LastChecked = 0
+				x.BlockLastChecked = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -13669,16 +14797,16 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.LastChecked |= uint64(b&0x7F) << shift
+					x.BlockLastChecked |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
 			case 8:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TimestampValidUntil", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockValidUntil", wireType)
 				}
-				x.TimestampValidUntil = 0
+				x.BlockValidUntil = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -13688,7 +14816,7 @@ func (x *fastReflection_InferenceRequest) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.TimestampValidUntil |= uint64(b&0x7F) << shift
+					x.BlockValidUntil |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -13788,10 +14916,10 @@ type Params struct {
 	MinRequestUnmetDemand         string  `protobuf:"bytes,5,opt,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                          // delete requests if they have below this demand remaining
 	MaxMissingInferencePercent    string  `protobuf:"bytes,6,opt,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`           // if a worker has this percentage of inferences missing, penalize them
 	RequiredMinimumStake          string  `protobuf:"bytes,7,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                               // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow        uint64  `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                      // how long to wait before allowed to remove stake
-	MinEpochLength                uint64  `protobuf:"varint,9,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-	MaxInferenceRequestValidity   uint64  `protobuf:"varint,10,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`      // longest time a subscription of inferences is allowed to be valid
-	MaxRequestCadence             uint64  `protobuf:"varint,11,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                      // slowest (largest) amount of time a subscription can take between inferences
+	RemoveStakeDelayWindow        int64   `protobuf:"varint,8,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                      // how long to wait before allowed to remove stake
+	MinEpochLength                int64   `protobuf:"varint,9,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
+	MaxInferenceRequestValidity   int64   `protobuf:"varint,10,opt,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`      // longest time a subscription of inferences is allowed to be valid
+	MaxRequestCadence             int64   `protobuf:"varint,11,opt,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                      // slowest (largest) amount of time a subscription can take between inferences
 	PercentRewardsReputersWorkers string  `protobuf:"bytes,12,opt,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"` // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
 	Sharpness                     float64 `protobuf:"fixed64,13,opt,name=sharpness,proto3" json:"sharpness,omitempty"`                                                                                // controls going from stake-weighted consensus at low values to majority vote of
 	// above-average stake holders at high values
@@ -13802,6 +14930,8 @@ type Params struct {
 	MinStakeFraction           float32 `protobuf:"fixed32,18,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`                                  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 	MaxWorkersPerTopicRequest  uint64  `protobuf:"varint,19,opt,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`    // max number of workers whose inference will be used and compensated per request
 	MaxReputersPerTopicRequest uint64  `protobuf:"varint,20,opt,name=max_reputers_per_topic_request,json=maxReputersPerTopicRequest,proto3" json:"max_reputers_per_topic_request,omitempty"` // max number of reputers to solicit losses from per loss request
+	Epsilon                    string  `protobuf:"bytes,21,opt,name=epsilon,proto3" json:"epsilon,omitempty"`                                                                                // small number to prevent division by zero
+	PInferenceSynthesis        string  `protobuf:"bytes,22,opt,name=p_inference_synthesis,json=pInferenceSynthesis,proto3" json:"p_inference_synthesis,omitempty"`                           // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
 func (x *Params) Reset() {
@@ -13873,28 +15003,28 @@ func (x *Params) GetRequiredMinimumStake() string {
 	return ""
 }
 
-func (x *Params) GetRemoveStakeDelayWindow() uint64 {
+func (x *Params) GetRemoveStakeDelayWindow() int64 {
 	if x != nil {
 		return x.RemoveStakeDelayWindow
 	}
 	return 0
 }
 
-func (x *Params) GetMinEpochLength() uint64 {
+func (x *Params) GetMinEpochLength() int64 {
 	if x != nil {
 		return x.MinEpochLength
 	}
 	return 0
 }
 
-func (x *Params) GetMaxInferenceRequestValidity() uint64 {
+func (x *Params) GetMaxInferenceRequestValidity() int64 {
 	if x != nil {
 		return x.MaxInferenceRequestValidity
 	}
 	return 0
 }
 
-func (x *Params) GetMaxRequestCadence() uint64 {
+func (x *Params) GetMaxRequestCadence() int64 {
 	if x != nil {
 		return x.MaxRequestCadence
 	}
@@ -13964,6 +15094,20 @@ func (x *Params) GetMaxReputersPerTopicRequest() uint64 {
 	return 0
 }
 
+func (x *Params) GetEpsilon() string {
+	if x != nil {
+		return x.Epsilon
+	}
+	return ""
+}
+
+func (x *Params) GetPInferenceSynthesis() string {
+	if x != nil {
+		return x.PInferenceSynthesis
+	}
+	return ""
+}
+
 type Topic struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -13976,9 +15120,9 @@ type Topic struct {
 	LossMethod             string  `protobuf:"bytes,5,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
 	InferenceLogic         string  `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
 	InferenceMethod        string  `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
-	EpochLastEnded         uint64  `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
-	EpochLength            uint64  `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	GroundTruthLag         uint64  `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
+	EpochLastEnded         int64   `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
+	EpochLength            int64   `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	GroundTruthLag         int64   `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
 	Active                 bool    `protobuf:"varint,11,opt,name=active,proto3" json:"active,omitempty"`
 	DefaultArg             string  `protobuf:"bytes,12,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
 	Pnorm                  uint64  `protobuf:"varint,13,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
@@ -14061,21 +15205,21 @@ func (x *Topic) GetInferenceMethod() string {
 	return ""
 }
 
-func (x *Topic) GetEpochLastEnded() uint64 {
+func (x *Topic) GetEpochLastEnded() int64 {
 	if x != nil {
 		return x.EpochLastEnded
 	}
 	return 0
 }
 
-func (x *Topic) GetEpochLength() uint64 {
+func (x *Topic) GetEpochLength() int64 {
 	if x != nil {
 		return x.EpochLength
 	}
 	return 0
 }
 
-func (x *Topic) GetGroundTruthLag() uint64 {
+func (x *Topic) GetGroundTruthLag() int64 {
 	if x != nil {
 		return x.GroundTruthLag
 	}
@@ -14245,7 +15389,7 @@ func (x *WorkerAttributedLoss) GetExtraData() []byte {
 	return nil
 }
 
-// eq13 in the litepaper
+// These losses are calculated per reputer or by the network
 type LossBundle struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -14740,9 +15884,9 @@ type InferenceSetForScoring struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId    uint64      `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Timestamp  uint64      `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Inferences *Inferences `protobuf:"bytes,3,opt,name=inferences,proto3" json:"inferences,omitempty"`
+	TopicId     uint64      `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64       `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Inferences  *Inferences `protobuf:"bytes,3,opt,name=inferences,proto3" json:"inferences,omitempty"`
 }
 
 func (x *InferenceSetForScoring) Reset() {
@@ -14772,9 +15916,9 @@ func (x *InferenceSetForScoring) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *InferenceSetForScoring) GetTimestamp() uint64 {
+func (x *InferenceSetForScoring) GetBlockHeight() int64 {
 	if x != nil {
-		return x.Timestamp
+		return x.BlockHeight
 	}
 	return 0
 }
@@ -14791,9 +15935,9 @@ type ForecastSetForScoring struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicId   uint64     `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Timestamp uint64     `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	Forecasts *Forecasts `protobuf:"bytes,3,opt,name=forecasts,proto3" json:"forecasts,omitempty"`
+	TopicId     uint64     `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64      `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	Forecasts   *Forecasts `protobuf:"bytes,3,opt,name=forecasts,proto3" json:"forecasts,omitempty"`
 }
 
 func (x *ForecastSetForScoring) Reset() {
@@ -14823,9 +15967,9 @@ func (x *ForecastSetForScoring) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *ForecastSetForScoring) GetTimestamp() uint64 {
+func (x *ForecastSetForScoring) GetBlockHeight() int64 {
 	if x != nil {
-		return x.Timestamp
+		return x.BlockHeight
 	}
 	return 0
 }
@@ -14833,6 +15977,92 @@ func (x *ForecastSetForScoring) GetTimestamp() uint64 {
 func (x *ForecastSetForScoring) GetForecasts() *Forecasts {
 	if x != nil {
 		return x.Forecasts
+	}
+	return nil
+}
+
+type WorkerRegret struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Worker          string  `protobuf:"bytes,1,opt,name=worker,proto3" json:"worker,omitempty"`
+	InferenceRegret float32 `protobuf:"fixed32,2,opt,name=inference_regret,json=inferenceRegret,proto3" json:"inference_regret,omitempty"`
+	ForecastRegret  float32 `protobuf:"fixed32,3,opt,name=forecast_regret,json=forecastRegret,proto3" json:"forecast_regret,omitempty"`
+}
+
+func (x *WorkerRegret) Reset() {
+	*x = WorkerRegret{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v1_types_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WorkerRegret) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkerRegret) ProtoMessage() {}
+
+// Deprecated: Use WorkerRegret.ProtoReflect.Descriptor instead.
+func (*WorkerRegret) Descriptor() ([]byte, []int) {
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *WorkerRegret) GetWorker() string {
+	if x != nil {
+		return x.Worker
+	}
+	return ""
+}
+
+func (x *WorkerRegret) GetInferenceRegret() float32 {
+	if x != nil {
+		return x.InferenceRegret
+	}
+	return 0
+}
+
+func (x *WorkerRegret) GetForecastRegret() float32 {
+	if x != nil {
+		return x.ForecastRegret
+	}
+	return 0
+}
+
+type WorkerRegrets struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	WorkerRegrets []*WorkerRegret `protobuf:"bytes,1,rep,name=worker_regrets,json=workerRegrets,proto3" json:"worker_regrets,omitempty"`
+}
+
+func (x *WorkerRegrets) Reset() {
+	*x = WorkerRegrets{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v1_types_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WorkerRegrets) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkerRegrets) ProtoMessage() {}
+
+// Deprecated: Use WorkerRegrets.ProtoReflect.Descriptor instead.
+func (*WorkerRegrets) Descriptor() ([]byte, []int) {
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *WorkerRegrets) GetWorkerRegrets() []*WorkerRegret {
+	if x != nil {
+		return x.WorkerRegrets
 	}
 	return nil
 }
@@ -14850,7 +16080,7 @@ type StakePlacement struct {
 func (x *StakePlacement) Reset() {
 	*x = StakePlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v1_types_proto_msgTypes[15]
+		mi := &file_emissions_v1_types_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14864,7 +16094,7 @@ func (*StakePlacement) ProtoMessage() {}
 
 // Deprecated: Use StakePlacement.ProtoReflect.Descriptor instead.
 func (*StakePlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_v1_types_proto_rawDescGZIP(), []int{15}
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *StakePlacement) GetTopicId() uint64 {
@@ -14893,14 +16123,14 @@ type StakeRemoval struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TimestampRemovalStarted uint64            `protobuf:"varint,1,opt,name=timestamp_removal_started,json=timestampRemovalStarted,proto3" json:"timestamp_removal_started,omitempty"`
-	Placements              []*StakePlacement `protobuf:"bytes,2,rep,name=placements,proto3" json:"placements,omitempty"`
+	BlockRemovalStarted int64             `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
+	Placements          []*StakePlacement `protobuf:"bytes,2,rep,name=placements,proto3" json:"placements,omitempty"`
 }
 
 func (x *StakeRemoval) Reset() {
 	*x = StakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v1_types_proto_msgTypes[16]
+		mi := &file_emissions_v1_types_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14914,12 +16144,12 @@ func (*StakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use StakeRemoval.ProtoReflect.Descriptor instead.
 func (*StakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_v1_types_proto_rawDescGZIP(), []int{16}
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *StakeRemoval) GetTimestampRemovalStarted() uint64 {
+func (x *StakeRemoval) GetBlockRemovalStarted() int64 {
 	if x != nil {
-		return x.TimestampRemovalStarted
+		return x.BlockRemovalStarted
 	}
 	return 0
 }
@@ -14945,7 +16175,7 @@ type DelegatedStakePlacement struct {
 func (x *DelegatedStakePlacement) Reset() {
 	*x = DelegatedStakePlacement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v1_types_proto_msgTypes[17]
+		mi := &file_emissions_v1_types_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -14959,7 +16189,7 @@ func (*DelegatedStakePlacement) ProtoMessage() {}
 
 // Deprecated: Use DelegatedStakePlacement.ProtoReflect.Descriptor instead.
 func (*DelegatedStakePlacement) Descriptor() ([]byte, []int) {
-	return file_emissions_v1_types_proto_rawDescGZIP(), []int{17}
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *DelegatedStakePlacement) GetTopicId() uint64 {
@@ -14995,14 +16225,14 @@ type DelegatedStakeRemoval struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TimestampRemovalStarted uint64                     `protobuf:"varint,1,opt,name=timestamp_removal_started,json=timestampRemovalStarted,proto3" json:"timestamp_removal_started,omitempty"`
-	Placements              []*DelegatedStakePlacement `protobuf:"bytes,2,rep,name=placements,proto3" json:"placements,omitempty"`
+	BlockRemovalStarted int64                      `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
+	Placements          []*DelegatedStakePlacement `protobuf:"bytes,2,rep,name=placements,proto3" json:"placements,omitempty"`
 }
 
 func (x *DelegatedStakeRemoval) Reset() {
 	*x = DelegatedStakeRemoval{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v1_types_proto_msgTypes[18]
+		mi := &file_emissions_v1_types_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -15016,12 +16246,12 @@ func (*DelegatedStakeRemoval) ProtoMessage() {}
 
 // Deprecated: Use DelegatedStakeRemoval.ProtoReflect.Descriptor instead.
 func (*DelegatedStakeRemoval) Descriptor() ([]byte, []int) {
-	return file_emissions_v1_types_proto_rawDescGZIP(), []int{18}
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *DelegatedStakeRemoval) GetTimestampRemovalStarted() uint64 {
+func (x *DelegatedStakeRemoval) GetBlockRemovalStarted() int64 {
 	if x != nil {
-		return x.TimestampRemovalStarted
+		return x.BlockRemovalStarted
 	}
 	return 0
 }
@@ -15043,18 +16273,18 @@ type InferenceRequest struct {
 	Sender               string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	Nonce                uint64 `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	TopicId              uint64 `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Cadence              uint64 `protobuf:"varint,4,opt,name=cadence,proto3" json:"cadence,omitempty"`                                                          // time in seconds between inferences, zero means oneshot inference
+	Cadence              int64  `protobuf:"varint,4,opt,name=cadence,proto3" json:"cadence,omitempty"`                                                          // blocks between inferences, zero means oneshot inference
 	MaxPricePerInference string `protobuf:"bytes,5,opt,name=max_price_per_inference,json=maxPricePerInference,proto3" json:"max_price_per_inference,omitempty"` // the maximum price per inference that alice is willing to pay
 	BidAmount            string `protobuf:"bytes,6,opt,name=bid_amount,json=bidAmount,proto3" json:"bid_amount,omitempty"`                                      // how many funds to send from alice with this Inference Request
-	LastChecked          uint64 `protobuf:"varint,7,opt,name=last_checked,json=lastChecked,proto3" json:"last_checked,omitempty"`                               // the last time the inference was checked and was possibly drawn from
-	TimestampValidUntil  uint64 `protobuf:"varint,8,opt,name=timestamp_valid_until,json=timestampValidUntil,proto3" json:"timestamp_valid_until,omitempty"`
+	BlockLastChecked     int64  `protobuf:"varint,7,opt,name=block_last_checked,json=blockLastChecked,proto3" json:"block_last_checked,omitempty"`              // last block the inference was checked and was possibly drawn from
+	BlockValidUntil      int64  `protobuf:"varint,8,opt,name=block_valid_until,json=blockValidUntil,proto3" json:"block_valid_until,omitempty"`
 	ExtraData            []byte `protobuf:"bytes,9,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 }
 
 func (x *InferenceRequest) Reset() {
 	*x = InferenceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v1_types_proto_msgTypes[19]
+		mi := &file_emissions_v1_types_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -15068,7 +16298,7 @@ func (*InferenceRequest) ProtoMessage() {}
 
 // Deprecated: Use InferenceRequest.ProtoReflect.Descriptor instead.
 func (*InferenceRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v1_types_proto_rawDescGZIP(), []int{19}
+	return file_emissions_v1_types_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *InferenceRequest) GetSender() string {
@@ -15092,7 +16322,7 @@ func (x *InferenceRequest) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *InferenceRequest) GetCadence() uint64 {
+func (x *InferenceRequest) GetCadence() int64 {
 	if x != nil {
 		return x.Cadence
 	}
@@ -15113,16 +16343,16 @@ func (x *InferenceRequest) GetBidAmount() string {
 	return ""
 }
 
-func (x *InferenceRequest) GetLastChecked() uint64 {
+func (x *InferenceRequest) GetBlockLastChecked() int64 {
 	if x != nil {
-		return x.LastChecked
+		return x.BlockLastChecked
 	}
 	return 0
 }
 
-func (x *InferenceRequest) GetTimestampValidUntil() uint64 {
+func (x *InferenceRequest) GetBlockValidUntil() int64 {
 	if x != nil {
-		return x.TimestampValidUntil
+		return x.BlockValidUntil
 	}
 	return 0
 }
@@ -15143,7 +16373,7 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfd, 0x09, 0x0a,
+	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xbb, 0x0b, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
 	0x6e, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x63, 0x61, 0x64, 0x65,
@@ -15181,17 +16411,17 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x53,
 	0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x73,
 	0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53,
+	0x77, 0x18, 0x08, 0x20, 0x01, 0x28, 0x03, 0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53,
 	0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x12,
 	0x28, 0x0a, 0x10, 0x6d, 0x69, 0x6e, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e,
-	0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x6d, 0x69, 0x6e, 0x45, 0x70,
+	0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x6d, 0x69, 0x6e, 0x45, 0x70,
 	0x6f, 0x63, 0x68, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x12, 0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78,
 	0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52,
+	0x03, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e,
 	0x0a, 0x13, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63, 0x61,
-	0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x04, 0x52, 0x11, 0x6d, 0x61, 0x78,
+	0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x03, 0x52, 0x11, 0x6d, 0x61, 0x78,
 	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x7f,
 	0x0a, 0x20, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64,
 	0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65,
@@ -15223,197 +16453,222 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x14, 0x20, 0x01, 0x28, 0x04,
 	0x52, 0x1a, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x50, 0x65, 0x72,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0xdf, 0x05, 0x0a,
-	0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72,
-	0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1d, 0x0a, 0x0a,
-	0x6c, 0x6f, 0x73, 0x73, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x09, 0x6c, 0x6f, 0x73, 0x73, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x1f, 0x0a, 0x0b, 0x6c,
-	0x6f, 0x73, 0x73, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0a, 0x6c, 0x6f, 0x73, 0x73, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x27, 0x0a, 0x0f,
-	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18,
-	0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64,
-	0x12, 0x28, 0x0a, 0x10, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x65,
-	0x6e, 0x64, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x65, 0x70, 0x6f, 0x63,
-	0x68, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6e, 0x64, 0x65, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x70,
-	0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x0b, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x12, 0x28, 0x0a,
-	0x10, 0x67, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x74, 0x72, 0x75, 0x74, 0x68, 0x5f, 0x6c, 0x61,
-	0x67, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x67, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x54,
-	0x72, 0x75, 0x74, 0x68, 0x4c, 0x61, 0x67, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76,
-	0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x12,
-	0x1f, 0x0a, 0x0b, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x5f, 0x61, 0x72, 0x67, 0x18, 0x0c,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x41, 0x72, 0x67,
-	0x12, 0x14, 0x0a, 0x05, 0x70, 0x6e, 0x6f, 0x72, 0x6d, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x05, 0x70, 0x6e, 0x6f, 0x72, 0x6d, 0x12, 0x21, 0x0a, 0x0c, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x5f,
-	0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0b, 0x61, 0x6c,
-	0x70, 0x68, 0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x72, 0x65,
-	0x77, 0x61, 0x72, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x0f, 0x20, 0x01,
-	0x28, 0x02, 0x52, 0x0e, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74,
-	0x65, 0x72, 0x12, 0x2b, 0x0a, 0x11, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x10, 0x20, 0x01, 0x28, 0x02, 0x52, 0x10, 0x70,
-	0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12,
-	0x29, 0x0a, 0x10, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63,
-	0x61, 0x73, 0x74, 0x18, 0x11, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0f, 0x70, 0x72, 0x65, 0x77, 0x61,
-	0x72, 0x64, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x66, 0x5f,
-	0x74, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x02, 0x52,
-	0x0a, 0x66, 0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73,
-	0x75, 0x62, 0x73, 0x69, 0x64, 0x79, 0x18, 0x13, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x73, 0x75,
-	0x62, 0x73, 0x69, 0x64, 0x79, 0x12, 0x38, 0x0a, 0x18, 0x73, 0x75, 0x62, 0x73, 0x69, 0x64, 0x69,
-	0x7a, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68,
-	0x73, 0x18, 0x14, 0x20, 0x01, 0x28, 0x02, 0x52, 0x16, 0x73, 0x75, 0x62, 0x73, 0x69, 0x64, 0x69,
-	0x7a, 0x65, 0x64, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x73, 0x12,
-	0x1d, 0x0a, 0x0a, 0x66, 0x5f, 0x74, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x18, 0x15, 0x20,
-	0x01, 0x28, 0x02, 0x52, 0x09, 0x66, 0x54, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x22, 0x38,
-	0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x06, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x22, 0x9d, 0x01, 0x0a, 0x14, 0x57, 0x6f, 0x72,
-	0x6b, 0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73,
-	0x73, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
-	0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
-	0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74,
-	0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61,
-	0x74, 0x61, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0xcb, 0x04, 0x0a, 0x0a, 0x4c, 0x6f, 0x73,
-	0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a,
-	0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x57, 0x0a, 0x0d, 0x63,
-	0x6f, 0x6d, 0x62, 0x69, 0x6e, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x73, 0x73, 0x18, 0x04, 0x20, 0x01,
-	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
-	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
-	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x63, 0x6f, 0x6d, 0x62, 0x69, 0x6e, 0x65, 0x64,
-	0x4c, 0x6f, 0x73, 0x73, 0x12, 0x49, 0x0a, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f,
-	0x6c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b,
-	0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73,
-	0x52, 0x0d, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12,
-	0x4f, 0x0a, 0x11, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6c, 0x6f,
-	0x73, 0x73, 0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72,
-	0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x10,
-	0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73,
-	0x12, 0x51, 0x0a, 0x0a, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x5f, 0x6c, 0x6f, 0x73, 0x73, 0x18, 0x07,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55,
-	0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x4c,
-	0x6f, 0x73, 0x73, 0x12, 0x48, 0x0a, 0x0e, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f, 0x6c,
-	0x6f, 0x73, 0x73, 0x65, 0x73, 0x18, 0x08, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52,
-	0x0c, 0x6f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a,
-	0x13, 0x6f, 0x6e, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x5f, 0x6c, 0x6f,
-	0x73, 0x73, 0x65, 0x73, 0x18, 0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72,
-	0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x10,
-	0x6f, 0x6e, 0x65, 0x49, 0x6e, 0x4e, 0x61, 0x69, 0x76, 0x65, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73,
-	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4a, 0x0a, 0x0b, 0x4c, 0x6f, 0x73, 0x73, 0x42, 0x75,
-	0x6e, 0x64, 0x6c, 0x65, 0x73, 0x12, 0x3b, 0x0a, 0x0c, 0x6c, 0x6f, 0x73, 0x73, 0x5f, 0x62, 0x75,
-	0x6e, 0x64, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x73, 0x73, 0x42,
-	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x0b, 0x6c, 0x6f, 0x73, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c,
-	0x65, 0x73, 0x22, 0xc3, 0x01, 0x0a, 0x09, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x77,
-	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72,
-	0x6b, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
-	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
-	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a,
-	0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05,
-	0x70, 0x72, 0x6f, 0x6f, 0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f,
-	0x6f, 0x66, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x45, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65,
-	0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x12, 0x37, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22,
-	0xb0, 0x01, 0x0a, 0x0f, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d,
-	0x65, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x12, 0x48, 0x0a,
-	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
-	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
-	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61,
-	0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74,
-	0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x18,
-	0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a, 0x04, 0xe8, 0xa0,
-	0x1f, 0x01, 0x22, 0x97, 0x01, 0x0a, 0x08, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12,
-	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a,
-	0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x11, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18,
-	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65,
-	0x6d, 0x65, 0x6e, 0x74, 0x52, 0x10, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c,
-	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x41, 0x0a, 0x09,
-	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x34, 0x0a, 0x09, 0x66, 0x6f, 0x72,
-	0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65,
-	0x63, 0x61, 0x73, 0x74, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22,
-	0xa5, 0x01, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65,
-	0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79,
-	0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e,
-	0x6f, 0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17,
-	0x0a, 0x07, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x6e, 0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x4d, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68,
-	0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x3c, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
-	0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x49,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61,
-	0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x22, 0x8b, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72,
-	0x65, 0x6e, 0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e,
-	0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09,
-	0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x38, 0x0a, 0x0a, 0x69, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x73, 0x22, 0x87, 0x01, 0x0a, 0x15, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
-	0x74, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x19,
-	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x09, 0x74, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x35, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63,
-	0x61, 0x73, 0x74, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
-	0x73, 0x74, 0x73, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0x91,
-	0x01, 0x0a, 0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e,
-	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07,
-	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72,
-	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x50, 0x0a, 0x07,
+	0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x18, 0x15, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44,
+	0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x12, 0x6a,
+	0x0a, 0x15, 0x70, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x73, 0x79,
+	0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73, 0x18, 0x16, 0x20, 0x01, 0x28, 0x09, 0x42, 0x36, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44,
+	0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x44, 0x65, 0x63,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x13, 0x70, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x53, 0x79, 0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73, 0x22, 0xdf, 0x05, 0x0a, 0x05, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x02, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a,
+	0x0a, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x6d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1d, 0x0a, 0x0a, 0x6c, 0x6f,
+	0x73, 0x73, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
+	0x6c, 0x6f, 0x73, 0x73, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x12, 0x1f, 0x0a, 0x0b, 0x6c, 0x6f, 0x73,
+	0x73, 0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a,
+	0x6c, 0x6f, 0x73, 0x73, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x27, 0x0a, 0x0f, 0x69, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x18, 0x06, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4c, 0x6f,
+	0x67, 0x69, 0x63, 0x12, 0x29, 0x0a, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x5f, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0f, 0x69,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x28,
+	0x0a, 0x10, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6e, 0x64,
+	0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x4c,
+	0x61, 0x73, 0x74, 0x45, 0x6e, 0x64, 0x65, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x65, 0x70, 0x6f, 0x63,
+	0x68, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b,
+	0x65, 0x70, 0x6f, 0x63, 0x68, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x12, 0x28, 0x0a, 0x10, 0x67,
+	0x72, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x74, 0x72, 0x75, 0x74, 0x68, 0x5f, 0x6c, 0x61, 0x67, 0x18,
+	0x0a, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0e, 0x67, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x54, 0x72, 0x75,
+	0x74, 0x68, 0x4c, 0x61, 0x67, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18,
+	0x0b, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x12, 0x1f, 0x0a,
+	0x0b, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x5f, 0x61, 0x72, 0x67, 0x18, 0x0c, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x41, 0x72, 0x67, 0x12, 0x14,
+	0x0a, 0x05, 0x70, 0x6e, 0x6f, 0x72, 0x6d, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x70,
+	0x6e, 0x6f, 0x72, 0x6d, 0x12, 0x21, 0x0a, 0x0c, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x5f, 0x72, 0x65,
+	0x67, 0x72, 0x65, 0x74, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0b, 0x61, 0x6c, 0x70, 0x68,
+	0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x27, 0x0a, 0x0f, 0x70, 0x72, 0x65, 0x77, 0x61,
+	0x72, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x02,
+	0x52, 0x0e, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72,
+	0x12, 0x2b, 0x0a, 0x11, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x10, 0x20, 0x01, 0x28, 0x02, 0x52, 0x10, 0x70, 0x72, 0x65,
+	0x77, 0x61, 0x72, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x29, 0x0a,
+	0x10, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
+	0x74, 0x18, 0x11, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0f, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x66, 0x5f, 0x74, 0x6f,
+	0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0a, 0x66,
+	0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x62,
+	0x73, 0x69, 0x64, 0x79, 0x18, 0x13, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x73, 0x75, 0x62, 0x73,
+	0x69, 0x64, 0x79, 0x12, 0x38, 0x0a, 0x18, 0x73, 0x75, 0x62, 0x73, 0x69, 0x64, 0x69, 0x7a, 0x65,
+	0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x73, 0x18,
+	0x14, 0x20, 0x01, 0x28, 0x02, 0x52, 0x16, 0x73, 0x75, 0x62, 0x73, 0x69, 0x64, 0x69, 0x7a, 0x65,
+	0x64, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x73, 0x12, 0x1d, 0x0a,
+	0x0a, 0x66, 0x5f, 0x74, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x18, 0x15, 0x20, 0x01, 0x28,
+	0x02, 0x52, 0x09, 0x66, 0x54, 0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x22, 0x38, 0x0a, 0x09,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x22, 0x9d, 0x01, 0x0a, 0x14, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x12,
+	0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
 	0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
-	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x22, 0x88, 0x01, 0x0a, 0x0c, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x61, 0x6c, 0x12, 0x3a, 0x0a, 0x19, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x17, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12,
+	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75,
+	0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61,
+	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0xcb, 0x04, 0x0a, 0x0a, 0x4c, 0x6f, 0x73, 0x73, 0x42,
+	0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78,
+	0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09,
+	0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x57, 0x0a, 0x0d, 0x63, 0x6f, 0x6d,
+	0x62, 0x69, 0x6e, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x73, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x63, 0x6f, 0x6d, 0x62, 0x69, 0x6e, 0x65, 0x64, 0x4c, 0x6f,
+	0x73, 0x73, 0x12, 0x49, 0x0a, 0x0e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f, 0x6c, 0x6f,
+	0x73, 0x73, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x0d,
+	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12, 0x4f, 0x0a,
+	0x11, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x6c, 0x6f, 0x73, 0x73,
+	0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x74,
+	0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x10, 0x66, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51,
+	0x0a, 0x0a, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x5f, 0x6c, 0x6f, 0x73, 0x73, 0x18, 0x07, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x4c, 0x6f, 0x73,
+	0x73, 0x12, 0x48, 0x0a, 0x0e, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f, 0x6c, 0x6f, 0x73,
+	0x73, 0x65, 0x73, 0x18, 0x08, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41,
+	0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x0c, 0x6f,
+	0x6e, 0x65, 0x4f, 0x75, 0x74, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x12, 0x51, 0x0a, 0x13, 0x6f,
+	0x6e, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x5f, 0x6c, 0x6f, 0x73, 0x73,
+	0x65, 0x73, 0x18, 0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x74,
+	0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x4c, 0x6f, 0x73, 0x73, 0x52, 0x10, 0x6f, 0x6e,
+	0x65, 0x49, 0x6e, 0x4e, 0x61, 0x69, 0x76, 0x65, 0x4c, 0x6f, 0x73, 0x73, 0x65, 0x73, 0x3a, 0x04,
+	0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x4a, 0x0a, 0x0b, 0x4c, 0x6f, 0x73, 0x73, 0x42, 0x75, 0x6e, 0x64,
+	0x6c, 0x65, 0x73, 0x12, 0x3b, 0x0a, 0x0c, 0x6c, 0x6f, 0x73, 0x73, 0x5f, 0x62, 0x75, 0x6e, 0x64,
+	0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4c, 0x6f, 0x73, 0x73, 0x42, 0x75, 0x6e,
+	0x64, 0x6c, 0x65, 0x52, 0x0b, 0x6c, 0x6f, 0x73, 0x73, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x73,
+	0x22, 0xc3, 0x01, 0x0a, 0x09, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x19,
+	0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72,
+	0x6b, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x12, 0x48, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65,
+	0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52,
+	0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72,
+	0x6f, 0x6f, 0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66,
+	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x45, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x73, 0x12, 0x37, 0x0a, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x52, 0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0xb0, 0x01,
+	0x0a, 0x0f, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65, 0x6e,
+	0x74, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x12, 0x48, 0x0a, 0x05, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64,
+	0x61, 0x74, 0x61, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61,
+	0x44, 0x61, 0x74, 0x61, 0x12, 0x14, 0x0a, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x05, 0x70, 0x72, 0x6f, 0x6f, 0x66, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01,
+	0x22, 0x97, 0x01, 0x0a, 0x08, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x66, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x66, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x11, 0x66, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x03, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d, 0x65,
+	0x6e, 0x74, 0x52, 0x10, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x45, 0x6c, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x73, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x41, 0x0a, 0x09, 0x46, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x12, 0x34, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63,
+	0x61, 0x73, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x52, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0xa5, 0x01,
+	0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x1e,
+	0x0a, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x69, 0x62, 0x50, 0x32, 0x70, 0x4b, 0x65, 0x79, 0x12, 0x23,
+	0x0a, 0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f, 0x64,
+	0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x17, 0x0a, 0x07,
+	0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x6e,
+	0x6f, 0x64, 0x65, 0x49, 0x64, 0x22, 0x4d, 0x0a, 0x0d, 0x4f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x3c, 0x0a, 0x0d, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x5f, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x0c, 0x6f, 0x66, 0x66, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x4e, 0x6f, 0x64, 0x65, 0x22, 0x90, 0x01, 0x0a, 0x16, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
+	0x63, 0x65, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x12,
+	0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x38, 0x0a,
+	0x0a, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x18, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31,
+	0x2e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x0a, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x22, 0x8c, 0x01, 0x0a, 0x15, 0x46, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x53, 0x65, 0x74, 0x46, 0x6f, 0x72, 0x53, 0x63, 0x6f, 0x72, 0x69, 0x6e,
+	0x67, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
+	0x35, 0x0a, 0x09, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x17, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
+	0x31, 0x2e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x52, 0x09, 0x66, 0x6f, 0x72,
+	0x65, 0x63, 0x61, 0x73, 0x74, 0x73, 0x22, 0x7a, 0x0a, 0x0c, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x29,
+	0x0a, 0x10, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x65, 0x67, 0x72,
+	0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x02, 0x52, 0x0f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x27, 0x0a, 0x0f, 0x66, 0x6f, 0x72,
+	0x65, 0x63, 0x61, 0x73, 0x74, 0x5f, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x02, 0x52, 0x0e, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x52, 0x65, 0x67, 0x72,
+	0x65, 0x74, 0x22, 0x52, 0x0a, 0x0d, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x67, 0x72,
+	0x65, 0x74, 0x73, 0x12, 0x41, 0x0a, 0x0e, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x5f, 0x72, 0x65,
+	0x67, 0x72, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x52, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52,
+	0x65, 0x67, 0x72, 0x65, 0x74, 0x73, 0x22, 0x91, 0x01, 0x0a, 0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x4a,
+	0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
+	0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x80, 0x01, 0x0a, 0x0c, 0x53,
+	0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x12, 0x32, 0x0a, 0x15, 0x62,
+	0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61,
+	0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x13, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12,
 	0x3c, 0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x02, 0x20,
 	0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
 	0x76, 0x31, 0x2e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e,
@@ -15429,56 +16684,56 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
 	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
-	0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x9a, 0x01, 0x0a, 0x15, 0x44, 0x65, 0x6c,
+	0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x92, 0x01, 0x0a, 0x15, 0x44, 0x65, 0x6c,
 	0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76,
-	0x61, 0x6c, 0x12, 0x3a, 0x0a, 0x19, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x5f,
-	0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x17, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12, 0x45,
-	0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x25, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
-	0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65,
-	0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65,
-	0x6d, 0x65, 0x6e, 0x74, 0x73, 0x22, 0xa9, 0x03, 0x0a, 0x10, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65,
-	0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64,
-	0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x69, 0x0a,
-	0x17, 0x6d, 0x61, 0x78, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x69,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32,
-	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
-	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4,
-	0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0,
-	0x2a, 0x01, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x50, 0x72, 0x69, 0x63, 0x65, 0x50, 0x65, 0x72, 0x49,
-	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x51, 0x0a, 0x0a, 0x62, 0x69, 0x64, 0x5f,
-	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
-	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
-	0x52, 0x09, 0x62, 0x69, 0x64, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x6c,
-	0x61, 0x73, 0x74, 0x5f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x12, 0x32,
-	0x0a, 0x15, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x5f, 0x76, 0x61, 0x6c, 0x69,
-	0x64, 0x5f, 0x75, 0x6e, 0x74, 0x69, 0x6c, 0x18, 0x08, 0x20, 0x01, 0x28, 0x04, 0x52, 0x13, 0x74,
-	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x55, 0x6e, 0x74,
-	0x69, 0x6c, 0x12, 0x1d, 0x0a, 0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61,
-	0x18, 0x09, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74,
-	0x61, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f,
-	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
-	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x6c, 0x12, 0x32, 0x0a, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x65, 0x6d, 0x6f,
+	0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x13, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53,
+	0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12, 0x45, 0x0a, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d,
+	0x65, 0x6e, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61,
+	0x74, 0x65, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e,
+	0x74, 0x52, 0x0a, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x22, 0xac, 0x03,
+	0x0a, 0x10, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f,
+	0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
+	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63,
+	0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x63, 0x61,
+	0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x69, 0x0a, 0x17, 0x6d, 0x61, 0x78, 0x5f, 0x70, 0x72, 0x69,
+	0x63, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x50,
+	0x72, 0x69, 0x63, 0x65, 0x50, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
+	0x12, 0x51, 0x0a, 0x0a, 0x62, 0x69, 0x64, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x06,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55,
+	0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x62, 0x69, 0x64, 0x41, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x2c, 0x0a, 0x12, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x6c, 0x61, 0x73,
+	0x74, 0x5f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x65, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x10, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x4c, 0x61, 0x73, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x65,
+	0x64, 0x12, 0x2a, 0x0a, 0x11, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64,
+	0x5f, 0x75, 0x6e, 0x74, 0x69, 0x6c, 0x18, 0x08, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0f, 0x62, 0x6c,
+	0x6f, 0x63, 0x6b, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x55, 0x6e, 0x74, 0x69, 0x6c, 0x12, 0x1d, 0x0a,
+	0x0a, 0x65, 0x78, 0x74, 0x72, 0x61, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x18, 0x09, 0x20, 0x01, 0x28,
+	0x0c, 0x52, 0x09, 0x65, 0x78, 0x74, 0x72, 0x61, 0x44, 0x61, 0x74, 0x61, 0x42, 0xc0, 0x01, 0x0a,
+	0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
+	0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
+	0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31,
+	0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
+	0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -15493,7 +16748,7 @@ func file_emissions_v1_types_proto_rawDescGZIP() []byte {
 	return file_emissions_v1_types_proto_rawDescData
 }
 
-var file_emissions_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_emissions_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_emissions_v1_types_proto_goTypes = []interface{}{
 	(*Params)(nil),                  // 0: emissions.v1.Params
 	(*Topic)(nil),                   // 1: emissions.v1.Topic
@@ -15510,11 +16765,13 @@ var file_emissions_v1_types_proto_goTypes = []interface{}{
 	(*OffchainNodes)(nil),           // 12: emissions.v1.OffchainNodes
 	(*InferenceSetForScoring)(nil),  // 13: emissions.v1.InferenceSetForScoring
 	(*ForecastSetForScoring)(nil),   // 14: emissions.v1.ForecastSetForScoring
-	(*StakePlacement)(nil),          // 15: emissions.v1.StakePlacement
-	(*StakeRemoval)(nil),            // 16: emissions.v1.StakeRemoval
-	(*DelegatedStakePlacement)(nil), // 17: emissions.v1.DelegatedStakePlacement
-	(*DelegatedStakeRemoval)(nil),   // 18: emissions.v1.DelegatedStakeRemoval
-	(*InferenceRequest)(nil),        // 19: emissions.v1.InferenceRequest
+	(*WorkerRegret)(nil),            // 15: emissions.v1.WorkerRegret
+	(*WorkerRegrets)(nil),           // 16: emissions.v1.WorkerRegrets
+	(*StakePlacement)(nil),          // 17: emissions.v1.StakePlacement
+	(*StakeRemoval)(nil),            // 18: emissions.v1.StakeRemoval
+	(*DelegatedStakePlacement)(nil), // 19: emissions.v1.DelegatedStakePlacement
+	(*DelegatedStakeRemoval)(nil),   // 20: emissions.v1.DelegatedStakeRemoval
+	(*InferenceRequest)(nil),        // 21: emissions.v1.InferenceRequest
 }
 var file_emissions_v1_types_proto_depIdxs = []int32{
 	1,  // 0: emissions.v1.TopicList.topics:type_name -> emissions.v1.Topic
@@ -15529,13 +16786,14 @@ var file_emissions_v1_types_proto_depIdxs = []int32{
 	6,  // 9: emissions.v1.OffchainNodes.offchain_node:type_name -> emissions.v1.Inference
 	7,  // 10: emissions.v1.InferenceSetForScoring.inferences:type_name -> emissions.v1.Inferences
 	10, // 11: emissions.v1.ForecastSetForScoring.forecasts:type_name -> emissions.v1.Forecasts
-	15, // 12: emissions.v1.StakeRemoval.placements:type_name -> emissions.v1.StakePlacement
-	17, // 13: emissions.v1.DelegatedStakeRemoval.placements:type_name -> emissions.v1.DelegatedStakePlacement
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	15, // 12: emissions.v1.WorkerRegrets.worker_regrets:type_name -> emissions.v1.WorkerRegret
+	17, // 13: emissions.v1.StakeRemoval.placements:type_name -> emissions.v1.StakePlacement
+	19, // 14: emissions.v1.DelegatedStakeRemoval.placements:type_name -> emissions.v1.DelegatedStakePlacement
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_emissions_v1_types_proto_init() }
@@ -15725,7 +16983,7 @@ func file_emissions_v1_types_proto_init() {
 			}
 		}
 		file_emissions_v1_types_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakePlacement); i {
+			switch v := v.(*WorkerRegret); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15737,7 +16995,7 @@ func file_emissions_v1_types_proto_init() {
 			}
 		}
 		file_emissions_v1_types_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakeRemoval); i {
+			switch v := v.(*WorkerRegrets); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15749,7 +17007,7 @@ func file_emissions_v1_types_proto_init() {
 			}
 		}
 		file_emissions_v1_types_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DelegatedStakePlacement); i {
+			switch v := v.(*StakePlacement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15761,7 +17019,7 @@ func file_emissions_v1_types_proto_init() {
 			}
 		}
 		file_emissions_v1_types_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DelegatedStakeRemoval); i {
+			switch v := v.(*StakeRemoval); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -15773,6 +17031,30 @@ func file_emissions_v1_types_proto_init() {
 			}
 		}
 		file_emissions_v1_types_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DelegatedStakePlacement); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v1_types_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DelegatedStakeRemoval); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v1_types_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InferenceRequest); i {
 			case 0:
 				return &v.state
@@ -15791,7 +17073,7 @@ func file_emissions_v1_types_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v1_types_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

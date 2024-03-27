@@ -21,14 +21,12 @@ func (ms msgServer) ProcessForecasts(ctx context.Context, msg *types.MsgProcessF
 		groupedForecasts[forecast.TopicId] = append(groupedForecasts[forecast.TopicId], forecast)
 	}
 
-	actualTimestamp := uint64(sdkCtx.BlockTime().Unix())
-
 	// Update all_inferences
 	for topicId, forecasts := range groupedForecasts {
 		forecasts := &types.Forecasts{
 			Forecasts: forecasts,
 		}
-		err := ms.k.InsertForecasts(ctx, topicId, actualTimestamp, *forecasts)
+		err := ms.k.InsertForecasts(ctx, topicId, sdkCtx.BlockHeight(), *forecasts)
 		if err != nil {
 			return nil, err
 		}
