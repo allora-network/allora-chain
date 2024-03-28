@@ -1,6 +1,10 @@
 package module
 
-func emitRewards() {
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+func emitRewards(ctx sdk.Context, am AppModule) error {
 	// Get Total Emissions/ Fees Collected
 
 	// Get Total Allocation
@@ -14,4 +18,6 @@ func emitRewards() {
 	// Get Distribution of Rewards per Reputer
 
 	// Pay out rewards
+
+	return nil
 }

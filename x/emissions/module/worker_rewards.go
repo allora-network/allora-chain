@@ -5,6 +5,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type TaskRewards struct {
+	Address sdk.AccAddress
+	Reward  float64
+}
+
 // TODO: Add litepaper references
 // TODO: Make sure to avoid duplicate rewarding/scoring
 func GetWorkersRewardsInferenceTask(
@@ -14,7 +19,7 @@ func GetWorkersRewardsInferenceTask(
 	block int64,
 	preward float64,
 	totalRewardsInferenceTask float64,
-) ([]float64, error) {
+) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := am.keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
@@ -24,6 +29,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get new score for each worker
 	// TODO: Sort by worker (?)
 	var scores [][]types.Score
+	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutLosses {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
@@ -54,6 +60,9 @@ func GetWorkersRewardsInferenceTask(
 
 		// Add worker score in the scores array
 		scores = append(scores, workerLastScores)
+
+		// Add worker address in the worker addresses array
+		workerAddresses = append(workerAddresses, workerAddr)
 	}
 
 	// Convert scores to float64
@@ -73,10 +82,13 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get Worker Rewards
-	var workerRewards []float64
-	for _, rewardFraction := range workersRewardsFractions {
+	var workerRewards []TaskRewards
+	for i, rewardFraction := range workersRewardsFractions {
 		workerReward := rewardFraction * totalRewardsInferenceTask
-		workerRewards = append(workerRewards, workerReward)
+		workerRewards = append(workerRewards, TaskRewards{
+			Address: workerAddresses[i],
+			Reward:  workerReward,
+		})
 	}
 
 	return workerRewards, nil
@@ -89,7 +101,7 @@ func GetWorkersRewardsForecastTask(
 	block int64,
 	preward float64,
 	totalRewardsForecastTask float64,
-) ([]float64, error) {
+) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := am.keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
@@ -114,6 +126,7 @@ func GetWorkersRewardsForecastTask(
 	numForecasters := len(workersScoresOneOut)
 	fUniqueAgg := GetfUniqueAgg(float64(numForecasters))
 	var scores [][]types.Score
+	var workerAddresses []sdk.AccAddress
 	for i, workerScoreOneOut := range workersScoresOneOut {
 		workerAddr, err := sdk.AccAddressFromBech32(networkLosses.OneInNaiveLosses[i].Worker)
 		if err != nil {
@@ -126,7 +139,7 @@ func GetWorkersRewardsForecastTask(
 			return nil, err
 		}
 
-		// Calculate new score	
+		// Calculate new score
 		workerFinalScore := GetFinalWorkerScoreForecastTask(workersScoresOneIn[i], workerScoreOneOut, fUniqueAgg)
 
 		scoreToAdd := types.Score{
@@ -144,6 +157,9 @@ func GetWorkersRewardsForecastTask(
 
 		// Add worker score in the scores array
 		scores = append(scores, workerLastScores)
+
+		// Add worker address in the worker addresses array
+		workerAddresses = append(workerAddresses, workerAddr)
 	}
 
 	// Convert scores to float64
@@ -163,10 +179,13 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get Worker Rewards
-	var workerRewards []float64
-	for _, rewardFraction := range workersRewardsFractions {
+	var workerRewards []TaskRewards
+	for i, rewardFraction := range workersRewardsFractions {
 		workerReward := rewardFraction * totalRewardsForecastTask
-		workerRewards = append(workerRewards, workerReward)
+		workerRewards = append(workerRewards, TaskRewards{
+			Address: workerAddresses[i],
+			Reward:  workerReward,
+		})
 	}
 
 	return workerRewards, nil
