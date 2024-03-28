@@ -14,7 +14,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1006)
+	err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -22,7 +22,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 		s.ctx,
 		s.appModule,
 		1,
-		1006,
+		1003,
 		1.5,
 		100.0,
 	)
@@ -36,7 +36,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1006)
+	err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -44,7 +44,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		s.ctx,
 		s.appModule,
 		1,
-		1006,
+		1003,
 		1.5,
 		100.0,
 	)
@@ -130,8 +130,6 @@ func mockWorkerLastScores(s *ModuleTestSuite, topicId uint64) error {
 		1001,
 		1002,
 		1003,
-		1004,
-		1005,
 	}
 
 	var scores = [][]float64{
