@@ -559,6 +559,12 @@ func (k *Keeper) GetLossBundles(ctx context.Context, topicId TOPIC_ID, block BLO
 	return &lossBundles, nil
 }
 
+// Insert a network loss bundle for a topic and block.
+func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundle types.LossBundle) error {
+	key := collections.Join(topicId, block)
+	return k.networkLossBundles.Set(ctx, key, lossBundle)
+}
+
 // A function that accepts a topicId and returns the latest Network LossBundle or error
 func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
