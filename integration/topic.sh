@@ -20,23 +20,33 @@ fi
 echo "Creating topic 1"
 PT_CREATOR="$ALICE_ADDRESS"
 PT_METADATA="ETH 24h Prediction"
-PT_WEIGHT_LOGIC="bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq"
-PT_WEIGHT_METHOD="eth-price-weights-calc.wasm"
-PT_WEIGHT_CADENCE="10800"
+PT_LOSS_LOGIC="bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq"
+PT_LOSS_METHOD="eth-price-weights-calc.wasm"
 PT_INFERENCE_LOGIC="bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm"
 PT_INFERENCE_METHOD="allora-inference-function.wasm"
-PT_INFERENCE_CADENCE="61"
+PT_EPOCH_LENGTH="10800"
 PT_DEFAULT_ARG="ETH"
-$ALLORAD_BIN tx emissions push-topic \
+PT_PNORM="2"
+PT_ALPHA_REGRET="3.14"
+PT_PREREWARD_REPUTER="6.2"
+PT_PREREWARD_INFERENCE="7.3"
+PT_PREREWARD_FORECAST="8.4"
+PT_F_TOLERANCE="5.5"
+$ALLORAD_BIN tx emissions create-topic \
   "$PT_CREATOR" \
   "$PT_METADATA" \
-  "$PT_WEIGHT_LOGIC" \
-  "$PT_WEIGHT_METHOD" \
-  "$PT_WEIGHT_CADENCE" \
+  "$PT_LOSS_LOGIC" \
+  "$PT_LOSS_METHOD" \
   "$PT_INFERENCE_LOGIC" \
   "$PT_INFERENCE_METHOD" \
-  "$PT_INFERENCE_CADENCE" \
+  "$PT_EPOCH_LENGTH" \
   "$PT_DEFAULT_ARG" \
+  "$PT_PNORM" \
+  "$PT_ALPHA_REGRET" \
+  "$PT_PREREWARD_REPUTER" \
+  "$PT_PREREWARD_INFERENCE" \
+  "$PT_PREREWARD_FORECAST" \
+  "$PT_F_TOLERANCE" \
   --yes --keyring-backend=test --chain-id=demo \
   --gas-prices=1uallo --gas=auto --gas-adjustment=1.5;
 

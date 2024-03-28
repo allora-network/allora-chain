@@ -7,7 +7,7 @@ import (
 
 	"strings"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 
 	collcodec "cosmossdk.io/collections/codec"
 )
@@ -26,7 +26,7 @@ func (i topicIdListValueCodec) Encode(value []uint64) ([]byte, error) {
 
 func (i topicIdListValueCodec) Decode(b []byte) ([]uint64, error) {
 	if len(b)%8 != 0 {
-		return nil, state.ErrTopicIdListValueDecodeInvalidLength
+		return nil, types.ErrTopicIdListValueDecodeInvalidLength
 	}
 	value := make([]uint64, len(b)/8)
 	for i := 0; i < len(b); i += 8 {
@@ -53,10 +53,10 @@ func (i topicIdListValueCodec) EncodeJSON(value []uint64) ([]byte, error) {
 func (i topicIdListValueCodec) DecodeJSON(b []byte) ([]uint64, error) {
 	stringRep := string(b)
 	if len(stringRep) < 2 {
-		return nil, state.ErrTopicIdListValueDecodeJsonInvalidLength
+		return nil, types.ErrTopicIdListValueDecodeJsonInvalidLength
 	}
 	if stringRep[0] != '[' || stringRep[len(stringRep)-1] != ']' {
-		return nil, state.ErrTopicIdListValueDecodeJsonInvalidFormat
+		return nil, types.ErrTopicIdListValueDecodeJsonInvalidFormat
 	}
 	if len(stringRep) == 2 {
 		return []uint64{}, nil

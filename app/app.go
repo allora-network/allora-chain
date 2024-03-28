@@ -2,13 +2,13 @@ package app
 
 import (
 	_ "embed"
-	"github.com/allora-network/allora-chain/x/emissions"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"io"
 	"os"
 	"path/filepath"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	dbm "github.com/cosmos/cosmos-db"
 
@@ -19,6 +19,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -225,8 +226,8 @@ func NewAlloraApp(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
 
-	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
-	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
+	// topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
+	// app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)
 
