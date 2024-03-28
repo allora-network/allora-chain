@@ -18,7 +18,10 @@ func BeginBlocker(ctx context.Context, am AppModule) error {
 	}
 	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
+	reputerWorkerCut := cosmosMath.
+		NewInt(int64(percentRewardsToReputersAndWorkers * Precision)).
+		Mul(feesCollectedAndEmissionsMintedLastBlock.Amount).
+		Quo(cosmosMath.NewInt(Precision))
 	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		am.keeper.GetFeeCollectorName(),

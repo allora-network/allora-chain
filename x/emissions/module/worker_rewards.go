@@ -19,7 +19,7 @@ func GetWorkersRewardsInferenceTask(
 	totalRewardsInferenceTask float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := am.keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get last score for each worker
 	var scores [][]*types.Score
 	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutLosses {
+	for _, oneOutLoss := range networkLosses.OneOutValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err
@@ -84,7 +84,7 @@ func GetWorkersRewardsForecastTask(
 	totalRewardsForecastTask float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := am.keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func GetWorkersRewardsForecastTask(
 	// Get new score for each worker
 	var scores [][]*types.Score
 	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutLosses {
+	for _, oneOutLoss := range networkLosses.OneOutValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err

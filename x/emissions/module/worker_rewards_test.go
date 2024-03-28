@@ -1,7 +1,6 @@
 package module_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -54,58 +53,58 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 
 func mockNetworkLosses(s *ModuleTestSuite, topicId uint64, block int64) error {
 	// Generate network losses
-	oneOutLosses := []*types.WorkerAttributedLoss{
+	oneOutLosses := []*types.WorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  cosmosMath.NewUint(100),
+			Value:  100.0,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  cosmosMath.NewUint(200),
+			Value:  200.0,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  cosmosMath.NewUint(300),
+			Value:  300.0,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  cosmosMath.NewUint(400),
+			Value:  400.0,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  cosmosMath.NewUint(500),
+			Value:  500.0,
 		},
 	}
 
-	oneInNaiveLosses := []*types.WorkerAttributedLoss{
+	oneInNaiveLosses := []*types.WorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  cosmosMath.NewUint(500),
+			Value:  500.0,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  cosmosMath.NewUint(400),
+			Value:  400.0,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  cosmosMath.NewUint(300),
+			Value:  300.0,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  cosmosMath.NewUint(200),
+			Value:  200.0,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  cosmosMath.NewUint(100),
+			Value:  100.0,
 		},
 	}
 
-	networkLosses := types.LossBundle{
+	networkLosses := types.ValueBundle{
 		TopicId:          topicId,
-		OneOutLosses:     oneOutLosses,
-		OneInNaiveLosses: oneInNaiveLosses,
-		CombinedLoss:     cosmosMath.NewUint(1500),
-		NaiveLoss:        cosmosMath.NewUint(1500),
+		OneOutValues:     oneOutLosses,
+		OneInNaiveValues: oneInNaiveLosses,
+		CombinedValue:    1500.0,
+		NaiveValue:       1500.0,
 	}
 
 	// Persist network losses

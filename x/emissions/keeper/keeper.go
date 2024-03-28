@@ -560,13 +560,13 @@ func (k *Keeper) GetValueBundles(ctx context.Context, topicId TOPIC_ID, block BL
 }
 
 // Insert a network loss bundle for a topic and block.
-func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundle types.LossBundle) error {
+func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundle types.ValueBundle) error {
 	key := collections.Join(topicId, block)
 	return k.networkLossBundles.Set(ctx, key, lossBundle)
 }
 
 // A function that accepts a topicId and returns the latest Network LossBundle or error
-func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TOPIC_ID) (*types.LossBundle, error) {
+func (k *Keeper) GetLatestNetworkValueBundle(ctx context.Context, topicId TOPIC_ID) (*types.ValueBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
