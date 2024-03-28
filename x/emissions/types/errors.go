@@ -106,4 +106,7 @@ var (
 	ErrInvalidSliceLength                                = errors.Register(ModuleName, 101, "invalid slice length")
 	ErrTopicCadenceBelowMinimum                          = errors.Register(ModuleName, 102, "topic cadence must be at least 60 seconds (1 minute)")
 	ErrPhiCannotBeZero                                   = errors.Register(ModuleName, 103, "phi: cannot be zero")
+	ErrInferenceRequestBlockValidUntilInPast             = errors.Register(ModuleName, 104, "inference request block valid until in past")
+	ErrInferenceRequestBlockValidUntilTooFarInFuture     = errors.Register(ModuleName, 105, "inference request block valid until too far in future")
+	ErrSumWeightsLessThanEta                             = errors.Register(ModuleName, 106, "sum weights less than eta")
 )

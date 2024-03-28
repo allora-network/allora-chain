@@ -44,5 +44,6 @@ var (
 	ChurnReadyTopicsKey           = collections.NewPrefix(33)
 	FoundationWhitelistKey        = collections.NewPrefix(34)
 	NetworkLossBundlesKey         = collections.NewPrefix(35)
-	StakeByReputerAndTopicIdKey   = collections.NewPrefix(36)
+	NetworkRegretsKey             = collections.NewPrefix(36)
+	StakeByReputerAndTopicIdKey   = collections.NewPrefix(37)
 )

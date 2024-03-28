@@ -7,10 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-///
-/// WHITELIST
-///
-
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)

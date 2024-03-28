@@ -10,10 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-///
-/// NODE REGISTRATION
-///
-
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
 	if msg.GetLibP2PKey() == "" {

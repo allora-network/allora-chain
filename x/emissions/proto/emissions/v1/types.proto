@@ -23,46 +23,38 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // delete requests if they have below this demand remaining
-  string max_missing_inference_percent = 6 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // if a worker has this percentage of inferences missing, penalize them
+  ];                                         // delete requests if they have below this demand remaining
+  double max_missing_inference_percent = 6;  // if a worker has this percentage of inferences missing, penalize them
   string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                     // minimum amount of tokens to send to stake as a reputer or worker
-  uint64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
-  uint64 min_epoch_length =
+  ];                                    // minimum amount of tokens to send to stake as a reputer or worker
+  int64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
+  int64 min_epoch_length =
       9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-  uint64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
-  uint64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
-  string percent_rewards_reputers_workers = 12 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];                                  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-  double sharpness = 13;              // controls going from stake-weighted consensus at low values to majority vote of
-                                      // above-average stake holders at high values
-  float beta_entropy = 14;            // controls resilience of reward payouts against copycat workers
-  float dcoef_abs = 15;               // delta for numerical differentiation
-  double learning_rate = 16;          // speed of gradient descent
-  float max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
-  float min_stake_fraction =
+  int64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
+  int64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
+  double percent_rewards_reputers_workers =
+      12;                     // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
+  double sharpness = 13;      // controls going from stake-weighted consensus at low values to majority vote of
+                              // above-average stake holders at high values
+  double beta_entropy = 14;   // controls resilience of reward payouts against copycat workers
+  double dcoef_abs = 15;      // delta for numerical differentiation
+  double learning_rate = 16;  // speed of gradient descent
+  double max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
+  double min_stake_fraction =
       18;  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
   uint64 max_workers_per_topic_request =
       19;  // max number of workers whose inference will be used and compensated per request
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
+  double epsilon = 21;                         // small number to prevent division by zero
+  double p_inference_synthesis =
+      22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
-///
 /// TOPICS
-///
 
 message Topic {
   uint64 id = 1;
@@ -72,93 +64,75 @@ message Topic {
   string loss_method = 5;
   string inference_logic = 6;
   string inference_method = 7;
-  uint64 epoch_last_ended = 8;
-  uint64 epoch_length = 9;
-  uint64 ground_truth_lag = 10;
+  int64 epoch_last_ended = 8;
+  int64 epoch_length = 9;
+  int64 ground_truth_lag = 10;
   bool active = 11;
   string default_arg = 12;
   uint64 pnorm = 13;
-  float alpha_regret = 14;
-  float preward_reputer = 15;
-  float preward_inference = 16;
-  float preward_forecast = 17;
-  float f_tolerance = 18;
-  uint64 subsidy = 19;
-  float subsidized_reward_epochs = 20;
-  float f_treasury = 21;
+  double alpha_regret = 14;
+  double preward_reputer = 15;
+  double preward_inference = 16;
+  double preward_forecast = 17;
+  double f_tolerance = 18;
 }
 
 message TopicList {
   repeated Topic topics = 1;
 }
 
-///
 /// REPUTERS
-///
 
-message WorkerAttributedLoss {
+message WorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;
-  string value = 2 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 2;
   bytes extra_data = 3;
 }
 
-// eq13 in the litepaper
-message LossBundle {
+// These losses and inferences are calculated per reputer or by the network
+// The `m`s in the comments below exist for when they're made by reputers,
+// but they may be absent implying that they were made by the network
+message ValueBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
-  string reputer = 2;
-  bytes extra_data = 3;
-  // L_im
-  string combined_loss = 4 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // L_ijm
-  repeated WorkerAttributedLoss inferer_losses = 5;
-  // L_ikm
-  repeated WorkerAttributedLoss forecaster_losses = 6;
-  // L^-_im
-  string naive_loss = 7 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // L^-_lim
-  repeated WorkerAttributedLoss one_out_losses = 8;
-  // L^+_kim
-  repeated WorkerAttributedLoss one_in_naive_losses = 9;
+  bytes extra_data = 2;
+  // L_im or I_i
+  double combined_value = 3;
+  // L_ijm or I_ij
+  repeated WorkerAttributedValue inferer_values = 4;
+  // L_ikm or I_ik
+  repeated WorkerAttributedValue forecaster_values = 5;
+  // L^-_im or I^-_i
+  double naive_value = 6;
+  // L^-_lim or I^-_li
+  repeated WorkerAttributedValue one_out_values = 7;
+  // L^+_kim or I^+_ki
+  repeated WorkerAttributedValue one_in_naive_values = 8;
 }
 
-message LossBundles {
-  repeated LossBundle loss_bundles = 1;
+// For when the bundle is computed on a per-reputer basis (ie.. if there is an index `m` in the above)
+message ReputerValueBundle {
+  option (gogoproto.equal) = true;
+
+  string reputer = 1;
+  ValueBundle value_bundle = 2;
 }
 
-///
+message ReputerValueBundles {
+  repeated ReputerValueBundle reputer_value_bundles = 1;
+}
+
 /// WORKERS
-///
 
 message Inference {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
   string worker = 2;
-  string value = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 3;
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -171,12 +145,7 @@ message ForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 2;
-  string value = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 3;
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -207,19 +176,27 @@ message OffchainNodes {
 
 message InferenceSetForScoring {
   uint64 topic_id = 1;
-  uint64 timestamp = 2;
+  int64 block_height = 2;
   Inferences inferences = 3;
 }
 
 message ForecastSetForScoring {
   uint64 topic_id = 1;
-  uint64 timestamp = 2;
+  int64 block_height = 2;
   Forecasts forecasts = 3;
 }
 
-///
+message WorkerRegret {
+  string worker = 1;
+  double inference_regret = 2;
+  double forecast_regret = 3;
+}
+
+message WorkerRegrets {
+  repeated WorkerRegret worker_regrets = 1;
+}
+
 /// STAKE
-///
 
 message StakePlacement {
   uint64 topic_id = 1;
@@ -233,7 +210,7 @@ message StakePlacement {
 }
 
 message StakeRemoval {
-  uint64 timestamp_removal_started = 1;
+  int64 block_removal_started = 1;
   repeated StakePlacement placements = 2;
 }
 
@@ -250,13 +227,11 @@ message DelegatedStakePlacement {
 }
 
 message DelegatedStakeRemoval {
-  uint64 timestamp_removal_started = 1;
+  int64 block_removal_started = 1;
   repeated DelegatedStakePlacement placements = 2;
 }
 
-///
 /// INFERENCE REQUEST
-///
 
 // num_inference_possible = bid_amount / max_price_per_inference,
 // length of time this inference repeats for =  num_inference_possible * cadence
@@ -264,7 +239,7 @@ message InferenceRequest {
   string sender = 1;
   uint64 nonce = 2;
   uint64 topic_id = 3;
-  uint64 cadence = 4;  // time in seconds between inferences, zero means oneshot inference
+  int64 cadence = 4;  // blocks between inferences, zero means oneshot inference
   string max_price_per_inference = 5 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -276,8 +251,8 @@ message InferenceRequest {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                        // how many funds to send from alice with this Inference Request
-  uint64 last_checked = 7;  // the last time the inference was checked and was possibly drawn from
-  uint64 timestamp_valid_until = 8;
+  ];                             // how many funds to send from alice with this Inference Request
+  int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
+  int64 block_valid_until = 8;
   bytes extra_data = 9;
 }

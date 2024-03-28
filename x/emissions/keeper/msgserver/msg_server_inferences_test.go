@@ -3,7 +3,6 @@ package msgserver_test
 import (
 	"math"
 
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,9 +14,9 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 
 	// Mock setup for inferences
 	inferences := []*types.Inference{
-		{TopicId: 0, Worker: sdk.AccAddress(PKS[0].Address()).String(), Value: cosmosMath.NewUint(2200)},
-		{TopicId: 0, Worker: sdk.AccAddress(PKS[1].Address()).String(), Value: cosmosMath.NewUint(2100)},
-		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: cosmosMath.NewUint(12)},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[0].Address()).String(), Value: 2200},
+		{TopicId: 0, Worker: sdk.AccAddress(PKS[1].Address()).String(), Value: 2100},
+		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: 12},
 	}
 
 	// Call the ProcessInferences function to test writes
@@ -32,10 +31,10 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	 */
 	// Ensure low ts for topic 1
 	var topicId = uint64(0)
-	var inferenceTimestamp = uint64(1500000000)
+	inferenceBlock := int64(0x16)
 
 	// _, err = msgServer.SetLatestInferencesTimestamp(ctx, inferencesMsg)
-	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceBlock)
 	require.NoError(err, "Setting latest inference timestamp should not fail")
 
 	allInferences, err := s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(0))
@@ -48,9 +47,9 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 	/*
 	 * Inferences under threshold should not be returned
 	 */
-	inferenceTimestamp = math.MaxUint64
+	inferenceBlock = math.MaxInt64
 
-	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTimestamp)
+	err = s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceBlock)
 	require.NoError(err)
 
 	allInferences, err = s.emissionsKeeper.GetLatestInferencesFromTopic(ctx, uint64(1))

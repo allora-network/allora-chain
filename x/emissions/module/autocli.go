@@ -65,12 +65,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetAllInferences",
-					Use:       "inference [topic_id] [timestamp]",
+					RpcMethod: "GetInferencesAtBlock",
+					Use:       "inference [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
-						{ProtoField: "timestamp"},
+						{ProtoField: "block_height"},
 					},
 				},
 				{

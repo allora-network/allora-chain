@@ -608,8 +608,8 @@ func (s *KeeperTestSuite) TestAddToMempool() {
 		Cadence:              60 * 60 * 24,
 		MaxPricePerInference: cosmosMath.NewUint(1000),
 		BidAmount:            cosmosMath.NewUint(1446),
-		TimestampValidUntil:  uint64(time.Now().Unix()),
-		LastChecked:          0,
+		BlockValidUntil:      0x14,
+		BlockLastChecked:     0,
 		ExtraData:            []byte("extra data"),
 	}
 	requestId, err := inferenceRequest.GetRequestId()
@@ -638,7 +638,8 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 			Cadence:              60 * 60 * 24,
 			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
 			BidAmount:            cosmosMath.NewUint(1446 * i),
-			TimestampValidUntil:  uint64(time.Now().Unix()),
+			BlockValidUntil:      0x14,
+			BlockLastChecked:     0x0,
 			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
 		}
 		// Add to mempool
@@ -673,7 +674,8 @@ func (s *KeeperTestSuite) TestGetMempoolSimple() {
 			Cadence:              60 * 60 * 24,
 			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
 			BidAmount:            cosmosMath.NewUint(1446 * i),
-			TimestampValidUntil:  uint64(time.Now().Unix()),
+			BlockValidUntil:      0x14,
+			BlockLastChecked:     0x0,
 			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
 		}
 		// Add to mempool
@@ -705,13 +707,13 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
 		MaxTopicsPerBlock:             1000,
 		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:    cosmosMath.LegacyMustNewDecFromStr("10"),
+		MaxMissingInferencePercent:    10,
 		RequiredMinimumStake:          cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:        172800,
 		MinEpochLength:                60,
 		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
 		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
-		PercentRewardsReputersWorkers: cosmosMath.LegacyMustNewDecFromStr("50"),
+		PercentRewardsReputersWorkers: 50,
 		MaxWorkersPerTopicRequest:     10,
 		MaxReputersPerTopicRequest:    10,
 	}

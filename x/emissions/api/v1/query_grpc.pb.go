@@ -30,10 +30,10 @@ const (
 	Query_GetAllExistingInferenceRequests_FullMethodName   = "/emissions.v1.Query/GetAllExistingInferenceRequests"
 	Query_GetTopicUnmetDemand_FullMethodName               = "/emissions.v1.Query/GetTopicUnmetDemand"
 	Query_GetWorkerLatestInferenceByTopicId_FullMethodName = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetAllInferences_FullMethodName                  = "/emissions.v1.Query/GetAllInferences"
+	Query_GetInferencesAtBlock_FullMethodName              = "/emissions.v1.Query/GetInferencesAtBlock"
 	Query_GetInferencesToScore_FullMethodName              = "/emissions.v1.Query/GetInferencesToScore"
 	Query_GetForecastsToScore_FullMethodName               = "/emissions.v1.Query/GetForecastsToScore"
-	Query_GetLatestNetworkLossBundle_FullMethodName        = "/emissions.v1.Query/GetLatestNetworkLossBundle"
+	Query_GetLatestNetworkValueBundle_FullMethodName       = "/emissions.v1.Query/GetLatestNetworkValueBundle"
 	Query_GetTotalStake_FullMethodName                     = "/emissions.v1.Query/GetTotalStake"
 	Query_GetReputerStakeList_FullMethodName               = "/emissions.v1.Query/GetReputerStakeList"
 	Query_GetTopicStakeList_FullMethodName                 = "/emissions.v1.Query/GetTopicStakeList"
@@ -58,10 +58,10 @@ type QueryClient interface {
 	GetAllExistingInferenceRequests(ctx context.Context, in *QueryAllExistingInferenceRequest, opts ...grpc.CallOption) (*QueryAllExistingInferenceResponse, error)
 	GetTopicUnmetDemand(ctx context.Context, in *QueryTopicUnmetDemandRequest, opts ...grpc.CallOption) (*QueryTopicUnmetDemandResponse, error)
 	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error)
-	GetAllInferences(ctx context.Context, in *QueryAllInferencesRequest, opts ...grpc.CallOption) (*QueryAllInferencesResponse, error)
+	GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error)
 	GetInferencesToScore(ctx context.Context, in *QueryInferencesToScoreRequest, opts ...grpc.CallOption) (*QueryInferencesToScoreResponse, error)
 	GetForecastsToScore(ctx context.Context, in *QueryForecastsToScoreRequest, opts ...grpc.CallOption) (*QueryForecastsToScoreResponse, error)
-	GetLatestNetworkLossBundle(ctx context.Context, in *QueryLatestNetworkLossBundleRequest, opts ...grpc.CallOption) (*QueryLatestNetworkLossBundleResponse, error)
+	GetLatestNetworkValueBundle(ctx context.Context, in *QueryLatestNetworkValueBundleRequest, opts ...grpc.CallOption) (*QueryLatestNetworkValueBundleResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
 	GetReputerStakeList(ctx context.Context, in *QueryReputerStakeListRequest, opts ...grpc.CallOption) (*QueryReputerStakeListResponse, error)
 	GetTopicStakeList(ctx context.Context, in *QueryTopicStakeListRequest, opts ...grpc.CallOption) (*QueryTopicStakeListResponse, error)
@@ -177,9 +177,9 @@ func (c *queryClient) GetWorkerLatestInferenceByTopicId(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *queryClient) GetAllInferences(ctx context.Context, in *QueryAllInferencesRequest, opts ...grpc.CallOption) (*QueryAllInferencesResponse, error) {
-	out := new(QueryAllInferencesResponse)
-	err := c.cc.Invoke(ctx, Query_GetAllInferences_FullMethodName, in, out, opts...)
+func (c *queryClient) GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error) {
+	out := new(QueryInferencesAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetInferencesAtBlock_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -204,9 +204,9 @@ func (c *queryClient) GetForecastsToScore(ctx context.Context, in *QueryForecast
 	return out, nil
 }
 
-func (c *queryClient) GetLatestNetworkLossBundle(ctx context.Context, in *QueryLatestNetworkLossBundleRequest, opts ...grpc.CallOption) (*QueryLatestNetworkLossBundleResponse, error) {
-	out := new(QueryLatestNetworkLossBundleResponse)
-	err := c.cc.Invoke(ctx, Query_GetLatestNetworkLossBundle_FullMethodName, in, out, opts...)
+func (c *queryClient) GetLatestNetworkValueBundle(ctx context.Context, in *QueryLatestNetworkValueBundleRequest, opts ...grpc.CallOption) (*QueryLatestNetworkValueBundleResponse, error) {
+	out := new(QueryLatestNetworkValueBundleResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestNetworkValueBundle_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -283,10 +283,10 @@ type QueryServer interface {
 	GetAllExistingInferenceRequests(context.Context, *QueryAllExistingInferenceRequest) (*QueryAllExistingInferenceResponse, error)
 	GetTopicUnmetDemand(context.Context, *QueryTopicUnmetDemandRequest) (*QueryTopicUnmetDemandResponse, error)
 	GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error)
-	GetAllInferences(context.Context, *QueryAllInferencesRequest) (*QueryAllInferencesResponse, error)
+	GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error)
 	GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error)
 	GetForecastsToScore(context.Context, *QueryForecastsToScoreRequest) (*QueryForecastsToScoreResponse, error)
-	GetLatestNetworkLossBundle(context.Context, *QueryLatestNetworkLossBundleRequest) (*QueryLatestNetworkLossBundleResponse, error)
+	GetLatestNetworkValueBundle(context.Context, *QueryLatestNetworkValueBundleRequest) (*QueryLatestNetworkValueBundleResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
 	GetReputerStakeList(context.Context, *QueryReputerStakeListRequest) (*QueryReputerStakeListResponse, error)
 	GetTopicStakeList(context.Context, *QueryTopicStakeListRequest) (*QueryTopicStakeListResponse, error)
@@ -333,8 +333,8 @@ func (UnimplementedQueryServer) GetTopicUnmetDemand(context.Context, *QueryTopic
 func (UnimplementedQueryServer) GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerLatestInferenceByTopicId not implemented")
 }
-func (UnimplementedQueryServer) GetAllInferences(context.Context, *QueryAllInferencesRequest) (*QueryAllInferencesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllInferences not implemented")
+func (UnimplementedQueryServer) GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesAtBlock not implemented")
 }
 func (UnimplementedQueryServer) GetInferencesToScore(context.Context, *QueryInferencesToScoreRequest) (*QueryInferencesToScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesToScore not implemented")
@@ -342,8 +342,8 @@ func (UnimplementedQueryServer) GetInferencesToScore(context.Context, *QueryInfe
 func (UnimplementedQueryServer) GetForecastsToScore(context.Context, *QueryForecastsToScoreRequest) (*QueryForecastsToScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForecastsToScore not implemented")
 }
-func (UnimplementedQueryServer) GetLatestNetworkLossBundle(context.Context, *QueryLatestNetworkLossBundleRequest) (*QueryLatestNetworkLossBundleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkLossBundle not implemented")
+func (UnimplementedQueryServer) GetLatestNetworkValueBundle(context.Context, *QueryLatestNetworkValueBundleRequest) (*QueryLatestNetworkValueBundleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkValueBundle not implemented")
 }
 func (UnimplementedQueryServer) GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalStake not implemented")
@@ -574,20 +574,20 @@ func _Query_GetWorkerLatestInferenceByTopicId_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetAllInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllInferencesRequest)
+func _Query_GetInferencesAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInferencesAtBlockRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetAllInferences(ctx, in)
+		return srv.(QueryServer).GetInferencesAtBlock(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetAllInferences_FullMethodName,
+		FullMethod: Query_GetInferencesAtBlock_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetAllInferences(ctx, req.(*QueryAllInferencesRequest))
+		return srv.(QueryServer).GetInferencesAtBlock(ctx, req.(*QueryInferencesAtBlockRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -628,20 +628,20 @@ func _Query_GetForecastsToScore_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLatestNetworkLossBundle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestNetworkLossBundleRequest)
+func _Query_GetLatestNetworkValueBundle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestNetworkValueBundleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetLatestNetworkLossBundle(ctx, in)
+		return srv.(QueryServer).GetLatestNetworkValueBundle(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetLatestNetworkLossBundle_FullMethodName,
+		FullMethod: Query_GetLatestNetworkValueBundle_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestNetworkLossBundle(ctx, req.(*QueryLatestNetworkLossBundleRequest))
+		return srv.(QueryServer).GetLatestNetworkValueBundle(ctx, req.(*QueryLatestNetworkValueBundleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -806,8 +806,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetWorkerLatestInferenceByTopicId_Handler,
 		},
 		{
-			MethodName: "GetAllInferences",
-			Handler:    _Query_GetAllInferences_Handler,
+			MethodName: "GetInferencesAtBlock",
+			Handler:    _Query_GetInferencesAtBlock_Handler,
 		},
 		{
 			MethodName: "GetInferencesToScore",
@@ -818,8 +818,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetForecastsToScore_Handler,
 		},
 		{
-			MethodName: "GetLatestNetworkLossBundle",
-			Handler:    _Query_GetLatestNetworkLossBundle_Handler,
+			MethodName: "GetLatestNetworkValueBundle",
+			Handler:    _Query_GetLatestNetworkValueBundle_Handler,
 		},
 		{
 			MethodName: "GetTotalStake",

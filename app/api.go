@@ -56,12 +56,12 @@ func generateWeights(
 	inferencesByTimestamp := []LatestInferences{}
 
 	for _, infSet := range inferences {
-		timestamp := fmt.Sprintf("%d", infSet.Timestamp)
+		timestamp := fmt.Sprintf("%d", infSet.BlockHeight)
 		inferences := []InferenceItem{}
 		for _, inf := range infSet.Inferences.Inferences {
 			inferences = append(inferences, InferenceItem{
 				Worker:    inf.Worker,
-				Inference: inf.Value.String(),
+				Inference: strconv.FormatFloat(inf.Value, 'f', -1, 64),
 			})
 		}
 		inferencesByTimestamp = append(inferencesByTimestamp, LatestInferences{

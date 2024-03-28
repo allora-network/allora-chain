@@ -32,6 +32,9 @@ var (
 // ConsensusVersion defines the current module consensus version.
 const ConsensusVersion = 1
 
+// Precision used to convert any float or double to an integer during arithmetic operations
+const Precision = 1000000
+
 type AppModule struct {
 	cdc    codec.Codec
 	keeper keeper.Keeper
@@ -124,7 +127,10 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	}
 	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
 	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	reputerWorkerCut := percentRewardsToReputersAndWorkers.MulInt(feesCollectedAndEmissionsMintedLastBlock.Amount).TruncateInt()
+	reputerWorkerCut := cosmosMath.
+		NewInt(int64(percentRewardsToReputersAndWorkers * Precision)).
+		Mul(feesCollectedAndEmissionsMintedLastBlock.Amount).
+		Quo(cosmosMath.NewInt(Precision))
 	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		am.keeper.GetFeeCollectorName(),
@@ -142,13 +148,12 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 	// Ensure that enough blocks have passed to hit an epoch.
 	// If not, skip rewards calculation
 	blockNumber := sdkCtx.BlockHeight()
-	currentTime := uint64(sdkCtx.BlockTime().Unix())
 	lastRewardsUpdate, err := am.keeper.GetLastRewardsUpdate(sdkCtx)
 	if err != nil {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, currentTime)
+	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, blockNumber)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
@@ -194,14 +199,14 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if currentTime-topic.EpochLastEnded >= topic.EpochLength {
+			if blockNumber-topic.EpochLastEnded >= topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
 
 				// Update the last inference ran
-				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, currentTime)
+				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockNumber)
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
 				}
