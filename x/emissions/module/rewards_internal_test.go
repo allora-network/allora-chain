@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -656,7 +656,7 @@ func (s *MathTestSuite) TestNormalizationFactorNaN() {
 	// given that emissions.ErrNormilazationFactorInvalidInput will be thrown first
 }
 
-func (s *MathTestSuite) TestStdDev(t *testing.T) {
+func TestStdDev(t *testing.T) {
 	tests := []struct {
 		name string
 		data []float64

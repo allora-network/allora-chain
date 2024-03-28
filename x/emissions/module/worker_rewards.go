@@ -10,8 +10,6 @@ type TaskRewards struct {
 	Reward  float64
 }
 
-// TODO: Add litepaper references
-// TODO: Make sure to avoid duplicate rewarding/scoring
 func GetWorkersRewardsInferenceTask(
 	ctx sdk.Context,
 	am AppModule,
@@ -26,9 +24,8 @@ func GetWorkersRewardsInferenceTask(
 		return nil, err
 	}
 
-	// Get new score for each worker
-	// TODO: Sort by worker (?)
-	var scores [][]types.Score
+	// Get last score for each worker
+	var scores [][]*types.Score
 	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutLosses {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
@@ -41,22 +38,6 @@ func GetWorkersRewardsInferenceTask(
 		if err != nil {
 			return nil, err
 		}
-
-		// Calculate new score
-		workerNewScore := GetWorkerScore(float64(networkLosses.CombinedLoss.BigInt().Int64()), float64(oneOutLoss.Value.BigInt().Int64()))
-
-		scoreToAdd := types.Score{
-			TopicId:     topicId,
-			BlockNumber: block,
-			Address:     workerAddr.String(),
-			Score:       workerNewScore,
-		}
-
-		// Persist worker score
-		am.keeper.InsertWorkerInferenceScore(ctx, topicId, block, scoreToAdd)
-
-		// Add new score in the last scores array
-		workerLastScores = append(workerLastScores, scoreToAdd)
 
 		// Add worker score in the scores array
 		scores = append(scores, workerLastScores)
@@ -108,27 +89,11 @@ func GetWorkersRewardsForecastTask(
 		return nil, err
 	}
 
-	// Get worker scores for one out loss
-	var workersScoresOneOut []float64
-	for _, oneOutLoss := range networkLosses.OneOutLosses {
-		workerScore := GetWorkerScore(float64(networkLosses.CombinedLoss.BigInt().Int64()), float64(oneOutLoss.Value.BigInt().Int64()))
-		workersScoresOneOut = append(workersScoresOneOut, workerScore)
-	}
-
-	// Get worker scores for one in naive loss
-	var workersScoresOneIn []float64
-	for _, oneInNaiveLoss := range networkLosses.OneInNaiveLosses {
-		workerScore := GetWorkerScore(float64(networkLosses.NaiveLoss.BigInt().Int64()), float64(oneInNaiveLoss.Value.BigInt().Int64()))
-		workersScoresOneIn = append(workersScoresOneIn, workerScore)
-	}
-
 	// Get new score for each worker
-	numForecasters := len(workersScoresOneOut)
-	fUniqueAgg := GetfUniqueAgg(float64(numForecasters))
-	var scores [][]types.Score
+	var scores [][]*types.Score
 	var workerAddresses []sdk.AccAddress
-	for i, workerScoreOneOut := range workersScoresOneOut {
-		workerAddr, err := sdk.AccAddressFromBech32(networkLosses.OneInNaiveLosses[i].Worker)
+	for _, oneOutLoss := range networkLosses.OneOutLosses {
+		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err
 		}
@@ -138,22 +103,6 @@ func GetWorkersRewardsForecastTask(
 		if err != nil {
 			return nil, err
 		}
-
-		// Calculate new score
-		workerFinalScore := GetFinalWorkerScoreForecastTask(workersScoresOneIn[i], workerScoreOneOut, fUniqueAgg)
-
-		scoreToAdd := types.Score{
-			TopicId:     topicId,
-			BlockNumber: block,
-			Address:     workerAddr.String(),
-			Score:       workerFinalScore,
-		}
-
-		// Persist worker score
-		am.keeper.InsertWorkerForecastScore(ctx, topicId, block, scoreToAdd)
-
-		// Add new score in the last scores array
-		workerLastScores = append(workerLastScores, scoreToAdd)
 
 		// Add worker score in the scores array
 		scores = append(scores, workerLastScores)
