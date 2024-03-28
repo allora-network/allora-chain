@@ -1565,6 +1565,118 @@ func (m *DelegatedStakeRemoval) GetPlacements() []*DelegatedStakePlacement {
 	return nil
 }
 
+type Score struct {
+	TopicId     uint64  `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockNumber int64   `protobuf:"varint,2,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	Address     string  `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
+	Score       float64 `protobuf:"fixed64,4,opt,name=score,proto3" json:"score,omitempty"`
+}
+
+func (m *Score) Reset()         { *m = Score{} }
+func (m *Score) String() string { return proto.CompactTextString(m) }
+func (*Score) ProtoMessage()    {}
+func (*Score) Descriptor() ([]byte, []int) {
+	return fileDescriptor_32ba9f7333c0b525, []int{21}
+}
+func (m *Score) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Score) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Score.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Score) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Score.Merge(m, src)
+}
+func (m *Score) XXX_Size() int {
+	return m.Size()
+}
+func (m *Score) XXX_DiscardUnknown() {
+	xxx_messageInfo_Score.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Score proto.InternalMessageInfo
+
+func (m *Score) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *Score) GetBlockNumber() int64 {
+	if m != nil {
+		return m.BlockNumber
+	}
+	return 0
+}
+
+func (m *Score) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *Score) GetScore() float64 {
+	if m != nil {
+		return m.Score
+	}
+	return 0
+}
+
+type Scores struct {
+	Scores []*Score `protobuf:"bytes,1,rep,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *Scores) Reset()         { *m = Scores{} }
+func (m *Scores) String() string { return proto.CompactTextString(m) }
+func (*Scores) ProtoMessage()    {}
+func (*Scores) Descriptor() ([]byte, []int) {
+	return fileDescriptor_32ba9f7333c0b525, []int{22}
+}
+func (m *Scores) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Scores) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Scores.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Scores) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Scores.Merge(m, src)
+}
+func (m *Scores) XXX_Size() int {
+	return m.Size()
+}
+func (m *Scores) XXX_DiscardUnknown() {
+	xxx_messageInfo_Scores.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Scores proto.InternalMessageInfo
+
+func (m *Scores) GetScores() []*Score {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
 // num_inference_possible = bid_amount / max_price_per_inference,
 // length of time this inference repeats for =  num_inference_possible * cadence
 type InferenceRequest struct {
@@ -1684,6 +1796,8 @@ func init() {
 	proto.RegisterType((*StakeRemoval)(nil), "emissions.v1.StakeRemoval")
 	proto.RegisterType((*DelegatedStakePlacement)(nil), "emissions.v1.DelegatedStakePlacement")
 	proto.RegisterType((*DelegatedStakeRemoval)(nil), "emissions.v1.DelegatedStakeRemoval")
+	proto.RegisterType((*Score)(nil), "emissions.v1.Score")
+	proto.RegisterType((*Scores)(nil), "emissions.v1.Scores")
 	proto.RegisterType((*InferenceRequest)(nil), "emissions.v1.InferenceRequest")
 }
 
@@ -3299,6 +3413,89 @@ func (m *DelegatedStakeRemoval) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *Score) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Score) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Score) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Score != 0 {
+		i -= 8
+		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.Score))))
+		i--
+		dAtA[i] = 0x21
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.BlockNumber != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.BlockNumber))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Scores) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Scores) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Scores) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for iNdEx := len(m.Scores) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Scores[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTypes(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *InferenceRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -3936,6 +4133,43 @@ func (m *DelegatedStakeRemoval) Size() (n int) {
 	}
 	if len(m.Placements) > 0 {
 		for _, e := range m.Placements {
+			l = e.Size()
+			n += 1 + l + sovTypes(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *Score) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovTypes(uint64(m.TopicId))
+	}
+	if m.BlockNumber != 0 {
+		n += 1 + sovTypes(uint64(m.BlockNumber))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	if m.Score != 0 {
+		n += 9
+	}
+	return n
+}
+
+func (m *Scores) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for _, e := range m.Scores {
 			l = e.Size()
 			n += 1 + l + sovTypes(uint64(l))
 		}
@@ -7403,6 +7637,221 @@ func (m *DelegatedStakeRemoval) Unmarshal(dAtA []byte) error {
 			}
 			m.Placements = append(m.Placements, &DelegatedStakePlacement{})
 			if err := m.Placements[len(m.Placements)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Score) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Score: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Score: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockNumber", wireType)
+			}
+			m.BlockNumber = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockNumber |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Score", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(encoding_binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.Score = float64(math.Float64frombits(v))
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Scores) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Scores: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Scores: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Scores = append(m.Scores, &Score{})
+			if err := m.Scores[len(m.Scores)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
