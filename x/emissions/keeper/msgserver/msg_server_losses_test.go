@@ -1,7 +1,6 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -17,34 +16,36 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	// Create a MsgSetLosses message
 	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		ValueBundles: []*types.ValueBundle{
+		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
-				TopicId:      1,
-				Reputer:      reputerAddr,
-				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+				Reputer: reputerAddr,
+				ValueBundle: &types.ValueBundle{
+					TopicId:       1,
+					CombinedValue: 100,
+					InfererValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				ForecasterLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					NaiveValue: 100,
+					OneOutValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				OneInNaiveLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					OneInNaiveValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
 				},
 			},
@@ -66,34 +67,36 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	// Create a MsgSetLosses message
 	lossesMsg := &types.MsgSetLosses{
 		Sender: reputerAddr,
-		ValueBundles: []*types.ValueBundle{
+		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
-				TopicId:      1,
-				Reputer:      reputerAddr,
-				CombinedLoss: cosmosMath.NewUint(100),
-				InfererLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+				Reputer: reputerAddr,
+				ValueBundle: &types.ValueBundle{
+					TopicId:       1,
+					CombinedValue: 100,
+					InfererValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				ForecasterLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				NaiveLoss: cosmosMath.NewUint(100),
-				OneOutLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					NaiveValue: 100,
+					OneOutValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
-				},
-				OneInNaiveLosses: []*types.WorkerAttributedValue{
-					{
-						Worker: workerAddr,
-						Value:  cosmosMath.NewUint(100),
+					OneInNaiveValues: []*types.WorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
 					},
 				},
 			},
