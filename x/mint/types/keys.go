@@ -2,11 +2,15 @@ package types
 
 import "cosmossdk.io/collections"
 
+// these might need to be unique across the whole module space
+// certain tests were failing in weird ways when they were not
+// e.g. emissions starts at 0, so maybe there was a conflict
+// with using the same integer for the keys for multiple keepers
 var (
 	// MinterKey is the key to use for the keeper store.
-	MinterKey          = collections.NewPrefix(0)
-	ParamsKey          = collections.NewPrefix(1)
-	PreviousRewardsKey = collections.NewPrefix(2)
+	MinterKey          = collections.NewPrefix(137)
+	ParamsKey          = collections.NewPrefix(138)
+	PreviousRewardsKey = collections.NewPrefix(139)
 )
 
 const (

@@ -1,10 +1,13 @@
 package types
 
+import "cosmossdk.io/math"
+
 // NewGenesisState creates a new GenesisState object
-func NewGenesisState(minter Minter, params Params) *GenesisState {
+func NewGenesisState(minter Minter, params Params, previousReward math.Int) *GenesisState {
 	return &GenesisState{
-		Minter: minter,
-		Params: params,
+		Minter:         minter,
+		Params:         params,
+		PreviousReward: previousReward,
 	}
 }
 

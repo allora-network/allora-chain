@@ -32,7 +32,7 @@ type Keeper struct {
 	Schema         collections.Schema
 	Params         collections.Item[types.Params]
 	Minter         collections.Item[types.Minter]
-	PreviousReward math.Int //collections.Item[math.Int]
+	PreviousReward collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -52,6 +52,7 @@ func NewKeeper(
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
+	previousReward := collections.NewItem(sb, types.PreviousRewardsKey, "previousrewards", sdk.IntValue)
 	k := Keeper{
 		cdc:              cdc,
 		storeService:     storeService,
@@ -63,8 +64,7 @@ func NewKeeper(
 		authority:        authority,
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		Minter:           collections.NewItem(sb, types.MinterKey, "minter", codec.CollValue[types.Minter](cdc)),
-		PreviousReward:   math.NewInt(0),
-		//PreviousReward:   collections.NewItem(sb, types.PreviousRewardsKey, "previousrewards", sdk.IntValue),
+		PreviousReward:   previousReward,
 	}
 
 	schema, err := sb.Build()

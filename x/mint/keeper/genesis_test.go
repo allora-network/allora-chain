@@ -90,8 +90,8 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	s.Require().Equal(genesisState.Params, params)
 	s.Require().NoError(err)
 
-	//previousRewardsPerUnitStake, err := s.keeper.PreviousReward.Get(s.sdkCtx)
-	//s.Require().True(genesisState.PreviousReward.Equal(previousRewardsPerUnitStake))
+	previousRewards, err := s.keeper.PreviousReward.Get(s.sdkCtx)
+	s.Require().True(genesisState.PreviousReward.Equal(previousRewards))
 	s.Require().NoError(err)
 
 	genesisState2 := s.keeper.ExportGenesis(s.sdkCtx)
@@ -99,5 +99,5 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	// bigint params screw .Equal up
 	s.Require().Equal(genesisState.Minter, genesisState2.Minter)
 	s.Require().Equal(genesisState.Params, genesisState2.Params)
-	//s.Require().True(genesisState.PreviousReward.Equal(genesisState2.PreviousReward))
+	s.Require().True(genesisState.PreviousReward.Equal(genesisState2.PreviousReward))
 }

@@ -16,9 +16,9 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 		panic(err)
 	}
 
-	//if err := keeper.PreviousReward.Set(ctx, data.PreviousReward); err != nil {
-	//	panic(err)
-	//}
+	if err := keeper.PreviousReward.Set(ctx, data.PreviousReward); err != nil {
+		panic(err)
+	}
 
 	ak.GetModuleAccount(ctx, types.ModuleName)
 }
@@ -35,5 +35,10 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
-	return types.NewGenesisState(minter, params)
+	previousReward, err := keeper.PreviousReward.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return types.NewGenesisState(minter, params, previousReward)
 }
