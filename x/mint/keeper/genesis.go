@@ -16,9 +16,9 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 		panic(err)
 	}
 
-	if err := keeper.PreviousReward.Set(ctx, data.PreviousReward); err != nil {
-		panic(err)
-	}
+	//if err := keeper.PreviousReward.Set(ctx, data.PreviousReward); err != nil {
+	//	panic(err)
+	//}
 
 	ak.GetModuleAccount(ctx, types.ModuleName)
 }

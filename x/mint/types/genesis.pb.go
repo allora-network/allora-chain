@@ -33,6 +33,7 @@ type GenesisState struct {
 	// params defines all the parameters of the module.
 	Params Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params"`
 	// previous target emission rewards per unit staked token
+	// math.int encoded in string
 	PreviousReward cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=previous_reward,json=previousReward,proto3,customtype=cosmossdk.io/math.Int" json:"previous_reward"`
 }
 

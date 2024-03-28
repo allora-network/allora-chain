@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -95,6 +96,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
+	emissionsKeeper := emissionskeeper.NewKeeper(
+		encCfg.Codec,
+		addresscodec.NewBech32Codec(sdk.Bech32PrefixAccAddr),
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		"fee_collector",
+	)
 
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
@@ -102,6 +111,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		stakingKeeper,
 		accountKeeper,
 		bankKeeper,
+		emissionsKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress("gov").String(),
 	)

@@ -17,9 +17,11 @@ message GenesisState {
   Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 
   // previous target emission rewards per unit staked token
+  // math.int encoded in string
   string previous_reward = 3 [
-    (amino.dont_omitempty) = true,
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false];
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

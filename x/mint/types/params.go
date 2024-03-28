@@ -52,7 +52,7 @@ func DefaultParams() Params {
 
 // Default previous emission per token is zero
 func DefaultPreviousReward() math.Int {
-	return math.ZeroInt()
+	return math.NewInt(0)
 }
 
 // Validate does the sanity check on the params.

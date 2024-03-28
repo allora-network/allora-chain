@@ -222,3 +222,37 @@ func (mr *MockBankKeeperMockRecorder) GetSupply(ctx, denom interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupply", reflect.TypeOf((*MockBankKeeper)(nil).GetSupply), ctx, denom)
 }
+
+// GetBalance mocks base method.
+func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types.AccAddress, denom string) types.Coin {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBalance", ctx, addr, denom)
+	ret0, _ := ret[0].(types.Coin)
+	return ret0
+}
+
+// MockEmissionsKeeper is a mock of BankKeeper interface.
+type MockEmissionsKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockEmissionsKeeperMockRecorder
+}
+
+// MockStakingKeeperMockRecorder is the mock recorder for MockStakingKeeper.
+type MockEmissionsKeeperMockRecorder struct {
+	mock *MockEmissionsKeeper
+}
+
+// NewEmissionsBankKeeper creates a new mock instance.
+func NewMockEmissionsKeeper(ctrl *gomock.Controller) *MockEmissionsKeeper {
+	mock := &MockEmissionsKeeper{ctrl: ctrl}
+	mock.recorder = &MockEmissionsKeeperMockRecorder{mock}
+	return mock
+}
+
+func (m *MockEmissionsKeeper) GetTotalStake(ctx context.Context) (math.Uint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTotalStake", ctx)
+	ret0, _ := ret[0].(math.Uint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}

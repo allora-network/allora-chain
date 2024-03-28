@@ -617,6 +617,7 @@ type GenesisState struct {
 	// params defines all the parameters of the module.
 	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
 	// previous target emission rewards per unit staked token
+	// math.int encoded in string
 	PreviousReward string `protobuf:"bytes,3,opt,name=previous_reward,json=previousReward,proto3" json:"previous_reward,omitempty"`
 }
 
