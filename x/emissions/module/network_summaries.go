@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -51,7 +50,7 @@ func CalcForcastImpliedInferencesAtTime(
 	topicId TopicId,
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
-	networkLossBundle *emissions.LossBundle,
+	networkValueBundle *emissions.ValueBundle,
 	epsilon float64,
 	pInferenceSynthesis float64) ([]emissions.Inference, error) {
 	// Map each worker to the inference they submitted
@@ -60,10 +59,10 @@ func CalcForcastImpliedInferencesAtTime(
 		inferenceByWorker[inference.Worker] = inference
 	}
 	// Possibly add a small value to previous network loss avoid infinite logarithm
-	networkCombinedLoss := networkLossBundle.CombinedLoss.Uint64()
+	networkCombinedLoss := networkValueBundle.CombinedValue
 	if networkCombinedLoss == 0 {
 		// Take max of epsilon and 1 to avoid division by 0
-		networkCombinedLoss = uint64(math.Max(epsilon, 1))
+		networkCombinedLoss = math.Max(epsilon, 1)
 	}
 
 	// "k" here is the index of the forecaster's report among many reports
@@ -89,10 +88,10 @@ func CalcForcastImpliedInferencesAtTime(
 			w_ik := make([]float64, len(forecastElementsWithInferences))
 
 			// Define variable to store maximum regret for forecast k
-			maxjRijk := float64(forecastElementsWithInferences[0].Value.Uint64())
+			maxjRijk := forecastElementsWithInferences[0].Value
 			for j, el := range forecastElementsWithInferences {
 				// Calculate the approximate forecast regret of the network inference
-				R_ik[j] = math.Log10(float64(networkCombinedLoss / el.Value.Uint64())) // forecasted regrets R_ijk = log10(L_i / L_ijk)
+				R_ik[j] = math.Log10(networkCombinedLoss / el.Value) // forecasted regrets R_ijk = log10(L_i / L_ijk)
 				if R_ik[j] > maxjRijk {
 					maxjRijk = R_ik[j]
 				}
@@ -113,12 +112,12 @@ func CalcForcastImpliedInferencesAtTime(
 			weightSum := 0.0
 			weightInferenceDotProduct := 0.0
 			for j, w_ijk := range w_ik {
-				weightInferenceDotProduct += w_ijk * float64(inferenceByWorker[forecast.ForecastElements[j].Inferer].Value.Uint64())
+				weightInferenceDotProduct += w_ijk * inferenceByWorker[forecast.ForecastElements[j].Inferer].Value
 				weightSum += w_ijk
 			}
 			I_i[k] = emissions.Inference{
 				Worker: forecast.Forecaster,
-				Value:  cosmosMath.NewUint(uint64(weightInferenceDotProduct / weightSum)),
+				Value:  weightInferenceDotProduct / weightSum,
 			}
 		}
 	}
@@ -148,7 +147,7 @@ func GetAndCalcForcastImpliedInferencesAtBlock(
 		return nil, err
 	}
 	// Get losses from loss update just before the given time
-	networkLossBundle, err := k.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
+	networkValueBundle, err := k.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		fmt.Println("Error getting network losses: ", err)
 		return nil, err
@@ -166,7 +165,7 @@ func GetAndCalcForcastImpliedInferencesAtBlock(
 		return nil, err
 	}
 
-	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkLossBundle, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
+	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkValueBundle, epsilon, pInferenceSynthesis)
 }
 
 // Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
@@ -195,7 +194,7 @@ func CalcNetworkCombinedInference(
 	}
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used in calculating the network combined inference
-	maxPreviousRegret := float32(epsilon) // averts div by 0 error
+	maxPreviousRegret := epsilon // averts div by 0 error
 	for _, regret := range regrets.WorkerRegrets {
 		// If inference regret is not null, use it to calculate the maximum regret
 		if maxPreviousRegret < regret.InferenceRegret && float64(regret.InferenceRegret) > epsilon {
@@ -217,7 +216,7 @@ func CalcNetworkCombinedInference(
 			fmt.Println("Error calculating gradient: ", err)
 			return float64(0), err
 		}
-		unnormalizedI_i += weight * float64(inferenceByWorker[regret.Worker].Value.Uint64()) // numerator of network combined inference calculation
+		unnormalizedI_i += weight * inferenceByWorker[regret.Worker].Value // numerator of network combined inference calculation
 		sumWeights += weight
 	}
 
@@ -267,5 +266,18 @@ func GetAndCalcNetworkCombinedInference(
 		return float64(0), err
 	}
 
-	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets, epsilon.MustFloat64(), pInferenceSynthesis.MustFloat64())
+	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets, epsilon, pInferenceSynthesis)
+}
+
+// Calculates all network inferences in I_i given inferences, forecast implied inferences, and network combined inference
+func CalcNetworkInferences(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	inferences *emissions.Inferences,
+	forecastImpliedInferences []emissions.Inference,
+	networkCombinedInference float64,
+) ([]emissions.Inference, error) {
+	// TODO implement!
+	return nil, nil
 }

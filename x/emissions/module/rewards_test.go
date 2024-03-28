@@ -419,92 +419,96 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	workers, err := mockSomeWorkers(s, topicId)
 	s.NoError(err, "Error creating workers")
 
-	// Add a lossBundle for each reputer
-	var reputersLossBundles []*types.LossBundle
-	reputer1LossBundle := types.LossBundle{
-		TopicId:      topicId,
-		Reputer:      reputers[0].String(),
-		CombinedLoss: cosmosMath.NewUint(85),
-		ForecasterLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(90),
+	// Add a valueBundle for each reputer
+	var reputersValueBundles []*types.ReputerValueBundle
+	reputer1ValueBundle := types.ReputerValueBundle{
+		Reputer: reputers[0].String(),
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: 85,
+			ForecasterValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  90,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
 			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
+			NaiveValue: 100,
+			// Increased loss when removing for worker 1
+			OneOutValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  115,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
 			},
-		},
-		NaiveLoss: cosmosMath.NewUint(100),
-		// Increased loss when removing for worker 1
-		OneOutLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(115),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
-			},
-		},
-		OneInNaiveLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(90),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
-			},
-		},
-	}
-	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
-	reputer2LossBundle := types.LossBundle{
-		TopicId:      topicId,
-		Reputer:      reputers[1].String(),
-		CombinedLoss: cosmosMath.NewUint(80),
-		ForecasterLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(85),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
-			},
-		},
-		NaiveLoss: cosmosMath.NewUint(90),
-		// Increased loss when removing for worker 1
-		OneOutLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(120),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
-			},
-		},
-		OneInNaiveLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(85),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
+			OneInNaiveValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  90,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
 			},
 		},
 	}
-	reputersLossBundles = append(reputersLossBundles, &reputer2LossBundle)
+	reputersValueBundles = append(reputersValueBundles, &reputer1ValueBundle)
+	reputer2ValueBundle := types.ReputerValueBundle{
+		Reputer: reputers[1].String(),
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: 80,
+			ForecasterValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  85,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
+			},
+			NaiveValue: 90,
+			// Increased loss when removing for worker 1
+			OneOutValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  120,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
+			},
+			OneInNaiveValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  85,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
+			},
+		},
+	}
+	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
-	s.NoError(err, "Error adding lossBundles")
+	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	s.NoError(err, "Error adding valueBundles")
 
-	// Get LossBundles
-	lossBundles, err := s.emissionsKeeper.GetLossBundles(s.ctx, topicId, timeNow)
-	s.NoError(err, "Error getting lossBundles")
+	// Get ValueBundles
+	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
 	var reputersStakes []float64
@@ -517,8 +521,8 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	var reputersWorker1ReportedOneInNaiveLosses []float64
 	var reputersWorker2ReportedOneInNaiveLosses []float64
 
-	for _, lossBundle := range lossBundles.LossBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(lossBundle.Reputer)
+	for _, valueBundle := range valueBundles.ReputerValueBundles {
+		reputerAddr, err := sdk.AccAddressFromBech32(valueBundle.Reputer)
 		s.NoError(err, "Error getting reputerAddr")
 
 		reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddr)
@@ -526,24 +530,24 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 
 		reputerStakeFloat := float64(reputerStake.BigInt().Int64())
 		reputersStakes = append(reputersStakes, reputerStakeFloat)
-		reputersReportedCombinedLosses = append(reputersReportedCombinedLosses, float64(lossBundle.CombinedLoss.BigInt().Int64()))
-		reputersNaiveReportedLosses = append(reputersNaiveReportedLosses, float64(lossBundle.NaiveLoss.BigInt().Int64()))
+		reputersReportedCombinedLosses = append(reputersReportedCombinedLosses, valueBundle.ValueBundle.CombinedValue)
+		reputersNaiveReportedLosses = append(reputersNaiveReportedLosses, valueBundle.ValueBundle.NaiveValue)
 
 		// Add OneOutLosses
-		for _, workerLoss := range lossBundle.OneOutLosses {
+		for _, workerLoss := range valueBundle.ValueBundle.OneOutValues {
 			if workerLoss.Worker == workers[0].String() {
-				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, workerLoss.Value)
 			} else if workerLoss.Worker == workers[1].String() {
-				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, workerLoss.Value)
 			}
 		}
 
 		// Add OneInNaiveLosses
-		for _, workerLoss := range lossBundle.OneInNaiveLosses {
+		for _, workerLoss := range valueBundle.ValueBundle.OneInNaiveValues {
 			if workerLoss.Worker == workers[0].String() {
-				reputersWorker1ReportedOneInNaiveLosses = append(reputersWorker1ReportedOneInNaiveLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker1ReportedOneInNaiveLosses = append(reputersWorker1ReportedOneInNaiveLosses, workerLoss.Value)
 			} else if workerLoss.Worker == workers[1].String() {
-				reputersWorker2ReportedOneInNaiveLosses = append(reputersWorker2ReportedOneInNaiveLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker2ReportedOneInNaiveLosses = append(reputersWorker2ReportedOneInNaiveLosses, workerLoss.Value)
 			}
 		}
 	}
@@ -614,50 +618,54 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	workers, err := mockSomeWorkers(s, topicId)
 	s.NoError(err, "Error creating workers")
 
-	// Add a lossBundle for each reputer
-	var reputersLossBundles []*types.LossBundle
-	reputer1LossBundle := types.LossBundle{
-		TopicId:      topicId,
-		Reputer:      reputers[0].String(),
-		CombinedLoss: cosmosMath.NewUint(85),
-		// Increased loss when removing for worker 1
-		OneOutLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(115),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
-			},
-		},
-	}
-	reputersLossBundles = append(reputersLossBundles, &reputer1LossBundle)
-	reputer2LossBundle := types.LossBundle{
-		TopicId:      topicId,
-		Reputer:      reputers[1].String(),
-		CombinedLoss: cosmosMath.NewUint(80),
-		// Increased loss when removing for worker 1
-		OneOutLosses: []*types.WorkerAttributedLoss{
-			{
-				Worker: workers[0].String(),
-				Value:  cosmosMath.NewUint(120),
-			},
-			{
-				Worker: workers[1].String(),
-				Value:  cosmosMath.NewUint(100),
+	// Add a valueBundle for each reputer
+	var reputersValueBundles []*types.ReputerValueBundle
+	reputer1ValueBundle := types.ReputerValueBundle{
+		Reputer: reputers[0].String(),
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: 85,
+			// Increased loss when removing for worker 1
+			OneOutValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  115,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
 			},
 		},
 	}
-	reputersLossBundles = append(reputersLossBundles, &reputer2LossBundle)
+	reputersValueBundles = append(reputersValueBundles, &reputer1ValueBundle)
+	reputer2ValueBundle := types.ReputerValueBundle{
+		Reputer: reputers[1].String(),
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: 80,
+			// Increased loss when removing for worker 1
+			OneOutValues: []*types.WorkerAttributedValue{
+				{
+					Worker: workers[0].String(),
+					Value:  120,
+				},
+				{
+					Worker: workers[1].String(),
+					Value:  100,
+				},
+			},
+		},
+	}
+	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: reputersLossBundles})
-	s.NoError(err, "Error adding lossBundle for worker")
+	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	s.NoError(err, "Error adding valueBundle for worker")
 
-	// Get LossBundles
-	lossBundles, err := s.emissionsKeeper.GetLossBundles(s.ctx, topicId, timeNow)
-	s.NoError(err, "Error getting lossBundles")
+	// Get ValueBundles
+	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
 	var reputersStakes []float64
@@ -666,8 +674,8 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	var reputersWorker1ReportedOneOutLosses []float64
 	var reputersWorker2ReportedOneOutLosses []float64
 
-	for _, lossBundle := range lossBundles.LossBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(lossBundle.Reputer)
+	for _, valueBundle := range valueBundles.ReputerValueBundles {
+		reputerAddr, err := sdk.AccAddressFromBech32(valueBundle.Reputer)
 		s.NoError(err, "Error getting reputerAddr")
 
 		reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddr)
@@ -675,14 +683,14 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 
 		reputerStakeFloat := float64(reputerStake.BigInt().Int64())
 		reputersStakes = append(reputersStakes, reputerStakeFloat)
-		reputersCombinedReportedLosses = append(reputersCombinedReportedLosses, float64(lossBundle.CombinedLoss.BigInt().Int64()))
+		reputersCombinedReportedLosses = append(reputersCombinedReportedLosses, valueBundle.ValueBundle.CombinedValue)
 
 		// Add OneOutLosses
-		for _, workerLoss := range lossBundle.OneOutLosses {
+		for _, workerLoss := range valueBundle.ValueBundle.OneOutValues {
 			if workerLoss.Worker == workers[0].String() {
-				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, workerLoss.Value)
 			} else if workerLoss.Worker == workers[1].String() {
-				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, float64(workerLoss.Value.BigInt().Int64()))
+				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, workerLoss.Value)
 			}
 		}
 	}
@@ -719,33 +727,35 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 	reputers, err := mockSomeReputers(s, topicId)
 	s.NoError(err, "Error creating reputers")
 
-	// Add a lossBundle for each reputer
-	losses := []cosmosMath.Uint{cosmosMath.NewUint(150), cosmosMath.NewUint(250)}
+	// Add a valueBundle for each reputer
+	losses := []float64{150, 250}
 
-	var newLossBundles []*types.LossBundle
+	var newValueBundles []*types.ReputerValueBundle
 	for i, reputer := range reputers {
-		lossBundle := types.LossBundle{
-			Reputer:      reputer.String(),
-			CombinedLoss: losses[i],
+		valueBundle := types.ReputerValueBundle{
+			Reputer: reputer.String(),
+			ValueBundle: &types.ValueBundle{
+				CombinedValue: losses[i],
+			},
 		}
-		newLossBundles = append(newLossBundles, &lossBundle)
+		newValueBundles = append(newValueBundles, &valueBundle)
 	}
 
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertLossBundles(s.ctx, topicId, timeNow, types.LossBundles{LossBundles: newLossBundles})
-	s.NoError(err, "Error adding lossBundle for reputer")
+	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: newValueBundles})
+	s.NoError(err, "Error adding valueBundle for reputer")
 
 	var reputersStakes []float64
 	var reputersReportedLosses []float64
 
-	// Get LossBundles
-	lossBundles, err := s.emissionsKeeper.GetLossBundles(s.ctx, topicId, timeNow)
-	s.NoError(err, "Error getting lossBundles")
+	// Get ValueBundles
+	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	s.NoError(err, "Error getting valueBundles")
 
 	// Get stakes and reported losses
-	for _, lossBundle := range lossBundles.LossBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(lossBundle.Reputer)
+	for _, valueBundle := range valueBundles.ReputerValueBundles {
+		reputerAddr, err := sdk.AccAddressFromBech32(valueBundle.Reputer)
 		s.NoError(err, "Error getting reputerAddr")
 
 		reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddr)
@@ -753,7 +763,7 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 
 		reputerStakeFloat, _ := reputerStake.BigInt().Float64()
 		reputersStakes = append(reputersStakes, reputerStakeFloat)
-		reputersReportedLosses = append(reputersReportedLosses, float64(lossBundle.CombinedLoss.BigInt().Int64()))
+		reputersReportedLosses = append(reputersReportedLosses, valueBundle.ValueBundle.CombinedValue)
 	}
 
 	expectedStakeWeightedLoss, err := module.GetStakeWeightedLoss(reputersStakes, reputersReportedLosses)

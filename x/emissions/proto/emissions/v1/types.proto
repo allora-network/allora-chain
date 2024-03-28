@@ -23,13 +23,8 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // delete requests if they have below this demand remaining
-  string max_missing_inference_percent = 6 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // if a worker has this percentage of inferences missing, penalize them
+  ];                                         // delete requests if they have below this demand remaining
+  double max_missing_inference_percent = 6;  // if a worker has this percentage of inferences missing, penalize them
   string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -41,35 +36,22 @@ message Params {
       9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
   int64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
   int64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
-  string percent_rewards_reputers_workers = 12 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];                                  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-  double sharpness = 13;              // controls going from stake-weighted consensus at low values to majority vote of
-                                      // above-average stake holders at high values
-  float beta_entropy = 14;            // controls resilience of reward payouts against copycat workers
-  float dcoef_abs = 15;               // delta for numerical differentiation
-  double learning_rate = 16;          // speed of gradient descent
-  float max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
-  float min_stake_fraction =
+  double percent_rewards_reputers_workers =
+      12;                     // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
+  double sharpness = 13;      // controls going from stake-weighted consensus at low values to majority vote of
+                              // above-average stake holders at high values
+  double beta_entropy = 14;   // controls resilience of reward payouts against copycat workers
+  double dcoef_abs = 15;      // delta for numerical differentiation
+  double learning_rate = 16;  // speed of gradient descent
+  double max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
+  double min_stake_fraction =
       18;  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
   uint64 max_workers_per_topic_request =
       19;  // max number of workers whose inference will be used and compensated per request
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
-  string epsilon = 21 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // small number to prevent division by zero
-  string p_inference_synthesis = 22 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  double epsilon = 21;                         // small number to prevent division by zero
+  double p_inference_synthesis =
+      22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
 }
 
 /// TOPICS
@@ -88,14 +70,11 @@ message Topic {
   bool active = 11;
   string default_arg = 12;
   uint64 pnorm = 13;
-  float alpha_regret = 14;
-  float preward_reputer = 15;
-  float preward_inference = 16;
-  float preward_forecast = 17;
-  float f_tolerance = 18;
-  uint64 subsidy = 19;
-  float subsidized_reward_epochs = 20;
-  float f_treasury = 21;
+  double alpha_regret = 14;
+  double preward_reputer = 15;
+  double preward_inference = 16;
+  double preward_forecast = 17;
+  double f_tolerance = 18;
 }
 
 message TopicList {
@@ -104,52 +83,46 @@ message TopicList {
 
 /// REPUTERS
 
-message WorkerAttributedLoss {
+message WorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;
-  string value = 2 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 2;
   bytes extra_data = 3;
 }
 
-// These losses are calculated per reputer or by the network
-message LossBundle {
+// These losses and inferences are calculated per reputer or by the network
+// The `m`s in the comments below exist for when they're made by reputers,
+// but they may be absent implying that they were made by the network
+message ValueBundle {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
-  string reputer = 2;
-  bytes extra_data = 3;
-  // L_im
-  string combined_loss = 4 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // L_ijm
-  repeated WorkerAttributedLoss inferer_losses = 5;
-  // L_ikm
-  repeated WorkerAttributedLoss forecaster_losses = 6;
-  // L^-_im
-  string naive_loss = 7 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // L^-_lim
-  repeated WorkerAttributedLoss one_out_losses = 8;
-  // L^+_kim
-  repeated WorkerAttributedLoss one_in_naive_losses = 9;
+  bytes extra_data = 2;
+  // L_im or I_i
+  double combined_value = 3;
+  // L_ijm or I_ij
+  repeated WorkerAttributedValue inferer_values = 4;
+  // L_ikm or I_ik
+  repeated WorkerAttributedValue forecaster_values = 5;
+  // L^-_im or I^-_i
+  double naive_value = 6;
+  // L^-_lim or I^-_li
+  repeated WorkerAttributedValue one_out_values = 7;
+  // L^+_kim or I^+_ki
+  repeated WorkerAttributedValue one_in_naive_values = 8;
 }
 
-message LossBundles {
-  repeated LossBundle loss_bundles = 1;
+// For when the bundle is computed on a per-reputer basis (ie.. if there is an index `m` in the above)
+message ReputerValueBundle {
+  option (gogoproto.equal) = true;
+
+  string reputer = 1;
+  ValueBundle value_bundle = 2;
+}
+
+message ReputerValueBundles {
+  repeated ReputerValueBundle reputer_value_bundles = 1;
 }
 
 /// WORKERS
@@ -159,12 +132,7 @@ message Inference {
 
   uint64 topic_id = 1;
   string worker = 2;
-  string value = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 3;
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -177,12 +145,7 @@ message ForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 2;
-  string value = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  double value = 3;
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -225,8 +188,8 @@ message ForecastSetForScoring {
 
 message WorkerRegret {
   string worker = 1;
-  float inference_regret = 2;
-  float forecast_regret = 3;
+  double inference_regret = 2;
+  double forecast_regret = 3;
 }
 
 message WorkerRegrets {

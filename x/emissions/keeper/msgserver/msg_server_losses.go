@@ -24,9 +24,9 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// Group loss bundles by topicId - Create a map to store the grouped loss bundles
-	groupedBundles := make(map[uint64][]*types.LossBundle)
-	for _, lossBundle := range msg.LossBundles {
-		reputer, err := sdk.AccAddressFromBech32(lossBundle.Reputer)
+	groupedBundles := make(map[uint64][]*types.ReputerValueBundle)
+	for _, bundle := range msg.ReputerValueBundles {
+		reputer, err := sdk.AccAddressFromBech32(bundle.Reputer)
 		if err != nil {
 			return nil, err
 		}
@@ -35,23 +35,24 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 			return nil, err
 		}
 		if isLossSetter {
-			groupedBundles[lossBundle.TopicId] = append(groupedBundles[lossBundle.TopicId], lossBundle)
+			groupedBundles[bundle.ValueBundle.TopicId] = append(groupedBundles[bundle.ValueBundle.TopicId], bundle)
 		}
 	}
 
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	for topicId, lossBundles := range groupedBundles {
-		bundles := &types.LossBundles{
-			LossBundles: lossBundles,
+	for topicId, bundles := range groupedBundles {
+		bundles := &types.ReputerValueBundles{
+			ReputerValueBundles: bundles,
 		}
-		err = ms.k.InsertLossBundles(ctx, topicId, blockHeight, *bundles)
+		err = ms.k.InsertValueBundles(ctx, topicId, blockHeight, *bundles)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	/**
-	 * TODO calculate eq14,15, and possibly ep9-11
+	 * TODO calculate eq14,15, and possibly ep9-12
+	 * TODO calc eq3-15\13 when reputer queries for the chain. Then, make caching tickets for the validators
 	 */
 
 	return &types.MsgSetLossesResponse{}, nil
