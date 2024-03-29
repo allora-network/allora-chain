@@ -47,6 +47,6 @@ var (
 	NetworkRegretsKey             = collections.NewPrefix(36)
 	StakeByReputerAndTopicIdKey   = collections.NewPrefix(37)
 	ReputerScoresKey              = collections.NewPrefix(38)
-	WorkerInferenceScoresKey      = collections.NewPrefix(39)
-	WorkerForecastScoresKey       = collections.NewPrefix(40)
+	InferenceScoresKey      = collections.NewPrefix(39)
+	ForecastScoresKey       = collections.NewPrefix(40)
 )

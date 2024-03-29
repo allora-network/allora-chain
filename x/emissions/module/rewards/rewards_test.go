@@ -1,17 +1,130 @@
-package module_test
+package rewards_test
 
 import (
 	"fmt"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	"time"
+
+	"cosmossdk.io/core/header"
+	"cosmossdk.io/log"
 
 	cosmosMath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/testutil"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	auth "github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *ModuleTestSuite) TestGetReputerScore() {
+const (
+	multiPerm  = "multiple permissions account"
+	randomPerm = "random permission"
+)
+
+type RewardsTestSuite struct {
+	suite.Suite
+
+	ctx             sdk.Context
+	accountKeeper   keeper.AccountKeeper
+	bankKeeper      keeper.BankKeeper
+	emissionsKeeper keeper.Keeper
+	appModule       module.AppModule
+	msgServer       types.MsgServer
+	key             *storetypes.KVStoreKey
+	addrs           []sdk.AccAddress
+	addrsStr        []string
+}
+
+func (s *RewardsTestSuite) SetupTest() {
+	key := storetypes.NewKVStoreKey("emissions")
+	storeService := runtime.NewKVStoreService(key)
+	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
+	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
+
+	maccPerms := map[string][]string{
+		"fee_collector":                 {"minter"},
+		"mint":                          {"minter"},
+		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:  {"minter"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
+	}
+
+	accountKeeper := authkeeper.NewAccountKeeper(
+		encCfg.Codec,
+		storeService,
+		authtypes.ProtoBaseAccount,
+		maccPerms,
+		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
+		params.Bech32PrefixAccAddr,
+		authtypes.NewModuleAddress("gov").String(),
+	)
+
+	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
+	var addrsStr []string = make([]string, 0)
+	pubkeys := simtestutil.CreateTestPubKeys(5)
+	for i := 0; i < 5; i++ {
+		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
+		addrsStr = append(addrsStr, addrs[i].String())
+	}
+	s.addrs = addrs
+	s.addrsStr = addrsStr
+
+	bankKeeper := bankkeeper.NewBaseKeeper(
+		encCfg.Codec,
+		storeService,
+		accountKeeper,
+		map[string]bool{},
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		log.NewNopLogger(),
+	)
+
+	s.ctx = ctx
+	s.accountKeeper = accountKeeper
+	s.bankKeeper = bankKeeper
+	s.emissionsKeeper = keeper.NewKeeper(
+		encCfg.Codec,
+		addressCodec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.FeeCollectorName)
+	s.key = key
+	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
+	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
+	s.appModule = appModule
+
+	// Add all tests addresses in whitelists
+	for _, addr := range addrs {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
+		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
+	}
+}
+
+func (s *RewardsTestSuite) TestGetReputerScore() {
 	// Mock data with 2 reputers reporting loss of 2 workers
 	// [0] - Reputer 1
 	// [1] - Reputer 2
@@ -60,21 +173,21 @@ func (s *ModuleTestSuite) TestGetReputerScore() {
 	// Get adjusted stakes
 	var adjustedStakes []float64
 	for _, reputerStake := range allReputersStakes {
-		adjustedStake, err := module.GetAdjustedStake(reputerStake, allReputersStakes, listeningCoefficient, allListeningCoefficients, float64(2))
+		adjustedStake, err := rewards.GetAdjustedStake(reputerStake, allReputersStakes, listeningCoefficient, allListeningCoefficients, float64(2))
 		s.NoError(err, "Error getting adjustedStake")
 		adjustedStakes = append(adjustedStakes, adjustedStake)
 	}
 
 	// Get consensus loss vector
-	consensus, err := module.GetStakeWeightedLossMatrix(adjustedStakes, [][]float64{reputer1AllReportedLosses, reputer2AllReportedLosses})
+	consensus, err := rewards.GetStakeWeightedLossMatrix(adjustedStakes, [][]float64{reputer1AllReportedLosses, reputer2AllReportedLosses})
 	s.NoError(err, "Error getting consensus")
 
 	// Get reputer scores
-	reputer1Score, err := module.GetConsensusScore(reputer1AllReportedLosses, consensus)
+	reputer1Score, err := rewards.GetConsensusScore(reputer1AllReportedLosses, consensus)
 	s.NoError(err, "Error getting reputer1Score")
 	s.NotEqual(0, reputer1Score, "Expected reputer1Score to be non-zero")
 
-	reputer2Score, err := module.GetConsensusScore(reputer2AllReportedLosses, consensus)
+	reputer2Score, err := rewards.GetConsensusScore(reputer2AllReportedLosses, consensus)
 	s.NoError(err, "Error getting reputer2Score")
 	s.NotEqual(0, reputer2Score, "Expected reputer2Score to be non-zero")
 }
@@ -89,7 +202,7 @@ const (
 )
 
 // mock mint coins to participants
-func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []sdk.AccAddress) error {
+func mockMintRewardCoins(s *RewardsTestSuite, amount []cosmosMath.Int, target []sdk.AccAddress) error {
 	if len(amount) != len(target) {
 		return fmt.Errorf("amount and target must be the same length")
 	}
@@ -102,7 +215,7 @@ func mockMintRewardCoins(s *ModuleTestSuite, amount []cosmosMath.Int, target []s
 }
 
 // give some reputers coins, have them stake those coins
-func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
+func mockSomeReputers(s *RewardsTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -145,7 +258,7 @@ func mockSomeReputers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, err
 }
 
 // give some workers coins, have them stake those coins
-func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
+func mockSomeWorkers(s *RewardsTestSuite, topicId uint64) ([]sdk.AccAddress, error) {
 	workerAddrs := []sdk.AccAddress{
 		s.addrs[2],
 		s.addrs[3],
@@ -188,7 +301,7 @@ func mockSomeWorkers(s *ModuleTestSuite, topicId uint64) ([]sdk.AccAddress, erro
 }
 
 // create a topic
-func mockCreateTopics(s *ModuleTestSuite, numToCreate uint64) ([]uint64, error) {
+func mockCreateTopics(s *RewardsTestSuite, numToCreate uint64) ([]uint64, error) {
 	ret := make([]uint64, 0)
 	var i uint64
 	for i = 0; i < numToCreate; i++ {

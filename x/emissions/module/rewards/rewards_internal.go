@@ -1,4 +1,4 @@
-package module
+package rewards
 
 import (
 	"math"
@@ -45,12 +45,12 @@ func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards
 		}
 		lastScores[i] = workerScores[start:end]
 	}
-	
+
 	stdDev := StdDev(flatten(lastScores))
 	smoothedScores := make([]float64, len(lastScores))
 	total := 0.0
 	for i, score := range lastScores {
-		normalizedScore := score[len(score)-1]/stdDev
+		normalizedScore := score[len(score)-1] / stdDev
 		res, err := Phi(preward, normalizedScore)
 		if err != nil {
 			return nil, err

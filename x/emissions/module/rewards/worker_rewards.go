@@ -1,6 +1,7 @@
-package module
+package rewards
 
 import (
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -11,14 +12,14 @@ type TaskRewards struct {
 
 func GetWorkersRewardsInferenceTask(
 	ctx sdk.Context,
-	am AppModule,
+	keeper keeper.Keeper,
 	topicId uint64,
 	block int64,
 	preward float64,
 	totalRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +34,7 @@ func GetWorkersRewardsInferenceTask(
 		}
 
 		// Get worker last scores
-		workerLastScores, err := am.keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, block, workerAddr)
+		workerLastScores, err := keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
 			return nil, err
 		}
@@ -55,14 +56,14 @@ func GetWorkersRewardsInferenceTask(
 
 func GetWorkersRewardsForecastTask(
 	ctx sdk.Context,
-	am AppModule,
+	keeper keeper.Keeper,
 	topicId uint64,
 	block int64,
 	preward float64,
 	totalRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func GetWorkersRewardsForecastTask(
 		}
 
 		// Get worker last scores
-		workerLastScores, err := am.keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, block, workerAddr)
+		workerLastScores, err := keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
 			return nil, err
 		}
