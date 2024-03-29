@@ -33,11 +33,11 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	if !data.PreviousReward.IsPositive() {
+	if data.PreviousReward.IsNegative() {
 		return ErrInvalidPreviousReward
 	}
 
-	if !data.EcosystemTokensMinted.IsPositive() {
+	if data.EcosystemTokensMinted.IsNegative() {
 		return ErrInvalidEcosystemTokensMinted
 	}
 
