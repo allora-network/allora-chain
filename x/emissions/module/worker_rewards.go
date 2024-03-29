@@ -1,7 +1,6 @@
 package module
 
 import (
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,7 +15,7 @@ func GetWorkersRewardsInferenceTask(
 	topicId uint64,
 	block int64,
 	preward float64,
-	totalRewardsInferenceTask float64,
+	totalRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -25,7 +24,7 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get last score for each worker
-	var scores [][]*types.Score
+	var scoresFloat64 [][]float64
 	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
@@ -34,45 +33,24 @@ func GetWorkersRewardsInferenceTask(
 		}
 
 		// Get worker last scores
-		workerLastScores, err := am.keeper.GetLastWorkerInferenceScores(ctx, topicId, block, workerAddr)
+		workerLastScores, err := am.keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add worker score in the scores array
-		scores = append(scores, workerLastScores)
-
 		// Add worker address in the worker addresses array
 		workerAddresses = append(workerAddresses, workerAddr)
-	}
 
-	// Convert scores to float64
-	var scoresFloat64 [][]float64
-	for _, workerScoreArray := range scores {
-		var scoresOneOutFloat64 []float64
-		for _, score := range workerScoreArray {
-			scoresOneOutFloat64 = append(scoresOneOutFloat64, score.Score)
+		// Convert scores to float64
+		var workerLastScoresFloat64 []float64
+		for _, score := range workerLastScores {
+			workerLastScoresFloat64 = append(workerLastScoresFloat64, score.Score)
 		}
-		scoresFloat64 = append(scoresFloat64, scoresOneOutFloat64)
+		scoresFloat64 = append(scoresFloat64, workerLastScoresFloat64)
 	}
 
-	// Get Worker Reward Fractions
-	workersRewardsFractions, err := GetWorkerRewardFractions(scoresFloat64, preward)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get Worker Rewards
-	var workerRewards []TaskRewards
-	for i, rewardFraction := range workersRewardsFractions {
-		workerReward := rewardFraction * totalRewardsInferenceTask
-		workerRewards = append(workerRewards, TaskRewards{
-			Address: workerAddresses[i],
-			Reward:  workerReward,
-		})
-	}
-
-	return workerRewards, nil
+	// Get worker portion of rewards
+	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalRewards, workerAddresses)
 }
 
 func GetWorkersRewardsForecastTask(
@@ -81,7 +59,7 @@ func GetWorkersRewardsForecastTask(
 	topicId uint64,
 	block int64,
 	preward float64,
-	totalRewardsForecastTask float64,
+	totalRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := am.keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -90,7 +68,7 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get new score for each worker
-	var scores [][]*types.Score
+	var scoresFloat64 [][]float64
 	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
@@ -99,43 +77,22 @@ func GetWorkersRewardsForecastTask(
 		}
 
 		// Get worker last scores
-		workerLastScores, err := am.keeper.GetLastWorkerForecastScores(ctx, topicId, block, workerAddr)
+		workerLastScores, err := am.keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add worker score in the scores array
-		scores = append(scores, workerLastScores)
-
 		// Add worker address in the worker addresses array
 		workerAddresses = append(workerAddresses, workerAddr)
-	}
 
-	// Convert scores to float64
-	var scoresFloat64 [][]float64
-	for _, workerScoreArray := range scores {
-		var scoresOneOutFloat64 []float64
-		for _, score := range workerScoreArray {
-			scoresOneOutFloat64 = append(scoresOneOutFloat64, score.Score)
+		// Convert scores to float64
+		var workerLastScoresFloat64 []float64
+		for _, score := range workerLastScores {
+			workerLastScoresFloat64 = append(workerLastScoresFloat64, score.Score)
 		}
-		scoresFloat64 = append(scoresFloat64, scoresOneOutFloat64)
+		scoresFloat64 = append(scoresFloat64, workerLastScoresFloat64)
 	}
 
-	// Get Worker Reward Fractions
-	workersRewardsFractions, err := GetWorkerRewardFractions(scoresFloat64, preward)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get Worker Rewards
-	var workerRewards []TaskRewards
-	for i, rewardFraction := range workersRewardsFractions {
-		workerReward := rewardFraction * totalRewardsForecastTask
-		workerRewards = append(workerRewards, TaskRewards{
-			Address: workerAddresses[i],
-			Reward:  workerReward,
-		})
-	}
-
-	return workerRewards, nil
+	// Get worker portion of rewards
+	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalRewards, workerAddresses)
 }

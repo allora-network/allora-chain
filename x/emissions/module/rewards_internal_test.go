@@ -1,11 +1,13 @@
 package module_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -678,11 +680,13 @@ func TestStdDev(t *testing.T) {
 	}
 }
 
-func TestGetWorkerRewardFractions(t *testing.T) {
+func TestGetWorkerPortionOfRewards(t *testing.T) {
 	tests := []struct {
 		name    string
 		scores  [][]float64
 		preward float64
+		totalRewards float64
+		workerAddresses []sdk.AccAddress
 		want    []float64
 		wantErr bool
 	}{
@@ -696,20 +700,32 @@ func TestGetWorkerRewardFractions(t *testing.T) {
 				{0.09719, 0.09675, 0.09418},
 			},
 			preward: 1.5,
-			want:    []float64{0.07671, 0.05531, 0.09829, 0.21537, 0.55432},
+			totalRewards: 1000,
+			workerAddresses: []sdk.AccAddress{
+				[]byte("addr1"),
+				[]byte("addr2"),
+				[]byte("addr3"),
+				[]byte("addr4"),
+				[]byte("addr5"),
+			},
+			want:    []float64{76.71, 55.31, 98.29, 215.37, 554.32},
 			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetWorkerRewardFractions(tt.scores, tt.preward)
+			got, err := module.GetWorkerPortionOfRewards(tt.scores, tt.preward, tt.totalRewards, tt.workerAddresses)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetWorkerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !slicesAreApproxEqual(got, tt.want, 1e-4) {
-				t.Errorf("GetWorkerRewardFractions() got = %v, want %v", got, tt.want)
+
+			for i := range tt.want {
+				fmt.Println(">>>>>>", math.Abs(got[i].Reward-tt.want[i]))
+				if math.Abs(got[i].Reward-tt.want[i]) > 1e-1 {
+					t.Errorf("GetWorkerPortionOfRewards() got = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}

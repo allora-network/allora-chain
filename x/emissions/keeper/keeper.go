@@ -1761,7 +1761,7 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TOPIC_ID, block
 	return k.reputerScores.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetLastWorkerInferenceScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		EndInclusive(blockNumber).
@@ -1790,7 +1790,7 @@ func (k *Keeper) GetLastWorkerInferenceScores(ctx context.Context, topicId TOPIC
 	return scores, nil
 }
 
-func (k *Keeper) GetLastWorkerForecastScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		EndInclusive(blockNumber).
