@@ -88,7 +88,6 @@ message WorkerAttributedValue {
 
   string worker = 1;
   double value = 2;
-  bytes extra_data = 3;
 }
 
 // These losses and inferences are calculated per reputer or by the network

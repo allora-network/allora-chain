@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /**
@@ -44,22 +42,18 @@ func gradient(p float64, x float64) (float64, error) {
 //
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
-func CalcForcastImpliedInferencesAtTime(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId TopicId,
+func CalcForcastImpliedInferences(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
-	networkValueBundle *emissions.ValueBundle,
+	networkCombinedLoss float64,
 	epsilon float64,
-	pInferenceSynthesis float64) ([]emissions.Inference, error) {
+	pInferenceSynthesis float64) ([]*emissions.Inference, error) {
 	// Map each worker to the inference they submitted
 	inferenceByWorker := make(map[string]*emissions.Inference)
 	for _, inference := range inferences.Inferences {
 		inferenceByWorker[inference.Worker] = inference
 	}
 	// Possibly add a small value to previous network loss avoid infinite logarithm
-	networkCombinedLoss := networkValueBundle.CombinedValue
 	if networkCombinedLoss == 0 {
 		// Take max of epsilon and 1 to avoid division by 0
 		networkCombinedLoss = math.Max(epsilon, 1)
@@ -67,7 +61,7 @@ func CalcForcastImpliedInferencesAtTime(
 
 	// "k" here is the index of the forecaster's report among many reports
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
-	I_i := make([]emissions.Inference, len(forecasts.Forecasts))
+	I_i := make([]*emissions.Inference, len(forecasts.Forecasts))
 	for k, forecast := range forecasts.Forecasts {
 		if len(forecast.ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
@@ -115,10 +109,11 @@ func CalcForcastImpliedInferencesAtTime(
 				weightInferenceDotProduct += w_ijk * inferenceByWorker[forecast.ForecastElements[j].Inferer].Value
 				weightSum += w_ijk
 			}
-			I_i[k] = emissions.Inference{
+			forecast := emissions.Inference{
 				Worker: forecast.Forecaster,
 				Value:  weightInferenceDotProduct / weightSum,
 			}
+			I_i[k] = &forecast
 		}
 	}
 
@@ -126,46 +121,48 @@ func CalcForcastImpliedInferencesAtTime(
 	return I_i, nil
 }
 
-// Gathers inferences and forecasts from the worker update at or just after the given time, and
-// losses from the loss update just before the given time.
-// Then invokes calculation of the forecast-implied inferences using the Inference Synthesis formula from the litepaper.
-func GetAndCalcForcastImpliedInferencesAtBlock(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId TopicId,
-	blockHeight BlockHeight) ([]emissions.Inference, error) {
-	// Get inferences from worker update at or just after the given time
-	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting inferences: ", err)
-		return nil, err
+func MakeMapFromWorkerToTheirWork(inferences []*emissions.Inference) map[string]*emissions.Inference {
+	inferencesByWorker := make(map[string]*emissions.Inference)
+	for _, inference := range inferences {
+		inferencesByWorker[inference.Worker] = inference
 	}
-	// Get forecasts from worker update at or just after the given time
-	forecasts, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting forecasts: ", err)
-		return nil, err
-	}
-	// Get losses from loss update just before the given time
-	networkValueBundle, err := k.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting network losses: ", err)
-		return nil, err
-	}
+	return inferencesByWorker
+}
 
-	epsilon, err := k.GetParamsEpsilon(ctx)
-	if err != nil {
-		fmt.Println("Error getting epsilon: ", err)
-		return nil, err
-	}
+type RegretsByWorkerByType struct {
+	InferenceRegrets *map[string]*float64
+	ForecastRegrets  *map[string]*float64
+}
 
-	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
-	if err != nil {
-		fmt.Println("Error getting epsilon: ", err)
-		return nil, err
+func MakeMapFromWorkerToTheirRegret(regrets *emissions.WorkerRegrets) *RegretsByWorkerByType {
+	inferenceRegrets := make(map[string]*float64)
+	forecastRegrets := make(map[string]*float64)
+	for _, regret := range regrets.WorkerRegrets {
+		inferenceRegrets[regret.Worker] = &regret.InferenceRegret
+		forecastRegrets[regret.Worker] = &regret.ForecastRegret
 	}
+	return &RegretsByWorkerByType{
+		InferenceRegrets: &inferenceRegrets,
+		ForecastRegrets:  &forecastRegrets,
+	}
+}
 
-	return CalcForcastImpliedInferencesAtTime(ctx, k, topicId, inferences, forecasts, networkValueBundle, epsilon, pInferenceSynthesis)
+func FindMaxRegret(regrets *RegretsByWorkerByType, epsilon float64) float64 {
+	// Find the maximum regret admitted by any worker for an inference or forecast task; used in calculating the network combined inference
+	maxPreviousRegret := epsilon // averts div by 0 error
+	for _, regret := range *regrets.InferenceRegrets {
+		// If inference regret is not null, use it to calculate the maximum regret
+		if maxPreviousRegret < *regret && *regret > epsilon {
+			maxPreviousRegret = *regret
+		}
+	}
+	for _, regret := range *regrets.ForecastRegrets {
+		// If forecast regret is not null, use it to calculate the maximum regret
+		if maxPreviousRegret < *regret && *regret > epsilon {
+			maxPreviousRegret = *regret
+		}
+	}
+	return maxPreviousRegret
 }
 
 // Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
@@ -173,50 +170,35 @@ func GetAndCalcForcastImpliedInferencesAtBlock(
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func CalcNetworkCombinedInference(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId TopicId,
-	inferences *emissions.Inferences,
-	forecastImpliedInferences []emissions.Inference,
-	regrets *emissions.WorkerRegrets,
+func CalcWeightedInference(
+	inferenceByWorker map[string]*emissions.Inference,
+	forecastImpliedInferenceByWorker map[string]*emissions.Inference,
+	regrets *RegretsByWorkerByType,
 	epsilon float64,
 	pInferenceSynthesis float64) (float64, error) {
-	// Map each worker to their inference
-	inferenceByWorker := make(map[string]*emissions.Inference)
-	for _, inference := range inferences.Inferences {
-		inferenceByWorker[inference.Worker] = inference
-	}
-	// Map each worker to their forecast-implied inference
-	forecastImpliedInferenceByWorker := make(map[string]*emissions.Inference)
-	for _, inference := range forecastImpliedInferences {
-		forecastImpliedInferenceByWorker[inference.Worker] = &inference
-	}
-
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used in calculating the network combined inference
-	maxPreviousRegret := epsilon // averts div by 0 error
-	for _, regret := range regrets.WorkerRegrets {
-		// If inference regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.InferenceRegret && float64(regret.InferenceRegret) > epsilon {
-			maxPreviousRegret = regret.InferenceRegret
-		}
-		// If forecast regret is not null, use it to calculate the maximum regret
-		if maxPreviousRegret < regret.ForecastRegret && float64(regret.ForecastRegret) > epsilon {
-			maxPreviousRegret = regret.ForecastRegret
-		}
-	}
+	maxPreviousRegret := FindMaxRegret(regrets, epsilon)
 
 	// Calculate the network combined inference and network worker regrets
 	unnormalizedI_i := float64(0)
 	sumWeights := 0.0
-	for _, regret := range regrets.WorkerRegrets {
+	for worker, regret := range *regrets.InferenceRegrets {
 		// normalize worker regret then calculate gradient => weight per worker for network combined inference
-		weight, err := gradient(pInferenceSynthesis, float64(regret.InferenceRegret/maxPreviousRegret))
+		weight, err := gradient(pInferenceSynthesis, *regret/maxPreviousRegret)
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
-			return float64(0), err
+			return 0, err
 		}
-		unnormalizedI_i += weight * inferenceByWorker[regret.Worker].Value // numerator of network combined inference calculation
+		unnormalizedI_i += weight * inferenceByWorker[worker].Value // numerator of network combined inference calculation
+		sumWeights += weight
+	}
+	for worker, regret := range *regrets.ForecastRegrets {
+		weight, err := gradient(pInferenceSynthesis, *regret/maxPreviousRegret)
+		if err != nil {
+			fmt.Println("Error calculating gradient: ", err)
+			return 0, err
+		}
+		unnormalizedI_i += weight * forecastImpliedInferenceByWorker[worker].Value // numerator of network combined inference calculation
 		sumWeights += weight
 	}
 
@@ -227,57 +209,245 @@ func CalcNetworkCombinedInference(
 	return unnormalizedI_i / sumWeights, nil // divide numerator by denominator to get network combined inference
 }
 
-// Gathers inferences, forecast-implied inferences as of the given block
-// and the network regrets admitted by workers at or just before the given time,
-// then invokes calculation of network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper.
-func GetAndCalcNetworkCombinedInference(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId TopicId,
-	blockHeight BlockHeight) (float64, error) {
-	// Get inferences from worker update at or just after the given block
-	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting inferences: ", err)
-		return float64(0), err
+func CalcNaiveInference(
+	inferences map[string]*emissions.Inference,
+	regrets *RegretsByWorkerByType,
+	epsilon float64,
+) (float64, error) {
+	// Update regrets to remove forecast regrets
+	newRegrets := RegretsByWorkerByType{
+		InferenceRegrets: regrets.InferenceRegrets,
+		ForecastRegrets:  nil,
 	}
-	// Get regrets admitted by workers just before the given block
-	regrets, err := k.GetNetworkRegretsAtOrBeforeBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting network regrets: ", err)
-		return float64(0), err
-	}
-	// Get forecast-implied inferences at the given block
-	forecastImpliedInferences, err := GetAndCalcForcastImpliedInferencesAtBlock(ctx, k, topicId, blockHeight)
-	if err != nil {
-		fmt.Println("Error getting forecast implied inferences: ", err)
-		return float64(0), err
-	}
-
-	epsilon, err := k.GetParamsEpsilon(ctx)
-	if err != nil {
-		fmt.Println("Error getting epsilon: ", err)
-		return float64(0), err
-	}
-
-	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
-	if err != nil {
-		fmt.Println("Error getting epsilon: ", err)
-		return float64(0), err
-	}
-
-	return CalcNetworkCombinedInference(ctx, k, topicId, inferences, forecastImpliedInferences, regrets, epsilon, pInferenceSynthesis)
+	return CalcWeightedInference(inferences, nil, &newRegrets, epsilon, 0)
 }
 
-// Calculates all network inferences in I_i given inferences, forecast implied inferences, and network combined inference
+// Returns all one-out inferences that are possible given the provided input
+// Assumed that there is at most 1 inference per worker. Also that there is at most 1 forecast-implied inference per worker.
+func CalcOneOutInferences(
+	inferences map[string]*emissions.Inference,
+	forecastImpliedInferences map[string]*emissions.Inference,
+	regrets *RegretsByWorkerByType,
+	pInferenceSynthesis float64,
+) ([]*emissions.Inference, error) {
+	// Loop over all inferences and forecast-implied inferences and remove one at a time, then calculate the network inference given that one held out
+	oneOutInferences := make([]*emissions.Inference, 0)
+	for worker := range inferences {
+		// Remove the inference of the worker from the inferences
+		inferencesWithoutWorker := make(map[string]*emissions.Inference)
+		for k, v := range inferences {
+			if k != worker {
+				inferencesWithoutWorker[k] = v
+			}
+		}
+		// Calculate the network inference without the worker's inference
+		oneOutInference, err := CalcWeightedInference(inferencesWithoutWorker, forecastImpliedInferences, regrets, 0, pInferenceSynthesis)
+		if err != nil {
+			fmt.Println("Error calculating one-out inference: ", err)
+			return nil, err
+		}
+		oneOutInferences = append(oneOutInferences, &emissions.Inference{
+			Worker: worker,
+			Value:  oneOutInference,
+		})
+	}
+	return oneOutInferences, nil
+}
+
+// Returns all one-in inferences that are possible given the provided input
+// Assumed that there is at most 1 inference per worker. Also that there is at most 1 forecast-implied inference per worker.
+func CalcOneInInferences(
+	inferences map[string]*emissions.Inference,
+	forecastImpliedInferences map[string]*emissions.Inference,
+	regrets *RegretsByWorkerByType,
+	epsilon float64,
+	pInferenceSynthesis float64,
+) ([]*emissions.Inference, error) {
+	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
+	oneInInferences := make([]*emissions.Inference, 0)
+	for worker := range forecastImpliedInferences {
+		// Remove the forecast-implied inference of the worker from the forecast-implied inferences
+		forecastImpliedInferencesWithoutWorker := make(map[string]*emissions.Inference)
+		for k, v := range forecastImpliedInferences {
+			if k == worker {
+				forecastImpliedInferencesWithoutWorker[k] = v
+				break
+			}
+		}
+		// Calculate the network inference without the worker's forecast-implied inference
+		oneInInference, err := CalcWeightedInference(inferences, forecastImpliedInferencesWithoutWorker, regrets, epsilon, pInferenceSynthesis)
+		if err != nil {
+			fmt.Println("Error calculating one-in inference: ", err)
+			return nil, err
+		}
+		oneInInferences = append(oneInInferences, &emissions.Inference{
+			Worker: worker,
+			Value:  oneInInference,
+		})
+	}
+	return oneInInferences, nil
+}
+
+// This is an intermediary type used to return all the calculated inferences given
+// inferences, forecasts, regrets, network combined loss, from other actors or calculated on-chain
+type NetworkInferences struct {
+	CombinedValue float64
+	// InfererValues    *emissions.Inferences // Not needed
+	ForecasterValues *emissions.Forecasts
+	NaiveValue       float64
+	OneOutValues     []*emissions.Inference
+	OneInValues      []*emissions.Inference
+}
+
+// Calculates all network inferences in I_i given inferences, forecast implied inferences, and network combined inference.
+// I_ij are the inferences of worker j and already given as an argument.
 func CalcNetworkInferences(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId TopicId,
 	inferences *emissions.Inferences,
-	forecastImpliedInferences []emissions.Inference,
-	networkCombinedInference float64,
-) ([]emissions.Inference, error) {
-	// TODO implement!
-	return nil, nil
+	forecasts *emissions.Forecasts,
+	regrets *emissions.WorkerRegrets,
+	networkCombinedLoss float64,
+	epsilon float64,
+	pInferenceSynthesis float64,
+) (*NetworkInferences, error) {
+	// Calculate forecast-implied inferences I_ik
+	forecastImpliedInferences, err := CalcForcastImpliedInferences(inferences, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
+	if err != nil {
+		fmt.Println("Error calculating forecast-implied inferences: ", err)
+		return nil, err
+	}
+	// Map each worker to their inference
+	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
+	// Map each worker to their forecast-implied inference
+	forecastImpliedInferenceByWorker := MakeMapFromWorkerToTheirWork(forecastImpliedInferences)
+
+	// Map each worker to their regrets
+	regretsWorkerByType := MakeMapFromWorkerToTheirRegret(regrets)
+
+	// Calculate the combined network inference I_i
+	combinedNetworkInference, err := CalcWeightedInference(inferenceByWorker, forecastImpliedInferenceByWorker, regretsWorkerByType, epsilon, pInferenceSynthesis)
+	if err != nil {
+		fmt.Println("Error calculating network combined inference: ", err)
+		return nil, err
+	}
+
+	// Calculate the naive inference I^-_i
+	naiveInference, err := CalcNaiveInference(inferenceByWorker, regretsWorkerByType, epsilon)
+	if err != nil {
+		fmt.Println("Error calculating naive inference: ", err)
+		return nil, err
+	}
+
+	// Calculate the one-out inference I^-_li
+	oneOutInferences, err := CalcOneOutInferences(inferenceByWorker, forecastImpliedInferenceByWorker, regretsWorkerByType, pInferenceSynthesis)
+	if err != nil {
+		fmt.Println("Error calculating one-out inferences: ", err)
+		return nil, err
+	}
+
+	// Calculate the one-in inference I^+_ki
+	oneInInferences, err := CalcOneInInferences(inferenceByWorker, forecastImpliedInferenceByWorker, regretsWorkerByType, epsilon, pInferenceSynthesis)
+	if err != nil {
+		fmt.Println("Error calculating one-in inferences: ", err)
+		return nil, err
+	}
+
+	// Build value bundle to return all the calculated inferences
+	return &NetworkInferences{
+		CombinedValue:    combinedNetworkInference,
+		ForecasterValues: forecasts,
+		NaiveValue:       naiveInference,
+		OneOutValues:     oneOutInferences,
+		OneInValues:      oneInInferences,
+	}, nil
 }
+
+/// !! TODO: Apply the following functions to the module + Revamp as needed !!
+
+// // Gathers inferences and forecasts from the worker update at or just after the given time, and
+// // losses from the loss update just before the given time.
+// // Then invokes calculation of the forecast-implied inferences using the Inference Synthesis formula from the litepaper.
+// func GetAndCalcForcastImpliedInferencesAtBlock(
+// 	ctx sdk.Context,
+// 	k keeper.Keeper,
+// 	topicId TopicId,
+// 	blockHeight BlockHeight) ([]*emissions.Inference, error) {
+// 	// Get inferences from worker update at or just after the given time
+// 	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting inferences: ", err)
+// 		return nil, err
+// 	}
+// 	// Get forecasts from worker update at or just after the given time
+// 	forecasts, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting forecasts: ", err)
+// 		return nil, err
+// 	}
+// 	// Get losses from loss update just before the given time
+// 	networkValueBundle, err := k.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting network losses: ", err)
+// 		return nil, err
+// 	}
+
+// 	epsilon, err := k.GetParamsEpsilon(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error getting epsilon: ", err)
+// 		return nil, err
+// 	}
+
+// 	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error getting epsilon: ", err)
+// 		return nil, err
+// 	}
+
+// 	return CalcForcastImpliedInferences(inferences, forecasts, networkValueBundle, epsilon, pInferenceSynthesis)
+// }
+
+// // Gathers inferences, forecast-implied inferences as of the given block
+// // and the network regrets admitted by workers at or just before the given time,
+// // then invokes calculation of network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper.
+// func GetAndCalcNetworkCombinedInference(
+// 	ctx sdk.Context,
+// 	k keeper.Keeper,
+// 	topicId TopicId,
+// 	blockHeight BlockHeight) (float64, error) {
+// 	// Get inferences from worker update at or just after the given block
+// 	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting inferences: ", err)
+// 		return 0, err
+// 	}
+// 	// Map each worker to their inference
+// 	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
+
+// 	// Get regrets admitted by workers just before the given block
+// 	regrets, err := k.GetNetworkRegretsAtOrBeforeBlock(ctx, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting network regrets: ", err)
+// 		return 0, err
+// 	}
+// 	// Get forecast-implied inferences at the given block
+// 	forecastImpliedInferences, err := GetAndCalcForcastImpliedInferencesAtBlock(ctx, k, topicId, blockHeight)
+// 	if err != nil {
+// 		fmt.Println("Error getting forecast implied inferences: ", err)
+// 		return 0, err
+// 	}
+// 	// Map each worker to their forecast-implied inference
+// 	forecastImpliedInferenceByWorker := MakeMapFromWorkerToTheirWork(forecastImpliedInferences)
+
+// 	epsilon, err := k.GetParamsEpsilon(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error getting epsilon: ", err)
+// 		return 0, err
+// 	}
+
+// 	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
+// 	if err != nil {
+// 		fmt.Println("Error getting epsilon: ", err)
+// 		return 0, err
+// 	}
+
+// 	return CalcWeightedInference(inferenceByWorker, forecastImpliedInferenceByWorker, regrets, epsilon, pInferenceSynthesis)
+// }
