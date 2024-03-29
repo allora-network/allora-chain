@@ -15,7 +15,7 @@ RI_TOPIC_ID="1"
 RI_CADENCE="60"
 RI_MAX_PRICE_PER_INFERENCE="1"
 RI_BID_AMOUNT="10000"
-RI_BLOCK_VALID_UNTIL=$(bc <<< "$BLOCK_HEIGHT_CURR + 61")
+RI_BLOCK_VALID_UNTIL=$(bc <<< "$BLOCK_HEIGHT_CURR + 100")
 $ALLORAD_BIN tx emissions request-inference \
   $RI_CREATOR \
   "{\"nonce\": \"$RI_NONCE\",\"topic_id\":\"$RI_TOPIC_ID\",\"cadence\":\"$RI_CADENCE\",\"max_price_per_inference\":\"$RI_MAX_PRICE_PER_INFERENCE\",\"bid_amount\":\"$RI_BID_AMOUNT\",\"block_valid_until\":\"$RI_BLOCK_VALID_UNTIL\",\"extra_data\":\"\"}" \
@@ -25,12 +25,11 @@ echo "Checking the inference request was made correctly"
 
 echo $MEMPOOL
 MEMPOOL_INCREMENTED=false
-for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9
+for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 do
   MEMPOOL=$($ALLORAD_BIN query emissions all-inference-requests)
   if [ "$MEMPOOL" == "{}" ]; then
     echo "MEMPOOL is empty, transaction may not have mined yet, count sleep $COUNT_SLEEP seconds"
-    COUNT_SLEEP=$((COUNT_SLEEP+1))
     sleep 1
   else
     echo "The network has appears to have something in the mempool, inference request probably created successfully"
