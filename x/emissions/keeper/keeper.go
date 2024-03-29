@@ -57,6 +57,14 @@ type Keeper struct {
 	// for an address, what are all the topics that it's registered for?
 	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
+	/// SCORES
+	// map of (topic, block_number, worker) -> score
+	workerInferenceScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
+	// map of (topic, block_number, worker) -> score
+	workerForecastScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
+	// map of (topic, block_number, reputer) -> score
+	reputerScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
+
 	/// STAKING
 
 	// total sum stake of all stakers on the network
@@ -182,6 +190,9 @@ func NewKeeper(
 		topicCreationWhitelist:     collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:           collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		foundationWhitelist:        collections.NewKeySet(sb, types.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
+		workerInferenceScores:      collections.NewMap(sb, types.WorkerInferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		workerForecastScores:       collections.NewMap(sb, types.WorkerForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerScores:              collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -548,7 +559,13 @@ func (k *Keeper) GetValueBundles(ctx context.Context, topicId TOPIC_ID, block BL
 	return &valueBundles, nil
 }
 
-// A function that accepts a topicId and returns the latest Network ValueBundle or error
+// Insert a network loss bundle for a topic and block.
+func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TOPIC_ID, block BLOCK_NUMBER, lossBundle types.ValueBundle) error {
+	key := collections.Join(topicId, block)
+	return k.networkLossBundles.Set(ctx, key, lossBundle)
+}
+
+// A function that accepts a topicId and returns the latest Network LossBundle or error
 func (k *Keeper) GetLatestNetworkValueBundle(ctx context.Context, topicId TOPIC_ID) (*types.ValueBundle, error) {
 	// Parse networkLossBundles for the topicId in descending time order and take the first one
 	rng := collections.
@@ -1691,6 +1708,115 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+/// SCORES
+
+func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+	var scores types.Scores
+
+	scores, err := k.workerInferenceScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.workerInferenceScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+
+	scores, err := k.workerForecastScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.workerForecastScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+
+	scores, err := k.reputerScores.Get(ctx, key)
+	if err != nil {
+		if !errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.reputerScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) GetLastWorkerInferenceScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(blockNumber).
+		Descending()
+
+	scores := make([]*types.Score, 0)
+	iter, err := k.workerInferenceScores.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for ; iter.Valid() && count < 10; iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		for _, score := range existingScores.Value.Scores {
+			if score.Address == worker.String() {
+				scores = append(scores, score)
+				count++
+			}
+		}
+	}
+
+	return scores, nil
+}
+
+func (k *Keeper) GetLastWorkerForecastScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
+		EndInclusive(blockNumber).
+		Descending()
+
+	scores := make([]*types.Score, 0)
+	iter, err := k.workerForecastScores.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for ; iter.Valid() && count < 10; iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		for _, score := range existingScores.Value.Scores {
+			if score.Address == worker.String() {
+				scores = append(scores, score)
+				count++
+			}
+		}
+	}
+
+	return scores, nil
 }
 
 /// WHITELISTS
