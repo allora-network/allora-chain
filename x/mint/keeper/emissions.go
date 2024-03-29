@@ -110,7 +110,7 @@ func RewardEmissionPerUnitStakedToken(
 // default block time is 6311520 blocks per year aka 5 seconds per block
 // ^α_e = 1 − (1 − α_e)^(∆t/month)
 // where ˆαe is the recalibrated form of α_e appropriate for an update time step ∆t
-func smoothingFactor(
+func smoothingFactorPerBlock(
 	ctx sdk.Context,
 	k Keeper,
 	oneMonthSmoothingFactor math.LegacyDec,

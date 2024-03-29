@@ -8,9 +8,10 @@ import "cosmossdk.io/collections"
 // with using the same integer for the keys for multiple keepers
 var (
 	// MinterKey is the key to use for the keeper store.
-	MinterKey          = collections.NewPrefix(137)
-	ParamsKey          = collections.NewPrefix(138)
-	PreviousRewardsKey = collections.NewPrefix(139)
+	MinterKey                = collections.NewPrefix(137)
+	ParamsKey                = collections.NewPrefix(138)
+	PreviousRewardsKey       = collections.NewPrefix(139)
+	EcosystemTokensMintedKey = collections.NewPrefix(140)
 )
 
 const (

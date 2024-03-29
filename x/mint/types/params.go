@@ -55,6 +55,11 @@ func DefaultPreviousReward() math.Int {
 	return math.NewInt(0)
 }
 
+// at genesis, nothing has been minted yet
+func DefaultEcosystemTokensMinted() math.Int {
+	return math.NewInt(0)
+}
+
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {

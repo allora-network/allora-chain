@@ -75,6 +75,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		math.NewUintFromString("2831000000000000000000"),
 	)
 	genesisState.PreviousReward = types.DefaultPreviousReward()
+	genesisState.EcosystemTokensMinted = types.DefaultEcosystemTokensMinted()
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
 
@@ -94,10 +95,15 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	s.Require().True(genesisState.PreviousReward.Equal(previousRewards))
 	s.Require().NoError(err)
 
+	ecosystemTokensMinted, err := s.keeper.EcosystemTokensMinted.Get(s.sdkCtx)
+	s.Require().True(genesisState.EcosystemTokensMinted.Equal(ecosystemTokensMinted))
+	s.Require().NoError(err)
+
 	genesisState2 := s.keeper.ExportGenesis(s.sdkCtx)
 	// got to check the fields are equal one by one because the
 	// bigint params screw .Equal up
 	s.Require().Equal(genesisState.Minter, genesisState2.Minter)
 	s.Require().Equal(genesisState.Params, genesisState2.Params)
 	s.Require().True(genesisState.PreviousReward.Equal(genesisState2.PreviousReward))
+	s.Require().True(genesisState.EcosystemTokensMinted.Equal(genesisState2.EcosystemTokensMinted))
 }
