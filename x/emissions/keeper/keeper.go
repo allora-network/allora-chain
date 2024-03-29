@@ -59,9 +59,9 @@ type Keeper struct {
 
 	/// SCORES
 	// map of (topic, block_number, worker) -> score
-	workerInferenceScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
+	inferenceScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
 	// map of (topic, block_number, worker) -> score
-	workerForecastScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
+	forecastScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
 	// map of (topic, block_number, reputer) -> score
 	reputerScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_NUMBER], types.Scores]
 
@@ -190,8 +190,8 @@ func NewKeeper(
 		topicCreationWhitelist:     collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:           collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		foundationWhitelist:        collections.NewKeySet(sb, types.FoundationWhitelistKey, "foundation_whitelist", sdk.AccAddressKey),
-		workerInferenceScores:      collections.NewMap(sb, types.WorkerInferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		workerForecastScores:       collections.NewMap(sb, types.WorkerForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		inferenceScores:            collections.NewMap(sb, types.InferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecastScores:             collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerScores:              collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 	}
 
@@ -1716,7 +1716,7 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TOPIC_I
 	key := collections.Join(topicId, blockNumber)
 	var scores types.Scores
 
-	scores, err := k.workerInferenceScores.Get(ctx, key)
+	scores, err := k.inferenceScores.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			scores = types.Scores{}
@@ -1726,13 +1726,13 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TOPIC_I
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	return k.workerInferenceScores.Set(ctx, key, scores)
+	return k.inferenceScores.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, score types.Score) error {
 	key := collections.Join(topicId, blockNumber)
 
-	scores, err := k.workerForecastScores.Get(ctx, key)
+	scores, err := k.forecastScores.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			scores = types.Scores{}
@@ -1742,7 +1742,7 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TOPIC_ID
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	return k.workerForecastScores.Set(ctx, key, scores)
+	return k.forecastScores.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, score types.Score) error {
@@ -1761,14 +1761,14 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TOPIC_ID, block
 	return k.reputerScores.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetLastWorkerInferenceScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		EndInclusive(blockNumber).
 		Descending()
 
 	scores := make([]*types.Score, 0)
-	iter, err := k.workerInferenceScores.Iterate(ctx, rng)
+	iter, err := k.inferenceScores.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
@@ -1790,14 +1790,14 @@ func (k *Keeper) GetLastWorkerInferenceScores(ctx context.Context, topicId TOPIC
 	return scores, nil
 }
 
-func (k *Keeper) GetLastWorkerForecastScores(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
+func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_NUMBER, worker WORKER) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_NUMBER](topicId).
 		EndInclusive(blockNumber).
 		Descending()
 
 	scores := make([]*types.Score, 0)
-	iter, err := k.workerForecastScores.Iterate(ctx, rng)
+	iter, err := k.forecastScores.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}

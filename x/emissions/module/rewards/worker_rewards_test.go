@@ -1,13 +1,13 @@
-package module_test
+package rewards_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
+func (s *RewardsTestSuite) TestGetWorkerScoreInferenceTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
@@ -17,9 +17,9 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	s.Require().NoError(err)
 
 	// Get worker rewards
-	workerRewards, err := module.GetWorkersRewardsInferenceTask(
+	workerRewards, err := rewards.GetWorkersRewardsInferenceTask(
 		s.ctx,
-		s.appModule,
+		s.emissionsKeeper,
 		1,
 		1003,
 		1.5,
@@ -29,7 +29,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
+func (s *RewardsTestSuite) TestGetWorkerScoreForecastTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
@@ -39,9 +39,9 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	s.Require().NoError(err)
 
 	// Get worker rewards
-	workerRewards, err := module.GetWorkersRewardsForecastTask(
+	workerRewards, err := rewards.GetWorkersRewardsForecastTask(
 		s.ctx,
-		s.appModule,
+		s.emissionsKeeper,
 		1,
 		1003,
 		1.5,
@@ -51,7 +51,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func mockNetworkLosses(s *ModuleTestSuite, topicId uint64, block int64) error {
+func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
 	// Generate network losses
 	oneOutLosses := []*types.WorkerAttributedValue{
 		{
@@ -116,7 +116,7 @@ func mockNetworkLosses(s *ModuleTestSuite, topicId uint64, block int64) error {
 	return nil
 }
 
-func mockWorkerLastScores(s *ModuleTestSuite, topicId uint64) error {
+func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 	workerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],

@@ -1,10 +1,11 @@
-package module
+package rewards
 
 import (
 	"math"
 
 	errors "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // StdDev calculates the standard deviation of a slice of float64.
@@ -32,9 +33,9 @@ func flatten(arr [][]float64) []float64 {
 	return flat
 }
 
-// GetWorkerRewardFractions calculates the reward fractions for workers for forecast and inference tasks
-// U_ij / V_ik
-func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, error) {
+// GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
+// U_ij / V_ik * totalRewards
+func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards float64, workerAddresses []sdk.AccAddress) ([]TaskRewards, error) {
 	lastScores := make([][]float64, len(scores))
 	for i, workerScores := range scores {
 		end := len(workerScores)
@@ -46,32 +47,29 @@ func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, e
 	}
 
 	stdDev := StdDev(flatten(lastScores))
-	var normalizedScores []float64
-	for _, score := range lastScores {
-		normalizedScores = append(normalizedScores, score[len(score)-1]/stdDev)
-	}
-
-	smoothedScores := make([]float64, len(normalizedScores))
-	for i, v := range normalizedScores {
-		res, err := Phi(preward, v)
+	smoothedScores := make([]float64, len(lastScores))
+	total := 0.0
+	for i, score := range lastScores {
+		normalizedScore := score[len(score)-1] / stdDev
+		res, err := Phi(preward, normalizedScore)
 		if err != nil {
 			return nil, err
 		}
 		smoothedScores[i] = res
+		total += res
 	}
 
-	total := 0.0
-	for _, score := range smoothedScores {
-		total += score
-	}
-
-	var rewardFractions []float64
-	for _, score := range smoothedScores {
+	var rewardPortions []TaskRewards
+	for i, score := range smoothedScores {
 		rewardFraction := score / total
-		rewardFractions = append(rewardFractions, rewardFraction)
+		rewardPortion := rewardFraction * totalRewards
+		rewardPortions = append(rewardPortions, TaskRewards{
+			Address: workerAddresses[i],
+			Reward:  rewardPortion,
+		})
 	}
 
-	return rewardFractions, nil
+	return rewardPortions, nil
 }
 
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.

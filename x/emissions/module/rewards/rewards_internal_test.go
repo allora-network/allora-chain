@@ -1,11 +1,13 @@
-package module_test
+package rewards_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
-	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,7 +26,7 @@ func (s *MathTestSuite) TestPhiSimple() {
 	x := float64(7.9997)
 	p := float64(2)
 	// we expect a value very very close to 64
-	result, err := module.Phi(p, x)
+	result, err := rewards.Phi(p, x)
 	s.Require().NoError(err)
 	s.Require().InDelta(64, result, 0.001)
 }
@@ -35,11 +37,11 @@ func (s *MathTestSuite) TestFailPhiXTooLarge() {
 	// so we test that edge condition
 	x := float64(709)
 	p := float64(2)
-	_, err := module.Phi(p, x)
+	_, err := rewards.Phi(p, x)
 	s.Require().NoError(err)
 
 	x = float64(710)
-	_, err = module.Phi(p, x)
+	_, err = rewards.Phi(p, x)
 	s.Require().ErrorIs(err, emissions.ErrEToTheXExponentiationIsInfinity)
 }
 
@@ -48,28 +50,28 @@ func (s *MathTestSuite) TestFailPhiPTooLarge() {
 	// so we test that edge condition
 	x := float64(709)
 	p := float64(108)
-	_, err := module.Phi(p, x)
+	_, err := rewards.Phi(p, x)
 	s.Require().NoError(err)
 
 	p = float64(109)
-	_, err = module.Phi(p, x)
+	_, err = rewards.Phi(p, x)
 	s.Require().ErrorIs(err, emissions.ErrLnToThePExponentiationIsInfinity)
 }
 
 func (s *MathTestSuite) TestPhiInvalidInputs() {
 	// test that invalid inputs return the correct error
-	_, err := module.Phi(math.Inf(1), 3)
+	_, err := rewards.Phi(math.Inf(1), 3)
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
-	_, err = module.Phi(math.Inf(-1), 3)
+	_, err = rewards.Phi(math.Inf(-1), 3)
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
-	_, err = module.Phi(3, math.Inf(1))
+	_, err = rewards.Phi(3, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
-	_, err = module.Phi(3, math.Inf(-1))
+	_, err = rewards.Phi(3, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
 
-	_, err = module.Phi(math.NaN(), 3)
+	_, err = rewards.Phi(math.NaN(), 3)
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
-	_, err = module.Phi(3, math.NaN())
+	_, err = rewards.Phi(3, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrPhiInvalidInput)
 }
 
@@ -89,7 +91,7 @@ func (s *MathTestSuite) TestAdjustedStakeSimple() {
 	// https://www.wolframalpha.com/input?i2d=true&i=1-%5C%2840%29%5C%2840%29Power%5B%5C%2840%29Power%5B%5C%2840%29ln%5C%2840%291%2BPower%5Be%2C20%5D%5C%2841%29%5C%2841%29%2C1%5D%5C%2841%29%2C-1%5D%5C%2841%29*Power%5B%5C%2840%29ln%5C%2840%291%2BPower%5Be%2C%5C%2840%29-20%5C%2840%29Divide%5B3*0.18*100%5C%2844%29000%2C0.18*100%5C%2844%29000+%2B+0.25*50%5C%2844%29000+%2B+0.63*150%5C%2844%29000%5D+-+1%5C%2841%29%5C%2841%29%5D%5C%2841%29%5C%2841%29%2C1%5D%5C%2841%29
 	expected := 0.4319994174428689223916439092220111693737492607160554179509
 
-	result, err := module.GetAdjustedStake(
+	result, err := rewards.GetAdjustedStake(
 		stake,
 		allStakes,
 		listeningCoefficient,
@@ -109,7 +111,7 @@ func (s *MathTestSuite) TestExponentialMovingAverageSimple() {
 	// 30 + 180 = 210
 	var expected float64 = 210
 
-	result, err := module.ExponentialMovingAverage(alpha, current, previous)
+	result, err := rewards.ExponentialMovingAverage(alpha, current, previous)
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
 }
@@ -119,7 +121,7 @@ func (s *MathTestSuite) TestNormalizeAgainstSlice() {
 	a := []float64{2.0, 3.0, 5.0}
 	expected := 0.2
 
-	result, err := module.NormalizeAgainstSlice(v, a)
+	result, err := rewards.NormalizeAgainstSlice(v, a)
 
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
@@ -134,7 +136,7 @@ func (s *MathTestSuite) TestEntropySimple() {
 	// using wolfram alpha to get a sample result
 	// https://www.wolframalpha.com/input?i2d=true&i=-Power%5B%5C%2840%29Divide%5B0.75%2C3%5D%5C%2841%29%2C0.25%5D*%5C%2840%290.2*ln%5C%2840%290.2%5C%2841%29+%2B+0.3*ln%5C%2840%290.3%5C%2841%29+%2B+0.5*ln%5C%2840%290.5%5C%2841%29%5C%2841%29
 	expected := 0.7280746285142275338742683350155248011115920866691059016669
-	result, err := module.Entropy(f_ij, N_i_eff, N_i, beta)
+	result, err := rewards.Entropy(f_ij, N_i_eff, N_i, beta)
 	s.Require().NoError(err)
 	s.Require().InDelta(expected, result, 0.0001)
 }
@@ -186,7 +188,7 @@ func (s *MathTestSuite) TestEntropyInvalidInput() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			_, err := module.Entropy(nil, tc.N_eff, tc.numParticipants, tc.beta)
+			_, err := rewards.Entropy(nil, tc.N_eff, tc.numParticipants, tc.beta)
 			s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
 		})
 	}
@@ -194,27 +196,27 @@ func (s *MathTestSuite) TestEntropyInvalidInput() {
 
 func (s *MathTestSuite) TestEntropyInvalidInputAllFsInf() {
 	allFs := []float64{1, 2, math.Inf(0), 4}
-	_, err := module.Entropy(allFs, 100, 10, 0.5)
+	_, err := rewards.Entropy(allFs, 100, 10, 0.5)
 	s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
 }
 
 func (s *MathTestSuite) TestEntropyInvalidInputAllFsNan() {
 	allFs := []float64{1, 2, math.NaN(), 4}
-	_, err := module.Entropy(allFs, 100, 10, 0.5)
+	_, err := rewards.Entropy(allFs, 100, 10, 0.5)
 	s.Require().ErrorIs(err, emissions.ErrEntropyInvalidInput)
 }
 
 func (s *MathTestSuite) TestEntropyInfinity() {
 	allFs := []float64{0.1, 0.2, 0.3, 0.4}
 
-	_, err := module.Entropy(allFs, 100, 10, math.MaxFloat64)
+	_, err := rewards.Entropy(allFs, 100, 10, math.MaxFloat64)
 	s.Require().ErrorIs(err, emissions.ErrEntropyIsInfinity)
 }
 
 func (s *MathTestSuite) TestEntropyNaN() {
 	allFs := []float64{0, 0, 0, 0}
 
-	_, err := module.Entropy(allFs, 100, 10, 0)
+	_, err := rewards.Entropy(allFs, 100, 10, 0)
 	s.Require().ErrorIs(err, emissions.ErrEntropyIsNaN)
 }
 
@@ -226,7 +228,7 @@ func (s *MathTestSuite) TestNumberRatio() {
 	// 1 / 1.39 = 0.719424460431654676259005145797598627787307032590051458
 	expected := 0.7194244604316546762589928057553956834532374100
 
-	result, err := module.NumberRatio(rewardFractions)
+	result, err := rewards.NumberRatio(rewardFractions)
 	s.Require().NoError(err, "Error calculating number ratio")
 	s.Require().InDelta(expected, result, 0.0001)
 }
@@ -234,20 +236,20 @@ func (s *MathTestSuite) TestNumberRatio() {
 func (s *MathTestSuite) TestNumberRatioZeroFractions() {
 	zeroFractions := []float64{0.0}
 
-	_, err := module.NumberRatio(zeroFractions)
+	_, err := rewards.NumberRatio(zeroFractions)
 	s.Require().ErrorIs(err, emissions.ErrNumberRatioDivideByZero)
 }
 
 func (s *MathTestSuite) TestNumberRatioEmptyList() {
 	emptyFractions := []float64{}
 
-	_, err := module.NumberRatio(emptyFractions)
+	_, err := rewards.NumberRatio(emptyFractions)
 	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidSliceLength)
 }
 
 func (s *MathTestSuite) TestNumberRatioNaNFractions() {
 	invalidFractions := []float64{0.2, math.NaN(), 0.5}
-	_, err := module.NumberRatio(invalidFractions)
+	_, err := rewards.NumberRatio(invalidFractions)
 	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidInput)
 }
 
@@ -255,7 +257,7 @@ func (s *MathTestSuite) TestNumberRatioInfiniteFractions() {
 
 	infFractions := []float64{0.2, math.Inf(1), 0.5}
 
-	_, err := module.NumberRatio(infFractions)
+	_, err := rewards.NumberRatio(infFractions)
 	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidInput)
 }
 
@@ -263,7 +265,7 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// U_i = 0.5 * 8 / 8
 	// U_i = 0.5
-	infRewards, err := module.InferenceRewards(
+	infRewards, err := rewards.InferenceRewards(
 		0.5,
 		2.0,
 		2.0,
@@ -276,73 +278,73 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 }
 
 func (s *MathTestSuite) TestInferenceRewardsInvalidInput() {
-	_, err := module.InferenceRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
+	_, err := rewards.InferenceRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
+	_, err = rewards.InferenceRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 
-	_, err = module.InferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
+	_, err = rewards.InferenceRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsInvalidInput)
 }
 
 func (s *MathTestSuite) TestInferenceRewardsInfinity() {
-	_, err := module.InferenceRewards(math.MaxFloat64, math.MaxFloat64, math.MaxFloat64, 2.0, 2.0, 2.0)
+	_, err := rewards.InferenceRewards(math.MaxFloat64, math.MaxFloat64, math.MaxFloat64, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsIsInfinity)
 }
 
 func (s *MathTestSuite) TestInferenceRewardsNaN() {
-	_, err := module.InferenceRewards(0.5, 2.0, 0, 0, 0, 2.0)
+	_, err := rewards.InferenceRewards(0.5, 2.0, 0, 0, 0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrInferenceRewardsIsNaN)
 }
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
-	result, err := module.InferenceRewards(1, 2.0, 10, 20, 30, 2.0)
+	result, err := rewards.InferenceRewards(1, 2.0, 10, 20, 30, 2.0)
 	s.Require().NoError(err)
 	s.Require().InDelta(0, result, 0.0001)
 }
@@ -351,79 +353,79 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	// V_i = (2 * 3 * 4 * 5) / (6 + 4 + 10)
 	// V_i = 120 / 20
 	// V_i = 6
-	result, err := module.ForecastingRewards(2.0, 3.0, 6.0, 4.0, 10.0, 5.0)
+	result, err := rewards.ForecastingRewards(2.0, 3.0, 6.0, 4.0, 10.0, 5.0)
 	s.Require().NoError(err)
 	s.Require().InDelta(6.0, result, 0.0001)
 }
 
 func (s *MathTestSuite) TestForecastRewardsInvalidInput() {
-	_, err := module.ForecastingRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
+	_, err := rewards.ForecastingRewards(math.NaN(), 2.0, 4.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, math.NaN(), 4.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, math.NaN(), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 4.0, math.NaN(), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 4.0, 2.0, math.NaN(), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 4.0, 2.0, 2.0, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(math.Inf(1), 2.0, 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(math.Inf(-1), 2.0, 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, math.Inf(1), 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, math.Inf(-1), 2.0, 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, math.Inf(1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, math.Inf(-1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, math.Inf(1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, math.Inf(-1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, 2.0, math.Inf(-1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 
-	_, err = module.ForecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
+	_, err = rewards.ForecastingRewards(0.5, 2.0, 2.0, 2.0, 2.0, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsInvalidInput)
 }
 
 func (s *MathTestSuite) TestForecastRewardsInfinity() {
-	_, err := module.ForecastingRewards(math.MaxFloat64, 3.0, 4.0, 5.0, 6.0, 10.0)
+	_, err := rewards.ForecastingRewards(math.MaxFloat64, 3.0, 4.0, 5.0, 6.0, 10.0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsIsInfinity)
 }
 
 func (s *MathTestSuite) TestForecastRewardsNaN() {
-	_, err := module.ForecastingRewards(2.0, 3.0, 0, 0, 0, 0)
+	_, err := rewards.ForecastingRewards(2.0, 3.0, 0, 0, 0, 0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingRewardsIsNaN)
 }
 
 func (s *MathTestSuite) TestForecastRewardsZero() {
-	result, err := module.ForecastingRewards(0, 3.0, 4.0, 5.0, 6.0, 10.0)
+	result, err := rewards.ForecastingRewards(0, 3.0, 4.0, 5.0, 6.0, 10.0)
 	s.Require().NoError(err)
 	s.Require().InDelta(0, result, 0.0001)
 }
@@ -432,61 +434,61 @@ func (s *MathTestSuite) TestReputerRewardSimple() {
 	// W_i = (2 * 2) / (4 + 2 + 2)
 	// W_i = 4 / 8
 	// W_i = 0.5
-	result, err := module.ReputerRewards(4.0, 2.0, 2.0, 2.0)
+	result, err := rewards.ReputerRewards(4.0, 2.0, 2.0, 2.0)
 	s.Require().NoError(err)
 	s.Require().InDelta(0.5, result, 0.0001)
 }
 
 func (s *MathTestSuite) TestReputerRewardInvalidInput() {
-	_, err := module.ReputerRewards(math.NaN(), 2.0, 4.0, 2.0)
+	_, err := rewards.ReputerRewards(math.NaN(), 2.0, 4.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, math.NaN(), 4.0, 2.0)
+	_, err = rewards.ReputerRewards(0.5, math.NaN(), 4.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, math.NaN(), 2.0)
+	_, err = rewards.ReputerRewards(0.5, 2.0, math.NaN(), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, 4.0, math.NaN())
+	_, err = rewards.ReputerRewards(0.5, 2.0, 4.0, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(math.Inf(1), 2.0, 2.0, 2.0)
+	_, err = rewards.ReputerRewards(math.Inf(1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(math.Inf(-1), 2.0, 2.0, 2.0)
+	_, err = rewards.ReputerRewards(math.Inf(-1), 2.0, 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, math.Inf(1), 2.0, 2.0)
+	_, err = rewards.ReputerRewards(0.5, math.Inf(1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, math.Inf(-1), 2.0, 2.0)
+	_, err = rewards.ReputerRewards(0.5, math.Inf(-1), 2.0, 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, math.Inf(1), 2.0)
+	_, err = rewards.ReputerRewards(0.5, 2.0, math.Inf(1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, math.Inf(-1), 2.0)
+	_, err = rewards.ReputerRewards(0.5, 2.0, math.Inf(-1), 2.0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, 2.0, math.Inf(1))
+	_, err = rewards.ReputerRewards(0.5, 2.0, 2.0, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 
-	_, err = module.ReputerRewards(0.5, 2.0, 2.0, math.Inf(-1))
+	_, err = rewards.ReputerRewards(0.5, 2.0, 2.0, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsInvalidInput)
 }
 
 func (s *MathTestSuite) TestReputerRewardInfinity() {
-	_, err := module.ReputerRewards(2.0, 2.0, 2.0, math.MaxFloat64)
+	_, err := rewards.ReputerRewards(2.0, 2.0, 2.0, math.MaxFloat64)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsIsInfinity)
 }
 
 func (s *MathTestSuite) TestReputerRewardNaN() {
-	_, err := module.ReputerRewards(0, 0, 0, 0)
+	_, err := rewards.ReputerRewards(0, 0, 0, 0)
 	s.Require().ErrorIs(err, emissions.ErrReputerRewardsIsNaN)
 }
 
 func (s *MathTestSuite) TestReputerRewardZero() {
-	result, err := module.ReputerRewards(2, 2.0, 2.0, 0)
+	result, err := rewards.ReputerRewards(2, 2.0, 2.0, 0)
 	s.Require().NoError(err)
 	s.Require().InDelta(0, result, 0.0001)
 }
@@ -494,59 +496,59 @@ func (s *MathTestSuite) TestReputerRewardZero() {
 func (s *MathTestSuite) TestForecastingPerformanceScoreSimple() {
 	networkInferenceLoss := 100.0
 	naiveNetworkInferenceLoss := 1000.0
-	score, err := module.ForecastingPerformanceScore(naiveNetworkInferenceLoss, networkInferenceLoss)
+	score, err := rewards.ForecastingPerformanceScore(naiveNetworkInferenceLoss, networkInferenceLoss)
 	s.Require().NoError(err)
 	s.Require().InDelta(1, score, 0.0001)
 }
 
 func (s *MathTestSuite) TestForecastingPerformanceScoreInvalidInput() {
 
-	_, err := module.ForecastingPerformanceScore(math.NaN(), 100)
+	_, err := rewards.ForecastingPerformanceScore(math.NaN(), 100)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 
-	_, err = module.ForecastingPerformanceScore(100, math.NaN())
+	_, err = rewards.ForecastingPerformanceScore(100, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 
-	_, err = module.ForecastingPerformanceScore(math.Inf(1), 100)
+	_, err = rewards.ForecastingPerformanceScore(math.Inf(1), 100)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 
-	_, err = module.ForecastingPerformanceScore(100, math.Inf(1))
+	_, err = rewards.ForecastingPerformanceScore(100, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 
-	_, err = module.ForecastingPerformanceScore(math.Inf(-1), 100)
+	_, err = rewards.ForecastingPerformanceScore(math.Inf(-1), 100)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 
-	_, err = module.ForecastingPerformanceScore(100, math.Inf(-1))
+	_, err = rewards.ForecastingPerformanceScore(100, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreInvalidInput)
 }
 
 func (s *MathTestSuite) TestForecastingPerformanceScoreInfinity() {
-	_, err := module.ForecastingPerformanceScore(0, 100)
+	_, err := rewards.ForecastingPerformanceScore(0, 100)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreIsInfinity)
 }
 
 func (s *MathTestSuite) TestForecastingPerformanceScoreNaN() {
-	_, err := module.ForecastingPerformanceScore(0, 0)
+	_, err := rewards.ForecastingPerformanceScore(0, 0)
 	s.Require().ErrorIs(err, emissions.ErrForecastingPerformanceScoreIsNaN)
 }
 
 func (s *MathTestSuite) TestSigmoidSimple() {
 	x := 0.5
-	result, err := module.Sigmoid(x)
+	result, err := rewards.Sigmoid(x)
 	s.Require().NoError(err)
 	s.Require().InDelta(0.6224593312018546, result, 0.0001)
 }
 func (s *MathTestSuite) TestSigmoidInvalidInput() {
-	_, err := module.Sigmoid(math.NaN())
+	_, err := rewards.Sigmoid(math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
 }
 func (s *MathTestSuite) TestSigmoidInfinity() {
-	_, err := module.Sigmoid(math.Inf(1))
+	_, err := rewards.Sigmoid(math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
 }
 
 func (s *MathTestSuite) TestSigmoidNaN() {
-	_, err := module.Sigmoid(math.Inf(-1))
+	_, err := rewards.Sigmoid(math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrSigmoidInvalidInput)
 }
 
@@ -559,37 +561,37 @@ func (s *MathTestSuite) TestForecastingUtilitySimple() {
 	// 0.1 + 0.4 * 0.6224593312018546
 	// 0.34898373248074184
 
-	ret, err := module.ForecastingUtility(forecastingPerformanceScore, a, b)
+	ret, err := rewards.ForecastingUtility(forecastingPerformanceScore, a, b)
 	s.Require().NoError(err)
 	s.Require().InDelta(0.34898373248074184, ret, 0.0001)
 }
 
 func (s *MathTestSuite) TestForecastingUtilityInvalidInput() {
-	_, err := module.ForecastingUtility(math.NaN(), 0.5, 0.5)
+	_, err := rewards.ForecastingUtility(math.NaN(), 0.5, 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, math.NaN(), 0.5)
+	_, err = rewards.ForecastingUtility(0.5, math.NaN(), 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, 0.5, math.NaN())
+	_, err = rewards.ForecastingUtility(0.5, 0.5, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(math.Inf(1), 0.5, 0.5)
+	_, err = rewards.ForecastingUtility(math.Inf(1), 0.5, 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, math.Inf(1), 0.5)
+	_, err = rewards.ForecastingUtility(0.5, math.Inf(1), 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, 0.5, math.Inf(1))
+	_, err = rewards.ForecastingUtility(0.5, 0.5, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(math.Inf(-1), 0.5, 0.5)
+	_, err = rewards.ForecastingUtility(math.Inf(-1), 0.5, 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, math.Inf(-1), 0.5)
+	_, err = rewards.ForecastingUtility(0.5, math.Inf(-1), 0.5)
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 
-	_, err = module.ForecastingUtility(0.5, 0.5, math.Inf(-1))
+	_, err = rewards.ForecastingUtility(0.5, 0.5, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrForecastingUtilityInvalidInput)
 }
 
@@ -611,43 +613,43 @@ func (s *MathTestSuite) TestNormalizationFactorSimple() {
 	// 10 / 5
 	// 2
 
-	result, err := module.NormalizationFactor(entropyInference, entropyForecasting, chi)
+	result, err := rewards.NormalizationFactor(entropyInference, entropyForecasting, chi)
 	s.Require().NoError(err)
 
 	s.Require().InDelta(2.0, result, 0.0001)
 }
 
 func (s *MathTestSuite) TestNormalizationFactorInvalidInput() {
-	_, err := module.NormalizationFactor(math.NaN(), 1, 1)
+	_, err := rewards.NormalizationFactor(math.NaN(), 1, 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, math.NaN(), 1)
+	_, err = rewards.NormalizationFactor(1, math.NaN(), 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, 1, math.NaN())
+	_, err = rewards.NormalizationFactor(1, 1, math.NaN())
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(math.Inf(1), 1, 1)
+	_, err = rewards.NormalizationFactor(math.Inf(1), 1, 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, math.Inf(1), 1)
+	_, err = rewards.NormalizationFactor(1, math.Inf(1), 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, 1, math.Inf(1))
+	_, err = rewards.NormalizationFactor(1, 1, math.Inf(1))
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(math.Inf(-1), 1, 1)
+	_, err = rewards.NormalizationFactor(math.Inf(-1), 1, 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, math.Inf(-1), 1)
+	_, err = rewards.NormalizationFactor(1, math.Inf(-1), 1)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 
-	_, err = module.NormalizationFactor(1, 1, math.Inf(-1))
+	_, err = rewards.NormalizationFactor(1, 1, math.Inf(-1))
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorInvalidInput)
 }
 
 func (s *MathTestSuite) TestNormalizationFactorInfinity() {
-	_, err := module.NormalizationFactor(math.MaxFloat64, math.MaxFloat64, 0.2)
+	_, err := rewards.NormalizationFactor(math.MaxFloat64, math.MaxFloat64, 0.2)
 	s.Require().ErrorIs(err, emissions.ErrNormalizationFactorIsInfinity)
 }
 
@@ -671,20 +673,22 @@ func TestStdDev(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := module.StdDev(tt.data); math.Abs(got-tt.want) > 1e-5 {
+			if got := rewards.StdDev(tt.data); math.Abs(got-tt.want) > 1e-5 {
 				t.Errorf("StdDev() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGetWorkerRewardFractions(t *testing.T) {
+func TestGetWorkerPortionOfRewards(t *testing.T) {
 	tests := []struct {
-		name    string
-		scores  [][]float64
-		preward float64
-		want    []float64
-		wantErr bool
+		name            string
+		scores          [][]float64
+		preward         float64
+		totalRewards    float64
+		workerAddresses []sdk.AccAddress
+		want            []float64
+		wantErr         bool
 	}{
 		{
 			name: "basic",
@@ -695,21 +699,33 @@ func TestGetWorkerRewardFractions(t *testing.T) {
 				{0.0438, 0.04304, 0.03906},
 				{0.09719, 0.09675, 0.09418},
 			},
-			preward: 1.5,
-			want:    []float64{0.07671, 0.05531, 0.09829, 0.21537, 0.55432},
+			preward:      1.5,
+			totalRewards: 1000,
+			workerAddresses: []sdk.AccAddress{
+				[]byte("addr1"),
+				[]byte("addr2"),
+				[]byte("addr3"),
+				[]byte("addr4"),
+				[]byte("addr5"),
+			},
+			want:    []float64{76.71, 55.31, 98.29, 215.37, 554.32},
 			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetWorkerRewardFractions(tt.scores, tt.preward)
+			got, err := rewards.GetWorkerPortionOfRewards(tt.scores, tt.preward, tt.totalRewards, tt.workerAddresses)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetWorkerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !slicesAreApproxEqual(got, tt.want, 1e-4) {
-				t.Errorf("GetWorkerRewardFractions() got = %v, want %v", got, tt.want)
+
+			for i := range tt.want {
+				fmt.Println(">>>>>>", math.Abs(got[i].Reward-tt.want[i]))
+				if math.Abs(got[i].Reward-tt.want[i]) > 1e-1 {
+					t.Errorf("GetWorkerPortionOfRewards() got = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
@@ -736,7 +752,7 @@ func TestGetReputerRewardFractions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetReputerRewardFractions(tt.stakes, tt.scores, tt.preward)
+			got, err := rewards.GetReputerRewardFractions(tt.stakes, tt.scores, tt.preward)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetReputerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -781,7 +797,7 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+			got, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -816,7 +832,7 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetStakeWeightedLoss(tt.reputersStakes, tt.reputersReportedLosses)
+			got, err := rewards.GetStakeWeightedLoss(tt.reputersStakes, tt.reputersReportedLosses)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeWeightedLoss() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -840,7 +856,7 @@ func TestGetWorkerScore(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := module.GetWorkerScore(tt.losses, tt.lossesOneOut)
+			got := rewards.GetWorkerScore(tt.losses, tt.lossesOneOut)
 			if !(math.Abs(got-tt.want) <= 1e-14) {
 				t.Errorf("GetWorkerScore() got = %v, want %v", got, tt.want)
 			}
@@ -861,7 +877,7 @@ func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := module.GetFinalWorkerScoreForecastTask(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
+			got := rewards.GetFinalWorkerScoreForecastTask(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
 			if got != tt.want {
 				t.Errorf("GetFinalWorkerScoreForecastTask() got = %v, want %v", got, tt.want)
 			}
@@ -898,7 +914,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := module.GetAllConsensusScores(tt.allLosses, tt.stakes, tt.allListeningCoefficients, tt.numReputers)
+			got, err := rewards.GetAllConsensusScores(tt.allLosses, tt.stakes, tt.allListeningCoefficients, tt.numReputers)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, tt.wantErr)
@@ -944,7 +960,7 @@ func TestGetAllReputersOutput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotScores, gotCoefficients, err := module.GetAllReputersOutput(tt.allLosses, tt.stakes, tt.initialCoefficients, tt.numReputers)
+			gotScores, gotCoefficients, err := rewards.GetAllReputersOutput(tt.allLosses, tt.stakes, tt.initialCoefficients, tt.numReputers)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllReputersOutput() error = %v, wantErr %v", err, tt.wantErr)
 				return
