@@ -1,10 +1,11 @@
-package module
+package rewards
 
 import (
 	"math"
 
 	errors "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // StdDev calculates the standard deviation of a slice of float64.
@@ -32,9 +33,9 @@ func flatten(arr [][]float64) []float64 {
 	return flat
 }
 
-// GetWorkerRewardFractions calculates the reward fractions for workers for forecast and inference tasks
-// U_ij / V_ik
-func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, error) {
+// GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
+// U_ij / V_ik * totalRewards
+func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards float64, workerAddresses []sdk.AccAddress) ([]TaskRewards, error) {
 	lastScores := make([][]float64, len(scores))
 	for i, workerScores := range scores {
 		end := len(workerScores)
@@ -46,32 +47,29 @@ func GetWorkerRewardFractions(scores [][]float64, preward float64) ([]float64, e
 	}
 
 	stdDev := StdDev(flatten(lastScores))
-	var normalizedScores []float64
-	for _, score := range lastScores {
-		normalizedScores = append(normalizedScores, score[len(score)-1]/stdDev)
-	}
-
-	smoothedScores := make([]float64, len(normalizedScores))
-	for i, v := range normalizedScores {
-		res, err := phi(preward, v)
+	smoothedScores := make([]float64, len(lastScores))
+	total := 0.0
+	for i, score := range lastScores {
+		normalizedScore := score[len(score)-1] / stdDev
+		res, err := Phi(preward, normalizedScore)
 		if err != nil {
 			return nil, err
 		}
 		smoothedScores[i] = res
+		total += res
 	}
 
-	total := 0.0
-	for _, score := range smoothedScores {
-		total += score
-	}
-
-	var rewardFractions []float64
-	for _, score := range smoothedScores {
+	var rewardPortions []TaskRewards
+	for i, score := range smoothedScores {
 		rewardFraction := score / total
-		rewardFractions = append(rewardFractions, rewardFraction)
+		rewardPortion := rewardFraction * totalRewards
+		rewardPortions = append(rewardPortions, TaskRewards{
+			Address: workerAddresses[i],
+			Reward:  rewardPortion,
+		})
 	}
 
-	return rewardFractions, nil
+	return rewardPortions, nil
 }
 
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
@@ -337,7 +335,7 @@ func maxAbsDifference(a, b []float64) float64 {
 // NaN is impossible as 1+e^x is always positive no matter the value of x
 // and pow only produces NaN for NaN input
 // therefore we only return one type of error and that is if phi overflows.
-func phi(p float64, x float64) (float64, error) {
+func Phi(p float64, x float64) (float64, error) {
 	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
 		return 0, types.ErrPhiInvalidInput
 	}
@@ -385,11 +383,11 @@ func GetAdjustedStake(
 	stakeFraction = stakeFraction - 1
 	stakeFraction = stakeFraction * -eta
 
-	phi_1_stakeFraction, err := phi(1, stakeFraction)
+	phi_1_stakeFraction, err := Phi(1, stakeFraction)
 	if err != nil {
 		return 0, err
 	}
-	phi_1_Eta, err := phi(1, eta)
+	phi_1_Eta, err := Phi(1, eta)
 	if err != nil {
 		return 0, err
 	}
@@ -419,7 +417,7 @@ func GetAdjustedStake(
 // Uij = αUij + (1 − α)Ui−1,j
 // ̃Vik = αVik + (1 − α)Vi−1,k
 // ̃Wim = αWim + (1 − α)Wi−1,m
-func exponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
+func ExponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
 	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
 		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
 	}
@@ -452,7 +450,7 @@ func exponentialMovingAverage(alpha float64, current float64, previous float64) 
 // f_ij =  (̃U_ij) / ∑_j(̃Uij)
 // f_ik = (̃Vik) / ∑_k(̃Vik)
 // fim =  (̃Wim) / ∑_m(̃Wim)
-func normalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
+func NormalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
 	if len(allValues) == 0 {
 		return 0, types.ErrFractionInvalidSliceLength
 	}
@@ -486,7 +484,7 @@ func normalizeAgainstSlice(value float64, allValues []float64) (float64, error) 
 // Gi = - ∑_k( f_ik * ln(f_ik) * (N_{f,eff} / N_f)^β )
 // Hi = - ∑_m( f_im * ln(f_im) * (N_{r,eff} / N_r)^β )
 // we use beta = 0.25 as a fiducial value
-func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float64) (float64, error) {
+func Entropy(allFs []float64, N_eff float64, numParticipants float64, beta float64) (float64, error) {
 	if math.IsInf(N_eff, 0) ||
 		math.IsNaN(N_eff) ||
 		math.IsInf(numParticipants, 0) ||
@@ -542,7 +540,7 @@ func entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 // N_{i,eff} = 1 / ∑_j( f_ij^2 )
 // N_{f,eff} = 1 / ∑_k( f_ik^2 )
 // N_{r,eff} = 1 / ∑_m( f_im^2 )
-func numberRatio(rewardFractions []float64) (float64, error) {
+func NumberRatio(rewardFractions []float64) (float64, error) {
 	if len(rewardFractions) == 0 {
 		return 0, types.ErrNumberRatioInvalidSliceLength
 	}
@@ -568,7 +566,7 @@ func numberRatio(rewardFractions []float64) (float64, error) {
 
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
-func inferenceRewards(
+func InferenceRewards(
 	chi float64,
 	gamma float64,
 	entropyInference float64,
@@ -605,7 +603,7 @@ func inferenceRewards(
 
 // forecaster rewards calculation
 // V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
-func forecastingRewards(
+func ForecastingRewards(
 	chi float64,
 	gamma float64,
 	entropyInference float64,
@@ -642,7 +640,7 @@ func forecastingRewards(
 
 // reputer rewards calculation
 // W_i = (H_i * E_i) / (F_i + G_i + H_i)
-func reputerRewards(
+func ReputerRewards(
 	entropyInference float64,
 	entropyForecasting float64,
 	entropyReputer float64,
@@ -679,7 +677,7 @@ func reputerRewards(
 // (L_i) from that of the naive network (L_i^-), which is
 // obtained by omitting all forecast-implied inferences
 // T_i = log L_i^- - log L_i
-func forecastingPerformanceScore(
+func ForecastingPerformanceScore(
 	naiveNetworkInferenceLoss float64,
 	networkInferenceLoss float64,
 ) (float64, error) {
@@ -705,7 +703,7 @@ func forecastingPerformanceScore(
 
 // sigmoid function
 // σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
-func sigmoid(x float64) (float64, error) {
+func Sigmoid(x float64) (float64, error) {
 	if math.IsNaN(x) || math.IsInf(x, 0) {
 		return 0, types.ErrSigmoidInvalidInput
 	}
@@ -725,13 +723,13 @@ func sigmoid(x float64) (float64, error) {
 // sigma is the sigmoid function
 // a has fiduciary value of 8
 // b has fiduciary value of 0.5
-func forecastingUtility(forecastingPerformanceScore float64, a float64, b float64) (float64, error) {
+func ForecastingUtility(forecastingPerformanceScore float64, a float64, b float64) (float64, error) {
 	if math.IsNaN(forecastingPerformanceScore) || math.IsInf(forecastingPerformanceScore, 0) ||
 		math.IsNaN(a) || math.IsInf(a, 0) ||
 		math.IsNaN(b) || math.IsInf(b, 0) {
 		return 0, types.ErrForecastingUtilityInvalidInput
 	}
-	ret, err := sigmoid(a*forecastingPerformanceScore - b)
+	ret, err := Sigmoid(a*forecastingPerformanceScore - b)
 	if err != nil {
 		return 0, err
 	}
@@ -749,7 +747,7 @@ func forecastingUtility(forecastingPerformanceScore float64, a float64, b float6
 // total reward allocated to workers (Ui + Vi)
 // remains constant (otherwise, this would go at the expense of reputers)
 // γ = (F_i + G_i) / ( (1 − χ)*F_i + χ*G_i)
-func normalizationFactor(
+func NormalizationFactor(
 	entropyInference float64,
 	entropyForecasting float64,
 	forecastingUtility float64,

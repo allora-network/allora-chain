@@ -12,10 +12,10 @@ BLOCK_HEIGHT_CURR=$($ALLORAD_BIN query consensus comet block-latest | grep "heig
 RI_CREATOR="$BOB_ADDRESS"
 RI_NONCE="1"
 RI_TOPIC_ID="1"
-RI_CADENCE="60"
-RI_MAX_PRICE_PER_INFERENCE="1"
+RI_CADENCE="10800"
+RI_MAX_PRICE_PER_INFERENCE="10000"
 RI_BID_AMOUNT="10000"
-RI_BLOCK_VALID_UNTIL=$(bc <<< "$BLOCK_HEIGHT_CURR + 61")
+RI_BLOCK_VALID_UNTIL=$(bc <<< "$BLOCK_HEIGHT_CURR + 10805")
 $ALLORAD_BIN tx emissions request-inference \
   $RI_CREATOR \
   "{\"nonce\": \"$RI_NONCE\",\"topic_id\":\"$RI_TOPIC_ID\",\"cadence\":\"$RI_CADENCE\",\"max_price_per_inference\":\"$RI_MAX_PRICE_PER_INFERENCE\",\"bid_amount\":\"$RI_BID_AMOUNT\",\"block_valid_until\":\"$RI_BLOCK_VALID_UNTIL\",\"extra_data\":\"\"}" \
@@ -25,7 +25,7 @@ echo "Checking the inference request was made correctly"
 
 echo $MEMPOOL
 MEMPOOL_INCREMENTED=false
-for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9
+for COUNT_SLEEP in 1 2 3 4 5 6 7 8 9 10
 do
   MEMPOOL=$($ALLORAD_BIN query emissions all-inference-requests)
   if [ "$MEMPOOL" == "{}" ]; then
