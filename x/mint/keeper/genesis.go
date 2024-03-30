@@ -8,15 +8,11 @@ import (
 
 // InitGenesis new mint genesis
 func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *types.GenesisState) {
-	if err := keeper.Minter.Set(ctx, data.Minter); err != nil {
-		panic(err)
-	}
-
 	if err := keeper.Params.Set(ctx, data.Params); err != nil {
 		panic(err)
 	}
 
-	if err := keeper.PreviousReward.Set(ctx, data.PreviousReward); err != nil {
+	if err := keeper.PreviousRewardEmissionsPerUnitStakedToken.Set(ctx, data.PreviousRewardEmissionsPerUnitStakedToken); err != nil {
 		panic(err)
 	}
 
@@ -29,17 +25,12 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
-	minter, err := keeper.Minter.Get(ctx)
-	if err != nil {
-		panic(err)
-	}
-
 	params, err := keeper.Params.Get(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	previousReward, err := keeper.PreviousReward.Get(ctx)
+	previousRewardEmissionPerUnitStakedToken, err := keeper.PreviousRewardEmissionsPerUnitStakedToken.Get(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -49,5 +40,5 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
-	return types.NewGenesisState(minter, params, previousReward, ecosystemTokensMinted)
+	return types.NewGenesisState(params, previousRewardEmissionPerUnitStakedToken, ecosystemTokensMinted)
 }

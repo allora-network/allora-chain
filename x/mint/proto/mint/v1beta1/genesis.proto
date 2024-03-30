@@ -10,14 +10,11 @@ option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 
 // GenesisState defines the mint module's genesis state.
 message GenesisState {
-  // minter is a space for holding current inflation information.
-  Minter minter = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
-
   // params defines all the parameters of the module.
-  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 
   // previous target emission rewards per unit staked token
-  string previous_reward = 3 [
+  string previous_reward_emissions_per_unit_staked_token = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -25,7 +22,7 @@ message GenesisState {
   ];
 
   // number of tokens minted into the ecosystem treasury
-  string ecosystem_tokens_minted = 4 [
+  string ecosystem_tokens_minted = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

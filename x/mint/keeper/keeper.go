@@ -29,11 +29,10 @@ type Keeper struct {
 	// should be the x/gov module account.
 	authority string
 
-	Schema                collections.Schema
-	Params                collections.Item[types.Params]
-	Minter                collections.Item[types.Minter]
-	PreviousReward        collections.Item[math.Int]
-	EcosystemTokensMinted collections.Item[math.Int]
+	Schema                                    collections.Schema
+	Params                                    collections.Item[types.Params]
+	PreviousRewardEmissionsPerUnitStakedToken collections.Item[math.Int]
+	EcosystemTokensMinted                     collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -54,18 +53,17 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                   cdc,
-		storeService:          storeService,
-		stakingKeeper:         sk,
-		accountKeeper:         ak,
-		bankKeeper:            bk,
-		emissionsKeeper:       ek,
-		feeCollectorName:      feeCollectorName,
-		authority:             authority,
-		Params:                collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		Minter:                collections.NewItem(sb, types.MinterKey, "minter", codec.CollValue[types.Minter](cdc)),
-		PreviousReward:        collections.NewItem(sb, types.PreviousRewardsKey, "previousrewards", sdk.IntValue),
-		EcosystemTokensMinted: collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		cdc:              cdc,
+		storeService:     storeService,
+		stakingKeeper:    sk,
+		accountKeeper:    ak,
+		bankKeeper:       bk,
+		emissionsKeeper:  ek,
+		feeCollectorName: feeCollectorName,
+		authority:        authority,
+		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		PreviousRewardEmissionsPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardsKey, "previousrewardsemissionsperunitstakedtoken", sdk.IntValue),
+		EcosystemTokensMinted:                     collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -93,12 +91,6 @@ func (k Keeper) StakingTokenSupply(ctx context.Context) (math.Int, error) {
 	return k.stakingKeeper.StakingTokenSupply(ctx)
 }
 
-// BondedRatio implements an alias call to the underlying staking keeper's
-// BondedRatio to be used in BeginBlocker.
-func (k Keeper) BondedRatio(ctx context.Context) (math.LegacyDec, error) {
-	return k.stakingKeeper.BondedRatio(ctx)
-}
-
 // MintCoins implements an alias call to the underlying supply keeper's
 // MintCoins to be used in BeginBlocker.
 func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
@@ -120,4 +112,13 @@ func (k Keeper) AddCollectedFees(ctx context.Context, fees sdk.Coins) error {
 // GetSupply to be used in BeginBlocker.
 func (k Keeper) GetSupply(ctx context.Context) sdk.Coin {
 	return k.bankKeeper.GetSupply(ctx, params.BaseCoinUnit)
+}
+
+func (k Keeper) GetEcosystemAddress() sdk.AccAddress {
+	return k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
+}
+
+func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, sdk.AccAddress, error) {
+	ecosystemAddr := k.GetEcosystemAddress()
+	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, ecosystemAddr, nil
 }

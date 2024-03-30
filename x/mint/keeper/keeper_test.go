@@ -71,7 +71,6 @@ func (s *IntegrationTestSuite) SetupTest() {
 	err := s.mintKeeper.Params.Set(s.ctx, types.DefaultParams())
 	s.Require().NoError(err)
 
-	s.Require().NoError(s.mintKeeper.Minter.Set(s.ctx, types.DefaultInitialMinter()))
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
 }
 
@@ -81,12 +80,6 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 	tokenSupply, err := s.mintKeeper.StakingTokenSupply(s.ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(tokenSupply, stakingTokenSupply)
-
-	bondedRatio := math.LegacyNewDecWithPrec(15, 2)
-	s.stakingKeeper.EXPECT().BondedRatio(s.ctx).Return(bondedRatio, nil)
-	ratio, err := s.mintKeeper.BondedRatio(s.ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(ratio, bondedRatio)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000000)))
 	s.bankKeeper.EXPECT().MintCoins(s.ctx, types.ModuleName, coins).Return(nil)
