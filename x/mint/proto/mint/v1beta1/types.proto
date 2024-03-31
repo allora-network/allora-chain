@@ -31,7 +31,7 @@ message Params {
     (amino.dont_omitempty) = true
   ];
   // precision of the ecosystem treasury fraction
-  // e.g. if f_emission is less than 1, this number should be 
+  // e.g. if f_emission is less than 1, this number should be
   // the number of decimal places in f_emission
   // if f_emission is greater than 1, this number should be 0
   uint64 f_emission_prec = 5;
