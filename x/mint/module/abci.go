@@ -18,7 +18,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 
 	// Get the balance of the "ecosystem" module account
-	ecosystemBalance, ecosystemAddr, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
 	if err != nil {
 		return err
 	}
@@ -48,6 +48,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 	previousRewardEmissionsPerUnitStakedToken, err := k.PreviousRewardEmissionsPerUnitStakedToken.Get(ctx)
+	if err != nil {
+		return err
+	}
 	e_i := keeper.RewardEmissionPerUnitStakedToken(
 		targetRewardEmissionPerUnitStakedToken,
 		smoothingDegreeNumerator,
@@ -71,7 +74,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if ecosystemTokensAlreadyMinted.Add(blockEmissions).GT(ecosystemMaxSupply) {
 			return types.ErrMaxSupplyReached
 		}
-		// if not mint the amount of tokens required to pay out the emissions
+		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmissions.Sub(ecosystemBalance)
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
 		k.MintCoins(sdkCtx, coins)
@@ -83,7 +86,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	// pay out the computed block emissions from the ecosystem account
 	// if it came from collected fees, great, if it came from minting, also fine
-	err = k.PayEmissionsFromEcosystemAccount(sdkCtx, ecosystemAddr, blockEmissions)
+	coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, blockEmissions))
+	err = k.PayEmissionsFromEcosystemAccount(sdkCtx, coins)
 	if err != nil {
 		return err
 	}

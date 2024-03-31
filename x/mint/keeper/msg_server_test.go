@@ -36,9 +36,13 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:     sdk.DefaultBondDenom,
-					BlocksPerYear: uint64(60 * 60 * 8766 / 5),
-					MaxSupply:     maxSupply,
+					MintDenom:                   sdk.DefaultBondDenom,
+					BlocksPerYear:               uint64(60 * 60 * 8766 / 5),
+					MaxSupply:                   sdkmath.NewIntFromUint64(0),
+					FEmission:                   sdkmath.NewInt(15),
+					FEmissionPrec:               2,
+					OneMonthSmoothingDegree:     sdkmath.NewInt(1),
+					OneMonthSmoothingDegreePrec: 1,
 				},
 			},
 			expectErr: true,
@@ -48,9 +52,13 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:     sdk.DefaultBondDenom,
-					BlocksPerYear: uint64(60 * 60 * 8766 / 5),
-					MaxSupply:     maxSupply,
+					MintDenom:                   sdk.DefaultBondDenom,
+					BlocksPerYear:               uint64(60 * 60 * 8766 / 5),
+					MaxSupply:                   maxSupply,
+					FEmission:                   sdkmath.NewInt(15),
+					FEmissionPrec:               2,
+					OneMonthSmoothingDegree:     sdkmath.NewInt(1),
+					OneMonthSmoothingDegreePrec: 1,
 				},
 			},
 			expectErr: false,

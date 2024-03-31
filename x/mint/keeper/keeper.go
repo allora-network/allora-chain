@@ -11,6 +11,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/mint/types"
 
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -104,8 +105,8 @@ func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
 
 // AddCollectedFees implements an alias call to the underlying supply keeper's
 // AddCollectedFees to be used in BeginBlocker.
-func (k Keeper) AddCollectedFees(ctx context.Context, fees sdk.Coins) error {
-	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, fees)
+func (k Keeper) PayEmissionsFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
+	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, rewards)
 }
 
 // GetSupply implements an alias call to the underlying supply keeper's
@@ -118,7 +119,7 @@ func (k Keeper) GetEcosystemAddress() sdk.AccAddress {
 	return k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 }
 
-func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, sdk.AccAddress, error) {
+func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error) {
 	ecosystemAddr := k.GetEcosystemAddress()
-	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, ecosystemAddr, nil
+	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
 }

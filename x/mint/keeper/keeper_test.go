@@ -8,6 +8,7 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
@@ -87,6 +88,6 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 	s.Require().Nil(s.mintKeeper.MintCoins(s.ctx, coins))
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.ModuleName, authtypes.FeeCollectorName, fees).Return(nil)
-	s.Require().Nil(s.mintKeeper.AddCollectedFees(s.ctx, fees))
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
+	s.Require().Nil(s.mintKeeper.PayEmissionsFromEcosystemAccount(s.ctx, fees))
 }

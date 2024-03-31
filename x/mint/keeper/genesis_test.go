@@ -70,6 +70,10 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		"testDenom",
 		uint64(60*60*8766/5),
 		maxSupply,
+		math.NewInt(15),
+		uint64(2),
+		math.NewInt(1),
+		uint64(1),
 	)
 	genesisState.PreviousRewardEmissionsPerUnitStakedToken = types.DefaultPreviousRewardEmissionsPerUnitStakedToken()
 	genesisState.EcosystemTokensMinted = types.DefaultEcosystemTokensMinted()

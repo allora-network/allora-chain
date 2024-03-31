@@ -15,11 +15,19 @@ func NewParams(
 	mintDenom string,
 	blocksPerYear uint64,
 	maxSupply math.Int,
+	fEmission math.Int,
+	fEmissionsPrec uint64,
+	oneMonthSmoothingDegree math.Int,
+	oneMonthSmoothingDegreePrec uint64,
 ) Params {
 	return Params{
-		MintDenom:     mintDenom,
-		BlocksPerYear: blocksPerYear,
-		MaxSupply:     maxSupply,
+		MintDenom:                   mintDenom,
+		BlocksPerYear:               blocksPerYear,
+		MaxSupply:                   maxSupply,
+		FEmission:                   fEmission,
+		FEmissionPrec:               fEmissionsPrec,
+		OneMonthSmoothingDegree:     oneMonthSmoothingDegree,
+		OneMonthSmoothingDegreePrec: oneMonthSmoothingDegreePrec,
 	}
 }
 
@@ -94,14 +102,14 @@ func validateBlocksPerYear(i interface{}) error {
 }
 
 func validateMaxSupply(i interface{}) error {
-	v, ok := i.(math.Uint)
+	v, ok := i.(math.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	if v.IsNil() {
 		return fmt.Errorf("max supply cannot be nil: %s", v)
 	}
-	if v.LTE(math.NewUint(0)) {
+	if v.LTE(math.NewInt(0)) {
 		return fmt.Errorf("max supply must be positive: %s", v)
 	}
 
