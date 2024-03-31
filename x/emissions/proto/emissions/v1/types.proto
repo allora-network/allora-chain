@@ -106,10 +106,12 @@ message ValueBundle {
   repeated WorkerAttributedValue forecaster_values = 5;
   // L^-_im or I^-_i
   double naive_value = 6;
-  // L^-_lim or I^-_li
-  repeated WorkerAttributedValue one_out_values = 7;
-  // L^+_kim or I^+_ki
-  repeated WorkerAttributedValue one_in_naive_values = 8;
+  // L^-_lim or I^-_li where l = any j
+  repeated WorkerAttributedValue one_out_inferer_values = 7;
+  // L^-_lim or I^-_li where l = any k
+  repeated WorkerAttributedValue one_out_forecaster_values = 8;
+  // L^+_kim or I^+_ki. aka one_in_forecaster_values because akin to using only one forecast-implied inference
+  repeated WorkerAttributedValue one_in_forecaster_values = 9;
 }
 
 // For when the bundle is computed on a per-reputer basis (ie.. if there is an index `m` in the above)
