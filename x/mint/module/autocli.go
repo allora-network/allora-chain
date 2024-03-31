@@ -15,16 +15,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "params",
 					Short:     "Query the current minting parameters",
 				},
-				{
-					RpcMethod: "Inflation",
-					Use:       "inflation",
-					Short:     "Query the current minting inflation value",
-				},
-				{
-					RpcMethod: "AnnualProvisions",
-					Use:       "annual-provisions",
-					Short:     "Query the current minting annual provisions value",
-				},
 			},
 		},
 	}
