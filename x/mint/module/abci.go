@@ -77,7 +77,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmissions.Sub(ecosystemBalance)
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
-		k.MintCoins(sdkCtx, coins)
+		err = k.MintCoins(sdkCtx, coins)
+		if err != nil {
+			return err
+		}
+		err = k.MoveCoinsFromMintToEcosystem(sdkCtx, coins)
+		if err != nil {
+			return err
+		}
 		// then increment the recorded history of the amount of tokens minted
 		err = k.EcosystemTokensMinted.Set(ctx, ecosystemTokensAlreadyMinted.Add(tokensToMint))
 		if err != nil {

@@ -103,10 +103,34 @@ func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
 	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
 }
 
-// AddCollectedFees implements an alias call to the underlying supply keeper's
-// AddCollectedFees to be used in BeginBlocker.
+// MoveCoinsFromMintToEcosystem moves freshly minted tokens from the mint module
+// which has permissions to create new tokens, to the ecosystem account which
+// only has permissions to hold tokens.
+func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sdk.Coins) error {
+	if mintedCoins.Empty() {
+		return nil
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.ModuleName,
+		types.EcosystemModuleName,
+		mintedCoins,
+	)
+}
+
+// PayEmissionsFromEcosystemAccount sends funds from the ecosystem
+// treasury account to the reward payout account
+// PayEmissionsFromEcosystemAccount to be used in BeginBlocker.
 func (k Keeper) PayEmissionsFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
-	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, rewards)
+	if rewards.Empty() {
+		return nil
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.EcosystemModuleName,
+		emissionstypes.AlloraRewardsAccountName,
+		rewards,
+	)
 }
 
 // GetSupply implements an alias call to the underlying supply keeper's
