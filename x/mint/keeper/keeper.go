@@ -118,10 +118,25 @@ func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sd
 	)
 }
 
+// PayCosmosValidatorRewardFromEcosystemAccount sends funds from the ecosystem
+// treasury account to the validator rewards account (fee collector)
+// PayCosmosValidatorRewardFromEcosystemAccount to be used in BeginBlocker.
+func (k Keeper) PayCosmosValidatorRewardFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
+	if rewards.Empty() {
+		return nil
+	}
+	return k.bankKeeper.SendCoinsFromModuleToModule(
+		ctx,
+		types.EcosystemModuleName,
+		k.feeCollectorName,
+		rewards,
+	)
+}
+
 // PayEmissionsFromEcosystemAccount sends funds from the ecosystem
 // treasury account to the reward payout account
 // PayEmissionsFromEcosystemAccount to be used in BeginBlocker.
-func (k Keeper) PayEmissionsFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
+func (k Keeper) PayReputerRewardFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
 	if rewards.Empty() {
 		return nil
 	}

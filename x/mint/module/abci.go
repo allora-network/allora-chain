@@ -93,8 +93,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	// pay out the computed block emissions from the ecosystem account
 	// if it came from collected fees, great, if it came from minting, also fine
-	coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, blockEmissions))
-	err = k.PayEmissionsFromEcosystemAccount(sdkCtx, coins)
+	// we pay both reputers and cosmos validators, so each payment should be
+	// half as big (divide by two). Integer division truncates, and that's fine.
+	coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, blockEmissions.Quo(math.NewInt(2))))
+	err = k.PayCosmosValidatorRewardFromEcosystemAccount(sdkCtx, coins)
+	if err != nil {
+		return err
+	}
+	err = k.PayReputerRewardFromEcosystemAccount(sdkCtx, coins)
 	if err != nil {
 		return err
 	}
