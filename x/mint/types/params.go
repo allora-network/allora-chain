@@ -44,9 +44,9 @@ func DefaultParams() Params {
 		InflationMin:          math.LegacyNewDecWithPrec(0, 2),
 		GoalBonded:            math.LegacyNewDecWithPrec(67, 2),
 		BlocksPerYear:         uint64(60 * 60 * 8766 / 5),                             // assuming 5 second block times
-		MaxSupply:             math.NewUintFromString("1000000000000000000000000000"), //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		MaxSupply:             math.NewUintFromString("1000000000000000000000000000"), // 1 billion allo * 1e18 (exponent) = 1e27 uallo
 		HalvingInterval:       uint64(25246080),
-		CurrentBlockProvision: math.NewUintFromString("2831000000000000000000"), // uallo per block
+		CurrentBlockProvision: math.NewUintFromString("2831000000000000000"), // uallo per block
 	}
 }
 
