@@ -98,19 +98,20 @@ message ValueBundle {
 
   uint64 topic_id = 1;
   bytes extra_data = 2;
-  // L_im or I_i
+  // R_im || log10 L_im || I_i
   double combined_value = 3;
-  // L_ijm or I_ij
+  // R_ijm || log10 L_ijm || I_ij
   repeated WorkerAttributedValue inferer_values = 4;
-  // L_ikm or I_ik
+  // R_ikm || log10 L_ikm || I_ik
   repeated WorkerAttributedValue forecaster_values = 5;
-  // L^-_im or I^-_i
+  // R^-_im  || log10 L^-_im || I^-_i
   double naive_value = 6;
-  // L^-_lim or I^-_li where l = any j
+  // R^-_lim || log10 L^-_lim || I^-_li where l = any j
   repeated WorkerAttributedValue one_out_inferer_values = 7;
-  // L^-_lim or I^-_li where l = any k
+  // R^-_lim || log10 L^-_lim || I^-_li where l = any k
   repeated WorkerAttributedValue one_out_forecaster_values = 8;
-  // L^+_kim or I^+_ki. aka one_in_forecaster_values because akin to using only one forecast-implied inference
+  // R^+_kim || log10 L^+_kim || I^+_ki
+  //  aka one_in_forecaster_values because equivalent to using only one forecast-implied inference
   repeated WorkerAttributedValue one_in_forecaster_values = 9;
 }
 
