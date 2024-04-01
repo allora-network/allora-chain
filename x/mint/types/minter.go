@@ -20,8 +20,8 @@ func InitialMinter(inflation math.LegacyDec) Minter {
 
 	return NewMinter(
 		inflation,
-		// 2831000000000000000000 (initial uallo per block) * 6311520 (blocks per year) = 17867913120000000000000000 (initial annual provisions)
-		math.LegacyNewDecFromBigInt(math.NewUintFromString("17867913120000000000000000").BigInt()),
+		// 2831000000000000000 (initial uallo per block) * 6311520 (blocks per year) = 17867913120000000000000 (initial annual provisions)
+		math.LegacyNewDecFromBigInt(math.NewUintFromString("17867913120000000000000").BigInt()),
 	)
 }
 
