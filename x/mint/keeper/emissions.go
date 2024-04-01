@@ -12,7 +12,7 @@ import (
 )
 
 // set once at genesis and never changed after
-// 0.3675
+// 0.3675 = 36.75%
 const EcosystemTreasuryPercentOfTotalSupply = 3675
 const EcosystemTreasuryPercentOfTotalSupplyPrecision = 4
 

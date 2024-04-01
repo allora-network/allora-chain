@@ -26,11 +26,12 @@ const govModuleNameStr = "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
 type IntegrationTestSuite struct {
 	suite.Suite
 
-	mintKeeper    keeper.Keeper
-	ctx           sdk.Context
-	msgServer     types.MsgServer
-	stakingKeeper *minttestutil.MockStakingKeeper
-	bankKeeper    *minttestutil.MockBankKeeper
+	mintKeeper      keeper.Keeper
+	ctx             sdk.Context
+	msgServer       types.MsgServer
+	stakingKeeper   *minttestutil.MockStakingKeeper
+	bankKeeper      *minttestutil.MockBankKeeper
+	emissionsKeeper *minttestutil.MockEmissionsKeeper
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -65,6 +66,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 	)
 	s.stakingKeeper = stakingKeeper
 	s.bankKeeper = bankKeeper
+	s.emissionsKeeper = emissionsKeeper
 
 	s.Require().Equal(testCtx.Ctx.Logger().With("module", "x/"+types.ModuleName),
 		s.mintKeeper.Logger(testCtx.Ctx))

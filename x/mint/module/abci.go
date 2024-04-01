@@ -2,6 +2,7 @@ package mint
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
@@ -19,11 +20,13 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 
 	// Get the balance of the "ecosystem" module account
 	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	fmt.Println("Ecosystem balance", ecosystemBalance)
 	if err != nil {
 		return err
 	}
 	// Get the expected amount of emissions this block
 	networkStaked, err := keeper.GetNumStakedTokens(ctx, k)
+	fmt.Println("Network staked", networkStaked)
 	if err != nil {
 		return err
 	}
@@ -35,6 +38,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		ecosystemBalance,
 		networkStaked,
 	)
+	fmt.Println("Target reward emission per unit staked token", targetRewardEmissionPerUnitStakedToken)
 	if err != nil {
 		return err
 	}
@@ -44,10 +48,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		params.OneMonthSmoothingDegree,
 		params.OneMonthSmoothingDegreePrec,
 	)
+	fmt.Println("Smoothing degree numerator", smoothingDegreeNumerator)
 	if err != nil {
 		return err
 	}
 	previousRewardEmissionsPerUnitStakedToken, err := k.PreviousRewardEmissionsPerUnitStakedToken.Get(ctx)
+	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionsPerUnitStakedToken)
 	if err != nil {
 		return err
 	}
@@ -57,7 +63,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		smoothingDegreeDenominator,
 		previousRewardEmissionsPerUnitStakedToken,
 	)
+	fmt.Println("E_i", e_i)
 	blockEmissions := keeper.TotalEmissionPerTimestep(e_i, networkStaked)
+	fmt.Println("Block emissions", blockEmissions)
 
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmissions.GT(ecosystemBalance) {
@@ -77,6 +85,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmissions.Sub(ecosystemBalance)
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
+		fmt.Println("Minting tokensToMint", tokensToMint)
 		err = k.MintCoins(sdkCtx, coins)
 		if err != nil {
 			return err
@@ -96,6 +105,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
 	coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, blockEmissions.Quo(math.NewInt(2))))
+	fmt.Println("Paying coins", coins)
 	err = k.PayCosmosValidatorRewardFromEcosystemAccount(sdkCtx, coins)
 	if err != nil {
 		return err

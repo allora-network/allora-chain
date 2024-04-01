@@ -9,4 +9,5 @@ var (
 	ErrInvalidPreviousRewardEmissionsPerUnitStakedToken = errors.Register(ModuleName, 4, "invalid previous reward")
 	ErrInvalidEcosystemTokensMinted                     = errors.Register(ModuleName, 5, "invalid ecosystem tokens minted")
 	ErrMaxSupplyReached                                 = errors.Register(ModuleName, 6, "max supply reached")
+	ErrNilReputersStaked                                = errors.Register(ModuleName, 7, "nil reputers staked")
 )
