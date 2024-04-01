@@ -48,9 +48,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	if len(newParams.EpochLength) == 1 {
 		existingParams.EpochLength = newParams.EpochLength[0]
 	}
-	if len(newParams.EmissionsPerEpoch) == 1 {
-		existingParams.EmissionsPerEpoch = newParams.EmissionsPerEpoch[0]
-	}
 	if len(newParams.MinTopicUnmetDemand) == 1 {
 		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
 	}
@@ -80,6 +77,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *state.MsgUpdateParams
 	}
 	if len(newParams.MaxRequestCadence) == 1 {
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
+	}
+	if len(newParams.PercentRewardsReputersWorkers) == 1 {
+		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
@@ -179,10 +179,16 @@ func (ms msgServer) SetWeights(ctx context.Context, msg *state.MsgSetWeights) (*
 
 		fmt.Println("Topic: ", weightEntry.TopicId, "| Reputer: ", weightEntry.Reputer, "| Worker: ", weightEntry.Worker, "| Weight: ", weightEntry.Weight)
 
-		reputerAddr := sdk.AccAddress(weightEntry.Reputer)
-		workerAddr := sdk.AccAddress(weightEntry.Worker)
+		reputerAddr, err := sdk.AccAddressFromBech32(weightEntry.Reputer)
+		if err != nil {
+			return nil, err
+		}
+		workerAddr, err := sdk.AccAddressFromBech32(weightEntry.Worker)
+		if err != nil {
+			return nil, err
+		}
 
-		err := ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
+		err = ms.k.SetWeight(ctx, weightEntry.TopicId, reputerAddr, workerAddr, weightEntry.Weight)
 		if err != nil {
 			return nil, err
 		}
@@ -208,10 +214,10 @@ func (ms msgServer) ProcessInferences(ctx context.Context, msg *state.MsgProcess
 
 	// Update all_inferences
 	for topicId, inferences := range groupedInferences {
-		inferences := &state.Inferences{
+		topicInferences := &state.Inferences{
 			Inferences: inferences,
 		}
-		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *inferences)
+		err := ms.k.InsertInferences(ctx, topicId, actualTimestamp, *topicInferences)
 		if err != nil {
 			return nil, err
 		}
@@ -480,7 +486,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *state.MsgAddStake) (*stat
 	// 4. send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingModuleName, coins)
+	ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraStakingAccountName, coins)
 
 	// 5. get target topics Registerd
 	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
@@ -704,7 +710,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *state.MsgConfir
 		// 6. send the funds
 		amountInt := cosmosMath.NewIntFromBigInt(stakePlacement.Amount.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingModuleName, senderAddr, coins)
+		ms.k.bankKeeper.SendCoinsFromModuleToAccount(ctx, state.AlloraStakingAccountName, senderAddr, coins)
 
 		// 7. update the stake data structures
 		err = ms.k.RemoveStakeFromBond(ctx, stakePlacement.TopicIds, senderAddr, targetAddr, stakePlacement.Amount)
@@ -827,7 +833,7 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *state.MsgRequestI
 		}
 		amountInt := cosmosMath.NewIntFromBigInt(request.BidAmount.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-		err = ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraRequestsModuleName, coins)
+		err = ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, state.AlloraRequestsAccountName, coins)
 		if err != nil {
 			return nil, err
 		}
@@ -859,7 +865,7 @@ func moveFundsAddStake(
 	// move funds
 	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
 	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
-	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.AlloraStakingModuleName, amount)
+	err := ms.k.bankKeeper.SendCoinsFromAccountToModule(ctx, nodeAddr, state.AlloraStakingAccountName, amount)
 	if err != nil {
 		return err
 	}

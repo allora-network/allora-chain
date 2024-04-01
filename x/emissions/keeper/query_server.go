@@ -53,15 +53,6 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *state.QueryTotalSt
 	return &state.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
-// Get the amount of token rewards that have accumulated this epoch
-func (qs queryServer) GetAccumulatedEpochRewards(ctx context.Context, req *state.QueryAccumulatedEpochRewardsRequest) (*state.QueryAccumulatedEpochRewardsResponse, error) {
-	emissions, err := qs.k.CalculateAccumulatedEmissions(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &state.QueryAccumulatedEpochRewardsResponse{Amount: emissions}, nil
-}
-
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
 func (qs queryServer) GetNextTopicId(ctx context.Context, req *state.QueryNextTopicIdRequest) (*state.QueryNextTopicIdResponse, error) {
 	nextTopicId, err := qs.k.nextTopicId.Peek(ctx)
@@ -139,8 +130,14 @@ func (qs queryServer) GetAccountStakeList(ctx context.Context, req *state.QueryA
 
 // GetWeight find out how much weight the reputer has placed upon the worker for a given topid ID, reputer and worker.
 func (qs queryServer) GetWeight(ctx context.Context, req *state.QueryWeightRequest) (*state.QueryWeightResponse, error) {
-	reputerAddr := sdk.AccAddress(req.Reputer)
-	workerAddr := sdk.AccAddress(req.Worker)
+	reputerAddr, err := sdk.AccAddressFromBech32(req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	workerAddr, err := sdk.AccAddressFromBech32(req.Worker)
+	if err != nil {
+		return nil, err
+	}
 
 	key := collections.Join3(req.TopicId, reputerAddr, workerAddr)
 	weight, err := qs.k.weights.Get(ctx, key)
@@ -294,7 +291,8 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft})
+		inferenceRequestCopy := inferenceRequest
+		ret = append(ret, &state.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
 	return &state.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
 }

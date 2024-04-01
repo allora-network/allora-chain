@@ -77,7 +77,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetAllInferences",
 					Use:       "inference [topic_id] [timestamp]",
-					Short:     "Get Latest Inference for a Topic in a timestamp",
+					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "timestamp"},
@@ -128,11 +128,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
-				},
-				{
-					RpcMethod: "GetAccumulatedEpochRewards",
-					Use:       "accumulated-epoch-rewards",
-					Short:     "Get the accumlated rewards for the current epoch that have not yet been paid out to network participants",
 				},
 				{
 					RpcMethod: "GetLastRewardsUpdate",

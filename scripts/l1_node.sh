@@ -1,13 +1,12 @@
 #!/bin/bash
 set -exu
 
-NETWORK="${NETWORK:-edgenet}"
-GENESIS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/genesis.json"
-PEERS_URL="https://raw.githubusercontent.com/upshot-tech/networks/main/${NETWORK}/peers.txt"
-BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.edgenet.allora.network:8443}"               #! Replace with your blockless API URL
+NETWORK="${NETWORK:-testnet}"
+GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
+PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
+BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.${NETWORK}.allora.network}"               #! Replace with your blockless API URL
 
-
-APP_HOME="${APP_HOME:-./data}"
+APP_HOME="${APP_HOME:-/data}"
 INIT_FLAG="${APP_HOME}/.initialized"
 MONIKER="${MONIKER:-$(hostname)}"
 KEYRING_BACKEND=test                              #! Use test for simplicity, you should decide which backend to use !!!

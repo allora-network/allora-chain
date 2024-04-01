@@ -12,10 +12,12 @@ import (
 func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) error {
 
 	// ensure the module account exists
-	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingModuleName)
+	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingAccountName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsModuleName)
+	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
+	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRewardsAccountName)
+	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
 	}

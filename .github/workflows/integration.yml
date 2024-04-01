@@ -27,3 +27,9 @@ jobs:
 
     - name : Distribution
       run: bash ./integration/distribution.sh
+
+    - name : Rewards
+      run: bash ./integration/rewards.sh
+    
+    - name : InferenceRequests
+      run: bash ./integration/inferencerequest.sh

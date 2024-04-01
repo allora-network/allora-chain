@@ -103,15 +103,11 @@ func generateWeights(
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
+		TopicID:    strconv.FormatUint(topicId, 10),
 		Config: Config{
-			Stdin: &params,
-			Environment: []EnvVar{
-				{
-					Name:  "TOPIC_ID",
-					Value: fmt.Sprintf("%v", topicId),
-				},
-			},
-			NodeCount: 1,
+			Stdin:       &params,
+			Environment: []EnvVar{},
+			NodeCount:   1,
 		},
 	}
 
@@ -140,10 +136,6 @@ func generateInferences(functionId string, functionMethod string, param string, 
 				{
 					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
-				},
-				{
-					Name:  "TOPIC_ID",
-					Value: fmt.Sprintf("%v", topicId),
 				},
 			},
 			NodeCount: -1, // use all nodes that reported, no minimum / max
