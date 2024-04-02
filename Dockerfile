@@ -21,7 +21,8 @@ RUN apt update && \
     apt install -y --no-install-recommends \
         curl jq \
         tzdata \
-        ca-certificates && \
+        ca-certificates \
+        telnet && \
     echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
     apt update && \
     apt install -y --no-install-recommends -t testing \
