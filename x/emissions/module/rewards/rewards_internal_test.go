@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -722,7 +721,6 @@ func TestGetWorkerPortionOfRewards(t *testing.T) {
 			}
 
 			for i := range tt.want {
-				fmt.Println(">>>>>>", math.Abs(got[i].Reward-tt.want[i]))
 				if math.Abs(got[i].Reward-tt.want[i]) > 1e-1 {
 					t.Errorf("GetWorkerPortionOfRewards() got = %v, want %v", got, tt.want)
 				}

@@ -2,8 +2,10 @@ package rewards_test
 
 import (
 	"fmt"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	"testing"
 	"time"
+
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
@@ -122,6 +124,10 @@ func (s *RewardsTestSuite) SetupTest() {
 		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
 		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
+}
+
+func TestModuleTestSuite(t *testing.T) {
+	suite.Run(t, new(RewardsTestSuite))
 }
 
 func (s *RewardsTestSuite) TestGetReputerScore() {

@@ -7,7 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *RewardsTestSuite) TestGetWorkerScoreInferenceTask() {
+func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
@@ -29,7 +29,7 @@ func (s *RewardsTestSuite) TestGetWorkerScoreInferenceTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func (s *RewardsTestSuite) TestGetWorkerScoreForecastTask() {
+func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
@@ -139,13 +139,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 		{0.09719, 0.09675, 0.09418},
 	}
 
-	for i, wa := range workerAddrs {
-		workerAddr, err := sdk.AccAddressFromBech32(wa.String())
-		if err != nil {
-			return err
-		}
-		workerAddrs = append(workerAddrs, workerAddr)
-
+	for i, workerAddr := range workerAddrs {
 		for j, workerNewScore := range scores[i] {
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
@@ -155,7 +149,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 			}
 
 			// Persist worker inference score
-			err = s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return err
 			}

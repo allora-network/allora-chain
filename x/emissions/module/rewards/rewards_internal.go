@@ -791,3 +791,27 @@ func NormalizationFactor(
 
 	return ret, nil
 }
+
+// ExtractValues extracts all float64 values from a ValueBundle.
+func ExtractValues(bundle *types.ValueBundle) []float64 {
+	var values []float64
+
+	// Extract direct float64 values
+	values = append(values, bundle.CombinedValue, bundle.NaiveValue)
+
+	// Extract values from slices of WorkerAttributedValue
+	for _, v := range bundle.InfererValues {
+		values = append(values, v.Value)
+	}
+	for _, v := range bundle.ForecasterValues {
+		values = append(values, v.Value)
+	}
+	for _, v := range bundle.OneOutValues {
+		values = append(values, v.Value)
+	}
+	for _, v := range bundle.OneInNaiveValues {
+		values = append(values, v.Value)
+	}
+
+	return values
+}
