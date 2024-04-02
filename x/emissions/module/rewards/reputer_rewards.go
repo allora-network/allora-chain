@@ -28,7 +28,6 @@ func GetReputerRewards(
 	// Get reputers informations
 	var reputerAddresses []sdk.AccAddress
 	var reputerStakes []float64
-	var reputerListeningCoefficients []float64
 	var scoresFloat []float64
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
@@ -43,13 +42,6 @@ func GetReputerRewards(
 			return nil, err
 		}
 		reputerStakes = append(reputerStakes, float64(reputerStake.BigInt().Int64()))
-
-		// Get reputer listening coefficient
-		res, err := keeper.GetListeningCoefficient(ctx, topicId, reputerAddr)
-		if err != nil {
-			return nil, err
-		}
-		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
 
 		// Get reputer score
 		for _, score := range scores {
