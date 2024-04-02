@@ -2,13 +2,12 @@ package module_test
 
 import (
 	"math"
-	"testing"
 
+	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
 )
 
-func TestGradient(t *testing.T) {
+func (s *ModuleTestSuite) TestGradient() {
 	// Define test cases
 	tests := []struct {
 		name        string
@@ -56,16 +55,16 @@ func TestGradient(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		s.Run(tc.name, func() {
 			// Call the function under test
-			result, err := network_summaries.Gradient(tc.p, tc.x)
+			result, err := module.Gradient(tc.p, tc.x)
 
 			// Validate the results
 			if tc.expectedErr != nil {
-				require.ErrorIs(t, err, tc.expectedErr)
+				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
-				require.NoError(t, err)
-				require.InEpsilon(t, tc.expected, result, 1e-6, "result should match expected value within epsilon")
+				s.Require().NoError(err)
+				s.Require().InEpsilon(tc.expected, result, 1e-6, "result should match expected value within epsilon")
 			}
 		})
 	}
