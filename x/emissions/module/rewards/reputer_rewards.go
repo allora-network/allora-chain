@@ -5,6 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// The reputer rewards are calculated based on the reputer stake and the reputer score.
+// The reputer score is defined right after the network loss is generated.
 func GetReputerRewards(
 	ctx sdk.Context,
 	keeper keeper.Keeper,

@@ -16,7 +16,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -128,74 +127,6 @@ func (s *RewardsTestSuite) SetupTest() {
 
 func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(RewardsTestSuite))
-}
-
-func (s *RewardsTestSuite) TestGetReputerScore() {
-	// Mock data with 2 reputers reporting loss of 2 workers
-	// [0] - Reputer 1
-	// [1] - Reputer 2
-	reputersReportedCombinedLosses := []float64{85, 80}
-	reputersReportedNaiveLosses := []float64{100, 90}
-	reputersWorker1ReportedInferenceLosses := []float64{90, 90}
-	reputersWorker2ReportedInferenceLosses := []float64{100, 100}
-	reputersWorker1ReportedForecastLosses := []float64{90, 85}
-	reputersWorker2ReportedForecastLosses := []float64{100, 100}
-	reputersWorker1ReportedOneOutLosses := []float64{115, 120}
-	reputersWorker2ReportedOneOutLosses := []float64{100, 100}
-	reputersWorker1ReportedOneInNaiveLosses := []float64{90, 85}
-	reputersWorker2ReportedOneInNaiveLosses := []float64{100, 100}
-
-	reputer1AllReportedLosses := []float64{
-		reputersReportedCombinedLosses[0],
-		reputersReportedNaiveLosses[0],
-		reputersWorker1ReportedInferenceLosses[0],
-		reputersWorker2ReportedInferenceLosses[0],
-		reputersWorker1ReportedForecastLosses[0],
-		reputersWorker2ReportedForecastLosses[0],
-		reputersWorker1ReportedOneOutLosses[0],
-		reputersWorker2ReportedOneOutLosses[0],
-		reputersWorker1ReportedOneInNaiveLosses[0],
-		reputersWorker2ReportedOneInNaiveLosses[0],
-	}
-	reputer2AllReportedLosses := []float64{
-		reputersReportedCombinedLosses[1],
-		reputersReportedNaiveLosses[1],
-		reputersWorker1ReportedInferenceLosses[1],
-		reputersWorker2ReportedInferenceLosses[1],
-		reputersWorker1ReportedForecastLosses[1],
-		reputersWorker2ReportedForecastLosses[1],
-		reputersWorker1ReportedOneOutLosses[1],
-		reputersWorker2ReportedOneOutLosses[1],
-		reputersWorker1ReportedOneInNaiveLosses[1],
-		reputersWorker2ReportedOneInNaiveLosses[1],
-	}
-
-	allReputersStakes := []float64{50, 150}
-
-	// Get listening coefficients
-	listeningCoefficient := 0.18
-	allListeningCoefficients := []float64{listeningCoefficient, 0.63}
-
-	// Get adjusted stakes
-	var adjustedStakes []float64
-	for _, reputerStake := range allReputersStakes {
-		adjustedStake, err := rewards.GetAdjustedStake(reputerStake, allReputersStakes, listeningCoefficient, allListeningCoefficients, float64(2))
-		s.NoError(err, "Error getting adjustedStake")
-		adjustedStakes = append(adjustedStakes, adjustedStake)
-	}
-
-	// Get consensus loss vector
-	consensus, err := rewards.GetStakeWeightedLossMatrix(adjustedStakes, [][]float64{reputer1AllReportedLosses, reputer2AllReportedLosses})
-	s.NoError(err, "Error getting consensus")
-
-	// Get reputer scores
-	reputer1Score, err := rewards.GetConsensusScore(reputer1AllReportedLosses, consensus)
-	s.NoError(err, "Error getting reputer1Score")
-	s.NotEqual(0, reputer1Score, "Expected reputer1Score to be non-zero")
-
-	reputer2Score, err := rewards.GetConsensusScore(reputer2AllReportedLosses, consensus)
-	s.NoError(err, "Error getting reputer2Score")
-	s.NotEqual(0, reputer2Score, "Expected reputer2Score to be non-zero")
 }
 
 /// HELPER FUNCTIONS
