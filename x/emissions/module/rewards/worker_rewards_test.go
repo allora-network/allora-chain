@@ -13,7 +13,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1003)
+	_, err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -35,7 +35,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1003)
+	_, err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -51,7 +51,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
+func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
 	// Generate network losses
 	oneOutLosses := []*types.WorkerAttributedValue{
 		{
@@ -110,10 +110,10 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
 	// Persist network losses
 	err := s.emissionsKeeper.InsertNetworkLossBundle(s.ctx, topicId, block, networkLosses)
 	if err != nil {
-		return err
+		return types.ValueBundle{}, err
 	}
 
-	return nil
+	return networkLosses, nil
 }
 
 func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
