@@ -40,7 +40,7 @@ func Gradient(p float64, x float64) (float64, error) {
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
-// Calculates R_ijk, w_ijk, and I_ik for each forecast k and forecast element (forcast of worker loss) j
+// Calculates R_ijk (eq4), w_ijk (eq5), and I_ik (eq3) for each forecast k and forecast element (forcast of worker loss) j
 //
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
