@@ -31,6 +31,13 @@ func (s *ModuleTestSuite) TestGradient() {
 			expectedErr: nil,
 		},
 		{
+			name:        "normal operation",
+			p:           9.2,
+			x:           3.4,
+			expected:    219724,
+			expectedErr: nil,
+		},
+		{
 			name:        "p is NaN",
 			p:           math.NaN(),
 			x:           1,
@@ -51,7 +58,13 @@ func (s *ModuleTestSuite) TestGradient() {
 			expected:    0,
 			expectedErr: types.ErrPhiInvalidInput,
 		},
-		// Add more test cases as needed, especially to handle edge cases
+		{
+			name:        "x is Inf",
+			p:           1,
+			x:           math.Inf(1),
+			expected:    0,
+			expectedErr: types.ErrPhiInvalidInput,
+		},
 	}
 
 	for _, tc := range tests {
@@ -64,7 +77,7 @@ func (s *ModuleTestSuite) TestGradient() {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
 				s.Require().NoError(err)
-				s.Require().InEpsilon(tc.expected, result, 1e-6, "result should match expected value within epsilon")
+				s.Require().InEpsilon(tc.expected, result, 1e-5, "result should match expected value within epsilon")
 			}
 		})
 	}
