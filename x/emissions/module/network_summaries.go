@@ -382,29 +382,6 @@ func CalcNetworkInferences(
 	}, nil
 }
 
-func StakeWeightedSumOfCombinedAndNaiveLosses(
-	stakesByReputer map[string]float64,
-	reputerReportedLosses *emissions.ReputerValueBundles,
-) (float64, float64, error) {
-	weightedCombinedSum := 0.0
-	weightedNaiveSum := 0.0
-	weightSum := 0.0
-	for _, value := range reputerReportedLosses.ReputerValueBundles {
-		if value.ValueBundle != nil {
-			weight := stakesByReputer[value.Reputer]
-			weightedCombinedSum += math.Log10(value.ValueBundle.CombinedValue) * stakesByReputer[value.Reputer]
-			weightedNaiveSum += math.Log10(value.ValueBundle.NaiveValue) * stakesByReputer[value.Reputer]
-			weightSum += weight
-		}
-	}
-	if weightSum == 0 {
-		return 0, 0, emissions.ErrFractionDivideByZero
-	}
-	combinedFraction := weightedCombinedSum / weightSum
-	naiveFraction := weightedNaiveSum / weightSum
-	return combinedFraction, naiveFraction, nil
-}
-
 type WorkerRunningWeightedLoss struct {
 	SumWeight float64
 	Loss      float64
@@ -455,35 +432,37 @@ func ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(
 	return weightedLosses
 }
 
-type HigherOrderNetworkLosses struct {
-	infererLosses          []*emissions.WorkerAttributedValue
-	forecasterLosses       []*emissions.WorkerAttributedValue
-	oneOutInfererLosses    []*emissions.WithheldWorkerAttributedValue
-	oneOutForecasterLosses []*emissions.WithheldWorkerAttributedValue
-	oneInForecasterLosses  []*emissions.WorkerAttributedValue
-}
-
-func StakeWeightedSumOfLogInfererLosses(
+func CalcNetworkLosses(
 	stakesByReputer map[string]float64,
 	reputerReportedLosses *emissions.ReputerValueBundles,
 	epsilon float64,
-) (HigherOrderNetworkLosses, error) {
+) (*emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
+	runningWeightedCombinedLoss := WorkerRunningWeightedLoss{0, 0}
 	runningWeightedInfererLosses := make(map[string]*WorkerRunningWeightedLoss)
 	runningWeightedForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
+	runningWeightedNaiveLoss := WorkerRunningWeightedLoss{0, 0}
 	runningWeightedOneOutInfererLosses := make(map[string]*WorkerRunningWeightedLoss) // Withheld worker -> Forecaster -> Loss
 	runningWeightedOneOutForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
 	runningWeightedOneInForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
+			// Update combined loss
+			nextCombinedLoss, err := runningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakesByReputer[report.Reputer], report.ValueBundle.CombinedValue, epsilon)
+			if err != nil {
+				fmt.Println("Error updating running weighted average for combined loss: ", err)
+				return &emissions.ValueBundle{}, err
+			}
+			runningWeightedCombinedLoss = nextCombinedLoss
+
 			// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
 			// Update inferer losses
 			for _, loss := range report.ValueBundle.InfererValues {
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedInfererLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for inferer: ", err)
-					return HigherOrderNetworkLosses{}, err
+					return &emissions.ValueBundle{}, err
 				}
 				runningWeightedInfererLosses[loss.Worker] = &nextAvg
 			}
@@ -493,17 +472,25 @@ func StakeWeightedSumOfLogInfererLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedForecasterLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for forecaster: ", err)
-					return HigherOrderNetworkLosses{}, err
+					return &emissions.ValueBundle{}, err
 				}
 				runningWeightedForecasterLosses[loss.Worker] = &nextAvg
 			}
+
+			// Update naive loss
+			nextNaiveLoss, err := runningWeightedAvgUpdate(&runningWeightedNaiveLoss, stakesByReputer[report.Reputer], report.ValueBundle.NaiveValue, epsilon)
+			if err != nil {
+				fmt.Println("Error updating running weighted average for naive loss: ", err)
+				return &emissions.ValueBundle{}, err
+			}
+			runningWeightedCombinedLoss = nextNaiveLoss
 
 			// Update one-out inferer losses
 			for _, loss := range report.ValueBundle.OneOutInfererValues {
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out inferer: ", err)
-					return HigherOrderNetworkLosses{}, err
+					return &emissions.ValueBundle{}, err
 				}
 				runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
 			}
@@ -513,7 +500,7 @@ func StakeWeightedSumOfLogInfererLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutForecasterLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out forecaster: ", err)
-					return HigherOrderNetworkLosses{}, err
+					return &emissions.ValueBundle{}, err
 				}
 				runningWeightedOneOutForecasterLosses[loss.Worker] = &nextAvg
 			}
@@ -523,7 +510,7 @@ func StakeWeightedSumOfLogInfererLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneInForecasterLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-in forecaster: ", err)
-					return HigherOrderNetworkLosses{}, err
+					return &emissions.ValueBundle{}, err
 				}
 				runningWeightedOneInForecasterLosses[loss.Worker] = &nextAvg
 			}
@@ -531,43 +518,17 @@ func StakeWeightedSumOfLogInfererLosses(
 	}
 
 	// Convert the running weighted averages to WorkerAttributedValue for inferers and forecasters
-	output := HigherOrderNetworkLosses{
-		infererLosses:          ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses),
-		forecasterLosses:       ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses),
-		oneOutInfererLosses:    ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutInfererLosses),
-		oneOutForecasterLosses: ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutForecasterLosses),
-		oneInForecasterLosses:  ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses),
+	output := &emissions.ValueBundle{
+		CombinedValue:          runningWeightedCombinedLoss.Loss,
+		InfererValues:          ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses),
+		ForecasterValues:       ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses),
+		NaiveValue:             runningWeightedNaiveLoss.Loss,
+		OneOutInfererValues:    ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutInfererLosses),
+		OneOutForecasterValues: ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutForecasterLosses),
+		OneInForecasterValues:  ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses),
 	}
 
 	return output, nil
-}
-
-func CalcNetworkLosses(
-	stakesByReputer map[string]float64, //*cosmosMath.Uint,
-	reputerReportedLosses *emissions.ReputerValueBundles,
-	epsilon float64,
-) (*emissions.ValueBundle, error) {
-	combinedNetworkLoss, naiveNetworkLoss, err := StakeWeightedSumOfCombinedAndNaiveLosses(stakesByReputer, reputerReportedLosses)
-	if err != nil {
-		fmt.Println("Error calculating network losses: ", err)
-		return nil, err
-	}
-
-	higherOrderLosses, err := StakeWeightedSumOfLogInfererLosses(stakesByReputer, reputerReportedLosses, epsilon)
-	if err != nil {
-		fmt.Println("Error calculating network losses: ", err)
-		return nil, err
-	}
-
-	return &emissions.ValueBundle{
-		CombinedValue:          combinedNetworkLoss,
-		InfererValues:          higherOrderLosses.infererLosses,
-		ForecasterValues:       higherOrderLosses.forecasterLosses,
-		NaiveValue:             naiveNetworkLoss,
-		OneOutInfererValues:    higherOrderLosses.oneOutInfererLosses,
-		OneOutForecasterValues: higherOrderLosses.oneOutForecasterLosses,
-		OneInForecasterValues:  higherOrderLosses.oneInForecasterLosses,
-	}, nil
 }
 
 // // Build a value bundle of network regrets from the provided network losses
