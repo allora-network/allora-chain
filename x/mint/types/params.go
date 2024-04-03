@@ -41,7 +41,7 @@ func DefaultParams() Params {
 	}
 	return Params{
 		MintDenom:                            sdk.DefaultBondDenom,
-		BlocksPerMonth:                       uint64(525960),    // ~5 seconds block time, 6311520 per year, 525960 per month
+		BlocksPerMonth:                       DefaultBlocksPerMonth(),
 		EmissionCalibrationsTimestepPerMonth: uint64(30),        // "daily" emission calibration
 		MaxSupply:                            maxSupply,         //1 billion allo * 1e18 (exponent) = 1e27 uallo
 		FEmissionNumerator:                   math.NewInt(15),   // 0.015 per month
@@ -69,6 +69,11 @@ func DefaultPreviousBlockEmission() math.Int {
 // at genesis, nothing has been minted yet
 func DefaultEcosystemTokensMinted() math.Int {
 	return math.ZeroInt()
+}
+
+// ~5 seconds block time, 6311520 per year, 525960 per month
+func DefaultBlocksPerMonth() uint64 {
+	return uint64(525960)
 }
 
 // Validate does the sanity check on the params.
