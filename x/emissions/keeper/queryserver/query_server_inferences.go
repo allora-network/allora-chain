@@ -36,35 +36,8 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 	return &types.QueryWorkerLatestInferenceResponse{LatestInference: &inference}, nil
 }
 
-func (qs queryServer) GetInferencesToScore(ctx context.Context, req *types.QueryInferencesToScoreRequest) (*types.QueryInferencesToScoreResponse, error) {
-	// Defers implementation to the function in the Keeper
-	topicId := req.TopicId
-	inferences, err := qs.k.GetLatestInferencesFromTopic(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-
-	response := &types.QueryInferencesToScoreResponse{Inferences: inferences}
-	return response, nil
-}
-
-func (qs queryServer) GetForecastsToScore(ctx context.Context, req *types.QueryForecastsToScoreRequest) (*types.QueryForecastsToScoreResponse, error) {
-	// Defers implementation to the function in the Keeper
-	topicId := req.TopicId
-	forecasts, err := qs.k.GetLatestForecastsFromTopic(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-
-	response := &types.QueryForecastsToScoreResponse{Forecasts: forecasts}
-	return response, nil
-}
-
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.QueryInferencesAtBlockRequest) (*types.QueryInferencesAtBlockResponse, error) {
-	// Defers implementation to the function in the Keeper
-	topicId := req.TopicId
-	blockHeight := req.BlockHeight
-	inferences, err := qs.k.GetInferencesAtBlock(ctx, topicId, blockHeight)
+	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
 	}

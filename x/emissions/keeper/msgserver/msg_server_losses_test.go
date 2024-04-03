@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestMsgSetLosses() {
+func (s *KeeperTestSuite) TestMsgInsertLosses() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -13,8 +13,8 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()).String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgSetLosses message
-	lossesMsg := &types.MsgSetLosses{
+	// Create a MsgInsertLosses message
+	lossesMsg := &types.MsgInsertLosses{
 		Sender: reputerAddr,
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
@@ -62,7 +62,7 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 	require.NoError(err, "InsertLosses should not return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
+func (s *KeeperTestSuite) TestMsgInsertLossesInvalidUnauthorized() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -70,8 +70,8 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 	reputerAddr := nonAdminAccounts[0].String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgSetLosses message
-	lossesMsg := &types.MsgSetLosses{
+	// Create a MsgInsertLosses message
+	lossesMsg := &types.MsgInsertLosses{
 		Sender: reputerAddr,
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{

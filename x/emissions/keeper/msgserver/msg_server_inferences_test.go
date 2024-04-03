@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
+func (s *KeeperTestSuite) TestInsertInferencesAndQuery() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	s.CreateOneTopic()
@@ -19,11 +19,11 @@ func (s *KeeperTestSuite) TestProcessInferencesAndQuery() {
 		{TopicId: 2, Worker: sdk.AccAddress(PKS[2].Address()).String(), Value: 12},
 	}
 
-	// Call the ProcessInferences function to test writes
-	processInferencesMsg := &types.MsgProcessInferences{
+	// Call the InsertInferences function to test writes
+	processInferencesMsg := &types.MsgInsertInferences{
 		Inferences: inferences,
 	}
-	_, err := msgServer.ProcessInferences(ctx, processInferencesMsg)
+	_, err := msgServer.InsertInferences(ctx, processInferencesMsg)
 	require.NoError(err, "Processing Inferences should not fail")
 
 	/*

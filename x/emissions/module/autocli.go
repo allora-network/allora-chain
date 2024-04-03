@@ -246,7 +246,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "ProcessInferences",
+					RpcMethod: "InsertInferences",
 					Use:       "process-inferences [sender] [inferences]",
 					Short:     "Process a batch of inferences",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
