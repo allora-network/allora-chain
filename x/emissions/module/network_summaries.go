@@ -229,9 +229,9 @@ func CalcOneOutInferences(
 	networkCombinedInference float64,
 	epsilon float64,
 	pInferenceSynthesis float64,
-) ([]*emissions.WorkerAttributedValuesOfWithheldWorker, []*emissions.WithheldWorkerAttributedValue, error) {
+) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
-	oneOutInferences := make([]*emissions.WorkerAttributedValuesOfWithheldWorker, 0)
+	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for worker := range inferenceByWorker {
 		// Remove the inference of the worker from the inferences
 		inferencesWithoutWorker := make(map[string]*emissions.Inference)
@@ -242,23 +242,21 @@ func CalcOneOutInferences(
 			}
 		}
 		// Recalculate the forecast-implied inferences without the worker's inference
-		forecastImpliedInferencesWithoutWorker, err := CalcForcastImpliedInferences(inferencesWithoutWorker, forecasts, networkCombinedInference, epsilon, pInferenceSynthesis)
+		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForcastImpliedInferences(inferencesWithoutWorker, forecasts, networkCombinedInference, epsilon, pInferenceSynthesis)
 		if err != nil {
 			fmt.Println("Error calculating forecast-implied inferences for held-out inference: ", err)
 			return nil, nil, err
 		}
 
-		oneOutInferencesOfWithheldWorker := make([]*emissions.WorkerAttributedValue, 0)
-		for _, impliedInference := range forecastImpliedInferencesWithoutWorker {
-			oneOutInferencesOfWithheldWorker = append(oneOutInferencesOfWithheldWorker, &emissions.WorkerAttributedValue{
-				Worker: impliedInference.Worker,
-				Value:  impliedInference.Value,
-			})
+		oneOutNetworkInferenceWithoutInferer, err := CalcWeightedInference(inferenceByWorker, forecastImpliedInferencesWithoutWorkerByWorker, regrets, epsilon, pInferenceSynthesis)
+		if err != nil {
+			fmt.Println("Error calculating one-out inference: ", err)
+			return nil, nil, err
 		}
 
-		oneOutInferences = append(oneOutInferences, &emissions.WorkerAttributedValuesOfWithheldWorker{
-			WithheldWorker:         worker,
-			WorkerAttributedValues: oneOutInferencesOfWithheldWorker,
+		oneOutInferences = append(oneOutInferences, &emissions.WithheldWorkerAttributedValue{
+			Worker: worker,
+			Value:  oneOutNetworkInferenceWithoutInferer,
 		})
 	}
 
@@ -275,7 +273,7 @@ func CalcOneOutInferences(
 		}
 
 		// Calculate the network inference without the worker's inference
-		oneOutInference, err := CalcWeightedInference(inferenceByWorker, impliedInferenceWithoutWorker, regrets, 0, pInferenceSynthesis)
+		oneOutInference, err := CalcWeightedInference(inferenceByWorker, impliedInferenceWithoutWorker, regrets, epsilon, pInferenceSynthesis)
 		if err != nil {
 			fmt.Println("Error calculating one-out inference: ", err)
 			return nil, nil, err
@@ -457,31 +455,10 @@ func ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(
 	return weightedLosses
 }
 
-// Convert the running weighted averages to WorkerAttributedValues for one-out inferer values
-func ConvertNestedMapOfRunningWeightedLossesToWorkerAttributedValue(
-	runningWeightedLosses map[string]map[string]*WorkerRunningWeightedLoss,
-) []*emissions.WorkerAttributedValuesOfWithheldWorker {
-	weightedLosses := make([]*emissions.WorkerAttributedValuesOfWithheldWorker, 0)
-	for withheldWorker := range runningWeightedLosses {
-		weightedLossesWithoutWorker := make([]*emissions.WorkerAttributedValue, 0)
-		for worker, loss := range runningWeightedLosses[withheldWorker] {
-			weightedLossesWithoutWorker = append(weightedLossesWithoutWorker, &emissions.WorkerAttributedValue{
-				Worker: worker,
-				Value:  loss.Loss,
-			})
-		}
-		weightedLosses = append(weightedLosses, &emissions.WorkerAttributedValuesOfWithheldWorker{
-			WithheldWorker:         withheldWorker,
-			WorkerAttributedValues: weightedLossesWithoutWorker,
-		})
-	}
-	return weightedLosses
-}
-
 type HigherOrderNetworkLosses struct {
 	infererLosses          []*emissions.WorkerAttributedValue
 	forecasterLosses       []*emissions.WorkerAttributedValue
-	oneOutInfererLosses    []*emissions.WorkerAttributedValuesOfWithheldWorker
+	oneOutInfererLosses    []*emissions.WithheldWorkerAttributedValue
 	oneOutForecasterLosses []*emissions.WithheldWorkerAttributedValue
 	oneInForecasterLosses  []*emissions.WorkerAttributedValue
 }
@@ -494,7 +471,7 @@ func StakeWeightedSumOfLogInfererLosses(
 	// Make map from inferer to their running weighted-average loss
 	runningWeightedInfererLosses := make(map[string]*WorkerRunningWeightedLoss)
 	runningWeightedForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
-	runningWeightedOneOutInfererLosses := make(map[string]map[string]*WorkerRunningWeightedLoss) // Withheld worker -> Forecaster -> Loss
+	runningWeightedOneOutInfererLosses := make(map[string]*WorkerRunningWeightedLoss) // Withheld worker -> Forecaster -> Loss
 	runningWeightedOneOutForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
 	runningWeightedOneInForecasterLosses := make(map[string]*WorkerRunningWeightedLoss)
 
@@ -523,14 +500,12 @@ func StakeWeightedSumOfLogInfererLosses(
 
 			// Update one-out inferer losses
 			for _, loss := range report.ValueBundle.OneOutInfererValues {
-				for _, lossesWithoutWorker := range loss.WorkerAttributedValues {
-					nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.WithheldWorker][lossesWithoutWorker.Worker], stakesByReputer[report.Reputer], lossesWithoutWorker.Value, epsilon)
-					if err != nil {
-						fmt.Println("Error updating running weighted average for one-out inferer: ", err)
-						return HigherOrderNetworkLosses{}, err
-					}
-					runningWeightedOneOutInfererLosses[loss.WithheldWorker][lossesWithoutWorker.Worker] = &nextAvg
+				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakesByReputer[report.Reputer], loss.Value, epsilon)
+				if err != nil {
+					fmt.Println("Error updating running weighted average for one-out inferer: ", err)
+					return HigherOrderNetworkLosses{}, err
 				}
+				runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
 			}
 
 			// Update one-out forecaster losses
@@ -559,7 +534,7 @@ func StakeWeightedSumOfLogInfererLosses(
 	output := HigherOrderNetworkLosses{
 		infererLosses:          ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses),
 		forecasterLosses:       ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses),
-		oneOutInfererLosses:    ConvertNestedMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneOutInfererLosses),
+		oneOutInfererLosses:    ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutInfererLosses),
 		oneOutForecasterLosses: ConvertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutForecasterLosses),
 		oneInForecasterLosses:  ConvertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses),
 	}
