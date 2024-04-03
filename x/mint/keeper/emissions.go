@@ -140,8 +140,8 @@ func RewardEmissionPerUnitStakedToken(
 // a_e needs to be set to the correct value for the timestep in question
 // a_e has a fiduciary value of 0.1 but that's for a one-month timestep
 // so it must be corrected for whatever timestep we actually use
-// in this first version of the allora network we will use a "daily" timestep
 // default block time is 6311520 blocks per year aka 5 seconds per block
+// in this first version of the allora network we will use a "daily" timestep
 // so the value for delta t should be 30 (assuming a perfect world of 30 day months)
 // ^α_e = 1 - (1 - α_e)^(∆t/month)
 // where ˆαe is the recalibrated form of α_e appropriate for an update time step ∆t
@@ -157,7 +157,7 @@ func RewardEmissionPerUnitStakedToken(
 // ^α_e = (a_ed)^dt)/((a_ed)^dt) - ((a_ed-a_en)^dt)/((a_ed)^dt)
 // and the actual math we'll use in this function:
 // ^α_e = ((a_ed)^dt - ((a_ed-a_en)^dt)) / ((a_ed)^dt)
-func SmoothingFactorPerBlock(
+func SmoothingFactorPerTimestep(
 	ctx sdk.Context,
 	k Keeper,
 	a_en math.Int,

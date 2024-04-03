@@ -49,7 +49,7 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 	expectedDenominator, ok := math.NewIntFromString("1000000000000000000000000000000")
 	s.Require().True(ok)
 
-	resultNumerator, resultDenominator := keeper.SmoothingFactorPerBlock(
+	resultNumerator, resultDenominator := keeper.SmoothingFactorPerTimestep(
 		s.ctx,
 		s.mintKeeper,
 		math.NewInt(1),  // 0.1 | 1 over 10, so numerator is 1

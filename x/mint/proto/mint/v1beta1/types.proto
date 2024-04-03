@@ -13,8 +13,12 @@ message Params {
 
   // type of coin to mint
   string mint_denom = 1;
-  // expected blocks per year
-  uint64 blocks_per_year = 2;
+
+  // timestep to recalibrate the emission rate
+  // in units of "times per month" e.g. 30 for daily
+  // or 4 for weekly
+  uint64 emission_calibrations_timestep_per_month = 2;
+
   // maximum total supply of the coin
   string max_supply = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",

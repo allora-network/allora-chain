@@ -56,12 +56,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	smoothingDegreeNumerator, smoothingDegreeDenominator := keeper.SmoothingFactorPerBlock(
+	smoothingDegreeNumerator, smoothingDegreeDenominator := keeper.SmoothingFactorPerTimestep(
 		sdkCtx,
 		k,
 		params.OneMonthSmoothingDegreeNumerator,
 		params.OneMonthSmoothingDegreeDenominator,
-		30,
+		params.EmissionCalibrationsTimestepPerMonth,
 	)
 	fmt.Println("Smoothing degree numerator", smoothingDegreeNumerator)
 	previousRewardEmissionPerUnitStakedTokenNumerator, err := k.PreviousRewardEmissionPerUnitStakedTokenNumerator.Get(ctx)

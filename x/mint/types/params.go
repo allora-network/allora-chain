@@ -13,7 +13,7 @@ import (
 // NewParams returns Params instance with the given values.
 func NewParams(
 	mintDenom string,
-	blocksPerYear uint64,
+	emissionCalibrationTimestepPerMonth uint64,
 	maxSupply math.Int,
 	fEmissionNumerator math.Int,
 	fEmissionDenominator math.Int,
@@ -21,13 +21,13 @@ func NewParams(
 	oneMonthSmoothingDegreeDenominator math.Int,
 ) Params {
 	return Params{
-		MintDenom:                          mintDenom,
-		BlocksPerYear:                      blocksPerYear,
-		MaxSupply:                          maxSupply,
-		FEmissionNumerator:                 fEmissionNumerator,
-		FEmissionDenominator:               fEmissionDenominator,
-		OneMonthSmoothingDegreeNumerator:   oneMonthSmoothingDegreeNumerator,
-		OneMonthSmoothingDegreeDenominator: oneMonthSmoothingDegreeDenominator,
+		MintDenom:                            mintDenom,
+		EmissionCalibrationsTimestepPerMonth: emissionCalibrationTimestepPerMonth,
+		MaxSupply:                            maxSupply,
+		FEmissionNumerator:                   fEmissionNumerator,
+		FEmissionDenominator:                 fEmissionDenominator,
+		OneMonthSmoothingDegreeNumerator:     oneMonthSmoothingDegreeNumerator,
+		OneMonthSmoothingDegreeDenominator:   oneMonthSmoothingDegreeDenominator,
 	}
 }
 
@@ -38,13 +38,13 @@ func DefaultParams() Params {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                          sdk.DefaultBondDenom,
-		BlocksPerYear:                      uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
-		MaxSupply:                          maxSupply,                  //1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmissionNumerator:                 math.NewInt(15),            // 0.015 per month
-		FEmissionDenominator:               math.NewInt(1000),          // 0.015 per month is 15 over 1000
-		OneMonthSmoothingDegreeNumerator:   math.NewInt(1),             // 0.1 at 1 month cadence
-		OneMonthSmoothingDegreeDenominator: math.NewInt(10),            // 0.1 is 1 over 10
+		MintDenom:                            sdk.DefaultBondDenom,
+		EmissionCalibrationsTimestepPerMonth: uint64(30),        // "daily" emission calibration
+		MaxSupply:                            maxSupply,         //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmissionNumerator:                   math.NewInt(15),   // 0.015 per month
+		FEmissionDenominator:                 math.NewInt(1000), // 0.015 per month is 15 over 1000
+		OneMonthSmoothingDegreeNumerator:     math.NewInt(1),    // 0.1 at 1 month cadence
+		OneMonthSmoothingDegreeDenominator:   math.NewInt(10),   // 0.1 is 1 over 10
 	}
 }
 
@@ -68,9 +68,6 @@ func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {
 		return err
 	}
-	if err := validateBlocksPerYear(p.BlocksPerYear); err != nil {
-		return err
-	}
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
 		return err
 	}
@@ -88,19 +85,6 @@ func validateMintDenom(i interface{}) error {
 	}
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func validateBlocksPerYear(i interface{}) error {
-	v, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v == 0 {
-		return fmt.Errorf("blocks per year must be positive: %d", v)
 	}
 
 	return nil

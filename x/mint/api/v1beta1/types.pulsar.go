@@ -16,21 +16,21 @@ import (
 )
 
 var (
-	md_Params                                        protoreflect.MessageDescriptor
-	fd_Params_mint_denom                             protoreflect.FieldDescriptor
-	fd_Params_blocks_per_year                        protoreflect.FieldDescriptor
-	fd_Params_max_supply                             protoreflect.FieldDescriptor
-	fd_Params_f_emission_numerator                   protoreflect.FieldDescriptor
-	fd_Params_f_emission_denominator                 protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree_numerator   protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree_denominator protoreflect.FieldDescriptor
+	md_Params                                          protoreflect.MessageDescriptor
+	fd_Params_mint_denom                               protoreflect.FieldDescriptor
+	fd_Params_emission_calibrations_timestep_per_month protoreflect.FieldDescriptor
+	fd_Params_max_supply                               protoreflect.FieldDescriptor
+	fd_Params_f_emission_numerator                     protoreflect.FieldDescriptor
+	fd_Params_f_emission_denominator                   protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_numerator     protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_denominator   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_mint_v1beta1_types_proto_init()
 	md_Params = File_mint_v1beta1_types_proto.Messages().ByName("Params")
 	fd_Params_mint_denom = md_Params.Fields().ByName("mint_denom")
-	fd_Params_blocks_per_year = md_Params.Fields().ByName("blocks_per_year")
+	fd_Params_emission_calibrations_timestep_per_month = md_Params.Fields().ByName("emission_calibrations_timestep_per_month")
 	fd_Params_max_supply = md_Params.Fields().ByName("max_supply")
 	fd_Params_f_emission_numerator = md_Params.Fields().ByName("f_emission_numerator")
 	fd_Params_f_emission_denominator = md_Params.Fields().ByName("f_emission_denominator")
@@ -109,9 +109,9 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.BlocksPerYear != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.BlocksPerYear)
-		if !f(fd_Params_blocks_per_year, value) {
+	if x.EmissionCalibrationsTimestepPerMonth != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.EmissionCalibrationsTimestepPerMonth)
+		if !f(fd_Params_emission_calibrations_timestep_per_month, value) {
 			return
 		}
 	}
@@ -162,8 +162,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	case "mint.v1beta1.Params.mint_denom":
 		return x.MintDenom != ""
-	case "mint.v1beta1.Params.blocks_per_year":
-		return x.BlocksPerYear != uint64(0)
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
+		return x.EmissionCalibrationsTimestepPerMonth != uint64(0)
 	case "mint.v1beta1.Params.max_supply":
 		return x.MaxSupply != ""
 	case "mint.v1beta1.Params.f_emission_numerator":
@@ -192,8 +192,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	case "mint.v1beta1.Params.mint_denom":
 		x.MintDenom = ""
-	case "mint.v1beta1.Params.blocks_per_year":
-		x.BlocksPerYear = uint64(0)
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
+		x.EmissionCalibrationsTimestepPerMonth = uint64(0)
 	case "mint.v1beta1.Params.max_supply":
 		x.MaxSupply = ""
 	case "mint.v1beta1.Params.f_emission_numerator":
@@ -223,8 +223,8 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "mint.v1beta1.Params.mint_denom":
 		value := x.MintDenom
 		return protoreflect.ValueOfString(value)
-	case "mint.v1beta1.Params.blocks_per_year":
-		value := x.BlocksPerYear
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
+		value := x.EmissionCalibrationsTimestepPerMonth
 		return protoreflect.ValueOfUint64(value)
 	case "mint.v1beta1.Params.max_supply":
 		value := x.MaxSupply
@@ -263,8 +263,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	switch fd.FullName() {
 	case "mint.v1beta1.Params.mint_denom":
 		x.MintDenom = value.Interface().(string)
-	case "mint.v1beta1.Params.blocks_per_year":
-		x.BlocksPerYear = value.Uint()
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
+		x.EmissionCalibrationsTimestepPerMonth = value.Uint()
 	case "mint.v1beta1.Params.max_supply":
 		x.MaxSupply = value.Interface().(string)
 	case "mint.v1beta1.Params.f_emission_numerator":
@@ -297,8 +297,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 	switch fd.FullName() {
 	case "mint.v1beta1.Params.mint_denom":
 		panic(fmt.Errorf("field mint_denom of message mint.v1beta1.Params is not mutable"))
-	case "mint.v1beta1.Params.blocks_per_year":
-		panic(fmt.Errorf("field blocks_per_year of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
+		panic(fmt.Errorf("field emission_calibrations_timestep_per_month of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.max_supply":
 		panic(fmt.Errorf("field max_supply of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.f_emission_numerator":
@@ -324,7 +324,7 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	switch fd.FullName() {
 	case "mint.v1beta1.Params.mint_denom":
 		return protoreflect.ValueOfString("")
-	case "mint.v1beta1.Params.blocks_per_year":
+	case "mint.v1beta1.Params.emission_calibrations_timestep_per_month":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "mint.v1beta1.Params.max_supply":
 		return protoreflect.ValueOfString("")
@@ -409,8 +409,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.BlocksPerYear != 0 {
-			n += 1 + runtime.Sov(uint64(x.BlocksPerYear))
+		if x.EmissionCalibrationsTimestepPerMonth != 0 {
+			n += 1 + runtime.Sov(uint64(x.EmissionCalibrationsTimestepPerMonth))
 		}
 		l = len(x.MaxSupply)
 		if l > 0 {
@@ -496,8 +496,8 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x1a
 		}
-		if x.BlocksPerYear != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlocksPerYear))
+		if x.EmissionCalibrationsTimestepPerMonth != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.EmissionCalibrationsTimestepPerMonth))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -591,9 +591,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlocksPerYear", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EmissionCalibrationsTimestepPerMonth", wireType)
 				}
-				x.BlocksPerYear = 0
+				x.EmissionCalibrationsTimestepPerMonth = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -603,7 +603,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.BlocksPerYear |= uint64(b&0x7F) << shift
+					x.EmissionCalibrationsTimestepPerMonth |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -824,8 +824,10 @@ type Params struct {
 
 	// type of coin to mint
 	MintDenom string `protobuf:"bytes,1,opt,name=mint_denom,json=mintDenom,proto3" json:"mint_denom,omitempty"`
-	// expected blocks per year
-	BlocksPerYear uint64 `protobuf:"varint,2,opt,name=blocks_per_year,json=blocksPerYear,proto3" json:"blocks_per_year,omitempty"`
+	// timestep to recalibrate the emission rate
+	// in units of "times per month" e.g. 30 for daily
+	// or 4 for weekly
+	EmissionCalibrationsTimestepPerMonth uint64 `protobuf:"varint,2,opt,name=emission_calibrations_timestep_per_month,json=emissionCalibrationsTimestepPerMonth,proto3" json:"emission_calibrations_timestep_per_month,omitempty"`
 	// maximum total supply of the coin
 	MaxSupply string `protobuf:"bytes,3,opt,name=max_supply,json=maxSupply,proto3" json:"max_supply,omitempty"`
 	// ecosystem treasury fraction ideally emitted per unit time
@@ -868,9 +870,9 @@ func (x *Params) GetMintDenom() string {
 	return ""
 }
 
-func (x *Params) GetBlocksPerYear() uint64 {
+func (x *Params) GetEmissionCalibrationsTimestepPerMonth() uint64 {
 	if x != nil {
-		return x.BlocksPerYear
+		return x.EmissionCalibrationsTimestepPerMonth
 	}
 	return 0
 }
@@ -919,12 +921,15 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x97, 0x05, 0x0a,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc7, 0x05, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x74, 0x5f,
 	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x69, 0x6e,
-	0x74, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x26, 0x0a, 0x0f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
-	0x5f, 0x70, 0x65, 0x72, 0x5f, 0x79, 0x65, 0x61, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0d, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73, 0x50, 0x65, 0x72, 0x59, 0x65, 0x61, 0x72, 0x12, 0x4f,
+	0x74, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x56, 0x0a, 0x28, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x5f, 0x63, 0x61, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x5f,
+	0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x65, 0x70, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x6d, 0x6f, 0x6e,
+	0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x24, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x43, 0x61, 0x6c, 0x69, 0x62, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x54, 0x69,
+	0x6d, 0x65, 0x73, 0x74, 0x65, 0x70, 0x50, 0x65, 0x72, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x12, 0x4f,
 	0x0a, 0x0a, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18, 0x03, 0x20, 0x01,
 	0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e,
