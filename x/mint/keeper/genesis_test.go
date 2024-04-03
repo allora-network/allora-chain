@@ -68,7 +68,8 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	}
 	genesisState.Params = types.NewParams(
 		"testDenom",
-		uint64(60*60*8766/5),
+		uint64(60/5*60*24*30),
+		uint64(2),
 		maxSupply,
 		math.NewInt(15),
 		math.NewInt(1000),
@@ -77,6 +78,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedTokenNumerator = types.DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator()
 	genesisState.PreviousRewardEmissionPerUnitStakedTokenDenominator = types.DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator()
+	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()
 	genesisState.EcosystemTokensMinted = types.DefaultEcosystemTokensMinted()
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
@@ -90,6 +92,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	s.Require().NoError(err)
 
 	previousRewardsN, err := s.keeper.PreviousRewardEmissionPerUnitStakedTokenNumerator.Get(s.sdkCtx)
+	s.Require().NoError(err)
 	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenNumerator.Equal(previousRewardsN))
 	previousRewardsD, err := s.keeper.PreviousRewardEmissionPerUnitStakedTokenDenominator.Get(s.sdkCtx)
 	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenDenominator.Equal(previousRewardsD))

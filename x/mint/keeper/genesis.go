@@ -19,10 +19,16 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 	if err != nil {
 		panic(err)
 	}
+
 	err = keeper.PreviousRewardEmissionPerUnitStakedTokenDenominator.Set(
 		ctx,
 		data.PreviousRewardEmissionPerUnitStakedTokenDenominator,
 	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = keeper.PreviousBlockEmission.Set(ctx, data.PreviousBlockEmission)
 	if err != nil {
 		panic(err)
 	}
@@ -50,6 +56,8 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
+	previousBlockEmission, err := keeper.PreviousBlockEmission.Get(ctx)
+
 	ecosystemTokensMinted, err := keeper.EcosystemTokensMinted.Get(ctx)
 	if err != nil {
 		panic(err)
@@ -59,6 +67,7 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		params,
 		previousRewardEmissionPerUnitStakedTokenNumerator,
 		previousRewardEmissionPerUnitStakedTokenDenominator,
+		previousBlockEmission,
 		ecosystemTokensMinted,
 	)
 }

@@ -13,8 +13,8 @@ import (
 
 // set once at genesis and never changed after
 // 0.3675 = 36.75%
-const EcosystemTreasuryPercentOfTotalSupply = 3675
-const EcosystemTreasuryPercentOfTotalSupplyPrecision = 4
+const EcosystemTreasuryPercentOfTotalSupplyNumerator = 3675
+const EcosystemTreasuryPercentOfTotalSupplyDenominator = 10000
 
 // return the uncirculating supply, i.e. tokens on a vesting schedule
 // latest discussion on how these tokens should be handled lives in ORA-1111

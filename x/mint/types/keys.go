@@ -10,7 +10,8 @@ var (
 	ParamsKey                                              = collections.NewPrefix(138)
 	PreviousRewardEmissionPerUnitStakedTokenNumeratorKey   = collections.NewPrefix(139)
 	PreviousRewardEmissionPerUnitStakedTokenDenominatorKey = collections.NewPrefix(140)
-	EcosystemTokensMintedKey                               = collections.NewPrefix(141)
+	PreviousBlockEmissionKey                               = collections.NewPrefix(141)
+	EcosystemTokensMintedKey                               = collections.NewPrefix(142)
 )
 
 const (

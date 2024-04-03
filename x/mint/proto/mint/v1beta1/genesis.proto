@@ -28,8 +28,15 @@ message GenesisState {
     (amino.dont_omitempty) = true
   ];
 
+  string previous_block_emission = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
   // number of tokens minted into the ecosystem treasury
-  string ecosystem_tokens_minted = 4 [
+  string ecosystem_tokens_minted = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

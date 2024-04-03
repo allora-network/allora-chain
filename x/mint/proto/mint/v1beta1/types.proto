@@ -14,13 +14,16 @@ message Params {
   // type of coin to mint
   string mint_denom = 1;
 
+  // block emission rate in number of blocks expected per month
+  uint64 blocks_per_month = 2;
+
   // timestep to recalibrate the emission rate
   // in units of "times per month" e.g. 30 for daily
   // or 4 for weekly
-  uint64 emission_calibrations_timestep_per_month = 2;
+  uint64 emission_calibrations_timestep_per_month = 3;
 
   // maximum total supply of the coin
-  string max_supply = 3 [
+  string max_supply = 4 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -28,14 +31,14 @@ message Params {
   ];
   // ecosystem treasury fraction ideally emitted per unit time
   // this value includes a denominator, see f_emission_denominator
-  string f_emission_numerator = 4 [
+  string f_emission_numerator = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // f_emission is passed as a fraction, this is the denominator
-  string f_emission_denominator = 5 [
+  string f_emission_denominator = 6 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -43,7 +46,7 @@ message Params {
   ];
   // exponential moving average smoothing factor for one month
   // this value is a fraction, see one_month_smoothing_degree_denominator
-  string one_month_smoothing_degree_numerator = 6 [
+  string one_month_smoothing_degree_numerator = 7 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -51,7 +54,7 @@ message Params {
   ];
   // denominator for the one_month_smoothing_degree_numerator
   // pass the value as a fraction due to precision issues
-  string one_month_smoothing_degree_denominator = 7 [
+  string one_month_smoothing_degree_denominator = 8 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

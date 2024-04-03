@@ -37,6 +37,7 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
 					MintDenom:                            sdk.DefaultBondDenom,
+					BlocksPerMonth:                       uint64(525960),
 					EmissionCalibrationsTimestepPerMonth: uint64(30),
 					MaxSupply:                            sdkmath.NewIntFromUint64(0),
 					FEmissionNumerator:                   sdkmath.NewInt(15),
@@ -52,8 +53,10 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					EmissionCalibrationsTimestepPerMonth: uint64(30),
+					MintDenom:                            sdk.DefaultBondDenom,
 					MaxSupply:                            maxSupply,
+					BlocksPerMonth:                       uint64(525960),
+					EmissionCalibrationsTimestepPerMonth: uint64(30),
 					FEmissionNumerator:                   sdkmath.NewInt(15),
 					FEmissionDenominator:                 sdkmath.NewInt(1000),
 					OneMonthSmoothingDegreeNumerator:     sdkmath.NewInt(1),

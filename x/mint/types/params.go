@@ -13,6 +13,7 @@ import (
 // NewParams returns Params instance with the given values.
 func NewParams(
 	mintDenom string,
+	blocksPerMonth uint64,
 	emissionCalibrationTimestepPerMonth uint64,
 	maxSupply math.Int,
 	fEmissionNumerator math.Int,
@@ -22,6 +23,7 @@ func NewParams(
 ) Params {
 	return Params{
 		MintDenom:                            mintDenom,
+		BlocksPerMonth:                       blocksPerMonth,
 		EmissionCalibrationsTimestepPerMonth: emissionCalibrationTimestepPerMonth,
 		MaxSupply:                            maxSupply,
 		FEmissionNumerator:                   fEmissionNumerator,
@@ -39,6 +41,7 @@ func DefaultParams() Params {
 	}
 	return Params{
 		MintDenom:                            sdk.DefaultBondDenom,
+		BlocksPerMonth:                       uint64(525960),    // ~5 seconds block time, 6311520 per year, 525960 per month
 		EmissionCalibrationsTimestepPerMonth: uint64(30),        // "daily" emission calibration
 		MaxSupply:                            maxSupply,         //1 billion allo * 1e18 (exponent) = 1e27 uallo
 		FEmissionNumerator:                   math.NewInt(15),   // 0.015 per month
@@ -58,14 +61,22 @@ func DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator() math.Int {
 	return math.OneInt()
 }
 
+// no emission happened last block at genesis
+func DefaultPreviousBlockEmission() math.Int {
+	return math.ZeroInt()
+}
+
 // at genesis, nothing has been minted yet
 func DefaultEcosystemTokensMinted() math.Int {
-	return math.NewInt(0)
+	return math.ZeroInt()
 }
 
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {
+		return err
+	}
+	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
 	}
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
@@ -85,6 +96,19 @@ func validateMintDenom(i interface{}) error {
 	}
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateBlocksPerMonth(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("blocks per month must be positive: %d", v)
 	}
 
 	return nil

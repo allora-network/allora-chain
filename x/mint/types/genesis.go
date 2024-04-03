@@ -7,12 +7,14 @@ func NewGenesisState(
 	params Params,
 	previousRewardEmissionPerUnitStakedTokenNumerator math.Int,
 	previousRewardEmissionPerUnitStakedTokenDenominator math.Int,
+	previousBlockEmission math.Int,
 	ecosystemTokensMinted math.Int,
 ) *GenesisState {
 	return &GenesisState{
 		Params: params,
 		PreviousRewardEmissionPerUnitStakedTokenNumerator:   previousRewardEmissionPerUnitStakedTokenNumerator,
 		PreviousRewardEmissionPerUnitStakedTokenDenominator: previousRewardEmissionPerUnitStakedTokenDenominator,
+		PreviousBlockEmission:                               previousBlockEmission,
 		EcosystemTokensMinted:                               ecosystemTokensMinted,
 	}
 }
@@ -23,6 +25,7 @@ func DefaultGenesisState() *GenesisState {
 		Params: DefaultParams(),
 		PreviousRewardEmissionPerUnitStakedTokenNumerator:   DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator(),
 		PreviousRewardEmissionPerUnitStakedTokenDenominator: DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator(),
+		PreviousBlockEmission:                               DefaultPreviousBlockEmission(),
 		EcosystemTokensMinted:                               DefaultEcosystemTokensMinted(),
 	}
 }

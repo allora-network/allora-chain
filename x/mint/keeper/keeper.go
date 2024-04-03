@@ -34,6 +34,7 @@ type Keeper struct {
 	Params                                              collections.Item[types.Params]
 	PreviousRewardEmissionPerUnitStakedTokenNumerator   collections.Item[math.Int]
 	PreviousRewardEmissionPerUnitStakedTokenDenominator collections.Item[math.Int]
+	PreviousBlockEmission                               collections.Item[math.Int]
 	EcosystemTokensMinted                               collections.Item[math.Int]
 }
 
@@ -66,6 +67,7 @@ func NewKeeper(
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		PreviousRewardEmissionPerUnitStakedTokenNumerator:   collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenNumeratorKey, "previousrewardsemissionsperunitstakedtokennumerator", sdk.IntValue),
 		PreviousRewardEmissionPerUnitStakedTokenDenominator: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenDenominatorKey, "previousrewardsemissionsperunitstakedtokendenominator", sdk.IntValue),
+		PreviousBlockEmission:                               collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                               collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}
 
