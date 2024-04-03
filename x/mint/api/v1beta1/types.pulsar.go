@@ -16,14 +16,14 @@ import (
 )
 
 var (
-	md_Params                                 protoreflect.MessageDescriptor
-	fd_Params_mint_denom                      protoreflect.FieldDescriptor
-	fd_Params_blocks_per_year                 protoreflect.FieldDescriptor
-	fd_Params_max_supply                      protoreflect.FieldDescriptor
-	fd_Params_f_emission                      protoreflect.FieldDescriptor
-	fd_Params_f_emission_prec                 protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree      protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree_prec protoreflect.FieldDescriptor
+	md_Params                                        protoreflect.MessageDescriptor
+	fd_Params_mint_denom                             protoreflect.FieldDescriptor
+	fd_Params_blocks_per_year                        protoreflect.FieldDescriptor
+	fd_Params_max_supply                             protoreflect.FieldDescriptor
+	fd_Params_f_emission_numerator                   protoreflect.FieldDescriptor
+	fd_Params_f_emission_denominator                 protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_numerator   protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_denominator protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -32,10 +32,10 @@ func init() {
 	fd_Params_mint_denom = md_Params.Fields().ByName("mint_denom")
 	fd_Params_blocks_per_year = md_Params.Fields().ByName("blocks_per_year")
 	fd_Params_max_supply = md_Params.Fields().ByName("max_supply")
-	fd_Params_f_emission = md_Params.Fields().ByName("f_emission")
-	fd_Params_f_emission_prec = md_Params.Fields().ByName("f_emission_prec")
-	fd_Params_one_month_smoothing_degree = md_Params.Fields().ByName("one_month_smoothing_degree")
-	fd_Params_one_month_smoothing_degree_prec = md_Params.Fields().ByName("one_month_smoothing_degree_prec")
+	fd_Params_f_emission_numerator = md_Params.Fields().ByName("f_emission_numerator")
+	fd_Params_f_emission_denominator = md_Params.Fields().ByName("f_emission_denominator")
+	fd_Params_one_month_smoothing_degree_numerator = md_Params.Fields().ByName("one_month_smoothing_degree_numerator")
+	fd_Params_one_month_smoothing_degree_denominator = md_Params.Fields().ByName("one_month_smoothing_degree_denominator")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -121,27 +121,27 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.FEmission != "" {
-		value := protoreflect.ValueOfString(x.FEmission)
-		if !f(fd_Params_f_emission, value) {
+	if x.FEmissionNumerator != "" {
+		value := protoreflect.ValueOfString(x.FEmissionNumerator)
+		if !f(fd_Params_f_emission_numerator, value) {
 			return
 		}
 	}
-	if x.FEmissionPrec != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.FEmissionPrec)
-		if !f(fd_Params_f_emission_prec, value) {
+	if x.FEmissionDenominator != "" {
+		value := protoreflect.ValueOfString(x.FEmissionDenominator)
+		if !f(fd_Params_f_emission_denominator, value) {
 			return
 		}
 	}
-	if x.OneMonthSmoothingDegree != "" {
-		value := protoreflect.ValueOfString(x.OneMonthSmoothingDegree)
-		if !f(fd_Params_one_month_smoothing_degree, value) {
+	if x.OneMonthSmoothingDegreeNumerator != "" {
+		value := protoreflect.ValueOfString(x.OneMonthSmoothingDegreeNumerator)
+		if !f(fd_Params_one_month_smoothing_degree_numerator, value) {
 			return
 		}
 	}
-	if x.OneMonthSmoothingDegreePrec != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.OneMonthSmoothingDegreePrec)
-		if !f(fd_Params_one_month_smoothing_degree_prec, value) {
+	if x.OneMonthSmoothingDegreeDenominator != "" {
+		value := protoreflect.ValueOfString(x.OneMonthSmoothingDegreeDenominator)
+		if !f(fd_Params_one_month_smoothing_degree_denominator, value) {
 			return
 		}
 	}
@@ -166,14 +166,14 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.BlocksPerYear != uint64(0)
 	case "mint.v1beta1.Params.max_supply":
 		return x.MaxSupply != ""
-	case "mint.v1beta1.Params.f_emission":
-		return x.FEmission != ""
-	case "mint.v1beta1.Params.f_emission_prec":
-		return x.FEmissionPrec != uint64(0)
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
-		return x.OneMonthSmoothingDegree != ""
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		return x.OneMonthSmoothingDegreePrec != uint64(0)
+	case "mint.v1beta1.Params.f_emission_numerator":
+		return x.FEmissionNumerator != ""
+	case "mint.v1beta1.Params.f_emission_denominator":
+		return x.FEmissionDenominator != ""
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		return x.OneMonthSmoothingDegreeNumerator != ""
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		return x.OneMonthSmoothingDegreeDenominator != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -196,14 +196,14 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.BlocksPerYear = uint64(0)
 	case "mint.v1beta1.Params.max_supply":
 		x.MaxSupply = ""
-	case "mint.v1beta1.Params.f_emission":
-		x.FEmission = ""
-	case "mint.v1beta1.Params.f_emission_prec":
-		x.FEmissionPrec = uint64(0)
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
-		x.OneMonthSmoothingDegree = ""
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		x.OneMonthSmoothingDegreePrec = uint64(0)
+	case "mint.v1beta1.Params.f_emission_numerator":
+		x.FEmissionNumerator = ""
+	case "mint.v1beta1.Params.f_emission_denominator":
+		x.FEmissionDenominator = ""
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		x.OneMonthSmoothingDegreeNumerator = ""
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		x.OneMonthSmoothingDegreeDenominator = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -229,18 +229,18 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "mint.v1beta1.Params.max_supply":
 		value := x.MaxSupply
 		return protoreflect.ValueOfString(value)
-	case "mint.v1beta1.Params.f_emission":
-		value := x.FEmission
+	case "mint.v1beta1.Params.f_emission_numerator":
+		value := x.FEmissionNumerator
 		return protoreflect.ValueOfString(value)
-	case "mint.v1beta1.Params.f_emission_prec":
-		value := x.FEmissionPrec
-		return protoreflect.ValueOfUint64(value)
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
-		value := x.OneMonthSmoothingDegree
+	case "mint.v1beta1.Params.f_emission_denominator":
+		value := x.FEmissionDenominator
 		return protoreflect.ValueOfString(value)
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		value := x.OneMonthSmoothingDegreePrec
-		return protoreflect.ValueOfUint64(value)
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		value := x.OneMonthSmoothingDegreeNumerator
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		value := x.OneMonthSmoothingDegreeDenominator
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -267,14 +267,14 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.BlocksPerYear = value.Uint()
 	case "mint.v1beta1.Params.max_supply":
 		x.MaxSupply = value.Interface().(string)
-	case "mint.v1beta1.Params.f_emission":
-		x.FEmission = value.Interface().(string)
-	case "mint.v1beta1.Params.f_emission_prec":
-		x.FEmissionPrec = value.Uint()
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
-		x.OneMonthSmoothingDegree = value.Interface().(string)
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		x.OneMonthSmoothingDegreePrec = value.Uint()
+	case "mint.v1beta1.Params.f_emission_numerator":
+		x.FEmissionNumerator = value.Interface().(string)
+	case "mint.v1beta1.Params.f_emission_denominator":
+		x.FEmissionDenominator = value.Interface().(string)
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		x.OneMonthSmoothingDegreeNumerator = value.Interface().(string)
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		x.OneMonthSmoothingDegreeDenominator = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -301,14 +301,14 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field blocks_per_year of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.max_supply":
 		panic(fmt.Errorf("field max_supply of message mint.v1beta1.Params is not mutable"))
-	case "mint.v1beta1.Params.f_emission":
-		panic(fmt.Errorf("field f_emission of message mint.v1beta1.Params is not mutable"))
-	case "mint.v1beta1.Params.f_emission_prec":
-		panic(fmt.Errorf("field f_emission_prec of message mint.v1beta1.Params is not mutable"))
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
-		panic(fmt.Errorf("field one_month_smoothing_degree of message mint.v1beta1.Params is not mutable"))
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		panic(fmt.Errorf("field one_month_smoothing_degree_prec of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.f_emission_numerator":
+		panic(fmt.Errorf("field f_emission_numerator of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.f_emission_denominator":
+		panic(fmt.Errorf("field f_emission_denominator of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		panic(fmt.Errorf("field one_month_smoothing_degree_numerator of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		panic(fmt.Errorf("field one_month_smoothing_degree_denominator of message mint.v1beta1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -328,14 +328,14 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "mint.v1beta1.Params.max_supply":
 		return protoreflect.ValueOfString("")
-	case "mint.v1beta1.Params.f_emission":
+	case "mint.v1beta1.Params.f_emission_numerator":
 		return protoreflect.ValueOfString("")
-	case "mint.v1beta1.Params.f_emission_prec":
-		return protoreflect.ValueOfUint64(uint64(0))
-	case "mint.v1beta1.Params.one_month_smoothing_degree":
+	case "mint.v1beta1.Params.f_emission_denominator":
 		return protoreflect.ValueOfString("")
-	case "mint.v1beta1.Params.one_month_smoothing_degree_prec":
-		return protoreflect.ValueOfUint64(uint64(0))
+	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -416,19 +416,21 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.FEmission)
+		l = len(x.FEmissionNumerator)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.FEmissionPrec != 0 {
-			n += 1 + runtime.Sov(uint64(x.FEmissionPrec))
-		}
-		l = len(x.OneMonthSmoothingDegree)
+		l = len(x.FEmissionDenominator)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.OneMonthSmoothingDegreePrec != 0 {
-			n += 1 + runtime.Sov(uint64(x.OneMonthSmoothingDegreePrec))
+		l = len(x.OneMonthSmoothingDegreeNumerator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.OneMonthSmoothingDegreeDenominator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -459,27 +461,31 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.OneMonthSmoothingDegreePrec != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.OneMonthSmoothingDegreePrec))
+		if len(x.OneMonthSmoothingDegreeDenominator) > 0 {
+			i -= len(x.OneMonthSmoothingDegreeDenominator)
+			copy(dAtA[i:], x.OneMonthSmoothingDegreeDenominator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.OneMonthSmoothingDegreeDenominator)))
 			i--
-			dAtA[i] = 0x38
+			dAtA[i] = 0x3a
 		}
-		if len(x.OneMonthSmoothingDegree) > 0 {
-			i -= len(x.OneMonthSmoothingDegree)
-			copy(dAtA[i:], x.OneMonthSmoothingDegree)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.OneMonthSmoothingDegree)))
+		if len(x.OneMonthSmoothingDegreeNumerator) > 0 {
+			i -= len(x.OneMonthSmoothingDegreeNumerator)
+			copy(dAtA[i:], x.OneMonthSmoothingDegreeNumerator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.OneMonthSmoothingDegreeNumerator)))
 			i--
 			dAtA[i] = 0x32
 		}
-		if x.FEmissionPrec != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.FEmissionPrec))
+		if len(x.FEmissionDenominator) > 0 {
+			i -= len(x.FEmissionDenominator)
+			copy(dAtA[i:], x.FEmissionDenominator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FEmissionDenominator)))
 			i--
-			dAtA[i] = 0x28
+			dAtA[i] = 0x2a
 		}
-		if len(x.FEmission) > 0 {
-			i -= len(x.FEmission)
-			copy(dAtA[i:], x.FEmission)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FEmission)))
+		if len(x.FEmissionNumerator) > 0 {
+			i -= len(x.FEmissionNumerator)
+			copy(dAtA[i:], x.FEmissionNumerator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FEmissionNumerator)))
 			i--
 			dAtA[i] = 0x22
 		}
@@ -636,7 +642,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FEmission", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FEmissionNumerator", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -664,30 +670,11 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.FEmission = string(dAtA[iNdEx:postIndex])
+				x.FEmissionNumerator = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 5:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FEmissionPrec", wireType)
-				}
-				x.FEmissionPrec = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.FEmissionPrec |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 6:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneMonthSmoothingDegree", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FEmissionDenominator", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -715,13 +702,13 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.OneMonthSmoothingDegree = string(dAtA[iNdEx:postIndex])
+				x.FEmissionDenominator = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 7:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneMonthSmoothingDegreePrec", wireType)
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneMonthSmoothingDegreeNumerator", wireType)
 				}
-				x.OneMonthSmoothingDegreePrec = 0
+				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -731,11 +718,56 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.OneMonthSmoothingDegreePrec |= uint64(b&0x7F) << shift
+					stringLen |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.OneMonthSmoothingDegreeNumerator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneMonthSmoothingDegreeDenominator", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.OneMonthSmoothingDegreeDenominator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -797,21 +829,16 @@ type Params struct {
 	// maximum total supply of the coin
 	MaxSupply string `protobuf:"bytes,3,opt,name=max_supply,json=maxSupply,proto3" json:"max_supply,omitempty"`
 	// ecosystem treasury fraction ideally emitted per unit time
-	// this value includes precision: see f_emission_prec
-	FEmission string `protobuf:"bytes,4,opt,name=f_emission,json=fEmission,proto3" json:"f_emission,omitempty"`
-	// precision of the ecosystem treasury fraction
-	// e.g. if f_emission is less than 1, this number should be
-	// the number of decimal places in f_emission
-	// if f_emission is greater than 1, this number should be 0
-	FEmissionPrec uint64 `protobuf:"varint,5,opt,name=f_emission_prec,json=fEmissionPrec,proto3" json:"f_emission_prec,omitempty"`
+	// this value includes a denominator, see f_emission_denominator
+	FEmissionNumerator string `protobuf:"bytes,4,opt,name=f_emission_numerator,json=fEmissionNumerator,proto3" json:"f_emission_numerator,omitempty"`
+	// f_emission is passed as a fraction, this is the denominator
+	FEmissionDenominator string `protobuf:"bytes,5,opt,name=f_emission_denominator,json=fEmissionDenominator,proto3" json:"f_emission_denominator,omitempty"`
 	// exponential moving average smoothing factor for one month
-	// this value includes precision: see one_month_smoothing_prec
-	OneMonthSmoothingDegree string `protobuf:"bytes,6,opt,name=one_month_smoothing_degree,json=oneMonthSmoothingDegree,proto3" json:"one_month_smoothing_degree,omitempty"`
-	// precision of the smoothing factor
-	// e.g. if one_month_smoothing_degree is less than 1, this number should be
-	// the number of decimal places in one_month_smoothing_degree
-	// if one_month_smoothing_degree is greater than 1, this number should be 0
-	OneMonthSmoothingDegreePrec uint64 `protobuf:"varint,7,opt,name=one_month_smoothing_degree_prec,json=oneMonthSmoothingDegreePrec,proto3" json:"one_month_smoothing_degree_prec,omitempty"`
+	// this value is a fraction, see one_month_smoothing_degree_denominator
+	OneMonthSmoothingDegreeNumerator string `protobuf:"bytes,6,opt,name=one_month_smoothing_degree_numerator,json=oneMonthSmoothingDegreeNumerator,proto3" json:"one_month_smoothing_degree_numerator,omitempty"`
+	// denominator for the one_month_smoothing_degree_numerator
+	// pass the value as a fraction due to precision issues
+	OneMonthSmoothingDegreeDenominator string `protobuf:"bytes,7,opt,name=one_month_smoothing_degree_denominator,json=oneMonthSmoothingDegreeDenominator,proto3" json:"one_month_smoothing_degree_denominator,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -855,32 +882,32 @@ func (x *Params) GetMaxSupply() string {
 	return ""
 }
 
-func (x *Params) GetFEmission() string {
+func (x *Params) GetFEmissionNumerator() string {
 	if x != nil {
-		return x.FEmission
+		return x.FEmissionNumerator
 	}
 	return ""
 }
 
-func (x *Params) GetFEmissionPrec() uint64 {
+func (x *Params) GetFEmissionDenominator() string {
 	if x != nil {
-		return x.FEmissionPrec
-	}
-	return 0
-}
-
-func (x *Params) GetOneMonthSmoothingDegree() string {
-	if x != nil {
-		return x.OneMonthSmoothingDegree
+		return x.FEmissionDenominator
 	}
 	return ""
 }
 
-func (x *Params) GetOneMonthSmoothingDegreePrec() uint64 {
+func (x *Params) GetOneMonthSmoothingDegreeNumerator() string {
 	if x != nil {
-		return x.OneMonthSmoothingDegreePrec
+		return x.OneMonthSmoothingDegreeNumerator
 	}
-	return 0
+	return ""
+}
+
+func (x *Params) GetOneMonthSmoothingDegreeDenominator() string {
+	if x != nil {
+		return x.OneMonthSmoothingDegreeDenominator
+	}
+	return ""
 }
 
 var File_mint_v1beta1_types_proto protoreflect.FileDescriptor
@@ -892,7 +919,7 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xef, 0x03, 0x0a,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x97, 0x05, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x74, 0x5f,
 	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x69, 0x6e,
 	0x74, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x26, 0x0a, 0x0f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
@@ -903,40 +930,50 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e,
 	0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8,
 	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x6d, 0x61, 0x78, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12,
-	0x4f, 0x0a, 0x0a, 0x66, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20,
+	0x62, 0x0a, 0x14, 0x66, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x6e, 0x75,
+	0x6d, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
+	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
+	0x12, 0x66, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x4e, 0x75, 0x6d, 0x65, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x12, 0x66, 0x0a, 0x16, 0x66, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x05, 0x20,
 	0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49,
 	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x66, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x12, 0x26, 0x0a, 0x0f, 0x66, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x70,
-	0x72, 0x65, 0x63, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x66, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x50, 0x72, 0x65, 0x63, 0x12, 0x6d, 0x0a, 0x1a, 0x6f, 0x6e, 0x65, 0x5f,
-	0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x5f, 0x73, 0x6d, 0x6f, 0x6f, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x5f,
-	0x64, 0x65, 0x67, 0x72, 0x65, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
-	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x17,
-	0x6f, 0x6e, 0x65, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x53, 0x6d, 0x6f, 0x6f, 0x74, 0x68, 0x69, 0x6e,
-	0x67, 0x44, 0x65, 0x67, 0x72, 0x65, 0x65, 0x12, 0x44, 0x0a, 0x1f, 0x6f, 0x6e, 0x65, 0x5f, 0x6d,
-	0x6f, 0x6e, 0x74, 0x68, 0x5f, 0x73, 0x6d, 0x6f, 0x6f, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x5f, 0x64,
-	0x65, 0x67, 0x72, 0x65, 0x65, 0x5f, 0x70, 0x72, 0x65, 0x63, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04,
-	0x52, 0x1b, 0x6f, 0x6e, 0x65, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x53, 0x6d, 0x6f, 0x6f, 0x74, 0x68,
-	0x69, 0x6e, 0x67, 0x44, 0x65, 0x67, 0x72, 0x65, 0x65, 0x50, 0x72, 0x65, 0x63, 0x3a, 0x1f, 0x8a,
-	0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
-	0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb,
-	0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65,
-	0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
-	0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74,
-	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03,
-	0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d,
-	0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14, 0x66, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x80, 0x01, 0x0a, 0x24,
+	0x6f, 0x6e, 0x65, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x5f, 0x73, 0x6d, 0x6f, 0x6f, 0x74, 0x68,
+	0x69, 0x6e, 0x67, 0x5f, 0x64, 0x65, 0x67, 0x72, 0x65, 0x65, 0x5f, 0x6e, 0x75, 0x6d, 0x65, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x20, 0x6f, 0x6e,
+	0x65, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x53, 0x6d, 0x6f, 0x6f, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x44,
+	0x65, 0x67, 0x72, 0x65, 0x65, 0x4e, 0x75, 0x6d, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x84,
+	0x01, 0x0a, 0x26, 0x6f, 0x6e, 0x65, 0x5f, 0x6d, 0x6f, 0x6e, 0x74, 0x68, 0x5f, 0x73, 0x6d, 0x6f,
+	0x6f, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x5f, 0x64, 0x65, 0x67, 0x72, 0x65, 0x65, 0x5f, 0x64, 0x65,
+	0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4,
+	0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a,
+	0x01, 0x52, 0x22, 0x6f, 0x6e, 0x65, 0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x53, 0x6d, 0x6f, 0x6f, 0x74,
+	0x68, 0x69, 0x6e, 0x67, 0x44, 0x65, 0x67, 0x72, 0x65, 0x65, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x69,
+	0x6e, 0x61, 0x74, 0x6f, 0x72, 0x3a, 0x1f, 0x8a, 0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f,
+	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
+	0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70,
+	0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e,
+	0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31,
+	0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69,
+	0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e,
+	0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74,
+	0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62,
+	0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

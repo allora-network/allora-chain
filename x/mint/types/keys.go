@@ -7,11 +7,10 @@ import "cosmossdk.io/collections"
 // e.g. emissions starts at 0, so maybe there was a conflict
 // with using the same integer for the keys for multiple keepers
 var (
-	// MinterKey is the key to use for the keeper store.
-	MinterKey                = collections.NewPrefix(137)
-	ParamsKey                = collections.NewPrefix(138)
-	PreviousRewardsKey       = collections.NewPrefix(139)
-	EcosystemTokensMintedKey = collections.NewPrefix(140)
+	ParamsKey                                              = collections.NewPrefix(138)
+	PreviousRewardEmissionPerUnitStakedTokenNumeratorKey   = collections.NewPrefix(139)
+	PreviousRewardEmissionPerUnitStakedTokenDenominatorKey = collections.NewPrefix(140)
+	EcosystemTokensMintedKey                               = collections.NewPrefix(141)
 )
 
 const (

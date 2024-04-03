@@ -30,10 +30,11 @@ type Keeper struct {
 	// should be the x/gov module account.
 	authority string
 
-	Schema                                    collections.Schema
-	Params                                    collections.Item[types.Params]
-	PreviousRewardEmissionsPerUnitStakedToken collections.Item[math.Int]
-	EcosystemTokensMinted                     collections.Item[math.Int]
+	Schema                                              collections.Schema
+	Params                                              collections.Item[types.Params]
+	PreviousRewardEmissionPerUnitStakedTokenNumerator   collections.Item[math.Int]
+	PreviousRewardEmissionPerUnitStakedTokenDenominator collections.Item[math.Int]
+	EcosystemTokensMinted                               collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -63,8 +64,9 @@ func NewKeeper(
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		PreviousRewardEmissionsPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardsKey, "previousrewardsemissionsperunitstakedtoken", sdk.IntValue),
-		EcosystemTokensMinted:                     collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		PreviousRewardEmissionPerUnitStakedTokenNumerator:   collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenNumeratorKey, "previousrewardsemissionsperunitstakedtokennumerator", sdk.IntValue),
+		PreviousRewardEmissionPerUnitStakedTokenDenominator: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenDenominatorKey, "previousrewardsemissionsperunitstakedtokendenominator", sdk.IntValue),
+		EcosystemTokensMinted:                               collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -136,9 +138,9 @@ func (k Keeper) PayCosmosValidatorRewardFromEcosystemAccount(ctx context.Context
 	)
 }
 
-// PayEmissionsFromEcosystemAccount sends funds from the ecosystem
+// PayReputerRewardFromEcosystemAccount sends funds from the ecosystem
 // treasury account to the reward payout account
-// PayEmissionsFromEcosystemAccount to be used in BeginBlocker.
+// PayReputerRewardFromEcosystemAccount to be used in BeginBlocker.
 func (k Keeper) PayReputerRewardFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
 	fmt.Println("PayReputerRewardFromEcosystemAccount, paying: ", rewards)
 	if rewards.Empty() {

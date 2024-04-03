@@ -21,7 +21,7 @@ const EcosystemTreasuryPercentOfTotalSupplyPrecision = 4
 // probably thee tokens will be custodied off chain and this function will
 // just return the circulating supply based off of what the agreements off chain
 // were supposed to be at time of chain-genesis
-func numberLockedTokens() math.Int {
+func GetLockedTokenSupply() math.Int {
 	return math.ZeroInt()
 }
 
@@ -44,102 +44,105 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 // E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token
 // and N_{staked,i} is the total amount of tokens staked at timestep i
+// THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
 func TotalEmissionPerTimestep(
-	rewardEmissionPerUnitStakedToken math.Int,
+	rewardEmissionPerUnitStakedTokenNumerator math.Int,
+	rewardEmissionPerUnitStakedTokenDenominator math.Int,
 	numStakedTokens math.Int,
 ) math.Int {
-	return rewardEmissionPerUnitStakedToken.Mul(numStakedTokens)
+	return rewardEmissionPerUnitStakedTokenNumerator.Mul(numStakedTokens).Quo(rewardEmissionPerUnitStakedTokenDenominator)
 }
 
 // Target Reward Emission Per Unit Staked Token
 // controls the inflation rate of the token issuance
 //
-// ^e_i = (f_e*T_{total,i}) / N_{staked,i}) * (N_{circ,i} / N_{total,i})
+// ^e_i = ((f_e*T_{total,i}) / N_{staked,i}) * (N_{circ,i} / N_{total,i})
 //
 // where T_{total,i} is the total number of tokens held by the ecosystem
 // treasury, N_{total,i} is the total token supply, N_{circ,i} is the
 // circulating supply, and N_{staked,i} is the staked supply. The
 // factor f_e = 0.015 month^{−1} represents the fraction of the
 // ecosystem treasury that would ideally be emitted per unit time.
+// pass f_e as a fractional value, numerator and denominator as separate args
 func TargetRewardEmissionPerUnitStakedToken(
-	ctx sdk.Context,
-	k Keeper,
-	fEmission math.Int,
-	fEmissionPrec uint64,
+	fEmissionNumerator math.Int,
+	fEmissionDenominator math.Int,
 	ecosystemBalance math.Int,
 	networkStaked math.Int,
-) (math.Int, error) {
+	circulatingSupply math.Int,
+	totalSupply math.Int,
+) (math.Int, math.Int, error) {
 	// T_{total,i} = ecosystemBalance
-	// N_{circ,i}, N_{total,i}
-	lockedSupply := numberLockedTokens()
-	totalSupply := k.GetSupply(ctx).Amount
-	circulatingSupply := totalSupply.Sub(lockedSupply)
-	if circulatingSupply.IsNegative() {
-		return math.Int{}, errors.Wrapf(
-			types.ErrNegativeCirculatingSupply,
-			"circulating supply is negative: %s | %s | %s",
-			circulatingSupply.String(),
-			totalSupply.String(),
-			lockedSupply.String(),
-		)
-	}
-
 	// N_{staked,i} = networkStaked
-	// ^e_i
-	// avoid truncation error
-	numerator := fEmission.Mul(ecosystemBalance).Mul(circulatingSupply)
-	denominator := networkStaked.Mul(totalSupply).Mul(math.NewIntFromUint64(fEmissionPrec))
-	targetEmissionPerToken := numerator.Quo(denominator)
-	if targetEmissionPerToken.IsNegative() {
-		return math.Int{}, errors.Wrapf(
+	// N_{circ,i} = circulatingSupply
+	// N_{total,i} = totalSupply
+	numerator := fEmissionNumerator.Mul(ecosystemBalance).Mul(circulatingSupply)
+	denominator := networkStaked.Mul(totalSupply).Mul(fEmissionDenominator)
+	if numerator.IsNegative() || denominator.IsNegative() {
+		return math.Int{}, math.Int{}, errors.Wrapf(
 			types.ErrNegativeTargetEmissionPerToken,
-			"target emission per token is negative: %s | %s | %s | %s | %s",
-			targetEmissionPerToken.String(),
-			fEmission.String(),
-			ecosystemBalance.String(),
-			networkStaked.String(),
-			circulatingSupply.String(),
+			"target emission per token is negative: %s | %s",
+			numerator.String(),
+			denominator.String(),
 		)
 	}
-	return targetEmissionPerToken, nil
+	if denominator.IsZero() {
+		return math.Int{}, math.Int{}, errors.Wrapf(
+			types.ErrZeroDenominator,
+			"denominator is zero: %s | %s",
+			networkStaked.String(),
+			fEmissionDenominator.String(),
+		)
+	}
+	return numerator, denominator, nil
 }
 
 // Reward Emission Per Unit Staked Token is an exponential moving
 // average over the Target Reward Emission Per Unit Staked Token
 // e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
-// alpha emission is represented as a numerator and denominator
-// separately because cosmos math doesn't have a non deprecated float type.
+// all the terms are represented as a numerator and denominator
 // So α_e can be written as α_e_numerator (a_en) / α_e_denominator (a_ed)
+// and e_i can be written as e_i_numerator (e_in) / e_i_denominator (e_id), etc
 // also to reduce confusion with exponentiation since latex doesn't translate
 // to ascii comments well we write ^e_i from the paper as e'_i
 // which makes our formula:
-// e_i = a_en/a_ed * e'_i + (1 − a_en/a_ed)*e_{i−1}
-// e_i = a_en*e'_i / a_ed + ( (a_ed - a_en) / a_ed )*e_{i−1}
-// e_i = a_en*e'_i / a_ed + (a_ed - a_en) * e_{i−1} / a_ed
-// e_i = ( a_en*e'_i + (a_ed - a_en)*e_{i−1} ) / a_ed
-// and here we truncate after the division, to end with a math.int
+// e_in / e_id = a_en/a_ed * e'_in/e'_id + (1 − a_en/a_ed)*(e_{i−1}n / e_{i−1}d)
+// e_in / e_id = (a_en*e'_in / a_ed*e'_id) + (((a_ed - a_en)*e_{i−1}n) / (a_ed * e_{i−1}d))
+// e_in / e_id = (a_en*e'_in*e_{i-1}d + (a_ed - a_en)*e_{i−1}n*e'_id) / (a_ed * e'_id*e_{i−1}d)
+// and we return the numerator and denominator separately
 func RewardEmissionPerUnitStakedToken(
-	targetRewardEmissionPerUnitStakedToken math.Int,
+	targetRewardEmissionPerUnitStakedTokenNumerator math.Int,
+	targetRewardEmissionPerUnitStakedTokenDenominator math.Int,
 	alphaEmissionNumerator math.Int,
 	alphaEmissionDenominator math.Int,
-	previousRewardEmissionPerUnitStakedToken math.Int,
-) math.Int {
-	// a_en * e'_i
-	a_en_Mul_e_prime := alphaEmissionNumerator.Mul(targetRewardEmissionPerUnitStakedToken)
-	// a_ed - a_en
-	a_ed_Sub_a_en := alphaEmissionDenominator.Sub(alphaEmissionNumerator)
-	// (a_ed - a_en)*e_{i−1}
-	a_ed_Sub_a_en_Mul_e_prev := a_ed_Sub_a_en.Mul(previousRewardEmissionPerUnitStakedToken)
-	// ( a_en*e'_i + (a_ed - a_en)*e_{i−1} )
-	numerator := a_en_Mul_e_prime.Add(a_ed_Sub_a_en_Mul_e_prev)
-	// e_i = ( a_en*e'_i + (a_ed - a_en)*e_{i−1} ) / a_ed
-	return numerator.Quo(alphaEmissionDenominator)
+	previousRewardEmissionPerUnitStakedTokenNumerator math.Int,
+	previousRewardEmissionPerUnitStakedTokenDenominator math.Int,
+) (numerator math.Int, denominator math.Int) {
+	// e_in = (a_en*e'_in*e_{i-1}d + (a_ed - a_en)*e_{i−1}n*e'_id)
+	// first term
+	// a_en*e'_in*e_{i-1}d
+	firstTerm := alphaEmissionNumerator.
+		Mul(targetRewardEmissionPerUnitStakedTokenNumerator).
+		Mul(previousRewardEmissionPerUnitStakedTokenDenominator)
+	// second term
+	// (a_ed - a_en)*e_{i−1}n*e'_id)
+	parens := alphaEmissionDenominator.Sub(alphaEmissionNumerator)
+	secondTerm := parens.Mul(previousRewardEmissionPerUnitStakedTokenNumerator).
+		Mul(targetRewardEmissionPerUnitStakedTokenDenominator)
+	numerator = firstTerm.Add(secondTerm)
+	// e_id = (a_ed * e'_id*e_{i−1}d)
+	denominator = alphaEmissionDenominator.
+		Mul(targetRewardEmissionPerUnitStakedTokenDenominator).
+		Mul(previousRewardEmissionPerUnitStakedTokenDenominator)
+	return numerator, denominator
 }
 
 // a_e needs to be set to the correct value for the timestep in question
 // a_e has a fiduciary value of 0.1 but that's for a one-month timestep
-// so it must be corrected for the block timestep
+// so it must be corrected for whatever timestep we actually use
+// in this first version of the allora network we will use a "daily" timestep
 // default block time is 6311520 blocks per year aka 5 seconds per block
+// so the value for delta t should be 30 (assuming a perfect world of 30 day months)
 // ^α_e = 1 - (1 - α_e)^(∆t/month)
 // where ˆαe is the recalibrated form of α_e appropriate for an update time step ∆t
 //
@@ -158,15 +161,12 @@ func SmoothingFactorPerBlock(
 	ctx sdk.Context,
 	k Keeper,
 	a_en math.Int,
-	a_ed uint64,
-) (math.Int, math.Int, error) {
-	params, err := k.Params.Get(ctx)
-	if err != nil {
-		return math.Int{}, math.Int{}, err
-	}
-	Dt := bn.NewInt(0).SetUint64(params.BlocksPerYear / 12)
+	a_ed math.Int,
+	dt uint64,
+) (math.Int, math.Int) {
+	Dt := bn.NewInt(0).SetUint64(dt)
 	A_en := a_en.BigInt()
-	A_ed := math.NewIntFromUint64(a_ed).BigInt()
+	A_ed := a_ed.BigInt()
 
 	//(a_ed)^dt
 	A_ed_Exp_Dt := bn.NewInt(0).Exp(A_ed, Dt, nil)
@@ -181,5 +181,5 @@ func SmoothingFactorPerBlock(
 	)
 	//((a_ed)^dt)
 	denominator := math.NewIntFromBigInt(A_ed_Exp_Dt)
-	return numerator, denominator, nil
+	return numerator, denominator
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -30,41 +31,60 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	targetRewardEmissionPerUnitStakedToken, err := keeper.TargetRewardEmissionPerUnitStakedToken(
-		sdkCtx,
-		k,
-		params.FEmission,
-		params.FEmissionPrec,
+	totalSupply := k.GetSupply(sdkCtx).Amount
+	lockedSupply := keeper.GetLockedTokenSupply()
+	circulatingSupply := totalSupply.Sub(lockedSupply)
+	if circulatingSupply.IsNegative() {
+		return errors.Wrapf(
+			types.ErrNegativeCirculatingSupply,
+			"total supply %s, locked supply %s",
+			totalSupply.String(),
+			lockedSupply.String(),
+		)
+	}
+	targetRewardEmissionPerUnitStakedTokenNumerator, targetRewardEmissionPerUnitStakedTokenDenominator,
+		err := keeper.TargetRewardEmissionPerUnitStakedToken(
+		params.FEmissionNumerator,
+		params.FEmissionDenominator,
 		ecosystemBalance,
 		networkStaked,
+		circulatingSupply,
+		totalSupply,
 	)
-	fmt.Println("Target reward emission per unit staked token", targetRewardEmissionPerUnitStakedToken)
+	fmt.Println("Target reward emission per unit staked token numerator", targetRewardEmissionPerUnitStakedTokenNumerator)
+	fmt.Println("Target reward emission per unit staked token denominator", targetRewardEmissionPerUnitStakedTokenDenominator)
 	if err != nil {
 		return err
 	}
-	smoothingDegreeNumerator, smoothingDegreeDenominator, err := keeper.SmoothingFactorPerBlock(
+	smoothingDegreeNumerator, smoothingDegreeDenominator := keeper.SmoothingFactorPerBlock(
 		sdkCtx,
 		k,
-		params.OneMonthSmoothingDegree,
-		params.OneMonthSmoothingDegreePrec,
+		params.OneMonthSmoothingDegreeNumerator,
+		params.OneMonthSmoothingDegreeDenominator,
+		30,
 	)
 	fmt.Println("Smoothing degree numerator", smoothingDegreeNumerator)
+	previousRewardEmissionPerUnitStakedTokenNumerator, err := k.PreviousRewardEmissionPerUnitStakedTokenNumerator.Get(ctx)
+	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionPerUnitStakedTokenNumerator)
 	if err != nil {
 		return err
 	}
-	previousRewardEmissionsPerUnitStakedToken, err := k.PreviousRewardEmissionsPerUnitStakedToken.Get(ctx)
-	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionsPerUnitStakedToken)
+	previousRewardEmissionPerUnitStakedTokenDenominator, err := k.PreviousRewardEmissionPerUnitStakedTokenDenominator.Get(ctx)
 	if err != nil {
 		return err
 	}
-	e_i := keeper.RewardEmissionPerUnitStakedToken(
-		targetRewardEmissionPerUnitStakedToken,
+	// e_i_n stands for e_i numerator, d denominator
+	e_i_n, e_i_d := keeper.RewardEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedTokenNumerator,
+		targetRewardEmissionPerUnitStakedTokenDenominator,
 		smoothingDegreeNumerator,
 		smoothingDegreeDenominator,
-		previousRewardEmissionsPerUnitStakedToken,
+		previousRewardEmissionPerUnitStakedTokenNumerator,
+		previousRewardEmissionPerUnitStakedTokenDenominator,
 	)
-	fmt.Println("E_i", e_i)
-	blockEmissions := keeper.TotalEmissionPerTimestep(e_i, networkStaked)
+	fmt.Println("E_i numerator", e_i_n)
+	fmt.Println("E_i denominator", e_i_d)
+	blockEmissions := keeper.TotalEmissionPerTimestep(e_i_n, e_i_d, networkStaked)
 	fmt.Println("Block emissions", blockEmissions)
 
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
@@ -116,6 +136,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	// set the previous emissions to this block's emissions
 	// todo use int without truncation, control for precision in math
-	k.PreviousRewardEmissionsPerUnitStakedToken.Set(ctx, e_i)
+	k.PreviousRewardEmissionPerUnitStakedTokenNumerator.Set(ctx, e_i_n)
+	k.PreviousRewardEmissionPerUnitStakedTokenDenominator.Set(ctx, e_i_d)
 	return nil
 }

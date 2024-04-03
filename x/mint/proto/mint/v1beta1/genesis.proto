@@ -14,7 +14,14 @@ message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 
   // previous target emission rewards per unit staked token
-  string previous_reward_emissions_per_unit_staked_token = 2 [
+  string previous_reward_emission_per_unit_staked_token_numerator = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  string previous_reward_emission_per_unit_staked_token_denominator = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
@@ -22,7 +29,7 @@ message GenesisState {
   ];
 
   // number of tokens minted into the ecosystem treasury
-  string ecosystem_tokens_minted = 3 [
+  string ecosystem_tokens_minted = 4 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

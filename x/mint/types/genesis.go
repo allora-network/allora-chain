@@ -5,13 +5,15 @@ import "cosmossdk.io/math"
 // NewGenesisState creates a new GenesisState object
 func NewGenesisState(
 	params Params,
-	previousRewardEmissionsPerUnitStakedToken math.Int,
+	previousRewardEmissionPerUnitStakedTokenNumerator math.Int,
+	previousRewardEmissionPerUnitStakedTokenDenominator math.Int,
 	ecosystemTokensMinted math.Int,
 ) *GenesisState {
 	return &GenesisState{
 		Params: params,
-		PreviousRewardEmissionsPerUnitStakedToken: previousRewardEmissionsPerUnitStakedToken,
-		EcosystemTokensMinted:                     ecosystemTokensMinted,
+		PreviousRewardEmissionPerUnitStakedTokenNumerator:   previousRewardEmissionPerUnitStakedTokenNumerator,
+		PreviousRewardEmissionPerUnitStakedTokenDenominator: previousRewardEmissionPerUnitStakedTokenDenominator,
+		EcosystemTokensMinted:                               ecosystemTokensMinted,
 	}
 }
 
@@ -19,8 +21,9 @@ func NewGenesisState(
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params: DefaultParams(),
-		PreviousRewardEmissionsPerUnitStakedToken: DefaultPreviousRewardEmissionsPerUnitStakedToken(),
-		EcosystemTokensMinted:                     DefaultEcosystemTokensMinted(),
+		PreviousRewardEmissionPerUnitStakedTokenNumerator:   DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator(),
+		PreviousRewardEmissionPerUnitStakedTokenDenominator: DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator(),
+		EcosystemTokensMinted:                               DefaultEcosystemTokensMinted(),
 	}
 }
 
@@ -31,8 +34,11 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	if data.PreviousRewardEmissionsPerUnitStakedToken.IsNegative() {
-		return ErrInvalidPreviousRewardEmissionsPerUnitStakedToken
+	if data.PreviousRewardEmissionPerUnitStakedTokenNumerator.IsNegative() {
+		return ErrInvalidPreviousRewardEmissionPerUnitStakedToken
+	}
+	if data.PreviousRewardEmissionPerUnitStakedTokenDenominator.IsNegative() {
+		return ErrInvalidPreviousRewardEmissionPerUnitStakedToken
 	}
 
 	if data.EcosystemTokensMinted.IsNegative() {

@@ -15,19 +15,19 @@ func NewParams(
 	mintDenom string,
 	blocksPerYear uint64,
 	maxSupply math.Int,
-	fEmission math.Int,
-	fEmissionsPrec uint64,
-	oneMonthSmoothingDegree math.Int,
-	oneMonthSmoothingDegreePrec uint64,
+	fEmissionNumerator math.Int,
+	fEmissionDenominator math.Int,
+	oneMonthSmoothingDegreeNumerator math.Int,
+	oneMonthSmoothingDegreeDenominator math.Int,
 ) Params {
 	return Params{
-		MintDenom:                   mintDenom,
-		BlocksPerYear:               blocksPerYear,
-		MaxSupply:                   maxSupply,
-		FEmission:                   fEmission,
-		FEmissionPrec:               fEmissionsPrec,
-		OneMonthSmoothingDegree:     oneMonthSmoothingDegree,
-		OneMonthSmoothingDegreePrec: oneMonthSmoothingDegreePrec,
+		MintDenom:                          mintDenom,
+		BlocksPerYear:                      blocksPerYear,
+		MaxSupply:                          maxSupply,
+		FEmissionNumerator:                 fEmissionNumerator,
+		FEmissionDenominator:               fEmissionDenominator,
+		OneMonthSmoothingDegreeNumerator:   oneMonthSmoothingDegreeNumerator,
+		OneMonthSmoothingDegreeDenominator: oneMonthSmoothingDegreeDenominator,
 	}
 }
 
@@ -38,19 +38,24 @@ func DefaultParams() Params {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                   sdk.DefaultBondDenom,
-		BlocksPerYear:               uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
-		MaxSupply:                   maxSupply,                  //1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmission:                   math.NewInt(15),            //  0.015 per month
-		FEmissionPrec:               2,                          // true value of FEmission is FEmission divided by 10^FEmissionPrec
-		OneMonthSmoothingDegree:     math.NewInt(1),             // 0.1 at 1 month cadence
-		OneMonthSmoothingDegreePrec: 1,                          // true value of OneMonthSmoothingDegree is OneMonthSmoothingDegree divided by 10^OneMonthSmoothingPrec
+		MintDenom:                          sdk.DefaultBondDenom,
+		BlocksPerYear:                      uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
+		MaxSupply:                          maxSupply,                  //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmissionNumerator:                 math.NewInt(15),            // 0.015 per month
+		FEmissionDenominator:               math.NewInt(1000),          // 0.015 per month is 15 over 1000
+		OneMonthSmoothingDegreeNumerator:   math.NewInt(1),             // 0.1 at 1 month cadence
+		OneMonthSmoothingDegreeDenominator: math.NewInt(10),            // 0.1 is 1 over 10
 	}
 }
 
 // Default previous emission per token is zero
-func DefaultPreviousRewardEmissionsPerUnitStakedToken() math.Int {
-	return math.NewInt(0)
+func DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator() math.Int {
+	return math.ZeroInt()
+}
+
+// default previous emission per token denominator is 1
+func DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator() math.Int {
+	return math.OneInt()
 }
 
 // at genesis, nothing has been minted yet

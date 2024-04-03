@@ -23,29 +23,34 @@ message Params {
     (amino.dont_omitempty) = true
   ];
   // ecosystem treasury fraction ideally emitted per unit time
-  // this value includes precision: see f_emission_prec
-  string f_emission = 4 [
+  // this value includes a denominator, see f_emission_denominator
+  string f_emission_numerator = 4 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  // precision of the ecosystem treasury fraction
-  // e.g. if f_emission is less than 1, this number should be
-  // the number of decimal places in f_emission
-  // if f_emission is greater than 1, this number should be 0
-  uint64 f_emission_prec = 5;
+  // f_emission is passed as a fraction, this is the denominator
+  string f_emission_denominator = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
   // exponential moving average smoothing factor for one month
-  // this value includes precision: see one_month_smoothing_prec
-  string one_month_smoothing_degree = 6 [
+  // this value is a fraction, see one_month_smoothing_degree_denominator
+  string one_month_smoothing_degree_numerator = 6 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  // precision of the smoothing factor
-  // e.g. if one_month_smoothing_degree is less than 1, this number should be
-  // the number of decimal places in one_month_smoothing_degree
-  // if one_month_smoothing_degree is greater than 1, this number should be 0
-  uint64 one_month_smoothing_degree_prec = 7;
+  // denominator for the one_month_smoothing_degree_numerator
+  // pass the value as a fraction due to precision issues
+  string one_month_smoothing_degree_denominator = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
