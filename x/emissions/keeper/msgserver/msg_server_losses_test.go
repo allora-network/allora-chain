@@ -35,13 +35,19 @@ func (s *KeeperTestSuite) TestMsgSetLosses() {
 						},
 					},
 					NaiveValue: 100,
-					OneOutValues: []*types.WorkerAttributedValue{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
 							Value:  100,
 						},
 					},
-					OneInNaiveValues: []*types.WorkerAttributedValue{
+					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
+					},
+					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
 							Value:  100,
@@ -86,13 +92,19 @@ func (s *KeeperTestSuite) TestMsgSetLossesInvalidUnauthorized() {
 						},
 					},
 					NaiveValue: 100,
-					OneOutValues: []*types.WorkerAttributedValue{
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
 							Value:  100,
 						},
 					},
-					OneInNaiveValues: []*types.WorkerAttributedValue{
+					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+						{
+							Worker: workerAddr,
+							Value:  100,
+						},
+					},
+					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
 							Value:  100,
