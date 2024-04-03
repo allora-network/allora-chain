@@ -97,14 +97,6 @@ message WithheldWorkerAttributedValue {
   double value = 2;
 }
 
-message WorkerAttributedValuesOfWithheldWorker {
-  option (gogoproto.equal) = true;
-
-  string withheld_worker = 1;  // worker whose absence affected values
-  // the values that vary e.g. forecast-implied inferences
-  repeated WorkerAttributedValue worker_attributed_values = 2;
-}
-
 // These losses and inferences are calculated per reputer or by the network
 // The `m`s in the comments below exist for when they're made by reputers,
 // but they may be absent implying that they were made by the network
@@ -121,9 +113,9 @@ message ValueBundle {
   repeated WorkerAttributedValue forecaster_values = 5;
   // R^-_im  || log10 L^-_im || I^-_i
   double naive_value = 6;
-  // R^-_ilkm || log10 L^-_ilkm || I^-_ilk where l = any j
-  // An extra index is necessary because forecast-implied inferences are recomputed for each left-out inference
-  repeated WorkerAttributedValuesOfWithheldWorker one_out_inferer_values = 7;
+  // R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
+  // Note: forecast-implied inferences are recomputed for each left-out inference
+  repeated WithheldWorkerAttributedValue one_out_inferer_values = 7;
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
   repeated WithheldWorkerAttributedValue one_out_forecaster_values = 8;
   // R^+_ikm || log10 L^+_ikm || I^+_ik
