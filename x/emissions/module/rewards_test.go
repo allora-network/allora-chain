@@ -507,11 +507,11 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
 	s.NoError(err, "Error adding valueBundles")
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
@@ -659,11 +659,11 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
 	s.NoError(err, "Error adding valueBundle for worker")
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
@@ -737,14 +737,14 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: newValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: newValueBundles})
 	s.NoError(err, "Error adding valueBundle for reputer")
 
 	var reputersStakes []float64
 	var reputersReportedLosses []float64
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get stakes and reported losses

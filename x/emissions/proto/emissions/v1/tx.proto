@@ -15,9 +15,9 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc ProcessInferences(MsgProcessInferences) returns (MsgProcessInferencesResponse);
+  rpc InsertInferences(MsgInsertInferences) returns (MsgInsertInferencesResponse);
 
-  rpc ProcessForecasts(MsgProcessForecasts) returns (MsgProcessForecastsResponse);
+  rpc InsertForecasts(MsgInsertForecasts) returns (MsgInsertForecastsResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
@@ -29,7 +29,7 @@ service Msg {
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
-  rpc InsertLosses(MsgSetLosses) returns (MsgSetLossesResponse);
+  rpc InsertLosses(MsgInsertLosses) returns (MsgInsertLossesResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -143,36 +143,41 @@ message MsgCreateNewTopicResponse {
   uint64 topic_id = 1;
 }
 
-// MsgSetLosses sets the losses from a given reputer
-message MsgSetLosses {
+/// Worker and Reputer Interface
+
+// MsgInsertLosses sets the losses from a given reputer
+message MsgInsertLosses {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  repeated ReputerValueBundle reputer_value_bundles = 2;
+  int64 block_height = 2;
+  repeated ReputerValueBundle reputer_value_bundles = 3;
 }
 
-message MsgSetLossesResponse {}
+message MsgInsertLossesResponse {}
 
-message MsgProcessInferences {
+message MsgInsertInferences {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  repeated Inference inferences = 2;
+  int64 block_height = 2;
+  repeated Inference inferences = 3;
 }
 
-message MsgProcessInferencesResponse {}
+message MsgInsertInferencesResponse {}
 
-message MsgProcessForecasts {
+message MsgInsertForecasts {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  repeated Forecast forecasts = 2;
+  int64 block_height = 2;
+  repeated Forecast forecasts = 3;
 }
 
-message MsgProcessForecastsResponse {}
+message MsgInsertForecastsResponse {}
 
 ///  Inference Node Registration
 
@@ -380,24 +385,6 @@ message MsgRemoveFromReputerWhitelist {
 }
 
 message MsgRemoveFromReputerWhitelistResponse {}
-
-message MsgAddToFoundationWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgAddToFoundationWhitelistResponse {}
-
-message MsgRemoveFromFoundationWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgRemoveFromFoundationWhitelistResponse {}
 
 /// Topic Management
 
