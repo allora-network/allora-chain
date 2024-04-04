@@ -163,7 +163,6 @@ func (s *ModuleTestSuite) TestCalcForcastImpliedInferences() {
 				for key, expectedValue := range tc.expected {
 					actualValue, exists := result[key]
 					s.Require().True(exists, "Expected key does not exist in result map")
-					s.T().Logf("Key: %s, Expected Value: %v, Actual Value: %v", key, expectedValue.Value, actualValue.Value)
 					s.Require().InEpsilon(expectedValue.Value, actualValue.Value, 1e-5, "Values do not match for key: %s", key)
 				}
 			}
@@ -261,7 +260,6 @@ func (s *ModuleTestSuite) TestCalcWeightedInference() {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
 				s.Require().NoError(err)
-				s.T().Logf("Test Case: %s, Expected Network Combined Inference Value: %v, Actual Network Combined Inference Value: %v", tc.name, tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue)
 				s.Require().InEpsilon(tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue, 1e-5, "Network combined inference value should match expected value within epsilon")
 			}
 		})
