@@ -69,24 +69,22 @@ func CalcForcastImpliedInferences(
 		if len(forecast.ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
 			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
-			forecastElementsWithInferences := make([]*emissions.ForecastElement, 0)
-			// Track workers with inferences => We only add the first forecast element per forecast per inferer
-			inferenceWorkers := make(map[string]bool)
+			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
+			forecastElementsByInferer := make(map[string]*emissions.ForecastElement, 0)
 			for _, el := range forecast.ForecastElements {
-				if _, ok := inferenceByWorker[el.Inferer]; ok && !inferenceWorkers[el.Inferer] {
-					forecastElementsWithInferences = append(forecastElementsWithInferences, el)
-					inferenceWorkers[el.Inferer] = true
-				}
+				forecastElementsByInferer[el.Inferer] = el
 			}
 
 			// Approximate forecast regrets of the network inference
-			R_ik := make([]float64, len(forecastElementsWithInferences))
+			// Map inferer -> regret
+			R_ik := make(map[string]float64, len(forecastElementsByInferer))
 			// Weights used to map inferences to forecast-implied inferences
-			w_ik := make([]float64, len(forecastElementsWithInferences))
+			// Map inferer -> weight
+			w_ik := make(map[string]float64, len(forecastElementsByInferer))
 
 			// Define variable to store maximum regret for forecast k
-			maxjRijk := forecastElementsWithInferences[0].Value
-			for j, el := range forecastElementsWithInferences {
+			maxjRijk := float64(-1)
+			for j, el := range forecastElementsByInferer {
 				// Calculate the approximate forecast regret of the network inference
 				R_ik[j] = math.Log10(networkCombinedLoss / el.Value) // forecasted regrets R_ijk = log10(L_i / L_ijk)
 				if R_ik[j] > maxjRijk {
@@ -95,7 +93,7 @@ func CalcForcastImpliedInferences(
 			}
 
 			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
-			for j := range forecastElementsWithInferences {
+			for j := range forecastElementsByInferer {
 				R_ik[j] = R_ik[j] / maxjRijk                         // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 				w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 				if err != nil {
@@ -109,7 +107,7 @@ func CalcForcastImpliedInferences(
 			weightSum := 0.0
 			weightInferenceDotProduct := 0.0
 			for j, w_ijk := range w_ik {
-				weightInferenceDotProduct += w_ijk * inferenceByWorker[forecast.ForecastElements[j].Inferer].Value
+				weightInferenceDotProduct += w_ijk * inferenceByWorker[j].Value
 				weightSum += w_ijk
 			}
 			forecastImpliedInference := emissions.Inference{
