@@ -52,13 +52,8 @@ func DefaultParams() Params {
 }
 
 // Default previous emission per token is zero
-func DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator() math.Int {
-	return math.ZeroInt()
-}
-
-// default previous emission per token denominator is 1
-func DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator() math.Int {
-	return math.OneInt()
+func DefaultPreviousRewardEmissionPerUnitStakedToken() math.LegacyDec {
+	return math.ZeroInt().ToLegacyDec()
 }
 
 // no emission happened last block at genesis
@@ -85,6 +80,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
+		return err
+	}
+	if err := validateEmissionCalibrationTimestepPerMonth(p.EmissionCalibrationsTimestepPerMonth); err != nil {
 		return err
 	}
 	return nil
@@ -131,5 +129,20 @@ func validateMaxSupply(i interface{}) error {
 		return fmt.Errorf("max supply must be positive: %s", v)
 	}
 
+	return nil
+}
+
+func validateEmissionCalibrationTimestepPerMonth(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("emission calibration timestep per month must be positive: %d", v)
+	}
+	if v > 35 {
+		return fmt.Errorf("lets not do x to the power more than 35 times: %d", v)
+	}
 	return nil
 }

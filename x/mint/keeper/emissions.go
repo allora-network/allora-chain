@@ -3,8 +3,6 @@ package keeper
 import (
 	"context"
 
-	bn "math/big"
-
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -46,11 +44,10 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 // and N_{staked,i} is the total amount of tokens staked at timestep i
 // THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
 func TotalEmissionPerTimestep(
-	rewardEmissionPerUnitStakedTokenNumerator math.Int,
-	rewardEmissionPerUnitStakedTokenDenominator math.Int,
+	rewardEmissionPerUnitStakedToken math.LegacyDec,
 	numStakedTokens math.Int,
 ) math.Int {
-	return rewardEmissionPerUnitStakedTokenNumerator.Mul(numStakedTokens).Quo(rewardEmissionPerUnitStakedTokenDenominator)
+	return rewardEmissionPerUnitStakedToken.MulInt(numStakedTokens).TruncateInt()
 }
 
 // Target Reward Emission Per Unit Staked Token
@@ -71,79 +68,73 @@ func TargetRewardEmissionPerUnitStakedToken(
 	networkStaked math.Int,
 	circulatingSupply math.Int,
 	totalSupply math.Int,
-) (math.Int, math.Int, error) {
-	// T_{total,i} = ecosystemBalance
-	// N_{staked,i} = networkStaked
-	// N_{circ,i} = circulatingSupply
-	// N_{total,i} = totalSupply
-	numerator := fEmissionNumerator.Mul(ecosystemBalance).Mul(circulatingSupply)
-	denominator := networkStaked.Mul(totalSupply).Mul(fEmissionDenominator)
-	if numerator.IsNegative() || denominator.IsNegative() {
-		return math.Int{}, math.Int{}, errors.Wrapf(
-			types.ErrNegativeTargetEmissionPerToken,
-			"target emission per token is negative: %s | %s",
-			numerator.String(),
-			denominator.String(),
-		)
-	}
-	if denominator.IsZero() {
-		return math.Int{}, math.Int{}, errors.Wrapf(
+) (math.LegacyDec, error) {
+	if fEmissionDenominator.IsZero() ||
+		networkStaked.IsZero() ||
+		totalSupply.IsZero() {
+		return math.LegacyDec{}, errors.Wrapf(
 			types.ErrZeroDenominator,
 			"denominator is zero: %s | %s",
 			networkStaked.String(),
 			fEmissionDenominator.String(),
 		)
 	}
-	return numerator, denominator, nil
+	// T_{total,i} = ecosystemBalance
+	// N_{staked,i} = networkStaked
+	// N_{circ,i} = circulatingSupply
+	// N_{total,i} = totalSupply
+	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(totalSupply.ToLegacyDec())
+	ratioEcosystemToStaked := ecosystemBalance.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
+	ret := fEmissionNumerator.ToLegacyDec().
+		Mul(ratioEcosystemToStaked).
+		Mul(ratioCirculating).
+		Quo(fEmissionDenominator.ToLegacyDec())
+	if ret.IsNegative() {
+		return math.LegacyDec{}, errors.Wrapf(
+			types.ErrNegativeTargetEmissionPerToken,
+			"target emission per token is negative: %s | %s | %s",
+			ratioCirculating.String(),
+			ratioEcosystemToStaked.String(),
+			ret.String(),
+		)
+	}
+
+	return ret, nil
 }
 
 // Reward Emission Per Unit Staked Token is an exponential moving
 // average over the Target Reward Emission Per Unit Staked Token
 // e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
-// all the terms are represented as a numerator and denominator
-// So α_e can be written as α_e_numerator (a_en) / α_e_denominator (a_ed)
-// and e_i can be written as e_i_numerator (e_in) / e_i_denominator (e_id), etc
-// also to reduce confusion with exponentiation since latex doesn't translate
-// to ascii comments well we write ^e_i from the paper as e'_i
-// which makes our formula:
-// e_in / e_id = a_en/a_ed * e'_in/e'_id + (1 − a_en/a_ed)*(e_{i−1}n / e_{i−1}d)
-// e_in / e_id = (a_en*e'_in / a_ed*e'_id) + (((a_ed - a_en)*e_{i−1}n) / (a_ed * e_{i−1}d))
-// e_in / e_id = (a_en*e'_in*e_{i-1}d + (a_ed - a_en)*e_{i−1}n*e'_id) / (a_ed * e'_id*e_{i−1}d)
-// and we return the numerator and denominator separately
 func RewardEmissionPerUnitStakedToken(
-	targetRewardEmissionPerUnitStakedTokenNumerator math.Int,
-	targetRewardEmissionPerUnitStakedTokenDenominator math.Int,
-	alphaEmissionNumerator math.Int,
-	alphaEmissionDenominator math.Int,
-	previousRewardEmissionPerUnitStakedTokenNumerator math.Int,
-	previousRewardEmissionPerUnitStakedTokenDenominator math.Int,
-) (numerator math.Int, denominator math.Int) {
-	// e_in = (a_en*e'_in*e_{i-1}d + (a_ed - a_en)*e_{i−1}n*e'_id)
-	// first term
-	// a_en*e'_in*e_{i-1}d
-	firstTerm := alphaEmissionNumerator.
-		Mul(targetRewardEmissionPerUnitStakedTokenNumerator).
-		Mul(previousRewardEmissionPerUnitStakedTokenDenominator)
-	// second term
-	// (a_ed - a_en)*e_{i−1}n*e'_id)
-	parens := alphaEmissionDenominator.Sub(alphaEmissionNumerator)
-	secondTerm := parens.Mul(previousRewardEmissionPerUnitStakedTokenNumerator).
-		Mul(targetRewardEmissionPerUnitStakedTokenDenominator)
-	numerator = firstTerm.Add(secondTerm)
-	// e_id = (a_ed * e'_id*e_{i−1}d)
-	denominator = alphaEmissionDenominator.
-		Mul(targetRewardEmissionPerUnitStakedTokenDenominator).
-		Mul(previousRewardEmissionPerUnitStakedTokenDenominator)
-	return numerator, denominator
+	targetRewardEmissionPerUnitStakedToken math.LegacyDec,
+	alphaEmission math.LegacyDec,
+	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
+) math.LegacyDec {
+	firstTerm := targetRewardEmissionPerUnitStakedToken.Mul(alphaEmission)
+	secondTerm := math.OneInt().ToLegacyDec().Sub(alphaEmission).
+		Mul(previousRewardEmissionPerUnitStakedToken)
+	return firstTerm.Add(secondTerm)
 }
 
 // a_e needs to be set to the correct value for the timestep in question
 // a_e has a fiduciary value of 0.1 but that's for a one-month timestep
 // so it must be corrected for whatever timestep we actually use
-// default block time is 6311520 blocks per year aka 5 seconds per block
 // in this first version of the allora network we will use a "daily" timestep
 // so the value for delta t should be 30 (assuming a perfect world of 30 day months)
 // ^α_e = 1 - (1 - α_e)^(∆t/month)
+func SmoothingFactorPerTimestep(
+	ctx sdk.Context,
+	k Keeper,
+	a_en math.Int,
+	a_ed math.Int,
+	dt uint64,
+) math.LegacyDec {
+	a_e := a_en.ToLegacyDec().Quo(a_ed.ToLegacyDec())
+	base := math.OneInt().ToLegacyDec().Sub(a_e)
+	secondTerm := base.Power(dt)
+	return math.OneInt().ToLegacyDec().Sub(secondTerm)
+}
+
 // where ˆαe is the recalibrated form of α_e appropriate for an update time step ∆t
 //
 // due to using math.int rather than having a float like data structure available to us
@@ -157,6 +148,7 @@ func RewardEmissionPerUnitStakedToken(
 // ^α_e = (a_ed)^dt)/((a_ed)^dt) - ((a_ed-a_en)^dt)/((a_ed)^dt)
 // and the actual math we'll use in this function:
 // ^α_e = ((a_ed)^dt - ((a_ed-a_en)^dt)) / ((a_ed)^dt)
+/*
 func SmoothingFactorPerTimestep(
 	ctx sdk.Context,
 	k Keeper,
@@ -183,3 +175,4 @@ func SmoothingFactorPerTimestep(
 	denominator := math.NewIntFromBigInt(A_ed_Exp_Dt)
 	return numerator, denominator
 }
+*/

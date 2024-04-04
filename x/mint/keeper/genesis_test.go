@@ -76,8 +76,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		math.NewInt(1),
 		math.NewInt(100),
 	)
-	genesisState.PreviousRewardEmissionPerUnitStakedTokenNumerator = types.DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator()
-	genesisState.PreviousRewardEmissionPerUnitStakedTokenDenominator = types.DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator()
+	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()
 	genesisState.EcosystemTokensMinted = types.DefaultEcosystemTokensMinted()
 
@@ -91,11 +90,9 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	s.Require().Equal(genesisState.Params, params)
 	s.Require().NoError(err)
 
-	previousRewardsN, err := s.keeper.PreviousRewardEmissionPerUnitStakedTokenNumerator.Get(s.sdkCtx)
+	previousRewardsN, err := s.keeper.PreviousRewardEmissionPerUnitStakedToken.Get(s.sdkCtx)
 	s.Require().NoError(err)
-	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenNumerator.Equal(previousRewardsN))
-	previousRewardsD, err := s.keeper.PreviousRewardEmissionPerUnitStakedTokenDenominator.Get(s.sdkCtx)
-	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenDenominator.Equal(previousRewardsD))
+	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(previousRewardsN))
 	s.Require().NoError(err)
 
 	ecosystemTokensMinted, err := s.keeper.EcosystemTokensMinted.Get(s.sdkCtx)
@@ -106,7 +103,6 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	// got to check the fields are equal one by one because the
 	// bigint params screw .Equal up
 	s.Require().Equal(genesisState.Params, genesisState2.Params)
-	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenNumerator.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedTokenNumerator))
-	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedTokenDenominator.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedTokenDenominator))
+	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedToken))
 	s.Require().True(genesisState.EcosystemTokensMinted.Equal(genesisState2.EcosystemTokensMinted))
 }

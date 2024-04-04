@@ -30,12 +30,11 @@ type Keeper struct {
 	// should be the x/gov module account.
 	authority string
 
-	Schema                                              collections.Schema
-	Params                                              collections.Item[types.Params]
-	PreviousRewardEmissionPerUnitStakedTokenNumerator   collections.Item[math.Int]
-	PreviousRewardEmissionPerUnitStakedTokenDenominator collections.Item[math.Int]
-	PreviousBlockEmission                               collections.Item[math.Int]
-	EcosystemTokensMinted                               collections.Item[math.Int]
+	Schema                                   collections.Schema
+	Params                                   collections.Item[types.Params]
+	PreviousRewardEmissionPerUnitStakedToken collections.Item[math.LegacyDec]
+	PreviousBlockEmission                    collections.Item[math.Int]
+	EcosystemTokensMinted                    collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -56,19 +55,18 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:              cdc,
-		storeService:     storeService,
-		stakingKeeper:    sk,
-		accountKeeper:    ak,
-		bankKeeper:       bk,
-		emissionsKeeper:  ek,
-		feeCollectorName: feeCollectorName,
-		authority:        authority,
-		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		PreviousRewardEmissionPerUnitStakedTokenNumerator:   collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenNumeratorKey, "previousrewardsemissionsperunitstakedtokennumerator", sdk.IntValue),
-		PreviousRewardEmissionPerUnitStakedTokenDenominator: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenDenominatorKey, "previousrewardsemissionsperunitstakedtokendenominator", sdk.IntValue),
-		PreviousBlockEmission:                               collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
-		EcosystemTokensMinted:                               collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		cdc:                                      cdc,
+		storeService:                             storeService,
+		stakingKeeper:                            sk,
+		accountKeeper:                            ak,
+		bankKeeper:                               bk,
+		emissionsKeeper:                          ek,
+		feeCollectorName:                         feeCollectorName,
+		authority:                                authority,
+		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", LegacyDecValue),
+		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
+		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()

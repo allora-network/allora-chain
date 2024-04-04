@@ -9,14 +9,12 @@ import (
 
 func (s *IntegrationTestSuite) TestTotalEmissionPerTimestepSimple() {
 	// 1. Set up the test inputs
-	rewardEmissionPerUnitStakedTokenNumerator := math.NewInt(10)
-	rewardEmissionPerUnitStakedTokenDenominator := math.NewInt(2)
+	rewardEmissionPerUnitStakedToken := math.NewInt(5).ToLegacyDec()
 	numStakedTokens := math.NewInt(100)
 
 	// 2. Execute the test
 	totalEmission := keeper.TotalEmissionPerTimestep(
-		rewardEmissionPerUnitStakedTokenNumerator,
-		rewardEmissionPerUnitStakedTokenDenominator,
+		rewardEmissionPerUnitStakedToken,
 		numStakedTokens,
 	)
 
@@ -49,7 +47,7 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 	expectedDenominator, ok := math.NewIntFromString("1000000000000000000000000000000")
 	s.Require().True(ok)
 
-	resultNumerator, resultDenominator := keeper.SmoothingFactorPerTimestep(
+	result := keeper.SmoothingFactorPerTimestep(
 		s.ctx,
 		s.mintKeeper,
 		math.NewInt(1),  // 0.1 | 1 over 10, so numerator is 1
@@ -57,9 +55,9 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 		30,              // there are 30 days in a month (shh, close enough)
 	)
 
-	s.Require().True(resultDenominator.GTE(resultNumerator)) // we should be dealing with a fraction
-	s.Require().True(expectedNumerator.Equal(resultNumerator))
-	s.Require().True(expectedDenominator.Equal(resultDenominator))
+	s.Require().True(
+		math.LegacyDec(expectedNumerator).Quo(math.LegacyDec(expectedDenominator)).Equal(result),
+	)
 }
 
 func (s *IntegrationTestSuite) TestRewardEmissionPerUnitStakedTokenSimple() {
@@ -69,19 +67,14 @@ func (s *IntegrationTestSuite) TestRewardEmissionPerUnitStakedTokenSimple() {
 	// e_i = 100 + 720
 	// e_i = 820
 
-	resultNumerator, resultDenominator := keeper.RewardEmissionPerUnitStakedToken(
-		math.NewInt(1000),
-		math.NewInt(1),
-		math.NewInt(1),
-		math.NewInt(10),
-		math.NewInt(800),
-		math.NewInt(1),
+	result := keeper.RewardEmissionPerUnitStakedToken(
+		math.LegacyMustNewDecFromStr("1000"),
+		math.LegacyMustNewDecFromStr("0.1"),
+		math.LegacyMustNewDecFromStr("800"),
 	)
 
-	expectedValue := math.NewInt(820)
-	s.Require().True(expectedValue.Equal(resultNumerator.Quo(resultDenominator)))
-	s.Require().True(resultNumerator.Equal(math.NewInt(8200)))
-	s.Require().True(resultDenominator.Equal(math.NewInt(10)))
+	expectedValue := math.NewInt(820).ToLegacyDec()
+	s.Require().True(expectedValue.Equal(result))
 }
 
 func (s *IntegrationTestSuite) TestNumberLockedTokensSimple() {
@@ -94,7 +87,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 	// using some random sample values
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
 
-	resultNumerator, resultDenominator, err := keeper.TargetRewardEmissionPerUnitStakedToken(
+	result, err := keeper.TargetRewardEmissionPerUnitStakedToken(
 		math.NewInt(15),
 		math.NewInt(1000),
 		math.NewInt(200000),
@@ -103,5 +96,5 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 		math.NewInt(12000000),
 	)
 	s.Require().NoError(err)
-	fmt.Println(resultNumerator, resultDenominator)
+	fmt.Println(result)
 }

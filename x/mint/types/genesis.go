@@ -5,28 +5,25 @@ import "cosmossdk.io/math"
 // NewGenesisState creates a new GenesisState object
 func NewGenesisState(
 	params Params,
-	previousRewardEmissionPerUnitStakedTokenNumerator math.Int,
-	previousRewardEmissionPerUnitStakedTokenDenominator math.Int,
+	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
 	previousBlockEmission math.Int,
 	ecosystemTokensMinted math.Int,
 ) *GenesisState {
 	return &GenesisState{
-		Params: params,
-		PreviousRewardEmissionPerUnitStakedTokenNumerator:   previousRewardEmissionPerUnitStakedTokenNumerator,
-		PreviousRewardEmissionPerUnitStakedTokenDenominator: previousRewardEmissionPerUnitStakedTokenDenominator,
-		PreviousBlockEmission:                               previousBlockEmission,
-		EcosystemTokensMinted:                               ecosystemTokensMinted,
+		Params:                                   params,
+		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
+		PreviousBlockEmission:                    previousBlockEmission,
+		EcosystemTokensMinted:                    ecosystemTokensMinted,
 	}
 }
 
 // DefaultGenesisState creates a default GenesisState object
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Params: DefaultParams(),
-		PreviousRewardEmissionPerUnitStakedTokenNumerator:   DefaultPreviousRewardEmissionPerUnitStakedTokenNumerator(),
-		PreviousRewardEmissionPerUnitStakedTokenDenominator: DefaultPreviousRewardEmissionPerUnitStakedTokenDenominator(),
-		PreviousBlockEmission:                               DefaultPreviousBlockEmission(),
-		EcosystemTokensMinted:                               DefaultEcosystemTokensMinted(),
+		Params:                                   DefaultParams(),
+		PreviousRewardEmissionPerUnitStakedToken: DefaultPreviousRewardEmissionPerUnitStakedToken(),
+		PreviousBlockEmission:                    DefaultPreviousBlockEmission(),
+		EcosystemTokensMinted:                    DefaultEcosystemTokensMinted(),
 	}
 }
 
@@ -37,10 +34,7 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	if data.PreviousRewardEmissionPerUnitStakedTokenNumerator.IsNegative() {
-		return ErrInvalidPreviousRewardEmissionPerUnitStakedToken
-	}
-	if data.PreviousRewardEmissionPerUnitStakedTokenDenominator.IsNegative() {
+	if data.PreviousRewardEmissionPerUnitStakedToken.IsNegative() {
 		return ErrInvalidPreviousRewardEmissionPerUnitStakedToken
 	}
 

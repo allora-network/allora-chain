@@ -16,25 +16,30 @@ func UpdateEmissionRate(
 	k keeper.Keeper,
 	params types.Params,
 	ecosystemBalance math.Int,
-) (blockEmission math.Int, e_i_n math.Int, e_i_d math.Int, err error) {
+) (
+	emissionPerTimestep math.Int,
+	emissionPerUnitStakedToken math.LegacyDec,
+	err error,
+) {
+	fmt.Println("Updating emission rate")
 	// Get the expected amount of emissions this block
 	networkStaked, err := keeper.GetNumStakedTokens(ctx, k)
 	fmt.Println("Network staked", networkStaked)
 	if err != nil {
-		return math.Int{}, math.Int{}, math.Int{}, err
+		return math.Int{}, math.LegacyDec{}, err
 	}
 	totalSupply := k.GetSupply(ctx).Amount
 	lockedSupply := keeper.GetLockedTokenSupply()
 	circulatingSupply := totalSupply.Sub(lockedSupply)
 	if circulatingSupply.IsNegative() {
-		return math.Int{}, math.Int{}, math.Int{}, errors.Wrapf(
+		return math.Int{}, math.LegacyDec{}, errors.Wrapf(
 			types.ErrNegativeCirculatingSupply,
 			"total supply %s, locked supply %s",
 			totalSupply.String(),
 			lockedSupply.String(),
 		)
 	}
-	targetRewardEmissionPerUnitStakedTokenNumerator, targetRewardEmissionPerUnitStakedTokenDenominator,
+	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.TargetRewardEmissionPerUnitStakedToken(
 		params.FEmissionNumerator,
 		params.FEmissionDenominator,
@@ -43,42 +48,31 @@ func UpdateEmissionRate(
 		circulatingSupply,
 		totalSupply,
 	)
-	fmt.Println("Target reward emission per unit staked token numerator", targetRewardEmissionPerUnitStakedTokenNumerator)
-	fmt.Println("Target reward emission per unit staked token denominator", targetRewardEmissionPerUnitStakedTokenDenominator)
+	fmt.Println("Target reward emission per unit staked token numerator", targetRewardEmissionPerUnitStakedToken)
 	if err != nil {
-		return math.Int{}, math.Int{}, math.Int{}, err
+		return math.Int{}, math.LegacyDec{}, err
 	}
-	smoothingDegreeNumerator, smoothingDegreeDenominator := keeper.SmoothingFactorPerTimestep(
+	smoothingDegree := keeper.SmoothingFactorPerTimestep(
 		ctx,
 		k,
 		params.OneMonthSmoothingDegreeNumerator,
 		params.OneMonthSmoothingDegreeDenominator,
 		params.EmissionCalibrationsTimestepPerMonth,
 	)
-	fmt.Println("Smoothing degree numerator", smoothingDegreeNumerator)
-	previousRewardEmissionPerUnitStakedTokenNumerator, err := k.PreviousRewardEmissionPerUnitStakedTokenNumerator.Get(ctx)
-	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionPerUnitStakedTokenNumerator)
+	fmt.Println("Smoothing degree", smoothingDegree)
+	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
 	if err != nil {
-		return math.Int{}, math.Int{}, math.Int{}, err
+		return math.Int{}, math.LegacyDec{}, err
 	}
-	previousRewardEmissionPerUnitStakedTokenDenominator, err := k.PreviousRewardEmissionPerUnitStakedTokenDenominator.Get(ctx)
-	if err != nil {
-		return math.Int{}, math.Int{}, math.Int{}, err
-	}
-	// e_i_n stands for e_i numerator, d denominator
-	e_i_n, e_i_d = keeper.RewardEmissionPerUnitStakedToken(
-		targetRewardEmissionPerUnitStakedTokenNumerator,
-		targetRewardEmissionPerUnitStakedTokenDenominator,
-		smoothingDegreeNumerator,
-		smoothingDegreeDenominator,
-		previousRewardEmissionPerUnitStakedTokenNumerator,
-		previousRewardEmissionPerUnitStakedTokenDenominator,
+	fmt.Println("Previous reward emissions per unit staked token numerator", previousRewardEmissionPerUnitStakedToken)
+	emissionPerUnitStakedToken = keeper.RewardEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		smoothingDegree,
+		previousRewardEmissionPerUnitStakedToken,
 	)
-	fmt.Println("E_i numerator", e_i_n)
-	fmt.Println("E_i denominator", e_i_d)
-	blockEmission = keeper.TotalEmissionPerTimestep(e_i_n, e_i_d, networkStaked)
-	fmt.Println("Block emissions", blockEmission)
-	return blockEmission, e_i_n, e_i_d, nil
+	fmt.Println("E_i", emissionPerUnitStakedToken)
+	emissionPerTimestep = keeper.TotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
+	return emissionPerTimestep, emissionPerUnitStakedToken, nil
 }
 
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
@@ -96,8 +90,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 
 	// find out if we need to update the block emissions rate
-	emissionsRateUpdateCadence := params.BlocksPerMonth / params.EmissionCalibrationsTimestepPerMonth
-	if emissionsRateUpdateCadence == 0 {
+	emissionRateUpdateCadence := params.BlocksPerMonth / params.EmissionCalibrationsTimestepPerMonth
+	if emissionRateUpdateCadence == 0 {
 		return errors.Wrapf(
 			types.ErrZeroDenominator,
 			"emissions rate update cadence is zero: %d | %d",
@@ -107,20 +101,27 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	blockHeight := sdkCtx.BlockHeight()
 
-	updateEmission := false
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		return err
 	}
-	var e_i_n, e_i_d math.Int
+	updateEmission := false
+	var e_i math.LegacyDec
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
-	if uint64(blockHeight)%emissionsRateUpdateCadence == 0 {
-		blockEmission, e_i_n, e_i_d, err = UpdateEmissionRate(sdkCtx, k, params, ecosystemBalance)
+	fmt.Printf("Block Height %d | emissionRateUpdateCadence %d\n", blockHeight, emissionRateUpdateCadence)
+	if uint64(blockHeight)%emissionRateUpdateCadence == 1 { // easier to test when genesis starts at 1
+		emissionPerTimestep, emissionPerUnitStakedToken, err := UpdateEmissionRate(sdkCtx, k, params, ecosystemBalance)
 		if err != nil {
 			return err
 		}
+		// emission/block = (emission/timestep) * (timestep/month) / (block/month)
+		blockEmission = emissionPerTimestep.
+			Mul(math.NewIntFromUint64(params.EmissionCalibrationsTimestepPerMonth)).
+			Quo(math.NewIntFromUint64(params.BlocksPerMonth))
+		e_i = emissionPerUnitStakedToken
 		updateEmission = true
 	}
+	fmt.Println("Block emissions", blockEmission)
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
 		// check that you are allowed to mint more tokens and we haven't hit the max supply
@@ -168,8 +169,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	if updateEmission {
 		// set the previous emissions to this block's emissions
-		k.PreviousRewardEmissionPerUnitStakedTokenNumerator.Set(ctx, e_i_n)
-		k.PreviousRewardEmissionPerUnitStakedTokenDenominator.Set(ctx, e_i_d)
+		k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
 		k.PreviousBlockEmission.Set(ctx, blockEmission)
 	}
 	return nil

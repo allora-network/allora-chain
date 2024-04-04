@@ -7,11 +7,10 @@ import "cosmossdk.io/collections"
 // e.g. emissions starts at 0, so maybe there was a conflict
 // with using the same integer for the keys for multiple keepers
 var (
-	ParamsKey                                              = collections.NewPrefix(138)
-	PreviousRewardEmissionPerUnitStakedTokenNumeratorKey   = collections.NewPrefix(139)
-	PreviousRewardEmissionPerUnitStakedTokenDenominatorKey = collections.NewPrefix(140)
-	PreviousBlockEmissionKey                               = collections.NewPrefix(141)
-	EcosystemTokensMintedKey                               = collections.NewPrefix(142)
+	ParamsKey                                   = collections.NewPrefix(138)
+	PreviousRewardEmissionPerUnitStakedTokenKey = collections.NewPrefix(139)
+	PreviousBlockEmissionKey                    = collections.NewPrefix(140)
+	EcosystemTokensMintedKey                    = collections.NewPrefix(141)
 )
 
 const (
