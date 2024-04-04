@@ -20,16 +20,20 @@ func NewParams(
 	fEmissionDenominator math.Int,
 	oneMonthSmoothingDegreeNumerator math.Int,
 	oneMonthSmoothingDegreeDenominator math.Int,
+	ecosystemPercentOfTotalSupplyNumerator math.Int,
+	ecosystemPercentOfTotalSupplyDenominator math.Int,
 ) Params {
 	return Params{
-		MintDenom:                            mintDenom,
-		BlocksPerMonth:                       blocksPerMonth,
-		EmissionCalibrationsTimestepPerMonth: emissionCalibrationTimestepPerMonth,
-		MaxSupply:                            maxSupply,
-		FEmissionNumerator:                   fEmissionNumerator,
-		FEmissionDenominator:                 fEmissionDenominator,
-		OneMonthSmoothingDegreeNumerator:     oneMonthSmoothingDegreeNumerator,
-		OneMonthSmoothingDegreeDenominator:   oneMonthSmoothingDegreeDenominator,
+		MintDenom:                                        mintDenom,
+		BlocksPerMonth:                                   blocksPerMonth,
+		EmissionCalibrationsTimestepPerMonth:             emissionCalibrationTimestepPerMonth,
+		MaxSupply:                                        maxSupply,
+		FEmissionNumerator:                               fEmissionNumerator,
+		FEmissionDenominator:                             fEmissionDenominator,
+		OneMonthSmoothingDegreeNumerator:                 oneMonthSmoothingDegreeNumerator,
+		OneMonthSmoothingDegreeDenominator:               oneMonthSmoothingDegreeDenominator,
+		EcosystemTreasuryPercentOfTotalSupplyNumerator:   ecosystemPercentOfTotalSupplyNumerator,
+		EcosystemTreasuryPercentOfTotalSupplyDenominator: ecosystemPercentOfTotalSupplyDenominator,
 	}
 }
 
@@ -40,14 +44,16 @@ func DefaultParams() Params {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                            sdk.DefaultBondDenom,
-		BlocksPerMonth:                       DefaultBlocksPerMonth(),
-		EmissionCalibrationsTimestepPerMonth: uint64(30),        // "daily" emission calibration
-		MaxSupply:                            maxSupply,         //1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmissionNumerator:                   math.NewInt(15),   // 0.015 per month
-		FEmissionDenominator:                 math.NewInt(1000), // 0.015 per month is 15 over 1000
-		OneMonthSmoothingDegreeNumerator:     math.NewInt(1),    // 0.1 at 1 month cadence
-		OneMonthSmoothingDegreeDenominator:   math.NewInt(10),   // 0.1 is 1 over 10
+		MintDenom:                                        sdk.DefaultBondDenom,
+		BlocksPerMonth:                                   DefaultBlocksPerMonth(),
+		EmissionCalibrationsTimestepPerMonth:             uint64(30),         // "daily" emission calibration
+		MaxSupply:                                        maxSupply,          //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmissionNumerator:                               math.NewInt(15),    // 0.015 per month
+		FEmissionDenominator:                             math.NewInt(1000),  // 0.015 per month is 15 over 1000
+		OneMonthSmoothingDegreeNumerator:                 math.NewInt(1),     // 0.1 at 1 month cadence
+		OneMonthSmoothingDegreeDenominator:               math.NewInt(10),    // 0.1 is 1 over 10
+		EcosystemTreasuryPercentOfTotalSupplyNumerator:   math.NewInt(3675),  // 36.75%
+		EcosystemTreasuryPercentOfTotalSupplyDenominator: math.NewInt(10000), // 36.75% is 3675 over 10000
 	}
 }
 

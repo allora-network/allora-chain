@@ -13,7 +13,7 @@ func (s *IntegrationTestSuite) TestTotalEmissionPerTimestepSimple() {
 	numStakedTokens := math.NewInt(100)
 
 	// 2. Execute the test
-	totalEmission := keeper.TotalEmissionPerTimestep(
+	totalEmission := keeper.GetTotalEmissionPerTimestep(
 		rewardEmissionPerUnitStakedToken,
 		numStakedTokens,
 	)
@@ -47,7 +47,7 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 	expectedDenominator, ok := math.NewIntFromString("1000000000000000000000000000000")
 	s.Require().True(ok)
 
-	result := keeper.SmoothingFactorPerTimestep(
+	result := keeper.GetSmoothingFactorPerTimestep(
 		s.ctx,
 		s.mintKeeper,
 		math.NewInt(1),  // 0.1 | 1 over 10, so numerator is 1
@@ -67,7 +67,7 @@ func (s *IntegrationTestSuite) TestRewardEmissionPerUnitStakedTokenSimple() {
 	// e_i = 100 + 720
 	// e_i = 820
 
-	result := keeper.RewardEmissionPerUnitStakedToken(
+	result := keeper.GetRewardEmissionPerUnitStakedToken(
 		math.LegacyMustNewDecFromStr("1000"),
 		math.LegacyMustNewDecFromStr("0.1"),
 		math.LegacyMustNewDecFromStr("800"),
@@ -87,7 +87,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 	// using some random sample values
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
 
-	result, err := keeper.TargetRewardEmissionPerUnitStakedToken(
+	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		math.NewInt(15),
 		math.NewInt(1000),
 		math.NewInt(200000),

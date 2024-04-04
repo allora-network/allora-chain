@@ -9,11 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// set once at genesis and never changed after
-// 0.3675 = 36.75%
-const EcosystemTreasuryPercentOfTotalSupplyNumerator = 3675
-const EcosystemTreasuryPercentOfTotalSupplyDenominator = 10000
-
 // return the uncirculating supply, i.e. tokens on a vesting schedule
 // latest discussion on how these tokens should be handled lives in ORA-1111
 // probably thee tokens will be custodied off chain and this function will
@@ -43,7 +38,7 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 // where e_i is the emission per unit staked token
 // and N_{staked,i} is the total amount of tokens staked at timestep i
 // THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
-func TotalEmissionPerTimestep(
+func GetTotalEmissionPerTimestep(
 	rewardEmissionPerUnitStakedToken math.LegacyDec,
 	numStakedTokens math.Int,
 ) math.Int {
@@ -61,7 +56,7 @@ func TotalEmissionPerTimestep(
 // factor f_e = 0.015 month^{−1} represents the fraction of the
 // ecosystem treasury that would ideally be emitted per unit time.
 // pass f_e as a fractional value, numerator and denominator as separate args
-func TargetRewardEmissionPerUnitStakedToken(
+func GetTargetRewardEmissionPerUnitStakedToken(
 	fEmissionNumerator math.Int,
 	fEmissionDenominator math.Int,
 	ecosystemBalance math.Int,
@@ -105,7 +100,7 @@ func TargetRewardEmissionPerUnitStakedToken(
 // Reward Emission Per Unit Staked Token is an exponential moving
 // average over the Target Reward Emission Per Unit Staked Token
 // e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
-func RewardEmissionPerUnitStakedToken(
+func GetRewardEmissionPerUnitStakedToken(
 	targetRewardEmissionPerUnitStakedToken math.LegacyDec,
 	alphaEmission math.LegacyDec,
 	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
@@ -122,7 +117,7 @@ func RewardEmissionPerUnitStakedToken(
 // in this first version of the allora network we will use a "daily" timestep
 // so the value for delta t should be 30 (assuming a perfect world of 30 day months)
 // ^α_e = 1 - (1 - α_e)^(∆t/month)
-func SmoothingFactorPerTimestep(
+func GetSmoothingFactorPerTimestep(
 	ctx sdk.Context,
 	k Keeper,
 	a_en math.Int,
@@ -134,45 +129,3 @@ func SmoothingFactorPerTimestep(
 	secondTerm := base.Power(dt)
 	return math.OneInt().ToLegacyDec().Sub(secondTerm)
 }
-
-// where ˆαe is the recalibrated form of α_e appropriate for an update time step ∆t
-//
-// due to using math.int rather than having a float like data structure available to us
-// we actually encode α_e as α_e_numerator (a_en) and α_e_denominator (a_ed)
-// ∆t/month is a pain in the butt to write in code so lets just call that dt
-// now we have:
-// ^α_e = 1 - (1 - a_en/a_ed)^dt
-// ^α_e = 1 - (a_ed/a_ed - a_en/a_ed)^dt
-// ^α_e = 1 - ((a_ed-a_en)/a_ed)^dt
-// ^α_e = 1 - ((a_ed-a_en)^dt)/((a_ed)^dt)
-// ^α_e = (a_ed)^dt)/((a_ed)^dt) - ((a_ed-a_en)^dt)/((a_ed)^dt)
-// and the actual math we'll use in this function:
-// ^α_e = ((a_ed)^dt - ((a_ed-a_en)^dt)) / ((a_ed)^dt)
-/*
-func SmoothingFactorPerTimestep(
-	ctx sdk.Context,
-	k Keeper,
-	a_en math.Int,
-	a_ed math.Int,
-	dt uint64,
-) (math.Int, math.Int) {
-	Dt := bn.NewInt(0).SetUint64(dt)
-	A_en := a_en.BigInt()
-	A_ed := a_ed.BigInt()
-
-	//(a_ed)^dt
-	A_ed_Exp_Dt := bn.NewInt(0).Exp(A_ed, Dt, nil)
-
-	//((a_ed-a_en)^dt))
-	A_ed_Sub_A_en := bn.NewInt(0).Sub(A_ed, A_en)
-	A_ed_Sub_A_en_Exp_Dt := bn.NewInt(0).Exp(A_ed_Sub_A_en, Dt, nil)
-
-	//((a_ed)^dt - ((a_ed-a_en)^dt))
-	numerator := math.NewIntFromBigInt(
-		bn.NewInt(0).Sub(A_ed_Exp_Dt, A_ed_Sub_A_en_Exp_Dt),
-	)
-	//((a_ed)^dt)
-	denominator := math.NewIntFromBigInt(A_ed_Exp_Dt)
-	return numerator, denominator
-}
-*/

@@ -75,6 +75,8 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		math.NewInt(1000),
 		math.NewInt(1),
 		math.NewInt(100),
+		math.NewInt(3675),
+		math.NewInt(10000),
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()

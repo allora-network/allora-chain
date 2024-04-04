@@ -16,15 +16,17 @@ import (
 )
 
 var (
-	md_Params                                          protoreflect.MessageDescriptor
-	fd_Params_mint_denom                               protoreflect.FieldDescriptor
-	fd_Params_blocks_per_month                         protoreflect.FieldDescriptor
-	fd_Params_emission_calibrations_timestep_per_month protoreflect.FieldDescriptor
-	fd_Params_max_supply                               protoreflect.FieldDescriptor
-	fd_Params_f_emission_numerator                     protoreflect.FieldDescriptor
-	fd_Params_f_emission_denominator                   protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree_numerator     protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree_denominator   protoreflect.FieldDescriptor
+	md_Params                                                        protoreflect.MessageDescriptor
+	fd_Params_mint_denom                                             protoreflect.FieldDescriptor
+	fd_Params_blocks_per_month                                       protoreflect.FieldDescriptor
+	fd_Params_emission_calibrations_timestep_per_month               protoreflect.FieldDescriptor
+	fd_Params_max_supply                                             protoreflect.FieldDescriptor
+	fd_Params_f_emission_numerator                                   protoreflect.FieldDescriptor
+	fd_Params_f_emission_denominator                                 protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_numerator                   protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree_denominator                 protoreflect.FieldDescriptor
+	fd_Params_ecosystem_treasury_percent_of_total_supply_numerator   protoreflect.FieldDescriptor
+	fd_Params_ecosystem_treasury_percent_of_total_supply_denominator protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -38,6 +40,8 @@ func init() {
 	fd_Params_f_emission_denominator = md_Params.Fields().ByName("f_emission_denominator")
 	fd_Params_one_month_smoothing_degree_numerator = md_Params.Fields().ByName("one_month_smoothing_degree_numerator")
 	fd_Params_one_month_smoothing_degree_denominator = md_Params.Fields().ByName("one_month_smoothing_degree_denominator")
+	fd_Params_ecosystem_treasury_percent_of_total_supply_numerator = md_Params.Fields().ByName("ecosystem_treasury_percent_of_total_supply_numerator")
+	fd_Params_ecosystem_treasury_percent_of_total_supply_denominator = md_Params.Fields().ByName("ecosystem_treasury_percent_of_total_supply_denominator")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -153,6 +157,18 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.EcosystemTreasuryPercentOfTotalSupplyNumerator != "" {
+		value := protoreflect.ValueOfString(x.EcosystemTreasuryPercentOfTotalSupplyNumerator)
+		if !f(fd_Params_ecosystem_treasury_percent_of_total_supply_numerator, value) {
+			return
+		}
+	}
+	if x.EcosystemTreasuryPercentOfTotalSupplyDenominator != "" {
+		value := protoreflect.ValueOfString(x.EcosystemTreasuryPercentOfTotalSupplyDenominator)
+		if !f(fd_Params_ecosystem_treasury_percent_of_total_supply_denominator, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -184,6 +200,10 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.OneMonthSmoothingDegreeNumerator != ""
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
 		return x.OneMonthSmoothingDegreeDenominator != ""
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		return x.EcosystemTreasuryPercentOfTotalSupplyNumerator != ""
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
+		return x.EcosystemTreasuryPercentOfTotalSupplyDenominator != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -216,6 +236,10 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.OneMonthSmoothingDegreeNumerator = ""
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
 		x.OneMonthSmoothingDegreeDenominator = ""
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		x.EcosystemTreasuryPercentOfTotalSupplyNumerator = ""
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
+		x.EcosystemTreasuryPercentOfTotalSupplyDenominator = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -256,6 +280,12 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
 		value := x.OneMonthSmoothingDegreeDenominator
 		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		value := x.EcosystemTreasuryPercentOfTotalSupplyNumerator
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
+		value := x.EcosystemTreasuryPercentOfTotalSupplyDenominator
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -292,6 +322,10 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.OneMonthSmoothingDegreeNumerator = value.Interface().(string)
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
 		x.OneMonthSmoothingDegreeDenominator = value.Interface().(string)
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		x.EcosystemTreasuryPercentOfTotalSupplyNumerator = value.Interface().(string)
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
+		x.EcosystemTreasuryPercentOfTotalSupplyDenominator = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -328,6 +362,10 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field one_month_smoothing_degree_numerator of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
 		panic(fmt.Errorf("field one_month_smoothing_degree_denominator of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		panic(fmt.Errorf("field ecosystem_treasury_percent_of_total_supply_numerator of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
+		panic(fmt.Errorf("field ecosystem_treasury_percent_of_total_supply_denominator of message mint.v1beta1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -356,6 +394,10 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "mint.v1beta1.Params.one_month_smoothing_degree_numerator":
 		return protoreflect.ValueOfString("")
 	case "mint.v1beta1.Params.one_month_smoothing_degree_denominator":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_numerator":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply_denominator":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -456,6 +498,14 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.EcosystemTreasuryPercentOfTotalSupplyNumerator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EcosystemTreasuryPercentOfTotalSupplyDenominator)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -484,6 +534,20 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.EcosystemTreasuryPercentOfTotalSupplyDenominator) > 0 {
+			i -= len(x.EcosystemTreasuryPercentOfTotalSupplyDenominator)
+			copy(dAtA[i:], x.EcosystemTreasuryPercentOfTotalSupplyDenominator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemTreasuryPercentOfTotalSupplyDenominator)))
+			i--
+			dAtA[i] = 0x52
+		}
+		if len(x.EcosystemTreasuryPercentOfTotalSupplyNumerator) > 0 {
+			i -= len(x.EcosystemTreasuryPercentOfTotalSupplyNumerator)
+			copy(dAtA[i:], x.EcosystemTreasuryPercentOfTotalSupplyNumerator)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemTreasuryPercentOfTotalSupplyNumerator)))
+			i--
+			dAtA[i] = 0x4a
 		}
 		if len(x.OneMonthSmoothingDegreeDenominator) > 0 {
 			i -= len(x.OneMonthSmoothingDegreeDenominator)
@@ -816,6 +880,70 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.OneMonthSmoothingDegreeDenominator = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 9:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemTreasuryPercentOfTotalSupplyNumerator", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemTreasuryPercentOfTotalSupplyNumerator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 10:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemTreasuryPercentOfTotalSupplyDenominator", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemTreasuryPercentOfTotalSupplyDenominator = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -890,7 +1018,9 @@ type Params struct {
 	OneMonthSmoothingDegreeNumerator string `protobuf:"bytes,7,opt,name=one_month_smoothing_degree_numerator,json=oneMonthSmoothingDegreeNumerator,proto3" json:"one_month_smoothing_degree_numerator,omitempty"`
 	// denominator for the one_month_smoothing_degree_numerator
 	// pass the value as a fraction due to precision issues
-	OneMonthSmoothingDegreeDenominator string `protobuf:"bytes,8,opt,name=one_month_smoothing_degree_denominator,json=oneMonthSmoothingDegreeDenominator,proto3" json:"one_month_smoothing_degree_denominator,omitempty"`
+	OneMonthSmoothingDegreeDenominator               string `protobuf:"bytes,8,opt,name=one_month_smoothing_degree_denominator,json=oneMonthSmoothingDegreeDenominator,proto3" json:"one_month_smoothing_degree_denominator,omitempty"`
+	EcosystemTreasuryPercentOfTotalSupplyNumerator   string `protobuf:"bytes,9,opt,name=ecosystem_treasury_percent_of_total_supply_numerator,json=ecosystemTreasuryPercentOfTotalSupplyNumerator,proto3" json:"ecosystem_treasury_percent_of_total_supply_numerator,omitempty"`
+	EcosystemTreasuryPercentOfTotalSupplyDenominator string `protobuf:"bytes,10,opt,name=ecosystem_treasury_percent_of_total_supply_denominator,json=ecosystemTreasuryPercentOfTotalSupplyDenominator,proto3" json:"ecosystem_treasury_percent_of_total_supply_denominator,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -969,6 +1099,20 @@ func (x *Params) GetOneMonthSmoothingDegreeDenominator() string {
 	return ""
 }
 
+func (x *Params) GetEcosystemTreasuryPercentOfTotalSupplyNumerator() string {
+	if x != nil {
+		return x.EcosystemTreasuryPercentOfTotalSupplyNumerator
+	}
+	return ""
+}
+
+func (x *Params) GetEcosystemTreasuryPercentOfTotalSupplyDenominator() string {
+	if x != nil {
+		return x.EcosystemTreasuryPercentOfTotalSupplyDenominator
+	}
+	return ""
+}
+
 var File_mint_v1beta1_types_proto protoreflect.FileDescriptor
 
 var file_mint_v1beta1_types_proto_rawDesc = []byte{
@@ -978,7 +1122,7 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf1, 0x05, 0x0a,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb7, 0x08, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x74, 0x5f,
 	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x69, 0x6e,
 	0x74, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x28, 0x0a, 0x10, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
@@ -1023,22 +1167,42 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d,
 	0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x22, 0x6f, 0x6e, 0x65,
 	0x4d, 0x6f, 0x6e, 0x74, 0x68, 0x53, 0x6d, 0x6f, 0x6f, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x44, 0x65,
-	0x67, 0x72, 0x65, 0x65, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x3a,
-	0x1f, 0x8a, 0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
-	0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x42, 0xbb, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31,
-	0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69,
-	0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65,
-	0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2,
-	0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62,
-	0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65,
-	0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74,
-	0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
-	0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x67, 0x72, 0x65, 0x65, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x12,
+	0x9e, 0x01, 0x0a, 0x34, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x74, 0x72,
+	0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x6f,
+	0x66, 0x5f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x5f, 0x6e,
+	0x75, 0x6d, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x2e, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x54, 0x72, 0x65, 0x61, 0x73,
+	0x75, 0x72, 0x79, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x54, 0x6f, 0x74, 0x61,
+	0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x4e, 0x75, 0x6d, 0x65, 0x72, 0x61, 0x74, 0x6f, 0x72,
+	0x12, 0xa2, 0x01, 0x0a, 0x36, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x74,
+	0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f,
+	0x6f, 0x66, 0x5f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x5f,
+	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x69, 0x6e, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x0a, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x30, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x54, 0x72,
+	0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x54,
+	0x6f, 0x74, 0x61, 0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x69,
+	0x6e, 0x61, 0x74, 0x6f, 0x72, 0x3a, 0x1f, 0x8a, 0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f,
+	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
+	0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70,
+	0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e,
+	0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31,
+	0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69,
+	0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e,
+	0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74,
+	0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62,
+	0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

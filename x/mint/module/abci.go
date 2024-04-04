@@ -40,7 +40,7 @@ func UpdateEmissionRate(
 		)
 	}
 	targetRewardEmissionPerUnitStakedToken,
-		err := keeper.TargetRewardEmissionPerUnitStakedToken(
+		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmissionNumerator,
 		params.FEmissionDenominator,
 		ecosystemBalance,
@@ -52,7 +52,7 @@ func UpdateEmissionRate(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	smoothingDegree := keeper.SmoothingFactorPerTimestep(
+	smoothingDegree := keeper.GetSmoothingFactorPerTimestep(
 		ctx,
 		k,
 		params.OneMonthSmoothingDegreeNumerator,
@@ -65,13 +65,13 @@ func UpdateEmissionRate(
 		return math.Int{}, math.LegacyDec{}, err
 	}
 	fmt.Println("Previous reward emissions per unit staked token numerator", previousRewardEmissionPerUnitStakedToken)
-	emissionPerUnitStakedToken = keeper.RewardEmissionPerUnitStakedToken(
+	emissionPerUnitStakedToken = keeper.GetRewardEmissionPerUnitStakedToken(
 		targetRewardEmissionPerUnitStakedToken,
 		smoothingDegree,
 		previousRewardEmissionPerUnitStakedToken,
 	)
 	fmt.Println("E_i", emissionPerUnitStakedToken)
-	emissionPerTimestep = keeper.TotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
+	emissionPerTimestep = keeper.GetTotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
 	return emissionPerTimestep, emissionPerUnitStakedToken, nil
 }
 
@@ -130,8 +130,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			return err
 		}
 		ecosystemMaxSupply := params.MaxSupply.
-			Mul(math.NewInt(keeper.EcosystemTreasuryPercentOfTotalSupplyNumerator)).
-			Quo(math.NewInt(keeper.EcosystemTreasuryPercentOfTotalSupplyDenominator))
+			Mul(params.EcosystemTreasuryPercentOfTotalSupplyNumerator).
+			Quo(params.EcosystemTreasuryPercentOfTotalSupplyDenominator)
 		if ecosystemTokensAlreadyMinted.Add(blockEmission).GT(ecosystemMaxSupply) {
 			return types.ErrMaxSupplyReached
 		}
