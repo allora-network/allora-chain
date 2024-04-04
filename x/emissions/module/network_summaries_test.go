@@ -5,10 +5,10 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *ModuleTestSuite) TestGradient() {
-	// Define test cases
 	tests := []struct {
 		name        string
 		p           float64
@@ -69,10 +69,8 @@ func (s *ModuleTestSuite) TestGradient() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			// Call the function under test
 			result, err := module.Gradient(tc.p, tc.x)
 
-			// Validate the results
 			if tc.expectedErr != nil {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
@@ -83,124 +81,332 @@ func (s *ModuleTestSuite) TestGradient() {
 	}
 }
 
-/*
-
-func (s *ModuleTestSuite) TestCalcForecastImpliedInferencesAtTimeWithDummyData() {
-	test := struct {
+func (s *ModuleTestSuite) TestCalcForcastImpliedInferences() {
+	tests := []struct {
 		name                string
-		inferences          *emissions.Inferences
+		inferenceByWorker   map[string]*emissions.Inference
 		forecasts           *emissions.Forecasts
-		networkValueBundle  *emissions.ValueBundle
+		networkCombinedLoss float64
 		epsilon             float64
 		pInferenceSynthesis float64
-		expected            []*emissions.Inference // Adjusted to slice of pointers
+		expected            map[string]*emissions.Inference
 		expectedErr         error
 	}{
-		name: "basic operation with valid inputs",
-		inferences: &emissions.Inferences{
-			Inferences: []*emissions.Inference{ // Adjusted to slice of pointers
-				{Worker: "worker1", Value: 1.0},
-				{Worker: "worker2", Value: 1.5},
+		{
+			name: "basic functionality, two workers, one forecaster",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker1": {Value: 1.5},
+				"worker2": {Value: 2.5},
 			},
+			forecasts: &emissions.Forecasts{
+				Forecasts: []*emissions.Forecast{
+					{
+						Forecaster: "forecaster1",
+						ForecastElements: []*emissions.ForecastElement{
+							{Inferer: "worker1", Value: 1.0},
+							{Inferer: "worker2", Value: 2.0},
+						},
+					},
+				},
+			},
+			networkCombinedLoss: 10.0,
+			epsilon:             1e-4,
+			pInferenceSynthesis: 2.0,
+			expected: map[string]*emissions.Inference{
+				"forecaster1": {Value: 1.9340854555354376},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "basic functionality, two workers, two forecasters",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker1": {Value: 1.5},
+				"worker2": {Value: 2.5},
+			},
+			forecasts: &emissions.Forecasts{
+				Forecasts: []*emissions.Forecast{
+					{
+						Forecaster: "forecaster1",
+						ForecastElements: []*emissions.ForecastElement{
+							{Inferer: "worker1", Value: 1.0},
+							{Inferer: "worker2", Value: 2.0},
+						},
+					},
+					{
+						Forecaster: "forecaster2",
+						ForecastElements: []*emissions.ForecastElement{
+							{Inferer: "worker1", Value: 2.0},
+							{Inferer: "worker2", Value: 3.0},
+						},
+					},
+				},
+			},
+			networkCombinedLoss: 10.0,
+			epsilon:             1e-4,
+			pInferenceSynthesis: 2.0,
+			expected: map[string]*emissions.Inference{
+				"forecaster1": {Value: 1.9340854555354376},
+				"forecaster2": {Value: 1.9759009202379174},
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			result, err := module.CalcForcastImpliedInferences(tc.inferenceByWorker, tc.forecasts, tc.networkCombinedLoss, tc.epsilon, tc.pInferenceSynthesis)
+
+			if tc.expectedErr != nil {
+				s.Require().ErrorIs(err, tc.expectedErr)
+			} else {
+
+				for key, expectedValue := range tc.expected {
+					actualValue, exists := result[key]
+					s.Require().True(exists, "Expected key does not exist in result map")
+					s.T().Logf("Key: %s, Expected Value: %v, Actual Value: %v", key, expectedValue.Value, actualValue.Value)
+					s.Require().InEpsilon(expectedValue.Value, actualValue.Value, 1e-5, "Values do not match for key: %s", key)
+				}
+			}
+		})
+	}
+}
+
+func (s *ModuleTestSuite) TestFindMaxRegret() {
+	tests := []struct {
+		name              string
+		regrets           module.RegretsByWorkerByType
+		epsilon           float64
+		expectedMaxRegret float64
+	}{
+
+		{
+			name: "inference regret higher",
+			regrets: module.RegretsByWorkerByType{
+				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.5)},
+				ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4)},
+			},
+			epsilon:           0.05,
+			expectedMaxRegret: 0.5,
+		},
+		{
+			name: "forecast regret higher",
+			regrets: module.RegretsByWorkerByType{
+				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.3)},
+				ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4), "worker5": floatPtr(0.6)},
+			},
+			epsilon:           0.05,
+			expectedMaxRegret: 0.6,
+		},
+		{
+			name: "all below epsilon",
+			regrets: module.RegretsByWorkerByType{
+				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.01)},
+				ForecastRegrets:  &map[string]*float64{"worker2": floatPtr(0.02)},
+			},
+			epsilon:           0.05,
+			expectedMaxRegret: 0.05,
+		},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			maxRegret := module.FindMaxRegret(&tc.regrets, tc.epsilon)
+			s.Require().Equal(tc.expectedMaxRegret, maxRegret, "Expected and actual max regret do not match")
+		})
+	}
+}
+
+// Helper function to create pointers to float64 values
+func floatPtr(f float64) *float64 {
+	return &f
+}
+
+func (s *ModuleTestSuite) TestCalcWeightedInference() {
+	tests := []struct {
+		name                                  string
+		inferenceByWorker                     map[string]*emissions.Inference
+		forecastImpliedInferenceByWorker      map[string]*emissions.Inference
+		regrets                               module.RegretsByWorkerByType
+		epsilon                               float64
+		pInferenceSynthesis                   float64
+		expectedNetworkCombinedInferenceValue float64
+		expectedErr                           error
+	}{
+		{
+			name: "normal operation",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker1": {Value: 1.5},
+				"worker2": {Value: 2.5},
+			},
+			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
+				"worker1": {Value: 1.0},
+				"worker2": {Value: 2.0},
+			},
+			regrets: module.RegretsByWorkerByType{
+				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.5)},
+				ForecastRegrets:  &map[string]*float64{"worker1": floatPtr(0.1), "worker2": floatPtr(0.4)},
+			},
+			epsilon:                               1e-4,
+			pInferenceSynthesis:                   2.0,
+			expectedNetworkCombinedInferenceValue: 1.9157039893342431,
+			expectedErr:                           nil,
+		},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			networkCombinedInferenceValue, err := module.CalcWeightedInference(tc.inferenceByWorker, tc.forecastImpliedInferenceByWorker, &tc.regrets, tc.epsilon, tc.pInferenceSynthesis)
+
+			if tc.expectedErr != nil {
+				s.Require().ErrorIs(err, tc.expectedErr)
+			} else {
+				s.Require().NoError(err)
+				s.T().Logf("Test Case: %s, Expected Network Combined Inference Value: %v, Actual Network Combined Inference Value: %v", tc.name, tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue)
+				s.Require().InEpsilon(tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue, 1e-5, "Network combined inference value should match expected value within epsilon")
+			}
+		})
+	}
+}
+
+func (s *ModuleTestSuite) TestCalcOneOutInferences() {
+	test := struct {
+		name                             string
+		inferenceByWorker                map[string]*emissions.Inference
+		forecastImpliedInferenceByWorker map[string]*emissions.Inference
+		forecasts                        *emissions.Forecasts
+		regrets                          module.RegretsByWorkerByType
+		networkCombinedInference         float64
+		epsilon                          float64
+		pInferenceSynthesis              float64
+		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
+		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
+	}{
+		name: "example test case",
+		inferenceByWorker: map[string]*emissions.Inference{
+			"worker1": &emissions.Inference{Value: 1.5},
+			"worker2": &emissions.Inference{Value: 2.5},
+		},
+		forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
+			"worker1": &emissions.Inference{Value: 1.0},
+			"worker2": &emissions.Inference{Value: 2.0},
 		},
 		forecasts: &emissions.Forecasts{
-			Forecasts: []*emissions.Forecast{ // Adjusted to slice of pointers
+			Forecasts: []*emissions.Forecast{
 				{
 					Forecaster: "forecaster1",
-					ForecastElements: []*emissions.ForecastElement{ // Adjusted to slice of pointers
-						{Inferer: "worker1", Value: 2.0},
-						{Inferer: "worker2", Value: 3.0},
+					ForecastElements: []*emissions.ForecastElement{
+						{Inferer: "worker1", Value: 1.0},
+						{Inferer: "worker2", Value: 2.0},
 					},
 				},
 				{
 					Forecaster: "forecaster2",
-					ForecastElements: []*emissions.ForecastElement{ // Adjusted to slice of pointers
-						{Inferer: "worker1", Value: 2.5},
-						{Inferer: "worker2", Value: 3.5},
+					ForecastElements: []*emissions.ForecastElement{
+						{Inferer: "worker1", Value: 2.0},
+						{Inferer: "worker2", Value: 3.0},
 					},
 				},
 			},
 		},
-		networkValueBundle: &emissions.ValueBundle{
-			CombinedValue: 10.0,
+		regrets: module.RegretsByWorkerByType{
+			InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.5)},
+			ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4)},
 		},
-		epsilon:             1e-5,
-		pInferenceSynthesis: 2,
-		expected:            []*emissions.Inference{ // Adjusted to slice of pointers
-			// Placeholder for actual expected values, to be filled based on your function's logic
+		networkCombinedInference: 10.0,
+		epsilon:                  0.0001,
+		expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
+			{Worker: "worker1", Value: 9.8},
+			{Worker: "worker2", Value: 9.5},
 		},
-		expectedErr: nil,
+		expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
+			{Worker: "worker1", Value: 9.7},
+			{Worker: "worker2", Value: 9.4},
+		},
+		pInferenceSynthesis: 2.0,
 	}
 
-	// Running the test
 	s.Run(test.name, func() {
-		actual, err := module.CalcForcastImpliedInferencesAtTime(
-			s.ctx,
-			s.emissionsKeeper,
-			1, // Mock topic ID
-			test.inferences,
+		oneOutInferences, oneOutImpliedInferences, err := module.CalcOneOutInferences(
+			test.inferenceByWorker,
+			test.forecastImpliedInferenceByWorker,
 			test.forecasts,
-			test.networkValueBundle,
+			&test.regrets,
+			test.networkCombinedInference,
 			test.epsilon,
 			test.pInferenceSynthesis,
 		)
 
-		// Validate the results
-		if test.expectedErr != nil {
-			s.Require().ErrorIs(err, test.expectedErr)
-		} else {
-			s.Require().NoError(err)
-			// Now let's use 'actual' to compare against 'expected'
-			s.Require().Equal(len(test.expected), len(actual), "Expected and actual slices should have the same length")
+		s.Require().NoError(err, "CalcOneOutInferences should not return an error")
 
-			for i, expInference := range test.expected {
-				s.Require().InDelta(expInference.Value, actual[i].Value, 0.01, "Expected and actual values should be within delta for each inference")
-				s.Require().Equal(expInference.Worker, actual[i].Worker, "Expected and actual worker IDs should match")
-			}
+		s.Require().Len(oneOutInferences, len(test.expectedOneOutInferences), "Unexpected number of one-out inferences")
+		s.Require().Len(oneOutImpliedInferences, len(test.expectedOneOutImpliedInferences), "Unexpected number of one-out implied inferences")
+
+		for i, expected := range test.expectedOneOutInferences {
+			s.Require().InEpsilon(expected.Value, oneOutInferences[i].Value, 1e-5, "Mismatch in value for one-out inference of worker %s", expected.Worker)
+		}
+
+		for i, expected := range test.expectedOneOutImpliedInferences {
+			s.Require().InEpsilon(expected.Value, oneOutImpliedInferences[i].Value, 1e-5, "Mismatch in value for one-out implied inference of worker %s", expected.Worker)
 		}
 	})
 }
 
-func (s *ModuleTestSuite) TestCalcNetworkCombinedInference() {
-	ctx := s.ctx // Assuming you have a mock sdk.Context already set up
-
-	// Mock inferences
-	inferences := &types.Inferences{
-		Inferences: []*types.Inference{
-			{Worker: "worker1", Value: 1.0},
-			{Worker: "worker2", Value: 2.0},
+func (s *ModuleTestSuite) TestCalcOneInInferences() {
+	tests := []struct {
+		name                      string
+		inferences                map[string]*emissions.Inference
+		forecastImpliedInferences map[string]*emissions.Inference
+		regrets                   module.RegretsByWorkerByType
+		epsilon                   float64
+		pInferenceSynthesis       float64
+		expectedOneInInferences   []*emissions.WorkerAttributedValue
+		expectedErr               error
+	}{
+		{
+			name: "basic functionality, single worker",
+			inferences: map[string]*emissions.Inference{
+				"worker1": {Value: 1.5},
+				"worker2": {Value: 2.5},
+			},
+			forecastImpliedInferences: map[string]*emissions.Inference{
+				"worker1": {Value: 1.0},
+				"worker2": {Value: 2.0},
+			},
+			regrets: module.RegretsByWorkerByType{
+				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.3)},
+				ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4), "worker5": floatPtr(0.6)},
+			},
+			epsilon:             0.0001,
+			pInferenceSynthesis: 2.0,
+			expectedOneInInferences: []*emissions.WorkerAttributedValue{
+				{Worker: "worker1", Value: 1.2},
+			},
+			expectedErr: nil,
 		},
 	}
 
-	// Mock forecast-implied inferences
-	forecastImpliedInferences := []types.Inference{
-		{Worker: "worker1", Value: 1.5},
-		{Worker: "worker2", Value: 2.5},
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			oneInInferences, err := module.CalcOneInInferences(
+				tc.inferences,
+				tc.forecastImpliedInferences,
+				&tc.regrets,
+				tc.epsilon,
+				tc.pInferenceSynthesis,
+			)
+
+			if tc.expectedErr != nil {
+				s.Require().ErrorIs(err, tc.expectedErr)
+			} else {
+				s.Require().NoError(err)
+				s.Require().Len(oneInInferences, len(tc.expectedOneInInferences), "Unexpected number of one-in inferences")
+
+				for i, expected := range tc.expectedOneInInferences {
+					actual := oneInInferences[i]
+					s.Require().Equal(expected.Worker, actual.Worker, "Mismatch in worker for one-in inference")
+					s.Require().InEpsilon(expected.Value, actual.Value, 1e-5, "Mismatch in value for one-in inference of worker %s", expected.Worker)
+				}
+			}
+		})
 	}
-
-	// Mock regrets
-	regrets := &types.WorkerRegrets{
-		WorkerRegrets: []*types.WorkerRegret{
-			{Worker: "worker1", InferenceRegret: 0.1, ForecastRegret: 0.2},
-			{Worker: "worker2", InferenceRegret: 0.2, ForecastRegret: 0.1},
-		},
-	}
-
-	epsilon := 1e-5
-	pInferenceSynthesis := 2.0
-
-	// Expected output needs to be calculated based on the input and the function's logic.
-	// This is a placeholder for illustration.
-	expectedOutput := 1.75
-
-	// Call the function under test
-	actualOutput, err := module.CalcNetworkCombinedInference(ctx, s.emissionsKeeper, 1, inferences, forecastImpliedInferences, regrets, epsilon, pInferenceSynthesis)
-
-	// Validate no error returned
-	require.NoError(s.T(), err)
-
-	// Validate the output
-	require.InDelta(s.T(), expectedOutput, actualOutput, 0.01, "The actual output should closely match the expected output.")
 }
-
-*/
