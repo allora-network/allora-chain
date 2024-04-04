@@ -308,7 +308,7 @@ func (s *ModuleTestSuite) TestCalcOneOutInferences() {
 		},
 		regrets: module.RegretsByWorkerByType{
 			InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.5)},
-			ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4)},
+			ForecastRegrets:  &map[string]*float64{"worker1": floatPtr(0.1), "worker2": floatPtr(0.4)},
 		},
 		networkCombinedInference: 10.0,
 		epsilon:                  0.0001,
@@ -372,13 +372,13 @@ func (s *ModuleTestSuite) TestCalcOneInInferences() {
 			},
 			regrets: module.RegretsByWorkerByType{
 				InferenceRegrets: &map[string]*float64{"worker1": floatPtr(0.2), "worker2": floatPtr(0.3)},
-				ForecastRegrets:  &map[string]*float64{"worker3": floatPtr(0.1), "worker4": floatPtr(0.4), "worker5": floatPtr(0.6)},
+				ForecastRegrets:  &map[string]*float64{"worker1": floatPtr(0.1), "worker2": floatPtr(0.4)},
 			},
 			epsilon:             0.0001,
 			pInferenceSynthesis: 2.0,
 			expectedOneInInferences: []*emissions.WorkerAttributedValue{
 				{Worker: "worker1", Value: 1.2},
-				{Worker: "worker1", Value: 1.3},
+				{Worker: "worker2", Value: 1.3},
 			},
 			expectedErr: nil,
 		},
