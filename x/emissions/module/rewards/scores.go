@@ -70,7 +70,7 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 
 func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
 	var newScores []types.Score
-	for _, oneOutLoss := range networkLosses.OneOutValues {
+	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return []types.Score{}, err
@@ -97,7 +97,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
 	// Get worker scores for one out loss
 	var workersScoresOneOut []float64
-	for _, oneOutLoss := range networkLosses.OneOutValues {
+	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
 		workerScore := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
 		workersScoresOneOut = append(workersScoresOneOut, workerScore)
 	}
@@ -105,14 +105,14 @@ func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint6
 	numForecasters := len(workersScoresOneOut)
 	fUniqueAgg := GetfUniqueAgg(float64(numForecasters))
 	var newScores []types.Score
-	for i, oneInNaiveLoss := range networkLosses.OneInNaiveValues {
+	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneInNaiveLoss.Worker)
 		if err != nil {
 			return []types.Score{}, err
 		}
 
 		// Get worker score for one in loss
-		workerScoreOneIn := GetWorkerScore(networkLosses.NaiveValue, oneInNaiveLoss.Value)
+		workerScoreOneIn := GetWorkerScore(oneInNaiveLoss.Value, networkLosses.NaiveValue)
 
 		// Calculate forecast score
 		workerFinalScore := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
@@ -127,6 +127,7 @@ func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint6
 		if err != nil {
 			return []types.Score{}, err
 		}
+		newScores = append(newScores, newScore)
 	}
 
 	return newScores, nil

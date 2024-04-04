@@ -52,59 +52,82 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 }
 
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
-	// Generate network losses
-	oneOutLosses := []*types.WorkerAttributedValue{
+	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  100.0,
+			Value:  0.01327,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  200.0,
+			Value:  0.01302,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  300.0,
+			Value:  0.0136,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  400.0,
+			Value:  0.01491,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  500.0,
+			Value:  0.01686,
+		},
+	}
+
+	oneOutForecasterLosses := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  0.01402,
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  0.01316,
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  0.01657,
+		},
+		{
+			Worker: s.addrs[3].String(),
+			Value:  0.0124,
+		},
+		{
+			Worker: s.addrs[4].String(),
+			Value:  0.01341,
 		},
 	}
 
 	oneInNaiveLosses := []*types.WorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  500.0,
+			Value:  0.01529,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  400.0,
+			Value:  0.01141,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  300.0,
+			Value:  0.01562,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  200.0,
+			Value:  0.01444,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  100.0,
+			Value:  0.01396,
 		},
 	}
 
 	networkLosses := types.ValueBundle{
-		TopicId:          topicId,
-		OneOutValues:     oneOutLosses,
-		OneInNaiveValues: oneInNaiveLosses,
-		CombinedValue:    1500.0,
-		NaiveValue:       1500.0,
+		TopicId:                topicId,
+		CombinedValue:          0.013481256018186383,
+		NaiveValue:             0.01344474872292,
+		OneOutInfererValues:    oneOutInfererLosses,
+		OneOutForecasterValues: oneOutForecasterLosses,
+		OneInForecasterValues:  oneInNaiveLosses,
 	}
 
 	// Persist network losses
