@@ -378,6 +378,7 @@ func (s *ModuleTestSuite) TestCalcOneInInferences() {
 			pInferenceSynthesis: 2.0,
 			expectedOneInInferences: []*emissions.WorkerAttributedValue{
 				{Worker: "worker1", Value: 1.2},
+				{Worker: "worker1", Value: 1.3},
 			},
 			expectedErr: nil,
 		},
