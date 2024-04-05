@@ -16,7 +16,7 @@ func GetReputerRewards(
 	totalReputerRewards float64,
 ) ([]TaskRewards, error) {
 	// Get All reported losses from last block
-	reportedLosses, err := keeper.GetValueBundles(ctx, topicId, block)
+	reportedLosses, err := keeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
