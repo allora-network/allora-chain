@@ -45,4 +45,7 @@ var (
 	NetworkLossBundlesKey         = collections.NewPrefix(34)
 	NetworkRegretsKey             = collections.NewPrefix(35)
 	StakeByReputerAndTopicIdKey   = collections.NewPrefix(36)
+	ReputerScoresKey              = collections.NewPrefix(37)
+	InferenceScoresKey            = collections.NewPrefix(38)
+	ForecastScoresKey             = collections.NewPrefix(39)
 )
