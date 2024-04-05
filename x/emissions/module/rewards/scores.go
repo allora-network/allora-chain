@@ -6,8 +6,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+/*
+ These functions will be used immediately after the network loss for the relevant time step has been generated.
+ Using the network loss and the sets of losses reported by each repeater, the scores are calculated. In the case
+ of workers (who perform the forecast task and network task), the last 10 previous scores will also be taken into
+ consideration to generate the score at the most recent time step.
+*/
+
+// GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
 func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, reportedLosses types.ReputerValueBundles) ([]types.Score, error) {
-	// Get reputers informations
+	// Get reputers data
 	var reputerAddresses []sdk.AccAddress
 	var reputerStakes []float64
 	var reputerListeningCoefficients []float64
@@ -68,6 +76,7 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 	return newScores, nil
 }
 
+// GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
 func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
 	var newScores []types.Score
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
@@ -94,6 +103,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 	return newScores, nil
 }
 
+// GenerateForecastScores calculates and persists scores for workers based on their forecast task performance.
 func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
 	// Get worker scores for one out loss
 	var workersScoresOneOut []float64
