@@ -438,17 +438,19 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 			},
 			NaiveValue: 100,
 			// Increased loss when removing for worker 1
-			OneOutValues: []*types.WorkerAttributedValue{
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  115,
 				},
+			},
+			OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[1].String(),
 					Value:  100,
 				},
 			},
-			OneInNaiveValues: []*types.WorkerAttributedValue{
+			OneInForecasterValues: []*types.WorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  90,
@@ -478,17 +480,19 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 			},
 			NaiveValue: 90,
 			// Increased loss when removing for worker 1
-			OneOutValues: []*types.WorkerAttributedValue{
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  120,
 				},
+			},
+			OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[1].String(),
 					Value:  100,
 				},
 			},
-			OneInNaiveValues: []*types.WorkerAttributedValue{
+			OneInForecasterValues: []*types.WorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  85,
@@ -503,11 +507,11 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
 	s.NoError(err, "Error adding valueBundles")
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
@@ -534,16 +538,11 @@ func (s *ModuleTestSuite) TestGetWorkerScoreForecastTask() {
 		reputersNaiveReportedLosses = append(reputersNaiveReportedLosses, valueBundle.ValueBundle.NaiveValue)
 
 		// Add OneOutLosses
-		for _, workerLoss := range valueBundle.ValueBundle.OneOutValues {
-			if workerLoss.Worker == workers[0].String() {
-				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, workerLoss.Value)
-			} else if workerLoss.Worker == workers[1].String() {
-				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, workerLoss.Value)
-			}
-		}
+		reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, valueBundle.ValueBundle.OneOutInfererValues[0].Value)
+		reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, valueBundle.ValueBundle.OneOutForecasterValues[0].Value)
 
 		// Add OneInNaiveLosses
-		for _, workerLoss := range valueBundle.ValueBundle.OneInNaiveValues {
+		for _, workerLoss := range valueBundle.ValueBundle.OneInForecasterValues {
 			if workerLoss.Worker == workers[0].String() {
 				reputersWorker1ReportedOneInNaiveLosses = append(reputersWorker1ReportedOneInNaiveLosses, workerLoss.Value)
 			} else if workerLoss.Worker == workers[1].String() {
@@ -626,7 +625,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 			TopicId:       topicId,
 			CombinedValue: 85,
 			// Increased loss when removing for worker 1
-			OneOutValues: []*types.WorkerAttributedValue{
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  115,
@@ -645,7 +644,7 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 			TopicId:       topicId,
 			CombinedValue: 80,
 			// Increased loss when removing for worker 1
-			OneOutValues: []*types.WorkerAttributedValue{
+			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: workers[0].String(),
 					Value:  120,
@@ -660,11 +659,11 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 	reputersValueBundles = append(reputersValueBundles, &reputer2ValueBundle)
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: reputersValueBundles})
 	s.NoError(err, "Error adding valueBundle for worker")
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get reputers stakes and reported losses for each worker
@@ -686,13 +685,8 @@ func (s *ModuleTestSuite) TestGetWorkerScoreInferenceTask() {
 		reputersCombinedReportedLosses = append(reputersCombinedReportedLosses, valueBundle.ValueBundle.CombinedValue)
 
 		// Add OneOutLosses
-		for _, workerLoss := range valueBundle.ValueBundle.OneOutValues {
-			if workerLoss.Worker == workers[0].String() {
-				reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, workerLoss.Value)
-			} else if workerLoss.Worker == workers[1].String() {
-				reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, workerLoss.Value)
-			}
-		}
+		reputersWorker1ReportedOneOutLosses = append(reputersWorker1ReportedOneOutLosses, valueBundle.ValueBundle.OneOutInfererValues[0].Value)
+		reputersWorker2ReportedOneOutLosses = append(reputersWorker2ReportedOneOutLosses, valueBundle.ValueBundle.OneOutInfererValues[1].Value)
 	}
 
 	// Get Stake Weighted Loss - Network Inference Loss - (L_i)
@@ -743,14 +737,14 @@ func (s *ModuleTestSuite) TestGetStakeWeightedLoss() {
 
 	timeNow := s.ctx.BlockHeight()
 
-	err = s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: newValueBundles})
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, timeNow, types.ReputerValueBundles{ReputerValueBundles: newValueBundles})
 	s.NoError(err, "Error adding valueBundle for reputer")
 
 	var reputersStakes []float64
 	var reputersReportedLosses []float64
 
 	// Get ValueBundles
-	valueBundles, err := s.emissionsKeeper.GetValueBundles(s.ctx, topicId, timeNow)
+	valueBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, timeNow)
 	s.NoError(err, "Error getting valueBundles")
 
 	// Get stakes and reported losses
