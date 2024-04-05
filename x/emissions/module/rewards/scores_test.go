@@ -182,7 +182,7 @@ func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64
 		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
 	}
 
-	err := s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, block, reputerValueBundles)
+	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
 	if err != nil {
 		return types.ReputerValueBundles{}, err
 	}
