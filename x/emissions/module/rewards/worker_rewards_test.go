@@ -7,13 +7,13 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *RewardsTestSuite) TestGetWorkerScoreInferenceTask() {
+func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1003)
+	_, err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -29,13 +29,13 @@ func (s *RewardsTestSuite) TestGetWorkerScoreInferenceTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func (s *RewardsTestSuite) TestGetWorkerScoreForecastTask() {
+func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	// Generate old scores
 	err := mockWorkerLastScores(s, 1)
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	err = mockNetworkLosses(s, 1, 1003)
+	_, err = mockNetworkLosses(s, 1, 1003)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -51,69 +51,92 @@ func (s *RewardsTestSuite) TestGetWorkerScoreForecastTask() {
 	s.Require().Equal(5, len(workerRewards))
 }
 
-func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
-	// Generate network losses
-	oneOutLosses := []*types.WithheldWorkerAttributedValue{
+func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
+	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  100.0,
+			Value:  0.01327,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  200.0,
+			Value:  0.01302,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  300.0,
+			Value:  0.0136,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  400.0,
+			Value:  0.01491,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  500.0,
+			Value:  0.01686,
+		},
+	}
+
+	oneOutForecasterLosses := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  0.01402,
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  0.01316,
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  0.01657,
+		},
+		{
+			Worker: s.addrs[3].String(),
+			Value:  0.0124,
+		},
+		{
+			Worker: s.addrs[4].String(),
+			Value:  0.01341,
 		},
 	}
 
 	oneInNaiveLosses := []*types.WorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  500.0,
+			Value:  0.01529,
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  400.0,
+			Value:  0.01141,
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  300.0,
+			Value:  0.01562,
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  200.0,
+			Value:  0.01444,
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  100.0,
+			Value:  0.01396,
 		},
 	}
 
 	networkLosses := types.ValueBundle{
 		TopicId:                topicId,
-		OneOutForecasterValues: oneOutLosses,
+		CombinedValue:          0.013481256018186383,
+		NaiveValue:             0.01344474872292,
+		OneOutInfererValues:    oneOutInfererLosses,
+		OneOutForecasterValues: oneOutForecasterLosses,
 		OneInForecasterValues:  oneInNaiveLosses,
-		CombinedValue:          1500.0,
-		NaiveValue:             1500.0,
 	}
 
 	// Persist network losses
 	err := s.emissionsKeeper.InsertNetworkLossBundle(s.ctx, topicId, block, networkLosses)
 	if err != nil {
-		return err
+		return types.ValueBundle{}, err
 	}
 
-	return nil
+	return networkLosses, nil
 }
 
 func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
@@ -139,13 +162,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 		{0.09719, 0.09675, 0.09418},
 	}
 
-	for i, wa := range workerAddrs {
-		workerAddr, err := sdk.AccAddressFromBech32(wa.String())
-		if err != nil {
-			return err
-		}
-		workerAddrs = append(workerAddrs, workerAddr)
-
+	for i, workerAddr := range workerAddrs {
 		for j, workerNewScore := range scores[i] {
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
@@ -155,7 +172,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 			}
 
 			// Persist worker inference score
-			err = s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
 			if err != nil {
 				return err
 			}

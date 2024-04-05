@@ -16,7 +16,7 @@ func GetWorkersRewardsInferenceTask(
 	topicId uint64,
 	block int64,
 	preward float64,
-	totalRewards float64,
+	totalInferenceRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -27,7 +27,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get last score for each worker
 	var scoresFloat64 [][]float64
 	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
+	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err
@@ -51,7 +51,7 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get worker portion of rewards
-	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalRewards, workerAddresses)
+	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalInferenceRewards, workerAddresses)
 }
 
 func GetWorkersRewardsForecastTask(
@@ -60,7 +60,7 @@ func GetWorkersRewardsForecastTask(
 	topicId uint64,
 	block int64,
 	preward float64,
-	totalRewards float64,
+	totalForecastRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -95,5 +95,5 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get worker portion of rewards
-	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalRewards, workerAddresses)
+	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalForecastRewards, workerAddresses)
 }

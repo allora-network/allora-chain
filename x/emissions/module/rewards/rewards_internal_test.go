@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"fmt"
 	"math"
 	"testing"
 
@@ -708,7 +707,7 @@ func TestGetWorkerPortionOfRewards(t *testing.T) {
 				[]byte("addr4"),
 				[]byte("addr5"),
 			},
-			want:    []float64{76.71, 55.31, 98.29, 215.37, 554.32},
+			want:    []float64{76.71471224853309, 55.310145462117234, 98.29388639227018, 215.38198445289035, 554.2992714441891},
 			wantErr: false,
 		},
 	}
@@ -722,8 +721,7 @@ func TestGetWorkerPortionOfRewards(t *testing.T) {
 			}
 
 			for i := range tt.want {
-				fmt.Println(">>>>>>", math.Abs(got[i].Reward-tt.want[i]))
-				if math.Abs(got[i].Reward-tt.want[i]) > 1e-1 {
+				if math.Abs(got[i].Reward-tt.want[i]) > 1e-5 {
 					t.Errorf("GetWorkerPortionOfRewards() got = %v, want %v", got, tt.want)
 				}
 			}
@@ -802,10 +800,6 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			// convert to 10^x
-			for i, v := range got {
-				got[i] = math.Pow(10, v)
-			}
 			if !slicesAreApproxEqual(got, tt.want, 1e-5) {
 				t.Errorf("GetStakeWeightedLossMatrix() got = %v, want %v", got, tt.want)
 			}
@@ -837,7 +831,8 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 				t.Errorf("GetStakeWeightedLoss() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(math.Abs(math.Pow(10, got)-tt.want) <= 1e-5) {
+
+			if !(math.Abs(got-tt.want) <= 1e-5) {
 				t.Errorf("GetStakeWeightedLoss() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -915,7 +910,6 @@ func TestGetAllConsensusScores(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := rewards.GetAllConsensusScores(tt.allLosses, tt.stakes, tt.allListeningCoefficients, tt.numReputers)
-
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -952,7 +946,7 @@ func TestGetAllReputersOutput(t *testing.T) {
 			stakes:              []float64{1176644.37627, 384623.3607, 394676.13226, 207999.66194, 368582.76542},
 			initialCoefficients: []float64{1.0, 1.0, 1.0, 1.0, 1.0},
 			numReputers:         5,
-			wantScores:          []float64{17.53436, 20.29489, 24.26994, 11.36754, 15.21749},
+			wantScores:          []float64{17.536755245164326, 20.302662649273707, 24.278413872561256, 11.365030585937692, 15.211816727558011},
 			wantCoefficients:    []float64{0.99942, 1.0, 1.0, 0.96574, 0.95346},
 			wantErr:             false,
 		},
@@ -966,7 +960,7 @@ func TestGetAllReputersOutput(t *testing.T) {
 				return
 			}
 
-			if !slicesAreApproxEqual(gotScores, tt.wantScores, 1e-4) {
+			if !slicesAreApproxEqual(gotScores, tt.wantScores, 1e-5) {
 				t.Errorf("GetAllReputersOutput() gotScores = %v, want %v", gotScores, tt.wantScores)
 			}
 

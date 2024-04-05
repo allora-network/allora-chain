@@ -254,6 +254,11 @@ message Scores {
   repeated Score scores = 1;
 }
 
+/// LISTENING COEFFICIENTS
+message ListeningCoefficient {
+  double coefficient = 3;
+}
+
 /// INFERENCE REQUEST
 
 // num_inference_possible = bid_amount / max_price_per_inference,
