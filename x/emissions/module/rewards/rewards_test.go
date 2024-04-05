@@ -83,8 +83,8 @@ func (s *RewardsTestSuite) SetupTest() {
 
 	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
 	var addrsStr []string = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
-	for i := 0; i < 5; i++ {
+	pubkeys := simtestutil.CreateTestPubKeys(10)
+	for i := 0; i < 10; i++ {
 		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
 		addrsStr = append(addrsStr, addrs[i].String())
 	}

@@ -14,7 +14,7 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	block := int64(1003)
 
 	// Generate reputers data for tests
-	err := mockReputersData(s, topidId, block)
+	_, err := mockReputersData(s, topidId, block)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -39,7 +39,7 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 }
 
 // mockReputersData generates reputer scores, stakes and losses
-func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) error {
+func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -59,9 +59,9 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) error {
 
 	var reputerValueBundles types.ReputerValueBundles
 	for i, reputerAddr := range reputerAddrs {
-		err := s.emissionsKeeper.SetDelegatedStakeUponReputer(s.ctx, topicId, reputerAddr, stakes[i])
+		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddr, stakes[i])
 		if err != nil {
-			return err
+			return types.ReputerValueBundles{}, err
 		}
 
 		scoreToAdd := types.Score{
@@ -72,7 +72,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) error {
 		}
 		err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
 		if err != nil {
-			return err
+			return types.ReputerValueBundles{}, err
 		}
 
 		reputerValueBundle := &types.ReputerValueBundle{
@@ -88,8 +88,8 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) error {
 
 	err := s.emissionsKeeper.InsertValueBundles(s.ctx, topicId, block, reputerValueBundles)
 	if err != nil {
-		return err
+		return types.ReputerValueBundles{}, err
 	}
 
-	return nil
+	return reputerValueBundles, nil
 }

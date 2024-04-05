@@ -135,7 +135,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 		stakeWeightedLoss += weightedLoss
 	}
 
-	return stakeWeightedLoss, nil
+	return math.Pow(10, stakeWeightedLoss), nil
 }
 
 // GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
@@ -158,7 +158,7 @@ func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReport
 		for i, losses := range reputersReportedLosses {
 			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
 		}
-		stakeWeightedLoss[j] = logSum
+		stakeWeightedLoss[j] = math.Pow(10, logSum)
 	}
 
 	return stakeWeightedLoss, nil
@@ -174,7 +174,7 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 
 	var sumLogConsensusSquared float64
 	for _, cLoss := range consensusLosses {
-		sumLogConsensusSquared += math.Pow(cLoss, 2)
+		sumLogConsensusSquared += math.Pow(math.Log10(cLoss), 2)
 	}
 	consensusNorm := math.Sqrt(sumLogConsensusSquared)
 
@@ -806,10 +806,13 @@ func ExtractValues(bundle *types.ValueBundle) []float64 {
 	for _, v := range bundle.ForecasterValues {
 		values = append(values, v.Value)
 	}
-	for _, v := range bundle.OneOutValues {
+	for _, v := range bundle.OneOutInfererValues {
 		values = append(values, v.Value)
 	}
-	for _, v := range bundle.OneInNaiveValues {
+	for _, v := range bundle.OneOutForecasterValues {
+		values = append(values, v.Value)
+	}
+	for _, v := range bundle.OneInForecasterValues {
 		values = append(values, v.Value)
 	}
 
