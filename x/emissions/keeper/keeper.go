@@ -117,10 +117,17 @@ type Keeper struct {
 	// map of (topic, block_number) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.ValueBundle]
 
-	// map of (topic, worker, block_number) -> WorkerRegrets, a list of regrets of all workers that were calculable as of that timestep
-	networkRegrets collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.WorkerRegrets]
-
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
+
+	/// REGRETS
+
+	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
+	latestInfererNetworkRegrets collections.Map[collections.Pair[TOPIC_ID, WORKER], types.TimestampedValue]
+	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
+	latestForecasterNetworkRegrets collections.Map[collections.Pair[TOPIC_ID, WORKER], types.TimestampedValue]
+	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
+	// all network inferer losses L_ij including the network forecast-implied inference L_ik^* of the forecaster
+	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TOPIC_ID, WORKER, WORKER], types.TimestampedValue]
 
 	/// WHITELISTS
 
@@ -141,44 +148,46 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                        cdc,
-		addressCodec:               addressCodec,
-		feeCollectorName:           feeCollectorName,
-		params:                     collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		authKeeper:                 ak,
-		bankKeeper:                 bk,
-		totalStake:                 collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                 collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
-		lastRewardsUpdate:          collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:                collections.NewSequence(sb, types.NextTopicIdKey, "next_topic_id"),
-		topics:                     collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
-		churnReadyTopics:           collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
-		topicWorkers:               collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:              collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
-		topicReputers:              collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:   collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		stakeRemovalQueue:          collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
-		delegatedStakeRemovalQueue: collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
-		stakeFromDelegator:         collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		delegatedStakePlacement:    collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		stakeUponReputer:           collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		mempool:                    collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
-		requestUnmetDemand:         collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
-		topicUnmetDemand:           collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
-		inferences:                 collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
-		forecasts:                  collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
-		workers:                    collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		reputers:                   collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		allInferences:              collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:               collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:             collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
-		networkLossBundles:         collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
-		networkRegrets:             collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.WorkerRegrets](cdc)),
-		accumulatedMetDemand:       collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
-		numInferencesInRewardEpoch: collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		whitelistAdmins:            collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
-		topicCreationWhitelist:     collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
-		reputerWhitelist:           collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
+		cdc:                                 cdc,
+		addressCodec:                        addressCodec,
+		feeCollectorName:                    feeCollectorName,
+		params:                              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		authKeeper:                          ak,
+		bankKeeper:                          bk,
+		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
+		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
+		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_topic_id"),
+		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
+		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
+		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
+		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeRemovalQueue:                   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
+		delegatedStakeRemovalQueue:          collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
+		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		delegatedStakePlacement:             collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		mempool:                             collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
+		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
+		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		inferences:                          collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
+		forecasts:                           collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
+		workers:                             collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		reputers:                            collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		allInferences:                       collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:                        collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
+		allLossBundles:                      collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
+		networkLossBundles:                  collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		accumulatedMetDemand:                collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
+		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
+		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 	}
 
 	schema, err := sb.Build()
@@ -189,6 +198,89 @@ func NewKeeper(
 	k.schema = schema
 
 	return k
+}
+
+/// REGRETS
+
+func (k *Keeper) UpdateInfererNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, worker)
+	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) UpdateForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, worker)
+	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) UpdateOneInForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, forecaster WORKER, inferer WORKER, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, forecaster, inferer)
+	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER) (types.TimestampedValue, error) {
+	key := collections.Join(topicId, worker)
+	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       1,
+			}, nil
+		}
+		return types.TimestampedValue{}, err
+	}
+	return regret, nil
+}
+
+func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER) (types.TimestampedValue, error) {
+	key := collections.Join(topicId, worker)
+	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       1,
+			}, nil
+		}
+		return types.TimestampedValue{}, err
+	}
+	return regret, nil
+}
+
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, forecaster WORKER, inferer WORKER) (types.TimestampedValue, error) {
+	key := collections.Join3(topicId, forecaster, inferer)
+	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       1,
+			}, nil
+		}
+		return types.TimestampedValue{}, err
+	}
+	return regret, nil
+}
+
+func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.WorkerRegrets, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
+		StartInclusive(block).
+		Descending()
+
+	iter, err := k.networkRegrets.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	if !iter.Valid() {
+		// Return empty loss bundle if no loss bundle is found
+		return &types.WorkerRegrets{}, nil
+	}
+	kv, err := iter.KeyValue()
+	if err != nil {
+		return nil, err
+	}
+	return &kv.Value, nil
 }
 
 /// PARAMETERS
@@ -536,7 +628,7 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 	return forecasts, nil
 }
 
-/// LOSS BUNDLES, REGRETS
+/// LOSS BUNDLES
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
 func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT, reptuerLossBundles types.ReputerValueBundles) error {
@@ -564,7 +656,7 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TOPIC_
 	return &lossBundle, nil
 }
 
-func (k *Keeper) GetNetworkValueBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.ValueBundle, error) {
+func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.ValueBundle, error) {
 	rng := collections.
 		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
 		StartInclusive(block).
@@ -577,27 +669,6 @@ func (k *Keeper) GetNetworkValueBundleAtOrBeforeBlock(ctx context.Context, topic
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
 		return &types.ValueBundle{}, nil
-	}
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, err
-	}
-	return &kv.Value, nil
-}
-
-func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.WorkerRegrets, error) {
-	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
-		StartInclusive(block).
-		Descending()
-
-	iter, err := k.networkRegrets.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.WorkerRegrets{}, nil
 	}
 	kv, err := iter.KeyValue()
 	if err != nil {
