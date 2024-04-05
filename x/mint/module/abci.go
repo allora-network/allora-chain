@@ -39,6 +39,11 @@ func UpdateEmissionRate(
 			lockedSupply.String(),
 		)
 	}
+	fmt.Println("Total supply", totalSupply)
+	fmt.Println("Locked supply", lockedSupply)
+	fmt.Println("Circulating supply", circulatingSupply)
+	fmt.Println("FEmissionNumerator", params.FEmissionNumerator)
+	fmt.Println("FEmissionDenominator", params.FEmissionDenominator)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmissionNumerator,
@@ -48,7 +53,7 @@ func UpdateEmissionRate(
 		circulatingSupply,
 		totalSupply,
 	)
-	fmt.Println("Target reward emission per unit staked token numerator", targetRewardEmissionPerUnitStakedToken)
+	fmt.Println("Target reward emission per unit staked token", targetRewardEmissionPerUnitStakedToken)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
@@ -64,7 +69,7 @@ func UpdateEmissionRate(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	fmt.Println("Previous reward emissions per unit staked token numerator", previousRewardEmissionPerUnitStakedToken)
+	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionPerUnitStakedToken)
 	emissionPerUnitStakedToken = keeper.GetRewardEmissionPerUnitStakedToken(
 		targetRewardEmissionPerUnitStakedToken,
 		smoothingDegree,

@@ -21,6 +21,8 @@ $ALLORAD_BIN genesis add-genesis-account allo1q4fa4tqzng2lshfhjaklx90hzfnfennxt0
 $ALLORAD_BIN genesis add-genesis-account allo1zy5akp9grwfp3x6rqd40x0g4agpzjaskxr9lnn 10000000allo
 $ALLORAD_BIN genesis add-genesis-account allo1ywhj2svg67mn7ylr9mu5kz9f668z2xejnp9w9y 10000000allo
 $ALLORAD_BIN genesis add-genesis-account allo1r7hqeqdmf6jg9v9px0gh5l6n7tlr0tlxt86plc 10000000allo
+# Ecosystem account gets 36.75% of total supply
+$ALLORAD_BIN genesis add-genesis-account allo12uxa8rw9hte3z2nuswjzpmfen289n30uag6agp 367500000allo
 
 # create default validator
 $ALLORAD_BIN genesis gentx alice 1000allo --chain-id demo
