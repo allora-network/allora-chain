@@ -74,14 +74,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetInferencesToScore",
-					Use:       "inferences-to-score [topic_id]",
-					Short:     "Get Latest Inferences for a Topic to be scored",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
 					RpcMethod: "GetWorkerNodeRegistration",
 					Use:       "worker-registration [owner|libp2p-pub-key]",
 					Short:     "Get registration for worker node id",
