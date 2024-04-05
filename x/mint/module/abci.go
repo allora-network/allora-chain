@@ -42,12 +42,10 @@ func UpdateEmissionRate(
 	fmt.Println("Total supply", totalSupply)
 	fmt.Println("Locked supply", lockedSupply)
 	fmt.Println("Circulating supply", circulatingSupply)
-	fmt.Println("FEmissionNumerator", params.FEmissionNumerator)
-	fmt.Println("FEmissionDenominator", params.FEmissionDenominator)
+	fmt.Println("FEmission", params.FEmission)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
-		params.FEmissionNumerator,
-		params.FEmissionDenominator,
+		params.FEmission,
 		ecosystemBalance,
 		networkStaked,
 		circulatingSupply,
@@ -60,8 +58,7 @@ func UpdateEmissionRate(
 	smoothingDegree := keeper.GetSmoothingFactorPerTimestep(
 		ctx,
 		k,
-		params.OneMonthSmoothingDegreeNumerator,
-		params.OneMonthSmoothingDegreeDenominator,
+		params.OneMonthSmoothingDegree,
 		params.EmissionCalibrationsTimestepPerMonth,
 	)
 	fmt.Println("Smoothing degree", smoothingDegree)
@@ -134,9 +131,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if err != nil {
 			return err
 		}
-		ecosystemMaxSupply := params.MaxSupply.
-			Mul(params.EcosystemTreasuryPercentOfTotalSupplyNumerator).
-			Quo(params.EcosystemTreasuryPercentOfTotalSupplyDenominator)
+		ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
+			Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
 		if ecosystemTokensAlreadyMinted.Add(blockEmission).GT(ecosystemMaxSupply) {
 			return types.ErrMaxSupplyReached
 		}

@@ -45,6 +45,9 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	previousBlockEmission, err := keeper.PreviousBlockEmission.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	ecosystemTokensMinted, err := keeper.EcosystemTokensMinted.Get(ctx)
 	if err != nil {

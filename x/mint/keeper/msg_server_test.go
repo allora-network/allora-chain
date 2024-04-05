@@ -3,15 +3,10 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestUpdateParams() {
-	maxSupply, ok := sdkmath.NewIntFromString("1000000000000000000000000000")
-	if !ok {
-		panic("invalid number")
-	}
+	defaultParams := types.DefaultParams()
 	testCases := []struct {
 		name      string
 		request   *types.MsgUpdateParams
@@ -31,19 +26,19 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			},
 			expectErr: true,
 		},
+		//todo do all failing testcases for each validity check against each param one by one
 		{
 			name: "set invalid params",
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:                            sdk.DefaultBondDenom,
-					BlocksPerMonth:                       uint64(525960),
-					EmissionCalibrationsTimestepPerMonth: uint64(30),
-					MaxSupply:                            sdkmath.NewIntFromUint64(0),
-					FEmissionNumerator:                   sdkmath.NewInt(15),
-					FEmissionDenominator:                 sdkmath.NewInt(1000),
-					OneMonthSmoothingDegreeNumerator:     sdkmath.NewInt(1),
-					OneMonthSmoothingDegreeDenominator:   sdkmath.NewInt(10),
+					MintDenom:                             defaultParams.MintDenom,
+					BlocksPerMonth:                        defaultParams.BlocksPerMonth,
+					EmissionCalibrationsTimestepPerMonth:  defaultParams.EmissionCalibrationsTimestepPerMonth,
+					MaxSupply:                             sdkmath.NewIntFromUint64(0),
+					FEmission:                             defaultParams.FEmission,
+					OneMonthSmoothingDegree:               defaultParams.OneMonthSmoothingDegree,
+					EcosystemTreasuryPercentOfTotalSupply: defaultParams.EcosystemTreasuryPercentOfTotalSupply,
 				},
 			},
 			expectErr: true,
@@ -53,14 +48,13 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:                            sdk.DefaultBondDenom,
-					MaxSupply:                            maxSupply,
-					BlocksPerMonth:                       uint64(525960),
-					EmissionCalibrationsTimestepPerMonth: uint64(30),
-					FEmissionNumerator:                   sdkmath.NewInt(15),
-					FEmissionDenominator:                 sdkmath.NewInt(1000),
-					OneMonthSmoothingDegreeNumerator:     sdkmath.NewInt(1),
-					OneMonthSmoothingDegreeDenominator:   sdkmath.NewInt(10),
+					MintDenom:                             defaultParams.MintDenom,
+					MaxSupply:                             defaultParams.MaxSupply,
+					BlocksPerMonth:                        defaultParams.BlocksPerMonth,
+					EmissionCalibrationsTimestepPerMonth:  defaultParams.EmissionCalibrationsTimestepPerMonth,
+					FEmission:                             defaultParams.FEmission,
+					OneMonthSmoothingDegree:               defaultParams.OneMonthSmoothingDegree,
+					EcosystemTreasuryPercentOfTotalSupply: defaultParams.EcosystemTreasuryPercentOfTotalSupply,
 				},
 			},
 			expectErr: false,

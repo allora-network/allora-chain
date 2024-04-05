@@ -50,9 +50,8 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 	result := keeper.GetSmoothingFactorPerTimestep(
 		s.ctx,
 		s.mintKeeper,
-		math.NewInt(1),  // 0.1 | 1 over 10, so numerator is 1
-		math.NewInt(10), // 0.1 | 1 over 10 so denominator is 10
-		30,              // there are 30 days in a month (shh, close enough)
+		math.LegacyMustNewDecFromStr("0.1"),
+		30, // there are 30 days in a month (shh, close enough)
 	)
 
 	s.Require().True(
@@ -88,8 +87,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
 
 	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
-		math.NewInt(15),
-		math.NewInt(1000),
+		math.LegacyMustNewDecFromStr("0.015"),
 		math.NewInt(200000),
 		math.NewInt(400),
 		math.NewInt(10000000),

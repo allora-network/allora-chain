@@ -30,47 +30,23 @@ message Params {
     (amino.dont_omitempty) = true
   ];
   // ecosystem treasury fraction ideally emitted per unit time
-  // this value includes a denominator, see f_emission_denominator
-  string f_emission_numerator = 5 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // f_emission is passed as a fraction, this is the denominator
-  string f_emission_denominator = 6 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+  string f_emission = 5 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // exponential moving average smoothing factor for one month
-  // this value is a fraction, see one_month_smoothing_degree_denominator
-  string one_month_smoothing_degree_numerator = 7 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+  string one_month_smoothing_degree = 7 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  // denominator for the one_month_smoothing_degree_numerator
-  // pass the value as a fraction due to precision issues
-  string one_month_smoothing_degree_denominator = 8 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-
-  string ecosystem_treasury_percent_of_total_supply_numerator = 9 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-
-  string ecosystem_treasury_percent_of_total_supply_denominator = 10 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+  // percentage of the total supply is reserved and locked in the ecosystem treasury
+  string ecosystem_treasury_percent_of_total_supply = 9 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

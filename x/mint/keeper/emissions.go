@@ -57,21 +57,19 @@ func GetTotalEmissionPerTimestep(
 // ecosystem treasury that would ideally be emitted per unit time.
 // pass f_e as a fractional value, numerator and denominator as separate args
 func GetTargetRewardEmissionPerUnitStakedToken(
-	fEmissionNumerator math.Int,
-	fEmissionDenominator math.Int,
+	fEmission math.LegacyDec,
 	ecosystemBalance math.Int,
 	networkStaked math.Int,
 	circulatingSupply math.Int,
 	totalSupply math.Int,
 ) (math.LegacyDec, error) {
-	if fEmissionDenominator.IsZero() ||
-		networkStaked.IsZero() ||
+	if networkStaked.IsZero() ||
 		totalSupply.IsZero() {
 		return math.LegacyDec{}, errors.Wrapf(
 			types.ErrZeroDenominator,
 			"denominator is zero: %s | %s",
 			networkStaked.String(),
-			fEmissionDenominator.String(),
+			totalSupply.String(),
 		)
 	}
 	// T_{total,i} = ecosystemBalance
@@ -80,10 +78,9 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 	// N_{total,i} = totalSupply
 	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(totalSupply.ToLegacyDec())
 	ratioEcosystemToStaked := ecosystemBalance.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
-	ret := fEmissionNumerator.ToLegacyDec().
+	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
-		Mul(ratioCirculating).
-		Quo(fEmissionDenominator.ToLegacyDec())
+		Mul(ratioCirculating)
 	if ret.IsNegative() {
 		return math.LegacyDec{}, errors.Wrapf(
 			types.ErrNegativeTargetEmissionPerToken,
@@ -120,11 +117,9 @@ func GetRewardEmissionPerUnitStakedToken(
 func GetSmoothingFactorPerTimestep(
 	ctx sdk.Context,
 	k Keeper,
-	a_en math.Int,
-	a_ed math.Int,
+	a_e math.LegacyDec,
 	dt uint64,
 ) math.LegacyDec {
-	a_e := a_en.ToLegacyDec().Quo(a_ed.ToLegacyDec())
 	base := math.OneInt().ToLegacyDec().Sub(a_e)
 	secondTerm := base.Power(dt)
 	return math.OneInt().ToLegacyDec().Sub(secondTerm)

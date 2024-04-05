@@ -71,12 +71,9 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		uint64(60/5*60*24*30),
 		uint64(2),
 		maxSupply,
-		math.NewInt(15),
-		math.NewInt(1000),
-		math.NewInt(1),
-		math.NewInt(100),
-		math.NewInt(3675),
-		math.NewInt(10000),
+		types.DefaultParams().FEmission,
+		types.DefaultParams().OneMonthSmoothingDegree,
+		types.DefaultParams().EcosystemTreasuryPercentOfTotalSupply,
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()

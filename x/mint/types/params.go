@@ -16,24 +16,18 @@ func NewParams(
 	blocksPerMonth uint64,
 	emissionCalibrationTimestepPerMonth uint64,
 	maxSupply math.Int,
-	fEmissionNumerator math.Int,
-	fEmissionDenominator math.Int,
-	oneMonthSmoothingDegreeNumerator math.Int,
-	oneMonthSmoothingDegreeDenominator math.Int,
-	ecosystemPercentOfTotalSupplyNumerator math.Int,
-	ecosystemPercentOfTotalSupplyDenominator math.Int,
+	fEmission math.LegacyDec,
+	oneMonthSmoothingDegree math.LegacyDec,
+	ecosystemPercentOfTotalSupply math.LegacyDec,
 ) Params {
 	return Params{
-		MintDenom:                                        mintDenom,
-		BlocksPerMonth:                                   blocksPerMonth,
-		EmissionCalibrationsTimestepPerMonth:             emissionCalibrationTimestepPerMonth,
-		MaxSupply:                                        maxSupply,
-		FEmissionNumerator:                               fEmissionNumerator,
-		FEmissionDenominator:                             fEmissionDenominator,
-		OneMonthSmoothingDegreeNumerator:                 oneMonthSmoothingDegreeNumerator,
-		OneMonthSmoothingDegreeDenominator:               oneMonthSmoothingDegreeDenominator,
-		EcosystemTreasuryPercentOfTotalSupplyNumerator:   ecosystemPercentOfTotalSupplyNumerator,
-		EcosystemTreasuryPercentOfTotalSupplyDenominator: ecosystemPercentOfTotalSupplyDenominator,
+		MintDenom:                             mintDenom,
+		BlocksPerMonth:                        blocksPerMonth,
+		EmissionCalibrationsTimestepPerMonth:  emissionCalibrationTimestepPerMonth,
+		MaxSupply:                             maxSupply,
+		FEmission:                             fEmission,
+		OneMonthSmoothingDegree:               oneMonthSmoothingDegree,
+		EcosystemTreasuryPercentOfTotalSupply: ecosystemPercentOfTotalSupply,
 	}
 }
 
@@ -44,16 +38,13 @@ func DefaultParams() Params {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                                        sdk.DefaultBondDenom,
-		BlocksPerMonth:                                   DefaultBlocksPerMonth(),
-		EmissionCalibrationsTimestepPerMonth:             uint64(30),         // "daily" emission calibration
-		MaxSupply:                                        maxSupply,          //1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmissionNumerator:                               math.NewInt(15),    // 0.015 per month
-		FEmissionDenominator:                             math.NewInt(1000),  // 0.015 per month is 15 over 1000
-		OneMonthSmoothingDegreeNumerator:                 math.NewInt(1),     // 0.1 at 1 month cadence
-		OneMonthSmoothingDegreeDenominator:               math.NewInt(10),    // 0.1 is 1 over 10
-		EcosystemTreasuryPercentOfTotalSupplyNumerator:   math.NewInt(3675),  // 36.75%
-		EcosystemTreasuryPercentOfTotalSupplyDenominator: math.NewInt(10000), // 36.75% is 3675 over 10000
+		MintDenom:                             sdk.DefaultBondDenom,
+		BlocksPerMonth:                        DefaultBlocksPerMonth(),
+		EmissionCalibrationsTimestepPerMonth:  uint64(30),                             // "daily" emission calibration
+		MaxSupply:                             maxSupply,                              //1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmission:                             math.LegacyMustNewDecFromStr("0.015"),  // 0.015 per month
+		OneMonthSmoothingDegree:               math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
+		EcosystemTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.3675"), // 36.75%
 	}
 }
 
@@ -89,6 +80,15 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateEmissionCalibrationTimestepPerMonth(p.EmissionCalibrationsTimestepPerMonth); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.FEmission); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.OneMonthSmoothingDegree); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.EcosystemTreasuryPercentOfTotalSupply); err != nil {
 		return err
 	}
 	return nil
@@ -150,5 +150,23 @@ func validateEmissionCalibrationTimestepPerMonth(i interface{}) error {
 	if v > 35 {
 		return fmt.Errorf("lets not do x to the power more than 35 times: %d", v)
 	}
+	return nil
+}
+
+func validateAFractionValue(i interface{}) error {
+	v, ok := i.(math.LegacyDec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNil() {
+		return fmt.Errorf("fractional value cannot be nil: %s", v)
+	}
+	if v.LT(math.LegacyNewDec(0)) {
+		return fmt.Errorf("fractional value should be between 0 and 1, greater or equal to 0: %s", v)
+	}
+	if v.GT(math.LegacyNewDec(1)) {
+		return fmt.Errorf("fractional value should be between 0 and 1, less or equal to 1: %s", v)
+	}
+
 	return nil
 }
