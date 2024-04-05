@@ -27,7 +27,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get last score for each worker
 	var scoresFloat64 [][]float64
 	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutValues {
+	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err
@@ -71,7 +71,7 @@ func GetWorkersRewardsForecastTask(
 	// Get new score for each worker
 	var scoresFloat64 [][]float64
 	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutValues {
+	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
 			return nil, err

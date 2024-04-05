@@ -75,20 +75,15 @@ service Query {
     option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{block_height}";
   }
 
-  rpc GetInferencesToScore(QueryInferencesToScoreRequest) returns (QueryInferencesToScoreResponse) {
+  rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest) returns (QueryForecastsAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}/{block_height}";
   }
 
-  rpc GetForecastsToScore(QueryForecastsToScoreRequest) returns (QueryForecastsToScoreResponse) {
+  rpc GetNetworkLossBundleAtBlock(QueryNetworkLossBundleAtBlockRequest)
+      returns (QueryNetworkLossBundleAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}";
-  }
-
-  rpc GetLatestNetworkValueBundle(QueryLatestNetworkValueBundleRequest)
-      returns (QueryLatestNetworkValueBundleResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/network_loss/{topic_id}";
+    option (google.api.http).get = "/emissions/v1/network_loss/{topic_id}/{block_height}";
   }
 
   rpc GetTotalStake(QueryTotalStakeRequest) returns (QueryTotalStakeResponse) {
@@ -173,12 +168,13 @@ message QueryTopicStakeListResponse {
   repeated StakePlacement stakes = 1;
 }
 
-message QueryLatestNetworkValueBundleRequest {
+message QueryNetworkLossBundleAtBlockRequest {
   uint64 topic_id = 1;
+  int64 block_height = 2;
 }
 
-message QueryLatestNetworkValueBundleResponse {
-  ValueBundle value_bundle = 1;
+message QueryNetworkLossBundleAtBlockResponse {
+  ValueBundle loss_bundle = 1;
 }
 
 message QueryNextTopicIdRequest {}
@@ -224,27 +220,6 @@ message QueryRegisteredTopicIdsResponse {
   repeated uint64 topic_ids = 1;
 }
 
-// Returns the weight assigned by a reputer onto a worker for a given topic
-message QueryWeightRequest {
-  uint64 topic_id = 1;
-  string reputer = 2;
-  string worker = 3;
-}
-
-// Returns the weight assigned by a reputer onto a worker for a given topic
-//
-// NOTE: The amount field is a Uint which implements the custom method
-// signatures required by gogoproto.
-message QueryWeightResponse {
-  option (gogoproto.equal) = true;
-  string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
 // Returns the inferences on a topic posted at a block height
 message QueryInferencesAtBlockRequest {
   uint64 topic_id = 1;
@@ -259,20 +234,18 @@ message QueryInferencesAtBlockResponse {
   Inferences inferences = 1;
 }
 
-message QueryInferencesToScoreRequest {
+// Returns the forecasts on a topic posted at a block height
+message QueryForecastsAtBlockRequest {
   uint64 topic_id = 1;
+  int64 block_height = 2;
 }
 
-message QueryInferencesToScoreResponse {
-  repeated InferenceSetForScoring inferences = 1;
-}
-
-message QueryForecastsToScoreRequest {
-  uint64 topic_id = 1;
-}
-
-message QueryForecastsToScoreResponse {
-  repeated ForecastSetForScoring forecasts = 1;
+// Returns the forecasts on a topic posted at a block height
+//
+// NOTE: The amount field is a Uint which implements the custom method
+// signatures required by gogoproto.
+message QueryForecastsAtBlockResponse {
+  Forecasts forecasts = 1;
 }
 
 message QueryWorkerLatestInferenceRequest {

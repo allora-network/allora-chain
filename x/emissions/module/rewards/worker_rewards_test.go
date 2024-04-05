@@ -53,7 +53,7 @@ func (s *RewardsTestSuite) TestGetWorkerScoreForecastTask() {
 
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
 	// Generate network losses
-	oneOutLosses := []*types.WorkerAttributedValue{
+	oneOutLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
 			Value:  100.0,
@@ -100,11 +100,11 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) error {
 	}
 
 	networkLosses := types.ValueBundle{
-		TopicId:          topicId,
-		OneOutValues:     oneOutLosses,
-		OneInNaiveValues: oneInNaiveLosses,
-		CombinedValue:    1500.0,
-		NaiveValue:       1500.0,
+		TopicId:                topicId,
+		OneOutForecasterValues: oneOutLosses,
+		OneInForecasterValues:  oneInNaiveLosses,
+		CombinedValue:          1500.0,
+		NaiveValue:             1500.0,
 	}
 
 	// Persist network losses

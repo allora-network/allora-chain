@@ -8,7 +8,7 @@ import (
 )
 
 // Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
-func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (*types.MsgSetLossesResponse, error) {
+func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgInsertLosses) (*types.MsgInsertLossesResponse, error) {
 	// Check if the sender is in the weight setting whitelist
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -39,12 +39,11 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 		}
 	}
 
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	for topicId, bundles := range groupedBundles {
 		bundles := &types.ReputerValueBundles{
 			ReputerValueBundles: bundles,
 		}
-		err = ms.k.InsertValueBundles(ctx, topicId, blockHeight, *bundles)
+		err = ms.k.InsertReputerLossBundlesAtBlock(ctx, topicId, msg.BlockHeight, *bundles)
 		if err != nil {
 			return nil, err
 		}
@@ -55,5 +54,5 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgSetLosses) (
 	 * TODO calc eq3-15\13 when reputer queries for the chain. Then, make caching tickets for the validators
 	 */
 
-	return &types.MsgSetLossesResponse{}, nil
+	return &types.MsgInsertLossesResponse{}, nil
 }
