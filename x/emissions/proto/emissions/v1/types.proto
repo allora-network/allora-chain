@@ -238,6 +238,24 @@ message DelegatedStakeRemoval {
   repeated DelegatedStakePlacement placements = 2;
 }
 
+/// SCORES
+
+message Score {
+  uint64 topic_id = 1;
+  int64 block_number = 2;
+  string address = 3;
+  double score = 4;
+}
+
+message Scores {
+  repeated Score scores = 1;
+}
+
+/// LISTENING COEFFICIENTS
+message ListeningCoefficient {
+  double coefficient = 3;
+}
+
 /// INFERENCE REQUEST
 
 // num_inference_possible = bid_amount / max_price_per_inference,

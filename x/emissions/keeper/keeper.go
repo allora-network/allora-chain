@@ -57,6 +57,16 @@ type Keeper struct {
 	// for an address, what are all the topics that it's registered for?
 	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
+	/// SCORES
+	// map of (topic, block_number, worker) -> score
+	inferenceScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Scores]
+	// map of (topic, block_number, worker) -> score
+	forecastScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Scores]
+	// map of (topic, block_number, reputer) -> score
+	reputerScores collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Scores]
+	// map of (topic, reputer) -> listening coefficient
+	reputerListeningCoefficient collections.Map[collections.Pair[TOPIC_ID, REPUTER], types.ListeningCoefficient]
+
 	/// STAKING
 
 	// total sum stake of all stakers on the network
@@ -105,16 +115,16 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_HEIGHT]
 
-	// map of (topic, block_number) -> Inference
+	// map of (topic, block_height) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Inferences]
 
-	// map of (topic, block_number) -> Forecast
+	// map of (topic, block_height) -> Forecast
 	allForecasts collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Forecasts]
 
-	// map of (topic, block_number) -> ReputerValueBundles (1 per reputer active at that time)
+	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
 	allLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.ReputerValueBundles]
 
-	// map of (topic, block_number) -> ValueBundle (1 network wide bundle per timestep)
+	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.ValueBundle]
 
 	accumulatedMetDemand collections.Map[TOPIC_ID, Uint]
@@ -167,7 +177,7 @@ func NewKeeper(
 		stakeRemovalQueue:                   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue:          collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		delegatedStakePlacement:             collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
+		delegatedStakePlacement:             collections.NewMap(sb, types.DelegatedStakePlacementKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
 		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		mempool:                             collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
 		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
@@ -188,6 +198,10 @@ func NewKeeper(
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
+		inferenceScores:                     collections.NewMap(sb, types.InferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecastScores:                      collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerScores:                       collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -262,26 +276,26 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TO
 	return regret, nil
 }
 
-func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.WorkerRegrets, error) {
-	rng := collections.
-		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
-		StartInclusive(block).
-		Descending()
+// func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.WorkerRegrets, error) {
+// 	rng := collections.
+// 		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
+// 		StartInclusive(block).
+// 		Descending()
 
-	iter, err := k.networkRegrets.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.WorkerRegrets{}, nil
-	}
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, err
-	}
-	return &kv.Value, nil
-}
+// 	iter, err := k.networkRegrets.Iterate(ctx, rng)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if !iter.Valid() {
+// 		// Return empty loss bundle if no loss bundle is found
+// 		return &types.WorkerRegrets{}, nil
+// 	}
+// 	kv, err := iter.KeyValue()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &kv.Value, nil
+// }
 
 /// PARAMETERS
 
@@ -646,7 +660,13 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TOPIC
 	return &reputerLossBundles, nil
 }
 
-// A function that accepts a topicId and returns the latest Network ValueBundle or error
+// Insert a network loss bundle for a topic and block.
+func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT, lossBundle types.ValueBundle) error {
+	key := collections.Join(topicId, block)
+	return k.networkLossBundles.Set(ctx, key, lossBundle)
+}
+
+// A function that accepts a topicId and returns the network LossBundle at the block or error
 func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) (*types.ValueBundle, error) {
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
@@ -1756,6 +1776,145 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+/// SCORES
+
+func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_HEIGHT, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+	var scores types.Scores
+
+	scores, err := k.inferenceScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.inferenceScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_HEIGHT, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+
+	scores, err := k.forecastScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.forecastScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_HEIGHT, score types.Score) error {
+	key := collections.Join(topicId, blockNumber)
+
+	scores, err := k.reputerScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			scores = types.Scores{}
+		} else {
+			return err
+		}
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	return k.reputerScores.Set(ctx, key, scores)
+}
+
+func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_HEIGHT, worker WORKER) ([]*types.Score, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
+		EndInclusive(blockNumber).
+		Descending()
+
+	scores := make([]*types.Score, 0)
+	iter, err := k.inferenceScores.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for ; iter.Valid() && count < 10; iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		for _, score := range existingScores.Value.Scores {
+			if score.Address == worker.String() {
+				scores = append(scores, score)
+				count++
+			}
+		}
+	}
+
+	return scores, nil
+}
+
+func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TOPIC_ID, blockNumber BLOCK_HEIGHT, worker WORKER) ([]*types.Score, error) {
+	rng := collections.
+		NewPrefixedPairRange[TOPIC_ID, BLOCK_HEIGHT](topicId).
+		EndInclusive(blockNumber).
+		Descending()
+
+	scores := make([]*types.Score, 0)
+	iter, err := k.forecastScores.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for ; iter.Valid() && count < 10; iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		for _, score := range existingScores.Value.Scores {
+			if score.Address == worker.String() {
+				scores = append(scores, score)
+				count++
+			}
+		}
+	}
+
+	return scores, nil
+}
+
+func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TOPIC_ID, block BLOCK_HEIGHT) ([]*types.Score, error) {
+	key := collections.Join(topicId, block)
+	scores, err := k.reputerScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return []*types.Score{}, nil
+		}
+		return nil, err
+	}
+	return scores.Scores, nil
+}
+
+func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TOPIC_ID, reputer sdk.AccAddress, coefficient types.ListeningCoefficient) error {
+	key := collections.Join(topicId, reputer)
+	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
+}
+
+func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TOPIC_ID, reputer sdk.AccAddress) (types.ListeningCoefficient, error) {
+	key := collections.Join(topicId, reputer)
+	coef, err := k.reputerListeningCoefficient.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			// Return a default value
+			return types.ListeningCoefficient{Coefficient: 1.0}, nil
+		}
+		return types.ListeningCoefficient{}, err
+	}
+	return coef, nil
 }
 
 /// WHITELISTS
