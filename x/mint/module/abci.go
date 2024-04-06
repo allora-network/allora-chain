@@ -15,7 +15,7 @@ func UpdateEmissionRate(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	params types.Params,
-	ecosystemBalance math.Int,
+	ecosystemMintSupplyRemaining math.Int,
 ) (
 	emissionPerTimestep math.Int,
 	emissionPerUnitStakedToken math.LegacyDec,
@@ -31,7 +31,6 @@ func UpdateEmissionRate(
 	totalSupply := k.GetSupply(ctx).Amount
 	lockedSupply := keeper.GetLockedTokenSupply(
 		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
-		ecosystemBalance,
 		params,
 	)
 	circulatingSupply := totalSupply.Sub(lockedSupply)
@@ -50,7 +49,7 @@ func UpdateEmissionRate(
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
-		ecosystemBalance,
+		ecosystemMintSupplyRemaining,
 		networkStaked,
 		circulatingSupply,
 		totalSupply,
@@ -79,6 +78,23 @@ func UpdateEmissionRate(
 	fmt.Println("E_i", emissionPerUnitStakedToken)
 	emissionPerTimestep = keeper.GetTotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
 	return emissionPerTimestep, emissionPerUnitStakedToken, nil
+}
+
+// How many tokens are left that the ecosystem bucket is allowed to mint?
+func GetEcosystemMintSupplyRemaining(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	params types.Params,
+) (math.Int, error) {
+	// calculate how many tokens left the ecosystem account is allowed to mint
+	ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return math.Int{}, err
+	}
+	// check that you are allowed to mint more tokens and we haven't hit the max supply
+	ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
+		Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
+	return ecosystemMaxSupply.Sub(ecosystemTokensAlreadyMinted), nil
 }
 
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
@@ -111,12 +127,21 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+	ecosystemMintSupplyRemaining, err := GetEcosystemMintSupplyRemaining(sdkCtx, k, params)
+	if err != nil {
+		return err
+	}
 	updateEmission := false
 	var e_i math.LegacyDec
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
 	fmt.Printf("Block Height %d | emissionRateUpdateCadence %d\n", blockHeight, emissionRateUpdateCadence)
 	if uint64(blockHeight)%emissionRateUpdateCadence == 1 { // easier to test when genesis starts at 1
-		emissionPerTimestep, emissionPerUnitStakedToken, err := UpdateEmissionRate(sdkCtx, k, params, ecosystemBalance)
+		emissionPerTimestep, emissionPerUnitStakedToken, err := UpdateEmissionRate(
+			sdkCtx,
+			k,
+			params,
+			ecosystemMintSupplyRemaining,
+		)
 		if err != nil {
 			return err
 		}
@@ -130,16 +155,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	fmt.Println("Block emissions", blockEmission)
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
-		// check that you are allowed to mint more tokens and we haven't hit the max supply
-		ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
-		if err != nil {
-			return err
-		}
-		ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
-			Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
-		if ecosystemTokensAlreadyMinted.Add(blockEmission).GT(ecosystemMaxSupply) {
-			return types.ErrMaxSupplyReached
-		}
+
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmission.Sub(ecosystemBalance)
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
@@ -153,7 +169,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			return err
 		}
 		// then increment the recorded history of the amount of tokens minted
-		err = k.EcosystemTokensMinted.Set(ctx, ecosystemTokensAlreadyMinted.Add(tokensToMint))
+		err = k.AddEcosystemTokensMinted(ctx, tokensToMint)
 		if err != nil {
 			return err
 		}

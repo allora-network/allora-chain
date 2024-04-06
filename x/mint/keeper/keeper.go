@@ -168,3 +168,12 @@ func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math
 	ecosystemAddr := k.GetEcosystemAddress()
 	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
 }
+
+func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) error {
+	curr, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return err
+	}
+	new := curr.Add(minted)
+	return k.EcosystemTokensMinted.Set(ctx, new)
+}

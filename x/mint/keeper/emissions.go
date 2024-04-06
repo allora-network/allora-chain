@@ -15,10 +15,8 @@ import (
 // the agreements off chain say were supposed to happen for token lockup
 func GetLockedTokenSupply(
 	blockHeight math.Int,
-	ecosystemBalance math.Int,
 	params types.Params,
 ) math.Int {
-	// ecosystemBalance is locked and drips at the rate set in GetTotalEmissionPerTimestep
 	// foundation is unlocked from genesis
 	// participants are unlocked from genesis
 	//investors and team tokens are locked on a 1 year cliff three year vesting schedule
@@ -46,7 +44,7 @@ func GetLockedTokenSupply(
 		investors = math.ZeroInt()
 		team = math.ZeroInt()
 	}
-	return ecosystemBalance.Add(investors).Add(team)
+	return investors.Add(team)
 }
 
 // helper function to get the number of staked tokens on the network
@@ -81,15 +79,18 @@ func GetTotalEmissionPerTimestep(
 //
 // ^e_i = ((f_e*T_{total,i}) / N_{staked,i}) * (N_{circ,i} / N_{total,i})
 //
-// where T_{total,i} is the total number of tokens held by the ecosystem
-// treasury, N_{total,i} is the total token supply, N_{circ,i} is the
-// circulating supply, and N_{staked,i} is the staked supply. The
-// factor f_e = 0.015 month^{−1} represents the fraction of the
-// ecosystem treasury that would ideally be emitted per unit time.
-// pass f_e as a fractional value, numerator and denominator as separate args
+// f_e is a global tuning constant, by default f_e = 0.015 month^{−1}
+// represents the fraction of the ecosystem treasury that would ideally
+// be emitted per unit time.
+// T_{total,i} = number of tokens that the ecosystem bucket can still mint.
+// The ecosystem bucket is capped to be able to mint by default 36.75% of the max supply,
+// but as more tokens are minted the amount the ecosystem is permitted to mint decreases.
+// N_{staked,i} is the total number of tokens staked on the network at timestep i
+// N_{circ,i} is the number of tokens in circulation at timestep i
+// N_{total,i} is the total number of tokens at timestep i
 func GetTargetRewardEmissionPerUnitStakedToken(
 	fEmission math.LegacyDec,
-	ecosystemBalance math.Int,
+	ecosystemMintableRemaining math.Int,
 	networkStaked math.Int,
 	circulatingSupply math.Int,
 	totalSupply math.Int,
@@ -103,12 +104,12 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 			totalSupply.String(),
 		)
 	}
-	// T_{total,i} = ecosystemBalance
+	// T_{total,i} = ecosystemMintableRemaining
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
 	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(totalSupply.ToLegacyDec())
-	ratioEcosystemToStaked := ecosystemBalance.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
+	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
 	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
 		Mul(ratioCirculating)

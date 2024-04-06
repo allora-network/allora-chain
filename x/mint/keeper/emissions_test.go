@@ -77,27 +77,15 @@ func (s *IntegrationTestSuite) TestRewardEmissionPerUnitStakedTokenSimple() {
 	s.Require().True(expectedValue.Equal(result))
 }
 
-func (s *IntegrationTestSuite) TestNumberLockedTokensZero() {
-	result := keeper.GetLockedTokenSupply(
-		math.NewInt(0),
-		math.NewInt(0),
-		types.DefaultParams(),
-	)
-	s.Require().True(result.Equal(math.NewInt(0)))
-}
-
 func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	defaultParams := types.DefaultParams()
-	fullEcosystem := defaultParams.EcosystemTreasuryPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
 	fullInvestors := defaultParams.InvestorsPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
 	fullTeam := defaultParams.TeamPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
-	expectedLocked := fullEcosystem.Add(fullInvestors).Add(fullTeam)
+	expectedLocked := fullInvestors.Add(fullTeam)
 	result := keeper.GetLockedTokenSupply(
 		math.NewInt(int64(defaultParams.BlocksPerMonth*2)),
-		fullEcosystem,
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
@@ -105,8 +93,6 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 
 func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	defaultParams := types.DefaultParams()
-	fullEcosystem := defaultParams.EcosystemTreasuryPercentOfTotalSupply.
-		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
 	// after 13 months investors and team should get 1/3 + 1/36 = 13/36
 	fractionUnlocked := math.LegacyNewDec(13).Quo(math.LegacyNewDec(36))
 	fractionLocked := math.LegacyNewDec(1).Sub(fractionUnlocked)
@@ -116,10 +102,9 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	team := defaultParams.TeamPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).
 		Mul(fractionLocked).TruncateInt()
-	expectedLocked := fullEcosystem.Add(investors).Add(team)
+	expectedLocked := investors.Add(team)
 	result := keeper.GetLockedTokenSupply(
 		math.NewInt(int64(defaultParams.BlocksPerMonth*13+1)),
-		fullEcosystem,
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
@@ -127,14 +112,11 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 
 func (s *IntegrationTestSuite) TestNumberLockedTokensAfterVest() {
 	defaultParams := types.DefaultParams()
-	fullEcosystem := defaultParams.EcosystemTreasuryPercentOfTotalSupply.
-		Mul(math.LegacyDec(defaultParams.MaxSupply)).TruncateInt()
 	result := keeper.GetLockedTokenSupply(
 		math.NewInt(int64(defaultParams.BlocksPerMonth*40)),
-		fullEcosystem,
 		defaultParams,
 	)
-	s.Require().True(result.Equal(fullEcosystem))
+	s.Require().True(result.Equal(math.ZeroInt()))
 }
 
 func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple() {
