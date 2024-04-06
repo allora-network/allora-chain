@@ -1,7 +1,6 @@
 package msgserver_test
 
 import (
-	"testing"
 	"time"
 
 	"cosmossdk.io/core/header"
@@ -40,10 +39,6 @@ type KeeperTestSuite struct {
 	msgServer       types.MsgServer
 	mockCtrl        *gomock.Controller
 	key             *storetypes.KVStoreKey
-}
-
-func TestMsgServerTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
 }
 
 func (s *KeeperTestSuite) SetupTest() {
