@@ -1,7 +1,9 @@
 package app
 
 import (
+	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	_ "embed"
+	"github.com/cosmos/cosmos-sdk/x/authz"
 	"io"
 	"os"
 	"path/filepath"
@@ -17,7 +19,9 @@ import (
 	"cosmossdk.io/log"
 
 	storetypes "cosmossdk.io/store/types"
+	circuittypes "cosmossdk.io/x/circuit/types"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
@@ -33,6 +37,7 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
@@ -101,6 +106,8 @@ type AlloraApp struct {
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
+	AuthzKeeper           authzkeeper.Keeper
+	CircuitKeeper         circuitkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -179,6 +186,8 @@ func NewAlloraApp(
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
 		&app.SlashingKeeper,
+		&app.AuthzKeeper,
+		&app.CircuitKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -203,12 +212,15 @@ func NewAlloraApp(
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		stakingtypes.ModuleName,
+		upgradetypes.ModuleName,
 		minttypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		authz.ModuleName,
+		circuittypes.ModuleName,
 	)
 	app.ModuleManager.SetOrderEndBlockers(
 		stakingtypes.ModuleName,
@@ -219,6 +231,9 @@ func NewAlloraApp(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		emissions.ModuleName,
+		upgradetypes.ModuleName,
+		authz.ModuleName,
+		circuittypes.ModuleName,
 	)
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
