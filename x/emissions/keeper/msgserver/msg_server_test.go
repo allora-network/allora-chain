@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	"testing"
 	"time"
 
 	"cosmossdk.io/core/header"
@@ -41,6 +42,10 @@ type KeeperTestSuite struct {
 	key             *storetypes.KVStoreKey
 }
 
+func TestMsgServerTestSuite(t *testing.T) {
+	suite.Run(t, new(KeeperTestSuite))
+}
+
 func (s *KeeperTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
@@ -75,13 +80,18 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:        metadata,
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:         metadata,
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      "10",
+		PrewardReputer:   "11",
+		PrewardInference: "12",
+		PrewardForecast:  "13",
+		FTolerance:       "14",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
