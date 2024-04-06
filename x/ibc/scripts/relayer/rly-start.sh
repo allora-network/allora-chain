@@ -13,4 +13,4 @@ if ! [ -x "$(command -v $BINARY)" ]; then
 fi
 
 echo "Starting to listen relayer..."
-$BINARY start alloard-axelar -b 100 -p events --home $CHAIN_DIR/$RELAYER_DIR
+$BINARY start allora_demo-axelar_demo -b 100 -p events --home $CHAIN_DIR/$RELAYER_DIR

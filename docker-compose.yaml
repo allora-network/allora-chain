@@ -4,7 +4,7 @@ services:
   validator0:
     container_name: validator0
     # build: .
-    image: "alloranetwork/allora-chain:v0.0.8"
+    image: "alloranetwork/allora-chain:v0.0.10"
     environment:
       - NETWORK=testnet
       - MONIKER=validator0

@@ -30,13 +30,13 @@ echo "Initializing $CHAINID..."
 $BINARY init test --home $CHAIN_DIR/$CHAINID --chain-id=$CHAINID
 
 echo "Adding genesis accounts..."
-echo $VAL_MNEMONIC | $BINARY keys add val --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
-echo $DEMO_MNEMONIC | $BINARY keys add demowallet --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
-echo $RLY_MNEMONIC | $BINARY keys add rly --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
+$BINARY keys add val --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
+$BINARY keys add demowallet --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
+$BINARY keys add axelarrelayer --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
 
 $BINARY genesis add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val --keyring-backend test -a) 100000000000uaxl  --home $CHAIN_DIR/$CHAINID
 $BINARY genesis add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet --keyring-backend test -a) 100000000000uaxl  --home $CHAIN_DIR/$CHAINID
-$BINARY genesis add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly --keyring-backend test -a) 100000000000uaxl  --home $CHAIN_DIR/$CHAINID
+$BINARY genesis add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show axelarrelayer --keyring-backend test -a) 100000000000uaxl  --home $CHAIN_DIR/$CHAINID
 
 echo "Creating and collecting gentx..."
 $BINARY gentx val2 7000000000uaxl --home $CHAIN_DIR/$CHAINID --chain-id $CHAINID --keyring-backend test
