@@ -52,42 +52,62 @@ func (s *GenesisTestSuite) SetupTest() {
 	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
 	accountKeeper := minttestutil.NewMockAccountKeeper(ctrl)
 	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
+	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
 	s.accountKeeper = accountKeeper
 	accountKeeper.EXPECT().GetModuleAddress(minterAcc.Name).Return(minterAcc.GetAddress())
 	accountKeeper.EXPECT().GetModuleAccount(s.sdkCtx, minterAcc.Name).Return(minterAcc)
 
-	s.keeper = keeper.NewKeeper(s.cdc, runtime.NewKVStoreService(key), stakingKeeper, accountKeeper, bankKeeper, "", "")
+	s.keeper = keeper.NewKeeper(s.cdc, runtime.NewKVStoreService(key), stakingKeeper, accountKeeper, bankKeeper, emissionsKeeper, "", "")
 }
 
 func (s *GenesisTestSuite) TestImportExportGenesis() {
 	genesisState := types.DefaultGenesisState()
-	genesisState.Minter = types.NewMinter(math.LegacyNewDecWithPrec(20, 2), math.LegacyNewDec(1))
+	maxSupply, ok := math.NewIntFromString("1000000000000000000000000000")
+	if !ok {
+		panic("invalid number")
+	}
+	defaultParams := types.DefaultParams()
 	genesisState.Params = types.NewParams(
 		"testDenom",
-		math.LegacyNewDecWithPrec(15, 2),
-		math.LegacyNewDecWithPrec(22, 2),
-		math.LegacyNewDecWithPrec(9, 2),
-		math.LegacyNewDecWithPrec(69, 2),
-		uint64(60*60*8766/5),
-		math.NewUintFromString("1000000000000000000000000000"),
-		uint64(25246080),
-		math.NewUintFromString("2831000000000000000000"),
+		uint64(60/5*60*24*30),
+		uint64(2),
+		defaultParams.ValidatorsVsAlloraPercentReward,
+		maxSupply,
+		defaultParams.FEmission,
+		defaultParams.OneMonthSmoothingDegree,
+		defaultParams.EcosystemTreasuryPercentOfTotalSupply,
+		defaultParams.FoundationTreasuryPercentOfTotalSupply,
+		defaultParams.ParticipantsPercentOfTotalSupply,
+		defaultParams.InvestorsPercentOfTotalSupply,
+		defaultParams.TeamPercentOfTotalSupply,
 	)
+	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
+	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()
+	genesisState.EcosystemTokensMinted = types.DefaultEcosystemTokensMinted()
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
 
-	minter, err := s.keeper.Minter.Get(s.sdkCtx)
-	s.Require().Equal(genesisState.Minter, minter)
-	s.Require().NoError(err)
-
 	invalidCtx := testutil.DefaultContextWithDB(s.T(), s.key, storetypes.NewTransientStoreKey("transient_test"))
-	_, err = s.keeper.Minter.Get(invalidCtx.Ctx)
+	_, err := s.keeper.EcosystemTokensMinted.Get(invalidCtx.Ctx)
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 
 	params, err := s.keeper.Params.Get(s.sdkCtx)
 	s.Require().Equal(genesisState.Params, params)
 	s.Require().NoError(err)
 
+	previousRewardsN, err := s.keeper.PreviousRewardEmissionPerUnitStakedToken.Get(s.sdkCtx)
+	s.Require().NoError(err)
+	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(previousRewardsN))
+	s.Require().NoError(err)
+
+	ecosystemTokensMinted, err := s.keeper.EcosystemTokensMinted.Get(s.sdkCtx)
+	s.Require().True(genesisState.EcosystemTokensMinted.Equal(ecosystemTokensMinted))
+	s.Require().NoError(err)
+
 	genesisState2 := s.keeper.ExportGenesis(s.sdkCtx)
-	s.Require().Equal(genesisState, genesisState2)
+	// got to check the fields are equal one by one because the
+	// bigint params screw .Equal up
+	s.Require().Equal(genesisState.Params, genesisState2.Params)
+	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedToken))
+	s.Require().True(genesisState.EcosystemTokensMinted.Equal(genesisState2.EcosystemTokensMinted))
 }
