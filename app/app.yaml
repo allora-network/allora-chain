@@ -70,9 +70,9 @@ modules:
   - name: slashing
     config:
       "@type": cosmos.slashing.module.v1.Module
-  - name: authz
-    config:
-      "@type": cosmos.authz.module.v1.Module
   - name: circuit
     config:
       "@type": cosmos.circuit.module.v1.Module
+  - name: authz
+    config:
+      "@type": cosmos.authz.module.v1.Module
