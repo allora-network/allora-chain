@@ -19,7 +19,7 @@ func GetWorkersRewardsInferenceTask(
 	totalInferenceRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func GetWorkersRewardsForecastTask(
 	totalForecastRewards float64,
 ) ([]TaskRewards, error) {
 	// Get network loss
-	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
+	networkLosses, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
 		return nil, err
 	}

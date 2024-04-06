@@ -216,17 +216,17 @@ func NewKeeper(
 
 /// REGRETS
 
-func (k *Keeper) UpdateInfererNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
+func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) UpdateForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
+func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, worker WORKER, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) UpdateOneInForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, forecaster WORKER, inferer WORKER, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TOPIC_ID, forecaster WORKER, inferer WORKER, regret types.TimestampedValue) error {
 	key := collections.Join3(topicId, forecaster, inferer)
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
