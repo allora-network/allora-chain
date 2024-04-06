@@ -72,4 +72,4 @@ modules:
       "@type": cosmos.slashing.module.v1.Module
   - name: circuit
     config:
-      "@type": cosmos.circuit.module.v1.Module
+      "@type": circuit.module.v1.Module
