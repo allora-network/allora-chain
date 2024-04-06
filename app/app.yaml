@@ -73,6 +73,3 @@ modules:
   - name: circuit
     config:
       "@type": cosmos.circuit.module.v1.Module
-  - name: authz
-    config:
-      "@type": cosmos.authz.module.v1.Module
