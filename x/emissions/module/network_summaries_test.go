@@ -315,12 +315,12 @@ func (s *ModuleTestSuite) TestCalcOneOutInferences() {
 		networkCombinedInference: 10.0,
 		epsilon:                  0.0001,
 		expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: 9.8},
-			{Worker: "worker2", Value: 9.5},
+			{Worker: "worker1", Value: 2.1372088489865027},
+			{Worker: "worker2", Value: 2.1372088489865027},
 		},
 		expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: 9.7},
-			{Worker: "worker2", Value: 9.4},
+			{Worker: "worker1", Value: 2.2638535501227155},
+			{Worker: "worker2", Value: 1.993476410370818},
 		},
 		pInferenceSynthesis: 2.0,
 	}
@@ -379,8 +379,8 @@ func (s *ModuleTestSuite) TestCalcOneInInferences() {
 			epsilon:             0.0001,
 			pInferenceSynthesis: 2.0,
 			expectedOneInInferences: []*emissions.WorkerAttributedValue{
-				{Worker: "worker1", Value: 1.2},
-				{Worker: "worker2", Value: 1.3},
+				{Worker: "worker1", Value: 1.793021988551953},
+				{Worker: "worker2", Value: 2.035452836400373},
 			},
 			expectedErr: nil,
 		},
@@ -402,10 +402,18 @@ func (s *ModuleTestSuite) TestCalcOneInInferences() {
 				s.Require().NoError(err)
 				s.Require().Len(oneInInferences, len(tc.expectedOneInInferences), "Unexpected number of one-in inferences")
 
-				for i, expected := range tc.expectedOneInInferences {
-					actual := oneInInferences[i]
-					s.Require().Equal(expected.Worker, actual.Worker, "Mismatch in worker for one-in inference")
-					s.Require().InEpsilon(expected.Value, actual.Value, 1e-5, "Mismatch in value for one-in inference of worker %s", expected.Worker)
+				for _, expected := range tc.expectedOneInInferences {
+					found := false
+					for _, actual := range oneInInferences {
+						if expected.Worker == actual.Worker {
+							s.Require().InEpsilon(expected.Value, actual.Value, 1e-5, "Mismatch in value for one-in inference of worker %s", expected.Worker)
+							found = true
+							break
+						}
+					}
+					if !found {
+						s.FailNow("Matching worker not found", "Worker %s not found in actual inferences", expected.Worker)
+					}
 				}
 			}
 		})

@@ -107,8 +107,10 @@ func CalcForcastImpliedInferences(
 			weightSum := 0.0
 			weightInferenceDotProduct := 0.0
 			for j, w_ijk := range w_ik {
-				weightInferenceDotProduct += w_ijk * inferenceByWorker[j].Value
-				weightSum += w_ijk
+				if (inferenceByWorker[j] != nil) && (w_ijk != 0) {
+					weightInferenceDotProduct += w_ijk * inferenceByWorker[j].Value
+					weightSum += w_ijk
+				}
 			}
 			forecastImpliedInference := emissions.Inference{
 				Worker: forecast.Forecaster,
@@ -186,13 +188,17 @@ func CalcWeightedInference(
 		sumWeights += weight
 	}
 	for worker, regret := range *regrets.ForecastRegrets {
-		weight, err := Gradient(pInferenceSynthesis, *regret/maxPreviousRegret)
-		if err != nil {
-			fmt.Println("Error calculating gradient: ", err)
-			return 0, err
+		if forecastImpliedInferenceByWorker[worker] != nil {
+			weight, err := Gradient(pInferenceSynthesis, *regret/maxPreviousRegret)
+			if err != nil {
+				fmt.Println("Error calculating gradient: ", err)
+				return 0, err
+			}
+			if weight != 0 {
+				unnormalizedI_i += weight * forecastImpliedInferenceByWorker[worker].Value // numerator of network combined inference calculation
+				sumWeights += weight
+			}
 		}
-		unnormalizedI_i += weight * forecastImpliedInferenceByWorker[worker].Value // numerator of network combined inference calculation
-		sumWeights += weight
 	}
 
 	// Normalize the network combined inference
