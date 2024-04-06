@@ -87,28 +87,28 @@ func GetTotalEmissionPerTimestep(
 // but as more tokens are minted the amount the ecosystem is permitted to mint decreases.
 // N_{staked,i} is the total number of tokens staked on the network at timestep i
 // N_{circ,i} is the number of tokens in circulation at timestep i
-// N_{total,i} is the total number of tokens at timestep i
+// N_{total,i} is the total number of tokens ever allowed to exist
 func GetTargetRewardEmissionPerUnitStakedToken(
 	fEmission math.LegacyDec,
 	ecosystemMintableRemaining math.Int,
 	networkStaked math.Int,
 	circulatingSupply math.Int,
-	totalSupply math.Int,
+	maxSupply math.Int,
 ) (math.LegacyDec, error) {
 	if networkStaked.IsZero() ||
-		totalSupply.IsZero() {
+		maxSupply.IsZero() {
 		return math.LegacyDec{}, errors.Wrapf(
 			types.ErrZeroDenominator,
 			"denominator is zero: %s | %s",
 			networkStaked.String(),
-			totalSupply.String(),
+			maxSupply.String(),
 		)
 	}
 	// T_{total,i} = ecosystemMintableRemaining
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
-	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(totalSupply.ToLegacyDec())
+	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(maxSupply.ToLegacyDec())
 	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
 	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
@@ -129,7 +129,7 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 // Reward Emission Per Unit Staked Token is an exponential moving
 // average over the Target Reward Emission Per Unit Staked Token
 // e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
-func GetRewardEmissionPerUnitStakedToken(
+func GetExponentialMovingAverage(
 	targetRewardEmissionPerUnitStakedToken math.LegacyDec,
 	alphaEmission math.LegacyDec,
 	previousRewardEmissionPerUnitStakedToken math.LegacyDec,

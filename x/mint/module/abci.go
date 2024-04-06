@@ -24,11 +24,10 @@ func UpdateEmissionRate(
 	fmt.Println("Updating emission rate")
 	// Get the expected amount of emissions this block
 	networkStaked, err := keeper.GetNumStakedTokens(ctx, k)
-	fmt.Println("Network staked", networkStaked)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := k.GetSupply(ctx).Amount
+	totalSupply := k.GetTotalCurrTokenSupply(ctx).Amount
 	lockedSupply := keeper.GetLockedTokenSupply(
 		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
 		params,
@@ -42,17 +41,20 @@ func UpdateEmissionRate(
 			lockedSupply.String(),
 		)
 	}
-	fmt.Println("Total supply", totalSupply)
+	fmt.Println("Supply minted", totalSupply)
 	fmt.Println("Locked supply", lockedSupply)
 	fmt.Println("Circulating supply", circulatingSupply)
 	fmt.Println("FEmission", params.FEmission)
+	fmt.Println("Max supply", params.MaxSupply)
+	fmt.Println("Ecosystem mint supply remaining", ecosystemMintSupplyRemaining)
+	fmt.Println("Network staked", networkStaked)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
 		ecosystemMintSupplyRemaining,
 		networkStaked,
 		circulatingSupply,
-		totalSupply,
+		params.MaxSupply,
 	)
 	fmt.Println("Target reward emission per unit staked token", targetRewardEmissionPerUnitStakedToken)
 	if err != nil {
@@ -70,7 +72,7 @@ func UpdateEmissionRate(
 		return math.Int{}, math.LegacyDec{}, err
 	}
 	fmt.Println("Previous reward emissions per unit staked token", previousRewardEmissionPerUnitStakedToken)
-	emissionPerUnitStakedToken = keeper.GetRewardEmissionPerUnitStakedToken(
+	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
 		smoothingDegree,
 		previousRewardEmissionPerUnitStakedToken,
@@ -112,15 +114,10 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 
 	// find out if we need to update the block emissions rate
+	// EmissionsCalibrationsTimesepPerMonth can never be zero
+	// validateEmissionCalibrationTimestepPerMonth prevents zero
 	emissionRateUpdateCadence := params.BlocksPerMonth / params.EmissionCalibrationsTimestepPerMonth
-	if emissionRateUpdateCadence == 0 {
-		return errors.Wrapf(
-			types.ErrZeroDenominator,
-			"emissions rate update cadence is zero: %d | %d",
-			params.BlocksPerMonth,
-			params.EmissionCalibrationsTimestepPerMonth,
-		)
-	}
+
 	blockHeight := sdkCtx.BlockHeight()
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
@@ -131,6 +128,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("Ecosystem mint supply remaining", ecosystemMintSupplyRemaining)
 	updateEmission := false
 	var e_i math.LegacyDec
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
@@ -155,7 +153,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	fmt.Println("Block emissions", blockEmission)
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
-
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmission.Sub(ecosystemBalance)
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
@@ -178,13 +175,15 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// if it came from collected fees, great, if it came from minting, also fine
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
-	coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, blockEmission.Quo(math.NewInt(2))))
-	fmt.Println("Paying coins", coins)
-	err = k.PayCosmosValidatorRewardFromEcosystemAccount(sdkCtx, coins)
+	validatorCut := params.ValidatorsVsAlloraPercentReward.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
+	alloraRewardsCut := blockEmission.Sub(validatorCut)
+	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))
+	err = k.PayValidatorsFromEcosystem(sdkCtx, coinsValidator)
 	if err != nil {
 		return err
 	}
-	err = k.PayReputerRewardFromEcosystemAccount(sdkCtx, coins)
+	err = k.PayAlloraRewardsFromEcosystem(sdkCtx, coinsAlloraRewards)
 	if err != nil {
 		return err
 	}

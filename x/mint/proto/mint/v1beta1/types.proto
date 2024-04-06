@@ -22,15 +22,25 @@ message Params {
   // or 4 for weekly
   uint64 emission_calibrations_timestep_per_month = 3;
 
+  // percentage of the total supply that is rewarded to
+  // cosmos network validators the rest goes to
+  // allora reputers workers etc
+  string validators_vs_allora_percent_reward = 4 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
   // maximum total supply of the coin
-  string max_supply = 4 [
+  string max_supply = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // ecosystem treasury fraction ideally emitted per unit time
-  string f_emission = 5 [
+  string f_emission = 6 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -44,35 +54,35 @@ message Params {
     (amino.dont_omitempty) = true
   ];
   // percentage of the total supply is reserved and locked in the ecosystem treasury
-  string ecosystem_treasury_percent_of_total_supply = 9 [
+  string ecosystem_treasury_percent_of_total_supply = 8 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // percentage of the total supply that is unlocked and usable in the foundation treasury
-  string foundation_treasury_percent_of_total_supply = 10 [
+  string foundation_treasury_percent_of_total_supply = 9 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // percentage of the total supply that is unlocked and usable by partipicants at the genesis
-  string participants_percent_of_total_supply = 11 [
+  string participants_percent_of_total_supply = 10 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // percentage of the total supply that is locked in the investors bucket at the genesis
-  string investors_percent_of_total_supply = 12 [
+  string investors_percent_of_total_supply = 11 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
   // percentage of the total supply that is locked in the team bucket at the genesis
-  string team_percent_of_total_supply = 13 [
+  string team_percent_of_total_supply = 12 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,

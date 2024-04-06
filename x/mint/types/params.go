@@ -15,6 +15,7 @@ func NewParams(
 	mintDenom string,
 	blocksPerMonth uint64,
 	emissionCalibrationTimestepPerMonth uint64,
+	validatorsVsAlloraPercentReward math.LegacyDec,
 	maxSupply math.Int,
 	fEmission math.LegacyDec,
 	oneMonthSmoothingDegree math.LegacyDec,
@@ -29,6 +30,7 @@ func NewParams(
 		BlocksPerMonth:                         blocksPerMonth,
 		EmissionCalibrationsTimestepPerMonth:   emissionCalibrationTimestepPerMonth,
 		MaxSupply:                              maxSupply,
+		ValidatorsVsAlloraPercentReward:        validatorsVsAlloraPercentReward,
 		FEmission:                              fEmission,
 		OneMonthSmoothingDegree:                oneMonthSmoothingDegree,
 		EcosystemTreasuryPercentOfTotalSupply:  ecosystemPercentOfTotalSupply,
@@ -49,6 +51,7 @@ func DefaultParams() Params {
 		MintDenom:                              sdk.DefaultBondDenom,
 		BlocksPerMonth:                         DefaultBlocksPerMonth(),
 		EmissionCalibrationsTimestepPerMonth:   uint64(30),                             // "daily" emission calibration
+		ValidatorsVsAlloraPercentReward:        math.LegacyMustNewDecFromStr("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
 		FEmission:                              math.LegacyMustNewDecFromStr("0.015"),  // 0.015 per month
 		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
@@ -92,6 +95,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateEmissionCalibrationTimestepPerMonth(p.EmissionCalibrationsTimestepPerMonth); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.ValidatorsVsAlloraPercentReward); err != nil {
 		return err
 	}
 	if err := validateAFractionValue(p.FEmission); err != nil {

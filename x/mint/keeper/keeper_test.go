@@ -91,5 +91,5 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
-	s.Require().Nil(s.mintKeeper.PayReputerRewardFromEcosystemAccount(s.ctx, fees))
+	s.Require().Nil(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
 }

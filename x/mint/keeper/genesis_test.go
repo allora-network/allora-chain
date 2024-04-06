@@ -71,6 +71,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		"testDenom",
 		uint64(60/5*60*24*30),
 		uint64(2),
+		defaultParams.ValidatorsVsAlloraPercentReward,
 		maxSupply,
 		defaultParams.FEmission,
 		defaultParams.OneMonthSmoothingDegree,

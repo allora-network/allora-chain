@@ -60,14 +60,14 @@ func (s *IntegrationTestSuite) TestSmoothingFactorPerBlockSimple() {
 	)
 }
 
-func (s *IntegrationTestSuite) TestRewardEmissionPerUnitStakedTokenSimple() {
+func (s *IntegrationTestSuite) TestGetExponentialMovingAverageSimple() {
 	// e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
 	// random numbers for test
 	// e_i = 0.1 * 1000 + (1 - 0.1) * 800
 	// e_i = 100 + 720
 	// e_i = 820
 
-	result := keeper.GetRewardEmissionPerUnitStakedToken(
+	result := keeper.GetExponentialMovingAverage(
 		math.LegacyMustNewDecFromStr("1000"),
 		math.LegacyMustNewDecFromStr("0.1"),
 		math.LegacyMustNewDecFromStr("800"),

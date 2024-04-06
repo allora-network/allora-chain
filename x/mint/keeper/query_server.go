@@ -46,7 +46,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Mul(math.NewIntFromUint64(params.BlocksPerMonth)).
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
-	totalSupply := q.k.GetSupply(ctx).Amount.ToLegacyDec()
+	totalSupply := q.k.GetTotalCurrTokenSupply(ctx).Amount.ToLegacyDec()
 	inflation := EmissionPerYearAtCurrentBlockEmissionRate.Quo(totalSupply).MulInt64(100)
 	ret := types.QueryInflationResponse{
 		Inflation: inflation,

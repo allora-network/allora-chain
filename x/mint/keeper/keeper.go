@@ -88,11 +88,26 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
+// This function increases the ledger that tracks the total tokens minted by the ecosystem treasury
+// over the life of the blockchain.
+func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) error {
+	curr, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return err
+	}
+	new := curr.Add(minted)
+	return k.EcosystemTokensMinted.Set(ctx, new)
+}
+
+/// STAKIND KEEPER RELATED FUNCTIONS
+
 // StakingTokenSupply implements an alias call to the underlying staking keeper's
 // StakingTokenSupply to be used in BeginBlocker.
 func (k Keeper) StakingTokenSupply(ctx context.Context) (math.Int, error) {
 	return k.stakingKeeper.StakingTokenSupply(ctx)
 }
+
+/// BANK KEEPER RELATED FUNCTIONS
 
 // MintCoins implements an alias call to the underlying supply keeper's
 // MintCoins to be used in BeginBlocker.
@@ -122,11 +137,11 @@ func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sd
 	)
 }
 
-// PayCosmosValidatorRewardFromEcosystemAccount sends funds from the ecosystem
-// treasury account to the validator rewards account (fee collector)
-// PayCosmosValidatorRewardFromEcosystemAccount to be used in BeginBlocker.
-func (k Keeper) PayCosmosValidatorRewardFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
-	fmt.Println("PayCosmosValidatorRewardFromEcosystemAccount, paying: ", rewards)
+// PayValidatorsFromEcosystem sends funds from the ecosystem
+// treasury account to the cosmos network validators rewards account (fee collector)
+// PayValidatorsFromEcosystem to be used in BeginBlocker.
+func (k Keeper) PayValidatorsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
+	fmt.Println("PayValidatorsFromEcosystem, paying: ", rewards)
 	if rewards.Empty() {
 		return nil
 	}
@@ -138,11 +153,11 @@ func (k Keeper) PayCosmosValidatorRewardFromEcosystemAccount(ctx context.Context
 	)
 }
 
-// PayReputerRewardFromEcosystemAccount sends funds from the ecosystem
-// treasury account to the reward payout account
-// PayReputerRewardFromEcosystemAccount to be used in BeginBlocker.
-func (k Keeper) PayReputerRewardFromEcosystemAccount(ctx context.Context, rewards sdk.Coins) error {
-	fmt.Println("PayReputerRewardFromEcosystemAccount, paying: ", rewards)
+// PayAlloraRewardsFromEcosystem sends funds from the ecosystem
+// treasury account to the allora reward payout account used in the emissions module
+// PayAlloraRewardsFromEcosystem to be used in BeginBlocker.
+func (k Keeper) PayAlloraRewardsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
+	fmt.Println("PayAlloraRewardsFromEcosystem, paying: ", rewards)
 	if rewards.Empty() {
 		return nil
 	}
@@ -154,26 +169,16 @@ func (k Keeper) PayReputerRewardFromEcosystemAccount(ctx context.Context, reward
 	)
 }
 
-// GetSupply implements an alias call to the underlying supply keeper's
-// GetSupply to be used in BeginBlocker.
-func (k Keeper) GetSupply(ctx context.Context) sdk.Coin {
+// GetTotalCurrTokenSupply implements an alias call to the underlying supply keeper's
+// GetTotalCurrTokenSupply to be used in BeginBlocker.
+func (k Keeper) GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin {
 	return k.bankKeeper.GetSupply(ctx, params.BaseCoinUnit)
 }
 
-func (k Keeper) GetEcosystemAddress() sdk.AccAddress {
-	return k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
-}
-
+// returns the quantity of tokens currenty stored in the "ecosystem" module account
+// this module account is paid by inference requests and is drained by this mint module
+// when forwarding rewards to fee collector and allorarewards accounts
 func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error) {
-	ecosystemAddr := k.GetEcosystemAddress()
+	ecosystemAddr := k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
-}
-
-func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) error {
-	curr, err := k.EcosystemTokensMinted.Get(ctx)
-	if err != nil {
-		return err
-	}
-	new := curr.Add(minted)
-	return k.EcosystemTokensMinted.Set(ctx, new)
 }
