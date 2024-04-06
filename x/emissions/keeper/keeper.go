@@ -1000,7 +1000,7 @@ func (k *Keeper) RemoveDelegatedStake(
 }
 
 // Gets the total sum of all stake in the network across all topics
-func (k *Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
+func (k Keeper) GetTotalStake(ctx context.Context) (Uint, error) {
 	ret, err := k.totalStake.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
