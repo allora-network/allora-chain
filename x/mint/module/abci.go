@@ -3,7 +3,6 @@ package mint
 import (
 	"context"
 
-	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -32,12 +31,7 @@ func UpdateEmissionRate(
 	)
 	circulatingSupply := totalSupply.Sub(lockedSupply)
 	if circulatingSupply.IsNegative() {
-		return math.Int{}, math.LegacyDec{}, errors.Wrapf(
-			types.ErrNegativeCirculatingSupply,
-			"total supply %s, locked supply %s",
-			totalSupply.String(),
-			lockedSupply.String(),
-		)
+		circulatingSupply = math.ZeroInt()
 	}
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
