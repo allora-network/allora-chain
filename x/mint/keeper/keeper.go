@@ -112,7 +112,6 @@ func (k Keeper) StakingTokenSupply(ctx context.Context) (math.Int, error) {
 // MintCoins implements an alias call to the underlying supply keeper's
 // MintCoins to be used in BeginBlocker.
 func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
-	fmt.Println("MintCoins, minting: ", newCoins)
 	if newCoins.Empty() {
 		// skip as no coins need to be minted
 		return nil
@@ -125,7 +124,6 @@ func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
 // which has permissions to create new tokens, to the ecosystem account which
 // only has permissions to hold tokens.
 func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sdk.Coins) error {
-	fmt.Println("MoveCoinsFromMintToEcosystem, moving: ", mintedCoins)
 	if mintedCoins.Empty() {
 		return nil
 	}
@@ -141,7 +139,6 @@ func (k Keeper) MoveCoinsFromMintToEcosystem(ctx context.Context, mintedCoins sd
 // treasury account to the cosmos network validators rewards account (fee collector)
 // PayValidatorsFromEcosystem to be used in BeginBlocker.
 func (k Keeper) PayValidatorsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
-	fmt.Println("PayValidatorsFromEcosystem, paying: ", rewards)
 	if rewards.Empty() {
 		return nil
 	}
@@ -157,7 +154,6 @@ func (k Keeper) PayValidatorsFromEcosystem(ctx context.Context, rewards sdk.Coin
 // treasury account to the allora reward payout account used in the emissions module
 // PayAlloraRewardsFromEcosystem to be used in BeginBlocker.
 func (k Keeper) PayAlloraRewardsFromEcosystem(ctx context.Context, rewards sdk.Coins) error {
-	fmt.Println("PayAlloraRewardsFromEcosystem, paying: ", rewards)
 	if rewards.Empty() {
 		return nil
 	}
