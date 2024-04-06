@@ -16,14 +16,18 @@ import (
 )
 
 var (
-	md_Params                                            protoreflect.MessageDescriptor
-	fd_Params_mint_denom                                 protoreflect.FieldDescriptor
-	fd_Params_blocks_per_month                           protoreflect.FieldDescriptor
-	fd_Params_emission_calibrations_timestep_per_month   protoreflect.FieldDescriptor
-	fd_Params_max_supply                                 protoreflect.FieldDescriptor
-	fd_Params_f_emission                                 protoreflect.FieldDescriptor
-	fd_Params_one_month_smoothing_degree                 protoreflect.FieldDescriptor
-	fd_Params_ecosystem_treasury_percent_of_total_supply protoreflect.FieldDescriptor
+	md_Params                                             protoreflect.MessageDescriptor
+	fd_Params_mint_denom                                  protoreflect.FieldDescriptor
+	fd_Params_blocks_per_month                            protoreflect.FieldDescriptor
+	fd_Params_emission_calibrations_timestep_per_month    protoreflect.FieldDescriptor
+	fd_Params_max_supply                                  protoreflect.FieldDescriptor
+	fd_Params_f_emission                                  protoreflect.FieldDescriptor
+	fd_Params_one_month_smoothing_degree                  protoreflect.FieldDescriptor
+	fd_Params_ecosystem_treasury_percent_of_total_supply  protoreflect.FieldDescriptor
+	fd_Params_foundation_treasury_percent_of_total_supply protoreflect.FieldDescriptor
+	fd_Params_participants_percent_of_total_supply        protoreflect.FieldDescriptor
+	fd_Params_investors_percent_of_total_supply           protoreflect.FieldDescriptor
+	fd_Params_team_percent_of_total_supply                protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -36,6 +40,10 @@ func init() {
 	fd_Params_f_emission = md_Params.Fields().ByName("f_emission")
 	fd_Params_one_month_smoothing_degree = md_Params.Fields().ByName("one_month_smoothing_degree")
 	fd_Params_ecosystem_treasury_percent_of_total_supply = md_Params.Fields().ByName("ecosystem_treasury_percent_of_total_supply")
+	fd_Params_foundation_treasury_percent_of_total_supply = md_Params.Fields().ByName("foundation_treasury_percent_of_total_supply")
+	fd_Params_participants_percent_of_total_supply = md_Params.Fields().ByName("participants_percent_of_total_supply")
+	fd_Params_investors_percent_of_total_supply = md_Params.Fields().ByName("investors_percent_of_total_supply")
+	fd_Params_team_percent_of_total_supply = md_Params.Fields().ByName("team_percent_of_total_supply")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -145,6 +153,30 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.FoundationTreasuryPercentOfTotalSupply != "" {
+		value := protoreflect.ValueOfString(x.FoundationTreasuryPercentOfTotalSupply)
+		if !f(fd_Params_foundation_treasury_percent_of_total_supply, value) {
+			return
+		}
+	}
+	if x.ParticipantsPercentOfTotalSupply != "" {
+		value := protoreflect.ValueOfString(x.ParticipantsPercentOfTotalSupply)
+		if !f(fd_Params_participants_percent_of_total_supply, value) {
+			return
+		}
+	}
+	if x.InvestorsPercentOfTotalSupply != "" {
+		value := protoreflect.ValueOfString(x.InvestorsPercentOfTotalSupply)
+		if !f(fd_Params_investors_percent_of_total_supply, value) {
+			return
+		}
+	}
+	if x.TeamPercentOfTotalSupply != "" {
+		value := protoreflect.ValueOfString(x.TeamPercentOfTotalSupply)
+		if !f(fd_Params_team_percent_of_total_supply, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -174,6 +206,14 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.OneMonthSmoothingDegree != ""
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
 		return x.EcosystemTreasuryPercentOfTotalSupply != ""
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		return x.FoundationTreasuryPercentOfTotalSupply != ""
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		return x.ParticipantsPercentOfTotalSupply != ""
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		return x.InvestorsPercentOfTotalSupply != ""
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
+		return x.TeamPercentOfTotalSupply != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -204,6 +244,14 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.OneMonthSmoothingDegree = ""
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
 		x.EcosystemTreasuryPercentOfTotalSupply = ""
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		x.FoundationTreasuryPercentOfTotalSupply = ""
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		x.ParticipantsPercentOfTotalSupply = ""
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		x.InvestorsPercentOfTotalSupply = ""
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
+		x.TeamPercentOfTotalSupply = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -241,6 +289,18 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
 		value := x.EcosystemTreasuryPercentOfTotalSupply
 		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		value := x.FoundationTreasuryPercentOfTotalSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		value := x.ParticipantsPercentOfTotalSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		value := x.InvestorsPercentOfTotalSupply
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
+		value := x.TeamPercentOfTotalSupply
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -275,6 +335,14 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.OneMonthSmoothingDegree = value.Interface().(string)
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
 		x.EcosystemTreasuryPercentOfTotalSupply = value.Interface().(string)
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		x.FoundationTreasuryPercentOfTotalSupply = value.Interface().(string)
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		x.ParticipantsPercentOfTotalSupply = value.Interface().(string)
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		x.InvestorsPercentOfTotalSupply = value.Interface().(string)
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
+		x.TeamPercentOfTotalSupply = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -309,6 +377,14 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field one_month_smoothing_degree of message mint.v1beta1.Params is not mutable"))
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
 		panic(fmt.Errorf("field ecosystem_treasury_percent_of_total_supply of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		panic(fmt.Errorf("field foundation_treasury_percent_of_total_supply of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		panic(fmt.Errorf("field participants_percent_of_total_supply of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		panic(fmt.Errorf("field investors_percent_of_total_supply of message mint.v1beta1.Params is not mutable"))
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
+		panic(fmt.Errorf("field team_percent_of_total_supply of message mint.v1beta1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.Params"))
@@ -335,6 +411,14 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "mint.v1beta1.Params.one_month_smoothing_degree":
 		return protoreflect.ValueOfString("")
 	case "mint.v1beta1.Params.ecosystem_treasury_percent_of_total_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.foundation_treasury_percent_of_total_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.participants_percent_of_total_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.investors_percent_of_total_supply":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.Params.team_percent_of_total_supply":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -431,6 +515,22 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.FoundationTreasuryPercentOfTotalSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ParticipantsPercentOfTotalSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.InvestorsPercentOfTotalSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.TeamPercentOfTotalSupply)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -459,6 +559,34 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.TeamPercentOfTotalSupply) > 0 {
+			i -= len(x.TeamPercentOfTotalSupply)
+			copy(dAtA[i:], x.TeamPercentOfTotalSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TeamPercentOfTotalSupply)))
+			i--
+			dAtA[i] = 0x6a
+		}
+		if len(x.InvestorsPercentOfTotalSupply) > 0 {
+			i -= len(x.InvestorsPercentOfTotalSupply)
+			copy(dAtA[i:], x.InvestorsPercentOfTotalSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.InvestorsPercentOfTotalSupply)))
+			i--
+			dAtA[i] = 0x62
+		}
+		if len(x.ParticipantsPercentOfTotalSupply) > 0 {
+			i -= len(x.ParticipantsPercentOfTotalSupply)
+			copy(dAtA[i:], x.ParticipantsPercentOfTotalSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ParticipantsPercentOfTotalSupply)))
+			i--
+			dAtA[i] = 0x5a
+		}
+		if len(x.FoundationTreasuryPercentOfTotalSupply) > 0 {
+			i -= len(x.FoundationTreasuryPercentOfTotalSupply)
+			copy(dAtA[i:], x.FoundationTreasuryPercentOfTotalSupply)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FoundationTreasuryPercentOfTotalSupply)))
+			i--
+			dAtA[i] = 0x52
 		}
 		if len(x.EcosystemTreasuryPercentOfTotalSupply) > 0 {
 			i -= len(x.EcosystemTreasuryPercentOfTotalSupply)
@@ -752,6 +880,134 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.EcosystemTreasuryPercentOfTotalSupply = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 10:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FoundationTreasuryPercentOfTotalSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.FoundationTreasuryPercentOfTotalSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 11:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ParticipantsPercentOfTotalSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ParticipantsPercentOfTotalSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 12:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InvestorsPercentOfTotalSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.InvestorsPercentOfTotalSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 13:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TeamPercentOfTotalSupply", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TeamPercentOfTotalSupply = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -822,6 +1078,14 @@ type Params struct {
 	OneMonthSmoothingDegree string `protobuf:"bytes,7,opt,name=one_month_smoothing_degree,json=oneMonthSmoothingDegree,proto3" json:"one_month_smoothing_degree,omitempty"`
 	// percentage of the total supply is reserved and locked in the ecosystem treasury
 	EcosystemTreasuryPercentOfTotalSupply string `protobuf:"bytes,9,opt,name=ecosystem_treasury_percent_of_total_supply,json=ecosystemTreasuryPercentOfTotalSupply,proto3" json:"ecosystem_treasury_percent_of_total_supply,omitempty"`
+	// percentage of the total supply that is unlocked and usable in the foundation treasury
+	FoundationTreasuryPercentOfTotalSupply string `protobuf:"bytes,10,opt,name=foundation_treasury_percent_of_total_supply,json=foundationTreasuryPercentOfTotalSupply,proto3" json:"foundation_treasury_percent_of_total_supply,omitempty"`
+	// percentage of the total supply that is unlocked and usable by partipicants at the genesis
+	ParticipantsPercentOfTotalSupply string `protobuf:"bytes,11,opt,name=participants_percent_of_total_supply,json=participantsPercentOfTotalSupply,proto3" json:"participants_percent_of_total_supply,omitempty"`
+	// percentage of the total supply that is locked in the investors bucket at the genesis
+	InvestorsPercentOfTotalSupply string `protobuf:"bytes,12,opt,name=investors_percent_of_total_supply,json=investorsPercentOfTotalSupply,proto3" json:"investors_percent_of_total_supply,omitempty"`
+	// percentage of the total supply that is locked in the team bucket at the genesis
+	TeamPercentOfTotalSupply string `protobuf:"bytes,13,opt,name=team_percent_of_total_supply,json=teamPercentOfTotalSupply,proto3" json:"team_percent_of_total_supply,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -893,6 +1157,34 @@ func (x *Params) GetEcosystemTreasuryPercentOfTotalSupply() string {
 	return ""
 }
 
+func (x *Params) GetFoundationTreasuryPercentOfTotalSupply() string {
+	if x != nil {
+		return x.FoundationTreasuryPercentOfTotalSupply
+	}
+	return ""
+}
+
+func (x *Params) GetParticipantsPercentOfTotalSupply() string {
+	if x != nil {
+		return x.ParticipantsPercentOfTotalSupply
+	}
+	return ""
+}
+
+func (x *Params) GetInvestorsPercentOfTotalSupply() string {
+	if x != nil {
+		return x.InvestorsPercentOfTotalSupply
+	}
+	return ""
+}
+
+func (x *Params) GetTeamPercentOfTotalSupply() string {
+	if x != nil {
+		return x.TeamPercentOfTotalSupply
+	}
+	return ""
+}
+
 var File_mint_v1beta1_types_proto protoreflect.FileDescriptor
 
 var file_mint_v1beta1_types_proto_rawDesc = []byte{
@@ -902,7 +1194,7 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
-	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x8d, 0x05, 0x0a,
+	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xbf, 0x09, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x6d, 0x69, 0x6e, 0x74, 0x5f,
 	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6d, 0x69, 0x6e,
 	0x74, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x28, 0x0a, 0x10, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x73,
@@ -941,22 +1233,57 @@ var file_mint_v1beta1_types_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8,
 	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x25, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x54,
 	0x72, 0x65, 0x61, 0x73, 0x75, 0x72, 0x79, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x4f, 0x66,
-	0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x3a, 0x1f, 0x8a, 0xe7, 0xb0,
-	0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78,
-	0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb, 0x01, 0x0a,
-	0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61,
-	0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b,
-	0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58,
-	0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
-	0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2,
-	0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47,
-	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e,
-	0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x99, 0x01, 0x0a, 0x2b,
+	0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x72, 0x65, 0x61, 0x73,
+	0x75, 0x72, 0x79, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x6f, 0x66, 0x5f, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18, 0x0a, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67,
+	0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x10, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
+	0x26, 0x66, 0x6f, 0x75, 0x6e, 0x64, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x72, 0x65, 0x61, 0x73,
+	0x75, 0x72, 0x79, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x54, 0x6f, 0x74, 0x61,
+	0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x8c, 0x01, 0x0a, 0x24, 0x70, 0x61, 0x72, 0x74,
+	0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74,
+	0x5f, 0x6f, 0x66, 0x5f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79,
+	0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x10, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x20, 0x70, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e,
+	0x74, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x4f, 0x66, 0x54, 0x6f, 0x74, 0x61, 0x6c,
+	0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12, 0x86, 0x01, 0x0a, 0x21, 0x69, 0x6e, 0x76, 0x65, 0x73,
+	0x74, 0x6f, 0x72, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x6f, 0x66, 0x5f,
+	0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18, 0x0c, 0x20, 0x01,
+	0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65,
+	0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x10, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
+	0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x1d, 0x69, 0x6e, 0x76, 0x65, 0x73, 0x74, 0x6f, 0x72, 0x73, 0x50, 0x65, 0x72, 0x63, 0x65,
+	0x6e, 0x74, 0x4f, 0x66, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x12,
+	0x7c, 0x0a, 0x1c, 0x74, 0x65, 0x61, 0x6d, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f,
+	0x6f, 0x66, 0x5f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x73, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x18,
+	0x0d, 0x20, 0x01, 0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x10, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x18, 0x74, 0x65, 0x61, 0x6d, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74,
+	0x4f, 0x66, 0x54, 0x6f, 0x74, 0x61, 0x6c, 0x53, 0x75, 0x70, 0x70, 0x6c, 0x79, 0x3a, 0x1f, 0x8a,
+	0xe7, 0xb0, 0x2a, 0x1a, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0xbb,
+	0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65,
+	0x74, 0x61, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
+	0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03,
+	0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74,
+	0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61,
+	0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
+	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d,
+	0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

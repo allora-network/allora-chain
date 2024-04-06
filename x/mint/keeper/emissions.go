@@ -10,12 +10,43 @@ import (
 )
 
 // return the uncirculating supply, i.e. tokens on a vesting schedule
-// latest discussion on how these tokens should be handled lives in ORA-1111
-// probably thee tokens will be custodied off chain and this function will
-// just return the circulating supply based off of what the agreements off chain
-// were supposed to be at time of chain-genesis
-func GetLockedTokenSupply() math.Int {
-	return math.ZeroInt()
+// these tokens will be custodied by a centralized actor off chain.
+// this function returns the circulating supply based off of what
+// the agreements off chain say were supposed to happen for token lockup
+func GetLockedTokenSupply(
+	blockHeight math.Int,
+	ecosystemBalance math.Int,
+	params types.Params,
+) math.Int {
+	// ecosystemBalance is locked and drips at the rate set in GetTotalEmissionPerTimestep
+	// foundation is unlocked from genesis
+	// participants are unlocked from genesis
+	//investors and team tokens are locked on a 1 year cliff three year vesting schedule
+	blocksInAYear := math.NewIntFromUint64(params.BlocksPerMonth * 12)
+	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
+	maxSupply := params.MaxSupply.ToLegacyDec()
+	percentInvestors := params.InvestorsPercentOfTotalSupply
+	percentTeam := params.TeamPercentOfTotalSupply
+	fullInvestors := percentInvestors.Mul(maxSupply).TruncateInt()
+	fullTeam := percentTeam.Mul(maxSupply).TruncateInt()
+	var investors, team math.Int
+	if blockHeight.LT(blocksInAYear) {
+		// less than a year, completely locked
+		investors = fullInvestors
+		team = fullTeam
+	} else if blockHeight.GTE(blocksInAYear) && blockHeight.LT(blocksInThreeYears) {
+		// between 1 and 3 years, investors and team tokens are vesting and partially unlocked
+		thirtySix := math.LegacyNewDec(36)
+		monthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(params.BlocksPerMonth)).ToLegacyDec()
+		monthsLocked := thirtySix.Sub(monthsUnlocked)
+		investors = monthsLocked.Quo(thirtySix).Mul(fullInvestors.ToLegacyDec()).TruncateInt()
+		team = monthsLocked.Quo(thirtySix).Mul(fullTeam.ToLegacyDec()).TruncateInt()
+	} else {
+		// greater than 3 years, all investor, team tokens are unlocked
+		investors = math.ZeroInt()
+		team = math.ZeroInt()
+	}
+	return ecosystemBalance.Add(investors).Add(team)
 }
 
 // helper function to get the number of staked tokens on the network

@@ -29,7 +29,11 @@ func UpdateEmissionRate(
 		return math.Int{}, math.LegacyDec{}, err
 	}
 	totalSupply := k.GetSupply(ctx).Amount
-	lockedSupply := keeper.GetLockedTokenSupply()
+	lockedSupply := keeper.GetLockedTokenSupply(
+		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
+		ecosystemBalance,
+		params,
+	)
 	circulatingSupply := totalSupply.Sub(lockedSupply)
 	if circulatingSupply.IsNegative() {
 		return math.Int{}, math.LegacyDec{}, errors.Wrapf(

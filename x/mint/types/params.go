@@ -19,32 +19,44 @@ func NewParams(
 	fEmission math.LegacyDec,
 	oneMonthSmoothingDegree math.LegacyDec,
 	ecosystemPercentOfTotalSupply math.LegacyDec,
+	foundationPercentOfTotalSupply math.LegacyDec,
+	participantsPercentOfTotalSupply math.LegacyDec,
+	investorsPercentOfTotalSupply math.LegacyDec,
+	teamPercentOfTotalSupply math.LegacyDec,
 ) Params {
 	return Params{
-		MintDenom:                             mintDenom,
-		BlocksPerMonth:                        blocksPerMonth,
-		EmissionCalibrationsTimestepPerMonth:  emissionCalibrationTimestepPerMonth,
-		MaxSupply:                             maxSupply,
-		FEmission:                             fEmission,
-		OneMonthSmoothingDegree:               oneMonthSmoothingDegree,
-		EcosystemTreasuryPercentOfTotalSupply: ecosystemPercentOfTotalSupply,
+		MintDenom:                              mintDenom,
+		BlocksPerMonth:                         blocksPerMonth,
+		EmissionCalibrationsTimestepPerMonth:   emissionCalibrationTimestepPerMonth,
+		MaxSupply:                              maxSupply,
+		FEmission:                              fEmission,
+		OneMonthSmoothingDegree:                oneMonthSmoothingDegree,
+		EcosystemTreasuryPercentOfTotalSupply:  ecosystemPercentOfTotalSupply,
+		FoundationTreasuryPercentOfTotalSupply: foundationPercentOfTotalSupply,
+		ParticipantsPercentOfTotalSupply:       participantsPercentOfTotalSupply,
+		InvestorsPercentOfTotalSupply:          investorsPercentOfTotalSupply,
+		TeamPercentOfTotalSupply:               teamPercentOfTotalSupply,
 	}
 }
 
 // DefaultParams returns default x/mint module parameters.
 func DefaultParams() Params {
-	maxSupply, ok := math.NewIntFromString("1000000000000000000000000000")
+	maxSupply, ok := math.NewIntFromString("1000000000000000000000000000") // 1e27
 	if !ok {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                             sdk.DefaultBondDenom,
-		BlocksPerMonth:                        DefaultBlocksPerMonth(),
-		EmissionCalibrationsTimestepPerMonth:  uint64(30),                             // "daily" emission calibration
-		MaxSupply:                             maxSupply,                              //1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmission:                             math.LegacyMustNewDecFromStr("0.015"),  // 0.015 per month
-		OneMonthSmoothingDegree:               math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
-		EcosystemTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.3675"), // 36.75%
+		MintDenom:                              sdk.DefaultBondDenom,
+		BlocksPerMonth:                         DefaultBlocksPerMonth(),
+		EmissionCalibrationsTimestepPerMonth:   uint64(30),                             // "daily" emission calibration
+		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmission:                              math.LegacyMustNewDecFromStr("0.015"),  // 0.015 per month
+		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
+		EcosystemTreasuryPercentOfTotalSupply:  math.LegacyMustNewDecFromStr("0.3675"), // 36.75%
+		FoundationTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.1"),    // 10%
+		ParticipantsPercentOfTotalSupply:       math.LegacyMustNewDecFromStr("0.05"),   // 5%
+		InvestorsPercentOfTotalSupply:          math.LegacyMustNewDecFromStr("0.3075"), // 30.75%
+		TeamPercentOfTotalSupply:               math.LegacyMustNewDecFromStr("0.175"),  // 17.5%
 	}
 }
 
@@ -89,6 +101,27 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateAFractionValue(p.EcosystemTreasuryPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.FoundationTreasuryPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.ParticipantsPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.InvestorsPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.TeamPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateTokenSupplyAddsTo100Percent(
+		p.EcosystemTreasuryPercentOfTotalSupply,
+		p.FoundationTreasuryPercentOfTotalSupply,
+		p.ParticipantsPercentOfTotalSupply,
+		p.InvestorsPercentOfTotalSupply,
+		p.TeamPercentOfTotalSupply,
+	); err != nil {
 		return err
 	}
 	return nil
@@ -168,5 +201,33 @@ func validateAFractionValue(i interface{}) error {
 		return fmt.Errorf("fractional value should be between 0 and 1, less or equal to 1: %s", v)
 	}
 
+	return nil
+}
+
+func validateTokenSupplyAddsTo100Percent(
+	ecosystem math.LegacyDec,
+	foundation math.LegacyDec,
+	participants math.LegacyDec,
+	investors math.LegacyDec,
+	team math.LegacyDec,
+) error {
+	one := math.OneInt().ToLegacyDec()
+	equal100Percent := one.Equal(
+		ecosystem.
+			Add(foundation).
+			Add(participants).
+			Add(investors).
+			Add(team),
+	)
+	if !equal100Percent {
+		return fmt.Errorf(
+			"total supply percentages do not add up to 100 percent: %s %s %s %s %s",
+			ecosystem,
+			foundation,
+			participants,
+			investors,
+			team,
+		)
+	}
 	return nil
 }

@@ -66,14 +66,19 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	if !ok {
 		panic("invalid number")
 	}
+	defaultParams := types.DefaultParams()
 	genesisState.Params = types.NewParams(
 		"testDenom",
 		uint64(60/5*60*24*30),
 		uint64(2),
 		maxSupply,
-		types.DefaultParams().FEmission,
-		types.DefaultParams().OneMonthSmoothingDegree,
-		types.DefaultParams().EcosystemTreasuryPercentOfTotalSupply,
+		defaultParams.FEmission,
+		defaultParams.OneMonthSmoothingDegree,
+		defaultParams.EcosystemTreasuryPercentOfTotalSupply,
+		defaultParams.FoundationTreasuryPercentOfTotalSupply,
+		defaultParams.ParticipantsPercentOfTotalSupply,
+		defaultParams.InvestorsPercentOfTotalSupply,
+		defaultParams.TeamPercentOfTotalSupply,
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()
