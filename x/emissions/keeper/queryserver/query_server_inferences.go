@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -43,4 +44,53 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 	}
 
 	return &types.QueryInferencesAtBlockResponse{Inferences: inferences}, nil
+}
+
+func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
+	epsilon, err := qs.k.GetParamsEpsilon(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pInferenceSynthesis, err := qs.k.GetParamsPInferenceSynthesis(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	stakesOnTopic, err := qs.k.GetStakePlacementsByTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Map list of stakesOnTopic to map of stakesByReputer
+	stakesByReputer := make(map[string]types.StakePlacement)
+	for _, stake := range stakesOnTopic {
+		stakesByReputer[stake.Reputer] = stake
+	}
+
+	reputerReportedLosses, _, err := qs.k.GetReputerReportedLossesAtOrBeforeBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	networkCombinedLoss, err := synth.CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, epsilon)
+	if err != nil {
+		return nil, err
+	}
+
+	inferences, blockHeight, err := qs.k.GetInferencesAtOrAfterBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	forecasts, _, err := qs.k.GetForecastsAtOrAfterBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	networkInferences, err := synth.CalcNetworkInferences(ctx.(sdk.Context), qs.k, req.TopicId, inferences, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences, BlockHeight: blockHeight}, nil
 }

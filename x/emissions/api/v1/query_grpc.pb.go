@@ -39,6 +39,7 @@ const (
 	Query_GetWorkerNodeRegistration_FullMethodName         = "/emissions.v1.Query/GetWorkerNodeRegistration"
 	Query_GetWorkerAddressByP2PKey_FullMethodName          = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
 	Query_GetRegisteredTopicIds_FullMethodName             = "/emissions.v1.Query/GetRegisteredTopicIds"
+	Query_GetNetworkInferencesAtBlock_FullMethodName       = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
 )
 
 // QueryClient is the client API for Query service.
@@ -66,6 +67,7 @@ type QueryClient interface {
 	GetWorkerNodeRegistration(ctx context.Context, in *QueryRegisteredWorkerNodesRequest, opts ...grpc.CallOption) (*QueryRegisteredWorkerNodesResponse, error)
 	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetRegisteredTopicIds(ctx context.Context, in *QueryRegisteredTopicIdsRequest, opts ...grpc.CallOption) (*QueryRegisteredTopicIdsResponse, error)
+	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 }
 
 type queryClient struct {
@@ -256,6 +258,15 @@ func (c *queryClient) GetRegisteredTopicIds(ctx context.Context, in *QueryRegist
 	return out, nil
 }
 
+func (c *queryClient) GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error) {
+	out := new(QueryNetworkInferencesAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetNetworkInferencesAtBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -281,6 +292,7 @@ type QueryServer interface {
 	GetWorkerNodeRegistration(context.Context, *QueryRegisteredWorkerNodesRequest) (*QueryRegisteredWorkerNodesResponse, error)
 	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetRegisteredTopicIds(context.Context, *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error)
+	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -347,6 +359,9 @@ func (UnimplementedQueryServer) GetWorkerAddressByP2PKey(context.Context, *Query
 }
 func (UnimplementedQueryServer) GetRegisteredTopicIds(context.Context, *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRegisteredTopicIds not implemented")
+}
+func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -721,6 +736,24 @@ func _Query_GetRegisteredTopicIds_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetNetworkInferencesAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNetworkInferencesAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetNetworkInferencesAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetNetworkInferencesAtBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetNetworkInferencesAtBlock(ctx, req.(*QueryNetworkInferencesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -807,6 +840,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRegisteredTopicIds",
 			Handler:    _Query_GetRegisteredTopicIds_Handler,
+		},
+		{
+			MethodName: "GetNetworkInferencesAtBlock",
+			Handler:    _Query_GetNetworkInferencesAtBlock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
