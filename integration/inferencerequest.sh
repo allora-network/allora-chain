@@ -30,7 +30,6 @@ do
   MEMPOOL=$($ALLORAD_BIN query emissions all-inference-requests)
   if [ "$MEMPOOL" == "{}" ]; then
     echo "MEMPOOL is empty, transaction may not have mined yet, count sleep $COUNT_SLEEP seconds"
-    COUNT_SLEEP=$((COUNT_SLEEP+1))
     sleep 1
   else
     echo "The network has appears to have something in the mempool, inference request probably created successfully"

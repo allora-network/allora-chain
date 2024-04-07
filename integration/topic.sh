@@ -58,7 +58,6 @@ do
   NEXT_TOPIC_ID=$($ALLORAD_BIN query emissions next-topic-id | head -n 1 | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
   if [ "$NEXT_TOPIC_ID" != "2" ]; then
     echo "$NEXT_TOPIC_ID is not 2, transaction may not have mined yet, count sleep $COUNT_SLEEP seconds"
-    COUNT_SLEEP=$((COUNT_SLEEP+1))
     sleep 1
   else
     echo "The network has incremented the topic count, topic probably created successfully"
