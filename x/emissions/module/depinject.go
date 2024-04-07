@@ -36,6 +36,7 @@ type ModuleInputs struct {
 	AddressCodec  address.Codec
 	AccountKeeper keeper.AccountKeeper
 	BankKeeper    keeper.BankKeeper
+	MintKeeper    keeper.MintKeeper
 
 	Config *modulev1.Module
 }
@@ -53,7 +54,15 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		feeCollectorName = authtypes.FeeCollectorName
 	}
 
-	k := keeper.NewKeeper(in.Cdc, in.AddressCodec, in.StoreService, in.AccountKeeper, in.BankKeeper, feeCollectorName)
+	k := keeper.NewKeeper(
+		in.Cdc,
+		in.AddressCodec,
+		in.StoreService,
+		in.AccountKeeper,
+		in.BankKeeper,
+		in.MintKeeper,
+		feeCollectorName,
+	)
 	m := NewAppModule(in.Cdc, k)
 
 	return ModuleOutputs{Module: m, Keeper: k}

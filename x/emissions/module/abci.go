@@ -50,7 +50,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 	if blocksSinceLastUpdate >= rewardCadence {
-		err = rewards.EmitRewards(sdkCtx, am.keeper, activeTopics)
+		err = rewards.EmitRewards(sdkCtx, am.keeper, topTopicsActiveWithDemand)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate
 		// and we can retroactively pay them out

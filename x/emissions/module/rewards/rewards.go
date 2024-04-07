@@ -27,7 +27,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	}
 	f_v := validatorsVsAlloraPercentReward.MustFloat64()
 	topicRewards := make([]float64, len(activeTopics))
-	for i, _ := range activeTopics {
+	for i := range weights {
 		topicWeight := weights[i]
 		topicRewardFraction := GetTopicRewardFraction(f_v, topicWeight, sumWeight)
 		topicReward := GetTopicReward(topicRewardFraction, totalRewardFloat)
