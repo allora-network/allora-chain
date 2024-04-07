@@ -49,4 +49,6 @@ var (
 	InferenceScoresKey             = collections.NewPrefix(38)
 	ForecastScoresKey              = collections.NewPrefix(39)
 	ReputerListeningCoefficientKey = collections.NewPrefix(40)
+	FeeRevenueEpochKey             = collections.NewPrefix(41)
+	TopicFeeRevenueKey             = collections.NewPrefix(42)
 )

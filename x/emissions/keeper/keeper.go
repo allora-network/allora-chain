@@ -94,6 +94,10 @@ type Keeper struct {
 	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
 	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
+	// fee revenue collected by a topic over the course of the last reward cadence
+	topicFeeRevenue collections.Map[TOPIC_ID, types.TopicFeeRevenue]
+	// feeRevenueEpoch marks the current epoch for fee revenue
+	feeRevenueEpoch collections.Item[uint64]
 
 	/// MISC GLOBAL STATE
 
@@ -175,6 +179,8 @@ func NewKeeper(
 		mempool:                     collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
 		requestUnmetDemand:          collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
 		topicUnmetDemand:            collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		topicFeeRevenue:             collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		feeRevenueEpoch:             collections.NewItem(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch", collections.Uint64Value),
 		inferences:                  collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                   collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                     collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -320,6 +326,14 @@ func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, err
 		return 0, err
 	}
 	return params.PInferenceSynthesis, nil
+}
+
+func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (float64, float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -1483,6 +1497,16 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 	}
 
 	return topicsByAddress, nil
+}
+
+// Get the amount of fee revenue collected by a topic
+func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TOPIC_ID) (types.TopicFeeRevenue, error) {
+	return k.topicFeeRevenue.Get(ctx, topicId)
+}
+
+// what is the current latest fee revenue epoch
+func (k *Keeper) GetFeeRevenueEpoch(ctx context.Context) (uint64, error) {
+	return k.feeRevenueEpoch.Get(ctx)
 }
 
 /// MEMPOOL & INFERENCE REQUESTS

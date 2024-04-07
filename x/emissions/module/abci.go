@@ -7,30 +7,11 @@ import (
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-func BeginBlocker(ctx context.Context, am AppModule) error {
-	percentRewardsToReputersAndWorkers, err := am.keeper.GetParamsPercentRewardsReputersWorkers(ctx)
-	if err != nil {
-		return err
-	}
-	feeCollectorAddress := am.keeper.AccountKeeper().GetModuleAddress(am.keeper.GetFeeCollectorName())
-	feesCollectedAndEmissionsMintedLastBlock := am.keeper.BankKeeper().GetBalance(ctx, feeCollectorAddress, params.DefaultBondDenom)
-	reputerWorkerCut := cosmosMath.
-		NewInt(int64(percentRewardsToReputersAndWorkers * Precision)).
-		Mul(feesCollectedAndEmissionsMintedLastBlock.Amount).
-		Quo(cosmosMath.NewInt(Precision))
-	am.keeper.BankKeeper().SendCoinsFromModuleToModule(
-		ctx,
-		am.keeper.GetFeeCollectorName(),
-		types.AlloraRewardsAccountName,
-		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerWorkerCut)),
-	)
-
-	return nil
-}
 
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -47,13 +28,13 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
 	}
-	// send collected inference request fees to the fee collector account
+	// send collected inference request fees to the Ecosystem module account
 	// they will be paid out to reputers, workers, and cosmos validators
-	// in the following BeginBlock of the next block
+	// according to the formulas in the beginblock of the mint module
 	err = am.keeper.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
 		types.AlloraRequestsAccountName,
-		am.keeper.GetFeeCollectorName(),
+		mintTypes.EcosystemModuleName,
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
@@ -69,7 +50,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 	if blocksSinceLastUpdate >= rewardCadence {
-		// err = emitRewards(sdkCtx, am)
+		err = rewards.EmitRewards(sdkCtx, am.keeper, activeTopics)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate
 		// and we can retroactively pay them out

@@ -7,7 +7,7 @@ modules:
       # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
       # NOTE: staking module is required if HistoricalEntries param > 0
       # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
-      begin_blockers: [capability, emissions, distribution, slashing, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
+      begin_blockers: [capability, distribution, slashing, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
       end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
