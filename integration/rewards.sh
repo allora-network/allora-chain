@@ -91,7 +91,6 @@ do
   BOB_REGD_1=$($ALLORAD_BIN query emissions registered-topic-ids "$BOB_ADDRESS" "false" | tail -n 2 | cut -f 2 -d "-" | tr -d " " | tr -d "\"")
   if [[ "$BOB_REGD_1" != "1" ]] ; then
       echo "Bob not registered as a worker in topic 1";
-      COUNT_SLEEP=$((COUNT_SLEEP+1))
       sleep 1
   else
       echo "Bob successfully registered as a worker in topic 1";
@@ -136,7 +135,6 @@ exit 0
 #   WEIGHT_1=$($ALLORAD_BIN query emissions weight 1 "$ALICE_ADDRESS" "$BOB_ADDRESS" | cut -f 2 -d ":" | tr -d " " | tr -d "\"")
 #   if [[ "$WEIGHT_1" != "1000" ]] ; then
 #       echo "Weights not set";
-#       COUNT_SLEEP=$((COUNT_SLEEP+1))
 #       sleep 1
 #   else
 #       echo "Weights successfully set";
@@ -164,7 +162,6 @@ exit 0
 #     ALLORA_STAKING_INCREASED=$(bc <<< "$ALLORA_STAKING_1 > $ALLORA_STAKING_0")
 #     if [[ $ALLORA_STAKING_INCREASED -ne 1 ]]; then
 #         echo "Distribution of rewards to allora staking did not increase"
-#         COUNT_SLEEP=$((COUNT_SLEEP+1))
 #         sleep 1
 #     else 
 #         echo "Distribution of rewards to allora staking increased"
@@ -186,7 +183,6 @@ exit 0
 #     BOB_STAKE_POSITION_INCREASED=$(bc <<< "$BOB_STAKE_POSITION_1 > $BOB_STAKE_POSITION_0")
 #     if [[ $BOB_STAKE_POSITION_INCREASED -ne 1 ]]; then
 #         echo "Bob did not get rewards for staking"
-#         COUNT_SLEEP=$((COUNT_SLEEP+1))
 #         sleep 1
 #     else 
 #         echo "Bob got rewards for staking"

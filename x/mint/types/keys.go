@@ -2,15 +2,22 @@ package types
 
 import "cosmossdk.io/collections"
 
+// these might need to be unique across the whole module space
+// certain tests were failing in weird ways when they were not
+// e.g. emissions starts at 0, so maybe there was a conflict
+// with using the same integer for the keys for multiple keepers
 var (
-	// MinterKey is the key to use for the keeper store.
-	MinterKey = collections.NewPrefix(0)
-	ParamsKey = collections.NewPrefix(1)
+	ParamsKey                                   = collections.NewPrefix(138)
+	PreviousRewardEmissionPerUnitStakedTokenKey = collections.NewPrefix(139)
+	PreviousBlockEmissionKey                    = collections.NewPrefix(140)
+	EcosystemTokensMintedKey                    = collections.NewPrefix(141)
 )
 
 const (
 	// module name
 	ModuleName = "mint"
+	// ecosystem module account name
+	EcosystemModuleName = "ecosystem"
 
 	// StoreKey is the default store key for mint
 	StoreKey = ModuleName
