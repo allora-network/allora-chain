@@ -2,6 +2,9 @@ package app
 
 import (
 	_ "embed"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	"io"
 	"os"
 	"path/filepath"
@@ -17,7 +20,9 @@ import (
 	"cosmossdk.io/log"
 
 	storetypes "cosmossdk.io/store/types"
+	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
@@ -33,12 +38,16 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -92,6 +101,8 @@ type AlloraApp struct {
 
 	// keepers
 	AccountKeeper         authkeeper.AccountKeeper
+	AuthzKeeper           authzkeeper.Keeper
+	CircuitBreakerKeeper  circuitkeeper.Keeper
 	BankKeeper            bankkeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
@@ -101,6 +112,7 @@ type AlloraApp struct {
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
+	GovKeeper             govkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -137,6 +149,11 @@ func AppConfig() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				govtypes.ModuleName: gov.NewAppModuleBasic(
+					[]govclient.ProposalHandler{
+						paramsclient.ProposalHandler,
+					},
+				),
 			},
 		),
 	)
@@ -179,6 +196,9 @@ func NewAlloraApp(
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
 		&app.SlashingKeeper,
+		&app.GovKeeper,
+		&app.AuthzKeeper,
+		&app.CircuitBreakerKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -203,14 +223,17 @@ func NewAlloraApp(
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		stakingtypes.ModuleName,
+		upgradetypes.ModuleName,
 		minttypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
+		authz.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 	)
 	app.ModuleManager.SetOrderEndBlockers(
+		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
