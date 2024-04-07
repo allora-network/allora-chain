@@ -70,6 +70,6 @@ modules:
   - name: slashing
     config:
       "@type": cosmos.slashing.module.v1.Module
-  - name: circuit
+  - name: gov
     config:
-      "@type": circuit.module.v1.Module
+      "@type": cosmos.gov.module.v1.Module
