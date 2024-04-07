@@ -56,6 +56,8 @@ message Params {
                                               // topic and has a fiduciary value of 0.5
   double topic_reward_fee_revenue_importance = 24;  // The exponent ν represents the importance of fee revenue in the
                                                     // reward of a topic and has a fiduciary value of 0.5
+  double topic_reward_alpha = 25;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
+                                   // monthly timescale, 0.5 for weekly updates
 }
 
 /// TOPICS
@@ -299,4 +301,9 @@ message TopicFeeRevenue {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message PreviousTopicWeight {
+  uint64 epoch = 1;
+  double weigth = 2;
 }

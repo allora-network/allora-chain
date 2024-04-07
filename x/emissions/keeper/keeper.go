@@ -41,6 +41,7 @@ type Keeper struct {
 	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
+	mintKeeper MintKeeper
 
 	/// TOPIC
 
@@ -94,10 +95,6 @@ type Keeper struct {
 	requestUnmetDemand collections.Map[REQUEST_ID, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
 	topicUnmetDemand collections.Map[TOPIC_ID, Uint]
-	// fee revenue collected by a topic over the course of the last reward cadence
-	topicFeeRevenue collections.Map[TOPIC_ID, types.TopicFeeRevenue]
-	// feeRevenueEpoch marks the current epoch for fee revenue
-	feeRevenueEpoch collections.Item[uint64]
 
 	/// MISC GLOBAL STATE
 
@@ -118,6 +115,15 @@ type Keeper struct {
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_HEIGHT]
+
+	// fee revenue collected by a topic over the course of the last reward cadence
+	topicFeeRevenue collections.Map[TOPIC_ID, types.TopicFeeRevenue]
+
+	// feeRevenueEpoch marks the current epoch for fee revenue
+	feeRevenueEpoch collections.Item[uint64]
+
+	// store previous wieghts for exponential moving average in rewards calc
+	previousTopicWeight collections.Map[TOPIC_ID, types.PreviousTopicWeight]
 
 	// map of (topic, block_number) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Inferences]
@@ -151,6 +157,7 @@ func NewKeeper(
 	storeService storetypes.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
+	mk MintKeeper,
 	feeCollectorName string) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
@@ -161,6 +168,7 @@ func NewKeeper(
 		params:                      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                  ak,
 		bankKeeper:                  bk,
+		mintKeeper:                  mk,
 		totalStake:                  collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
 		topicStake:                  collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
 		lastRewardsUpdate:           collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
@@ -181,6 +189,7 @@ func NewKeeper(
 		topicUnmetDemand:            collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
 		topicFeeRevenue:             collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
 		feeRevenueEpoch:             collections.NewItem(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch", collections.Uint64Value),
+		previousTopicWeight:         collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, codec.CollValue[types.PreviousTopicWeight](cdc)),
 		inferences:                  collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                   collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                     collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -334,6 +343,22 @@ func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (flo
 		return 0, 0, err
 	}
 	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
+}
+
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.TopicRewardAlpha, nil
+}
+
+func (k *Keeper) GetParamValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	mintParams, err := k.mintKeeper.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyDec{}, err
+	}
+	return mintParams.ValidatorsVsAlloraPercentReward, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -562,6 +587,11 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 		forecasts = append(forecasts, forecastSet)
 	}
 	return forecasts, nil
+}
+
+// get the previous weight during rewards calculation for a topic
+func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TOPIC_ID) (types.PreviousTopicWeight, error) {
+	return k.previousTopicWeight.Get(ctx, topicId)
 }
 
 /// LOSS BUNDLES, REGRETS

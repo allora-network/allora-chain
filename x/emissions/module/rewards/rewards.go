@@ -10,38 +10,28 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	// Get Total Emissions/ Fees Collected
 
 	// Get Total Allocation
+	totalReward := k.BankKeeper().GetBalance(
+		ctx,
+		sdk.AccAddress(types.AlloraRewardsAccountName),
+		sdk.DefaultBondDenom).Amount
+	totalRewardFloat, _ := totalReward.BigInt().Float64()
 
 	// Get Distribution of Rewards per Topic
-	for _, topic := range activeTopics {
-		topicStake, err := k.GetTopicStake(ctx, topic.Id)
-		if err != nil {
-			return err
-		}
-		topicStakeFloat64, _ := topicStake.BigInt().Float64()
-		topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
-		if err != nil {
-			return err
-		}
-		currentFeeRevenueEpoch, err := k.GetFeeRevenueEpoch(ctx)
-		if err != nil {
-			return err
-		}
-		var feeRevenueFloat float64
-		if topicFeeRevenue.Epoch != currentFeeRevenueEpoch {
-			feeRevenueFloat = 0
-		} else {
-			feeRevenueFloat, _ = topicFeeRevenue.Revenue.BigInt().Float64()
-		}
-		stakeImportance, feeImportance, err := k.GetParamsStakeAndFeeRevenueImportance(ctx)
-		if err != nil {
-			return err
-		}
-		targetWeight := GetTargetWeight(
-			topicStakeFloat64,
-			feeRevenueFloat,
-			stakeImportance,
-			feeImportance,
-		)
+	weights, sumWeight, err := GetActiveTopicWeights(ctx, k, activeTopics)
+	if err != nil {
+		return err
+	}
+	validatorsVsAlloraPercentReward, err := k.GetParamValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return err
+	}
+	f_v := validatorsVsAlloraPercentReward.MustFloat64()
+	topicRewards := make([]float64, len(activeTopics))
+	for i, _ := range activeTopics {
+		topicWeight := weights[i]
+		topicRewardFraction := GetTopicRewardFraction(f_v, topicWeight, sumWeight)
+		topicReward := GetTopicReward(topicRewardFraction, totalRewardFloat)
+		topicRewards[i] = topicReward
 	}
 
 	// Get Distribution of Rewards per Worker - Inference Task

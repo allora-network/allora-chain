@@ -178,3 +178,8 @@ func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math
 	ecosystemAddr := k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
 }
+
+// Params getter
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
+	return k.Params.Get(ctx)
+}

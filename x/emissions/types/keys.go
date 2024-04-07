@@ -51,4 +51,5 @@ var (
 	ReputerListeningCoefficientKey = collections.NewPrefix(40)
 	FeeRevenueEpochKey             = collections.NewPrefix(41)
 	TopicFeeRevenueKey             = collections.NewPrefix(42)
+	PreviousTopicWeightKey         = collections.NewPrefix(43)
 )
