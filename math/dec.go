@@ -5,6 +5,7 @@
 package math
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -290,6 +291,48 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 
 func (x Dec) String() string {
 	return x.dec.Text('f')
+}
+
+// Marshal implements the gogo proto custom type interface.
+func (d Dec) Marshal() ([]byte, error) {
+	return d.dec.MarshalText()
+}
+
+// Unmarshal implements the gogo proto custom type interface.
+func (d *Dec) Unmarshal(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	if err := d.dec.UnmarshalText(data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalJSON marshals the decimal
+func (d Dec) MarshalJSON() ([]byte, error) {
+	return json.Marshal(d.String())
+}
+
+// UnmarshalJSON defines custom decoding scheme
+func (d *Dec) UnmarshalJSON(bz []byte) error {
+
+	var text string
+	err := json.Unmarshal(bz, &text)
+	if err != nil {
+		return err
+	}
+
+	newDec, err := NewDecFromString(text)
+	if err != nil {
+		return err
+	}
+
+	*d = newDec
+
+	return nil
 }
 
 // Cmp compares x and y and returns:

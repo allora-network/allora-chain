@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -64,7 +65,7 @@ func NewKeeper(
 		feeCollectorName:                         feeCollectorName,
 		authority:                                authority,
 		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", LegacyDecValue),
+		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}

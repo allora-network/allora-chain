@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -157,8 +158,8 @@ func NewKeeper(
 		params:                      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                  ak,
 		bankKeeper:                  bk,
-		totalStake:                  collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                  collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		totalStake:                  collections.NewItem(sb, types.TotalStakeKey, "total_stake", alloraMath.UintValue),
+		topicStake:                  collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, alloraMath.UintValue),
 		lastRewardsUpdate:           collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                 collections.NewSequence(sb, types.NextTopicIdKey, "next_topic_id"),
 		topics:                      collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
@@ -166,15 +167,15 @@ func NewKeeper(
 		topicWorkers:                collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:               collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:               collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:    collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:    collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeRemovalQueue:           collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue:  collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
-		stakeFromDelegator:          collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		delegatedStakePlacement:     collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		stakeUponReputer:            collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeFromDelegator:          collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		delegatedStakePlacement:     collections.NewMap(sb, types.BondsKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
+		stakeUponReputer:            collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		mempool:                     collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
-		requestUnmetDemand:          collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
-		topicUnmetDemand:            collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		requestUnmetDemand:          collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, alloraMath.UintValue),
+		topicUnmetDemand:            collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, alloraMath.UintValue),
 		inferences:                  collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                   collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                     collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -184,8 +185,8 @@ func NewKeeper(
 		allLossBundles:              collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
 		networkLossBundles:          collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		networkRegrets:              collections.NewMap(sb, types.NetworkRegretsKey, "regrets_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.WorkerRegrets](cdc)),
-		accumulatedMetDemand:        collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
-		numInferencesInRewardEpoch:  collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		accumulatedMetDemand:        collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, alloraMath.UintValue),
+		numInferencesInRewardEpoch:  collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		whitelistAdmins:             collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:      collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:            collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
