@@ -9,7 +9,7 @@ import (
 
 // Implements function phi prime from litepaper
 // φ'_p(x) = p * (ln(1 + e^x))^(p-1) * e^x / (1 + e^x)
-func gradient(p float64, x Regret) (Weight, error) {
+func Gradient(p float64, x Regret) (Weight, error) {
 	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
 		return 0, emissions.ErrPhiInvalidInput
 	}
@@ -36,7 +36,7 @@ func gradient(p float64, x Regret) (Weight, error) {
 //
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
-func calcForcastImpliedInferences(
+func CalcForcastImpliedInferences(
 	inferenceByWorker map[Worker]*emissions.Inference,
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
@@ -82,7 +82,7 @@ func calcForcastImpliedInferences(
 			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
 			for j := range forecastElementsByInferer {
 				R_ik[j] = R_ik[j] / maxjRijk                         // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
-				w_ijk, err := gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
+				w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 				if err != nil {
 					fmt.Println("Error calculating gradient: ", err)
 					return nil, err
@@ -94,8 +94,10 @@ func calcForcastImpliedInferences(
 			weightSum := 0.0
 			weightInferenceDotProduct := 0.0
 			for j, w_ijk := range w_ik {
-				weightInferenceDotProduct += w_ijk * inferenceByWorker[j].Value
-				weightSum += w_ijk
+				if inferenceByWorker[j] != nil && w_ijk != 0 {
+					weightInferenceDotProduct += w_ijk * inferenceByWorker[j].Value
+					weightSum += w_ijk
+				}
 			}
 			forecastImpliedInference := emissions.Inference{
 				Worker: forecast.Forecaster,
