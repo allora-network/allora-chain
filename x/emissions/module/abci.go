@@ -58,6 +58,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			fmt.Println("Error calculating global emission per topic: ", err)
 			panic(err)
 		}
+		err := am.keeper.IncrementFeeRevenueEpoch(sdkCtx)
+		if err != nil {
+			fmt.Println("Error incrementing fee revenue epoch: ", err)
+			return err
+		}
 	}
 
 	var wg sync.WaitGroup

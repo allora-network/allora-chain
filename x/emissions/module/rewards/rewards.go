@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"fmt"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,10 +21,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	// Get Distribution of Rewards per Topic
 	weights, sumWeight, err := GetActiveTopicWeights(ctx, k, activeTopics)
 	if err != nil {
+		fmt.Println("weights error")
 		return err
 	}
 	validatorsVsAlloraPercentReward, err := k.GetParamsValidatorsVsAlloraPercentReward(ctx)
 	if err != nil {
+		fmt.Println("percent error")
 		return err
 	}
 	f_v := validatorsVsAlloraPercentReward.MustFloat64()
@@ -42,5 +46,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 
 	// Pay out rewards
 
+	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
 	return nil
 }

@@ -314,5 +314,5 @@ message TopicFeeRevenue {
 
 message PreviousTopicWeight {
   uint64 epoch = 1;
-  double weigth = 2;
+  double weight = 2;
 }

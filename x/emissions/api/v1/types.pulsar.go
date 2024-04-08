@@ -17629,14 +17629,14 @@ func (x *fastReflection_TopicFeeRevenue) ProtoMethods() *protoiface.Methods {
 var (
 	md_PreviousTopicWeight        protoreflect.MessageDescriptor
 	fd_PreviousTopicWeight_epoch  protoreflect.FieldDescriptor
-	fd_PreviousTopicWeight_weigth protoreflect.FieldDescriptor
+	fd_PreviousTopicWeight_weight protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_types_proto_init()
 	md_PreviousTopicWeight = File_emissions_v1_types_proto.Messages().ByName("PreviousTopicWeight")
 	fd_PreviousTopicWeight_epoch = md_PreviousTopicWeight.Fields().ByName("epoch")
-	fd_PreviousTopicWeight_weigth = md_PreviousTopicWeight.Fields().ByName("weigth")
+	fd_PreviousTopicWeight_weight = md_PreviousTopicWeight.Fields().ByName("weight")
 }
 
 var _ protoreflect.Message = (*fastReflection_PreviousTopicWeight)(nil)
@@ -17710,9 +17710,9 @@ func (x *fastReflection_PreviousTopicWeight) Range(f func(protoreflect.FieldDesc
 			return
 		}
 	}
-	if x.Weigth != float64(0) || math.Signbit(x.Weigth) {
-		value := protoreflect.ValueOfFloat64(x.Weigth)
-		if !f(fd_PreviousTopicWeight_weigth, value) {
+	if x.Weight != float64(0) || math.Signbit(x.Weight) {
+		value := protoreflect.ValueOfFloat64(x.Weight)
+		if !f(fd_PreviousTopicWeight_weight, value) {
 			return
 		}
 	}
@@ -17733,8 +17733,8 @@ func (x *fastReflection_PreviousTopicWeight) Has(fd protoreflect.FieldDescriptor
 	switch fd.FullName() {
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		return x.Epoch != uint64(0)
-	case "emissions.v1.PreviousTopicWeight.weigth":
-		return x.Weigth != float64(0) || math.Signbit(x.Weigth)
+	case "emissions.v1.PreviousTopicWeight.weight":
+		return x.Weight != float64(0) || math.Signbit(x.Weight)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.PreviousTopicWeight"))
@@ -17753,8 +17753,8 @@ func (x *fastReflection_PreviousTopicWeight) Clear(fd protoreflect.FieldDescript
 	switch fd.FullName() {
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		x.Epoch = uint64(0)
-	case "emissions.v1.PreviousTopicWeight.weigth":
-		x.Weigth = float64(0)
+	case "emissions.v1.PreviousTopicWeight.weight":
+		x.Weight = float64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.PreviousTopicWeight"))
@@ -17774,8 +17774,8 @@ func (x *fastReflection_PreviousTopicWeight) Get(descriptor protoreflect.FieldDe
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		value := x.Epoch
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.PreviousTopicWeight.weigth":
-		value := x.Weigth
+	case "emissions.v1.PreviousTopicWeight.weight":
+		value := x.Weight
 		return protoreflect.ValueOfFloat64(value)
 	default:
 		if descriptor.IsExtension() {
@@ -17799,8 +17799,8 @@ func (x *fastReflection_PreviousTopicWeight) Set(fd protoreflect.FieldDescriptor
 	switch fd.FullName() {
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		x.Epoch = value.Uint()
-	case "emissions.v1.PreviousTopicWeight.weigth":
-		x.Weigth = value.Float()
+	case "emissions.v1.PreviousTopicWeight.weight":
+		x.Weight = value.Float()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.PreviousTopicWeight"))
@@ -17823,8 +17823,8 @@ func (x *fastReflection_PreviousTopicWeight) Mutable(fd protoreflect.FieldDescri
 	switch fd.FullName() {
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		panic(fmt.Errorf("field epoch of message emissions.v1.PreviousTopicWeight is not mutable"))
-	case "emissions.v1.PreviousTopicWeight.weigth":
-		panic(fmt.Errorf("field weigth of message emissions.v1.PreviousTopicWeight is not mutable"))
+	case "emissions.v1.PreviousTopicWeight.weight":
+		panic(fmt.Errorf("field weight of message emissions.v1.PreviousTopicWeight is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.PreviousTopicWeight"))
@@ -17840,7 +17840,7 @@ func (x *fastReflection_PreviousTopicWeight) NewField(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	case "emissions.v1.PreviousTopicWeight.epoch":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.PreviousTopicWeight.weigth":
+	case "emissions.v1.PreviousTopicWeight.weight":
 		return protoreflect.ValueOfFloat64(float64(0))
 	default:
 		if fd.IsExtension() {
@@ -17914,7 +17914,7 @@ func (x *fastReflection_PreviousTopicWeight) ProtoMethods() *protoiface.Methods 
 		if x.Epoch != 0 {
 			n += 1 + runtime.Sov(uint64(x.Epoch))
 		}
-		if x.Weigth != 0 || math.Signbit(x.Weigth) {
+		if x.Weight != 0 || math.Signbit(x.Weight) {
 			n += 9
 		}
 		if x.unknownFields != nil {
@@ -17946,9 +17946,9 @@ func (x *fastReflection_PreviousTopicWeight) ProtoMethods() *protoiface.Methods 
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.Weigth != 0 || math.Signbit(x.Weigth) {
+		if x.Weight != 0 || math.Signbit(x.Weight) {
 			i -= 8
-			binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(x.Weigth))))
+			binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(x.Weight))))
 			i--
 			dAtA[i] = 0x11
 		}
@@ -18027,7 +18027,7 @@ func (x *fastReflection_PreviousTopicWeight) ProtoMethods() *protoiface.Methods 
 				}
 			case 2:
 				if wireType != 1 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Weigth", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
 				}
 				var v uint64
 				if (iNdEx + 8) > l {
@@ -18035,7 +18035,7 @@ func (x *fastReflection_PreviousTopicWeight) ProtoMethods() *protoiface.Methods 
 				}
 				v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
 				iNdEx += 8
-				x.Weigth = float64(math.Float64frombits(v))
+				x.Weight = float64(math.Float64frombits(v))
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -19824,7 +19824,7 @@ type PreviousTopicWeight struct {
 	unknownFields protoimpl.UnknownFields
 
 	Epoch  uint64  `protobuf:"varint,1,opt,name=epoch,proto3" json:"epoch,omitempty"`
-	Weigth float64 `protobuf:"fixed64,2,opt,name=weigth,proto3" json:"weigth,omitempty"`
+	Weight float64 `protobuf:"fixed64,2,opt,name=weight,proto3" json:"weight,omitempty"`
 }
 
 func (x *PreviousTopicWeight) Reset() {
@@ -19854,9 +19854,9 @@ func (x *PreviousTopicWeight) GetEpoch() uint64 {
 	return 0
 }
 
-func (x *PreviousTopicWeight) GetWeigth() float64 {
+func (x *PreviousTopicWeight) GetWeight() float64 {
 	if x != nil {
-		return x.Weigth
+		return x.Weight
 	}
 	return 0
 }
@@ -20246,8 +20246,8 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x22, 0x43, 0x0a, 0x13, 0x50, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73, 0x54, 0x6f, 0x70, 0x69,
 	0x63, 0x57, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x12, 0x16, 0x0a,
-	0x06, 0x77, 0x65, 0x69, 0x67, 0x74, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x77,
-	0x65, 0x69, 0x67, 0x74, 0x68, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
+	0x06, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x06, 0x77,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65,
 	0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
 	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
