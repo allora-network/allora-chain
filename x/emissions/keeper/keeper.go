@@ -280,6 +280,42 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 	return nil
 }
 
+// True if nonce is unfulfilled, false otherwise.
+func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+	// Get the latest unfulfilled nonces
+	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the nonce is present in the unfulfilled nonces
+	for _, n := range unfulfilledNonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+// True if nonce is unfulfilled, false otherwise.
+func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+	// Get the latest unfulfilled nonces
+	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the nonce is present in the unfulfilled nonces
+	for _, n := range unfulfilledNonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
 func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {

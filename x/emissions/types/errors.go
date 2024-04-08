@@ -110,4 +110,5 @@ var (
 	ErrInferenceRequestBlockValidUntilTooFarInFuture     = errors.Register(ModuleName, 105, "inference request block valid until too far in future")
 	ErrSumWeightsLessThanEta                             = errors.Register(ModuleName, 106, "sum weights less than eta")
 	ErrSliceLengthMismatch                               = errors.Register(ModuleName, 107, "slice length mismatch")
+	ErrNonceNotUnfulfilled                               = errors.Register(ModuleName, 108, "nonce not unfuilfilled")
 )
