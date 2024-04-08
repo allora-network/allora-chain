@@ -31,6 +31,8 @@ install:
 	# @go mod tidy
 	# @echo "--> installing allorad"
 	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/allorad
+	./scripts/init.sh
+	./integration/postinit.sh
 
 init:
 	./scripts/init.sh
@@ -38,4 +40,3 @@ init:
 build:
 	mkdir -p $(BUILDDIR)/
 	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
-

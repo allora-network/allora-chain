@@ -69,11 +69,13 @@ import (
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
+	_ "cosmossdk.io/x/circuit"               // import for side-effects
 	_ "cosmossdk.io/x/upgrade"
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/allora-network/allora-chain/x/mint/module" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"        // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/authz/module"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
@@ -112,11 +114,11 @@ type AlloraApp struct {
 	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
 	EmissionsKeeper       emissionsKeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	SlashingKeeper        slashingkeeper.Keeper
-	GovKeeper             govkeeper.Keeper
 
 	// IBC
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -194,14 +196,14 @@ func NewAlloraApp(
 		&app.AccountKeeper,
 		&app.BankKeeper,
 		&app.StakingKeeper,
+		&app.SlashingKeeper,
 		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
+		&app.GovKeeper,
 		&app.EmissionsKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
-		&app.SlashingKeeper,
-		&app.GovKeeper,
 		&app.AuthzKeeper,
 		&app.CircuitBreakerKeeper,
 	); err != nil {
