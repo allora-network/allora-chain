@@ -31,8 +31,6 @@ install:
 	# @go mod tidy
 	# @echo "--> installing allorad"
 	@go install $(BUILD_FLAGS) -mod=readonly ./cmd/allorad
-	./scripts/init.sh
-	./integration/postinit.sh
 
 init:
 	./scripts/init.sh
