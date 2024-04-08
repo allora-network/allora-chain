@@ -60,7 +60,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.StoreService,
 		in.AccountKeeper,
 		in.BankKeeper,
-		in.MintKeeper,
 		feeCollectorName,
 	)
 	m := NewAppModule(in.Cdc, k)

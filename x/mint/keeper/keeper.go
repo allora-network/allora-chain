@@ -183,3 +183,7 @@ func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math
 func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	return k.Params.Get(ctx)
 }
+
+func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (math.LegacyDec, error) {
+	return k.emissionsKeeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
+}

@@ -36,7 +36,6 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
 					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
 					MaxSupply:                              sdkmath.NewIntFromUint64(0),
-					ValidatorsVsAlloraPercentReward:        defaultParams.ValidatorsVsAlloraPercentReward,
 					FEmission:                              defaultParams.FEmission,
 					OneMonthSmoothingDegree:                defaultParams.OneMonthSmoothingDegree,
 					EcosystemTreasuryPercentOfTotalSupply:  defaultParams.EcosystemTreasuryPercentOfTotalSupply,
@@ -55,7 +54,6 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 				Params: types.Params{
 					MintDenom:                              defaultParams.MintDenom,
 					MaxSupply:                              defaultParams.MaxSupply,
-					ValidatorsVsAlloraPercentReward:        defaultParams.ValidatorsVsAlloraPercentReward,
 					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
 					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
 					FEmission:                              defaultParams.FEmission,

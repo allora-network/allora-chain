@@ -21,7 +21,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	if err != nil {
 		return err
 	}
-	validatorsVsAlloraPercentReward, err := k.GetParamValidatorsVsAlloraPercentReward(ctx)
+	validatorsVsAlloraPercentReward, err := k.GetParamsValidatorsVsAlloraPercentReward(ctx)
 	if err != nil {
 		return err
 	}

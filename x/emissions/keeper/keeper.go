@@ -41,7 +41,6 @@ type Keeper struct {
 	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
 	bankKeeper BankKeeper
-	mintKeeper MintKeeper
 
 	/// TOPIC
 
@@ -157,7 +156,6 @@ func NewKeeper(
 	storeService storetypes.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
-	mk MintKeeper,
 	feeCollectorName string) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
@@ -168,7 +166,6 @@ func NewKeeper(
 		params:                      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                  ak,
 		bankKeeper:                  bk,
-		mintKeeper:                  mk,
 		totalStake:                  collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
 		topicStake:                  collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
 		lastRewardsUpdate:           collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
@@ -353,12 +350,12 @@ func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error)
 	return params.TopicRewardAlpha, nil
 }
 
-func (k *Keeper) GetParamValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
-	mintParams, err := k.mintKeeper.GetParams(ctx)
+func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.LegacyDec{}, err
 	}
-	return mintParams.ValidatorsVsAlloraPercentReward, nil
+	return params.ValidatorsVsAlloraPercentReward, nil
 }
 
 /// INFERENCES, FORECASTS
