@@ -15,9 +15,7 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc InsertInferences(MsgInsertInferences) returns (MsgInsertInferencesResponse);
-
-  rpc InsertForecasts(MsgInsertForecasts) returns (MsgInsertForecastsResponse);
+  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload) returns (MsgInsertBulkWorkerPayloadResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
@@ -29,7 +27,7 @@ service Msg {
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
-  rpc InsertLosses(MsgInsertLosses) returns (MsgInsertLossesResponse);
+  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -145,39 +143,30 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
-// MsgInsertLosses sets the losses from a given reputer
-message MsgInsertLosses {
+message MsgInsertBulkReputerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
   Nonce nonce = 2;
-  repeated ReputerValueBundle reputer_value_bundles = 3;
+  uint64 topic_id = 3;
+  repeated ReputerValueBundle reputer_value_bundles = 4;
 }
 
-message MsgInsertLossesResponse {}
+message MsgInsertBulkReputerPayloadResponse {}
 
-message MsgInsertInferences {
+message MsgInsertBulkWorkerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
   Nonce nonce = 2;
-  repeated Inference inferences = 3;
+  uint64 topic_id = 3;
+  repeated Inference inferences = 4;
+  repeated Forecast forecasts = 5;
 }
 
-message MsgInsertInferencesResponse {}
-
-message MsgInsertForecasts {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-
-  Nonce nonce = 2;
-  repeated Forecast forecasts = 3;
-}
-
-message MsgInsertForecastsResponse {}
+message MsgInsertBulkWorkerPayloadResponse {}
 
 ///  Inference Node Registration
 

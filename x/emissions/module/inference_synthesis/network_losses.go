@@ -63,7 +63,7 @@ func stakePlacementToFloat64(stake emissions.StakePlacement) float64 {
 
 func CalcNetworkLosses(
 	stakesByReputer map[Worker]Stake,
-	reputerReportedLosses *emissions.ReputerValueBundles,
+	reputerReportedLosses emissions.ReputerValueBundles,
 	epsilon float64,
 ) (emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
