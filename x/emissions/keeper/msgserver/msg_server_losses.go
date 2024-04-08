@@ -4,6 +4,7 @@ import (
 	"context"
 
 	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -86,6 +87,24 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 	}
 
 	err = synth.GetCalcSetNetworkRegrets(ctx.(sdk.Context), ms.k, msg.TopicId, networkLossBundle, *msg.Nonce, params.AlphaRegret)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the reputer scores
+	_, err = rewards.GenerateReputerScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, bundles)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their inference work
+	_, err = rewards.GenerateInferenceScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, networkLossBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their forecast work
+	_, err = rewards.GenerateForecastScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}
