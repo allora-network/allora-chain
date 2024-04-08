@@ -7,7 +7,6 @@ $ALLORAD_BIN config set client chain-id demo
 $ALLORAD_BIN config set client keyring-backend test
 $ALLORAD_BIN keys add alice
 $ALLORAD_BIN keys add bob
-$ALLORAD_BIN keys add head
 $ALLORAD_BIN init test --chain-id demo --default-denom uallo
 # update genesis
 # Ecosystem non-human MODULE ACCOUNT prints tokens to itself. Starts with nothing.
@@ -29,7 +28,6 @@ $ALLORAD_BIN genesis add-genesis-account allo18jkqd9dl09ejkrsfwdzvx694spqyz2azm6
 # 12 random test accounts, so each gets 4166666.
 $ALLORAD_BIN genesis add-genesis-account alice 4166666allo --keyring-backend test
 $ALLORAD_BIN genesis add-genesis-account bob 4166666allo --keyring-backend test
-$ALLORAD_BIN genesis add-genesis-account head 1000allo --keyring-backend test
 $ALLORAD_BIN genesis add-genesis-account allo1m4ssnux4kh5pfmjzzkpde0hvxfg0d37mla0pdf 4166666allo
 $ALLORAD_BIN genesis add-genesis-account allo1m8m7u5wygh8f0m55m7aj957yts44fsqdzryjmc 4166666allo
 $ALLORAD_BIN genesis add-genesis-account allo18kq56ckavhacjjxwc7lajspfgn6zf78srfx3lk 4166666allo
