@@ -18,20 +18,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 		expectedNetworkCombinedInferenceValue float64
 		expectedErr                           error
 	}{
-		{
+		{ // ROW 3
 			name: "normal operation",
 			inferenceByWorker: map[string]*emissions.Inference{
-				"worker1": {Value: 1.5},
-				"worker2": {Value: 2.5},
+				"worker0": {Value: -0.05142348924899710},
+				"worker1": {Value: -0.03165322119892420},
 			},
 			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
-				"worker1": {Value: 1.0},
-				"worker2": {Value: 2.0},
+				"worker0": {Value: -0.07075177115182300},
+				"worker1": {Value: -0.06464638412104260},
 			},
 			maxRegret:                             0.5,
 			epsilon:                               1e-4,
-			pInferenceSynthesis:                   1,
-			expectedNetworkCombinedInferenceValue: 2,
+			pInferenceSynthesis:                   2,
+			expectedNetworkCombinedInferenceValue: -0.06470631905627390,
 			expectedErr:                           nil,
 		},
 	}
@@ -74,30 +74,30 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		pInferenceSynthesis              float64
 		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
 		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
-	}{
-		name: "example test case",
+	}{ // ROW 5
+		name: "basic functionality, multiple workers",
 		inferenceByWorker: map[string]*emissions.Inference{
-			"worker1": &emissions.Inference{Value: 1.5},
-			"worker2": &emissions.Inference{Value: 2.5},
+			"worker0": &emissions.Inference{Value: 0.09688553736890290},
+			"worker1": &emissions.Inference{Value: 0.15603487178220000},
 		},
 		forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
-			"worker1": &emissions.Inference{Value: 1.0},
-			"worker2": &emissions.Inference{Value: 2.0},
+			"worker0": &emissions.Inference{Value: 0.09590746110637150},
+			"worker1": &emissions.Inference{Value: 0.09199706634747750},
 		},
 		forecasts: &emissions.Forecasts{
 			Forecasts: []*emissions.Forecast{
 				{
-					Forecaster: "forecaster1",
+					Forecaster: "forecaster0",
 					ForecastElements: []*emissions.ForecastElement{
-						{Inferer: "worker1", Value: 1.0},
-						{Inferer: "worker2", Value: 2.0},
+						{Inferer: "worker0", Value: 9.65209481504552e-06},
+						{Inferer: "worker1", Value: 0.0013204058258572500},
 					},
 				},
 				{
-					Forecaster: "forecaster2",
+					Forecaster: "forecaster1",
 					ForecastElements: []*emissions.ForecastElement{
-						{Inferer: "worker1", Value: 2.0},
-						{Inferer: "worker2", Value: 3.0},
+						{Inferer: "worker0", Value: 1.57700563929882e-05},
+						{Inferer: "worker1", Value: 0.002446373314877150},
 					},
 				},
 			},
@@ -106,12 +106,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		networkCombinedLoss: 10.0,
 		epsilon:             1e-4,
 		expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: 2},
-			{Worker: "worker2", Value: 2},
+			{Worker: "worker0", Value: 0.07868265511452390},
+			{Worker: "worker1", Value: 0.05882929409106640},
 		},
 		expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: 2.166666666666666},
-			{Worker: "worker2", Value: 1.833333333333333},
+			{Worker: "worker0", Value: 2.166666666666666},
+			{Worker: "worker1", Value: 1.833333333333333},
 		},
 		pInferenceSynthesis: 2.0,
 	}
@@ -158,25 +158,25 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 		expectedOneInInferences     []*emissions.WorkerAttributedValue
 		expectedErr                 error
 	}{
-		{
+		{ // ROW 6
 			name: "basic functionality, single worker",
 			inferences: map[string]*emissions.Inference{
-				"worker1": {Value: 1.5},
-				"worker2": {Value: 2.5},
+				"worker0": {Value: 0.10711562728325500},
+				"worker1": {Value: 0.03008145586124120},
 			},
 			forecastImpliedInferences: map[string]*emissions.Inference{
-				"worker1": {Value: 1.0},
-				"worker2": {Value: 2.0},
+				"worker0": {Value: 0.08584946856167300},
+				"worker1": {Value: 0.08215179314806270},
 			},
 			maxRegretsByOneInForecaster: map[string]inference_synthesis.Regret{
-				"worker1": 0.1,
-				"worker2": 0.2,
+				"worker0": 0.1,
+				"worker1": 0.2,
 			},
 			epsilon:             0.0001,
 			pInferenceSynthesis: 2.0,
 			expectedOneInInferences: []*emissions.WorkerAttributedValue{
-				{Worker: "worker1", Value: 1.833333333333333},
-				{Worker: "worker2", Value: 2.166666666666667},
+				{Worker: "worker0", Value: 0.0764686352947760},
+				{Worker: "worker1", Value: 0.0755370605649977},
 			},
 			expectedErr: nil,
 		},
