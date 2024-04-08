@@ -1544,6 +1544,28 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TOPIC_ID) (type
 	return k.topicFeeRevenue.Get(ctx, topicId)
 }
 
+// Add to the fee revenue collected by a topic for this reward epoch
+func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TOPIC_ID, amount Uint) error {
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	currEpoch, err := k.GetFeeRevenueEpoch(ctx)
+	if err != nil {
+		return err
+	}
+	newTopicFeeRevenue := types.TopicFeeRevenue{}
+	if topicFeeRevenue.Epoch != currEpoch {
+		newTopicFeeRevenue.Epoch = currEpoch
+		newTopicFeeRevenue.Revenue = cosmosMath.NewIntFromBigInt(amount.BigInt())
+	} else {
+		newTopicFeeRevenue.Epoch = topicFeeRevenue.Epoch
+		amountInt := cosmosMath.NewIntFromBigInt(amount.BigInt())
+		newTopicFeeRevenue.Revenue = topicFeeRevenue.Revenue.Add(amountInt)
+	}
+	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+}
+
 // what is the current latest fee revenue epoch
 func (k *Keeper) GetFeeRevenueEpoch(ctx context.Context) (uint64, error) {
 	return k.feeRevenueEpoch.Peek(ctx)
