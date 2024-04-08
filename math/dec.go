@@ -311,6 +311,23 @@ func (d *Dec) Unmarshal(data []byte) error {
 	return nil
 }
 
+// Size returns the size of the marshalled Dec type in bytes
+func (d Dec) Size() int {
+	bz, _ := d.Marshal()
+	return len(bz)
+}
+
+// MarshalTo implements the gogo proto custom type interface.
+func (d *Dec) MarshalTo(data []byte) (n int, err error) {
+	bz, err := d.Marshal()
+	if err != nil {
+		return 0, err
+	}
+
+	copy(data, bz)
+	return len(bz), nil
+}
+
 // MarshalJSON marshals the decimal
 func (d Dec) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.String())
