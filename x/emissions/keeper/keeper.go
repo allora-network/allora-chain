@@ -443,6 +443,31 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
+// GetTopicWorkers returns a list of workers registered for a given topic ID.
+func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TOPIC_ID) ([]sdk.AccAddress, error) {
+    var workers []sdk.AccAddress
+
+	rng := collections.NewPrefixedPairRange[TOPIC_ID, WORKER](topicId)
+	
+    // Iterate over the workers registered for the given topic ID
+    iter, err := k.topicWorkers.Iterate(ctx, rng)
+    if err != nil {
+        return nil, err
+    }
+    defer iter.Close()
+
+    for ; iter.Valid(); iter.Next() {
+        pair, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+        workerAddr := pair.K2()
+        workers = append(workers, workerAddr)
+    }
+
+    return workers, nil
+}
+
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 	lastRewardsUpdate, err := k.lastRewardsUpdate.Get(ctx)

@@ -39,7 +39,7 @@ func GetReputerRewards(
 		reputerAddresses = append(reputerAddresses, reputerAddr)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetDelegatedStakeUponReputer(ctx, topicId, reputerAddr)
+		reputerStake, err := keeper.GetDelegatedStakeUponReputer(ctx, topicId, reputerAddr) //TODO: change to stake upon topic
 		if err != nil {
 			return nil, err
 		}
