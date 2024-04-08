@@ -151,7 +151,7 @@ message MsgInsertLosses {
 
   string sender = 1;
 
-  int64 block_height = 2;
+  Nonce nonce = 2;
   repeated ReputerValueBundle reputer_value_bundles = 3;
 }
 
@@ -162,7 +162,7 @@ message MsgInsertInferences {
 
   string sender = 1;
 
-  int64 block_height = 2;
+  Nonce nonce = 2;
   repeated Inference inferences = 3;
 }
 
@@ -173,7 +173,7 @@ message MsgInsertForecasts {
 
   string sender = 1;
 
-  int64 block_height = 2;
+  Nonce nonce = 2;
   repeated Forecast forecasts = 3;
 }
 

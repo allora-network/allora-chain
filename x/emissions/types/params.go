@@ -4,7 +4,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 )
 
-type BLOCK_NUMBER = int64
+type BlockHeight = int64
 
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
@@ -29,6 +29,9 @@ func DefaultParams() Params {
 		MinStakeFraction:              float64(0.5),                // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:     uint64(20),                  // maximum number of workers that can be assigned to a single inference request
 		MaxReputersPerTopicRequest:    uint64(20),                  // maximum number of reputers that can be assigned to a single loss request
+		AlphaRegret:                   float64(0.1),                // how much to weight the most recent log-loss differences in regret EMA update
+		MaxUnfulfilledWorkerRequests:  uint64(100),                 // maximum number of outstanding nonces for worker requests from the chain
+		MaxUnfulfilledReputerRequests: uint64(100),                 // maximum number of outstanding nonces for reputer requests from the chain
 	}
 }
 
@@ -36,7 +39,7 @@ func DefaultParamsVersion() string {
 	return DefaultParams().Version
 }
 
-func DefaultParamsEpochLength() BLOCK_NUMBER {
+func DefaultParamsEpochLength() BlockHeight {
 	return DefaultParams().RewardCadence
 }
 
@@ -60,19 +63,19 @@ func DefaultParamsRequiredMinimumStake() cosmosMath.Uint {
 	return DefaultParams().RequiredMinimumStake
 }
 
-func DefaultParamsRemoveStakeDelayWindow() BLOCK_NUMBER {
+func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
 	return DefaultParams().RemoveStakeDelayWindow
 }
 
-func DefaultParamsMinEpochLength() BLOCK_NUMBER {
+func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
 }
 
-func DefaultParamsMaxInferenceRequestValidity() BLOCK_NUMBER {
+func DefaultParamsMaxInferenceRequestValidity() BlockHeight {
 	return DefaultParams().MaxInferenceRequestValidity
 }
 
-func DefaultParamsMaxRequestCadence() BLOCK_NUMBER {
+func DefaultParamsMaxRequestCadence() BlockHeight {
 	return DefaultParams().MaxRequestCadence
 }
 
@@ -106,6 +109,18 @@ func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
 
 func DefaultParamsMaxReputersPerTopicRequest() uint64 {
 	return DefaultParams().MaxReputersPerTopicRequest
+}
+
+func DefaultParamsAlphaRegret() float64 {
+	return DefaultParams().AlphaRegret
+}
+
+func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {
+	return DefaultParams().MaxUnfulfilledWorkerRequests
+}
+
+func DefaultParamsMaxUnfulfilledReputerRequestNonces() uint64 {
+	return DefaultParams().MaxUnfulfilledReputerRequests
 }
 
 // Validate does the sanity check on the params.

@@ -51,7 +51,12 @@ message Params {
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
-      22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+      22;                    // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  double alpha_regret = 23;  // how much to weight the most recent log-loss differences in regret EMA update
+  uint64 max_unfulfilled_worker_requests =
+      24;  // max number of nonces for worker requests to keep track of for each topic
+  uint64 max_unfulfilled_reputer_requests =
+      25;  // max number of nonces for reputer requests to keep track of for each topic
 }
 
 /// TOPICS
@@ -280,4 +285,14 @@ message InferenceRequest {
   int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
   int64 block_valid_until = 8;
   bytes extra_data = 9;
+}
+
+/// NONCES for Worker and Reputer Requests
+
+message Nonce {
+  int64 nonce = 1;  // block height of the request
+}
+
+message Nonces {
+  repeated Nonce nonces = 1;
 }

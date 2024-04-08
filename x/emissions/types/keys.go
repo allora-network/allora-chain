@@ -52,4 +52,6 @@ var (
 	InfererNetworkRegretsKey         = collections.NewPrefix(41)
 	ForecasterNetworkRegretsKey      = collections.NewPrefix(42)
 	OneInForecasterNetworkRegretsKey = collections.NewPrefix(43)
+	UnfulfilledWorkerNoncesKey       = collections.NewPrefix(44)
+	UnfulfilledReputerNoncesKey      = collections.NewPrefix(45)
 )

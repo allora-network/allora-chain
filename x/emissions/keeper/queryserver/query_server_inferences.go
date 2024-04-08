@@ -46,13 +46,9 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 	return &types.QueryInferencesAtBlockResponse{Inferences: inferences}, nil
 }
 
+// Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
-	epsilon, err := qs.k.GetParamsEpsilon(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	pInferenceSynthesis, err := qs.k.GetParamsPInferenceSynthesis(ctx)
+	params, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +69,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 		return nil, err
 	}
 
-	networkCombinedLoss, err := synth.CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, epsilon)
+	networkCombinedLoss, err := synth.CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +83,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 		return nil, err
 	}
 
-	networkInferences, err := synth.CalcNetworkInferences(ctx.(sdk.Context), qs.k, req.TopicId, inferences, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
+	networkInferences, err := synth.CalcNetworkInferences(ctx.(sdk.Context), qs.k, req.TopicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
 	if err != nil {
 		return nil, err
 	}
