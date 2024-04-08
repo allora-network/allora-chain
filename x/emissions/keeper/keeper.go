@@ -37,6 +37,7 @@ type Keeper struct {
 	feeCollectorName string
 
 	/// TYPES
+
 	schema     collections.Schema
 	params     collections.Item[types.Params]
 	authKeeper AccountKeeper
@@ -58,6 +59,7 @@ type Keeper struct {
 	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
 	/// SCORES
+
 	// map of (topic, block_number, worker) -> score
 	inferenceScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_number, worker) -> score
@@ -128,6 +130,14 @@ type Keeper struct {
 	networkLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 
 	accumulatedMetDemand collections.Map[TopicId, Uint]
+
+	/// NONCES
+
+	// map of (topic) -> unfulfilled nonces
+	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
+
+	// map of (topic) -> unfulfilled nonces
+	unfulfilledReputerNonces collections.Map[TopicId, types.Nonces]
 
 	/// REGRETS
 
@@ -202,6 +212,8 @@ func NewKeeper(
 		forecastScores:                      collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerScores:                       collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -212,6 +224,138 @@ func NewKeeper(
 	k.schema = schema
 
 	return k
+}
+
+/// NONCES
+
+// Attempts to fulfill an unfulfilled nonce.
+// If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
+// If the nonce is not present, then the function returns false.
+func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the nonce is present in the unfulfilled nonces
+	for i, n := range unfulfilledNonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			// Remove the nonce from the unfulfilled nonces
+			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
+			if err != nil {
+				return false, err
+			}
+			return true, nil
+		}
+	}
+
+	// If the nonce is not present in the unfulfilled nonces
+	return false, nil
+}
+
+// Attempts to fulfill an unfulfilled nonce.
+// If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
+// If the nonce is not present, then the function returns false.
+func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Check if the nonce is present in the unfulfilled nonces
+	for i, n := range unfulfilledNonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			// Remove the nonce from the unfulfilled nonces
+			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	// If the nonce is not present in the unfulfilled nonces
+	return nil
+}
+
+// Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
+// If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
+func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Check that input nonce is not already contained in the nonces of this topic
+	for _, n := range nonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			return nil
+		}
+	}
+	nonces.Nonces = append(nonces.Nonces, nonce)
+
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
+	if err != nil {
+		return err
+	}
+
+	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
+		nonces.Nonces = nonces.Nonces[1:]
+	}
+
+	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
+}
+
+// Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
+// If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Check that input nonce is not already contained in the nonces of this topic
+	for _, n := range nonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			return nil
+		}
+	}
+	nonces.Nonces = append(nonces.Nonces, nonce)
+
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
+	if err != nil {
+		return err
+	}
+
+	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
+		nonces.Nonces = nonces.Nonces[1:]
+	}
+
+	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
+}
+
+func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Nonces{}, nil
+		}
+		return types.Nonces{}, err
+	}
+	return nonces, nil
+}
+
+func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Nonces{}, nil
+		}
+		return types.Nonces{}, err
+	}
+	return nonces, nil
 }
 
 /// REGRETS
@@ -275,27 +419,6 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	}
 	return regret, nil
 }
-
-// func (k *Keeper) GetNetworkRegretsAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.WorkerRegrets, error) {
-// 	rng := collections.
-// 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-// 		StartInclusive(block).
-// 		Descending()
-
-// 	iter, err := k.networkRegrets.Iterate(ctx, rng)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if !iter.Valid() {
-// 		// Return empty loss bundle if no loss bundle is found
-// 		return &types.WorkerRegrets{}, nil
-// 	}
-// 	kv, err := iter.KeyValue()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &kv.Value, nil
-// }
 
 /// PARAMETERS
 
@@ -414,6 +537,22 @@ func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, err
 	return params.PInferenceSynthesis, nil
 }
 
+func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxUnfulfilledWorkerRequests, nil
+}
+
+func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxUnfulfilledReputerRequests, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -483,7 +622,9 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, block BlockHeight, inferences types.Inferences) error {
+func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
+	block := nonce.Nonce
+
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
 		// Update latests inferences for each worker
@@ -508,7 +649,9 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, block Bl
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, block BlockHeight, forecasts types.Forecasts) error {
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
+	block := nonce.Nonce
+
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
 		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
@@ -665,7 +808,7 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 }
 
 // Insert a network loss bundle for a topic and block.
-func (k *Keeper) InsertNetworkLossBundle(ctx context.Context, topicId TopicId, block BlockHeight, lossBundle types.ValueBundle) error {
+func (k *Keeper) InsertNetworkLossBundleAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, lossBundle types.ValueBundle) error {
 	key := collections.Join(topicId, block)
 	return k.networkLossBundles.Set(ctx, key, lossBundle)
 }

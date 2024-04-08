@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 
+	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -39,20 +40,70 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgInsertLosses
 		}
 	}
 
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	for topicId, bundles := range groupedBundles {
+		// Get the latest unfulfilled nonces
+		unfulfilledNonces, err := ms.k.GetUnfulfilledReputerNonces(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if the nonce is among the latest unfulfilled nonces
+		nonceFound := false
+		for _, nonce := range unfulfilledNonces.Nonces {
+			if nonce.Nonce == msg.Nonce.Nonce {
+				nonceFound = true
+				break
+			}
+		}
+		if !nonceFound {
+			continue
+		}
+
 		bundles := &types.ReputerValueBundles{
 			ReputerValueBundles: bundles,
 		}
-		err = ms.k.InsertReputerLossBundlesAtBlock(ctx, topicId, msg.BlockHeight, *bundles)
+		err = ms.k.InsertReputerLossBundlesAtBlock(ctx, topicId, msg.Nonce.Nonce, *bundles)
+		if err != nil {
+			return nil, err
+		}
+
+		stakesOnTopic, err := ms.k.GetStakePlacementsByTopic(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
+
+		// Map list of stakesOnTopic to map of stakesByReputer
+		stakesByReputer := make(map[string]types.StakePlacement)
+		for _, stake := range stakesOnTopic {
+			stakesByReputer[stake.Reputer] = stake
+		}
+
+		networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ms.k.InsertNetworkLossBundleAtBlock(ctx, topicId, msg.Nonce.Nonce, networkLossBundle)
+		if err != nil {
+			return nil, err
+		}
+
+		err = synth.GetCalcSetNetworkRegrets(ctx.(sdk.Context), ms.k, topicId, networkLossBundle, *msg.Nonce, params.AlphaRegret)
+		if err != nil {
+			return nil, err
+		}
+
+		// Update the unfulfilled nonces
+		err = ms.k.FulfillReputerNonce(ctx, topicId, msg.Nonce)
 		if err != nil {
 			return nil, err
 		}
 	}
-
-	/**
-	 * TODO calculate eq14,15, and possibly ep9-12
-	 * TODO calc eq3-15\13 when reputer queries for the chain. Then, make caching tickets for the validators
-	 */
 
 	return &types.MsgInsertLossesResponse{}, nil
 }

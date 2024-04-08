@@ -22,7 +22,7 @@ func (ms msgServer) InsertForecasts(ctx context.Context, msg *types.MsgInsertFor
 		forecasts := &types.Forecasts{
 			Forecasts: forecasts,
 		}
-		err := ms.k.InsertForecasts(ctx, topicId, msg.BlockHeight, *forecasts)
+		err := ms.k.InsertForecasts(ctx, topicId, *msg.Nonce, *forecasts)
 		if err != nil {
 			return nil, err
 		}

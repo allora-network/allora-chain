@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,8 +20,8 @@ type networkLossesByWorker struct {
 
 // Convert a ValueBundle to a networkLossesByWorker
 func convertValueBundleToNetworkLossesByWorker(
-	valueBundle *emissions.ValueBundle,
-) *networkLossesByWorker {
+	valueBundle emissions.ValueBundle,
+) networkLossesByWorker {
 	infererLosses := make(map[Worker]Loss)
 	for _, inferer := range valueBundle.InfererValues {
 		infererLosses[inferer.Worker] = inferer.Value
@@ -48,7 +47,7 @@ func convertValueBundleToNetworkLossesByWorker(
 		oneInForecasterLosses[oneInForecaster.Worker] = oneInForecaster.Value
 	}
 
-	return &networkLossesByWorker{
+	return networkLossesByWorker{
 		CombinedLoss:           valueBundle.CombinedValue,
 		InfererLosses:          infererLosses,
 		ForecasterLosses:       forecasterLosses,
@@ -74,9 +73,9 @@ func computeAndBuildEMRegret(
 	currentRegret Regret,
 	alpha float64,
 	blockHeight BlockHeight,
-) types.TimestampedValue {
+) emissions.TimestampedValue {
 	newRegret := computeEMRegretFromLosses(lossA, lossB, currentRegret, alpha)
-	return types.TimestampedValue{
+	return emissions.TimestampedValue{
 		BlockHeight: blockHeight,
 		Value:       newRegret,
 	}
@@ -88,12 +87,13 @@ func GetCalcSetNetworkRegrets(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	networkLosses *emissions.ValueBundle,
-	blockHeight BlockHeight,
+	networkLosses emissions.ValueBundle,
+	nonce emissions.Nonce,
 	alpha float64,
 ) error {
 	// Convert the network losses to a networkLossesByWorker
 	networkLossesByWorker := convertValueBundleToNetworkLossesByWorker(networkLosses)
+	blockHeight := nonce.Nonce
 
 	// Get old regret R_{i-1,j} and Calculate then Set the new regrets R_ij for inferers
 	for _, infererLoss := range networkLosses.InfererValues {
@@ -141,98 +141,3 @@ func GetCalcSetNetworkRegrets(
 
 	return nil
 }
-
-// /// TODO ensure root functions check for uniqueness of inferer and forecaster workers in the input => Every sub function need not care
-
-// /// !! TODO: Apply the following functions to the module + Revamp them as needed to exhibit the proper I/O interface !!
-
-// // Gathers inferences and forecasts from the worker update at or just after the given time, and
-// // losses from the loss update just before the given time.
-// // Then invokes calculation of the forecast-implied inferences using the Inference Synthesis formula from the litepaper.
-// func GetAndCalcForcastImpliedInferencesAtBlock(
-// 	ctx sdk.Context,
-// 	k keeper.Keeper,
-// 	topicId TopicId,
-// 	blockHeight BlockHeight,
-// ) ([]*emissions.Inference, error) {
-// 	// Get inferences from worker update at or just after the given time
-// 	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting inferences: ", err)
-// 		return nil, err
-// 	}
-// 	// Get forecasts from worker update at or just after the given time
-// 	forecasts, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting forecasts: ", err)
-// 		return nil, err
-// 	}
-// 	// Get losses from loss update just before the given time
-// 	networkValueBundle, err := k.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting network losses: ", err)
-// 		return nil, err
-// 	}
-
-// 	epsilon, err := k.GetParamsEpsilon(ctx)
-// 	if err != nil {
-// 		fmt.Println("Error getting epsilon: ", err)
-// 		return nil, err
-// 	}
-
-// 	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
-// 	if err != nil {
-// 		fmt.Println("Error getting epsilon: ", err)
-// 		return nil, err
-// 	}
-
-// 	return calcForcastImpliedInferences(inferences, forecasts, networkValueBundle, epsilon, pInferenceSynthesis)
-// }
-
-// // Gathers inferences, forecast-implied inferences as of the given block
-// // and the network regrets admitted by workers at or just before the given time,
-// // then invokes calculation of network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper.
-// func GetAndCalcNetworkCombinedInference(
-// 	ctx sdk.Context,
-// 	k keeper.Keeper,
-// 	topicId TopicId,
-// 	blockHeight BlockHeight,
-// ) (InferenceValue, error) {
-// 	// Get inferences from worker update at or just after the given block
-// 	inferences, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting inferences: ", err)
-// 		return 0, err
-// 	}
-// 	// Map each worker to their inference
-// 	inferenceByWorker := makeMapFromWorkerToTheirWork(inferences.Inferences)
-
-// 	// Get regrets admitted by workers just before the given block
-// 	regrets, err := k.GetNetworkRegretsAtOrBeforeBlock(ctx, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting network regrets: ", err)
-// 		return 0, err
-// 	}
-// 	// Get forecast-implied inferences at the given block
-// 	forecastImpliedInferences, err := GetAndCalcForcastImpliedInferencesAtBlock(ctx, k, topicId, blockHeight)
-// 	if err != nil {
-// 		fmt.Println("Error getting forecast implied inferences: ", err)
-// 		return 0, err
-// 	}
-// 	// Map each worker to their forecast-implied inference
-// 	forecastImpliedInferenceByWorker := makeMapFromWorkerToTheirWork(forecastImpliedInferences)
-
-// 	epsilon, err := k.GetParamsEpsilon(ctx)
-// 	if err != nil {
-// 		fmt.Println("Error getting epsilon: ", err)
-// 		return 0, err
-// 	}
-
-// 	pInferenceSynthesis, err := k.GetParamsPInferenceSynthesis(ctx)
-// 	if err != nil {
-// 		fmt.Println("Error getting epsilon: ", err)
-// 		return 0, err
-// 	}
-
-// 	return calcWeightedInference(inferenceByWorker, forecastImpliedInferenceByWorker, regrets, epsilon, pInferenceSynthesis)
-// }

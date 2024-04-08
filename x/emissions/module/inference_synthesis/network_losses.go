@@ -65,7 +65,7 @@ func CalcNetworkLosses(
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses *emissions.ReputerValueBundles,
 	epsilon float64,
-) (*emissions.ValueBundle, error) {
+) (emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
 	runningWeightedCombinedLoss := workerRunningWeightedLoss{0, 0}
 	runningWeightedInfererLosses := make(map[Worker]*workerRunningWeightedLoss)
@@ -82,7 +82,7 @@ func CalcNetworkLosses(
 			nextCombinedLoss, err := runningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
 				fmt.Println("Error updating running weighted average for combined loss: ", err)
-				return &emissions.ValueBundle{}, err
+				return emissions.ValueBundle{}, err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
 
@@ -92,7 +92,7 @@ func CalcNetworkLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedInfererLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for inferer: ", err)
-					return &emissions.ValueBundle{}, err
+					return emissions.ValueBundle{}, err
 				}
 				runningWeightedInfererLosses[loss.Worker] = &nextAvg
 			}
@@ -102,7 +102,7 @@ func CalcNetworkLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for forecaster: ", err)
-					return &emissions.ValueBundle{}, err
+					return emissions.ValueBundle{}, err
 				}
 				runningWeightedForecasterLosses[loss.Worker] = &nextAvg
 			}
@@ -111,7 +111,7 @@ func CalcNetworkLosses(
 			nextNaiveLoss, err := runningWeightedAvgUpdate(&runningWeightedNaiveLoss, stakeAmount, report.ValueBundle.NaiveValue, epsilon)
 			if err != nil {
 				fmt.Println("Error updating running weighted average for naive loss: ", err)
-				return &emissions.ValueBundle{}, err
+				return emissions.ValueBundle{}, err
 			}
 			runningWeightedCombinedLoss = nextNaiveLoss
 
@@ -120,7 +120,7 @@ func CalcNetworkLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out inferer: ", err)
-					return &emissions.ValueBundle{}, err
+					return emissions.ValueBundle{}, err
 				}
 				runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
 			}
@@ -130,7 +130,7 @@ func CalcNetworkLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneOutForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out forecaster: ", err)
-					return &emissions.ValueBundle{}, err
+					return emissions.ValueBundle{}, err
 				}
 				runningWeightedOneOutForecasterLosses[loss.Worker] = &nextAvg
 			}
@@ -140,7 +140,7 @@ func CalcNetworkLosses(
 				nextAvg, err := runningWeightedAvgUpdate(runningWeightedOneInForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-in forecaster: ", err)
-					return &emissions.ValueBundle{}, err
+					return emissions.ValueBundle{}, err
 				}
 				runningWeightedOneInForecasterLosses[loss.Worker] = &nextAvg
 			}
@@ -148,7 +148,7 @@ func CalcNetworkLosses(
 	}
 
 	// Convert the running weighted averages to WorkerAttributedValue for inferers and forecasters
-	output := &emissions.ValueBundle{
+	output := emissions.ValueBundle{
 		CombinedValue:          runningWeightedCombinedLoss.Loss,
 		InfererValues:          convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses),
 		ForecasterValues:       convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses),

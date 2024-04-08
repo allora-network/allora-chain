@@ -21,7 +21,7 @@ func (ms msgServer) InsertInferences(ctx context.Context, msg *types.MsgInsertIn
 		topicInferences := &types.Inferences{
 			Inferences: inferences,
 		}
-		err := ms.k.InsertInferences(ctx, topicId, msg.BlockHeight, *topicInferences)
+		err := ms.k.InsertInferences(ctx, topicId, *msg.Nonce, *topicInferences)
 		if err != nil {
 			return nil, err
 		}
