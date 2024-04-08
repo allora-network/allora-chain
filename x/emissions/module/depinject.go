@@ -36,7 +36,6 @@ type ModuleInputs struct {
 	AddressCodec  address.Codec
 	AccountKeeper keeper.AccountKeeper
 	BankKeeper    keeper.BankKeeper
-	MintKeeper    keeper.MintKeeper
 
 	Config *modulev1.Module
 }
