@@ -200,11 +200,10 @@ func NewAlloraApp(
 
 	/****  Module Options ****/
 
-	//begin_blockers: [capability, emissions, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
+	//begin_blockers: [capability, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
 	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
 	app.ModuleManager.SetOrderBeginBlockers(
 		capabilitytypes.ModuleName,
-		emissions.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		stakingtypes.ModuleName,

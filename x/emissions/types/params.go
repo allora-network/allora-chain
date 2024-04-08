@@ -29,6 +29,9 @@ func DefaultParams() Params {
 		MinStakeFraction:                float64(0.5),                               // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:       uint64(20),                                 // maximum number of workers that can be assigned to a single inference request
 		MaxReputersPerTopicRequest:      uint64(20),                                 // maximum number of reputers that can be assigned to a single loss request
+		TopicRewardStakeImportance:      float64(0.5),                               // importance of stake in determining rewards for a topic
+		TopicRewardFeeRevenueImportance: float64(0.5),                               // importance of fee revenue in determining rewards for a topic
+		TopicRewardAlpha:                float64(0.5),                               // alpha for topic reward calculation
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 	}
 }
