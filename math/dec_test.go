@@ -158,6 +158,45 @@ func TestDec(t *testing.T) {
 	res, err = one.MulExact(two)
 	require.NoError(t, err)
 	require.True(t, res.Equal(two))
+
+	ten := NewDecFromInt64(10)
+	oneHundred := NewDecFromInt64(100)
+	logTenOneHundred, err := Log10(oneHundred)
+	require.NoError(t, err)
+	require.True(t, two.Equal(logTenOneHundred))
+	logTenTen, err := Log10(ten)
+	require.NoError(t, err)
+	require.True(t, one.Equal(logTenTen))
+	logTenOne, err := Log10(one)
+	require.NoError(t, err)
+	require.True(t, zero.Equal(logTenOne))
+
+	logEOne, err := Ln(one)
+	require.NoError(t, err)
+	require.True(t, zero.Equal(logEOne))
+
+	eight := NewDecFromInt64(8)
+	twoCubed, err := Pow(two, three)
+	require.NoError(t, err)
+	require.True(t, eight.Equal(twoCubed))
+
+	oneThousand := NewDecFromInt64(1000)
+	tenSquared, err := Exp10(two)
+	require.NoError(t, err)
+	require.True(t, oneHundred.Equal(tenSquared))
+	tenCubed, err := Exp10(three)
+	require.NoError(t, err)
+	require.True(t, oneThousand.Equal(tenCubed))
+
+	cielOnePointFourNine, err := onePointFourNine.Ceil()
+	require.NoError(t, err)
+	require.True(t, two.Equal(cielOnePointFourNine))
+
+	onePointFiveOne, err := NewDecFromString("1.51")
+	require.NoError(t, err)
+	floorOnePointFiveOne, err := onePointFiveOne.Floor()
+	require.NoError(t, err)
+	require.True(t, one.Equal(floorOnePointFiveOne))
 }
 
 // TODO: Think a bit more about the probability distribution of Dec

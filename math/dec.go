@@ -199,6 +199,56 @@ func (x Dec) Mul(y Dec) (Dec, error) {
 	return z, errors.Wrap(err, "decimal multiplication error")
 }
 
+// Log10 returns a new Dec with the value of the base 10 logarithm of x, without mutating x.
+func Log10(x Dec) (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Log10(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal base 10 logarithm error")
+}
+
+// Ln returns a new Dec with the value of the natural logarithm of x, without mutating x.
+func Ln(x Dec) (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Ln(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal natural logarithm error")
+}
+
+// Exp returns a new Dec with the value of e^x, without mutating x.
+func Exp(x Dec) (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Exp(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal e to the x exponentiation error")
+}
+
+// Exp10 returns a new Dec with the value of 10^x, without mutating x.
+func Exp10(x Dec) (Dec, error) {
+	var ten Dec = NewDecFromInt64(10)
+	var z Dec
+	_, err := dec128Context.Pow(&z.dec, &ten.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal 10 to the x exponentiation error")
+}
+
+// Pow returns a new Dec with the value of x**y, without mutating x or y.
+func Pow(x Dec, y Dec) (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Pow(&z.dec, &x.dec, &y.dec)
+	return z, errors.Wrap(err, "decimal exponentiation error")
+}
+
+// Ceil returns a new Dec with the value of x rounded up to the nearest integer, without mutating x.
+func (x Dec) Ceil() (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Ceil(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal ceiling error")
+}
+
+// Floor returns a new Dec with the value of x rounded down to the nearest integer, without mutating x.
+func (x Dec) Floor() (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Floor(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal floor error")
+}
+
 // Int64 converts x to an int64 or returns an error if x cannot
 // fit precisely into an int64.
 func (x Dec) Int64() (int64, error) {
