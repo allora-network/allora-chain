@@ -52,6 +52,21 @@ message Params {
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
       22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  double topic_reward_stake_importance = 23;  // The exponent μ represents the importance of stake in the reward of a
+                                              // topic and has a fiduciary value of 0.5
+  double topic_reward_fee_revenue_importance = 24;  // The exponent ν represents the importance of fee revenue in the
+                                                    // reward of a topic and has a fiduciary value of 0.5
+  double topic_reward_alpha = 25;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
+                                   // monthly timescale, 0.5 for weekly updates
+  // percentage of the total supply that is rewarded to
+  // cosmos network validators the rest goes to
+  // allora reputers workers etc
+  string validators_vs_allora_percent_reward = 26 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 /// TOPICS
@@ -283,4 +298,21 @@ message InferenceRequest {
   int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
   int64 block_valid_until = 8;
   bytes extra_data = 9;
+}
+
+// stores the amount of fees collected by a topic
+// in the last reward epoch
+message TopicFeeRevenue {
+  uint64 epoch = 1;
+  string revenue = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message PreviousTopicWeight {
+  uint64 epoch = 1;
+  double weight = 2;
 }
