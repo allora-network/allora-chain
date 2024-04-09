@@ -2,6 +2,7 @@ package rewards
 
 import (
 	"math"
+	"sort"
 
 	errors "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -140,9 +141,10 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (flo
 
 // GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
 // L_i - consensus loss vector
-func GetStakeWeightedLossMatrix(reputersAdjustedStakes map[string]float64, reputersReportedLosses ReputersMappedLosses) ([]float64, error) {
-    // Build a value bundle with the stake weighted losses
-	
+func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, []float64, error) {
+	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
+		return nil, nil, types.ErrInvalidSliceLength
+	}
 
 	// Calculate total stake for normalization
 	totalStake := 0.0
@@ -150,76 +152,37 @@ func GetStakeWeightedLossMatrix(reputersAdjustedStakes map[string]float64, reput
 		totalStake += stake
 	}
 
-	stakeWeightedLoss := make([]float64, 0)
-	// CombinedLoss
-	logSum := 0.0
-	for reputerAddr, loss := range reputersReportedLosses.CombinedLosses {
-		logSum += (reputersAdjustedStakes[reputerAddr] * math.Log10(loss)) / totalStake
-	}
-	stakeWeightedLoss = append(stakeWeightedLoss, math.Pow(10, logSum))
+	// Ensure every loss array is non-empty and calculate geometric mean
+	stakeWeightedLoss := make([]float64, len(reputersReportedLosses[0]))
+	mostDistantValues := make([]float64, len(reputersReportedLosses[0]))
 
-	// NaiveLoss
-	logSum = 0.0
-	for reputerAddr, loss := range reputersReportedLosses.NaiveLosses {
-		logSum += (reputersAdjustedStakes[reputerAddr] * math.Log10(loss)) / totalStake
-	}
-	stakeWeightedLoss = append(stakeWeightedLoss, math.Pow(10, logSum))
+	// Most distance value from 0 for each loss
+	for j := 0; j < len(reputersReportedLosses[0]); j++ {
+		logSum := 0.0
+		maxDistance := -1.0 // Initialize with an impossible value
+	
+		for i, losses := range reputersReportedLosses {
+			// Skip if loss is NaN
+			if math.IsNaN(losses[j]) {
+				continue
+			}
+			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
 
-	// TODO: Order By Worker all the losses below? (maybe before calculating the stake weighted loss)
-	// OneOutInfererLoss
-	logSum = 0.0
-	totalStakeToConsider := 0.0
-	for reputerAddr, _ := range reputersReportedLosses.OneOutInfererLosses {
-		totalStakeToConsider += reputersAdjustedStakes[reputerAddr]
-	}
-	// TODO: Check a better way to get the lengh
-	for j := 0; j < len(reputersReportedLosses.NaiveLosses); j++ {
-		count := 0
-		for reputerAddr, losses := range reputersReportedLosses.OneOutInfererLosses {
-			logSum += (reputersAdjustedStakes[reputerAddr] * math.Log10(losses[count])) / totalStakeToConsider
-			count++
+			// Save most distant value
+			if losses[j] > maxDistance {
+				maxDistance = losses[j]
+				mostDistantValues[j] = losses[j]
+			}
 		}
+		stakeWeightedLoss[j] = math.Pow(10, logSum)
 	}
-	stakeWeightedLoss = append(stakeWeightedLoss, math.Pow(10, logSum))
 
-	// OneOutForecasterLoss
-	logSum = 0.0
-	// OneOutForecasterLoss - Total Stake To Consider
-	totalStakeToConsider = 0.0
-	for reputerAddr, _ := range reputersReportedLosses.OneOutForecasterLosses {
-		totalStakeToConsider += reputersAdjustedStakes[reputerAddr]
-	}
-	for j := 0; j < len(reputersReportedLosses.NaiveLosses); j++ {
-		count := 0
-		for reputerAddr, losses := range reputersReportedLosses.OneOutForecasterLosses {
-			logSum += (reputersAdjustedStakes[reputerAddr] * math.Log10(losses[count])) / totalStakeToConsider
-			count++
-		}
-	}
-	stakeWeightedLoss = append(stakeWeightedLoss, math.Pow(10, logSum))
-
-	// OneInForecasterLoss
-	logSum = 0.0
-	totalStakeToConsider = 0.0
-	for reputerAddr, _ := range reputersReportedLosses.OneInForecasterLosses {
-		totalStakeToConsider += reputersAdjustedStakes[reputerAddr]
-	}
-	for j := 0; j < len(reputersReportedLosses.NaiveLosses); j++ {
-		count := 0
-		for reputerAddr, losses := range reputersReportedLosses.OneInForecasterLosses {
-			logSum += (reputersAdjustedStakes[reputerAddr] * math.Log10(losses[count])) / totalStakeToConsider
-			count++
-		}
-	}
-	stakeWeightedLoss = append(stakeWeightedLoss, math.Pow(10, logSum))
-
-
-	return stakeWeightedLoss, nil
+	return stakeWeightedLoss, mostDistantValues, nil
 }
 
 // GetConsensusScore calculates the proximity to consensus score for a reputer.
 // T_im
-func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error) {
+func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []float64) (float64, error) {
 	fTolerance := 0.01
 	if len(reputerLosses) != len(consensusLosses) {
 		return 0, types.ErrInvalidSliceLength
@@ -233,6 +196,10 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 
 	var distanceSquared float64
 	for i, rLoss := range reputerLosses {
+		// Attribute most distant value if loss is NaN
+		if math.IsNaN(rLoss) {
+			rLoss = mostDistantValues[i]
+		}
 		distanceSquared += math.Pow(math.Log10(rLoss/consensusLosses[i]), 2)
 	}
 	distance := math.Sqrt(distanceSquared)
@@ -246,21 +213,19 @@ func GetConsensusScore(reputerLosses, consensusLosses []float64) (float64, error
 // T_i - stake weighted total consensus
 // returns:
 // T_im - reputer score (proximity to consensus)
-func GetAllConsensusScores(allLosses ReputersMappedLosses, mappedStakes map[string]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
+func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
 	// Get adjusted stakes
-	var adjustedStakes map[string]float64
-	count := 0
-	for reputerAddr, reputerStake := range mappedStakes {
-		adjustedStake, err := GetAdjustedStake(reputerStake, stakes, allListeningCoefficients[count], allListeningCoefficients, float64(numReputers))
+	var adjustedStakes []float64
+	for i, reputerStake := range stakes {
+		adjustedStake, err := GetAdjustedStake(reputerStake, stakes, allListeningCoefficients[i], allListeningCoefficients, float64(numReputers))
 		if err != nil {
 			return nil, err
 		}
-		adjustedStakes[reputerAddr] = adjustedStake
-		count++
+		adjustedStakes = append(adjustedStakes, adjustedStake)
 	}
 
 	// Get consensus loss vector
-	consensus, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
+	consensus, mostDistantValues, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
 	if err != nil {
 		return nil, err
 	}
@@ -268,14 +233,8 @@ func GetAllConsensusScores(allLosses ReputersMappedLosses, mappedStakes map[stri
 	// Get reputers scores
 	scores := make([]float64, numReputers)
 	for i := 0; i < numReputers; i++ {
-		// Get Reputer Losses
-
-
-		// Get Consensus Losses that needs to be consired for this reputer
-
-
 		losses := allLosses[i]
-		scores[i], err = GetConsensusScore(losses, consensus)
+		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues)
 		if err != nil {
 			return nil, err
 		}
@@ -284,29 +243,13 @@ func GetAllConsensusScores(allLosses ReputersMappedLosses, mappedStakes map[stri
 	return scores, nil
 }
 
-func extractReputerLosses(allLosses ReputersMappedLosses, reputerAddr string) ([]float64, error) {
-	var losses []float64
-	losses = append(losses, allLosses.CombinedLosses[reputerAddr])
-	losses = append(losses, allLosses.NaiveLosses[reputerAddr])
-	losses = append(losses, allLosses.OneOutInfererLosses[reputerAddr]...)
-	losses = append(losses, allLosses.OneOutForecasterLosses[reputerAddr]...)
-	losses = append(losses, allLosses.OneInForecasterLosses[reputerAddr]...)
-	return losses, nil
-}
-
 // GetAllReputersOutput calculates the final scores and adjusted listening coefficients for all reputers.
 // This function iteratively adjusts the listening coefficients based on a gradient descent method to minimize
 // the difference between each reputer's losses and the consensus losses, taking into account each reputer's stake.
 // returns:
 // T_im - reputer score (proximity to consensus)
 // a_im - listening coefficients
-func GetAllReputersOutput(
-	allLosses ReputersMappedLosses,
-	mappedStakes map[string]float64,
-	stakes []float64,
-	initialCoefficients []float64,
-	numReputers int,
-) ([]float64, []float64, error) {
+func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int) ([]float64, []float64, error) {
 	learningRate := types.DefaultParamsLearningRate()
 	coefficients := make([]float64, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
@@ -333,7 +276,7 @@ func GetAllReputersOutput(
 			coeffs := make([]float64, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, mappedStakes, stakes, coeffs, numReputers)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -341,7 +284,7 @@ func GetAllReputersOutput(
 			copy(coeffs2, coeffs)
 			coeffs2[l] += dcoeff
 
-			scores2, err := GetAllConsensusScores(allLosses, mappedStakes, stakes, coeffs2, numReputers)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -876,19 +819,34 @@ func ExtractValues(bundle *types.ValueBundle) []float64 {
 	// Extract direct float64 values
 	values = append(values, bundle.CombinedValue, bundle.NaiveValue)
 
-	// Extract values from slices of WorkerAttributedValue
+	// Sort and Extract values from slices of WorkerAttributedValue
+	sort.Slice(bundle.InfererValues, func(i, j int) bool {
+		return bundle.InfererValues[i].Worker < bundle.InfererValues[j].Worker
+	})
 	for _, v := range bundle.InfererValues {
 		values = append(values, v.Value)
 	}
+	sort.Slice(bundle.ForecasterValues, func(i, j int) bool {
+		return bundle.ForecasterValues[i].Worker < bundle.ForecasterValues[j].Worker
+	})
 	for _, v := range bundle.ForecasterValues {
 		values = append(values, v.Value)
 	}
+	sort.Slice(bundle.OneOutInfererValues, func(i, j int) bool {
+        return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker
+    })
 	for _, v := range bundle.OneOutInfererValues {
 		values = append(values, v.Value)
 	}
+	sort.Slice(bundle.OneOutForecasterValues, func(i, j int) bool {
+		return bundle.OneOutForecasterValues[i].Worker < bundle.OneOutForecasterValues[j].Worker
+	})
 	for _, v := range bundle.OneOutForecasterValues {
 		values = append(values, v.Value)
 	}
+	sort.Slice(bundle.OneInForecasterValues, func(i, j int) bool {
+		return bundle.OneInForecasterValues[i].Worker < bundle.OneInForecasterValues[j].Worker
+	})
 	for _, v := range bundle.OneInForecasterValues {
 		values = append(values, v.Value)
 	}

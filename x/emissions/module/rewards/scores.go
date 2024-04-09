@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"math"
+
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,7 +25,7 @@ type ReputersMappedLosses struct {
 
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
 func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, reportedLosses types.ReputerValueBundles) ([]types.Score, error) {
-	// 1) Fetch all workers for the topic to determine expected report coverage
+	// Fetch all workers for the topic to determine expected report coverage
 	allWorkers, err := keeper.GetTopicWorkers(ctx, topicId)
 	if err != nil {
 		return nil, err
@@ -33,20 +35,11 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 		allWorkerAddresses[worker.String()] = struct{}{}
 	}
 
-	// 2) Fetch reputers data
+	// Fetch reputers data
 	var reputerAddresses []sdk.AccAddress
 	var reputerStakes []float64
 	var reputerListeningCoefficients []float64
-
-	// ---- v2
-	var mappedReputerStakes map[string]float64
-	// map of total stake to consider for type of loss indexed by the position of the loss in the reportedLosses
-	var CombinedLosses map[string]float64
-	var NaiveLosses map[string]float64
-	var OneOutInfererLosses map[string][]float64 = make(map[string][]float64)
-	var OneOutForecasterLosses map[string][]float64 = make(map[string][]float64)
-	var OneInForecasterLosses map[string][]float64 = make(map[string][]float64)
-
+	var losses [][]float64
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
 		if err != nil {
@@ -60,9 +53,6 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 			return []types.Score{}, err
 		}
 		reputerStakes = append(reputerStakes, float64(reputerStake.BigInt().Int64()))
-		mappedReputerStakes[reputerAddr.String()] = float64(reputerStake.BigInt().Int64())
-		// Combined Loss
-		// Naive Loss
 
 		// Get reputer listening coefficient
 		res, err := keeper.GetListeningCoefficient(ctx, topicId, reputerAddr)
@@ -75,9 +65,6 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 		workerOneOutInfererValues := map[string]bool{}
 		workerOneOutForecasterValues := map[string]bool{}
 		workerOneInForecasterValues := map[string]bool{}
-		workerOneOutInfererValuesComplete := true
-		workerOneOutForecasterValuesComplete := true
-		workerOneInForecasterValuesComplete := true
 
 		// Mark workers reported in OneOutInfererValues
 		for _, value := range reportedLoss.ValueBundle.OneOutInfererValues {
@@ -91,57 +78,33 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 				workerOneOutForecasterValues[value.Worker] = true
 			}
 		}
-
 		// Mark workers reported in OneInForecasterValues
 		for _, value := range reportedLoss.ValueBundle.OneInForecasterValues {
 			if _, exists := allWorkerAddresses[value.Worker]; exists {
 				workerOneInForecasterValues[value.Worker] = true
 			}
 		}
+
+		// Check the missing workers and add NaN values for the not reported
 		for worker := range allWorkerAddresses {
 			if _, reported := workerOneOutInfererValues[worker]; !reported {
-				workerOneOutInfererValuesComplete = false
+				reportedLoss.ValueBundle.OneOutInfererValues = append(reportedLoss.ValueBundle.OneOutInfererValues, &types.WithheldWorkerAttributedValue{Worker: worker, Value: math.NaN()})
 			}
 			if _, reported := workerOneOutForecasterValues[worker]; !reported {
-				workerOneOutForecasterValuesComplete = false
+				reportedLoss.ValueBundle.OneOutForecasterValues = append(reportedLoss.ValueBundle.OneOutForecasterValues, &types.WithheldWorkerAttributedValue{Worker: worker, Value: math.NaN()})
 			}
 			if _, reported := workerOneInForecasterValues[worker]; !reported {
-				workerOneInForecasterValuesComplete = false
+				reportedLoss.ValueBundle.OneInForecasterValues = append(reportedLoss.ValueBundle.OneInForecasterValues, &types.WorkerAttributedValue{Worker: worker, Value: math.NaN()})
 			}
 		}
 
-		
-		// Add complete losses to the map
-		// TODO: Check if Combined and Naive Loss will be required during insertion of reputer losses
-		CombinedLosses[reputerAddr.String()] = reportedLoss.ValueBundle.CombinedValue
-		NaiveLosses[reputerAddr.String()] = reportedLoss.ValueBundle.NaiveValue
-		if workerOneOutInfererValuesComplete {
-			for _, value := range reportedLoss.ValueBundle.OneOutInfererValues {
-				OneOutInfererLosses[reputerAddr.String()] = append(OneOutInfererLosses[reputerAddr.String()], value.Value)
-			}
-		}
-		if workerOneOutForecasterValuesComplete {
-			for _, value := range reportedLoss.ValueBundle.OneOutForecasterValues {
-				OneOutForecasterLosses[reputerAddr.String()] = append(OneOutForecasterLosses[reputerAddr.String()], value.Value)
-			}
-		}
-		if workerOneInForecasterValuesComplete {
-			for _, value := range reportedLoss.ValueBundle.OneInForecasterValues {
-				OneInForecasterLosses[reputerAddr.String()] = append(OneInForecasterLosses[reputerAddr.String()], value.Value)
-			}
-		}
-	}
-
-	reputersMappedLosses := ReputersMappedLosses{
-		CombinedLosses:         CombinedLosses,
-		NaiveLosses:            NaiveLosses,
-		OneOutInfererLosses:    OneOutInfererLosses,
-		OneOutForecasterLosses: OneOutForecasterLosses,
-		OneInForecasterLosses:  OneInForecasterLosses,
+		// Get all reported losses from bundle
+		reputerLosses := ExtractValues(reportedLoss.ValueBundle)
+		losses = append(losses, reputerLosses)
 	}
 
 	// Get reputer output
-	scores, newCoefficients, err := GetAllReputersOutput(reputersMappedLosses, mappedReputerStakes,reputerStakes, reputerListeningCoefficients, len(reputerStakes))
+	scores, newCoefficients, err := GetAllReputersOutput(losses, reputerStakes, reputerListeningCoefficients, len(reputerStakes))
 	if err != nil {
 		return []types.Score{}, err
 	}
