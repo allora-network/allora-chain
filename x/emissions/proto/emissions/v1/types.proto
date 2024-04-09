@@ -52,10 +52,8 @@ message Params {
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
       22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
-  uint64 number_of_clients_for_tax =
-      23; // global number for calculation tax of worker reward
-  uint64 parameter_for_tax =
-      24; // global parameter for calculation tax of worker reward
+  uint64 number_of_clients_for_tax = 23;  // number for calculation tax of worker reward
+  uint64 parameter_for_tax = 24;          // parameter for calculation tax of worker reward
 }
 
 /// TOPICS
