@@ -44,3 +44,16 @@ func (mr *MockEmissionsKeeperMockRecorder) GetTotalStake(ctx interface{}) *gomoc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalStake", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetTotalStake), ctx)
 }
+
+func (m *MockEmissionsKeeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (math.LegacyDec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParamsValidatorsVsAlloraPercentReward", ctx)
+	ret0, _ := ret[0].(math.LegacyDec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockEmissionsKeeperMockRecorder) GetParamsValidatorsVsAlloraPercentReward(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParamsValidatorsVsAlloraPercentReward", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsValidatorsVsAlloraPercentReward), ctx)
+}

@@ -2,6 +2,9 @@ package app
 
 import (
 	_ "embed"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	"io"
 	"math/big"
 	"os"
@@ -19,7 +22,9 @@ import (
 	"cosmossdk.io/math"
 
 	storetypes "cosmossdk.io/store/types"
+	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	emissionsKeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
@@ -37,12 +42,16 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
@@ -60,11 +69,13 @@ import (
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
+	_ "cosmossdk.io/x/circuit"               // import for side-effects
 	_ "cosmossdk.io/x/upgrade"
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/allora-network/allora-chain/x/mint/module" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"        // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/authz/module"          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"                  // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"          // import for side-effects
@@ -96,11 +107,14 @@ type AlloraApp struct {
 
 	// keepers
 	AccountKeeper         authkeeper.AccountKeeper
+	AuthzKeeper           authzkeeper.Keeper
+	CircuitBreakerKeeper  circuitkeeper.Keeper
 	BankKeeper            bankkeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	MintKeeper            mintkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
 	EmissionsKeeper       emissionsKeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
@@ -142,6 +156,11 @@ func AppConfig() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				govtypes.ModuleName: gov.NewAppModuleBasic(
+					[]govclient.ProposalHandler{
+						paramsclient.ProposalHandler,
+					},
+				),
 			},
 		),
 	)
@@ -177,13 +196,16 @@ func NewAlloraApp(
 		&app.AccountKeeper,
 		&app.BankKeeper,
 		&app.StakingKeeper,
+		&app.SlashingKeeper,
 		&app.DistrKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.MintKeeper,
+		&app.GovKeeper,
 		&app.EmissionsKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
-		&app.SlashingKeeper,
+		&app.AuthzKeeper,
+		&app.CircuitBreakerKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -200,22 +222,24 @@ func NewAlloraApp(
 
 	/****  Module Options ****/
 
-	//begin_blockers: [capability, emissions, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
+	//begin_blockers: [capability, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
 	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
 	app.ModuleManager.SetOrderBeginBlockers(
 		capabilitytypes.ModuleName,
-		emissions.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		stakingtypes.ModuleName,
+		upgradetypes.ModuleName,
 		minttypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName,
+		authz.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 	)
 	app.ModuleManager.SetOrderEndBlockers(
+		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,

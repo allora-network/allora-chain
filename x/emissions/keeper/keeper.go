@@ -119,6 +119,15 @@ type Keeper struct {
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BLOCK_HEIGHT]
 
+	// fee revenue collected by a topic over the course of the last reward cadence
+	topicFeeRevenue collections.Map[TOPIC_ID, types.TopicFeeRevenue]
+
+	// feeRevenueEpoch marks the current epoch for fee revenue
+	feeRevenueEpoch collections.Sequence
+
+	// store previous wieghts for exponential moving average in rewards calc
+	previousTopicWeight collections.Map[TOPIC_ID, types.PreviousTopicWeight]
+
 	// map of (topic, block_number) -> Inference
 	allInferences collections.Map[collections.Pair[TOPIC_ID, BLOCK_HEIGHT], types.Inferences]
 
@@ -179,6 +188,9 @@ func NewKeeper(
 		mempool:                     collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
 		requestUnmetDemand:          collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
 		topicUnmetDemand:            collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		topicFeeRevenue:             collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		feeRevenueEpoch:             collections.NewSequence(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch"),
+		previousTopicWeight:         collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, codec.CollValue[types.PreviousTopicWeight](cdc)),
 		inferences:                  collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                   collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                     collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -325,6 +337,30 @@ func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, err
 		return 0, err
 	}
 	return params.PInferenceSynthesis, nil
+}
+
+func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (float64, float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
+}
+
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.TopicRewardAlpha, nil
+}
+
+func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyDec{}, err
+	}
+	return params.ValidatorsVsAlloraPercentReward, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -553,6 +589,24 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TOPIC_
 		forecasts = append(forecasts, forecastSet)
 	}
 	return forecasts, nil
+}
+
+// get the previous weight during rewards calculation for a topic
+func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TOPIC_ID) (types.PreviousTopicWeight, error) {
+	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		ret := types.PreviousTopicWeight{
+			Weight: 0.0,
+			Epoch:  0,
+		}
+		return ret, nil
+	}
+	return topicWeight, err
+}
+
+// set the previous weight during rewards calculation for a topic
+func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TOPIC_ID, weight types.PreviousTopicWeight) error {
+	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
 /// LOSS BUNDLES, REGRETS
@@ -1488,6 +1542,44 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 	}
 
 	return topicsByAddress, nil
+}
+
+// Get the amount of fee revenue collected by a topic
+func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TOPIC_ID) (types.TopicFeeRevenue, error) {
+	return k.topicFeeRevenue.Get(ctx, topicId)
+}
+
+// Add to the fee revenue collected by a topic for this reward epoch
+func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TOPIC_ID, amount Uint) error {
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	currEpoch, err := k.GetFeeRevenueEpoch(ctx)
+	if err != nil {
+		return err
+	}
+	newTopicFeeRevenue := types.TopicFeeRevenue{}
+	if topicFeeRevenue.Epoch != currEpoch {
+		newTopicFeeRevenue.Epoch = currEpoch
+		newTopicFeeRevenue.Revenue = cosmosMath.NewIntFromBigInt(amount.BigInt())
+	} else {
+		newTopicFeeRevenue.Epoch = topicFeeRevenue.Epoch
+		amountInt := cosmosMath.NewIntFromBigInt(amount.BigInt())
+		newTopicFeeRevenue.Revenue = topicFeeRevenue.Revenue.Add(amountInt)
+	}
+	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+}
+
+// what is the current latest fee revenue epoch
+func (k *Keeper) GetFeeRevenueEpoch(ctx context.Context) (uint64, error) {
+	return k.feeRevenueEpoch.Peek(ctx)
+}
+
+// at the end of a rewards epoch, increment the fee revenue
+func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
+	_, err := k.feeRevenueEpoch.Next(ctx)
+	return err
 }
 
 /// MEMPOOL & INFERENCE REQUESTS
