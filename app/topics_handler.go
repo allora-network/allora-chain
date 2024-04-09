@@ -1,15 +1,13 @@
 package app
 
 import (
-	// "fmt"
-	// "sync"
-
 	"fmt"
 	"sync"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,7 +28,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		blockHeight := ctx.BlockHeight()
 		nonce := emissionstypes.Nonce{Nonce: blockHeight}
-		currentTime := uint64(ctx.BlockTime().Unix())
+		currentTime := uint64(ctx.BlockTime().Unix()) // TODO plz verify this isn't breaking consensus
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting active topics and met demand: ", err)
@@ -49,7 +47,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				//
 				// TODO  Add check whether the cadence is right - unclear about these new value changes
 				//
-				if topic.EpochLastEnded >= blockHeight {
+				if topic.EpochLastEnded+topic.EpochLength >= blockHeight {
 					// Check the cadence of inferences
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id,
@@ -59,7 +57,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				}
 
 				// TODO Check - is this the right cadence?
-				if topic.EpochLastEnded >= blockHeight {
+				if topic.EpochLastEnded+topic.EpochLength >= blockHeight {
 					// Check the cadence of weight calculations
 					fmt.Printf("Triggering Weight cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id,
@@ -67,7 +65,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						topic.DefaultArg)
 
 					// TODO: We don't want just the latest inferences but the ValueBundle (I_i) instead
-					inferences, err := th.emissionsKeeper.GetLatestInferencesFromTopic(ctx, topic.Id)
+					inferences, _, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, blockHeight)
 					// Get Lastest Inference
 					fmt.Println("Error getting latest inferences: ", err)
 					if err != nil {
