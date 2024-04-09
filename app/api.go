@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"cosmossdk.io/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -47,18 +46,17 @@ type WeightInferencePayload struct {
 	LatestWeights map[string]string  `json:"latest_weights"`
 }
 
-func generateWeights(
-	weights map[string]map[string]*math.Uint,
+func generateLosses(
 	inferences []*emissionstypes.InferenceSetForScoring,
 	functionId string,
 	functionMethod string,
-	topicId uint64) {
+	topicId uint64,
+	nonce emissionstypes.Nonce,
+	blocktime uint64) {
+
+	//
+	// TODO Change this to receive and use a ValueBundle instead, not just plain inferences
 	inferencesByTimestamp := []LatestInferences{}
-
-	//
-	// TODO generate new nonce and add to request!
-	//
-
 	for _, infSet := range inferences {
 		timestamp := fmt.Sprintf("%d", infSet.BlockHeight)
 		inferences := []InferenceItem{}
@@ -74,26 +72,9 @@ func generateWeights(
 		})
 	}
 
-	// Format the weights map into a map of strings
-	var latestWeights map[string]string = make(map[string]string)
-	if len(weights) == 0 {
-		for _, inference := range inferences {
-			for _, inf := range inference.Inferences.Inferences {
-				latestWeights[inf.Worker] = "0"
-			}
-		}
-	} else {
-		for _, workerWeights := range weights {
-			for worker, weight := range workerWeights {
-				latestWeights[worker] = weight.String()
-			}
-		}
-	}
-
 	// Combine everything into the final JSON object
 	payloadObj := WeightInferencePayload{
-		Inferences:    inferencesByTimestamp,
-		LatestWeights: latestWeights,
+		Inferences: inferencesByTimestamp,
 	}
 
 	payloadJSON, err := json.Marshal(payloadObj)
@@ -109,9 +90,23 @@ func generateWeights(
 		Method:     functionMethod,
 		TopicID:    strconv.FormatUint(topicId, 10),
 		Config: Config{
-			Stdin:       &params,
-			Environment: []EnvVar{},
-			NodeCount:   1,
+			Stdin: &params,
+			Environment: []EnvVar{
+				{
+					Name:  "BLS_REQUEST_PATH",
+					Value: "/api",
+				},
+				{
+					Name:  "ALLORA_ARG_PARAMS",
+					Value: strconv.FormatUint(blocktime, 10),
+				},
+				{
+					Name:  "ALLORA_NONCE",
+					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+				},
+			},
+			NodeCount: -1, // use all nodes that reported, no minimum / max
+			Timeout:   2,  // seconds to time out before rollcall complete
 		},
 	}
 
@@ -125,10 +120,12 @@ func generateWeights(
 	makeApiCall(payloadStr)
 }
 
-func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
-	//
-	// TODO generate new nonce and add to request!
-	//
+func generateInferences(
+	functionId string,
+	functionMethod string,
+	param string,
+	topicId uint64,
+	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
 		FunctionID: functionId,
@@ -144,6 +141,10 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
 				},
+				{
+					Name:  "ALLORA_NONCE",
+					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+				},
 			},
 			NodeCount: -1, // use all nodes that reported, no minimum / max
 			Timeout:   2,  // seconds to time out before rollcall complete
@@ -153,7 +154,6 @@ func generateInferences(functionId string, functionMethod string, param string, 
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
 		fmt.Println("Error marshalling outer JSON:", err)
-		return
 	}
 	payloadStr := string(payload)
 
