@@ -52,16 +52,18 @@ message Params {
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
       22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
-  double topic_reward_stake_importance = 23;  // The exponent μ represents the importance of stake in the reward of a
+  uint64 number_of_clients_for_tax = 24;      // global number for calculation tax of worker reward
+  uint64 parameter_for_tax = 25;              // global parameter for calculation tax of worker reward
+  double topic_reward_stake_importance = 26;  // The exponent μ represents the importance of stake in the reward of a
                                               // topic and has a fiduciary value of 0.5
-  double topic_reward_fee_revenue_importance = 24;  // The exponent ν represents the importance of fee revenue in the
+  double topic_reward_fee_revenue_importance = 27;  // The exponent ν represents the importance of fee revenue in the
                                                     // reward of a topic and has a fiduciary value of 0.5
-  double topic_reward_alpha = 25;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
+  double topic_reward_alpha = 28;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
                                    // monthly timescale, 0.5 for weekly updates
   // percentage of the total supply that is rewarded to
   // cosmos network validators the rest goes to
   // allora reputers workers etc
-  string validators_vs_allora_percent_reward = 26 [
+  string validators_vs_allora_percent_reward = 29 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -267,6 +269,13 @@ message Score {
 
 message Scores {
   repeated Score scores = 1;
+}
+
+/// AVERAGE REWARD
+
+message AverageWorkerReward {
+  uint32 count = 1;
+  double value = 2;
 }
 
 /// LISTENING COEFFICIENTS

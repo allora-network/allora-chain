@@ -29,6 +29,8 @@ func DefaultParams() Params {
 		MinStakeFraction:                float64(0.5),                               // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:       uint64(20),                                 // maximum number of workers that can be assigned to a single inference request
 		MaxReputersPerTopicRequest:      uint64(20),                                 // maximum number of reputers that can be assigned to a single loss request
+		NumberOfClientsForTax:           uint64(10),                                 // global number for calculation tax of worker reward
+		ParameterForTax:                 uint64(3),                                  // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      float64(0.5),                               // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: float64(0.5),                               // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                float64(0.5),                               // alpha for topic reward calculation
@@ -80,6 +82,10 @@ func DefaultParamsMaxRequestCadence() BLOCK_NUMBER {
 	return DefaultParams().MaxRequestCadence
 }
 
+func DefaultParamsPercentRewardsReputersWorkers() float64 {
+	return DefaultParams().PercentRewardsReputersWorkers
+}
+
 func DefaultParamsSharpness() float64 {
 	return DefaultParams().Sharpness
 }
@@ -110,6 +116,30 @@ func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
 
 func DefaultParamsMaxReputersPerTopicRequest() uint64 {
 	return DefaultParams().MaxReputersPerTopicRequest
+}
+
+func DefaultParamsNumberOfClientsForTax() uint64 {
+	return DefaultParams().NumberOfClientsForTax
+}
+
+func DefaultParameterForTax() uint64 {
+	return DefaultParams().ParameterForTax
+}
+
+func DefaultParamsTopicRewardStakeImportance() float64 {
+	return DefaultParams().TopicRewardStakeImportance
+}
+
+func DefaultParamsTopicRewardFeeRevenueImportance() float64 {
+	return DefaultParams().TopicRewardFeeRevenueImportance
+}
+
+func DefaultParamsTopicRewardAlpha() float64 {
+	return DefaultParams().TopicRewardAlpha
+}
+
+func DefaultParamsValidatorsVsAlloraPercentReward() cosmosMath.LegacyDec {
+	return DefaultParams().ValidatorsVsAlloraPercentReward
 }
 
 // Validate does the sanity check on the params.
