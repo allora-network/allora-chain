@@ -7,11 +7,11 @@ modules:
       # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
       # NOTE: staking module is required if HistoricalEntries param > 0
       # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
-      begin_blockers: [capability, distribution, slashing, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
-      end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
+      begin_blockers: [capability, distribution, slashing, staking, upgrade, mint, ibc, transfer, genutil, authz, interchainaccounts, feeibc]
+      end_blockers: [gov, staking, ibc, transfer, capability, genutil, authz, interchainaccounts, feeibc, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [capability, auth, bank, distribution, staking, slashing, mint, ibc, genutil, transfer, interchainaccounts, feeibc, params, upgrade, consensus, emissions, allorastaking, allorarequests, allorarewards, ecosystem]
+      init_genesis: [capability, auth, bank, distribution, staking, slashing, gov, mint, ibc, genutil, authz, transfer, interchainaccounts, feeibc, params, upgrade, consensus, circuit, emissions, allorastaking, allorarequests, allorarewards, ecosystem]
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
@@ -36,11 +36,18 @@ modules:
           permissions: [minter, burner]
         - account: feeibc
         - account: interchainaccounts
+        - account: gov
+  - name: gov
+    config:
+      "@type": cosmos.gov.module.v1.Module
   - name: bank
     config:
       "@type": cosmos.bank.module.v1.Module
       blocked_module_accounts_override:
         [auth, bonded_tokens_pool, not_bonded_tokens_pool, allorastaking, allorarequests, allorarewards, distribution]
+  - name: circuit
+    config:
+      "@type": cosmos.circuit.module.v1.Module
   - name: staking
     config:
       "@type": cosmos.staking.module.v1.Module
@@ -50,6 +57,9 @@ modules:
   - name: genutil
     config:
       "@type": cosmos.genutil.module.v1.Module
+  - name: authz
+    config:
+      "@type": cosmos.authz.module.v1.Module
   - name: tx
     config:
       "@type": cosmos.tx.config.v1.Config
