@@ -19,11 +19,10 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic     = AppModule{}
-	_ module.HasGenesis         = AppModule{}
-	_ appmodule.AppModule       = AppModule{}
-	_ appmodule.HasBeginBlocker = AppModule{}
-	_ appmodule.HasEndBlocker   = AppModule{}
+	_ module.AppModuleBasic   = AppModule{}
+	_ module.HasGenesis       = AppModule{}
+	_ appmodule.AppModule     = AppModule{}
+	_ appmodule.HasEndBlocker = AppModule{}
 )
 
 // ConsensusVersion defines the current module consensus version.
@@ -114,11 +113,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	}
 
 	return cdc.MustMarshalJSON(gs)
-}
-
-func (am AppModule) BeginBlock(ctx context.Context) error {
-	fmt.Printf("\n ---------------- Emissions BeginBlock ------------------- \n")
-	return BeginBlocker(ctx, am)
 }
 
 // EndBlock returns the end blocker for the emissions module.

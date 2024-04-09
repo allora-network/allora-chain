@@ -3,13 +3,15 @@ package msgserver
 import (
 	"context"
 
+	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
-func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgInsertLosses) (*types.MsgInsertLossesResponse, error) {
-	// Check if the sender is in the weight setting whitelist
+func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.MsgInsertBulkReputerPayload) (*types.MsgInsertBulkReputerPayloadResponse, error) {
+	// Check if the sender is in the reputer whitelist
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -22,9 +24,18 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgInsertLosses
 		return nil, types.ErrNotInReputerWhitelist
 	}
 
+	// Check if the nonce is unfulfilled
+	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.Nonce)
+	if err != nil {
+		return nil, err
+	}
+	if nonceUnfulfilled {
+		return nil, types.ErrNonceNotUnfulfilled
+	}
+
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// Group loss bundles by topicId - Create a map to store the grouped loss bundles
-	groupedBundles := make(map[uint64][]*types.ReputerValueBundle)
+	lossBundles := make([]*types.ReputerValueBundle, 0)
 	for _, bundle := range msg.ReputerValueBundles {
 		reputer, err := sdk.AccAddressFromBech32(bundle.Reputer)
 		if err != nil {
@@ -35,24 +46,74 @@ func (ms msgServer) InsertLosses(ctx context.Context, msg *types.MsgInsertLosses
 			return nil, err
 		}
 		if isLossSetter {
-			groupedBundles[bundle.ValueBundle.TopicId] = append(groupedBundles[bundle.ValueBundle.TopicId], bundle)
+			lossBundles = append(lossBundles, bundle)
 		}
+
+		// TODO check signatures! throw if invalid!
 	}
 
-	for topicId, bundles := range groupedBundles {
-		bundles := &types.ReputerValueBundles{
-			ReputerValueBundles: bundles,
-		}
-		err = ms.k.InsertReputerLossBundlesAtBlock(ctx, topicId, msg.BlockHeight, *bundles)
-		if err != nil {
-			return nil, err
-		}
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	/**
-	 * TODO calculate eq14,15, and possibly ep9-12
-	 * TODO calc eq3-15\13 when reputer queries for the chain. Then, make caching tickets for the validators
-	 */
+	bundles := types.ReputerValueBundles{
+		ReputerValueBundles: lossBundles,
+	}
+	err = ms.k.InsertReputerLossBundlesAtBlock(ctx, msg.TopicId, msg.Nonce.Nonce, bundles)
+	if err != nil {
+		return nil, err
+	}
 
-	return &types.MsgInsertLossesResponse{}, nil
+	stakesOnTopic, err := ms.k.GetStakePlacementsByTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Map list of stakesOnTopic to map of stakesByReputer
+	stakesByReputer := make(map[string]types.StakePlacement)
+	for _, stake := range stakesOnTopic {
+		stakesByReputer[stake.Reputer] = stake
+	}
+
+	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.Nonce.Nonce, networkLossBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	err = synth.GetCalcSetNetworkRegrets(ctx.(sdk.Context), ms.k, msg.TopicId, networkLossBundle, *msg.Nonce, params.AlphaRegret)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the reputer scores
+	_, err = rewards.GenerateReputerScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, bundles)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their inference work
+	_, err = rewards.GenerateInferenceScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, networkLossBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their forecast work
+	_, err = rewards.GenerateForecastScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.Nonce.Nonce, networkLossBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update the unfulfilled nonces
+	err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.Nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
 }

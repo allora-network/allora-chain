@@ -90,6 +90,30 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		}
 		existingParams.PInferenceSynthesis = pInferenceSynthesis
 	}
+	if len(newParams.TopicRewardStakeImportance) == 1 {
+		topicRewardStakeImportance, err := strconv.ParseFloat(newParams.TopicRewardStakeImportance[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.TopicRewardStakeImportance = topicRewardStakeImportance
+	}
+	if len(newParams.TopicRewardFeeRevenueImportance) == 1 {
+		topicRewardFeeRevenueImportance, err := strconv.ParseFloat(newParams.TopicRewardFeeRevenueImportance[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.TopicRewardFeeRevenueImportance = topicRewardFeeRevenueImportance
+	}
+	if len(newParams.TopicRewardAlpha) == 1 {
+		topicRewardAlpha, err := strconv.ParseFloat(newParams.TopicRewardAlpha[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.TopicRewardAlpha = topicRewardAlpha
+	}
+	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
+		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]
+	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err

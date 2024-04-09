@@ -15,9 +15,7 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc InsertInferences(MsgInsertInferences) returns (MsgInsertInferencesResponse);
-
-  rpc InsertForecasts(MsgInsertForecasts) returns (MsgInsertForecastsResponse);
+  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload) returns (MsgInsertBulkWorkerPayloadResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
@@ -29,7 +27,7 @@ service Msg {
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
-  rpc InsertLosses(MsgInsertLosses) returns (MsgInsertLossesResponse);
+  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -103,6 +101,22 @@ message OptionalParams {
   repeated string epsilon = 15;  // small number to prevent division by zero
   repeated string p_inference_synthesis =
       16;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  repeated string topic_reward_stake_importance = 23;  // The exponent μ represents the importance of stake in the
+                                                       // reward of a topic and has a fiduciary value of 0.5
+  repeated string topic_reward_fee_revenue_importance =
+      24;                                   // The exponent ν represents the importance of fee revenue in the
+                                            // reward of a topic and has a fiduciary value of 0.5
+  repeated string topic_reward_alpha = 25;  // global exponential moving average parameter. Fiduciary value of 0.9375 on
+                                            // a monthly timescale, 0.5 for weekly updates
+  // percentage of the total supply that is rewarded to
+  // cosmos network validators the rest goes to
+  // allora reputers workers etc
+  repeated string validators_vs_allora_percent_reward = 26 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 /// PARAMS
@@ -145,39 +159,30 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
-// MsgInsertLosses sets the losses from a given reputer
-message MsgInsertLosses {
+message MsgInsertBulkReputerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  int64 block_height = 2;
-  repeated ReputerValueBundle reputer_value_bundles = 3;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
+  repeated ReputerValueBundle reputer_value_bundles = 4;
 }
 
-message MsgInsertLossesResponse {}
+message MsgInsertBulkReputerPayloadResponse {}
 
-message MsgInsertInferences {
+message MsgInsertBulkWorkerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
 
-  int64 block_height = 2;
-  repeated Inference inferences = 3;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
+  repeated Inference inferences = 4;
+  repeated Forecast forecasts = 5;
 }
 
-message MsgInsertInferencesResponse {}
-
-message MsgInsertForecasts {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-
-  int64 block_height = 2;
-  repeated Forecast forecasts = 3;
-}
-
-message MsgInsertForecastsResponse {}
+message MsgInsertBulkWorkerPayloadResponse {}
 
 ///  Inference Node Registration
 

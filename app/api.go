@@ -55,6 +55,10 @@ func generateWeights(
 	topicId uint64) {
 	inferencesByTimestamp := []LatestInferences{}
 
+	//
+	// TODO generate new nonce and add to request!
+	//
+
 	for _, infSet := range inferences {
 		timestamp := fmt.Sprintf("%d", infSet.BlockHeight)
 		inferences := []InferenceItem{}
@@ -122,6 +126,9 @@ func generateWeights(
 }
 
 func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
+	//
+	// TODO generate new nonce and add to request!
+	//
 
 	payloadJson := BlocklessRequest{
 		FunctionID: functionId,
