@@ -354,8 +354,9 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		return err
 	}
 
-	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
-		nonces.Nonces = nonces.Nonces[1:]
+	diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+	if diff > 0 {
+		nonces.Nonces = nonces.Nonces[diff:]
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
@@ -628,6 +629,14 @@ func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (c
 		return cosmosMath.LegacyDec{}, err
 	}
 	return params.ValidatorsVsAlloraPercentReward, nil
+}
+
+func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxSamplesToScaleScores, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -2082,51 +2091,65 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 /// SCORES
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	key := collections.Join(topicId, blockNumber)
-	var scores types.Scores
-
-	scores, err := k.inferenceScores.Get(ctx, key)
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			scores = types.Scores{}
-		} else {
-			return err
-		}
+		return err
 	}
 	scores.Scores = append(scores.Scores, &score)
 
+	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return err
+	}
+
+	diff := uint64(len(scores.Scores)) - maxNumScores
+	if diff > 0 {
+		scores.Scores = scores.Scores[diff:]
+	}
+
+	key := collections.Join(topicId, blockNumber)
 	return k.inferenceScores.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	key := collections.Join(topicId, blockNumber)
-
-	scores, err := k.forecastScores.Get(ctx, key)
+	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			scores = types.Scores{}
-		} else {
-			return err
-		}
+		return err
 	}
 	scores.Scores = append(scores.Scores, &score)
 
+	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return err
+	}
+
+	diff := uint64(len(scores.Scores)) - maxNumScores
+	if diff > 0 {
+		scores.Scores = scores.Scores[diff:]
+	}
+
+	key := collections.Join(topicId, blockNumber)
 	return k.forecastScores.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	key := collections.Join(topicId, blockNumber)
-
-	scores, err := k.reputerScores.Get(ctx, key)
+	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			scores = types.Scores{}
-		} else {
-			return err
-		}
+		return err
 	}
 	scores.Scores = append(scores.Scores, &score)
 
+	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return err
+	}
+
+	diff := uint64(len(scores.Scores)) - maxNumScores
+	if diff > 0 {
+		scores.Scores = scores.Scores[diff:]
+	}
+
+	key := collections.Join(topicId, blockNumber)
 	return k.reputerScores.Set(ctx, key, scores)
 }
 
@@ -2188,16 +2211,40 @@ func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId 
 	return scores, nil
 }
 
-func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) ([]*types.Score, error) {
+func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
+	key := collections.Join(topicId, block)
+	scores, err := k.inferenceScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Scores{}, nil
+		}
+		return types.Scores{}, err
+	}
+	return scores, nil
+}
+
+func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
+	key := collections.Join(topicId, block)
+	scores, err := k.forecastScores.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Scores{}, nil
+		}
+		return types.Scores{}, err
+	}
+	return scores, nil
+}
+
+func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.reputerScores.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return []*types.Score{}, nil
+			return types.Scores{}, nil
 		}
-		return nil, err
+		return types.Scores{}, err
 	}
-	return scores.Scores, nil
+	return scores, nil
 }
 
 func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, coefficient types.ListeningCoefficient) error {

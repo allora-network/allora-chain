@@ -46,7 +46,7 @@ func GetReputerRewards(
 		reputerStakes = append(reputerStakes, float64(reputerStake.BigInt().Int64()))
 
 		// Get reputer score
-		for _, score := range scores {
+		for _, score := range scores.Scores {
 			if score.Address == reputerAddr.String() {
 				scoresFloat = append(scoresFloat, score.Score)
 			}

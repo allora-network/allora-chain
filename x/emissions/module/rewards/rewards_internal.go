@@ -795,11 +795,11 @@ func NormalizationFactor(
 // Calculate the tax of the reward
 // Fee = R_avg * N_c^(a-1)
 func CalculateWorkerTax(average float64) float64 {
-	a := types.DefaultParameterForTax() - 1
+	a := types.DefaultSybilTaxExponent() - 1
 	if a < 0 {
 		a = 0
 	}
-	fee := average * math.Pow(float64(types.DefaultParamsNumberOfClientsForTax()), float64(a))
+	fee := average * math.Pow(float64(types.DefaultParamsNumberExpectedInfernceSybils()), float64(a))
 	return fee
 }
 
