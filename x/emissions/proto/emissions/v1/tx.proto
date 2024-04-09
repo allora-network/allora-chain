@@ -57,6 +57,8 @@ service Msg {
   rpc AddToReputerWhitelist(MsgAddToReputerWhitelist) returns (MsgAddToReputerWhitelistResponse);
 
   rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist) returns (MsgRemoveFromReputerWhitelistResponse);
+
+  rpc TestDecMessage(DecMessage) returns (DecMessage);
 }
 
 // Because gocosmos, grpc-gateway, and go-pulsar do not support optional fields
@@ -397,4 +399,18 @@ message MsgReactivateTopic {
 
 message MsgReactivateTopicResponse {
   bool success = 1;
+}
+
+message DecMessage {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message DecMessageResponse {
+  string response = 1;
 }
