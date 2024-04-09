@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -12,8 +13,8 @@ func GetReputerRewards(
 	keeper keeper.Keeper,
 	topicId uint64,
 	block int64,
-	preward float64,
-	totalReputerRewards float64,
+	preward alloraMath.Dec,
+	totalReputerRewards alloraMath.Dec,
 ) ([]TaskRewards, error) {
 	// Get All reported losses from last block
 	reportedLosses, err := keeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
@@ -29,8 +30,8 @@ func GetReputerRewards(
 
 	// Get reputers informations
 	var reputerAddresses []sdk.AccAddress
-	var reputerStakes []float64
-	var scoresFloat []float64
+	var reputerStakes []alloraMath.Dec
+	var scoresDec []alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
 		if err != nil {
@@ -43,18 +44,22 @@ func GetReputerRewards(
 		if err != nil {
 			return nil, err
 		}
-		reputerStakes = append(reputerStakes, float64(reputerStake.BigInt().Int64()))
+		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
+		if err != nil {
+			return nil, err
+		}
+		reputerStakes = append(reputerStakes, reputerStakeDec)
 
 		// Get reputer score
 		for _, score := range scores {
 			if score.Address == reputerAddr.String() {
-				scoresFloat = append(scoresFloat, score.Score)
+				scoresDec = append(scoresDec, score.Score)
 			}
 		}
 	}
 
 	// Get reputer rewards fractions
-	reputersFractions, err := GetReputerRewardFractions(reputerStakes, scoresFloat, preward)
+	reputersFractions, err := GetReputerRewardFractions(reputerStakes, scoresDec, preward)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +67,13 @@ func GetReputerRewards(
 	// Calculate reputer rewards
 	var reputerRewards []TaskRewards
 	for i, reputerFraction := range reputersFractions {
+		reward, err := reputerFraction.Mul(totalReputerRewards)
+		if err != nil {
+			return nil, err
+		}
 		reputerRewards = append(reputerRewards, TaskRewards{
 			Address: reputerAddresses[i],
-			Reward:  reputerFraction * totalReputerRewards,
+			Reward:  reward,
 		})
 	}
 

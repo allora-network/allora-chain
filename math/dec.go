@@ -68,6 +68,14 @@ func NewDecFromString(s string) (Dec, error) {
 	return d1, nil
 }
 
+func MustNewDecFromString(s string) Dec {
+	ret, err := NewDecFromString(s)
+	if err != nil {
+		panic(err)
+	}
+	return ret
+}
+
 func NewNonNegativeDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
@@ -123,6 +131,30 @@ func NewDecFinite(coeff int64, exp int32) Dec {
 	var res Dec
 	res.dec.SetFinite(coeff, exp)
 	return res
+}
+
+// NewDec takes a cosmos `sdkmath.Int` and turns it into a Dec
+// it converts via strings and throws an error if the string
+// is unable to be parsed
+func NewDecFromSdkInt(x sdkmath.Int) (Dec, error) {
+	strRep := x.String()
+	return NewDecFromString(strRep)
+}
+
+// NewDec takes a cosmos `sdkmath.Uint` and turns it into a Dec
+// it converts via strings and throws an error if the string
+// is unable to be parsed
+func NewDecFromSdkUint(x sdkmath.Uint) (Dec, error) {
+	strRep := x.String()
+	return NewDecFromString(strRep)
+}
+
+// NewDec takes a cosmos `sdkmath.LegacyDec` and turns it into a Dec
+// it converts via strings and throws an error if the string
+// is unable to be parsed
+func NewDecFromSdkLegacyDec(x sdkmath.LegacyDec) (Dec, error) {
+	strRep := x.String()
+	return NewDecFromString(strRep)
 }
 
 // Add returns a new Dec with value `x+y` without mutating any argument and error if

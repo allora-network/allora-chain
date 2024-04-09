@@ -4,6 +4,7 @@ import (
 	"math"
 
 	errors "cosmossdk.io/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -74,7 +75,11 @@ func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards
 
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
 // W_im
-func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]float64, error) {
+func GetReputerRewardFractions(
+	stakes []alloraMath.Dec,
+	scores []alloraMath.Dec,
+	preward alloraMath.Dec,
+) ([]alloraMath.Dec, error) {
 	if len(stakes) != len(scores) {
 		return nil, types.ErrInvalidSliceLength
 	}

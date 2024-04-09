@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,11 +41,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
 	if len(newParams.MaxMissingInferencePercent) == 1 {
-		maxMissingInferencePercent, err := strconv.ParseFloat(newParams.MaxMissingInferencePercent[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.MaxMissingInferencePercent = maxMissingInferencePercent
+		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
 	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
@@ -64,11 +59,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	if len(newParams.PercentRewardsReputersWorkers) == 1 {
-		percentRewardsReputersWorkers, err := strconv.ParseFloat(newParams.PercentRewardsReputersWorkers[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.PercentRewardsReputersWorkers = percentRewardsReputersWorkers
+		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
 	}
 	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
 		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
@@ -77,39 +68,19 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	if len(newParams.Epsilon) == 1 {
-		epsilon, err := strconv.ParseFloat(newParams.Epsilon[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.Epsilon = epsilon
+		existingParams.Epsilon = newParams.Epsilon[0]
 	}
 	if len(newParams.PInferenceSynthesis) == 1 {
-		pInferenceSynthesis, err := strconv.ParseFloat(newParams.PInferenceSynthesis[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.PInferenceSynthesis = pInferenceSynthesis
+		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
 	}
 	if len(newParams.TopicRewardStakeImportance) == 1 {
-		topicRewardStakeImportance, err := strconv.ParseFloat(newParams.TopicRewardStakeImportance[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardStakeImportance = topicRewardStakeImportance
+		existingParams.TopicRewardStakeImportance = newParams.TopicRewardStakeImportance[0]
 	}
 	if len(newParams.TopicRewardFeeRevenueImportance) == 1 {
-		topicRewardFeeRevenueImportance, err := strconv.ParseFloat(newParams.TopicRewardFeeRevenueImportance[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardFeeRevenueImportance = topicRewardFeeRevenueImportance
+		existingParams.TopicRewardFeeRevenueImportance = newParams.TopicRewardFeeRevenueImportance[0]
 	}
 	if len(newParams.TopicRewardAlpha) == 1 {
-		topicRewardAlpha, err := strconv.ParseFloat(newParams.TopicRewardAlpha[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardAlpha = topicRewardAlpha
+		existingParams.TopicRewardAlpha = newParams.TopicRewardAlpha[0]
 	}
 	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
 		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]

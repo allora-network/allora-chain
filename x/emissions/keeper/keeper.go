@@ -436,7 +436,7 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -451,7 +451,7 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -466,7 +466,7 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -495,10 +495,10 @@ func (k *Keeper) GetFeeCollectorName() string {
 	return k.feeCollectorName
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -567,34 +567,34 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.PercentRewardsReputersWorkers, nil
 }
 
-func (k *Keeper) GetParamsEpsilon(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.Epsilon, nil
 }
 
-func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.PInferenceSynthesis, nil
 }
 
-func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (float64, float64, error) {
+func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, 0, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
 }
@@ -607,10 +607,10 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
-func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.TopicRewardAlpha, nil
 }
@@ -1484,7 +1484,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		ret := types.PreviousTopicWeight{
-			Weight: 0.0,
+			Weight: alloraMath.NewDecFromInt64(0),
 			Epoch:  0,
 		}
 		return ret, nil
@@ -2212,7 +2212,7 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.ListeningCoefficient{Coefficient: 1.0}, nil
+			return types.ListeningCoefficient{Coefficient: alloraMath.NewDecFromInt64(1)}, nil
 		}
 		return types.ListeningCoefficient{}, err
 	}
@@ -2232,7 +2232,7 @@ func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, wo
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.AverageWorkerReward{Count: 0, Value: 0.0}, nil
+			return types.AverageWorkerReward{Count: 0, Value: alloraMath.NewDecFromInt64(0)}, nil
 		}
 		return types.AverageWorkerReward{}, err
 	}

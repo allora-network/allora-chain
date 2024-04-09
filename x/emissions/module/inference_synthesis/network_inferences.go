@@ -267,8 +267,8 @@ func CalcNetworkInferences(
 	inferences *emissions.Inferences,
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
-	epsilon float64,
-	pInferenceSynthesis float64,
+	epsilon alloraMath.Dec,
+	pInferenceSynthesis alloraMath.Dec,
 ) (*emissions.ValueBundle, error) {
 	// Map each worker to their inference
 	inferenceByWorker := makeMapFromWorkerToTheirWork(inferences.Inferences)

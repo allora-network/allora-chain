@@ -1,13 +1,14 @@
 package rewards
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type TaskRewards struct {
 	Address sdk.AccAddress
-	Reward  float64
+	Reward  alloraMath.Dec
 }
 
 func GetWorkersRewardsInferenceTask(

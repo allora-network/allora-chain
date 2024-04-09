@@ -89,7 +89,7 @@ func GetCalcSetNetworkRegrets(
 	topicId TopicId,
 	networkLosses emissions.ValueBundle,
 	nonce emissions.Nonce,
-	alpha float64,
+	alpha alloraMath.Dec,
 ) error {
 	// Convert the network losses to a networkLossesByWorker
 	networkLossesByWorker := convertValueBundleToNetworkLossesByWorker(networkLosses)
