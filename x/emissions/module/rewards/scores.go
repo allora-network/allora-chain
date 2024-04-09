@@ -15,14 +15,6 @@ import (
  consideration to generate the score at the most recent time step.
 */
 
-type ReputersMappedLosses struct {
-	CombinedLosses         map[string]float64
-	NaiveLosses            map[string]float64
-	OneOutInfererLosses    map[string][]float64
-	OneOutForecasterLosses map[string][]float64
-	OneInForecasterLosses  map[string][]float64
-}
-
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
 func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, reportedLosses types.ReputerValueBundles) ([]types.Score, error) {
 	// Fetch all workers for the topic to determine expected report coverage
@@ -86,6 +78,7 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 		}
 
 		// Check the missing workers and add NaN values for the not reported
+		// This will help identify the losses that were not reported by the reputer
 		for worker := range allWorkerAddresses {
 			if _, reported := workerOneOutInfererValues[worker]; !reported {
 				reportedLoss.ValueBundle.OneOutInfererValues = append(reportedLoss.ValueBundle.OneOutInfererValues, &types.WithheldWorkerAttributedValue{Worker: worker, Value: math.NaN()})

@@ -154,26 +154,30 @@ func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReport
 
 	// Ensure every loss array is non-empty and calculate geometric mean
 	stakeWeightedLoss := make([]float64, len(reputersReportedLosses[0]))
+	// Array to store most distant values from consensus
 	mostDistantValues := make([]float64, len(reputersReportedLosses[0]))
 
-	// Most distance value from 0 for each loss
 	for j := 0; j < len(reputersReportedLosses[0]); j++ {
 		logSum := 0.0
 		maxDistance := -1.0 // Initialize with an impossible value
-	
+
 		for i, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
 			if math.IsNaN(losses[j]) {
 				continue
 			}
 			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
+		}
 
-			// Save most distant value
-			if losses[j] > maxDistance {
-				maxDistance = losses[j]
+		// Find most distant value from consensus value
+		for _, losses := range reputersReportedLosses {
+			distance := losses[j] - logSum
+			if distance > maxDistance {
+				maxDistance = distance
 				mostDistantValues[j] = losses[j]
 			}
 		}
+
 		stakeWeightedLoss[j] = math.Pow(10, logSum)
 	}
 
@@ -224,7 +228,7 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 		adjustedStakes = append(adjustedStakes, adjustedStake)
 	}
 
-	// Get consensus loss vector
+	// Get consensus loss vector and retrieve most distant values from
 	consensus, mostDistantValues, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
 	if err != nil {
 		return nil, err
@@ -819,7 +823,7 @@ func ExtractValues(bundle *types.ValueBundle) []float64 {
 	// Extract direct float64 values
 	values = append(values, bundle.CombinedValue, bundle.NaiveValue)
 
-	// Sort and Extract values from slices of WorkerAttributedValue
+	// Sort and Extract values from slices of ValueBundle
 	sort.Slice(bundle.InfererValues, func(i, j int) bool {
 		return bundle.InfererValues[i].Worker < bundle.InfererValues[j].Worker
 	})
@@ -833,8 +837,8 @@ func ExtractValues(bundle *types.ValueBundle) []float64 {
 		values = append(values, v.Value)
 	}
 	sort.Slice(bundle.OneOutInfererValues, func(i, j int) bool {
-        return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker
-    })
+		return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker
+	})
 	for _, v := range bundle.OneOutInfererValues {
 		values = append(values, v.Value)
 	}
