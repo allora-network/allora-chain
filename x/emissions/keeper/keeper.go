@@ -69,6 +69,10 @@ type Keeper struct {
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, Reputer], types.ListeningCoefficient]
 
+	/// TAX for REWARD
+	// map of (topic, block_number, worker) -> avg_worker_reward
+	averageWorkerReward collections.Map[collections.Pair[TopicId, sdk.AccAddress], types.AverageWorkerReward]
+
 	/// STAKING
 
 	// total sum stake of all stakers on the network
@@ -116,6 +120,15 @@ type Keeper struct {
 
 	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
 	lastRewardsUpdate collections.Item[BlockHeight]
+
+	// fee revenue collected by a topic over the course of the last reward cadence
+	topicFeeRevenue collections.Map[TopicId, types.TopicFeeRevenue]
+
+	// feeRevenueEpoch marks the current epoch for fee revenue
+	feeRevenueEpoch collections.Sequence
+
+	// store previous wieghts for exponential moving average in rewards calc
+	previousTopicWeight collections.Map[TopicId, types.PreviousTopicWeight]
 
 	// map of (topic, block_height) -> Inference
 	allInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.Inferences]
@@ -177,13 +190,13 @@ func NewKeeper(
 		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
 		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
 		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
-		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_topic_id"),
+		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_topic_id", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
 		stakeRemovalQueue:                   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue:          collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
 		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
@@ -192,6 +205,9 @@ func NewKeeper(
 		mempool:                             collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
 		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
 		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		feeRevenueEpoch:                     collections.NewSequence(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch"),
+		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, codec.CollValue[types.PreviousTopicWeight](cdc)),
 		inferences:                          collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                           collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                             collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -573,6 +589,14 @@ func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, err
 	return params.PInferenceSynthesis, nil
 }
 
+func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (float64, float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
+}
+
 func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -581,12 +605,28 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.TopicRewardAlpha, nil
+}
+
 func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
 	return params.MaxUnfulfilledReputerRequests, nil
+}
+
+func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.LegacyDec{}, err
+	}
+	return params.ValidatorsVsAlloraPercentReward, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -1437,6 +1477,24 @@ func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, ad
 
 /// TOPICS
 
+// Get the previous weight during rewards calculation for a topic
+func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (types.PreviousTopicWeight, error) {
+	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		ret := types.PreviousTopicWeight{
+			Weight: 0.0,
+			Epoch:  0,
+		}
+		return ret, nil
+	}
+	return topicWeight, err
+}
+
+// Set the previous weight during rewards calculation for a topic
+func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight types.PreviousTopicWeight) error {
+	return k.previousTopicWeight.Set(ctx, topicId, weight)
+}
+
 func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
@@ -1758,6 +1816,44 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 	}
 
 	return topicsByAddress, nil
+}
+
+// Get the amount of fee revenue collected by a topic
+func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
+	return k.topicFeeRevenue.Get(ctx, topicId)
+}
+
+// Add to the fee revenue collected by a topic for this reward epoch
+func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Uint) error {
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	currEpoch, err := k.GetFeeRevenueEpoch(ctx)
+	if err != nil {
+		return err
+	}
+	newTopicFeeRevenue := types.TopicFeeRevenue{}
+	if topicFeeRevenue.Epoch != currEpoch {
+		newTopicFeeRevenue.Epoch = currEpoch
+		newTopicFeeRevenue.Revenue = cosmosMath.NewIntFromBigInt(amount.BigInt())
+	} else {
+		newTopicFeeRevenue.Epoch = topicFeeRevenue.Epoch
+		amountInt := cosmosMath.NewIntFromBigInt(amount.BigInt())
+		newTopicFeeRevenue.Revenue = topicFeeRevenue.Revenue.Add(amountInt)
+	}
+	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+}
+
+// what is the current latest fee revenue epoch
+func (k *Keeper) GetFeeRevenueEpoch(ctx context.Context) (uint64, error) {
+	return k.feeRevenueEpoch.Peek(ctx)
+}
+
+// at the end of a rewards epoch, increment the fee revenue
+func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
+	_, err := k.feeRevenueEpoch.Next(ctx)
+	return err
 }
 
 /// MEMPOOL & INFERENCE REQUESTS
@@ -2119,6 +2215,26 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 		return types.ListeningCoefficient{}, err
 	}
 	return coef, nil
+}
+
+/// TAX for REWARD
+
+func (k *Keeper) SetAverageWorkerReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress, value types.AverageWorkerReward) error {
+	key := collections.Join(topicId, worker)
+	return k.averageWorkerReward.Set(ctx, key, value)
+}
+
+func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (types.AverageWorkerReward, error) {
+	key := collections.Join(topicId, worker)
+	val, err := k.averageWorkerReward.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			// Return a default value
+			return types.AverageWorkerReward{Count: 0, Value: 0.0}, nil
+		}
+		return types.AverageWorkerReward{}, err
+	}
+	return val, nil
 }
 
 /// WHITELISTS

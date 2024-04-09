@@ -54,4 +54,8 @@ var (
 	OneInForecasterNetworkRegretsKey = collections.NewPrefix(43)
 	UnfulfilledWorkerNoncesKey       = collections.NewPrefix(44)
 	UnfulfilledReputerNoncesKey      = collections.NewPrefix(45)
+	AverageWorkerRewardKey           = collections.NewPrefix(46)
+	FeeRevenueEpochKey               = collections.NewPrefix(47)
+	TopicFeeRevenueKey               = collections.NewPrefix(48)
+	PreviousTopicWeightKey           = collections.NewPrefix(49)
 )
