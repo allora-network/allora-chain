@@ -151,7 +151,11 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// if it came from collected fees, great, if it came from minting, also fine
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
-	validatorCut := params.ValidatorsVsAlloraPercentReward.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	vPercent, err := k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return err
+	}
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
 	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
 	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))

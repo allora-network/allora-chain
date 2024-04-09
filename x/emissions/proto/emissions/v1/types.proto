@@ -56,7 +56,24 @@ message Params {
   uint64 max_unfulfilled_worker_requests =
       24;  // max number of nonces for worker requests to keep track of for each topic
   uint64 max_unfulfilled_reputer_requests =
-      25;  // max number of nonces for reputer requests to keep track of for each topic
+      25;                                 // max number of nonces for reputer requests to keep track of for each topic
+  uint64 number_of_clients_for_tax = 26;  // global number for calculation tax of worker reward
+  uint64 parameter_for_tax = 27;          // global parameter for calculation tax of worker reward
+  double topic_reward_stake_importance = 28;  // The exponent μ represents the importance of stake in the reward of a
+                                              // topic and has a fiduciary value of 0.5
+  double topic_reward_fee_revenue_importance = 29;  // The exponent ν represents the importance of fee revenue in the
+                                                    // reward of a topic and has a fiduciary value of 0.5
+  double topic_reward_alpha = 30;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
+                                   // monthly timescale, 0.5 for weekly updates
+  // percentage of the total supply that is rewarded to
+  // cosmos network validators the rest goes to
+  // allora reputers workers etc
+  string validators_vs_allora_percent_reward = 31 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 /// TOPICS
@@ -256,6 +273,13 @@ message Scores {
   repeated Score scores = 1;
 }
 
+/// AVERAGE REWARD
+
+message AverageWorkerReward {
+  uint32 count = 1;
+  double value = 2;
+}
+
 /// LISTENING COEFFICIENTS
 message ListeningCoefficient {
   double coefficient = 3;
@@ -295,4 +319,21 @@ message Nonce {
 
 message Nonces {
   repeated Nonce nonces = 1;
+}
+
+// stores the amount of fees collected by a topic
+// in the last reward epoch
+message TopicFeeRevenue {
+  uint64 epoch = 1;
+  string revenue = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message PreviousTopicWeight {
+  uint64 epoch = 1;
+  double weight = 2;
 }

@@ -101,6 +101,22 @@ message OptionalParams {
   repeated string epsilon = 15;  // small number to prevent division by zero
   repeated string p_inference_synthesis =
       16;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  repeated string topic_reward_stake_importance = 23;  // The exponent μ represents the importance of stake in the
+                                                       // reward of a topic and has a fiduciary value of 0.5
+  repeated string topic_reward_fee_revenue_importance =
+      24;                                   // The exponent ν represents the importance of fee revenue in the
+                                            // reward of a topic and has a fiduciary value of 0.5
+  repeated string topic_reward_alpha = 25;  // global exponential moving average parameter. Fiduciary value of 0.9375 on
+                                            // a monthly timescale, 0.5 for weekly updates
+  // percentage of the total supply that is rewarded to
+  // cosmos network validators the rest goes to
+  // allora reputers workers etc
+  repeated string validators_vs_allora_percent_reward = 26 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 /// PARAMS

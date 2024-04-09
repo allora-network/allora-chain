@@ -254,6 +254,8 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	for _, topic := range topTopicsByReturn {
 		// Log the accumulated met demand for each topic
 		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
+		// Add to the fee revenue collected for this topic for this reward epoch
+		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 
 		// Draw demand from the valid requests
 		bestPrice := topicBestPrices[topic.Id].Price
