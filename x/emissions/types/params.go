@@ -29,6 +29,8 @@ func DefaultParams() Params {
 		MinStakeFraction:              float64(0.5),                // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:     uint64(20),                  // maximum number of workers that can be assigned to a single inference request
 		MaxReputersPerTopicRequest:    uint64(20),                  // maximum number of reputers that can be assigned to a single loss request
+		GlobalNumberOfClientsForTax:   uint64(10),                  // global number for calculation tax of worker reward
+		GlobalParameterForTax:         uint64(3),                   // global parameter for calculation tax of worker reward
 	}
 }
 
@@ -106,6 +108,14 @@ func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
 
 func DefaultParamsMaxReputersPerTopicRequest() uint64 {
 	return DefaultParams().MaxReputersPerTopicRequest
+}
+
+func DefaultParamsGlobalNumberOfClientsForTax() uint64 {
+	return DefaultParams().GlobalNumberOfClientsForTax
+}
+
+func DefaultGlobalParameterForTax() uint64 {
+	return DefaultParams().GlobalParameterForTax
 }
 
 // Validate does the sanity check on the params.

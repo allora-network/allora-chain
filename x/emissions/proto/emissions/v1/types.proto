@@ -52,6 +52,8 @@ message Params {
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
       22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  uint64 global_number_of_clients_for_tax = 23; // global number for calculation tax of worker reward
+  uint64 global_parameter_for_tax = 24; // global parameter for calculation tax of worker reward
 }
 
 /// TOPICS
@@ -252,6 +254,13 @@ message Score {
 
 message Scores {
   repeated Score scores = 1;
+}
+
+/// AVERAGE REWARD
+
+message AvgReward {
+  uint32 count = 1;
+  double value = 2;
 }
 
 /// LISTENING COEFFICIENTS

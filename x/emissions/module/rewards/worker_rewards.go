@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"context"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -51,7 +52,12 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get worker portion of rewards
-	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalInferenceRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(scoresFloat64, preward, totalInferenceRewards, workerAddresses)
+
+	if err != nil {
+		return nil, err
+	}
+	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
 }
 
 func GetWorkersRewardsForecastTask(
@@ -62,6 +68,7 @@ func GetWorkersRewardsForecastTask(
 	preward float64,
 	totalForecastRewards float64,
 ) ([]TaskRewards, error) {
+
 	// Get network loss
 	networkLosses, err := keeper.GetNetworkValueBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
@@ -95,5 +102,43 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get worker portion of rewards
-	return GetWorkerPortionOfRewards(scoresFloat64, preward, totalForecastRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(scoresFloat64, preward, totalForecastRewards, workerAddresses)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
+}
+
+func GetRewardsWithOutTax(
+	ctx context.Context,
+	keeper keeper.Keeper,
+	rewards []TaskRewards,
+	topicId uint64,
+) ([]TaskRewards, error) {
+
+	var result []TaskRewards
+	// Get average reward for this worker
+	for _, reward := range rewards {
+		avg, e := keeper.GetAverageReward(ctx, topicId, reward.Address)
+		if e != nil {
+			continue
+		}
+		totalRewards := avg.Value*float64(avg.Count) + reward.Reward
+		avg.Count += 1
+		avg.Value = totalRewards / float64(avg.Count)
+		_ = keeper.SetAverageReward(ctx, topicId, reward.Address, avg)
+		fee := CalculateTaxFee(avg.Value)
+		reward.Reward -= fee
+		if reward.Reward < 0 {
+			reward.Reward = 0
+		}
+		result = append(result, TaskRewards{
+			Address: reward.Address,
+			Reward:  reward.Reward,
+		})
+	}
+
+	return result, nil
 }
