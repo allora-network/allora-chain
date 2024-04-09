@@ -70,7 +70,7 @@ func CalcForcastImpliedInferences(
 			w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
 
 			// Define variable to store maximum regret for forecast k
-			maxjRijk := float64(-1)
+			maxjRijk := float64(math.Inf(-1))
 			for j, el := range forecastElementsByInferer {
 				// Calculate the approximate forecast regret of the network inference
 				R_ik[j] = math.Log10(networkCombinedLoss / el.Value) // forecasted regrets R_ijk = log10(L_i / L_ijk)
@@ -81,7 +81,7 @@ func CalcForcastImpliedInferences(
 
 			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
 			for j := range forecastElementsByInferer {
-				R_ik[j] = R_ik[j] / maxjRijk                         // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
+				R_ik[j] = R_ik[j] / math.Abs(maxjRijk)               // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 				w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 				if err != nil {
 					fmt.Println("Error calculating gradient: ", err)
