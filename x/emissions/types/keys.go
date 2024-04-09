@@ -49,7 +49,7 @@ var (
 	InferenceScoresKey             = collections.NewPrefix(38)
 	ForecastScoresKey              = collections.NewPrefix(39)
 	ReputerListeningCoefficientKey = collections.NewPrefix(40)
-	AverageRewardKey               = collections.NewPrefix(41)
+	AverageWorkerRewardKey         = collections.NewPrefix(41)
 	FeeRevenueEpochKey             = collections.NewPrefix(42)
 	TopicFeeRevenueKey             = collections.NewPrefix(43)
 	PreviousTopicWeightKey         = collections.NewPrefix(44)

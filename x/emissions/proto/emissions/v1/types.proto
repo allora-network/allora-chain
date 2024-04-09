@@ -273,7 +273,7 @@ message Scores {
 
 /// AVERAGE REWARD
 
-message AvgReward {
+message AverageWorkerReward {
   uint32 count = 1;
   double value = 2;
 }

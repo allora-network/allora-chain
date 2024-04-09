@@ -794,7 +794,7 @@ func NormalizationFactor(
 
 // Calculate the tax of the reward
 // Fee = R_avg * N_c^(a-1)
-func CalculateTaxFee(average float64) float64 {
+func CalculateWorkerTax(average float64) float64 {
 	a := types.DefaultParameterForTax() - 1
 	if a < 0 {
 		a = 0

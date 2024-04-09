@@ -119,15 +119,15 @@ func GetRewardsWithOutTax(
 	var result []TaskRewards
 	// Get average reward for this worker
 	for _, reward := range rewards {
-		avg, e := keeper.GetAverageReward(ctx, topicId, reward.Address)
+		avg, e := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
 		if e != nil {
 			continue
 		}
 		totalRewards := avg.Value*float64(avg.Count) + reward.Reward
 		avg.Count += 1
 		avg.Value = totalRewards / float64(avg.Count)
-		_ = keeper.SetAverageReward(ctx, topicId, reward.Address, avg)
-		fee := CalculateTaxFee(avg.Value)
+		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
+		fee := CalculateWorkerTax(avg.Value)
 		reward.Reward -= fee
 		if reward.Reward < 0 {
 			reward.Reward = 0

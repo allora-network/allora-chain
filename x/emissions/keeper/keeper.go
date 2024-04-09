@@ -68,8 +68,8 @@ type Keeper struct {
 	reputerListeningCoefficient collections.Map[collections.Pair[TOPIC_ID, REPUTER], types.ListeningCoefficient]
 
 	/// TAX for REWARD
-	// map of (topic, block_number, worker) -> avgreward
-	averageReward collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], types.AvgReward]
+	// map of (topic, block_number, worker) -> avg_worker_reward
+	averageWorkerReward collections.Map[collections.Pair[TOPIC_ID, sdk.AccAddress], types.AverageWorkerReward]
 
 	/// STAKING
 
@@ -209,7 +209,7 @@ func NewKeeper(
 		forecastScores:              collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerScores:               collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient: collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
-		averageReward:               collections.NewMap(sb, types.AverageRewardKey, "average_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AvgReward](cdc)),
+		averageWorkerReward:         collections.NewMap(sb, types.AverageWorkerRewardKey, "average_worker_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AverageWorkerReward](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -1945,20 +1945,20 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TOPIC_ID, 
 
 /// TAX for REWARD
 
-func (k *Keeper) SetAverageReward(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress, value types.AvgReward) error {
+func (k *Keeper) SetAverageWorkerReward(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress, value types.AverageWorkerReward) error {
 	key := collections.Join(topicId, worker)
-	return k.averageReward.Set(ctx, key, value)
+	return k.averageWorkerReward.Set(ctx, key, value)
 }
 
-func (k *Keeper) GetAverageReward(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress) (types.AvgReward, error) {
+func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TOPIC_ID, worker sdk.AccAddress) (types.AverageWorkerReward, error) {
 	key := collections.Join(topicId, worker)
-	val, err := k.averageReward.Get(ctx, key)
+	val, err := k.averageWorkerReward.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.AvgReward{Count: 0, Value: 0.0}, nil
+			return types.AverageWorkerReward{Count: 0, Value: 0.0}, nil
 		}
-		return types.AvgReward{}, err
+		return types.AverageWorkerReward{}, err
 	}
 	return val, nil
 }
