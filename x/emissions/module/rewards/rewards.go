@@ -38,13 +38,13 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		topicRewards[i] = topicReward
 	}
 
-	// Get Distribution of Rewards per Worker - Inference Task
+	// 	// Get Distribution of Rewards per Worker - Inference Task
 
-	// Get Distribution of Rewards per Worker - Forecast Task
+	// 	// Get Distribution of Rewards per Worker - Forecast Task
 
-	// Get Distribution of Rewards per Reputer
+	// 	// Get Distribution of Rewards per Reputer
 
-	// Pay out rewards
+	// 	// Pay out rewards
 
 	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
 	return nil

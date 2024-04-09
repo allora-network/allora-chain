@@ -131,7 +131,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	}
 
 	// Persist network losses
-	err := s.emissionsKeeper.InsertNetworkLossBundle(s.ctx, topicId, block, networkLosses)
+	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err
 	}

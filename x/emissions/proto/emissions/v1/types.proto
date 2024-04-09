@@ -51,19 +51,24 @@ message Params {
   uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
   double epsilon = 21;                         // small number to prevent division by zero
   double p_inference_synthesis =
-      22;  // fiducial value of exponent used in gradient function applied in Inference Synthesis
-  uint64 number_of_clients_for_tax = 24;      // global number for calculation tax of worker reward
-  uint64 parameter_for_tax = 25;              // global parameter for calculation tax of worker reward
-  double topic_reward_stake_importance = 26;  // The exponent μ represents the importance of stake in the reward of a
+      22;                    // fiducial value of exponent used in gradient function applied in Inference Synthesis
+  double alpha_regret = 23;  // how much to weight the most recent log-loss differences in regret EMA update
+  uint64 max_unfulfilled_worker_requests =
+      24;  // max number of nonces for worker requests to keep track of for each topic
+  uint64 max_unfulfilled_reputer_requests =
+      25;                                 // max number of nonces for reputer requests to keep track of for each topic
+  uint64 number_of_clients_for_tax = 26;  // global number for calculation tax of worker reward
+  uint64 parameter_for_tax = 27;          // global parameter for calculation tax of worker reward
+  double topic_reward_stake_importance = 28;  // The exponent μ represents the importance of stake in the reward of a
                                               // topic and has a fiduciary value of 0.5
-  double topic_reward_fee_revenue_importance = 27;  // The exponent ν represents the importance of fee revenue in the
+  double topic_reward_fee_revenue_importance = 29;  // The exponent ν represents the importance of fee revenue in the
                                                     // reward of a topic and has a fiduciary value of 0.5
-  double topic_reward_alpha = 28;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
+  double topic_reward_alpha = 30;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
                                    // monthly timescale, 0.5 for weekly updates
   // percentage of the total supply that is rewarded to
   // cosmos network validators the rest goes to
   // allora reputers workers etc
-  string validators_vs_allora_percent_reward = 29 [
+  string validators_vs_allora_percent_reward = 31 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -154,6 +159,13 @@ message ReputerValueBundles {
 
 /// WORKERS
 
+message TimestampedValue {
+  option (gogoproto.equal) = true;
+
+  int64 block_height = 1;  // height at which value calculated or received
+  double value = 2;
+}
+
 message Inference {
   option (gogoproto.equal) = true;
 
@@ -211,16 +223,6 @@ message ForecastSetForScoring {
   uint64 topic_id = 1;
   int64 block_height = 2;
   Forecasts forecasts = 3;
-}
-
-message WorkerRegret {
-  string worker = 1;
-  double inference_regret = 2;
-  double forecast_regret = 3;
-}
-
-message WorkerRegrets {
-  repeated WorkerRegret worker_regrets = 1;
 }
 
 /// STAKE
@@ -307,6 +309,16 @@ message InferenceRequest {
   int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
   int64 block_valid_until = 8;
   bytes extra_data = 9;
+}
+
+/// NONCES for Worker and Reputer Requests
+
+message Nonce {
+  int64 nonce = 1;  // block height of the request
+}
+
+message Nonces {
+  repeated Nonce nonces = 1;
 }
 
 // stores the amount of fees collected by a topic
