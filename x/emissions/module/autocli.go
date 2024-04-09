@@ -238,15 +238,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "InsertInferences",
-					Use:       "process-inferences [sender] [inferences]",
-					Short:     "Process a batch of inferences",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "inferences"},
-					},
-				},
-				{
 					RpcMethod: "ReactivateTopic",
 					Use:       "reactivate-topic [sender] [topic_id]",
 					Short:     "Reactivate a topic that has become inactivated",
