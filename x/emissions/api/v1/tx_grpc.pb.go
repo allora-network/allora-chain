@@ -41,7 +41,6 @@ const (
 	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist"
 	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.v1.Msg/AddToReputerWhitelist"
 	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.v1.Msg/RemoveFromReputerWhitelist"
-	Msg_TestDecMessage_FullMethodName                   = "/emissions.v1.Msg/TestDecMessage"
 )
 
 // MsgClient is the client API for Msg service.
@@ -70,7 +69,6 @@ type MsgClient interface {
 	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error)
 	RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error)
-	TestDecMessage(ctx context.Context, in *DecMessage, opts ...grpc.CallOption) (*DecMessage, error)
 }
 
 type msgClient struct {
@@ -279,15 +277,6 @@ func (c *msgClient) RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemov
 	return out, nil
 }
 
-func (c *msgClient) TestDecMessage(ctx context.Context, in *DecMessage, opts ...grpc.CallOption) (*DecMessage, error) {
-	out := new(DecMessage)
-	err := c.cc.Invoke(ctx, Msg_TestDecMessage_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -314,7 +303,6 @@ type MsgServer interface {
 	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
 	AddToReputerWhitelist(context.Context, *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error)
 	RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error)
-	TestDecMessage(context.Context, *DecMessage) (*DecMessage, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -387,9 +375,6 @@ func (UnimplementedMsgServer) AddToReputerWhitelist(context.Context, *MsgAddToRe
 }
 func (UnimplementedMsgServer) RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromReputerWhitelist not implemented")
-}
-func (UnimplementedMsgServer) TestDecMessage(context.Context, *DecMessage) (*DecMessage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TestDecMessage not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -800,24 +785,6 @@ func _Msg_RemoveFromReputerWhitelist_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_TestDecMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DecMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).TestDecMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_TestDecMessage_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).TestDecMessage(ctx, req.(*DecMessage))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -912,10 +879,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromReputerWhitelist",
 			Handler:    _Msg_RemoveFromReputerWhitelist_Handler,
-		},
-		{
-			MethodName: "TestDecMessage",
-			Handler:    _Msg_TestDecMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

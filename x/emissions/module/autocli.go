@@ -318,15 +318,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "address"},
 					},
 				},
-				{
-					RpcMethod: "TestDecMessage",
-					Use:       "test-dec-message [value]",
-					Short:     "test sending a dec message via the cli",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "value"},
-					},
-				},
 			},
 		},
 	}
