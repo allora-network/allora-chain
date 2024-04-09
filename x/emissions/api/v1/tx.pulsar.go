@@ -571,7 +571,7 @@ func (x *_OptionalParams_12_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_13_list)(nil)
 
 type _OptionalParams_13_list struct {
-	list *[]uint64
+	list *[]string
 }
 
 func (x *_OptionalParams_13_list) Len() int {
@@ -582,23 +582,23 @@ func (x *_OptionalParams_13_list) Len() int {
 }
 
 func (x *_OptionalParams_13_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfString((*x.list)[i])
 }
 
 func (x *_OptionalParams_13_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_13_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_OptionalParams_13_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxWorkersPerTopicRequest as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field Sharpness as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_13_list) Truncate(n int) {
@@ -606,8 +606,8 @@ func (x *_OptionalParams_13_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_13_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := ""
+	return protoreflect.ValueOfString(v)
 }
 
 func (x *_OptionalParams_13_list) IsValid() bool {
@@ -617,7 +617,7 @@ func (x *_OptionalParams_13_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_14_list)(nil)
 
 type _OptionalParams_14_list struct {
-	list *[]uint64
+	list *[]string
 }
 
 func (x *_OptionalParams_14_list) Len() int {
@@ -628,23 +628,23 @@ func (x *_OptionalParams_14_list) Len() int {
 }
 
 func (x *_OptionalParams_14_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfString((*x.list)[i])
 }
 
 func (x *_OptionalParams_14_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_14_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_OptionalParams_14_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxReputersPerTopicRequest as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field BetaEntropy as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_14_list) Truncate(n int) {
@@ -652,8 +652,8 @@ func (x *_OptionalParams_14_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_14_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := ""
+	return protoreflect.ValueOfString(v)
 }
 
 func (x *_OptionalParams_14_list) IsValid() bool {
@@ -690,7 +690,7 @@ func (x *_OptionalParams_15_list) Append(value protoreflect.Value) {
 }
 
 func (x *_OptionalParams_15_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field Epsilon as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field DcoefAbs as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_15_list) Truncate(n int) {
@@ -736,7 +736,7 @@ func (x *_OptionalParams_16_list) Append(value protoreflect.Value) {
 }
 
 func (x *_OptionalParams_16_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field PInferenceSynthesis as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field LearningRate as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_16_list) Truncate(n int) {
@@ -749,6 +749,282 @@ func (x *_OptionalParams_16_list) NewElement() protoreflect.Value {
 }
 
 func (x *_OptionalParams_16_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_17_list)(nil)
+
+type _OptionalParams_17_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_17_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_17_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_17_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_17_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_17_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxGradientThreshold as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_17_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_17_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_17_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_18_list)(nil)
+
+type _OptionalParams_18_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_18_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_18_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_18_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_18_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_18_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MinStakeFraction as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_18_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_18_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_18_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_19_list)(nil)
+
+type _OptionalParams_19_list struct {
+	list *[]uint64
+}
+
+func (x *_OptionalParams_19_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_19_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfUint64((*x.list)[i])
+}
+
+func (x *_OptionalParams_19_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_19_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_19_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxWorkersPerTopicRequest as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_19_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_19_list) NewElement() protoreflect.Value {
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
+}
+
+func (x *_OptionalParams_19_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_20_list)(nil)
+
+type _OptionalParams_20_list struct {
+	list *[]uint64
+}
+
+func (x *_OptionalParams_20_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_20_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfUint64((*x.list)[i])
+}
+
+func (x *_OptionalParams_20_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_20_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_20_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxReputersPerTopicRequest as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_20_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_20_list) NewElement() protoreflect.Value {
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
+}
+
+func (x *_OptionalParams_20_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_21_list)(nil)
+
+type _OptionalParams_21_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_21_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_21_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_21_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_21_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_21_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field Epsilon as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_21_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_21_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_21_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_22_list)(nil)
+
+type _OptionalParams_22_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_22_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_22_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_22_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_22_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_22_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field PInferenceSynthesis as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_22_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_22_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_22_list) IsValid() bool {
 	return x.list != nil
 }
 
@@ -782,7 +1058,7 @@ func (x *_OptionalParams_23_list) Append(value protoreflect.Value) {
 }
 
 func (x *_OptionalParams_23_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardStakeImportance as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field AlphaRegret as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_23_list) Truncate(n int) {
@@ -801,7 +1077,7 @@ func (x *_OptionalParams_23_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_24_list)(nil)
 
 type _OptionalParams_24_list struct {
-	list *[]string
+	list *[]uint64
 }
 
 func (x *_OptionalParams_24_list) Len() int {
@@ -812,23 +1088,23 @@ func (x *_OptionalParams_24_list) Len() int {
 }
 
 func (x *_OptionalParams_24_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_24_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_24_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_OptionalParams_24_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardFeeRevenueImportance as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxUnfulfilledWorkerRequests as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_24_list) Truncate(n int) {
@@ -836,8 +1112,8 @@ func (x *_OptionalParams_24_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_24_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
 }
 
 func (x *_OptionalParams_24_list) IsValid() bool {
@@ -847,7 +1123,7 @@ func (x *_OptionalParams_24_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_25_list)(nil)
 
 type _OptionalParams_25_list struct {
-	list *[]string
+	list *[]uint64
 }
 
 func (x *_OptionalParams_25_list) Len() int {
@@ -858,23 +1134,23 @@ func (x *_OptionalParams_25_list) Len() int {
 }
 
 func (x *_OptionalParams_25_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_25_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_25_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_OptionalParams_25_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardAlpha as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field MaxUnfulfilledReputerRequests as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_25_list) Truncate(n int) {
@@ -882,8 +1158,8 @@ func (x *_OptionalParams_25_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_25_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
 }
 
 func (x *_OptionalParams_25_list) IsValid() bool {
@@ -893,7 +1169,7 @@ func (x *_OptionalParams_25_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_26_list)(nil)
 
 type _OptionalParams_26_list struct {
-	list *[]string
+	list *[]uint64
 }
 
 func (x *_OptionalParams_26_list) Len() int {
@@ -904,23 +1180,23 @@ func (x *_OptionalParams_26_list) Len() int {
 }
 
 func (x *_OptionalParams_26_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_26_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_26_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_OptionalParams_26_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field ValidatorsVsAlloraPercentReward as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field NumberOfClientsForTax as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_26_list) Truncate(n int) {
@@ -928,11 +1204,241 @@ func (x *_OptionalParams_26_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_26_list) NewElement() protoreflect.Value {
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
+}
+
+func (x *_OptionalParams_26_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_27_list)(nil)
+
+type _OptionalParams_27_list struct {
+	list *[]uint64
+}
+
+func (x *_OptionalParams_27_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_27_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfUint64((*x.list)[i])
+}
+
+func (x *_OptionalParams_27_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_27_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Uint()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_27_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field ParameterForTax as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_27_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_27_list) NewElement() protoreflect.Value {
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
+}
+
+func (x *_OptionalParams_27_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_28_list)(nil)
+
+type _OptionalParams_28_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_28_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_28_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_28_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_28_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_28_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardStakeImportance as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_28_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_28_list) NewElement() protoreflect.Value {
 	v := ""
 	return protoreflect.ValueOfString(v)
 }
 
-func (x *_OptionalParams_26_list) IsValid() bool {
+func (x *_OptionalParams_28_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_29_list)(nil)
+
+type _OptionalParams_29_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_29_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_29_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_29_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_29_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_29_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardFeeRevenueImportance as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_29_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_29_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_29_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_30_list)(nil)
+
+type _OptionalParams_30_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_30_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_30_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_30_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_30_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_30_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicRewardAlpha as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_30_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_30_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_30_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_OptionalParams_31_list)(nil)
+
+type _OptionalParams_31_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_31_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_31_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_31_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_31_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_31_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field ValidatorsVsAlloraPercentReward as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_31_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_31_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_31_list) IsValid() bool {
 	return x.list != nil
 }
 
@@ -950,10 +1456,21 @@ var (
 	fd_OptionalParams_max_inference_request_validity      protoreflect.FieldDescriptor
 	fd_OptionalParams_max_request_cadence                 protoreflect.FieldDescriptor
 	fd_OptionalParams_percent_rewards_reputers_workers    protoreflect.FieldDescriptor
+	fd_OptionalParams_sharpness                           protoreflect.FieldDescriptor
+	fd_OptionalParams_beta_entropy                        protoreflect.FieldDescriptor
+	fd_OptionalParams_dcoef_abs                           protoreflect.FieldDescriptor
+	fd_OptionalParams_learning_rate                       protoreflect.FieldDescriptor
+	fd_OptionalParams_max_gradient_threshold              protoreflect.FieldDescriptor
+	fd_OptionalParams_min_stake_fraction                  protoreflect.FieldDescriptor
 	fd_OptionalParams_max_workers_per_topic_request       protoreflect.FieldDescriptor
 	fd_OptionalParams_max_reputers_per_topic_request      protoreflect.FieldDescriptor
 	fd_OptionalParams_epsilon                             protoreflect.FieldDescriptor
 	fd_OptionalParams_p_inference_synthesis               protoreflect.FieldDescriptor
+	fd_OptionalParams_alpha_regret                        protoreflect.FieldDescriptor
+	fd_OptionalParams_max_unfulfilled_worker_requests     protoreflect.FieldDescriptor
+	fd_OptionalParams_max_unfulfilled_reputer_requests    protoreflect.FieldDescriptor
+	fd_OptionalParams_number_of_clients_for_tax           protoreflect.FieldDescriptor
+	fd_OptionalParams_parameter_for_tax                   protoreflect.FieldDescriptor
 	fd_OptionalParams_topic_reward_stake_importance       protoreflect.FieldDescriptor
 	fd_OptionalParams_topic_reward_fee_revenue_importance protoreflect.FieldDescriptor
 	fd_OptionalParams_topic_reward_alpha                  protoreflect.FieldDescriptor
@@ -975,10 +1492,21 @@ func init() {
 	fd_OptionalParams_max_inference_request_validity = md_OptionalParams.Fields().ByName("max_inference_request_validity")
 	fd_OptionalParams_max_request_cadence = md_OptionalParams.Fields().ByName("max_request_cadence")
 	fd_OptionalParams_percent_rewards_reputers_workers = md_OptionalParams.Fields().ByName("percent_rewards_reputers_workers")
+	fd_OptionalParams_sharpness = md_OptionalParams.Fields().ByName("sharpness")
+	fd_OptionalParams_beta_entropy = md_OptionalParams.Fields().ByName("beta_entropy")
+	fd_OptionalParams_dcoef_abs = md_OptionalParams.Fields().ByName("dcoef_abs")
+	fd_OptionalParams_learning_rate = md_OptionalParams.Fields().ByName("learning_rate")
+	fd_OptionalParams_max_gradient_threshold = md_OptionalParams.Fields().ByName("max_gradient_threshold")
+	fd_OptionalParams_min_stake_fraction = md_OptionalParams.Fields().ByName("min_stake_fraction")
 	fd_OptionalParams_max_workers_per_topic_request = md_OptionalParams.Fields().ByName("max_workers_per_topic_request")
 	fd_OptionalParams_max_reputers_per_topic_request = md_OptionalParams.Fields().ByName("max_reputers_per_topic_request")
 	fd_OptionalParams_epsilon = md_OptionalParams.Fields().ByName("epsilon")
 	fd_OptionalParams_p_inference_synthesis = md_OptionalParams.Fields().ByName("p_inference_synthesis")
+	fd_OptionalParams_alpha_regret = md_OptionalParams.Fields().ByName("alpha_regret")
+	fd_OptionalParams_max_unfulfilled_worker_requests = md_OptionalParams.Fields().ByName("max_unfulfilled_worker_requests")
+	fd_OptionalParams_max_unfulfilled_reputer_requests = md_OptionalParams.Fields().ByName("max_unfulfilled_reputer_requests")
+	fd_OptionalParams_number_of_clients_for_tax = md_OptionalParams.Fields().ByName("number_of_clients_for_tax")
+	fd_OptionalParams_parameter_for_tax = md_OptionalParams.Fields().ByName("parameter_for_tax")
 	fd_OptionalParams_topic_reward_stake_importance = md_OptionalParams.Fields().ByName("topic_reward_stake_importance")
 	fd_OptionalParams_topic_reward_fee_revenue_importance = md_OptionalParams.Fields().ByName("topic_reward_fee_revenue_importance")
 	fd_OptionalParams_topic_reward_alpha = md_OptionalParams.Fields().ByName("topic_reward_alpha")
@@ -1122,50 +1650,116 @@ func (x *fastReflection_OptionalParams) Range(f func(protoreflect.FieldDescripto
 			return
 		}
 	}
+	if len(x.Sharpness) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_13_list{list: &x.Sharpness})
+		if !f(fd_OptionalParams_sharpness, value) {
+			return
+		}
+	}
+	if len(x.BetaEntropy) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_14_list{list: &x.BetaEntropy})
+		if !f(fd_OptionalParams_beta_entropy, value) {
+			return
+		}
+	}
+	if len(x.DcoefAbs) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_15_list{list: &x.DcoefAbs})
+		if !f(fd_OptionalParams_dcoef_abs, value) {
+			return
+		}
+	}
+	if len(x.LearningRate) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_16_list{list: &x.LearningRate})
+		if !f(fd_OptionalParams_learning_rate, value) {
+			return
+		}
+	}
+	if len(x.MaxGradientThreshold) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_17_list{list: &x.MaxGradientThreshold})
+		if !f(fd_OptionalParams_max_gradient_threshold, value) {
+			return
+		}
+	}
+	if len(x.MinStakeFraction) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_18_list{list: &x.MinStakeFraction})
+		if !f(fd_OptionalParams_min_stake_fraction, value) {
+			return
+		}
+	}
 	if len(x.MaxWorkersPerTopicRequest) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_13_list{list: &x.MaxWorkersPerTopicRequest})
+		value := protoreflect.ValueOfList(&_OptionalParams_19_list{list: &x.MaxWorkersPerTopicRequest})
 		if !f(fd_OptionalParams_max_workers_per_topic_request, value) {
 			return
 		}
 	}
 	if len(x.MaxReputersPerTopicRequest) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_14_list{list: &x.MaxReputersPerTopicRequest})
+		value := protoreflect.ValueOfList(&_OptionalParams_20_list{list: &x.MaxReputersPerTopicRequest})
 		if !f(fd_OptionalParams_max_reputers_per_topic_request, value) {
 			return
 		}
 	}
 	if len(x.Epsilon) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_15_list{list: &x.Epsilon})
+		value := protoreflect.ValueOfList(&_OptionalParams_21_list{list: &x.Epsilon})
 		if !f(fd_OptionalParams_epsilon, value) {
 			return
 		}
 	}
 	if len(x.PInferenceSynthesis) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_16_list{list: &x.PInferenceSynthesis})
+		value := protoreflect.ValueOfList(&_OptionalParams_22_list{list: &x.PInferenceSynthesis})
 		if !f(fd_OptionalParams_p_inference_synthesis, value) {
 			return
 		}
 	}
+	if len(x.AlphaRegret) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_23_list{list: &x.AlphaRegret})
+		if !f(fd_OptionalParams_alpha_regret, value) {
+			return
+		}
+	}
+	if len(x.MaxUnfulfilledWorkerRequests) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_24_list{list: &x.MaxUnfulfilledWorkerRequests})
+		if !f(fd_OptionalParams_max_unfulfilled_worker_requests, value) {
+			return
+		}
+	}
+	if len(x.MaxUnfulfilledReputerRequests) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_25_list{list: &x.MaxUnfulfilledReputerRequests})
+		if !f(fd_OptionalParams_max_unfulfilled_reputer_requests, value) {
+			return
+		}
+	}
+	if len(x.NumberOfClientsForTax) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_26_list{list: &x.NumberOfClientsForTax})
+		if !f(fd_OptionalParams_number_of_clients_for_tax, value) {
+			return
+		}
+	}
+	if len(x.ParameterForTax) != 0 {
+		value := protoreflect.ValueOfList(&_OptionalParams_27_list{list: &x.ParameterForTax})
+		if !f(fd_OptionalParams_parameter_for_tax, value) {
+			return
+		}
+	}
 	if len(x.TopicRewardStakeImportance) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_23_list{list: &x.TopicRewardStakeImportance})
+		value := protoreflect.ValueOfList(&_OptionalParams_28_list{list: &x.TopicRewardStakeImportance})
 		if !f(fd_OptionalParams_topic_reward_stake_importance, value) {
 			return
 		}
 	}
 	if len(x.TopicRewardFeeRevenueImportance) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_24_list{list: &x.TopicRewardFeeRevenueImportance})
+		value := protoreflect.ValueOfList(&_OptionalParams_29_list{list: &x.TopicRewardFeeRevenueImportance})
 		if !f(fd_OptionalParams_topic_reward_fee_revenue_importance, value) {
 			return
 		}
 	}
 	if len(x.TopicRewardAlpha) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_25_list{list: &x.TopicRewardAlpha})
+		value := protoreflect.ValueOfList(&_OptionalParams_30_list{list: &x.TopicRewardAlpha})
 		if !f(fd_OptionalParams_topic_reward_alpha, value) {
 			return
 		}
 	}
 	if len(x.ValidatorsVsAlloraPercentReward) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_26_list{list: &x.ValidatorsVsAlloraPercentReward})
+		value := protoreflect.ValueOfList(&_OptionalParams_31_list{list: &x.ValidatorsVsAlloraPercentReward})
 		if !f(fd_OptionalParams_validators_vs_allora_percent_reward, value) {
 			return
 		}
@@ -1209,6 +1803,18 @@ func (x *fastReflection_OptionalParams) Has(fd protoreflect.FieldDescriptor) boo
 		return len(x.MaxRequestCadence) != 0
 	case "emissions.v1.OptionalParams.percent_rewards_reputers_workers":
 		return len(x.PercentRewardsReputersWorkers) != 0
+	case "emissions.v1.OptionalParams.sharpness":
+		return len(x.Sharpness) != 0
+	case "emissions.v1.OptionalParams.beta_entropy":
+		return len(x.BetaEntropy) != 0
+	case "emissions.v1.OptionalParams.dcoef_abs":
+		return len(x.DcoefAbs) != 0
+	case "emissions.v1.OptionalParams.learning_rate":
+		return len(x.LearningRate) != 0
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		return len(x.MaxGradientThreshold) != 0
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		return len(x.MinStakeFraction) != 0
 	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
 		return len(x.MaxWorkersPerTopicRequest) != 0
 	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
@@ -1217,6 +1823,16 @@ func (x *fastReflection_OptionalParams) Has(fd protoreflect.FieldDescriptor) boo
 		return len(x.Epsilon) != 0
 	case "emissions.v1.OptionalParams.p_inference_synthesis":
 		return len(x.PInferenceSynthesis) != 0
+	case "emissions.v1.OptionalParams.alpha_regret":
+		return len(x.AlphaRegret) != 0
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		return len(x.MaxUnfulfilledWorkerRequests) != 0
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		return len(x.MaxUnfulfilledReputerRequests) != 0
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		return len(x.NumberOfClientsForTax) != 0
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		return len(x.ParameterForTax) != 0
 	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
 		return len(x.TopicRewardStakeImportance) != 0
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
@@ -1265,6 +1881,18 @@ func (x *fastReflection_OptionalParams) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxRequestCadence = nil
 	case "emissions.v1.OptionalParams.percent_rewards_reputers_workers":
 		x.PercentRewardsReputersWorkers = nil
+	case "emissions.v1.OptionalParams.sharpness":
+		x.Sharpness = nil
+	case "emissions.v1.OptionalParams.beta_entropy":
+		x.BetaEntropy = nil
+	case "emissions.v1.OptionalParams.dcoef_abs":
+		x.DcoefAbs = nil
+	case "emissions.v1.OptionalParams.learning_rate":
+		x.LearningRate = nil
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		x.MaxGradientThreshold = nil
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		x.MinStakeFraction = nil
 	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
 		x.MaxWorkersPerTopicRequest = nil
 	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
@@ -1273,6 +1901,16 @@ func (x *fastReflection_OptionalParams) Clear(fd protoreflect.FieldDescriptor) {
 		x.Epsilon = nil
 	case "emissions.v1.OptionalParams.p_inference_synthesis":
 		x.PInferenceSynthesis = nil
+	case "emissions.v1.OptionalParams.alpha_regret":
+		x.AlphaRegret = nil
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		x.MaxUnfulfilledWorkerRequests = nil
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		x.MaxUnfulfilledReputerRequests = nil
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		x.NumberOfClientsForTax = nil
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		x.ParameterForTax = nil
 	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
 		x.TopicRewardStakeImportance = nil
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
@@ -1369,53 +2007,119 @@ func (x *fastReflection_OptionalParams) Get(descriptor protoreflect.FieldDescrip
 		}
 		listValue := &_OptionalParams_12_list{list: &x.PercentRewardsReputersWorkers}
 		return protoreflect.ValueOfList(listValue)
-	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
-		if len(x.MaxWorkersPerTopicRequest) == 0 {
+	case "emissions.v1.OptionalParams.sharpness":
+		if len(x.Sharpness) == 0 {
 			return protoreflect.ValueOfList(&_OptionalParams_13_list{})
 		}
-		listValue := &_OptionalParams_13_list{list: &x.MaxWorkersPerTopicRequest}
+		listValue := &_OptionalParams_13_list{list: &x.Sharpness}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.beta_entropy":
+		if len(x.BetaEntropy) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_14_list{})
+		}
+		listValue := &_OptionalParams_14_list{list: &x.BetaEntropy}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.dcoef_abs":
+		if len(x.DcoefAbs) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_15_list{})
+		}
+		listValue := &_OptionalParams_15_list{list: &x.DcoefAbs}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.learning_rate":
+		if len(x.LearningRate) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_16_list{})
+		}
+		listValue := &_OptionalParams_16_list{list: &x.LearningRate}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		if len(x.MaxGradientThreshold) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_17_list{})
+		}
+		listValue := &_OptionalParams_17_list{list: &x.MaxGradientThreshold}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		if len(x.MinStakeFraction) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_18_list{})
+		}
+		listValue := &_OptionalParams_18_list{list: &x.MinStakeFraction}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
+		if len(x.MaxWorkersPerTopicRequest) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_19_list{})
+		}
+		listValue := &_OptionalParams_19_list{list: &x.MaxWorkersPerTopicRequest}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
 		if len(x.MaxReputersPerTopicRequest) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_14_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_20_list{})
 		}
-		listValue := &_OptionalParams_14_list{list: &x.MaxReputersPerTopicRequest}
+		listValue := &_OptionalParams_20_list{list: &x.MaxReputersPerTopicRequest}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.epsilon":
 		if len(x.Epsilon) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_15_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_21_list{})
 		}
-		listValue := &_OptionalParams_15_list{list: &x.Epsilon}
+		listValue := &_OptionalParams_21_list{list: &x.Epsilon}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.p_inference_synthesis":
 		if len(x.PInferenceSynthesis) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_16_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_22_list{})
 		}
-		listValue := &_OptionalParams_16_list{list: &x.PInferenceSynthesis}
+		listValue := &_OptionalParams_22_list{list: &x.PInferenceSynthesis}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.alpha_regret":
+		if len(x.AlphaRegret) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_23_list{})
+		}
+		listValue := &_OptionalParams_23_list{list: &x.AlphaRegret}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		if len(x.MaxUnfulfilledWorkerRequests) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_24_list{})
+		}
+		listValue := &_OptionalParams_24_list{list: &x.MaxUnfulfilledWorkerRequests}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		if len(x.MaxUnfulfilledReputerRequests) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_25_list{})
+		}
+		listValue := &_OptionalParams_25_list{list: &x.MaxUnfulfilledReputerRequests}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		if len(x.NumberOfClientsForTax) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_26_list{})
+		}
+		listValue := &_OptionalParams_26_list{list: &x.NumberOfClientsForTax}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		if len(x.ParameterForTax) == 0 {
+			return protoreflect.ValueOfList(&_OptionalParams_27_list{})
+		}
+		listValue := &_OptionalParams_27_list{list: &x.ParameterForTax}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
 		if len(x.TopicRewardStakeImportance) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_23_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_28_list{})
 		}
-		listValue := &_OptionalParams_23_list{list: &x.TopicRewardStakeImportance}
+		listValue := &_OptionalParams_28_list{list: &x.TopicRewardStakeImportance}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
 		if len(x.TopicRewardFeeRevenueImportance) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_24_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_29_list{})
 		}
-		listValue := &_OptionalParams_24_list{list: &x.TopicRewardFeeRevenueImportance}
+		listValue := &_OptionalParams_29_list{list: &x.TopicRewardFeeRevenueImportance}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.topic_reward_alpha":
 		if len(x.TopicRewardAlpha) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_25_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_30_list{})
 		}
-		listValue := &_OptionalParams_25_list{list: &x.TopicRewardAlpha}
+		listValue := &_OptionalParams_30_list{list: &x.TopicRewardAlpha}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.validators_vs_allora_percent_reward":
 		if len(x.ValidatorsVsAlloraPercentReward) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_26_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_31_list{})
 		}
-		listValue := &_OptionalParams_26_list{list: &x.ValidatorsVsAlloraPercentReward}
+		listValue := &_OptionalParams_31_list{list: &x.ValidatorsVsAlloraPercentReward}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -1485,37 +2189,81 @@ func (x *fastReflection_OptionalParams) Set(fd protoreflect.FieldDescriptor, val
 		lv := value.List()
 		clv := lv.(*_OptionalParams_12_list)
 		x.PercentRewardsReputersWorkers = *clv.list
-	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
+	case "emissions.v1.OptionalParams.sharpness":
 		lv := value.List()
 		clv := lv.(*_OptionalParams_13_list)
+		x.Sharpness = *clv.list
+	case "emissions.v1.OptionalParams.beta_entropy":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_14_list)
+		x.BetaEntropy = *clv.list
+	case "emissions.v1.OptionalParams.dcoef_abs":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_15_list)
+		x.DcoefAbs = *clv.list
+	case "emissions.v1.OptionalParams.learning_rate":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_16_list)
+		x.LearningRate = *clv.list
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_17_list)
+		x.MaxGradientThreshold = *clv.list
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_18_list)
+		x.MinStakeFraction = *clv.list
+	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_19_list)
 		x.MaxWorkersPerTopicRequest = *clv.list
 	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_14_list)
+		clv := lv.(*_OptionalParams_20_list)
 		x.MaxReputersPerTopicRequest = *clv.list
 	case "emissions.v1.OptionalParams.epsilon":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_15_list)
+		clv := lv.(*_OptionalParams_21_list)
 		x.Epsilon = *clv.list
 	case "emissions.v1.OptionalParams.p_inference_synthesis":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_16_list)
+		clv := lv.(*_OptionalParams_22_list)
 		x.PInferenceSynthesis = *clv.list
-	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
+	case "emissions.v1.OptionalParams.alpha_regret":
 		lv := value.List()
 		clv := lv.(*_OptionalParams_23_list)
+		x.AlphaRegret = *clv.list
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_24_list)
+		x.MaxUnfulfilledWorkerRequests = *clv.list
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_25_list)
+		x.MaxUnfulfilledReputerRequests = *clv.list
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_26_list)
+		x.NumberOfClientsForTax = *clv.list
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_27_list)
+		x.ParameterForTax = *clv.list
+	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
+		lv := value.List()
+		clv := lv.(*_OptionalParams_28_list)
 		x.TopicRewardStakeImportance = *clv.list
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_24_list)
+		clv := lv.(*_OptionalParams_29_list)
 		x.TopicRewardFeeRevenueImportance = *clv.list
 	case "emissions.v1.OptionalParams.topic_reward_alpha":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_25_list)
+		clv := lv.(*_OptionalParams_30_list)
 		x.TopicRewardAlpha = *clv.list
 	case "emissions.v1.OptionalParams.validators_vs_allora_percent_reward":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_26_list)
+		clv := lv.(*_OptionalParams_31_list)
 		x.ValidatorsVsAlloraPercentReward = *clv.list
 	default:
 		if fd.IsExtension() {
@@ -1609,53 +2357,119 @@ func (x *fastReflection_OptionalParams) Mutable(fd protoreflect.FieldDescriptor)
 		}
 		value := &_OptionalParams_12_list{list: &x.PercentRewardsReputersWorkers}
 		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.sharpness":
+		if x.Sharpness == nil {
+			x.Sharpness = []string{}
+		}
+		value := &_OptionalParams_13_list{list: &x.Sharpness}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.beta_entropy":
+		if x.BetaEntropy == nil {
+			x.BetaEntropy = []string{}
+		}
+		value := &_OptionalParams_14_list{list: &x.BetaEntropy}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.dcoef_abs":
+		if x.DcoefAbs == nil {
+			x.DcoefAbs = []string{}
+		}
+		value := &_OptionalParams_15_list{list: &x.DcoefAbs}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.learning_rate":
+		if x.LearningRate == nil {
+			x.LearningRate = []string{}
+		}
+		value := &_OptionalParams_16_list{list: &x.LearningRate}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		if x.MaxGradientThreshold == nil {
+			x.MaxGradientThreshold = []string{}
+		}
+		value := &_OptionalParams_17_list{list: &x.MaxGradientThreshold}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		if x.MinStakeFraction == nil {
+			x.MinStakeFraction = []string{}
+		}
+		value := &_OptionalParams_18_list{list: &x.MinStakeFraction}
+		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
 		if x.MaxWorkersPerTopicRequest == nil {
 			x.MaxWorkersPerTopicRequest = []uint64{}
 		}
-		value := &_OptionalParams_13_list{list: &x.MaxWorkersPerTopicRequest}
+		value := &_OptionalParams_19_list{list: &x.MaxWorkersPerTopicRequest}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
 		if x.MaxReputersPerTopicRequest == nil {
 			x.MaxReputersPerTopicRequest = []uint64{}
 		}
-		value := &_OptionalParams_14_list{list: &x.MaxReputersPerTopicRequest}
+		value := &_OptionalParams_20_list{list: &x.MaxReputersPerTopicRequest}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.epsilon":
 		if x.Epsilon == nil {
 			x.Epsilon = []string{}
 		}
-		value := &_OptionalParams_15_list{list: &x.Epsilon}
+		value := &_OptionalParams_21_list{list: &x.Epsilon}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.p_inference_synthesis":
 		if x.PInferenceSynthesis == nil {
 			x.PInferenceSynthesis = []string{}
 		}
-		value := &_OptionalParams_16_list{list: &x.PInferenceSynthesis}
+		value := &_OptionalParams_22_list{list: &x.PInferenceSynthesis}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.alpha_regret":
+		if x.AlphaRegret == nil {
+			x.AlphaRegret = []string{}
+		}
+		value := &_OptionalParams_23_list{list: &x.AlphaRegret}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		if x.MaxUnfulfilledWorkerRequests == nil {
+			x.MaxUnfulfilledWorkerRequests = []uint64{}
+		}
+		value := &_OptionalParams_24_list{list: &x.MaxUnfulfilledWorkerRequests}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		if x.MaxUnfulfilledReputerRequests == nil {
+			x.MaxUnfulfilledReputerRequests = []uint64{}
+		}
+		value := &_OptionalParams_25_list{list: &x.MaxUnfulfilledReputerRequests}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		if x.NumberOfClientsForTax == nil {
+			x.NumberOfClientsForTax = []uint64{}
+		}
+		value := &_OptionalParams_26_list{list: &x.NumberOfClientsForTax}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		if x.ParameterForTax == nil {
+			x.ParameterForTax = []uint64{}
+		}
+		value := &_OptionalParams_27_list{list: &x.ParameterForTax}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
 		if x.TopicRewardStakeImportance == nil {
 			x.TopicRewardStakeImportance = []string{}
 		}
-		value := &_OptionalParams_23_list{list: &x.TopicRewardStakeImportance}
+		value := &_OptionalParams_28_list{list: &x.TopicRewardStakeImportance}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
 		if x.TopicRewardFeeRevenueImportance == nil {
 			x.TopicRewardFeeRevenueImportance = []string{}
 		}
-		value := &_OptionalParams_24_list{list: &x.TopicRewardFeeRevenueImportance}
+		value := &_OptionalParams_29_list{list: &x.TopicRewardFeeRevenueImportance}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.topic_reward_alpha":
 		if x.TopicRewardAlpha == nil {
 			x.TopicRewardAlpha = []string{}
 		}
-		value := &_OptionalParams_25_list{list: &x.TopicRewardAlpha}
+		value := &_OptionalParams_30_list{list: &x.TopicRewardAlpha}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.validators_vs_allora_percent_reward":
 		if x.ValidatorsVsAlloraPercentReward == nil {
 			x.ValidatorsVsAlloraPercentReward = []string{}
 		}
-		value := &_OptionalParams_26_list{list: &x.ValidatorsVsAlloraPercentReward}
+		value := &_OptionalParams_31_list{list: &x.ValidatorsVsAlloraPercentReward}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
@@ -1706,30 +2520,63 @@ func (x *fastReflection_OptionalParams) NewField(fd protoreflect.FieldDescriptor
 	case "emissions.v1.OptionalParams.percent_rewards_reputers_workers":
 		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_12_list{list: &list})
-	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
-		list := []uint64{}
+	case "emissions.v1.OptionalParams.sharpness":
+		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_13_list{list: &list})
-	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
-		list := []uint64{}
+	case "emissions.v1.OptionalParams.beta_entropy":
+		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_14_list{list: &list})
-	case "emissions.v1.OptionalParams.epsilon":
+	case "emissions.v1.OptionalParams.dcoef_abs":
 		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_15_list{list: &list})
-	case "emissions.v1.OptionalParams.p_inference_synthesis":
+	case "emissions.v1.OptionalParams.learning_rate":
 		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_16_list{list: &list})
-	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
+	case "emissions.v1.OptionalParams.max_gradient_threshold":
+		list := []string{}
+		return protoreflect.ValueOfList(&_OptionalParams_17_list{list: &list})
+	case "emissions.v1.OptionalParams.min_stake_fraction":
+		list := []string{}
+		return protoreflect.ValueOfList(&_OptionalParams_18_list{list: &list})
+	case "emissions.v1.OptionalParams.max_workers_per_topic_request":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_19_list{list: &list})
+	case "emissions.v1.OptionalParams.max_reputers_per_topic_request":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_20_list{list: &list})
+	case "emissions.v1.OptionalParams.epsilon":
+		list := []string{}
+		return protoreflect.ValueOfList(&_OptionalParams_21_list{list: &list})
+	case "emissions.v1.OptionalParams.p_inference_synthesis":
+		list := []string{}
+		return protoreflect.ValueOfList(&_OptionalParams_22_list{list: &list})
+	case "emissions.v1.OptionalParams.alpha_regret":
 		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_23_list{list: &list})
+	case "emissions.v1.OptionalParams.max_unfulfilled_worker_requests":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_24_list{list: &list})
+	case "emissions.v1.OptionalParams.max_unfulfilled_reputer_requests":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_25_list{list: &list})
+	case "emissions.v1.OptionalParams.number_of_clients_for_tax":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_26_list{list: &list})
+	case "emissions.v1.OptionalParams.parameter_for_tax":
+		list := []uint64{}
+		return protoreflect.ValueOfList(&_OptionalParams_27_list{list: &list})
+	case "emissions.v1.OptionalParams.topic_reward_stake_importance":
+		list := []string{}
+		return protoreflect.ValueOfList(&_OptionalParams_28_list{list: &list})
 	case "emissions.v1.OptionalParams.topic_reward_fee_revenue_importance":
 		list := []string{}
-		return protoreflect.ValueOfList(&_OptionalParams_24_list{list: &list})
+		return protoreflect.ValueOfList(&_OptionalParams_29_list{list: &list})
 	case "emissions.v1.OptionalParams.topic_reward_alpha":
 		list := []string{}
-		return protoreflect.ValueOfList(&_OptionalParams_25_list{list: &list})
+		return protoreflect.ValueOfList(&_OptionalParams_30_list{list: &list})
 	case "emissions.v1.OptionalParams.validators_vs_allora_percent_reward":
 		list := []string{}
-		return protoreflect.ValueOfList(&_OptionalParams_26_list{list: &list})
+		return protoreflect.ValueOfList(&_OptionalParams_31_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OptionalParams"))
@@ -1877,24 +2724,60 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
 		}
+		if len(x.Sharpness) > 0 {
+			for _, s := range x.Sharpness {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.BetaEntropy) > 0 {
+			for _, s := range x.BetaEntropy {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.DcoefAbs) > 0 {
+			for _, s := range x.DcoefAbs {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.LearningRate) > 0 {
+			for _, s := range x.LearningRate {
+				l = len(s)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.MaxGradientThreshold) > 0 {
+			for _, s := range x.MaxGradientThreshold {
+				l = len(s)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.MinStakeFraction) > 0 {
+			for _, s := range x.MinStakeFraction {
+				l = len(s)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if len(x.MaxWorkersPerTopicRequest) > 0 {
 			l = 0
 			for _, e := range x.MaxWorkersPerTopicRequest {
 				l += runtime.Sov(uint64(e))
 			}
-			n += 1 + runtime.Sov(uint64(l)) + l
+			n += 2 + runtime.Sov(uint64(l)) + l
 		}
 		if len(x.MaxReputersPerTopicRequest) > 0 {
 			l = 0
 			for _, e := range x.MaxReputersPerTopicRequest {
 				l += runtime.Sov(uint64(e))
 			}
-			n += 1 + runtime.Sov(uint64(l)) + l
+			n += 2 + runtime.Sov(uint64(l)) + l
 		}
 		if len(x.Epsilon) > 0 {
 			for _, s := range x.Epsilon {
 				l = len(s)
-				n += 1 + l + runtime.Sov(uint64(l))
+				n += 2 + l + runtime.Sov(uint64(l))
 			}
 		}
 		if len(x.PInferenceSynthesis) > 0 {
@@ -1902,6 +2785,40 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				l = len(s)
 				n += 2 + l + runtime.Sov(uint64(l))
 			}
+		}
+		if len(x.AlphaRegret) > 0 {
+			for _, s := range x.AlphaRegret {
+				l = len(s)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.MaxUnfulfilledWorkerRequests) > 0 {
+			l = 0
+			for _, e := range x.MaxUnfulfilledWorkerRequests {
+				l += runtime.Sov(uint64(e))
+			}
+			n += 2 + runtime.Sov(uint64(l)) + l
+		}
+		if len(x.MaxUnfulfilledReputerRequests) > 0 {
+			l = 0
+			for _, e := range x.MaxUnfulfilledReputerRequests {
+				l += runtime.Sov(uint64(e))
+			}
+			n += 2 + runtime.Sov(uint64(l)) + l
+		}
+		if len(x.NumberOfClientsForTax) > 0 {
+			l = 0
+			for _, e := range x.NumberOfClientsForTax {
+				l += runtime.Sov(uint64(e))
+			}
+			n += 2 + runtime.Sov(uint64(l)) + l
+		}
+		if len(x.ParameterForTax) > 0 {
+			l = 0
+			for _, e := range x.ParameterForTax {
+				l += runtime.Sov(uint64(e))
+			}
+			n += 2 + runtime.Sov(uint64(l)) + l
 		}
 		if len(x.TopicRewardStakeImportance) > 0 {
 			for _, s := range x.TopicRewardStakeImportance {
@@ -1964,7 +2881,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x1
 				i--
-				dAtA[i] = 0xd2
+				dAtA[i] = 0xfa
 			}
 		}
 		if len(x.TopicRewardAlpha) > 0 {
@@ -1975,7 +2892,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x1
 				i--
-				dAtA[i] = 0xca
+				dAtA[i] = 0xf2
 			}
 		}
 		if len(x.TopicRewardFeeRevenueImportance) > 0 {
@@ -1986,7 +2903,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x1
 				i--
-				dAtA[i] = 0xc2
+				dAtA[i] = 0xea
 			}
 		}
 		if len(x.TopicRewardStakeImportance) > 0 {
@@ -1994,6 +2911,105 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i -= len(x.TopicRewardStakeImportance[iNdEx])
 				copy(dAtA[i:], x.TopicRewardStakeImportance[iNdEx])
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicRewardStakeImportance[iNdEx])))
+				i--
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0xe2
+			}
+		}
+		if len(x.ParameterForTax) > 0 {
+			var pksize2 int
+			for _, num := range x.ParameterForTax {
+				pksize2 += runtime.Sov(uint64(num))
+			}
+			i -= pksize2
+			j1 := i
+			for _, num := range x.ParameterForTax {
+				for num >= 1<<7 {
+					dAtA[j1] = uint8(uint64(num)&0x7f | 0x80)
+					num >>= 7
+					j1++
+				}
+				dAtA[j1] = uint8(num)
+				j1++
+			}
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize2))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xda
+		}
+		if len(x.NumberOfClientsForTax) > 0 {
+			var pksize4 int
+			for _, num := range x.NumberOfClientsForTax {
+				pksize4 += runtime.Sov(uint64(num))
+			}
+			i -= pksize4
+			j3 := i
+			for _, num := range x.NumberOfClientsForTax {
+				for num >= 1<<7 {
+					dAtA[j3] = uint8(uint64(num)&0x7f | 0x80)
+					num >>= 7
+					j3++
+				}
+				dAtA[j3] = uint8(num)
+				j3++
+			}
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize4))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xd2
+		}
+		if len(x.MaxUnfulfilledReputerRequests) > 0 {
+			var pksize6 int
+			for _, num := range x.MaxUnfulfilledReputerRequests {
+				pksize6 += runtime.Sov(uint64(num))
+			}
+			i -= pksize6
+			j5 := i
+			for _, num := range x.MaxUnfulfilledReputerRequests {
+				for num >= 1<<7 {
+					dAtA[j5] = uint8(uint64(num)&0x7f | 0x80)
+					num >>= 7
+					j5++
+				}
+				dAtA[j5] = uint8(num)
+				j5++
+			}
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize6))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xca
+		}
+		if len(x.MaxUnfulfilledWorkerRequests) > 0 {
+			var pksize8 int
+			for _, num := range x.MaxUnfulfilledWorkerRequests {
+				pksize8 += runtime.Sov(uint64(num))
+			}
+			i -= pksize8
+			j7 := i
+			for _, num := range x.MaxUnfulfilledWorkerRequests {
+				for num >= 1<<7 {
+					dAtA[j7] = uint8(uint64(num)&0x7f | 0x80)
+					num >>= 7
+					j7++
+				}
+				dAtA[j7] = uint8(num)
+				j7++
+			}
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize8))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xc2
+		}
+		if len(x.AlphaRegret) > 0 {
+			for iNdEx := len(x.AlphaRegret) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.AlphaRegret[iNdEx])
+				copy(dAtA[i:], x.AlphaRegret[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AlphaRegret[iNdEx])))
 				i--
 				dAtA[i] = 0x1
 				i--
@@ -2008,7 +3024,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x1
 				i--
-				dAtA[i] = 0x82
+				dAtA[i] = 0xb2
 			}
 		}
 		if len(x.Epsilon) > 0 {
@@ -2017,48 +3033,114 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				copy(dAtA[i:], x.Epsilon[iNdEx])
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Epsilon[iNdEx])))
 				i--
-				dAtA[i] = 0x7a
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0xaa
 			}
 		}
 		if len(x.MaxReputersPerTopicRequest) > 0 {
-			var pksize2 int
+			var pksize10 int
 			for _, num := range x.MaxReputersPerTopicRequest {
-				pksize2 += runtime.Sov(uint64(num))
+				pksize10 += runtime.Sov(uint64(num))
 			}
-			i -= pksize2
-			j1 := i
+			i -= pksize10
+			j9 := i
 			for _, num := range x.MaxReputersPerTopicRequest {
 				for num >= 1<<7 {
-					dAtA[j1] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j9] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j1++
+					j9++
 				}
-				dAtA[j1] = uint8(num)
-				j1++
+				dAtA[j9] = uint8(num)
+				j9++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize2))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize10))
 			i--
-			dAtA[i] = 0x72
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0xa2
 		}
 		if len(x.MaxWorkersPerTopicRequest) > 0 {
-			var pksize4 int
+			var pksize12 int
 			for _, num := range x.MaxWorkersPerTopicRequest {
-				pksize4 += runtime.Sov(uint64(num))
+				pksize12 += runtime.Sov(uint64(num))
 			}
-			i -= pksize4
-			j3 := i
+			i -= pksize12
+			j11 := i
 			for _, num := range x.MaxWorkersPerTopicRequest {
 				for num >= 1<<7 {
-					dAtA[j3] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j11] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j3++
+					j11++
 				}
-				dAtA[j3] = uint8(num)
-				j3++
+				dAtA[j11] = uint8(num)
+				j11++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize4))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize12))
 			i--
-			dAtA[i] = 0x6a
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x9a
+		}
+		if len(x.MinStakeFraction) > 0 {
+			for iNdEx := len(x.MinStakeFraction) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.MinStakeFraction[iNdEx])
+				copy(dAtA[i:], x.MinStakeFraction[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MinStakeFraction[iNdEx])))
+				i--
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0x92
+			}
+		}
+		if len(x.MaxGradientThreshold) > 0 {
+			for iNdEx := len(x.MaxGradientThreshold) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.MaxGradientThreshold[iNdEx])
+				copy(dAtA[i:], x.MaxGradientThreshold[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxGradientThreshold[iNdEx])))
+				i--
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0x8a
+			}
+		}
+		if len(x.LearningRate) > 0 {
+			for iNdEx := len(x.LearningRate) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.LearningRate[iNdEx])
+				copy(dAtA[i:], x.LearningRate[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LearningRate[iNdEx])))
+				i--
+				dAtA[i] = 0x1
+				i--
+				dAtA[i] = 0x82
+			}
+		}
+		if len(x.DcoefAbs) > 0 {
+			for iNdEx := len(x.DcoefAbs) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.DcoefAbs[iNdEx])
+				copy(dAtA[i:], x.DcoefAbs[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DcoefAbs[iNdEx])))
+				i--
+				dAtA[i] = 0x7a
+			}
+		}
+		if len(x.BetaEntropy) > 0 {
+			for iNdEx := len(x.BetaEntropy) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.BetaEntropy[iNdEx])
+				copy(dAtA[i:], x.BetaEntropy[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BetaEntropy[iNdEx])))
+				i--
+				dAtA[i] = 0x72
+			}
+		}
+		if len(x.Sharpness) > 0 {
+			for iNdEx := len(x.Sharpness) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Sharpness[iNdEx])
+				copy(dAtA[i:], x.Sharpness[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Sharpness[iNdEx])))
+				i--
+				dAtA[i] = 0x6a
+			}
 		}
 		if len(x.PercentRewardsReputersWorkers) > 0 {
 			for iNdEx := len(x.PercentRewardsReputersWorkers) - 1; iNdEx >= 0; iNdEx-- {
@@ -2070,86 +3152,86 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 		}
 		if len(x.MaxRequestCadence) > 0 {
-			var pksize6 int
+			var pksize14 int
 			for _, num := range x.MaxRequestCadence {
-				pksize6 += runtime.Sov(uint64(num))
+				pksize14 += runtime.Sov(uint64(num))
 			}
-			i -= pksize6
-			j5 := i
+			i -= pksize14
+			j13 := i
 			for _, num1 := range x.MaxRequestCadence {
 				num := uint64(num1)
 				for num >= 1<<7 {
-					dAtA[j5] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j13] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j5++
+					j13++
 				}
-				dAtA[j5] = uint8(num)
-				j5++
+				dAtA[j13] = uint8(num)
+				j13++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize6))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize14))
 			i--
 			dAtA[i] = 0x5a
 		}
 		if len(x.MaxInferenceRequestValidity) > 0 {
-			var pksize8 int
+			var pksize16 int
 			for _, num := range x.MaxInferenceRequestValidity {
-				pksize8 += runtime.Sov(uint64(num))
+				pksize16 += runtime.Sov(uint64(num))
 			}
-			i -= pksize8
-			j7 := i
+			i -= pksize16
+			j15 := i
 			for _, num1 := range x.MaxInferenceRequestValidity {
 				num := uint64(num1)
 				for num >= 1<<7 {
-					dAtA[j7] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j15] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j7++
+					j15++
 				}
-				dAtA[j7] = uint8(num)
-				j7++
+				dAtA[j15] = uint8(num)
+				j15++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize8))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize16))
 			i--
 			dAtA[i] = 0x52
 		}
 		if len(x.MinEpochLength) > 0 {
-			var pksize10 int
+			var pksize18 int
 			for _, num := range x.MinEpochLength {
-				pksize10 += runtime.Sov(uint64(num))
+				pksize18 += runtime.Sov(uint64(num))
 			}
-			i -= pksize10
-			j9 := i
+			i -= pksize18
+			j17 := i
 			for _, num1 := range x.MinEpochLength {
 				num := uint64(num1)
 				for num >= 1<<7 {
-					dAtA[j9] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j17] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j9++
+					j17++
 				}
-				dAtA[j9] = uint8(num)
-				j9++
+				dAtA[j17] = uint8(num)
+				j17++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize10))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize18))
 			i--
 			dAtA[i] = 0x4a
 		}
 		if len(x.RemoveStakeDelayWindow) > 0 {
-			var pksize12 int
+			var pksize20 int
 			for _, num := range x.RemoveStakeDelayWindow {
-				pksize12 += runtime.Sov(uint64(num))
+				pksize20 += runtime.Sov(uint64(num))
 			}
-			i -= pksize12
-			j11 := i
+			i -= pksize20
+			j19 := i
 			for _, num1 := range x.RemoveStakeDelayWindow {
 				num := uint64(num1)
 				for num >= 1<<7 {
-					dAtA[j11] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j19] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j11++
+					j19++
 				}
-				dAtA[j11] = uint8(num)
-				j11++
+				dAtA[j19] = uint8(num)
+				j19++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize12))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize20))
 			i--
 			dAtA[i] = 0x42
 		}
@@ -2181,22 +3263,22 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 		}
 		if len(x.MaxTopicsPerBlock) > 0 {
-			var pksize14 int
+			var pksize22 int
 			for _, num := range x.MaxTopicsPerBlock {
-				pksize14 += runtime.Sov(uint64(num))
+				pksize22 += runtime.Sov(uint64(num))
 			}
-			i -= pksize14
-			j13 := i
+			i -= pksize22
+			j21 := i
 			for _, num := range x.MaxTopicsPerBlock {
 				for num >= 1<<7 {
-					dAtA[j13] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j21] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j13++
+					j21++
 				}
-				dAtA[j13] = uint8(num)
-				j13++
+				dAtA[j21] = uint8(num)
+				j21++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize14))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize22))
 			i--
 			dAtA[i] = 0x22
 		}
@@ -2210,23 +3292,23 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 		}
 		if len(x.RewardCadence) > 0 {
-			var pksize16 int
+			var pksize24 int
 			for _, num := range x.RewardCadence {
-				pksize16 += runtime.Sov(uint64(num))
+				pksize24 += runtime.Sov(uint64(num))
 			}
-			i -= pksize16
-			j15 := i
+			i -= pksize24
+			j23 := i
 			for _, num1 := range x.RewardCadence {
 				num := uint64(num1)
 				for num >= 1<<7 {
-					dAtA[j15] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j23] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j15++
+					j23++
 				}
-				dAtA[j15] = uint8(num)
-				j15++
+				dAtA[j23] = uint8(num)
+				j23++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize16))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize24))
 			i--
 			dAtA[i] = 0x12
 		}
@@ -2937,6 +4019,198 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				x.PercentRewardsReputersWorkers = append(x.PercentRewardsReputersWorkers, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			case 13:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sharpness", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Sharpness = append(x.Sharpness, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 14:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BetaEntropy", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.BetaEntropy = append(x.BetaEntropy, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 15:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DcoefAbs", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DcoefAbs = append(x.DcoefAbs, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 16:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LearningRate", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LearningRate = append(x.LearningRate, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 17:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxGradientThreshold", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxGradientThreshold = append(x.MaxGradientThreshold, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 18:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinStakeFraction", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MinStakeFraction = append(x.MinStakeFraction, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 19:
 				if wireType == 0 {
 					var v uint64
 					for shift := uint(0); ; shift += 7 {
@@ -3012,7 +4286,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				} else {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxWorkersPerTopicRequest", wireType)
 				}
-			case 14:
+			case 20:
 				if wireType == 0 {
 					var v uint64
 					for shift := uint(0); ; shift += 7 {
@@ -3088,7 +4362,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				} else {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxReputersPerTopicRequest", wireType)
 				}
-			case 15:
+			case 21:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Epsilon", wireType)
 				}
@@ -3120,7 +4394,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.Epsilon = append(x.Epsilon, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 16:
+			case 22:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PInferenceSynthesis", wireType)
 				}
@@ -3154,6 +4428,342 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 23:
 				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AlphaRegret", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.AlphaRegret = append(x.AlphaRegret, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 24:
+				if wireType == 0 {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					x.MaxUnfulfilledWorkerRequests = append(x.MaxUnfulfilledWorkerRequests, v)
+				} else if wireType == 2 {
+					var packedLen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						packedLen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if packedLen < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					postIndex := iNdEx + packedLen
+					if postIndex < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					if postIndex > l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					var elementCount int
+					var count int
+					for _, integer := range dAtA[iNdEx:postIndex] {
+						if integer < 128 {
+							count++
+						}
+					}
+					elementCount = count
+					if elementCount != 0 && len(x.MaxUnfulfilledWorkerRequests) == 0 {
+						x.MaxUnfulfilledWorkerRequests = make([]uint64, 0, elementCount)
+					}
+					for iNdEx < postIndex {
+						var v uint64
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+							}
+							if iNdEx >= l {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							v |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								break
+							}
+						}
+						x.MaxUnfulfilledWorkerRequests = append(x.MaxUnfulfilledWorkerRequests, v)
+					}
+				} else {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledWorkerRequests", wireType)
+				}
+			case 25:
+				if wireType == 0 {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					x.MaxUnfulfilledReputerRequests = append(x.MaxUnfulfilledReputerRequests, v)
+				} else if wireType == 2 {
+					var packedLen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						packedLen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if packedLen < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					postIndex := iNdEx + packedLen
+					if postIndex < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					if postIndex > l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					var elementCount int
+					var count int
+					for _, integer := range dAtA[iNdEx:postIndex] {
+						if integer < 128 {
+							count++
+						}
+					}
+					elementCount = count
+					if elementCount != 0 && len(x.MaxUnfulfilledReputerRequests) == 0 {
+						x.MaxUnfulfilledReputerRequests = make([]uint64, 0, elementCount)
+					}
+					for iNdEx < postIndex {
+						var v uint64
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+							}
+							if iNdEx >= l {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							v |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								break
+							}
+						}
+						x.MaxUnfulfilledReputerRequests = append(x.MaxUnfulfilledReputerRequests, v)
+					}
+				} else {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledReputerRequests", wireType)
+				}
+			case 26:
+				if wireType == 0 {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					x.NumberOfClientsForTax = append(x.NumberOfClientsForTax, v)
+				} else if wireType == 2 {
+					var packedLen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						packedLen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if packedLen < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					postIndex := iNdEx + packedLen
+					if postIndex < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					if postIndex > l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					var elementCount int
+					var count int
+					for _, integer := range dAtA[iNdEx:postIndex] {
+						if integer < 128 {
+							count++
+						}
+					}
+					elementCount = count
+					if elementCount != 0 && len(x.NumberOfClientsForTax) == 0 {
+						x.NumberOfClientsForTax = make([]uint64, 0, elementCount)
+					}
+					for iNdEx < postIndex {
+						var v uint64
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+							}
+							if iNdEx >= l {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							v |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								break
+							}
+						}
+						x.NumberOfClientsForTax = append(x.NumberOfClientsForTax, v)
+					}
+				} else {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NumberOfClientsForTax", wireType)
+				}
+			case 27:
+				if wireType == 0 {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					x.ParameterForTax = append(x.ParameterForTax, v)
+				} else if wireType == 2 {
+					var packedLen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						packedLen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if packedLen < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					postIndex := iNdEx + packedLen
+					if postIndex < 0 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+					}
+					if postIndex > l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					var elementCount int
+					var count int
+					for _, integer := range dAtA[iNdEx:postIndex] {
+						if integer < 128 {
+							count++
+						}
+					}
+					elementCount = count
+					if elementCount != 0 && len(x.ParameterForTax) == 0 {
+						x.ParameterForTax = make([]uint64, 0, elementCount)
+					}
+					for iNdEx < postIndex {
+						var v uint64
+						for shift := uint(0); ; shift += 7 {
+							if shift >= 64 {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+							}
+							if iNdEx >= l {
+								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+							}
+							b := dAtA[iNdEx]
+							iNdEx++
+							v |= uint64(b&0x7F) << shift
+							if b < 0x80 {
+								break
+							}
+						}
+						x.ParameterForTax = append(x.ParameterForTax, v)
+					}
+				} else {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ParameterForTax", wireType)
+				}
+			case 28:
+				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicRewardStakeImportance", wireType)
 				}
 				var stringLen uint64
@@ -3184,7 +4794,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.TopicRewardStakeImportance = append(x.TopicRewardStakeImportance, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 24:
+			case 29:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicRewardFeeRevenueImportance", wireType)
 				}
@@ -3216,7 +4826,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.TopicRewardFeeRevenueImportance = append(x.TopicRewardFeeRevenueImportance, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 25:
+			case 30:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicRewardAlpha", wireType)
 				}
@@ -3248,7 +4858,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.TopicRewardAlpha = append(x.TopicRewardAlpha, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 26:
+			case 31:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ValidatorsVsAlloraPercentReward", wireType)
 				}
@@ -25245,27 +26855,35 @@ type OptionalParams struct {
 	MinTopicUnmetDemand           []string `protobuf:"bytes,3,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3" json:"min_topic_unmet_demand,omitempty"`                                  // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
 	MaxTopicsPerBlock             []uint64 `protobuf:"varint,4,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                // max number of topics to run cadence for per block
 	MinRequestUnmetDemand         []string `protobuf:"bytes,5,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3" json:"min_request_unmet_demand,omitempty"`                            // delete requests if they have below this demand remaining
-	MaxMissingInferencePercent    []string `protobuf:"bytes,6,rep,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`             // if worker has this percentage of inferences missing penalize them
+	MaxMissingInferencePercent    []string `protobuf:"bytes,6,rep,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3" json:"max_missing_inference_percent,omitempty"`             // if a worker has this percentage of inferences missing, penalize them
 	RequiredMinimumStake          []string `protobuf:"bytes,7,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                 // minimum amount of tokens to send to stake as a reputer or worker
 	RemoveStakeDelayWindow        []int64  `protobuf:"varint,8,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                 // how long to wait before allowed to remove stake
-	MinEpochLength                []int64  `protobuf:"varint,9,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                           // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
-	MaxInferenceRequestValidity   []int64  `protobuf:"varint,10,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"` // longest time a subscription is allowed to be valid
-	MaxRequestCadence             []int64  `protobuf:"varint,11,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                 // slowest/largest amount of time subscription can take between inferences
+	MinEpochLength                []int64  `protobuf:"varint,9,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                           // fastest allowable topic epoch and cadence of a repeating inference request
+	MaxInferenceRequestValidity   []int64  `protobuf:"varint,10,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"` // longest time a subscription of inferences is allowed to be valid
+	MaxRequestCadence             []int64  `protobuf:"varint,11,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`                                 // slowest (largest) amount of time a subscription can take between inferences
 	PercentRewardsReputersWorkers []string `protobuf:"bytes,12,rep,name=percent_rewards_reputers_workers,json=percentRewardsReputersWorkers,proto3" json:"percent_rewards_reputers_workers,omitempty"`   // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-	MaxWorkersPerTopicRequest     []uint64 `protobuf:"varint,13,rep,packed,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`     // max number of workers whose inference will be used and compensated per request
-	MaxReputersPerTopicRequest    []uint64 `protobuf:"varint,14,rep,packed,name=max_reputers_per_topic_request,json=maxReputersPerTopicRequest,proto3" json:"max_reputers_per_topic_request,omitempty"`  // max number of reputers to solicit losses from per loss request
-	Epsilon                       []string `protobuf:"bytes,15,rep,name=epsilon,proto3" json:"epsilon,omitempty"`                                                                                        // small number to prevent division by zero
-	PInferenceSynthesis           []string `protobuf:"bytes,16,rep,name=p_inference_synthesis,json=pInferenceSynthesis,proto3" json:"p_inference_synthesis,omitempty"`                                   // fiducial value of exponent used in gradient function applied in Inference Synthesis
-	TopicRewardStakeImportance    []string `protobuf:"bytes,23,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`            // The exponent μ represents the importance of stake in the
-	// reward of a topic and has a fiduciary value of 0.5
-	TopicRewardFeeRevenueImportance []string `protobuf:"bytes,24,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the
-	// reward of a topic and has a fiduciary value of 0.5
-	TopicRewardAlpha []string `protobuf:"bytes,25,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiduciary value of 0.9375 on
-	// a monthly timescale, 0.5 for weekly updates
-	// percentage of the total supply that is rewarded to
-	// cosmos network validators the rest goes to
-	// allora reputers workers etc
-	ValidatorsVsAlloraPercentReward []string `protobuf:"bytes,26,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"`
+	Sharpness                     []string `protobuf:"bytes,13,rep,name=sharpness,proto3" json:"sharpness,omitempty"`                                                                                    // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at
+	// high values
+	BetaEntropy                     []string `protobuf:"bytes,14,rep,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                                                                   // controls resilience of reward payouts against copycat workers
+	DcoefAbs                        []string `protobuf:"bytes,15,rep,name=dcoef_abs,json=dcoefAbs,proto3" json:"dcoef_abs,omitempty"`                                                                            // delta for numerical differentiation
+	LearningRate                    []string `protobuf:"bytes,16,rep,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                                                                // speed of gradient descent
+	MaxGradientThreshold            []string `protobuf:"bytes,17,rep,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`                                      // gradient descent stops when gradient falls below this
+	MinStakeFraction                []string `protobuf:"bytes,18,rep,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`                                                  // minimum fraction of stake to listen to when setting consensus listening coefficients
+	MaxWorkersPerTopicRequest       []uint64 `protobuf:"varint,19,rep,packed,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`           // max num workers whose inference are used and compensated per request
+	MaxReputersPerTopicRequest      []uint64 `protobuf:"varint,20,rep,packed,name=max_reputers_per_topic_request,json=maxReputersPerTopicRequest,proto3" json:"max_reputers_per_topic_request,omitempty"`        // max num reputers to solicit losses from per loss request
+	Epsilon                         []string `protobuf:"bytes,21,rep,name=epsilon,proto3" json:"epsilon,omitempty"`                                                                                              // small number to prevent division by zero
+	PInferenceSynthesis             []string `protobuf:"bytes,22,rep,name=p_inference_synthesis,json=pInferenceSynthesis,proto3" json:"p_inference_synthesis,omitempty"`                                         // fiducial value of exponent for Inference Synthesis gradient function
+	AlphaRegret                     []string `protobuf:"bytes,23,rep,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`                                                                   // how much to weight the most recent log-loss differences in regret EMA update
+	MaxUnfulfilledWorkerRequests    []uint64 `protobuf:"varint,24,rep,packed,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`    // max num worker request nonces to keep track of per topic
+	MaxUnfulfilledReputerRequests   []uint64 `protobuf:"varint,25,rep,packed,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"` // max num reputer request nonces to keep track of per topic
+	NumberOfClientsForTax           []uint64 `protobuf:"varint,26,rep,packed,name=number_of_clients_for_tax,json=numberOfClientsForTax,proto3" json:"number_of_clients_for_tax,omitempty"`                       // global number for calculation tax of worker reward
+	ParameterForTax                 []uint64 `protobuf:"varint,27,rep,packed,name=parameter_for_tax,json=parameterForTax,proto3" json:"parameter_for_tax,omitempty"`                                             // global parameter for calculation tax of worker reward
+	TopicRewardStakeImportance      []string `protobuf:"bytes,28,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`                  // The exponent μ represents the importance of stake in the reward of a topic and has a fiduciary value of 0.5
+	TopicRewardFeeRevenueImportance []string `protobuf:"bytes,29,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiduciary value of
+	// 0.5
+	TopicRewardAlpha []string `protobuf:"bytes,30,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiduciary value of 0.9375 on a monthly timescale, 0.5 for weekly
+	// updates
+	ValidatorsVsAlloraPercentReward []string `protobuf:"bytes,31,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"` // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
 }
 
 func (x *OptionalParams) Reset() {
@@ -25372,6 +26990,48 @@ func (x *OptionalParams) GetPercentRewardsReputersWorkers() []string {
 	return nil
 }
 
+func (x *OptionalParams) GetSharpness() []string {
+	if x != nil {
+		return x.Sharpness
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetBetaEntropy() []string {
+	if x != nil {
+		return x.BetaEntropy
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetDcoefAbs() []string {
+	if x != nil {
+		return x.DcoefAbs
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetLearningRate() []string {
+	if x != nil {
+		return x.LearningRate
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetMaxGradientThreshold() []string {
+	if x != nil {
+		return x.MaxGradientThreshold
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetMinStakeFraction() []string {
+	if x != nil {
+		return x.MinStakeFraction
+	}
+	return nil
+}
+
 func (x *OptionalParams) GetMaxWorkersPerTopicRequest() []uint64 {
 	if x != nil {
 		return x.MaxWorkersPerTopicRequest
@@ -25396,6 +27056,41 @@ func (x *OptionalParams) GetEpsilon() []string {
 func (x *OptionalParams) GetPInferenceSynthesis() []string {
 	if x != nil {
 		return x.PInferenceSynthesis
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetAlphaRegret() []string {
+	if x != nil {
+		return x.AlphaRegret
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetMaxUnfulfilledWorkerRequests() []uint64 {
+	if x != nil {
+		return x.MaxUnfulfilledWorkerRequests
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetMaxUnfulfilledReputerRequests() []uint64 {
+	if x != nil {
+		return x.MaxUnfulfilledReputerRequests
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetNumberOfClientsForTax() []uint64 {
+	if x != nil {
+		return x.NumberOfClientsForTax
+	}
+	return nil
+}
+
+func (x *OptionalParams) GetParameterForTax() []uint64 {
+	if x != nil {
+		return x.ParameterForTax
 	}
 	return nil
 }
@@ -27335,7 +29030,7 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
 	0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc8, 0x0a, 0x0a,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe8, 0x14, 0x0a,
 	0x0e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x61, 0x6c, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12,
 	0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09,
 	0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x65, 0x77,
@@ -27357,64 +29052,146 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
 	0x52, 0x15, 0x6d, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x55, 0x6e, 0x6d, 0x65,
-	0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x41, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x6d,
+	0x74, 0x44, 0x65, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x7a, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x03, 0x28, 0x09, 0x52, 0x1a,
-	0x6d, 0x61, 0x78, 0x4d, 0x69, 0x73, 0x73, 0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x12, 0x68, 0x0a, 0x16, 0x72, 0x65,
-	0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x5f, 0x73,
-	0x74, 0x61, 0x6b, 0x65, 0x18, 0x07, 0x20, 0x03, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00,
-	0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f,
-	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14,
-	0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a, 0x19, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x73,
-	0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f,
-	0x77, 0x18, 0x08, 0x20, 0x03, 0x28, 0x03, 0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c, 0x61, 0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x12,
-	0x28, 0x0a, 0x10, 0x6d, 0x69, 0x6e, 0x5f, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e,
-	0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x03, 0x28, 0x03, 0x52, 0x0e, 0x6d, 0x69, 0x6e, 0x45, 0x70,
-	0x6f, 0x63, 0x68, 0x4c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x12, 0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78,
-	0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x18, 0x0a, 0x20, 0x03, 0x28,
-	0x03, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e,
-	0x0a, 0x13, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63, 0x61,
-	0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x03, 0x52, 0x11, 0x6d, 0x61, 0x78,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x47,
-	0x0a, 0x20, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64,
-	0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x09, 0x52, 0x1d, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e,
-	0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73,
-	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x12, 0x40, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x77,
+	0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x18, 0x06, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x1a, 0x6d, 0x61, 0x78, 0x4d, 0x69, 0x73, 0x73,
+	0x69, 0x6e, 0x67, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x50, 0x65, 0x72, 0x63,
+	0x65, 0x6e, 0x74, 0x12, 0x68, 0x0a, 0x16, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65, 0x64, 0x5f,
+	0x6d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x07, 0x20,
+	0x03, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55,
+	0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x14, 0x72, 0x65, 0x71, 0x75, 0x69, 0x72, 0x65,
+	0x64, 0x4d, 0x69, 0x6e, 0x69, 0x6d, 0x75, 0x6d, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x39, 0x0a,
+	0x19, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x64, 0x65,
+	0x6c, 0x61, 0x79, 0x5f, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x18, 0x08, 0x20, 0x03, 0x28, 0x03,
+	0x52, 0x16, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x44, 0x65, 0x6c,
+	0x61, 0x79, 0x57, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x12, 0x28, 0x0a, 0x10, 0x6d, 0x69, 0x6e, 0x5f,
+	0x65, 0x70, 0x6f, 0x63, 0x68, 0x5f, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x09, 0x20, 0x03,
+	0x28, 0x03, 0x52, 0x0e, 0x6d, 0x69, 0x6e, 0x45, 0x70, 0x6f, 0x63, 0x68, 0x4c, 0x65, 0x6e, 0x67,
+	0x74, 0x68, 0x12, 0x43, 0x0a, 0x1e, 0x6d, 0x61, 0x78, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x6e, 0x63, 0x65, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x76, 0x61, 0x6c, 0x69,
+	0x64, 0x69, 0x74, 0x79, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x03, 0x52, 0x1b, 0x6d, 0x61, 0x78, 0x49,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x56,
+	0x61, 0x6c, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x61, 0x78, 0x5f, 0x72,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x5f, 0x63, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x18, 0x0b,
+	0x20, 0x03, 0x28, 0x03, 0x52, 0x11, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x43, 0x61, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x80, 0x01, 0x0a, 0x20, 0x70, 0x65, 0x72, 0x63,
+	0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x5f, 0x72, 0x65, 0x70, 0x75,
+	0x74, 0x65, 0x72, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x18, 0x0c, 0x20, 0x03,
+	0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65,
+	0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61,
+	0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x1d, 0x70, 0x65, 0x72,
+	0x63, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x73, 0x52, 0x65, 0x70, 0x75, 0x74,
+	0x65, 0x72, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x12, 0x55, 0x0a, 0x09, 0x73, 0x68,
+	0x61, 0x72, 0x70, 0x6e, 0x65, 0x73, 0x73, 0x18, 0x0d, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61,
+	0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x09, 0x73, 0x68, 0x61, 0x72, 0x70, 0x6e, 0x65, 0x73,
+	0x73, 0x12, 0x5a, 0x0a, 0x0c, 0x62, 0x65, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x6f, 0x70,
+	0x79, 0x18, 0x0e, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
+	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
+	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
+	0x52, 0x0b, 0x62, 0x65, 0x74, 0x61, 0x45, 0x6e, 0x74, 0x72, 0x6f, 0x70, 0x79, 0x12, 0x54, 0x0a,
+	0x09, 0x64, 0x63, 0x6f, 0x65, 0x66, 0x5f, 0x61, 0x62, 0x73, 0x18, 0x0f, 0x20, 0x03, 0x28, 0x09,
+	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x08, 0x64, 0x63, 0x6f, 0x65, 0x66,
+	0x41, 0x62, 0x73, 0x12, 0x5c, 0x0a, 0x0d, 0x6c, 0x65, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x5f,
+	0x72, 0x61, 0x74, 0x65, 0x18, 0x10, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x44, 0x65, 0x63, 0x52, 0x0c, 0x6c, 0x65, 0x61, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x52, 0x61, 0x74,
+	0x65, 0x12, 0x6d, 0x0a, 0x16, 0x6d, 0x61, 0x78, 0x5f, 0x67, 0x72, 0x61, 0x64, 0x69, 0x65, 0x6e,
+	0x74, 0x5f, 0x74, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64, 0x18, 0x11, 0x20, 0x03, 0x28,
+	0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x47,
+	0x72, 0x61, 0x64, 0x69, 0x65, 0x6e, 0x74, 0x54, 0x68, 0x72, 0x65, 0x73, 0x68, 0x6f, 0x6c, 0x64,
+	0x12, 0x65, 0x0a, 0x12, 0x6d, 0x69, 0x6e, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x66, 0x72,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x12, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x10, 0x6d, 0x69, 0x6e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x46,
+	0x72, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x40, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x77,
 	0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x0d, 0x20, 0x03, 0x28, 0x04, 0x52, 0x19,
+	0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x13, 0x20, 0x03, 0x28, 0x04, 0x52, 0x19,
 	0x6d, 0x61, 0x78, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x73, 0x50, 0x65, 0x72, 0x54, 0x6f, 0x70,
 	0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x42, 0x0a, 0x1e, 0x6d, 0x61, 0x78,
 	0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x74, 0x6f,
-	0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x0e, 0x20, 0x03, 0x28,
+	0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x14, 0x20, 0x03, 0x28,
 	0x04, 0x52, 0x1a, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x73, 0x50, 0x65,
-	0x72, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18, 0x0a,
-	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x18, 0x0f, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07,
-	0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x12, 0x32, 0x0a, 0x15, 0x70, 0x5f, 0x69, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x73, 0x79, 0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73,
-	0x18, 0x10, 0x20, 0x03, 0x28, 0x09, 0x52, 0x13, 0x70, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x53, 0x79, 0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73, 0x12, 0x41, 0x0a, 0x1d, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x73, 0x74, 0x61, 0x6b,
-	0x65, 0x5f, 0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x17, 0x20, 0x03,
-	0x28, 0x09, 0x52, 0x1a, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x4c,
-	0x0a, 0x23, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66,
-	0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x69, 0x6d, 0x70, 0x6f, 0x72,
-	0x74, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x18, 0x20, 0x03, 0x28, 0x09, 0x52, 0x1f, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76, 0x65, 0x6e,
-	0x75, 0x65, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x2c, 0x0a, 0x12,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x61, 0x6c, 0x70,
-	0x68, 0x61, 0x18, 0x19, 0x20, 0x03, 0x28, 0x09, 0x52, 0x10, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52,
+	0x72, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x51, 0x0a,
+	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x18, 0x15, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e,
+	0x12, 0x6b, 0x0a, 0x15, 0x70, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x5f,
+	0x73, 0x79, 0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73, 0x18, 0x16, 0x20, 0x03, 0x28, 0x09, 0x42,
+	0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x13, 0x70, 0x49, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x53, 0x79, 0x6e, 0x74, 0x68, 0x65, 0x73, 0x69, 0x73, 0x12, 0x5a, 0x0a,
+	0x0c, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x5f, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x17, 0x20,
+	0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e,
+	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68,
+	0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0b, 0x61, 0x6c,
+	0x70, 0x68, 0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x45, 0x0a, 0x1f, 0x6d, 0x61, 0x78,
+	0x5f, 0x75, 0x6e, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x6c, 0x65, 0x64, 0x5f, 0x77, 0x6f, 0x72,
+	0x6b, 0x65, 0x72, 0x5f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x73, 0x18, 0x18, 0x20, 0x03,
+	0x28, 0x04, 0x52, 0x1c, 0x6d, 0x61, 0x78, 0x55, 0x6e, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x6c,
+	0x65, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x73,
+	0x12, 0x47, 0x0a, 0x20, 0x6d, 0x61, 0x78, 0x5f, 0x75, 0x6e, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c,
+	0x6c, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x5f, 0x72, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x73, 0x18, 0x19, 0x20, 0x03, 0x28, 0x04, 0x52, 0x1d, 0x6d, 0x61, 0x78, 0x55,
+	0x6e, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x6c, 0x65, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65,
+	0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x73, 0x12, 0x38, 0x0a, 0x19, 0x6e, 0x75, 0x6d,
+	0x62, 0x65, 0x72, 0x5f, 0x6f, 0x66, 0x5f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x73, 0x5f, 0x66,
+	0x6f, 0x72, 0x5f, 0x74, 0x61, 0x78, 0x18, 0x1a, 0x20, 0x03, 0x28, 0x04, 0x52, 0x15, 0x6e, 0x75,
+	0x6d, 0x62, 0x65, 0x72, 0x4f, 0x66, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x73, 0x46, 0x6f, 0x72,
+	0x54, 0x61, 0x78, 0x12, 0x2a, 0x0a, 0x11, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72,
+	0x5f, 0x66, 0x6f, 0x72, 0x5f, 0x74, 0x61, 0x78, 0x18, 0x1b, 0x20, 0x03, 0x28, 0x04, 0x52, 0x0f,
+	0x70, 0x61, 0x72, 0x61, 0x6d, 0x65, 0x74, 0x65, 0x72, 0x46, 0x6f, 0x72, 0x54, 0x61, 0x78, 0x12,
+	0x7a, 0x0a, 0x1d, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f,
+	0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6e, 0x63, 0x65,
+	0x18, 0x1c, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
+	0x1a, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x53, 0x74, 0x61, 0x6b,
+	0x65, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x85, 0x01, 0x0a, 0x23,
+	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66, 0x65, 0x65,
+	0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x69, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61,
+	0x6e, 0x63, 0x65, 0x18, 0x1d, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
+	0x65, 0x63, 0x52, 0x1f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x46,
+	0x65, 0x65, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x49, 0x6d, 0x70, 0x6f, 0x72, 0x74, 0x61,
+	0x6e, 0x63, 0x65, 0x12, 0x65, 0x0a, 0x12, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x77,
+	0x61, 0x72, 0x64, 0x5f, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x18, 0x1e, 0x20, 0x03, 0x28, 0x09, 0x42,
+	0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f,
+	0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f,
+	0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x10, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52,
 	0x65, 0x77, 0x61, 0x72, 0x64, 0x41, 0x6c, 0x70, 0x68, 0x61, 0x12, 0x8a, 0x01, 0x0a, 0x23, 0x76,
 	0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x5f, 0x76, 0x73, 0x5f, 0x61, 0x6c, 0x6c,
 	0x6f, 0x72, 0x61, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x65, 0x77, 0x61,
-	0x72, 0x64, 0x18, 0x1a, 0x20, 0x03, 0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x72, 0x64, 0x18, 0x1f, 0x20, 0x03, 0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
 	0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
 	0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d,
 	0x10, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65,
