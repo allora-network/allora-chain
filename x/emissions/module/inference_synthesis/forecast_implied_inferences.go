@@ -36,6 +36,9 @@ func Gradient(p alloraMath.Dec, x Regret) (Weight, error) {
 		return Weight{}, err
 	}
 	numerator, err := pResult.Mul(eToTheX)
+	if err != nil {
+		return Weight{}, err
+	}
 	ret, err := numerator.Quo(onePlusEToTheX)
 	if err != nil {
 		return Weight{}, err
@@ -92,6 +95,10 @@ func CalcForcastImpliedInferences(
 					return nil, err
 				}
 				R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
+				if err != nil {
+					fmt.Println("Error calculating forecasted regrets: ", err)
+					return nil, err
+				}
 				if first {
 					maxjRijk = R_ik[j]
 					first = false
