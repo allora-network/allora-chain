@@ -134,6 +134,9 @@ func GetRewardsWithOutTax(
 		}
 		avg.Count += 1
 		avg.Value, err = totalRewards.Quo(alloraMath.NewDecFromInt64(int64(avg.Count)))
+		if err != nil {
+			continue
+		}
 		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
 		fee, err := CalculateWorkerTax(avg.Value)
 		if err != nil {

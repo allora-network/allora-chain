@@ -18,6 +18,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		sdk.AccAddress(types.AlloraRewardsAccountName),
 		sdk.DefaultBondDenom).Amount
 	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
+	if err != nil {
+		return err
+	}
 
 	// Get Distribution of Rewards per Topic
 	weights, sumWeight, err := GetActiveTopicWeights(ctx, k, activeTopics)

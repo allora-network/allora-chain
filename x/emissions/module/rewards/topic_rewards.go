@@ -141,6 +141,9 @@ func GetActiveTopicWeights(
 		}
 		weights[i] = weight
 		sumWeight, err = sumWeight.Add(weight)
+		if err != nil {
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		}
 	}
 	return weights, sumWeight, nil
 }

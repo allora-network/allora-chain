@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"math"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -594,6 +596,9 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 		maxGradient, err = maxAbsDiffCoeff.Quo(learningRate)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		copy(finalScores, newScores)
 	}
@@ -762,7 +767,13 @@ func ExponentialMovingAverage(alpha, current, previous alloraMath.Dec) (alloraMa
 		return alloraMath.ZeroDec(), err
 	}
 	oneMinusAlphaTimesPrev, err := oneMinusAlpha.Mul(previous)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 	ret, err := alphaCurrent.Add(oneMinusAlphaTimesPrev)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 	return ret, nil
 }
 
@@ -1106,13 +1117,16 @@ func NormalizationFactor(
 // Fee = R_avg * N_c^(a-1)
 func CalculateWorkerTax(average alloraMath.Dec) (alloraMath.Dec, error) {
 	a := types.DefaultParameterForTax() - 1
-	if a < 0 {
+	if a == math.MaxUint64 { // overflow
 		a = 0
 	}
 	numClientsForTax := alloraMath.NewDecFromInt64(int64(types.DefaultParamsNumberOfClientsForTax()))
 	aDec := alloraMath.NewDecFromInt64(int64(a))
 
 	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 	fee, err := average.Mul(N_cToTheAMinusOne)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
