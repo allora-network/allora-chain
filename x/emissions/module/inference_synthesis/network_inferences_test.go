@@ -17,31 +17,75 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 		maxRegret                             inference_synthesis.Regret
 		epsilon                               float64
 		pInferenceSynthesis                   float64
+		infererNetworkRegrets                 map[string]inference_synthesis.Regret
 		expectedNetworkCombinedInferenceValue float64
 		expectedErr                           error
 	}{
-		{ // ROW 3
+		{ // EPOCH 3
 			name: "normal operation",
 			inferenceByWorker: map[string]*emissions.Inference{
-				"worker0": {Value: -0.05142348924899710},
-				"worker1": {Value: -0.03165322119892420},
+				"worker0": {Value: -0.0514234892489971},
+				"worker1": {Value: -0.0316532211989242},
 				"worker2": {Value: -0.1018014248041400},
 			},
 			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
-				"worker0": {Value: -0.07075177115182300},
-				"worker1": {Value: -0.06464638412104260},
-				"worker2": {Value: -0.06340991134166660},
+				"worker3": {Value: -0.0707517711518230},
+				"worker4": {Value: -0.0646463841210426},
+				"worker5": {Value: -0.0634099113416666},
 			},
-			maxRegret:                             0.5,
-			epsilon:                               1e-4,
-			pInferenceSynthesis:                   2,
+			maxRegret:           0.9871536722074480,
+			epsilon:             1e-4,
+			pInferenceSynthesis: 2,
+			infererNetworkRegrets: map[string]inference_synthesis.Regret{
+				"worker0": 0.6975029322458370,
+				"worker1": 0.910174442412618,
+				"worker2": 0.9871536722074480,
+				"worker3": 0.8308330665491310,
+				"worker4": 0.8396961220162480,
+				"worker5": 0.8017696138115460,
+			},
 			expectedNetworkCombinedInferenceValue: -0.06470631905627390,
+			expectedErr:                           nil,
+		},
+		{ // EPOCH 4
+			name: "normal operation2",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker0": {Value: -0.14361768314408600},
+				"worker1": {Value: -0.23422685055675900},
+				"worker2": {Value: -0.18201270373970600},
+			},
+			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
+				"worker3": {Value: -0.19840891048468800},
+				"worker4": {Value: -0.19696044261177800},
+				"worker5": {Value: -0.20289734770434400},
+			},
+			maxRegret:           0.9737035757621540,
+			epsilon:             1e-4,
+			pInferenceSynthesis: 2,
+			infererNetworkRegrets: map[string]inference_synthesis.Regret{
+				"worker0": 0.5576393860961080,
+				"worker1": 0.8588215562008240,
+				"worker2": 0.9737035757621540,
+				"worker3": 0.7535724745797420,
+				"worker4": 0.7658774622830770,
+				"worker5": 0.7185104293863190,
+			},
+			expectedNetworkCombinedInferenceValue: -0.19466636004515200,
 			expectedErr:                           nil,
 		},
 	}
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
+			for inferer, regret := range tc.infererNetworkRegrets {
+				s.emissionsKeeper.SetInfererNetworkRegret(
+					s.ctx,
+					topicId,
+					[]byte(inferer),
+					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
 			networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
 				s.ctx,
 				s.emissionsKeeper,
@@ -57,8 +101,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
 				s.Require().NoError(err)
-
-				log.Printf("Expected network combined inference value: %v, Actual network combined inference value: %v, Epsilon: %v.", tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue, 1e-5)
 				s.Require().InEpsilon(tc.expectedNetworkCombinedInferenceValue, networkCombinedInferenceValue, 1e-5, "Network combined inference value should match expected value within epsilon")
 			}
 		})

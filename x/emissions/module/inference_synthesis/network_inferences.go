@@ -118,7 +118,7 @@ func CalcWeightedInference(
 			return 0, err
 		}
 		// Normalize inferer regret then calculate gradient => weight per inferer for network combined inference
-		weight, err := Gradient(pInferenceSynthesis, regret.Value/maxRegret)
+		weight, err := Gradient(pInferenceSynthesis, regret.Value/math.Abs(maxRegret))
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
 			return 0, err
@@ -135,13 +135,13 @@ func CalcWeightedInference(
 			return 0, err
 		}
 		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
-		weight, err := Gradient(pInferenceSynthesis, regret.Value/maxRegret)
+		weight, err := Gradient(pInferenceSynthesis, regret.Value/math.Abs(maxRegret))
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
 			return 0, err
 		}
-		if weight != 0 && inferenceByWorker[forecaster] != nil {
-			unnormalizedI_i += weight * inferenceByWorker[forecaster].Value // numerator of network combined inference calculation
+		if weight != 0 && forecastImpliedInferenceByWorker[forecaster] != nil {
+			unnormalizedI_i += weight * forecastImpliedInferenceByWorker[forecaster].Value // numerator of network combined inference calculation
 			sumWeights += weight
 		}
 	}
