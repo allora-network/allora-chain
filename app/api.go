@@ -41,40 +41,20 @@ type InferenceItem struct {
 	Inference string `json:"inference"`
 }
 
-type WeightInferencePayload struct {
-	Inferences    []LatestInferences `json:"inferences"`
-	LatestWeights map[string]string  `json:"latest_weights"`
+type LossesPayload struct {
+	Inferences []emissionstypes.ValueBundle `json:"inferences"`
 }
 
 func generateLosses(
-	inferences []*emissionstypes.InferenceSetForScoring,
+	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
 	topicId uint64,
 	nonce emissionstypes.Nonce,
 	blocktime uint64) {
 
-	//
-	// TODO Change this to receive and use a ValueBundle instead, not just plain inferences
-	inferencesByTimestamp := []LatestInferences{}
-	for _, infSet := range inferences {
-		timestamp := fmt.Sprintf("%d", infSet.BlockHeight)
-		inferences := []InferenceItem{}
-		for _, inf := range infSet.Inferences.Inferences {
-			inferences = append(inferences, InferenceItem{
-				Worker:    inf.Worker,
-				Inference: strconv.FormatFloat(inf.Value, 'f', -1, 64),
-			})
-		}
-		inferencesByTimestamp = append(inferencesByTimestamp, LatestInferences{
-			Timestamp:  timestamp,
-			Inferences: inferences,
-		})
-	}
-
-	// Combine everything into the final JSON object
-	payloadObj := WeightInferencePayload{
-		Inferences: inferencesByTimestamp,
+	payloadObj := LossesPayload{
+		Inferences: []emissionstypes.ValueBundle{*inferences},
 	}
 
 	payloadJSON, err := json.Marshal(payloadObj)
@@ -84,11 +64,11 @@ func generateLosses(
 	}
 
 	params := string(payloadJSON)
-
+	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
-		TopicID:    strconv.FormatUint(topicId, 10),
+		TopicID:    topicIdStr,
 		Config: Config{
 			Stdin: &params,
 			Environment: []EnvVar{
@@ -116,7 +96,7 @@ func generateLosses(
 		return
 	}
 	payloadStr := string(payload)
-
+	fmt.Println("Making Losses Api Call, Payload: ", payloadStr)
 	makeApiCall(payloadStr)
 }
 
