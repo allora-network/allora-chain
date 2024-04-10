@@ -17,15 +17,11 @@ import (
 
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
 func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, reportedLosses types.ReputerValueBundles) ([]types.Score, error) {
-	// Fetch all workers for the topic to determine expected report coverage
-	allWorkers, err := keeper.GetTopicWorkers(ctx, topicId)
-	if err != nil {
-		return nil, err
-	}
-	allWorkerAddresses := make(map[string]struct{})
-	for _, worker := range allWorkers {
-		allWorkerAddresses[worker.String()] = struct{}{}
-	}
+
+	// Ensure all workers are present in the reported losses
+	// This is necessary to ensure that all workers are accounted for in the final scores
+	// If a worker is missing from the reported losses, it will be added with a NaN value
+	reportedLosses = ensureWorkerPresence(reportedLosses)
 
 	// Fetch reputers data
 	var reputerAddresses []sdk.AccAddress
@@ -52,44 +48,6 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 			return []types.Score{}, err
 		}
 		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
-
-		// Check if all workers are reported in OneOutInfererValues, OneOutForecasterValues, OneInForecasterValues
-		workerOneOutInfererValues := map[string]bool{}
-		workerOneOutForecasterValues := map[string]bool{}
-		workerOneInForecasterValues := map[string]bool{}
-
-		// Mark workers reported in OneOutInfererValues
-		for _, value := range reportedLoss.ValueBundle.OneOutInfererValues {
-			if _, exists := allWorkerAddresses[value.Worker]; exists {
-				workerOneOutInfererValues[value.Worker] = true
-			}
-		}
-		// Mark workers reported in OneOutForecasterValues
-		for _, value := range reportedLoss.ValueBundle.OneOutForecasterValues {
-			if _, exists := allWorkerAddresses[value.Worker]; exists {
-				workerOneOutForecasterValues[value.Worker] = true
-			}
-		}
-		// Mark workers reported in OneInForecasterValues
-		for _, value := range reportedLoss.ValueBundle.OneInForecasterValues {
-			if _, exists := allWorkerAddresses[value.Worker]; exists {
-				workerOneInForecasterValues[value.Worker] = true
-			}
-		}
-
-		// Check the missing workers and add NaN values for the not reported
-		// This will help identify the losses that were not reported by the reputer
-		for worker := range allWorkerAddresses {
-			if _, reported := workerOneOutInfererValues[worker]; !reported {
-				reportedLoss.ValueBundle.OneOutInfererValues = append(reportedLoss.ValueBundle.OneOutInfererValues, &types.WithheldWorkerAttributedValue{Worker: worker, Value: math.NaN()})
-			}
-			if _, reported := workerOneOutForecasterValues[worker]; !reported {
-				reportedLoss.ValueBundle.OneOutForecasterValues = append(reportedLoss.ValueBundle.OneOutForecasterValues, &types.WithheldWorkerAttributedValue{Worker: worker, Value: math.NaN()})
-			}
-			if _, reported := workerOneInForecasterValues[worker]; !reported {
-				reportedLoss.ValueBundle.OneInForecasterValues = append(reportedLoss.ValueBundle.OneInForecasterValues, &types.WorkerAttributedValue{Worker: worker, Value: math.NaN()})
-			}
-		}
 
 		// Get all reported losses from bundle
 		reputerLosses := ExtractValues(reportedLoss.ValueBundle)
@@ -191,4 +149,72 @@ func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint6
 	}
 
 	return newScores, nil
+}
+
+// Check if all workers are present in the reported losses and add NaN values for missing workers
+// Returns the reported losses adding NaN values for missing workers in uncompleted reported losses
+func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.ReputerValueBundles {
+	// Consolidate all unique worker addresses from the three slices
+	allWorkersOneOutInferer := make(map[string]struct{})
+	allWorkersOneOutForecaster := make(map[string]struct{})
+	allWorkersOneInForecaster := make(map[string]struct{})
+
+	for _, bundle := range reportedLosses.ReputerValueBundles {
+		for _, workerValue := range bundle.ValueBundle.OneOutInfererValues {
+			allWorkersOneOutInferer[workerValue.Worker] = struct{}{}
+		}
+		for _, workerValue := range bundle.ValueBundle.OneOutForecasterValues {
+			allWorkersOneOutForecaster[workerValue.Worker] = struct{}{}
+		}
+		for _, workerValue := range bundle.ValueBundle.OneInForecasterValues {
+			allWorkersOneInForecaster[workerValue.Worker] = struct{}{}
+		}
+	}
+
+	// Ensure each set has all workers, add NaN value for missing workers
+	for _, bundle := range reportedLosses.ReputerValueBundles {
+		bundle.ValueBundle.OneOutInfererValues = ensureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
+		bundle.ValueBundle.OneOutForecasterValues = ensureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
+		bundle.ValueBundle.OneInForecasterValues = ensureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
+	}
+
+	return reportedLosses
+}
+
+// ensureAllWorkersPresent checks and adds missing workers with NaN values for a given slice of WorkerAttributedValue
+func ensureAllWorkersPresent(values []*types.WorkerAttributedValue, allWorkers map[string]struct{}) []*types.WorkerAttributedValue {
+	foundWorkers := make(map[string]bool)
+	for _, value := range values {
+		foundWorkers[value.Worker] = true
+	}
+
+	for worker := range allWorkers {
+		if !foundWorkers[worker] {
+			values = append(values, &types.WorkerAttributedValue{
+				Worker: worker,
+				Value:  math.NaN(),
+			})
+		}
+	}
+
+	return values
+}
+
+// ensureAllWorkersPresentWithheld checks and adds missing workers with NaN values for a given slice of WithheldWorkerAttributedValue
+func ensureAllWorkersPresentWithheld(values []*types.WithheldWorkerAttributedValue, allWorkers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
+	foundWorkers := make(map[string]bool)
+	for _, value := range values {
+		foundWorkers[value.Worker] = true
+	}
+
+	for worker := range allWorkers {
+		if !foundWorkers[worker] {
+			values = append(values, &types.WithheldWorkerAttributedValue{
+				Worker: worker,
+				Value:  math.NaN(),
+			})
+		}
+	}
+
+	return values
 }
