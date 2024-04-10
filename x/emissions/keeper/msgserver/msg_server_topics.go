@@ -2,6 +2,9 @@ package msgserver
 
 import (
 	"context"
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	"math/big"
 	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -20,6 +23,17 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 	if !isTopicCreator {
 		return nil, types.ErrNotInTopicCreationWhitelist
+	}
+
+	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
+	feeAmount := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+
+	hasEnoughBal, err := ms.k.CheckEnoughDenom(ctx, creator, feeAmount)
+	if err != nil {
+		return nil, err
+	}
+	if !hasEnoughBal {
+		return nil, types.ErrTopicCreatorNotEnoughDenom
 	}
 
 	id, err := ms.k.GetNumTopics(ctx)
@@ -86,6 +100,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
+	// Transfer fee amount from creator to ecosystem bucket
+	_ = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.EcosystemModuleName, sdk.NewCoins(feeAmount))
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 

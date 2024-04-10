@@ -40,6 +40,7 @@ func DefaultParams() Params {
 		TopicRewardFeeRevenueImportance: float64(0.5),                               // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                float64(0.5),                               // alpha for topic reward calculation
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
+		CreateTopicFee:                  uint64(10),                                 //topic registration fee
 	}
 }
 
@@ -165,6 +166,10 @@ func DefaultParamsTopicRewardAlpha() float64 {
 
 func DefaultParamsValidatorsVsAlloraPercentReward() cosmosMath.LegacyDec {
 	return DefaultParams().ValidatorsVsAlloraPercentReward
+}
+
+func DefaultParamsCreateTopicFee() uint64 {
+	return DefaultParams().CreateTopicFee
 }
 
 // Validate does the sanity check on the params.

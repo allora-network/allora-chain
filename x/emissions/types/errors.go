@@ -111,4 +111,5 @@ var (
 	ErrSumWeightsLessThanEta                             = errors.Register(ModuleName, 106, "sum weights less than eta")
 	ErrSliceLengthMismatch                               = errors.Register(ModuleName, 107, "slice length mismatch")
 	ErrNonceNotUnfulfilled                               = errors.Register(ModuleName, 108, "nonce not unfuilfilled")
+	ErrTopicCreatorNotEnoughDenom                        = errors.Register(ModuleName, 109, "topic creator does not have enough denom")
 )

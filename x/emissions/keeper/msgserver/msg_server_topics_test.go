@@ -2,8 +2,11 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	"fmt"
+	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
 )
 
 // ########################################
@@ -14,15 +17,32 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	balM := s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom)
+	bal := s.bankKeeper.GetBalance(s.ctx, senderAddr, params.DefaultBondDenom)
+
+	fmt.Println("bal", balM, bal.Denom)
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
+		Creator:          sender,
+		Metadata:         "Some metadata for the new topic",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      "1.0",
+		PrewardReputer:   "1.0",
+		PrewardInference: "2.0",
+		PrewardForecast:  "3.0",
+		FTolerance:       "4.0",
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)

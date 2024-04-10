@@ -74,6 +74,8 @@ message Params {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+
+  uint64 create_topic_fee = 32; // topic registration fee
 }
 
 /// TOPICS
