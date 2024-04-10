@@ -16,8 +16,8 @@ func GetWorkersRewardsInferenceTask(
 	keeper keeper.Keeper,
 	topicId uint64,
 	block int64,
-	preward float64,
-	totalInferenceRewards float64,
+	preward alloraMath.Dec,
+	totalInferenceRewards alloraMath.Dec,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -26,7 +26,7 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get last score for each worker
-	var scoresFloat64 [][]float64
+	var scoresDec [][]alloraMath.Dec
 	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
@@ -44,15 +44,15 @@ func GetWorkersRewardsInferenceTask(
 		workerAddresses = append(workerAddresses, workerAddr)
 
 		// Convert scores to float64
-		var workerLastScoresFloat64 []float64
+		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range workerLastScores {
-			workerLastScoresFloat64 = append(workerLastScoresFloat64, score.Score)
+			workerLastScoresDec = append(workerLastScoresDec, score.Score)
 		}
-		scoresFloat64 = append(scoresFloat64, workerLastScoresFloat64)
+		scoresDec = append(scoresDec, workerLastScoresDec)
 	}
 
 	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresFloat64, preward, totalInferenceRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalInferenceRewards, workerAddresses)
 
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func GetWorkersRewardsForecastTask(
 	keeper keeper.Keeper,
 	topicId uint64,
 	block int64,
-	preward float64,
-	totalForecastRewards float64,
+	preward alloraMath.Dec,
+	totalForecastRewards alloraMath.Dec,
 ) ([]TaskRewards, error) {
 	// Get network loss
 	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
@@ -75,7 +75,7 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get new score for each worker
-	var scoresFloat64 [][]float64
+	var scoresDec [][]alloraMath.Dec
 	var workerAddresses []sdk.AccAddress
 	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
@@ -92,16 +92,16 @@ func GetWorkersRewardsForecastTask(
 		// Add worker address in the worker addresses array
 		workerAddresses = append(workerAddresses, workerAddr)
 
-		// Convert scores to float64
-		var workerLastScoresFloat64 []float64
+		// Convert scores to alloraMath.Dec
+		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range workerLastScores {
-			workerLastScoresFloat64 = append(workerLastScoresFloat64, score.Score)
+			workerLastScoresDec = append(workerLastScoresDec, score.Score)
 		}
-		scoresFloat64 = append(scoresFloat64, workerLastScoresFloat64)
+		scoresDec = append(scoresDec, workerLastScoresDec)
 	}
 
 	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresFloat64, preward, totalForecastRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalForecastRewards, workerAddresses)
 
 	if err != nil {
 		return nil, err
@@ -120,18 +120,31 @@ func GetRewardsWithOutTax(
 	var result []TaskRewards
 	// Get average reward for this worker
 	for _, reward := range rewards {
-		avg, e := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
-		if e != nil {
+		avg, err := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
+		if err != nil {
 			continue
 		}
-		totalRewards := avg.Value*float64(avg.Count) + reward.Reward
+		avgValueTimesCount, err := avg.Value.Mul(alloraMath.NewDecFromInt64(int64(avg.Count)))
+		if err != nil {
+			continue
+		}
+		totalRewards, err := avgValueTimesCount.Add(reward.Reward)
+		if err != nil {
+			continue
+		}
 		avg.Count += 1
-		avg.Value = totalRewards / float64(avg.Count)
+		avg.Value, err = totalRewards.Quo(alloraMath.NewDecFromInt64(int64(avg.Count)))
 		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
-		fee := CalculateWorkerTax(avg.Value)
-		reward.Reward -= fee
-		if reward.Reward < 0 {
-			reward.Reward = 0
+		fee, err := CalculateWorkerTax(avg.Value)
+		if err != nil {
+			continue
+		}
+		reward.Reward, err = reward.Reward.Sub(fee)
+		if err != nil {
+			continue
+		}
+		if reward.Reward.Cmp(alloraMath.ZeroDec()) == alloraMath.LessThan {
+			reward.Reward = alloraMath.ZeroDec()
 		}
 		result = append(result, TaskRewards{
 			Address: reward.Address,
