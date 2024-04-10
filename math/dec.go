@@ -479,3 +479,31 @@ func (x Dec) Reduce() (Dec, int) {
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
 }
+
+// helper function for test suites that want to check
+// if some math is within a delta
+func InDelta(expected, result Dec, epsilon Dec) bool {
+	delta, err := expected.Sub(result)
+	if err != nil {
+		return false
+	}
+	deltaAbs := delta.Abs()
+	compare := deltaAbs.Cmp(epsilon)
+	if compare == LessThan || compare == EqualTo {
+		return true
+	}
+	return false
+}
+
+// Helper function to compare two slices of alloraMath.Dec within a delta
+func SlicesInDelta(a, b []Dec, epsilon Dec) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !InDelta(a[i], b[i], epsilon) {
+			return false
+		}
+	}
+	return true
+}
