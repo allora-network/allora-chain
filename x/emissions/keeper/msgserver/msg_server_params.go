@@ -61,6 +61,24 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.PercentRewardsReputersWorkers) == 1 {
 		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
 	}
+	if len(newParams.Sharpness) == 1 {
+		existingParams.Sharpness = newParams.Sharpness[0]
+	}
+	if len(newParams.BetaEntropy) == 1 {
+		existingParams.BetaEntropy = newParams.BetaEntropy[0]
+	}
+	if len(newParams.DcoefAbs) == 1 {
+		existingParams.DcoefAbs = newParams.DcoefAbs[0]
+	}
+	if len(newParams.LearningRate) == 1 {
+		existingParams.LearningRate = newParams.LearningRate[0]
+	}
+	if len(newParams.MaxGradientThreshold) == 1 {
+		existingParams.MaxGradientThreshold = newParams.MaxGradientThreshold[0]
+	}
+	if len(newParams.MinStakeFraction) == 1 {
+		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
+	}
 	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
 		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
 	}
@@ -73,6 +91,21 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.PInferenceSynthesis) == 1 {
 		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
 	}
+	if len(newParams.AlphaRegret) == 1 {
+		existingParams.AlphaRegret = newParams.AlphaRegret[0]
+	}
+	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
+		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
+	}
+	if len(newParams.MaxUnfulfilledReputerRequests) == 1 {
+		existingParams.MaxUnfulfilledReputerRequests = newParams.MaxUnfulfilledReputerRequests[0]
+	}
+	if len(newParams.NumberExpectedInferenceSybils) == 1 {
+		existingParams.NumberExpectedInferenceSybils = newParams.NumberExpectedInferenceSybils[0]
+	}
+	if len(newParams.SybilTaxExponent) == 1 {
+		existingParams.SybilTaxExponent = newParams.SybilTaxExponent[0]
+	}
 	if len(newParams.TopicRewardStakeImportance) == 1 {
 		existingParams.TopicRewardStakeImportance = newParams.TopicRewardStakeImportance[0]
 	}
@@ -84,6 +117,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
 		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]
+	}
+	if len(newParams.MaxSamplesToScaleScores) == 1 {
+		existingParams.MaxSamplesToScaleScores = newParams.MaxSamplesToScaleScores[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

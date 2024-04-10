@@ -35,12 +35,13 @@ func DefaultParams() Params {
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),     // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                                // maximum number of outstanding nonces for worker requests from the chain
 		MaxUnfulfilledReputerRequests:   uint64(100),                                // maximum number of outstanding nonces for reputer requests from the chain
-		NumberOfClientsForTax:           uint64(10),                                 // global number for calculation tax of worker reward
-		ParameterForTax:                 uint64(3),                                  // global parameter for calculation tax of worker reward
+		NumberExpectedInferenceSybils:   uint64(10),                                 // global number for calculation tax of worker reward
+		SybilTaxExponent:                uint64(3),                                  // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),     // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),     // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),     // alpha for topic reward calculation
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
+		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
 	}
 }
 
@@ -144,12 +145,12 @@ func DefaultParamsMaxUnfulfilledReputerRequestNonces() uint64 {
 	return DefaultParams().MaxUnfulfilledReputerRequests
 }
 
-func DefaultParamsNumberOfClientsForTax() uint64 {
-	return DefaultParams().NumberOfClientsForTax
+func DefaultParamsNumberExpectedInfernceSybils() uint64 {
+	return DefaultParams().NumberExpectedInferenceSybils
 }
 
-func DefaultParameterForTax() uint64 {
-	return DefaultParams().ParameterForTax
+func DefaultParamsSybilTaxExponent() uint64 {
+	return DefaultParams().SybilTaxExponent
 }
 
 func DefaultParamsTopicRewardStakeImportance() alloraMath.Dec {
@@ -166,6 +167,10 @@ func DefaultParamsTopicRewardAlpha() alloraMath.Dec {
 
 func DefaultParamsValidatorsVsAlloraPercentReward() cosmosMath.LegacyDec {
 	return DefaultParams().ValidatorsVsAlloraPercentReward
+}
+
+func DefaultParamsMaxSamplesToScaleScores() uint64 {
+	return DefaultParams().MaxSamplesToScaleScores
 }
 
 // Validate does the sanity check on the params.

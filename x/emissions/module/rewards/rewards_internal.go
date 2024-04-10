@@ -749,34 +749,6 @@ func GetAdjustedStake(
 	return ret, nil
 }
 
-// Used by Rewards fraction functions,
-// all the exponential moving average functions take the form
-// x_average=α*x_current + (1-α)*x_previous
-//
-// this covers the equations
-// Uij = αUij + (1 − α)Ui−1,j
-// ̃Vik = αVik + (1 − α)Vi−1,k
-// ̃Wim = αWim + (1 − α)Wi−1,m
-func ExponentialMovingAverage(alpha, current, previous alloraMath.Dec) (alloraMath.Dec, error) {
-	alphaCurrent, err := alpha.Mul(current)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	oneMinusAlpha, err := alloraMath.OneDec().Sub(alpha)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	oneMinusAlphaTimesPrev, err := oneMinusAlpha.Mul(previous)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	ret, err := alphaCurrent.Add(oneMinusAlphaTimesPrev)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	return ret, nil
-}
-
 // f_ij, f_ik, and f_im are all reward fractions
 // that require computing the ratio of one participant to all participants
 // yes this is extremely simple math
@@ -1116,11 +1088,11 @@ func NormalizationFactor(
 // Calculate the tax of the reward
 // Fee = R_avg * N_c^(a-1)
 func CalculateWorkerTax(average alloraMath.Dec) (alloraMath.Dec, error) {
-	a := types.DefaultParameterForTax() - 1
+	a := types.DefaultParamsSybilTaxExponent() - 1
 	if a == math.MaxUint64 { // overflow
 		a = 0
 	}
-	numClientsForTax := alloraMath.NewDecFromInt64(int64(types.DefaultParamsNumberOfClientsForTax()))
+	numClientsForTax := alloraMath.NewDecFromInt64(int64(types.DefaultParamsNumberExpectedInfernceSybils()))
 	aDec := alloraMath.NewDecFromInt64(int64(a))
 
 	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)
