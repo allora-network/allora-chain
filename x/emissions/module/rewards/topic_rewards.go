@@ -134,7 +134,7 @@ func GetActiveTopicWeights(
 		if previousTopicWeight.Epoch == currentFeeRevenueEpoch-1 {
 			previousWeight = previousTopicWeight.Weight
 		}
-		weight, err := ExponentialMovingAverage(alphaTopic, targetWeight, previousWeight)
+		weight, err := alloraMath.ExponentialMovingAverage(alphaTopic, targetWeight, previousWeight)
 		if err != nil {
 			fmt.Println("ema error")
 			return []alloraMath.Dec{}, alloraMath.Dec{}, err
