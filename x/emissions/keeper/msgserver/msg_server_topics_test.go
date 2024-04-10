@@ -64,7 +64,6 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
 }
