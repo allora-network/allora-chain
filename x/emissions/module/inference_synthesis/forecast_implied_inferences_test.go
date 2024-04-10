@@ -164,11 +164,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 					},
 				},
 			},
-			networkCombinedLoss: 0.01569376583279220, // <- Row 2.  Row 3: 0.013254796439333800,
+			networkCombinedLoss: 0.01569376583279220, // <- from Row 2
 			epsilon:             1e-4,
 			pInferenceSynthesis: 2.0,
 			expected: map[string]*emissions.Inference{
-				"forecaster0": {Value: -0.07075177115182300}, // test value: -0.04602598
+				"forecaster0": {Value: -0.07075177115182300},
 			},
 			expectedErr: nil,
 		},
