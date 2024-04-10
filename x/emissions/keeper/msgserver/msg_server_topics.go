@@ -43,7 +43,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.ModuleName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
