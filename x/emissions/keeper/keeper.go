@@ -80,7 +80,7 @@ type Keeper struct {
 	totalStake collections.Item[Uint]
 	// for every topic, how much total stake does that topic have accumulated?
 	topicStake collections.Map[TopicId, Uint]
-	// amount of stake a reputer has placed in a topic, signalling their authority on the topic
+	// amount of stake a reputer has placed in a topic + delegate stake placed in them, signalling their authority on the topic
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, Reputer], Uint]
 	// map of (reputer) -> removal information for that reputer
 	stakeRemovalQueue collections.Map[Reputer, types.StakeRemoval]
