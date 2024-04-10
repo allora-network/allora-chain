@@ -22,16 +22,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 		expectedErr                           error
 	}{
 		{ // EPOCH 3
-			name: "normal operation",
+			name: "normal operation 1",
 			inferenceByWorker: map[string]*emissions.Inference{
-				"worker0": {Value: alloraMath.MustNewDecFromString("-0.05142348924899710")},
-				"worker1": {Value: alloraMath.MustNewDecFromString("-0.03165322119892420")},
+				"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
+				"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
+				"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
 			},
 			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
-				"worker0": {Value: alloraMath.MustNewDecFromString("-0.07075177115182300")},
-				"worker1": {Value: alloraMath.MustNewDecFromString("-0.06464638412104260")},
+				"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
+				"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
+				"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
 			},
-			maxRegret:           alloraMath.MustNewDecFromString("0.5"),
+			maxRegret:           alloraMath.MustNewDecFromString("0.9871536722074480"),
 			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2"),
 			infererNetworkRegrets: map[string]inference_synthesis.Regret{
@@ -46,7 +48,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 			expectedErr:                           nil,
 		},
 		{ // EPOCH 4
-			name: "normal operation2",
+			name: "normal operation 2",
 			inferenceByWorker: map[string]*emissions.Inference{
 				"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
 				"worker1": {Value: alloraMath.MustNewDecFromString("-0.23422685055675900")},
