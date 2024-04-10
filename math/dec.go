@@ -497,11 +497,18 @@ func InDelta(expected, result Dec, epsilon Dec) bool {
 
 // Helper function to compare two slices of alloraMath.Dec within a delta
 func SlicesInDelta(a, b []Dec, epsilon Dec) bool {
-	if len(a) != len(b) {
+	lenA := len(a)
+	if lenA != len(b) {
 		return false
 	}
-	for i := range a {
-		if !InDelta(a[i], b[i], epsilon) {
+	for i := 0; i < lenA; i++ {
+		// for performance reasons we do not call InDelta
+		// pass by copy causes this to run slow af for large slices
+		delta, err := a[i].Sub(b[i])
+		if err != nil {
+			return false
+		}
+		if delta.Abs().Cmp(epsilon) == GreaterThan {
 			return false
 		}
 	}

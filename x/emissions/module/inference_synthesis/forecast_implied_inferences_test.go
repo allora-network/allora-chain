@@ -45,10 +45,15 @@ func (s *InferenceSynthesisTestSuite) TestGradient() {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
 				s.Require().NoError(err)
-				s.Require().True(alloraMath.InDelta(
-					tc.expected,
-					result,
-					alloraMath.MustNewDecFromString("0.00001")), "result should match expected value within epsilon")
+				s.Require().True(
+					alloraMath.InDelta(
+						tc.expected,
+						result,
+						alloraMath.MustNewDecFromString("0.00001")),
+					"result should match expected value within epsilon",
+					tc.expected.String(),
+					result.String(),
+				)
 			}
 		})
 	}
@@ -162,7 +167,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 				for key, expectedValue := range tc.expected {
 					actualValue, exists := result[key]
 					s.Require().True(exists, "Expected key does not exist in result map")
-					s.Require().InEpsilon(expectedValue.Value, actualValue.Value, 1e-5, "Values do not match for key: %s", key)
+					s.Require().True(
+						alloraMath.InDelta(
+							expectedValue.Value,
+							actualValue.Value,
+							alloraMath.MustNewDecFromString("0.00001"),
+						), "Values do not match for key: %s %s %s",
+						key,
+						expectedValue.Value.String(),
+						actualValue.Value.String(),
+					)
 				}
 			}
 		})
