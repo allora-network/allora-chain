@@ -56,9 +56,9 @@ message Params {
   uint64 max_unfulfilled_worker_requests =
       24;  // max number of nonces for worker requests to keep track of for each topic
   uint64 max_unfulfilled_reputer_requests =
-      25;                                 // max number of nonces for reputer requests to keep track of for each topic
-  uint64 number_of_clients_for_tax = 26;  // global number for calculation tax of worker reward
-  uint64 parameter_for_tax = 27;          // global parameter for calculation tax of worker reward
+      25;  // max number of nonces for reputer requests to keep track of for each topic
+  uint64 number_expected_inference_sybils = 26;  // global number for calculation tax of worker reward
+  uint64 sybil_tax_exponent = 27;                // global parameter for calculation tax of worker reward
   double topic_reward_stake_importance = 28;  // The exponent μ represents the importance of stake in the reward of a
                                               // topic and has a fiduciary value of 0.5
   double topic_reward_fee_revenue_importance = 29;  // The exponent ν represents the importance of fee revenue in the
@@ -74,6 +74,7 @@ message Params {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  uint64 max_samples_to_scale_scores = 32;  // number of scores to use for standard deviation calculation
 }
 
 /// TOPICS

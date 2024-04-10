@@ -70,6 +70,48 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		}
 		existingParams.PercentRewardsReputersWorkers = percentRewardsReputersWorkers
 	}
+	if len(newParams.Sharpness) == 1 {
+		sharpness, err := strconv.ParseFloat(newParams.Sharpness[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.Sharpness = sharpness
+	}
+	if len(newParams.BetaEntropy) == 1 {
+		betaEntropy, err := strconv.ParseFloat(newParams.BetaEntropy[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.BetaEntropy = betaEntropy
+	}
+	if len(newParams.DcoefAbs) == 1 {
+		dcoefAbs, err := strconv.ParseFloat(newParams.DcoefAbs[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.DcoefAbs = dcoefAbs
+	}
+	if len(newParams.LearningRate) == 1 {
+		learningRate, err := strconv.ParseFloat(newParams.LearningRate[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.LearningRate = learningRate
+	}
+	if len(newParams.MaxGradientThreshold) == 1 {
+		maxGradientThreshold, err := strconv.ParseFloat(newParams.MaxGradientThreshold[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.MaxGradientThreshold = maxGradientThreshold
+	}
+	if len(newParams.MinStakeFraction) == 1 {
+		minStakeFraction, err := strconv.ParseFloat(newParams.MinStakeFraction[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.MinStakeFraction = minStakeFraction
+	}
 	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
 		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
 	}
@@ -89,6 +131,25 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 			return nil, err
 		}
 		existingParams.PInferenceSynthesis = pInferenceSynthesis
+	}
+	if len(newParams.AlphaRegret) == 1 {
+		alphaRegret, err := strconv.ParseFloat(newParams.AlphaRegret[0], 64)
+		if err != nil {
+			return nil, err
+		}
+		existingParams.AlphaRegret = alphaRegret
+	}
+	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
+		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
+	}
+	if len(newParams.MaxUnfulfilledReputerRequests) == 1 {
+		existingParams.MaxUnfulfilledReputerRequests = newParams.MaxUnfulfilledReputerRequests[0]
+	}
+	if len(newParams.NumberExpectedInfernceSybils) == 1 {
+		existingParams.NumberExpectedInfernceSybils = newParams.NumberExpectedInfernceSybils[0]
+	}
+	if len(newParams.SybilTaxExponent) == 1 {
+		existingParams.SybilTaxExponent = newParams.SybilTaxExponent[0]
 	}
 	if len(newParams.TopicRewardStakeImportance) == 1 {
 		topicRewardStakeImportance, err := strconv.ParseFloat(newParams.TopicRewardStakeImportance[0], 64)
@@ -113,6 +174,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
 		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]
+	}
+	if len(newParams.MaxSamplesToScaleScores) == 1 {
+		existingParams.MaxSamplesToScaleScores = newParams.MaxSamplesToScaleScores[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

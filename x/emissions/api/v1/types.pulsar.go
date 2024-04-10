@@ -44,12 +44,13 @@ var (
 	fd_Params_alpha_regret                        protoreflect.FieldDescriptor
 	fd_Params_max_unfulfilled_worker_requests     protoreflect.FieldDescriptor
 	fd_Params_max_unfulfilled_reputer_requests    protoreflect.FieldDescriptor
-	fd_Params_number_of_clients_for_tax           protoreflect.FieldDescriptor
-	fd_Params_parameter_for_tax                   protoreflect.FieldDescriptor
+	fd_Params_number_expected_inference_sybils           protoreflect.FieldDescriptor
+	fd_Params_sybil_tax_exponent                   protoreflect.FieldDescriptor
 	fd_Params_topic_reward_stake_importance       protoreflect.FieldDescriptor
 	fd_Params_topic_reward_fee_revenue_importance protoreflect.FieldDescriptor
 	fd_Params_topic_reward_alpha                  protoreflect.FieldDescriptor
 	fd_Params_validators_vs_allora_percent_reward protoreflect.FieldDescriptor
+	fd_Params_max_samples_to_scale_scores       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -80,12 +81,13 @@ func init() {
 	fd_Params_alpha_regret = md_Params.Fields().ByName("alpha_regret")
 	fd_Params_max_unfulfilled_worker_requests = md_Params.Fields().ByName("max_unfulfilled_worker_requests")
 	fd_Params_max_unfulfilled_reputer_requests = md_Params.Fields().ByName("max_unfulfilled_reputer_requests")
-	fd_Params_number_of_clients_for_tax = md_Params.Fields().ByName("number_of_clients_for_tax")
-	fd_Params_parameter_for_tax = md_Params.Fields().ByName("parameter_for_tax")
+	fd_Params_number_expected_inference_sybils = md_Params.Fields().ByName("number_expected_inference_sybils")
+	fd_Params_sybil_tax_exponent = md_Params.Fields().ByName("sybil_tax_exponent")
 	fd_Params_topic_reward_stake_importance = md_Params.Fields().ByName("topic_reward_stake_importance")
 	fd_Params_topic_reward_fee_revenue_importance = md_Params.Fields().ByName("topic_reward_fee_revenue_importance")
 	fd_Params_topic_reward_alpha = md_Params.Fields().ByName("topic_reward_alpha")
 	fd_Params_validators_vs_allora_percent_reward = md_Params.Fields().ByName("validators_vs_allora_percent_reward")
+	fd_Params_max_samples_to_scale_scores = md_Params.Fields().ByName("max_samples_to_scale_scores")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -303,15 +305,15 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.NumberOfClientsForTax != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.NumberOfClientsForTax)
-		if !f(fd_Params_number_of_clients_for_tax, value) {
+	if x.NumberExpectedInfernceSybils != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.NumberExpectedInfernceSybils)
+		if !f(fd_Params_number_expected_inference_sybils, value) {
 			return
 		}
 	}
-	if x.ParameterForTax != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.ParameterForTax)
-		if !f(fd_Params_parameter_for_tax, value) {
+	if x.SybilTaxExponent != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.SybilTaxExponent)
+		if !f(fd_Params_sybil_tax_exponent, value) {
 			return
 		}
 	}
@@ -336,6 +338,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 	if x.ValidatorsVsAlloraPercentReward != "" {
 		value := protoreflect.ValueOfString(x.ValidatorsVsAlloraPercentReward)
 		if !f(fd_Params_validators_vs_allora_percent_reward, value) {
+			return
+		}
+	}
+	if x.MaxSamplesToScaleScores != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.MaxSamplesToScaleScores)
+		if !f(fd_Params_max_samples_to_scale_scores, value) {
 			return
 		}
 	}
@@ -404,10 +412,10 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.MaxUnfulfilledWorkerRequests != uint64(0)
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		return x.MaxUnfulfilledReputerRequests != uint64(0)
-	case "emissions.v1.Params.number_of_clients_for_tax":
-		return x.NumberOfClientsForTax != uint64(0)
-	case "emissions.v1.Params.parameter_for_tax":
-		return x.ParameterForTax != uint64(0)
+	case "emissions.v1.Params.number_expected_inference_sybils":
+		return x.NumberExpectedInfernceSybils != uint64(0)
+	case "emissions.v1.Params.sybil_tax_exponent":
+		return x.SybilTaxExponent != uint64(0)
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		return x.TopicRewardStakeImportance != float64(0) || math.Signbit(x.TopicRewardStakeImportance)
 	case "emissions.v1.Params.topic_reward_fee_revenue_importance":
@@ -416,6 +424,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.TopicRewardAlpha != float64(0) || math.Signbit(x.TopicRewardAlpha)
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		return x.ValidatorsVsAlloraPercentReward != ""
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		return x.MaxSamplesToScaleScores != uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -482,10 +492,10 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.MaxUnfulfilledWorkerRequests = uint64(0)
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		x.MaxUnfulfilledReputerRequests = uint64(0)
-	case "emissions.v1.Params.number_of_clients_for_tax":
-		x.NumberOfClientsForTax = uint64(0)
-	case "emissions.v1.Params.parameter_for_tax":
-		x.ParameterForTax = uint64(0)
+	case "emissions.v1.Params.number_expected_inference_sybils":
+		x.NumberExpectedInfernceSybils = uint64(0)
+	case "emissions.v1.Params.sybil_tax_exponent":
+		x.SybilTaxExponent = uint64(0)
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		x.TopicRewardStakeImportance = float64(0)
 	case "emissions.v1.Params.topic_reward_fee_revenue_importance":
@@ -494,6 +504,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.TopicRewardAlpha = float64(0)
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		x.ValidatorsVsAlloraPercentReward = ""
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		x.MaxSamplesToScaleScores = uint64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -585,11 +597,11 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		value := x.MaxUnfulfilledReputerRequests
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.Params.number_of_clients_for_tax":
-		value := x.NumberOfClientsForTax
+	case "emissions.v1.Params.number_expected_inference_sybils":
+		value := x.NumberExpectedInfernceSybils
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.Params.parameter_for_tax":
-		value := x.ParameterForTax
+	case "emissions.v1.Params.sybil_tax_exponent":
+		value := x.SybilTaxExponent
 		return protoreflect.ValueOfUint64(value)
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		value := x.TopicRewardStakeImportance
@@ -603,6 +615,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		value := x.ValidatorsVsAlloraPercentReward
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		value := x.MaxSamplesToScaleScores
+		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -673,10 +688,10 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.MaxUnfulfilledWorkerRequests = value.Uint()
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		x.MaxUnfulfilledReputerRequests = value.Uint()
-	case "emissions.v1.Params.number_of_clients_for_tax":
-		x.NumberOfClientsForTax = value.Uint()
-	case "emissions.v1.Params.parameter_for_tax":
-		x.ParameterForTax = value.Uint()
+	case "emissions.v1.Params.number_expected_inference_sybils":
+		x.NumberExpectedInfernceSybils = value.Uint()
+	case "emissions.v1.Params.sybil_tax_exponent":
+		x.SybilTaxExponent = value.Uint()
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		x.TopicRewardStakeImportance = value.Float()
 	case "emissions.v1.Params.topic_reward_fee_revenue_importance":
@@ -685,6 +700,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.TopicRewardAlpha = value.Float()
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		x.ValidatorsVsAlloraPercentReward = value.Interface().(string)
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		x.MaxSamplesToScaleScores = value.Uint()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -755,10 +772,10 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field max_unfulfilled_worker_requests of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		panic(fmt.Errorf("field max_unfulfilled_reputer_requests of message emissions.v1.Params is not mutable"))
-	case "emissions.v1.Params.number_of_clients_for_tax":
-		panic(fmt.Errorf("field number_of_clients_for_tax of message emissions.v1.Params is not mutable"))
-	case "emissions.v1.Params.parameter_for_tax":
-		panic(fmt.Errorf("field parameter_for_tax of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.number_expected_inference_sybils":
+		panic(fmt.Errorf("field number_expected_inference_sybils of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.sybil_tax_exponent":
+		panic(fmt.Errorf("field sybil_tax_exponent of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		panic(fmt.Errorf("field topic_reward_stake_importance of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.topic_reward_fee_revenue_importance":
@@ -767,6 +784,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field topic_reward_alpha of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		panic(fmt.Errorf("field validators_vs_allora_percent_reward of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		panic(fmt.Errorf("field max_samples_to_scale_scores of message emissions.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -830,9 +849,9 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.Params.max_unfulfilled_reputer_requests":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.Params.number_of_clients_for_tax":
+	case "emissions.v1.Params.number_expected_inference_sybils":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.Params.parameter_for_tax":
+	case "emissions.v1.Params.sybil_tax_exponent":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.Params.topic_reward_stake_importance":
 		return protoreflect.ValueOfFloat64(float64(0))
@@ -842,6 +861,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 		return protoreflect.ValueOfFloat64(float64(0))
 	case "emissions.v1.Params.validators_vs_allora_percent_reward":
 		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.max_samples_to_scale_scores":
+		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -990,11 +1011,11 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.MaxUnfulfilledReputerRequests != 0 {
 			n += 2 + runtime.Sov(uint64(x.MaxUnfulfilledReputerRequests))
 		}
-		if x.NumberOfClientsForTax != 0 {
-			n += 2 + runtime.Sov(uint64(x.NumberOfClientsForTax))
+		if x.NumberExpectedInfernceSybils != 0 {
+			n += 2 + runtime.Sov(uint64(x.NumberExpectedInfernceSybils))
 		}
-		if x.ParameterForTax != 0 {
-			n += 2 + runtime.Sov(uint64(x.ParameterForTax))
+		if x.SybilTaxExponent != 0 {
+			n += 2 + runtime.Sov(uint64(x.SybilTaxExponent))
 		}
 		if x.TopicRewardStakeImportance != 0 || math.Signbit(x.TopicRewardStakeImportance) {
 			n += 10
@@ -1008,6 +1029,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		l = len(x.ValidatorsVsAlloraPercentReward)
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		if x.MaxSamplesToScaleScores != 0 {
+			n += 2 + runtime.Sov(uint64(x.MaxSamplesToScaleScores))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -1037,6 +1061,13 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.MaxSamplesToScaleScores != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxSamplesToScaleScores))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0x80
 		}
 		if len(x.ValidatorsVsAlloraPercentReward) > 0 {
 			i -= len(x.ValidatorsVsAlloraPercentReward)
@@ -1071,15 +1102,15 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0xe1
 		}
-		if x.ParameterForTax != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.ParameterForTax))
+		if x.SybilTaxExponent != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.SybilTaxExponent))
 			i--
 			dAtA[i] = 0x1
 			i--
 			dAtA[i] = 0xd8
 		}
-		if x.NumberOfClientsForTax != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.NumberOfClientsForTax))
+		if x.NumberExpectedInfernceSybils != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.NumberExpectedInfernceSybils))
 			i--
 			dAtA[i] = 0x1
 			i--
@@ -1739,9 +1770,9 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 			case 26:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NumberOfClientsForTax", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NumberExpectedInfernceSybils", wireType)
 				}
-				x.NumberOfClientsForTax = 0
+				x.NumberExpectedInfernceSybils = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1751,16 +1782,16 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.NumberOfClientsForTax |= uint64(b&0x7F) << shift
+					x.NumberExpectedInfernceSybils |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
 			case 27:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ParameterForTax", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SybilTaxExponent", wireType)
 				}
-				x.ParameterForTax = 0
+				x.SybilTaxExponent = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -1770,7 +1801,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.ParameterForTax |= uint64(b&0x7F) << shift
+					x.SybilTaxExponent |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1840,6 +1871,25 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.ValidatorsVsAlloraPercentReward = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 32:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxSamplesToScaleScores", wireType)
+				}
+				x.MaxSamplesToScaleScores = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.MaxSamplesToScaleScores |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -19151,8 +19201,8 @@ type Params struct {
 	AlphaRegret                   float64 `protobuf:"fixed64,23,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`                                                          // how much to weight the most recent log-loss differences in regret EMA update
 	MaxUnfulfilledWorkerRequests  uint64  `protobuf:"varint,24,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`    // max number of nonces for worker requests to keep track of for each topic
 	MaxUnfulfilledReputerRequests uint64  `protobuf:"varint,25,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"` // max number of nonces for reputer requests to keep track of for each topic
-	NumberOfClientsForTax         uint64  `protobuf:"varint,26,opt,name=number_of_clients_for_tax,json=numberOfClientsForTax,proto3" json:"number_of_clients_for_tax,omitempty"`                       // global number for calculation tax of worker reward
-	ParameterForTax               uint64  `protobuf:"varint,27,opt,name=parameter_for_tax,json=parameterForTax,proto3" json:"parameter_for_tax,omitempty"`                                             // global parameter for calculation tax of worker reward
+	NumberExpectedInfernceSybils         uint64  `protobuf:"varint,26,opt,name=number_expected_inference_sybils,json=numberOfClientsForTax,proto3" json:"number_expected_inference_sybils,omitempty"`                       // global number for calculation tax of worker reward
+	SybilTaxExponent               uint64  `protobuf:"varint,27,opt,name=sybil_tax_exponent,json=parameterForTax,proto3" json:"sybil_tax_exponent,omitempty"`                                             // global parameter for calculation tax of worker reward
 	TopicRewardStakeImportance    float64 `protobuf:"fixed64,28,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`         // The exponent μ represents the importance of stake in the reward of a
 	// topic and has a fiduciary value of 0.5
 	TopicRewardFeeRevenueImportance float64 `protobuf:"fixed64,29,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the
@@ -19163,6 +19213,7 @@ type Params struct {
 	// cosmos network validators the rest goes to
 	// allora reputers workers etc
 	ValidatorsVsAlloraPercentReward string `protobuf:"bytes,31,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"`
+	MaxSamplesToScaleScores         uint64 `protobuf:"varint,32,opt,name=max_samples_to_scale_scores,json=maxScoresToUseForStdDev,proto3" json:"max_samples_to_scale_scores,omitempty"` // number of scores to use for standard deviation calculation
 }
 
 func (x *Params) Reset() {
@@ -19360,16 +19411,16 @@ func (x *Params) GetMaxUnfulfilledReputerRequests() uint64 {
 	return 0
 }
 
-func (x *Params) GetNumberOfClientsForTax() uint64 {
+func (x *Params) GetNumberExpectedInfernceSybils() uint64 {
 	if x != nil {
-		return x.NumberOfClientsForTax
+		return x.NumberExpectedInfernceSybils
 	}
 	return 0
 }
 
-func (x *Params) GetParameterForTax() uint64 {
+func (x *Params) GetSybilTaxExponent() uint64 {
 	if x != nil {
-		return x.ParameterForTax
+		return x.SybilTaxExponent
 	}
 	return 0
 }
@@ -19400,6 +19451,13 @@ func (x *Params) GetValidatorsVsAlloraPercentReward() string {
 		return x.ValidatorsVsAlloraPercentReward
 	}
 	return ""
+}
+
+func (x *Params) GetMaxSamplesToScaleScores() uint64 {
+	if x != nil {
+		return x.MaxSamplesToScaleScores
+	}
+	return 0
 }
 
 type Topic struct {
@@ -21015,7 +21073,7 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc0, 0x0e, 0x0a,
+	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x80, 0x0f, 0x0a,
 	0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
 	0x6e, 0x12, 0x25, 0x0a, 0x0e, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x63, 0x61, 0x64, 0x65,
@@ -21131,7 +21189,11 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x63, 0x79, 0x44, 0x65, 0x63, 0xd2, 0xb4, 0x2d, 0x10, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
 	0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1f,
 	0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x56, 0x73, 0x41, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x22,
+	0x72, 0x61, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x12,
+	0x3e, 0x0a, 0x1d, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x73, 0x5f, 0x74, 0x6f,
+	0x5f, 0x75, 0x73, 0x65, 0x5f, 0x66, 0x6f, 0x72, 0x5f, 0x73, 0x74, 0x64, 0x5f, 0x64, 0x65, 0x76,
+	0x18, 0x20, 0x20, 0x01, 0x28, 0x04, 0x52, 0x17, 0x6d, 0x61, 0x78, 0x53, 0x63, 0x6f, 0x72, 0x65,
+	0x73, 0x54, 0x6f, 0x55, 0x73, 0x65, 0x46, 0x6f, 0x72, 0x53, 0x74, 0x64, 0x44, 0x65, 0x76, 0x22,
 	0xec, 0x04, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65,
 	0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61,
