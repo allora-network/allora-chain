@@ -47,7 +47,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weight
 	// Sort the slice of SortableItems
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
-		if items[i].Value == items[j].Value {
+		if items[i].Value.Id == items[j].Value.Id {
 			return items[i].Tiebreaker > items[j].Tiebreaker
 		}
 		return items[i].Weight > items[j].Weight

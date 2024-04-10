@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,36 +22,36 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
 					TopicId:       1,
-					CombinedValue: 100,
+					CombinedValue: alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
-					NaiveValue: 100,
+					NaiveValue: alloraMath.NewDecFromInt64(100),
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},
@@ -78,36 +79,36 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
 					TopicId:       1,
-					CombinedValue: 100,
+					CombinedValue: alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
-					NaiveValue: 100,
+					NaiveValue: alloraMath.NewDecFromInt64(100),
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},

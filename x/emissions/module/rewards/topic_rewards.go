@@ -3,8 +3,8 @@ package rewards
 import (
 	"context"
 	"fmt"
-	"math"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -14,10 +14,10 @@ import (
 // f_{t,i} is the reward fraction for that topic
 // E_i is the reward emission total for that epoch
 func GetTopicReward(
-	topicRewardFraction float64,
-	totalReward float64,
-) float64 {
-	return topicRewardFraction * totalReward
+	topicRewardFraction alloraMath.Dec,
+	totalReward alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	return topicRewardFraction.Mul(totalReward)
 }
 
 // The reward fraction for a topic
@@ -28,11 +28,17 @@ func GetTopicReward(
 // w_{t,i} is the weight of topic t
 // and the sum is naturally the total of all the weights for all topics
 func GetTopicRewardFraction(
-	f_v float64,
-	topicWeight float64,
-	totalWeight float64,
-) float64 {
-	return f_v * topicWeight / totalWeight
+	f_v alloraMath.Dec,
+	topicWeight alloraMath.Dec,
+	totalWeight alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	// todo why does the formula say 1 minus f_v and we are using f_v directly?
+	// bug?
+	f_vTimesTopicWeight, err := f_v.Mul(topicWeight)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return f_vTimesTopicWeight.Quo(totalWeight)
 }
 
 // Return the target weight of a topic
@@ -42,14 +48,20 @@ func GetTopicRewardFraction(
 // requests for topic t in the last reward epoch i
 // μ, ν are global constants with fiduciary values of 0.5 and 0.5
 func GetTargetWeight(
-	topicStake float64,
-	topicFeeRevenue float64,
-	stakeImportance float64,
-	feeImportance float64,
-) float64 {
-	s := math.Pow(topicStake, stakeImportance)
-	p := math.Pow(topicFeeRevenue, feeImportance)
-	return s * p
+	topicStake alloraMath.Dec,
+	topicFeeRevenue alloraMath.Dec,
+	stakeImportance alloraMath.Dec,
+	feeImportance alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	s, err := alloraMath.Pow(topicStake, stakeImportance)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	p, err := alloraMath.Pow(topicFeeRevenue, feeImportance)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return s.Mul(p)
 }
 
 // iterates through every active topic
@@ -61,62 +73,77 @@ func GetActiveTopicWeights(
 	ctx context.Context,
 	k keeper.Keeper,
 	activeTopics []types.Topic,
-) (weights []float64, sumWeight float64, err error) {
+) (weights []alloraMath.Dec, sumWeight alloraMath.Dec, err error) {
 	alphaTopic, err := k.GetParamsTopicRewardAlpha(ctx)
 	if err != nil {
 		fmt.Println("alpha error")
-		return []float64{}, 0.0, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	currentFeeRevenueEpoch, err := k.GetFeeRevenueEpoch(ctx)
 	if err != nil {
 		fmt.Println("epoch error")
-		return []float64{}, 0.0, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	stakeImportance, feeImportance, err := k.GetParamsStakeAndFeeRevenueImportance(ctx)
 	if err != nil {
 		fmt.Println("importance error")
-		return []float64{}, 0.0, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
-	sumWeight = 0.0
-	weights = make([]float64, len(activeTopics))
+	sumWeight = alloraMath.ZeroDec()
+	weights = make([]alloraMath.Dec, len(activeTopics))
 	for i, topic := range activeTopics {
 		topicStake, err := k.GetTopicStake(ctx, topic.Id)
 		if err != nil {
 			fmt.Println("stake error")
-			return []float64{}, 0.0, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
 		}
-		topicStakeFloat64, _ := topicStake.BigInt().Float64()
+		topicStakeDec, err := alloraMath.NewDecFromSdkUint(topicStake)
+		if err != nil {
+			fmt.Println("dec error")
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		}
 		topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
 		if err != nil {
 			fmt.Println("revenue error")
-			return []float64{}, 0.0, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
 		}
-		feeRevenueFloat := 0.0
+		feeRevenue := alloraMath.ZeroDec()
 		if topicFeeRevenue.Epoch == currentFeeRevenueEpoch {
-			feeRevenueFloat, _ = topicFeeRevenue.Revenue.BigInt().Float64()
+			feeRevenue, err = alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
+			if err != nil {
+				fmt.Println("dec error")
+				return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			}
 		}
-		targetWeight := GetTargetWeight(
-			topicStakeFloat64,
-			feeRevenueFloat,
+		targetWeight, err := GetTargetWeight(
+			topicStakeDec,
+			feeRevenue,
 			stakeImportance,
 			feeImportance,
 		)
+		if err != nil {
+			fmt.Println("target weight error")
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		}
 		previousTopicWeight, err := k.GetPreviousTopicWeight(ctx, topic.Id)
 		if err != nil {
 			fmt.Println("previous topic weight error")
-			return []float64{}, 0.0, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
 		}
-		previousWeight := 0.0
+		previousWeight := alloraMath.ZeroDec()
 		if previousTopicWeight.Epoch == currentFeeRevenueEpoch-1 {
 			previousWeight = previousTopicWeight.Weight
 		}
-		weight, err := ExponentialMovingAverage(alphaTopic, targetWeight, previousWeight)
+		weight, err := alloraMath.ExponentialMovingAverage(alphaTopic, targetWeight, previousWeight)
 		if err != nil {
 			fmt.Println("ema error")
-			return []float64{}, 0.0, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
 		}
 		weights[i] = weight
-		sumWeight += weight
+		sumWeight, err = sumWeight.Add(weight)
+		if err != nil {
+			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		}
 	}
 	return weights, sumWeight, nil
 }
@@ -127,7 +154,7 @@ func SetPreviousTopicWeights(
 	ctx context.Context,
 	k keeper.Keeper,
 	topics []types.Topic,
-	topicWeights []float64,
+	topicWeights []alloraMath.Dec,
 ) error {
 	currentEpoch, err := k.GetFeeRevenueEpoch(ctx)
 	if err != nil {

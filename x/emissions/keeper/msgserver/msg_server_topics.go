@@ -2,10 +2,11 @@ package msgserver
 
 import (
 	"context"
-	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
 	"math/big"
 	"strconv"
+
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -84,11 +85,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		Active:           true,
 		DefaultArg:       msg.DefaultArg,
 		Pnorm:            msg.Pnorm,
-		AlphaRegret:      alphaRegret,
-		PrewardReputer:   prewardReputer,
-		PrewardInference: prewardInference,
-		PrewardForecast:  prewardForecast,
-		FTolerance:       fTolerance,
+		AlphaRegret:      msg.AlphaRegret,
+		PrewardReputer:   msg.PrewardReputer,
+		PrewardInference: msg.PrewardInference,
+		PrewardForecast:  msg.PrewardForecast,
+		FTolerance:       msg.FTolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {

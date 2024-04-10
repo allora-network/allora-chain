@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,12 +15,18 @@ import (
 */
 
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
-func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, reportedLosses types.ReputerValueBundles) ([]types.Score, error) {
+func GenerateReputerScores(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	topicId uint64,
+	block int64,
+	reportedLosses types.ReputerValueBundles,
+) ([]types.Score, error) {
 	// Get reputers data
 	var reputerAddresses []sdk.AccAddress
-	var reputerStakes []float64
-	var reputerListeningCoefficients []float64
-	var losses [][]float64
+	var reputerStakes []alloraMath.Dec
+	var reputerListeningCoefficients []alloraMath.Dec
+	var losses [][]alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
 		if err != nil {
@@ -32,7 +39,11 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 		if err != nil {
 			return []types.Score{}, err
 		}
-		reputerStakes = append(reputerStakes, float64(reputerStake.BigInt().Int64()))
+		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
+		if err != nil {
+			return []types.Score{}, err
+		}
+		reputerStakes = append(reputerStakes, reputerStakeDec)
 
 		// Get reputer listening coefficient
 		res, err := keeper.GetListeningCoefficient(ctx, topicId, reputerAddr)
@@ -47,7 +58,12 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 	}
 
 	// Get reputer output
-	scores, newCoefficients, err := GetAllReputersOutput(losses, reputerStakes, reputerListeningCoefficients, len(reputerStakes))
+	scores, newCoefficients, err := GetAllReputersOutput(
+		losses,
+		reputerStakes,
+		reputerListeningCoefficients,
+		int64(len(reputerStakes)),
+	)
 	if err != nil {
 		return []types.Score{}, err
 	}
@@ -55,7 +71,12 @@ func GenerateReputerScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64
 	// Insert new coeffients and scores
 	var newScores []types.Score
 	for i, reputerAddr := range reputerAddresses {
-		err := keeper.SetListeningCoefficient(ctx, topicId, reputerAddr, types.ListeningCoefficient{Coefficient: newCoefficients[i]})
+		err := keeper.SetListeningCoefficient(
+			ctx,
+			topicId,
+			reputerAddr,
+			types.ListeningCoefficient{Coefficient: newCoefficients[i]},
+		)
 		if err != nil {
 			return []types.Score{}, err
 		}
@@ -86,7 +107,10 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		}
 
 		// Calculate new score
-		workerNewScore := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		workerNewScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		if err != nil {
+			return []types.Score{}, err
+		}
 
 		newScore := types.Score{
 			TopicId:     topicId,
@@ -104,16 +128,29 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 }
 
 // GenerateForecastScores calculates and persists scores for workers based on their forecast task performance.
-func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
+func GenerateForecastScores(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	topicId uint64,
+	block int64,
+	networkLosses types.ValueBundle,
+) ([]types.Score, error) {
 	// Get worker scores for one out loss
-	var workersScoresOneOut []float64
+	var workersScoresOneOut []alloraMath.Dec
 	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
-		workerScore := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		workerScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		if err != nil {
+			return []types.Score{}, err
+		}
+
 		workersScoresOneOut = append(workersScoresOneOut, workerScore)
 	}
 
-	numForecasters := len(workersScoresOneOut)
-	fUniqueAgg := GetfUniqueAgg(float64(numForecasters))
+	numForecasters := int64(len(workersScoresOneOut))
+	fUniqueAgg, err := GetfUniqueAgg(alloraMath.NewDecFromInt64(numForecasters))
+	if err != nil {
+		return []types.Score{}, err
+	}
 	var newScores []types.Score
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneInNaiveLoss.Worker)
@@ -122,10 +159,16 @@ func GenerateForecastScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint6
 		}
 
 		// Get worker score for one in loss
-		workerScoreOneIn := GetWorkerScore(oneInNaiveLoss.Value, networkLosses.NaiveValue)
+		workerScoreOneIn, err := GetWorkerScore(oneInNaiveLoss.Value, networkLosses.NaiveValue)
+		if err != nil {
+			return []types.Score{}, err
+		}
 
 		// Calculate forecast score
-		workerFinalScore := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
+		workerFinalScore, err := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
+		if err != nil {
+			return []types.Score{}, err
+		}
 
 		newScore := types.Score{
 			TopicId:     topicId,

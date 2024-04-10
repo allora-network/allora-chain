@@ -2,7 +2,8 @@ package inference_synthesis
 
 import (
 	"fmt"
-	"math"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -18,14 +19,41 @@ func RunningWeightedAvgUpdate(
 	runningWeightedAvg *WorkerRunningWeightedLoss,
 	weight Weight,
 	nextValue Weight,
-	epsilon float64,
+	epsilon alloraMath.Dec,
 ) (WorkerRunningWeightedLoss, error) {
+	var err error
 	// weightedAvg_n = weightedAvg_{n-1} + (weight_n / sumOfWeights_n) * (log10(val_n) - weightedAvg_{n-1})
-	runningWeightedAvg.SumWeight += weight
-	if runningWeightedAvg.SumWeight < epsilon {
+	runningWeightedAvg.SumWeight, err = runningWeightedAvg.SumWeight.Add(weight)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	if runningWeightedAvg.SumWeight.Cmp(epsilon) == alloraMath.LessThan {
 		return *runningWeightedAvg, emissions.ErrFractionDivideByZero
 	}
-	runningWeightedAvg.Loss += runningWeightedAvg.Loss + (weight/runningWeightedAvg.SumWeight)*(math.Log10(nextValue)-runningWeightedAvg.Loss)
+	weightFrac, err := weight.Quo(runningWeightedAvg.SumWeight)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	log10NextValue, err := alloraMath.Log10(nextValue)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	log10NextValueMinusLoss, err := log10NextValue.Sub(runningWeightedAvg.Loss)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	weightFracTimesLog10NextValueMinusLoss, err := weightFrac.Mul(log10NextValueMinusLoss)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	runningLoss, err := runningWeightedAvg.Loss.Add(weightFracTimesLog10NextValueMinusLoss)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
+	runningWeightedAvg.Loss, err = runningWeightedAvg.Loss.Add(runningLoss)
+	if err != nil {
+		return WorkerRunningWeightedLoss{}, err
+	}
 	return *runningWeightedAvg, nil
 }
 
@@ -57,27 +85,26 @@ func convertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(
 	return weightedLosses
 }
 
-func stakePlacementToFloat64(stake emissions.StakePlacement) float64 {
-	return float64(stake.Amount.Uint64())
-}
-
 func CalcNetworkLosses(
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses emissions.ReputerValueBundles,
-	epsilon float64,
+	epsilon alloraMath.Dec,
 ) (emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
-	runningWeightedCombinedLoss := WorkerRunningWeightedLoss{0, 0}
+	runningWeightedCombinedLoss := WorkerRunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
 	runningWeightedInfererLosses := make(map[Worker]*WorkerRunningWeightedLoss)
 	runningWeightedForecasterLosses := make(map[Worker]*WorkerRunningWeightedLoss)
-	runningWeightedNaiveLoss := WorkerRunningWeightedLoss{0, 0}
+	runningWeightedNaiveLoss := WorkerRunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
 	runningWeightedOneOutInfererLosses := make(map[Worker]*WorkerRunningWeightedLoss) // Withheld worker -> Forecaster -> Loss
 	runningWeightedOneOutForecasterLosses := make(map[Worker]*WorkerRunningWeightedLoss)
 	runningWeightedOneInForecasterLosses := make(map[Worker]*WorkerRunningWeightedLoss)
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount := stakePlacementToFloat64(stakesByReputer[report.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.Reputer].Amount)
+			if err != nil {
+				return emissions.ValueBundle{}, err
+			}
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
@@ -165,19 +192,28 @@ func CalcNetworkLosses(
 func CalcCombinedNetworkLoss(
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses *emissions.ReputerValueBundles,
-	epsilon float64,
+	epsilon alloraMath.Dec,
 ) (Loss, error) {
 	// Make map from inferer to their running weighted-average loss
-	runningWeightedCombinedLoss := WorkerRunningWeightedLoss{0, 0}
+	runningWeightedCombinedLoss := WorkerRunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount := stakePlacementToFloat64(stakesByReputer[report.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.Reputer].Amount)
+			if err != nil {
+				fmt.Println("Error converting stake to Dec: ", err)
+				return Loss{}, err
+			}
 			// Update combined loss with reputer reported loss and stake
-			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
+			nextCombinedLoss, err := RunningWeightedAvgUpdate(
+				&runningWeightedCombinedLoss,
+				stakeAmount,
+				report.ValueBundle.CombinedValue,
+				epsilon,
+			)
 			if err != nil {
 				fmt.Println("Error updating running weighted average for combined loss: ", err)
-				return 0, err
+				return alloraMath.ZeroDec(), err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
 		}

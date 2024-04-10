@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -88,11 +89,11 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      "10",
-		PrewardReputer:   "11",
-		PrewardInference: "12",
-		PrewardForecast:  "13",
-		FTolerance:       "14",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	s.PrepareForCreateTopic(newTopicMsg.Creator)
