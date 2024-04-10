@@ -23,8 +23,11 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                                         // delete requests if they have below this demand remaining
-  double max_missing_inference_percent = 6;  // if a worker has this percentage of inferences missing, penalize them
+  ];  // delete requests if they have below this demand remaining
+  string max_missing_inference_percent = 6 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // if a worker has this percentage of inferences missing, penalize them
   string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -32,48 +35,76 @@ message Params {
     (amino.dont_omitempty) = true
   ];                                    // minimum amount of tokens to send to stake as a reputer or worker
   int64 remove_stake_delay_window = 8;  // how long to wait before allowed to remove stake
-  int64 min_epoch_length =
-      9;  // fastest allowable topic epoch => also fastest allowed cadence of a repeating inference request
+  int64 min_epoch_length = 9;           // fastest allowable topic epoch and cadence of a repeating inference request
   int64 max_inference_request_validity = 10;  // longest time a subscription of inferences is allowed to be valid
   int64 max_request_cadence = 11;  // slowest (largest) amount of time a subscription can take between inferences
-  double percent_rewards_reputers_workers =
-      12;                     // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
-  double sharpness = 13;      // controls going from stake-weighted consensus at low values to majority vote of
-                              // above-average stake holders at high values
-  double beta_entropy = 14;   // controls resilience of reward payouts against copycat workers
-  double dcoef_abs = 15;      // delta for numerical differentiation
-  double learning_rate = 16;  // speed of gradient descent
-  double max_gradient_threshold = 17;  // gradient descent stops when gradient falls below this
-  double min_stake_fraction =
-      18;  // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-  uint64 max_workers_per_topic_request =
-      19;  // max number of workers whose inference will be used and compensated per request
-  uint64 max_reputers_per_topic_request = 20;  // max number of reputers to solicit losses from per loss request
-  double epsilon = 21;                         // small number to prevent division by zero
-  double p_inference_synthesis =
-      22;                    // fiducial value of exponent used in gradient function applied in Inference Synthesis
-  double alpha_regret = 23;  // how much to weight the most recent log-loss differences in regret EMA update
-  uint64 max_unfulfilled_worker_requests =
-      24;  // max number of nonces for worker requests to keep track of for each topic
-  uint64 max_unfulfilled_reputer_requests =
-      25;  // max number of nonces for reputer requests to keep track of for each topic
+  string percent_rewards_reputers_workers = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // rewards (tx fees + inflation) paid to workers/reputers. Validators get the rest
+  string sharpness = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at
+      // high values
+  string beta_entropy = 14 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // controls resilience of reward payouts against copycat workers
+  string dcoef_abs = 15 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // delta for numerical differentiation
+  string learning_rate = 16 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // speed of gradient descent
+  string max_gradient_threshold = 17 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // gradient descent stops when gradient falls below this
+  string min_stake_fraction = 18 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // minimum fraction of stake to listen to when setting consensus listening coefficients
+  uint64 max_workers_per_topic_request = 19;   // max num workers whose inference are used and compensated per request
+  uint64 max_reputers_per_topic_request = 20;  // max num reputers to solicit losses from per loss request
+  string epsilon = 21 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // small number to prevent division by zero
+  string p_inference_synthesis = 22 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // fiducial value of exponent for Inference Synthesis gradient function
+  string alpha_regret = 23 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // how much to weight the most recent log-loss differences in regret EMA update
+  uint64 max_unfulfilled_worker_requests = 24;   // max num worker request nonces to keep track of per topic
+  uint64 max_unfulfilled_reputer_requests = 25;  // max num reputer request nonces to keep track of per topic
   uint64 number_expected_inference_sybils = 26;  // global number for calculation tax of worker reward
   uint64 sybil_tax_exponent = 27;                // global parameter for calculation tax of worker reward
-  double topic_reward_stake_importance = 28;  // The exponent μ represents the importance of stake in the reward of a
-                                              // topic and has a fiduciary value of 0.5
-  double topic_reward_fee_revenue_importance = 29;  // The exponent ν represents the importance of fee revenue in the
-                                                    // reward of a topic and has a fiduciary value of 0.5
-  double topic_reward_alpha = 30;  // global exponential moving average parameter. Fiduciary value of 0.9375 on a
-                                   // monthly timescale, 0.5 for weekly updates
-  // percentage of the total supply that is rewarded to
-  // cosmos network validators the rest goes to
-  // allora reputers workers etc
+  string topic_reward_stake_importance = 28 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // The exponent μ represents the importance of stake in the reward of a topic and has a fiduciary value of 0.5
+  string topic_reward_fee_revenue_importance = 29 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiduciary value of
+      // 0.5
+  string topic_reward_alpha = 30 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // global exponential moving average parameter. Fiduciary value of 0.9375 on a monthly timescale, 0.5 for weekly
+      // updates
   string validators_vs_allora_percent_reward = 31 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];
+  ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
   uint64 max_samples_to_scale_scores = 32;  // number of scores to use for standard deviation calculation
 }
 
@@ -93,11 +124,16 @@ message Topic {
   bool active = 11;
   string default_arg = 12;
   uint64 pnorm = 13;
-  double alpha_regret = 14;
-  double preward_reputer = 15;
-  double preward_inference = 16;
-  double preward_forecast = 17;
-  double f_tolerance = 18;
+  string alpha_regret = 14
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_reputer = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_inference = 16
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_forecast = 17
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string f_tolerance = 18
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message TopicList {
@@ -110,14 +146,16 @@ message WorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;  // worker who created the value
-  double value = 2;
+  string value = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message WithheldWorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;
-  double value = 2;
+  string value = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 // These losses and inferences are calculated per reputer or by the network
@@ -129,13 +167,15 @@ message ValueBundle {
   uint64 topic_id = 1;
   bytes extra_data = 2;
   // R_im || log10 L_im || I_i
-  double combined_value = 3;
+  string combined_value = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   // R_ijm || log10 L_ijm || I_ij
   repeated WorkerAttributedValue inferer_values = 4;
   // R_ikm || log10 L_ikm || I_ik
   repeated WorkerAttributedValue forecaster_values = 5;
   // R^-_im  || log10 L^-_im || I^-_i
-  double naive_value = 6;
+  string naive_value = 6
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
   // Note: forecast-implied inferences are recomputed for each left-out inference
   repeated WithheldWorkerAttributedValue one_out_inferer_values = 7;
@@ -164,7 +204,8 @@ message TimestampedValue {
   option (gogoproto.equal) = true;
 
   int64 block_height = 1;  // height at which value calculated or received
-  double value = 2;
+  string value = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message Inference {
@@ -172,7 +213,8 @@ message Inference {
 
   uint64 topic_id = 1;
   string worker = 2;
-  double value = 3;
+  string value = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -185,7 +227,8 @@ message ForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 2;
-  double value = 3;
+  string value = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bytes extra_data = 4;
   string proof = 5;
 }
@@ -267,7 +310,8 @@ message Score {
   uint64 topic_id = 1;
   int64 block_number = 2;
   string address = 3;
-  double score = 4;
+  string score = 4
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message Scores {
@@ -278,12 +322,14 @@ message Scores {
 
 message AverageWorkerReward {
   uint32 count = 1;
-  double value = 2;
+  string value = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 /// LISTENING COEFFICIENTS
 message ListeningCoefficient {
-  double coefficient = 3;
+  string coefficient = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 /// INFERENCE REQUEST
@@ -336,5 +382,6 @@ message TopicFeeRevenue {
 
 message PreviousTopicWeight {
   uint64 epoch = 1;
-  double weight = 2;
+  string weight = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }

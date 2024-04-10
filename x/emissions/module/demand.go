@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"reflect"
 	"sort"
 
 	cosmosMath "cosmossdk.io/math"
@@ -47,7 +48,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weight
 	// Sort the slice of SortableItems
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
-		if items[i].Value == items[j].Value {
+		if reflect.DeepEqual(items[i].Value, items[j].Value) {
 			return items[i].Tiebreaker > items[j].Tiebreaker
 		}
 		return items[i].Weight > items[j].Weight

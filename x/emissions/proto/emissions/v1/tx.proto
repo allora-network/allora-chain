@@ -79,7 +79,8 @@ message OptionalParams {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string max_missing_inference_percent = 6;
+  repeated string max_missing_inference_percent = 6
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string required_minimum_stake = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -90,25 +91,38 @@ message OptionalParams {
   repeated int64 min_epoch_length = 9;
   repeated int64 max_inference_request_validity = 10;
   repeated int64 max_request_cadence = 11;
-  repeated string percent_rewards_reputers_workers = 12;
-  repeated string sharpness = 13;
-  repeated string beta_entropy = 14;
-  repeated string dcoef_abs = 15;
-  repeated string learning_rate = 16;
-  repeated string max_gradient_threshold = 17;
-  repeated string min_stake_fraction = 18;
+  repeated string percent_rewards_reputers_workers = 12
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string sharpness = 13
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string beta_entropy = 14
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string dcoef_abs = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string learning_rate = 16
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string max_gradient_threshold = 17
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string min_stake_fraction = 18
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 max_workers_per_topic_request = 19;
   repeated uint64 max_reputers_per_topic_request = 20;
-  repeated string epsilon = 21;
-  repeated string p_inference_synthesis = 22;
-  repeated string alpha_regret = 23;
+  repeated string epsilon = 21
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string p_inference_synthesis = 22
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string alpha_regret = 23
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 max_unfulfilled_worker_requests = 24;
   repeated uint64 max_unfulfilled_reputer_requests = 25;
   repeated uint64 number_expected_inference_sybils = 26;
   repeated uint64 sybil_tax_exponent = 27;
-  repeated string topic_reward_stake_importance = 28;
-  repeated string topic_reward_fee_revenue_importance = 29;
-  repeated string topic_reward_alpha = 30;
+  repeated string topic_reward_stake_importance = 28
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string topic_reward_fee_revenue_importance = 29
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string topic_reward_alpha = 30
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string validators_vs_allora_percent_reward = 31 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
@@ -145,11 +159,16 @@ message MsgCreateNewTopic {
   int64 ground_truth_lag = 8;
   string default_arg = 9;
   uint64 pnorm = 10;
-  string alpha_regret = 11;
-  string preward_reputer = 12;
-  string preward_inference = 13;
-  string preward_forecast = 14;
-  string f_tolerance = 15;
+  string alpha_regret = 11
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_reputer = 12
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_inference = 13
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_forecast = 14
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string f_tolerance = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message MsgCreateNewTopicResponse {

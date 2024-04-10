@@ -3,6 +3,7 @@ package rewards_test
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -22,8 +23,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 		s.emissionsKeeper,
 		1,
 		1003,
-		1.5,
-		100.0,
+		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.NewDecFromInt64(100),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(workerRewards))
@@ -44,8 +45,8 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 		s.emissionsKeeper,
 		1,
 		1003,
-		1.5,
-		100.0,
+		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.NewDecFromInt64(100),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(workerRewards))
@@ -55,76 +56,76 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  0.01327,
+			Value:  alloraMath.MustNewDecFromString("0.01327"),
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  0.01302,
+			Value:  alloraMath.MustNewDecFromString("0.01302"),
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  0.0136,
+			Value:  alloraMath.MustNewDecFromString("0.0136"),
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  0.01491,
+			Value:  alloraMath.MustNewDecFromString("0.01491"),
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  0.01686,
+			Value:  alloraMath.MustNewDecFromString("0.01686"),
 		},
 	}
 
 	oneOutForecasterLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  0.01402,
+			Value:  alloraMath.MustNewDecFromString("0.01402"),
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  0.01316,
+			Value:  alloraMath.MustNewDecFromString("0.01316"),
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  0.01657,
+			Value:  alloraMath.MustNewDecFromString("0.01657"),
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  0.0124,
+			Value:  alloraMath.MustNewDecFromString("0.0124"),
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  0.01341,
+			Value:  alloraMath.MustNewDecFromString("0.01341"),
 		},
 	}
 
 	oneInNaiveLosses := []*types.WorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
-			Value:  0.01529,
+			Value:  alloraMath.MustNewDecFromString("0.01529"),
 		},
 		{
 			Worker: s.addrs[1].String(),
-			Value:  0.01141,
+			Value:  alloraMath.MustNewDecFromString("0.01141"),
 		},
 		{
 			Worker: s.addrs[2].String(),
-			Value:  0.01562,
+			Value:  alloraMath.MustNewDecFromString("0.01562"),
 		},
 		{
 			Worker: s.addrs[3].String(),
-			Value:  0.01444,
+			Value:  alloraMath.MustNewDecFromString("0.01444"),
 		},
 		{
 			Worker: s.addrs[4].String(),
-			Value:  0.01396,
+			Value:  alloraMath.MustNewDecFromString("0.01396"),
 		},
 	}
 
 	networkLosses := types.ValueBundle{
 		TopicId:                topicId,
-		CombinedValue:          0.013481256018186383,
-		NaiveValue:             0.01344474872292,
+		CombinedValue:          alloraMath.MustNewDecFromString("0.013481256018186383"),
+		NaiveValue:             alloraMath.MustNewDecFromString("0.01344474872292"),
 		OneOutInfererValues:    oneOutInfererLosses,
 		OneOutForecasterValues: oneOutForecasterLosses,
 		OneInForecasterValues:  oneInNaiveLosses,
@@ -153,13 +154,12 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 		1002,
 		1003,
 	}
-
-	var scores = [][]float64{
-		{-0.00675, -0.00622, -0.00388},
-		{-0.01502, -0.01214, -0.01554},
-		{0.00392, 0.00559, 0.00545},
-		{0.0438, 0.04304, 0.03906},
-		{0.09719, 0.09675, 0.09418},
+	var scores = [][]alloraMath.Dec{
+		{alloraMath.MustNewDecFromString("-0.00675"), alloraMath.MustNewDecFromString("-0.00622"), alloraMath.MustNewDecFromString("-0.00388")},
+		{alloraMath.MustNewDecFromString("-0.01502"), alloraMath.MustNewDecFromString("-0.01214"), alloraMath.MustNewDecFromString("-0.01554")},
+		{alloraMath.MustNewDecFromString("0.00392"), alloraMath.MustNewDecFromString("0.00559"), alloraMath.MustNewDecFromString("0.00545")},
+		{alloraMath.MustNewDecFromString("0.0438"), alloraMath.MustNewDecFromString("0.04304"), alloraMath.MustNewDecFromString("0.03906")},
+		{alloraMath.MustNewDecFromString("0.09719"), alloraMath.MustNewDecFromString("0.09675"), alloraMath.MustNewDecFromString("0.09418")},
 	}
 
 	for i, workerAddr := range workerAddrs {

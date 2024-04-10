@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,11 +41,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
 	if len(newParams.MaxMissingInferencePercent) == 1 {
-		maxMissingInferencePercent, err := strconv.ParseFloat(newParams.MaxMissingInferencePercent[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.MaxMissingInferencePercent = maxMissingInferencePercent
+		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
 	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
@@ -64,53 +59,25 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	if len(newParams.PercentRewardsReputersWorkers) == 1 {
-		percentRewardsReputersWorkers, err := strconv.ParseFloat(newParams.PercentRewardsReputersWorkers[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.PercentRewardsReputersWorkers = percentRewardsReputersWorkers
+		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
 	}
 	if len(newParams.Sharpness) == 1 {
-		sharpness, err := strconv.ParseFloat(newParams.Sharpness[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.Sharpness = sharpness
+		existingParams.Sharpness = newParams.Sharpness[0]
 	}
 	if len(newParams.BetaEntropy) == 1 {
-		betaEntropy, err := strconv.ParseFloat(newParams.BetaEntropy[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.BetaEntropy = betaEntropy
+		existingParams.BetaEntropy = newParams.BetaEntropy[0]
 	}
 	if len(newParams.DcoefAbs) == 1 {
-		dcoefAbs, err := strconv.ParseFloat(newParams.DcoefAbs[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.DcoefAbs = dcoefAbs
+		existingParams.DcoefAbs = newParams.DcoefAbs[0]
 	}
 	if len(newParams.LearningRate) == 1 {
-		learningRate, err := strconv.ParseFloat(newParams.LearningRate[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.LearningRate = learningRate
+		existingParams.LearningRate = newParams.LearningRate[0]
 	}
 	if len(newParams.MaxGradientThreshold) == 1 {
-		maxGradientThreshold, err := strconv.ParseFloat(newParams.MaxGradientThreshold[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.MaxGradientThreshold = maxGradientThreshold
+		existingParams.MaxGradientThreshold = newParams.MaxGradientThreshold[0]
 	}
 	if len(newParams.MinStakeFraction) == 1 {
-		minStakeFraction, err := strconv.ParseFloat(newParams.MinStakeFraction[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.MinStakeFraction = minStakeFraction
+		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
 	}
 	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
 		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
@@ -119,25 +86,13 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	if len(newParams.Epsilon) == 1 {
-		epsilon, err := strconv.ParseFloat(newParams.Epsilon[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.Epsilon = epsilon
+		existingParams.Epsilon = newParams.Epsilon[0]
 	}
 	if len(newParams.PInferenceSynthesis) == 1 {
-		pInferenceSynthesis, err := strconv.ParseFloat(newParams.PInferenceSynthesis[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.PInferenceSynthesis = pInferenceSynthesis
+		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
 	}
 	if len(newParams.AlphaRegret) == 1 {
-		alphaRegret, err := strconv.ParseFloat(newParams.AlphaRegret[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.AlphaRegret = alphaRegret
+		existingParams.AlphaRegret = newParams.AlphaRegret[0]
 	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
@@ -145,32 +100,20 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxUnfulfilledReputerRequests) == 1 {
 		existingParams.MaxUnfulfilledReputerRequests = newParams.MaxUnfulfilledReputerRequests[0]
 	}
-	if len(newParams.NumberExpectedInfernceSybils) == 1 {
-		existingParams.NumberExpectedInfernceSybils = newParams.NumberExpectedInfernceSybils[0]
+	if len(newParams.NumberExpectedInferenceSybils) == 1 {
+		existingParams.NumberExpectedInferenceSybils = newParams.NumberExpectedInferenceSybils[0]
 	}
 	if len(newParams.SybilTaxExponent) == 1 {
 		existingParams.SybilTaxExponent = newParams.SybilTaxExponent[0]
 	}
 	if len(newParams.TopicRewardStakeImportance) == 1 {
-		topicRewardStakeImportance, err := strconv.ParseFloat(newParams.TopicRewardStakeImportance[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardStakeImportance = topicRewardStakeImportance
+		existingParams.TopicRewardStakeImportance = newParams.TopicRewardStakeImportance[0]
 	}
 	if len(newParams.TopicRewardFeeRevenueImportance) == 1 {
-		topicRewardFeeRevenueImportance, err := strconv.ParseFloat(newParams.TopicRewardFeeRevenueImportance[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardFeeRevenueImportance = topicRewardFeeRevenueImportance
+		existingParams.TopicRewardFeeRevenueImportance = newParams.TopicRewardFeeRevenueImportance[0]
 	}
 	if len(newParams.TopicRewardAlpha) == 1 {
-		topicRewardAlpha, err := strconv.ParseFloat(newParams.TopicRewardAlpha[0], 64)
-		if err != nil {
-			return nil, err
-		}
-		existingParams.TopicRewardAlpha = topicRewardAlpha
+		existingParams.TopicRewardAlpha = newParams.TopicRewardAlpha[0]
 	}
 	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
 		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]

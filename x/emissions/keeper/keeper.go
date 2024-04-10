@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -187,8 +188,8 @@ func NewKeeper(
 		params:                              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                          ak,
 		bankKeeper:                          bk,
-		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", UintValue),
-		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, UintValue),
+		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", alloraMath.UintValue),
+		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, alloraMath.UintValue),
 		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
@@ -196,15 +197,15 @@ func NewKeeper(
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeRemovalQueue:                   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
 		delegatedStakeRemovalQueue:          collections.NewMap(sb, types.DelegatedStakeRemovalQueueKey, "delegated_stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.DelegatedStakeRemoval](cdc)),
-		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
-		delegatedStakePlacement:             collections.NewMap(sb, types.DelegatedStakePlacementKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), UintValue),
-		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		delegatedStakePlacement:             collections.NewMap(sb, types.DelegatedStakePlacementKey, "delegated_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
+		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		mempool:                             collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
-		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, UintValue),
-		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, UintValue),
+		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, alloraMath.UintValue),
+		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, alloraMath.UintValue),
 		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
 		feeRevenueEpoch:                     collections.NewSequence(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch"),
 		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, codec.CollValue[types.PreviousTopicWeight](cdc)),
@@ -219,8 +220,8 @@ func NewKeeper(
 		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		accumulatedMetDemand:                collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, UintValue),
-		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), UintValue),
+		accumulatedMetDemand:                collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, alloraMath.UintValue),
+		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -354,9 +355,12 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		return err
 	}
 
-	diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-	if diff > 0 {
-		nonces.Nonces = nonces.Nonces[diff:]
+	lenNonces := uint64(len(nonces.Nonces))
+	if lenNonces > maxUnfulfilledRequests {
+		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+		if diff > 0 {
+			nonces.Nonces = nonces.Nonces[diff:]
+		}
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
@@ -436,7 +440,7 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -451,7 +455,7 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -466,7 +470,7 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       1,
+				Value:       alloraMath.NewDecFromInt64(1),
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -495,10 +499,10 @@ func (k *Keeper) GetFeeCollectorName() string {
 	return k.feeCollectorName
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.MaxMissingInferencePercent, nil
 }
@@ -567,34 +571,34 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.PercentRewardsReputersWorkers, nil
 }
 
-func (k *Keeper) GetParamsEpsilon(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.Epsilon, nil
 }
 
-func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.PInferenceSynthesis, nil
 }
 
-func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (float64, float64, error) {
+func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, 0, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
 }
@@ -607,10 +611,10 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
-func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (float64, error) {
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
 	return params.TopicRewardAlpha, nil
 }
@@ -1492,7 +1496,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		ret := types.PreviousTopicWeight{
-			Weight: 0.0,
+			Weight: alloraMath.ZeroDec(),
 			Epoch:  0,
 		}
 		return ret, nil
@@ -2102,9 +2106,12 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 		return err
 	}
 
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
 
 	key := collections.Join(topicId, blockNumber)
@@ -2123,9 +2130,12 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 		return err
 	}
 
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := uint64(len(scores.Scores)) - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
 
 	key := collections.Join(topicId, blockNumber)
@@ -2143,12 +2153,13 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 	if err != nil {
 		return err
 	}
-
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
-
 	key := collections.Join(topicId, blockNumber)
 	return k.reputerScores.Set(ctx, key, scores)
 }
@@ -2258,7 +2269,7 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.ListeningCoefficient{Coefficient: 1.0}, nil
+			return types.ListeningCoefficient{Coefficient: alloraMath.NewDecFromInt64(1)}, nil
 		}
 		return types.ListeningCoefficient{}, err
 	}
@@ -2278,7 +2289,7 @@ func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, wo
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.AverageWorkerReward{Count: 0, Value: 0.0}, nil
+			return types.AverageWorkerReward{Count: 0, Value: alloraMath.ZeroDec()}, nil
 		}
 		return types.AverageWorkerReward{}, err
 	}

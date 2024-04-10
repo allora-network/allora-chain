@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -35,27 +34,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
 
-	alphaRegret, err := strconv.ParseFloat(msg.AlphaRegret, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardReputer, err := strconv.ParseFloat(msg.PrewardReputer, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardInference, err := strconv.ParseFloat(msg.PrewardInference, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardForecast, err := strconv.ParseFloat(msg.PrewardForecast, 32)
-	if err != nil {
-		return nil, err
-	}
-	fTolerance, err := strconv.ParseFloat(msg.FTolerance, 32)
-	if err != nil {
-		return nil, err
-	}
-
 	topic := types.Topic{
 		Id:               id,
 		Creator:          creator.String(),
@@ -70,11 +48,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		Active:           true,
 		DefaultArg:       msg.DefaultArg,
 		Pnorm:            msg.Pnorm,
-		AlphaRegret:      alphaRegret,
-		PrewardReputer:   prewardReputer,
-		PrewardInference: prewardInference,
-		PrewardForecast:  prewardForecast,
-		FTolerance:       fTolerance,
+		AlphaRegret:      msg.AlphaRegret,
+		PrewardReputer:   msg.PrewardReputer,
+		PrewardInference: msg.PrewardInference,
+		PrewardForecast:  msg.PrewardForecast,
+		FTolerance:       msg.FTolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
