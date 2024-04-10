@@ -2,6 +2,7 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -26,11 +27,11 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      "1.0",
-		PrewardReputer:   "1.0",
-		PrewardInference: "2.0",
-		PrewardForecast:  "3.0",
-		FTolerance:       "4.0",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	s.PrepareForCreateTopic(newTopicMsg.Creator)

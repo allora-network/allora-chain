@@ -124,11 +124,11 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      "10",
-		PrewardReputer:   "11",
-		PrewardInference: "12",
-		PrewardForecast:  "13",
-		FTolerance:       "14",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	s.PrepareForCreateTopic(newTopicMsg.Creator)

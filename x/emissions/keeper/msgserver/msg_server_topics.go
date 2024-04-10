@@ -2,11 +2,9 @@ package msgserver
 
 import (
 	"context"
-	"math/big"
-	"strconv"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	"math/big"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,27 +40,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 	if msg.EpochLength < fastestCadence {
 		return nil, types.ErrTopicCadenceBelowMinimum
-	}
-
-	alphaRegret, err := strconv.ParseFloat(msg.AlphaRegret, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardReputer, err := strconv.ParseFloat(msg.PrewardReputer, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardInference, err := strconv.ParseFloat(msg.PrewardInference, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardForecast, err := strconv.ParseFloat(msg.PrewardForecast, 32)
-	if err != nil {
-		return nil, err
-	}
-	fTolerance, err := strconv.ParseFloat(msg.FTolerance, 32)
-	if err != nil {
-		return nil, err
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
