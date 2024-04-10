@@ -1484,7 +1484,7 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (t
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		ret := types.PreviousTopicWeight{
-			Weight: alloraMath.NewDecFromInt64(0),
+			Weight: alloraMath.ZeroDec(),
 			Epoch:  0,
 		}
 		return ret, nil
@@ -2232,7 +2232,7 @@ func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, wo
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			// Return a default value
-			return types.AverageWorkerReward{Count: 0, Value: alloraMath.NewDecFromInt64(0)}, nil
+			return types.AverageWorkerReward{Count: 0, Value: alloraMath.ZeroDec()}, nil
 		}
 		return types.AverageWorkerReward{}, err
 	}

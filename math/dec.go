@@ -40,6 +40,16 @@ var (
 	ErrInfiniteString     = errors.Register(mathCodespace, 4, "value is infinite")
 )
 
+// The number 0 encoded as Dec
+func ZeroDec() Dec {
+	return NewDecFromInt64(0)
+}
+
+// The number 1 encoded as Dec
+func OneDec() Dec {
+	return NewDecFromInt64(1)
+}
+
 // In cosmos-sdk#7773, decimal128 (with 34 digits of precision) was suggested for performing
 // Quo/Mult arithmetic generically across the SDK. Even though the SDK
 // has yet to support a GDA with decimal128 (34 digits), we choose to utilize it here.
@@ -266,6 +276,42 @@ func Pow(x Dec, y Dec) (Dec, error) {
 	var z Dec
 	_, err := dec128Context.Pow(&z.dec, &x.dec, &y.dec)
 	return z, errors.Wrap(err, "decimal exponentiation error")
+}
+
+// returns the max of x and y without mutating x or y.
+func Max(x Dec, y Dec) Dec {
+	var z Dec
+	if x.Cmp(y) == GreaterThan {
+		z.dec.Set(&x.dec)
+	} else {
+		z.dec.Set(&y.dec)
+	}
+	return z
+}
+
+// returns the min of x and y without mutating x or y.
+func Min(x Dec, y Dec) Dec {
+	var z Dec
+	if x.Cmp(y) == LessThan {
+		z.dec.Set(&x.dec)
+	} else {
+		z.dec.Set(&y.dec)
+	}
+	return z
+}
+
+// Sqrt returns a new Dec with the value of the square root of x, without mutating x.
+func (x Dec) Sqrt() (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Sqrt(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal square root error")
+}
+
+// Abs returns a new Dec with the absolute value of x, without mutating x.
+func (x Dec) Abs() Dec {
+	var z Dec
+	z.dec.Abs(&x.dec)
+	return z
 }
 
 // Ceil returns a new Dec with the value of x rounded up to the nearest integer, without mutating x.
