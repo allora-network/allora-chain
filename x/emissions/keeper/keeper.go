@@ -355,9 +355,12 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		return err
 	}
 
-	diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
-	if diff > 0 {
-		nonces.Nonces = nonces.Nonces[diff:]
+	lenNonces := uint64(len(nonces.Nonces))
+	if lenNonces > maxUnfulfilledRequests {
+		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+		if diff > 0 {
+			nonces.Nonces = nonces.Nonces[diff:]
+		}
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
@@ -2103,9 +2106,12 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 		return err
 	}
 
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
 
 	key := collections.Join(topicId, blockNumber)
@@ -2124,9 +2130,12 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 		return err
 	}
 
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := uint64(len(scores.Scores)) - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
 
 	key := collections.Join(topicId, blockNumber)
