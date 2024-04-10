@@ -25,13 +25,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
-	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
-	feeAmount := sdk.NewCoin(params.DefaultBondDenom, amountInt)
-
-	hasEnoughBal, err := ms.k.CheckEnoughDenom(ctx, creator, feeAmount)
-	if err != nil {
-		return nil, err
-	}
+	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
 	if !hasEnoughBal {
 		return nil, types.ErrTopicCreatorNotEnoughDenom
 	}
@@ -70,6 +64,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
+	// Before creating topic, transfer fee amount from creator to ecosystem bucket
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.ModuleName, sdk.NewCoins(fee))
+	if err != nil {
+		return nil, err
+	}
+
 	topic := types.Topic{
 		Id:               id,
 		Creator:          creator.String(),
@@ -100,8 +100,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
-	// Transfer fee amount from creator to ecosystem bucket
-	_ = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.EcosystemModuleName, sdk.NewCoins(feeAmount))
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
@@ -127,4 +125,11 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, err
 	}
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
+}
+
+func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
+	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
+	return balance.IsGTE(fee), fee, nil
 }

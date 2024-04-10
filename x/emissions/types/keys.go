@@ -6,7 +6,6 @@ const ModuleName = "emissions"
 const AlloraStakingAccountName = "allorastaking"
 const AlloraRequestsAccountName = "allorarequests"
 const AlloraRewardsAccountName = "allorarewards"
-const EcosystemModuleName = "ecosystem"
 
 var (
 	ParamsKey                        = collections.NewPrefix(0)

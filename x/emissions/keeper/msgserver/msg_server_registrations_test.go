@@ -169,13 +169,20 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         reputerAddr.String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
+		Creator:          reputerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      "10",
+		PrewardReputer:   "11",
+		PrewardInference: "12",
+		PrewardForecast:  "13",
+		FTolerance:       "14",
 	}
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
 
@@ -254,13 +261,20 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         workerAddr.String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
+		Creator:          workerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      "10",
+		PrewardReputer:   "11",
+		PrewardInference: "12",
+		PrewardForecast:  "13",
+		FTolerance:       "14",
 	}
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
 

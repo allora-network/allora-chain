@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	"testing"
 	"time"
 
@@ -94,8 +95,18 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		FTolerance:       "14",
 	}
 
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
+}
+
+func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
+	var initialStake = types.DefaultParamsCreateTopicFee() * 2
+	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(initialStake)))
+	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(types.DefaultParamsCreateTopicFee()))))
+	senderAddr, _ := sdk.AccAddressFromBech32(sender)
+	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.ModuleName, feeCoins)
 }
 
 func (s *KeeperTestSuite) TestCreateSeveralTopics() {
@@ -105,15 +116,21 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:        metadata,
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:         metadata,
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      "10",
+		PrewardReputer:   "11",
+		PrewardInference: "12",
+		PrewardForecast:  "13",
+		FTolerance:       "14",
 	}
 
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
@@ -122,6 +139,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	s.Require().NotNil(result)
 	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
 
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	// Create second topic
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on second topic")

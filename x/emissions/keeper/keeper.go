@@ -2276,12 +2276,6 @@ func (k *Keeper) RemoveFromReputerWhitelist(ctx context.Context, address sdk.Acc
 	return k.reputerWhitelist.Remove(ctx, address)
 }
 
-// Check the account has enough token
-func (k *Keeper) CheckEnoughDenom(ctx context.Context, address sdk.AccAddress, fee sdk.Coin) (bool, error) {
-	balance := k.bankKeeper.GetBalance(ctx, address, fee.Denom)
-	return balance.IsGTE(fee), nil
-}
-
 /// BANK KEEPER WRAPPERS
 
 // SendCoinsFromModuleToModule

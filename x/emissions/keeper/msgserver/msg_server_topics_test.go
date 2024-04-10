@@ -2,11 +2,8 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	"fmt"
-	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 )
 
 // ########################################
@@ -19,16 +16,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	var initialStake int64 = 1000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
-	balM := s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom)
-	bal := s.bankKeeper.GetBalance(s.ctx, senderAddr, params.DefaultBondDenom)
 
-	fmt.Println("bal", balM, bal.Denom)
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:          sender,
@@ -45,6 +33,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		FTolerance:       "4.0",
 	}
 
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
@@ -69,6 +58,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 		DefaultArg:      "ETH",
 	}
 
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
 }
