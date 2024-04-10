@@ -1,9 +1,8 @@
 package rewards_test
 
 import (
-	"math"
-
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,16 +22,24 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 		s.emissionsKeeper,
 		topidId,
 		block,
-		1,
-		1017.5559072418691,
+		alloraMath.OneDec(),
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(reputerRewards))
 
-	expectedRewards := []float64{456.49, 172.71, 211.93, 52.31, 124.10}
+	expectedRewards := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("456.49"),
+		alloraMath.MustNewDecFromString("172.71"),
+		alloraMath.MustNewDecFromString("211.93"),
+		alloraMath.MustNewDecFromString("52.31"),
+		alloraMath.MustNewDecFromString("124.10"),
+	}
 
 	for i, reputerReward := range reputerRewards {
-		if math.Abs(reputerReward.Reward-expectedRewards[i]) > 1e-2 {
+		rewardSubExpected, err := reputerReward.Reward.Sub(expectedRewards[i])
+		s.Require().NoError(err)
+		if rewardSubExpected.Abs().Cmp(alloraMath.MustNewDecFromString("0.01")) == alloraMath.GreaterThan {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
 	}
@@ -48,7 +55,13 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.R
 		s.addrs[4],
 	}
 
-	var scores = []float64{17.53436, 20.29489, 24.26994, 11.36754, 15.21749}
+	var scores = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("17.53436"),
+		alloraMath.MustNewDecFromString("20.29489"),
+		alloraMath.MustNewDecFromString("24.26994"),
+		alloraMath.MustNewDecFromString("11.36754"),
+		alloraMath.MustNewDecFromString("15.21749"),
+	}
 	var stakes = []cosmosMath.Uint{
 		cosmosMath.NewUint(1176644),
 		cosmosMath.NewUint(384623),
@@ -79,8 +92,8 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.R
 			Reputer: reputerAddr.String(),
 			ValueBundle: &types.ValueBundle{
 				TopicId:       topicId,
-				CombinedValue: 1500.0,
-				NaiveValue:    1500.0,
+				CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
+				NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 			},
 		}
 		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
