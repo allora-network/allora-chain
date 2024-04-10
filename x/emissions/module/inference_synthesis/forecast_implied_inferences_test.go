@@ -15,24 +15,24 @@ func (s *InferenceSynthesisTestSuite) TestGradient() {
 		expectedErr error
 	}{
 		{
-			name:        "normal operation",
+			name:        "normal operation 1",
 			p:           alloraMath.MustNewDecFromString("2"),
 			x:           alloraMath.MustNewDecFromString("1"),
 			expected:    alloraMath.MustNewDecFromString("1.92014"),
 			expectedErr: nil,
 		},
 		{
-			name:        "normal operation",
+			name:        "normal operation 2",
 			p:           alloraMath.MustNewDecFromString("10"),
 			x:           alloraMath.MustNewDecFromString("3"),
-			expected:    alloraMath.MustNewDecFromString("216664"),
+			expected:    alloraMath.MustNewDecFromString("216663.907950817"),
 			expectedErr: nil,
 		},
 		{
-			name:        "normal operation",
+			name:        "normal operation 3",
 			p:           alloraMath.MustNewDecFromString("9.2"),
 			x:           alloraMath.MustNewDecFromString("3.4"),
-			expected:    alloraMath.MustNewDecFromString("219724"),
+			expected:    alloraMath.MustNewDecFromString("219724.179615500"),
 			expectedErr: nil,
 		},
 	}
