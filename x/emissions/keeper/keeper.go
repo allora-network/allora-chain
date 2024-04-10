@@ -2144,12 +2144,13 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 	if err != nil {
 		return err
 	}
-
-	diff := uint64(len(scores.Scores)) - maxNumScores
-	if diff > 0 {
-		scores.Scores = scores.Scores[diff:]
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
 	}
-
 	key := collections.Join(topicId, blockNumber)
 	return k.reputerScores.Set(ctx, key, scores)
 }
