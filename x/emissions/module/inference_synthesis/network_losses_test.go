@@ -35,7 +35,6 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{},
 			expectedErr:         emissions.ErrFractionDivideByZero,
 		},
-		// Add more test cases as needed
 	}
 
 	for _, tc := range tests {
