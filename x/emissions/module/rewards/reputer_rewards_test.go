@@ -37,11 +37,12 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 
 	for i, reputerReward := range reputerRewards {
-		rewardSubExpected, err := reputerReward.Reward.Sub(expectedRewards[i])
-		s.Require().NoError(err)
-		if rewardSubExpected.Abs().Cmp(alloraMath.MustNewDecFromString("0.01")) == alloraMath.GreaterThan {
-			s.Fail("Expected reward is not equal to the actual reward")
-		}
+		s.Require().True(
+			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			"expected: %s, got: %s",
+			expectedRewards[i].String(),
+			reputerReward.Reward.String(),
+		)
 	}
 }
 

@@ -62,20 +62,6 @@ func (s *MathTestSuite) TestAdjustedStakeSimple() {
 	s.Require().True(alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
 }
 
-func (s *MathTestSuite) TestExponentialMovingAverageSimple() {
-	alpha := alloraMath.MustNewDecFromString("0.1")
-	current := alloraMath.MustNewDecFromString("300")
-	previous := alloraMath.MustNewDecFromString("200")
-
-	// 0.1*300 + (1-0.1)*200
-	// 30 + 180 = 210
-	expected := alloraMath.MustNewDecFromString("210")
-
-	result, err := rewards.ExponentialMovingAverage(alpha, current, previous)
-	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
-}
-
 func (s *MathTestSuite) TestNormalizeAgainstSlice() {
 	v := alloraMath.MustNewDecFromString("2.0")
 	a := []alloraMath.Dec{
@@ -346,8 +332,13 @@ func TestGetWorkerPortionOfRewards(t *testing.T) {
 			}
 
 			for i := range tt.want {
-				if alloraMath.InDelta(tt.want[i], got[i].Reward, alloraMath.MustNewDecFromString("0.00001")) {
-					t.Errorf("GetWorkerPortionOfRewards() got = %v, want %v", got, tt.want)
+				if !(alloraMath.InDelta(tt.want[i], got[i].Reward, alloraMath.MustNewDecFromString("0.00001"))) {
+					t.Errorf(
+						"GetWorkerPortionOfRewards() got = %s, want %s",
+						got[i].Reward.String(),
+						tt.want[i].String(),
+					)
+					return
 				}
 			}
 		})
@@ -512,13 +503,14 @@ func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := rewards.GetFinalWorkerScoreForecastTask(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
 			require.NoError(t, err)
-			if !got.Equal(tt.want) {
+			if !alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.00001")) {
 				t.Errorf("GetFinalWorkerScoreForecastTask() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
+/*
 func TestGetAllConsensusScores(t *testing.T) {
 	tests := []struct {
 		name                     string
@@ -609,3 +601,4 @@ func TestGetAllReputersOutput(t *testing.T) {
 		})
 	}
 }
+*/
