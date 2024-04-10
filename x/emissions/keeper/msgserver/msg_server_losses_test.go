@@ -1,11 +1,12 @@
 package msgserver_test
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestMsgInsertLosses() {
+func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -13,44 +14,44 @@ func (s *KeeperTestSuite) TestMsgInsertLosses() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()).String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgInsertLosses message
-	lossesMsg := &types.MsgInsertLosses{
+	// Create a MsgInsertBulkReputerPayload message
+	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender: reputerAddr,
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
 					TopicId:       1,
-					CombinedValue: 100,
+					CombinedValue: alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
-					NaiveValue: 100,
+					NaiveValue: alloraMath.NewDecFromInt64(100),
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},
@@ -58,11 +59,11 @@ func (s *KeeperTestSuite) TestMsgInsertLosses() {
 		},
 	}
 
-	_, err := msgServer.InsertLosses(ctx, lossesMsg)
-	require.NoError(err, "InsertLosses should not return an error")
+	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
+	require.NoError(err, "InsertBulkReputerPayload should not return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgInsertLossesInvalidUnauthorized() {
+func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -70,44 +71,44 @@ func (s *KeeperTestSuite) TestMsgInsertLossesInvalidUnauthorized() {
 	reputerAddr := nonAdminAccounts[0].String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
 
-	// Create a MsgInsertLosses message
-	lossesMsg := &types.MsgInsertLosses{
+	// Create a MsgInsertBulkReputerPayload message
+	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender: reputerAddr,
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
 					TopicId:       1,
-					CombinedValue: 100,
+					CombinedValue: alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
-					NaiveValue: 100,
+					NaiveValue: alloraMath.NewDecFromInt64(100),
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
 							Worker: workerAddr,
-							Value:  100,
+							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},
@@ -115,6 +116,6 @@ func (s *KeeperTestSuite) TestMsgInsertLossesInvalidUnauthorized() {
 		},
 	}
 
-	_, err := msgServer.InsertLosses(ctx, lossesMsg)
-	require.ErrorIs(err, types.ErrNotInReputerWhitelist, "InsertLosses should return an error")
+	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
+	require.ErrorIs(err, types.ErrNotInReputerWhitelist, "InsertBulkReputerPayload should return an error")
 }

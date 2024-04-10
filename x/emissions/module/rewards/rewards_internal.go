@@ -4,30 +4,57 @@ import (
 	"math"
 	"sort"
 
-	errors "cosmossdk.io/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// StdDev calculates the standard deviation of a slice of float64.
+// StdDev calculates the standard deviation of a slice of `alloraMath.Dec`
 // stdDev = sqrt((Σ(x - μ))^2/ N)
 // where μ is mean and N is number of elements
-func StdDev(data []float64) float64 {
-	var mean, sd float64
+func StdDev(data []alloraMath.Dec) (alloraMath.Dec, error) {
+	mean := alloraMath.ZeroDec()
+	var err error = nil
 	for _, v := range data {
-		mean += v
+		mean, err = mean.Add(v)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
-	mean /= float64(len(data))
+	lenData := alloraMath.NewDecFromInt64(int64(len(data)))
+	mean, err = mean.Quo(lenData)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	sd := alloraMath.ZeroDec()
 	for _, v := range data {
-		sd += math.Pow(v-mean, 2)
+		vMinusMean, err := v.Sub(mean)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		vMinusMeanSquared, err := vMinusMean.Mul(vMinusMean)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		sd, err = sd.Add(vMinusMeanSquared)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
-	sd = math.Sqrt(sd / float64(len(data)))
-	return sd
+	sdOverLen, err := sd.Quo(lenData)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	sqrtSdOverLen, err := sdOverLen.Sqrt()
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return sqrtSdOverLen, nil
 }
 
-// flatten converts a double slice of float64 to a single slice of float64
-func flatten(arr [][]float64) []float64 {
-	var flat []float64
+// flatten converts a double slice of alloraMath.Dec to a single slice of alloraMath.Dec
+func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
+	var flat []alloraMath.Dec
 	for _, row := range arr {
 		flat = append(flat, row...)
 	}
@@ -36,8 +63,13 @@ func flatten(arr [][]float64) []float64 {
 
 // GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
 // U_ij / V_ik * totalRewards
-func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards float64, workerAddresses []sdk.AccAddress) ([]TaskRewards, error) {
-	lastScores := make([][]float64, len(scores))
+func GetWorkerPortionOfRewards(
+	scores [][]alloraMath.Dec,
+	preward alloraMath.Dec,
+	totalRewards alloraMath.Dec,
+	workerAddresses []sdk.AccAddress,
+) ([]TaskRewards, error) {
+	lastScores := make([][]alloraMath.Dec, len(scores))
 	for i, workerScores := range scores {
 		end := len(workerScores)
 		start := end - 10
@@ -47,23 +79,38 @@ func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards
 		lastScores[i] = workerScores[start:end]
 	}
 
-	stdDev := StdDev(flatten(lastScores))
-	smoothedScores := make([]float64, len(lastScores))
-	total := 0.0
+	stdDev, err := StdDev(flatten(lastScores))
+	if err != nil {
+		return nil, err
+	}
+	smoothedScores := make([]alloraMath.Dec, len(lastScores))
+	total := alloraMath.ZeroDec()
 	for i, score := range lastScores {
-		normalizedScore := score[len(score)-1] / stdDev
+		normalizedScore, err := score[len(score)-1].Quo(stdDev)
+		if err != nil {
+			return nil, err
+		}
 		res, err := Phi(preward, normalizedScore)
 		if err != nil {
 			return nil, err
 		}
 		smoothedScores[i] = res
-		total += res
+		total, err = total.Add(res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var rewardPortions []TaskRewards
 	for i, score := range smoothedScores {
-		rewardFraction := score / total
-		rewardPortion := rewardFraction * totalRewards
+		rewardFraction, err := score.Quo(total)
+		if err != nil {
+			return nil, err
+		}
+		rewardPortion, err := rewardFraction.Mul(totalRewards)
+		if err != nil {
+			return nil, err
+		}
 		rewardPortions = append(rewardPortions, TaskRewards{
 			Address: workerAddresses[i],
 			Reward:  rewardPortion,
@@ -75,22 +122,40 @@ func GetWorkerPortionOfRewards(scores [][]float64, preward float64, totalRewards
 
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
 // W_im
-func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]float64, error) {
+func GetReputerRewardFractions(
+	stakes []alloraMath.Dec,
+	scores []alloraMath.Dec,
+	preward alloraMath.Dec,
+) ([]alloraMath.Dec, error) {
 	if len(stakes) != len(scores) {
 		return nil, types.ErrInvalidSliceLength
 	}
 
+	var err error
 	// Calculate (stakes * scores)^preward and sum of all fractions
-	var totalFraction float64
-	fractions := make([]float64, len(stakes))
+	var totalFraction alloraMath.Dec
+	fractions := make([]alloraMath.Dec, len(stakes))
 	for i, stake := range stakes {
-		fractions[i] = math.Pow(stake*scores[i], preward)
-		totalFraction += fractions[i]
+		stakeTimesScores, err := stake.Mul(scores[i])
+		if err != nil {
+			return []alloraMath.Dec{}, err
+		}
+		fractions[i], err = alloraMath.Pow(stakeTimesScores, preward)
+		if err != nil {
+			return []alloraMath.Dec{}, err
+		}
+		totalFraction, err = totalFraction.Add(fractions[i])
+		if err != nil {
+			return []alloraMath.Dec{}, err
+		}
 	}
 
 	// Normalize fractions
 	for i := range fractions {
-		fractions[i] /= totalFraction
+		fractions[i], err = fractions[i].Quo(totalFraction)
+		if err != nil {
+			return []alloraMath.Dec{}, err
+		}
 	}
 
 	return fractions, nil
@@ -98,87 +163,185 @@ func GetReputerRewardFractions(stakes, scores []float64, preward float64) ([]flo
 
 // GetfUniqueAgg calculates the unique value or impact of each forecaster.
 // ƒ^+
-func GetfUniqueAgg(numForecasters float64) float64 {
-	return 1.0 / math.Pow(2.0, (numForecasters-1.0))
+func GetfUniqueAgg(numForecasters alloraMath.Dec) (alloraMath.Dec, error) {
+	numForecastersMinusOne, err := numForecasters.Sub(alloraMath.OneDec())
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	twoToTheNumForecastersMinusOne, err := alloraMath.Pow(
+		alloraMath.NewDecFromInt64(2),
+		numForecastersMinusOne,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := alloraMath.OneDec().Quo(twoToTheNumForecastersMinusOne)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return ret, nil
 }
 
 // GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
 // T_ik
-func GetFinalWorkerScoreForecastTask(scoreOneIn, scoreOneOut, fUniqueAgg float64) float64 {
-	return fUniqueAgg*scoreOneIn + (1-fUniqueAgg)*scoreOneOut
+func GetFinalWorkerScoreForecastTask(
+	scoreOneIn,
+	scoreOneOut,
+	fUniqueAgg alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	scoreInUnique, err := fUniqueAgg.Mul(scoreOneIn)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	oneMinusUnique, err := alloraMath.OneDec().Sub(fUniqueAgg)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	scoreOutUnique, err := oneMinusUnique.Mul(scoreOneOut)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := scoreInUnique.Add(scoreOutUnique)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return ret, nil
 }
 
 // GetWorkerScore calculates the worker score based on the losses and lossesCut.
 // Consider the staked weighted inference loss and one-out loss to calculate the worker score.
 // T_ij / T^-_ik / T^+_ik
-func GetWorkerScore(losses, lossesOneOut float64) float64 {
-	deltaLogLoss := math.Log10(lossesOneOut) - math.Log10(losses)
-	return deltaLogLoss
+func GetWorkerScore(losses, lossesOneOut alloraMath.Dec) (alloraMath.Dec, error) {
+	log10LossesOneOut, err := alloraMath.Log10(lossesOneOut)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	log10Losses, err := alloraMath.Log10(losses)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	deltaLogLoss, err := log10LossesOneOut.Sub(log10Losses)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return deltaLogLoss, nil
 }
 
 // GetStakeWeightedLoss calculates the stake-weighted average loss.
 // Consider the losses and the stake of each reputer to calculate the stake-weighted loss.
 // The stake weighted loss is used to calculate the network-wide losses.
 // L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
-func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []float64) (float64, error) {
+func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []alloraMath.Dec) (alloraMath.Dec, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
-		return 0, types.ErrInvalidSliceLength
+		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
+	var err error = nil
 
-	totalStake := 0.0
+	totalStake := alloraMath.ZeroDec()
 	for _, stake := range reputersStakes {
-		totalStake += stake
+		totalStake, err = totalStake.Add(stake)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
 	}
 
-	var stakeWeightedLoss float64 = 0
+	stakeWeightedLoss := alloraMath.ZeroDec()
 	for i, loss := range reputersReportedLosses {
-		weightedLoss := (reputersStakes[i] * math.Log10(loss)) / totalStake
-		stakeWeightedLoss += weightedLoss
+		log10Loss, err := alloraMath.Log10(loss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		reputerStakesByLoss, err := reputersStakes[i].Mul(log10Loss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		weightedLoss, err := reputerStakesByLoss.Quo(totalStake)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		stakeWeightedLoss, err = stakeWeightedLoss.Add(weightedLoss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
 	}
-
-	return math.Pow(10, stakeWeightedLoss), nil
+	ten := alloraMath.NewDecFromInt64(10)
+	ret, err := alloraMath.Pow(ten, stakeWeightedLoss)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	return ret, nil
 }
 
-// GetStakeWeightedLossMatrix calculates the stake-weighted geometric mean of the losses to generate the consensus vector.
+// GetStakeWeightedLossMatrix calculates the stake-weighted
+// geometric mean of the losses to generate the consensus vector.
 // L_i - consensus loss vector
-func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReportedLosses [][]float64) ([]float64, []float64, error) {
+func GetStakeWeightedLossMatrix(
+	reputersAdjustedStakes []alloraMath.Dec,
+	reputersReportedLosses [][]alloraMath.Dec,
+) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
 		return nil, nil, types.ErrInvalidSliceLength
 	}
+	var err error = nil
 
 	// Calculate total stake for normalization
-	totalStake := 0.0
+	totalStake := alloraMath.ZeroDec()
 	for _, stake := range reputersAdjustedStakes {
-		totalStake += stake
+		totalStake, err = totalStake.Add(stake)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	// Ensure every loss array is non-empty and calculate geometric mean
-	stakeWeightedLoss := make([]float64, len(reputersReportedLosses[0]))
-	// Array to store most distant values from consensus
-	mostDistantValues := make([]float64, len(reputersReportedLosses[0]))
-
+	stakeWeightedLoss := make([]alloraMath.Dec, len(reputersReportedLosses[0]))
+	mostDistantValues := make([]alloraMath.Dec, len(reputersReportedLosses[0]))
 	for j := 0; j < len(reputersReportedLosses[0]); j++ {
-		logSum := 0.0
-		maxDistance := -1.0 // Initialize with an impossible value
-
+		logSum := alloraMath.ZeroDec()
 		for i, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
-			if math.IsNaN(losses[j]) {
+			if losses[j].IsNil() {
 				continue
 			}
-			logSum += (math.Log10(losses[j]) * reputersAdjustedStakes[i]) / totalStake
+
+			logLosses, err := alloraMath.Log10(losses[j])
+			if err != nil {
+				return nil, nil, err
+			}
+			logLossesTimesStake, err := logLosses.Mul(reputersAdjustedStakes[i])
+			if err != nil {
+				return nil, nil, err
+			}
+			logLossesTimesStakeOverTotalStake, err := logLossesTimesStake.Quo(totalStake)
+			if err != nil {
+				return nil, nil, err
+			}
+			logSum, err = logSum.Add(logLossesTimesStakeOverTotalStake)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+		ten := alloraMath.NewDecFromInt64(10)
+		stakeWeightedLoss[j], err = alloraMath.Pow(ten, logSum)
+		if err != nil {
+			return nil, nil, err
 		}
 
 		// Find most distant value from consensus value
+		maxDistance, err := alloraMath.OneDec().Mul(alloraMath.MustNewDecFromString("-1")) // Initialize with an impossible value
+		if err != nil {
+			return nil, nil, err
+		}
 		for _, losses := range reputersReportedLosses {
-			distance := losses[j] - logSum
-			if distance > maxDistance {
+			distance, err := losses[j].Sub(logSum)
+			if err != nil {
+				return nil, nil, err
+			}
+			if distance.Gt(maxDistance) {
 				maxDistance = distance
 				mostDistantValues[j] = losses[j]
 			}
 		}
-
-		stakeWeightedLoss[j] = math.Pow(10, logSum)
 	}
 
 	return stakeWeightedLoss, mostDistantValues, nil
@@ -186,29 +349,72 @@ func GetStakeWeightedLossMatrix(reputersAdjustedStakes []float64, reputersReport
 
 // GetConsensusScore calculates the proximity to consensus score for a reputer.
 // T_im
-func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []float64) (float64, error) {
-	fTolerance := 0.01
+func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []alloraMath.Dec) (alloraMath.Dec, error) {
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	if len(reputerLosses) != len(consensusLosses) {
-		return 0, types.ErrInvalidSliceLength
+		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
 
-	var sumLogConsensusSquared float64
+	var err error = nil
+	var sumLogConsensusSquared alloraMath.Dec = alloraMath.ZeroDec()
 	for _, cLoss := range consensusLosses {
-		sumLogConsensusSquared += math.Pow(math.Log10(cLoss), 2)
+		log10CLoss, err := alloraMath.Log10(cLoss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		log10CLossSquared, err := log10CLoss.Mul(log10CLoss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		sumLogConsensusSquared, err = sumLogConsensusSquared.Add(log10CLossSquared)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
 	}
-	consensusNorm := math.Sqrt(sumLogConsensusSquared)
+	consensusNorm, err := sumLogConsensusSquared.Sqrt()
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 
-	var distanceSquared float64
+	var distanceSquared alloraMath.Dec
 	for i, rLoss := range reputerLosses {
 		// Attribute most distant value if loss is NaN
-		if math.IsNaN(rLoss) {
+		if rLoss.IsNil() {
 			rLoss = mostDistantValues[i]
 		}
-		distanceSquared += math.Pow(math.Log10(rLoss/consensusLosses[i]), 2)
+		rLossOverConsensusLoss, err := rLoss.Quo(consensusLosses[i])
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		log10RLossOverCLoss, err := alloraMath.Log10(rLossOverConsensusLoss)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		log10RLossOverCLossSquared, err := log10RLossOverCLoss.Mul(log10RLossOverCLoss) // == Pow(x,2)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		distanceSquared, err = distanceSquared.Add(log10RLossOverCLossSquared)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
 	}
-	distance := math.Sqrt(distanceSquared)
-
-	score := 1 / (distance/consensusNorm + fTolerance)
+	distance, err := distanceSquared.Sqrt()
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	distanceOverConsensusNorm, err := distance.Quo(consensusNorm)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	distanceOverConsensusNormPlusFTolerance, err := distanceOverConsensusNorm.Add(fTolerance)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	score, err := alloraMath.OneDec().Quo(distanceOverConsensusNormPlusFTolerance)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 	return score, nil
 }
 
@@ -217,11 +423,22 @@ func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []float
 // T_i - stake weighted total consensus
 // returns:
 // T_im - reputer score (proximity to consensus)
-func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListeningCoefficients []float64, numReputers int) ([]float64, error) {
+func GetAllConsensusScores(
+	allLosses [][]alloraMath.Dec,
+	stakes []alloraMath.Dec,
+	allListeningCoefficients []alloraMath.Dec,
+	numReputers int64,
+) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
-	var adjustedStakes []float64
+	var adjustedStakes []alloraMath.Dec
 	for i, reputerStake := range stakes {
-		adjustedStake, err := GetAdjustedStake(reputerStake, stakes, allListeningCoefficients[i], allListeningCoefficients, float64(numReputers))
+		adjustedStake, err := GetAdjustedStake(
+			reputerStake,
+			stakes,
+			allListeningCoefficients[i],
+			allListeningCoefficients,
+			alloraMath.NewDecFromInt64(numReputers),
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -235,8 +452,8 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 	}
 
 	// Get reputers scores
-	scores := make([]float64, numReputers)
-	for i := 0; i < numReputers; i++ {
+	scores := make([]alloraMath.Dec, numReputers)
+	for i := int64(0); i < numReputers; i++ {
 		losses := allLosses[i]
 		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues)
 		if err != nil {
@@ -253,64 +470,162 @@ func GetAllConsensusScores(allLosses [][]float64, stakes []float64, allListening
 // returns:
 // T_im - reputer score (proximity to consensus)
 // a_im - listening coefficients
-func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoefficients []float64, numReputers int) ([]float64, []float64, error) {
+func GetAllReputersOutput(
+	allLosses [][]alloraMath.Dec,
+	stakes []alloraMath.Dec,
+	initialCoefficients []alloraMath.Dec,
+	numReputers int64,
+) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	learningRate := types.DefaultParamsLearningRate()
-	coefficients := make([]float64, len(initialCoefficients))
+	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
-	oldCoefficients := make([]float64, numReputers)
-	maxGradientThreshold := 0.001
-	imax := int(math.Round(1.0 / learningRate))
-	minStakeFraction := 0.5
-	var i int
-	var maxGradient float64 = 1
-	finalScores := make([]float64, numReputers)
+	oldCoefficients := make([]alloraMath.Dec, numReputers)
+	maxGradientThreshold := alloraMath.MustNewDecFromString("0.001")
+	imax, err := alloraMath.OneDec().Quo(learningRate)
+	// imax := int(math.Round(1.0 / learningRate))
+	// is rounding really necessary?
+	if err != nil {
+		return nil, nil, err
+	}
+	minStakeFraction := alloraMath.MustNewDecFromString("0.5")
+	var i alloraMath.Dec = alloraMath.ZeroDec()
+	var maxGradient alloraMath.Dec = alloraMath.OneDec()
+	finalScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient > maxGradientThreshold && i < imax {
-		i++
+	for maxGradient.Cmp(maxGradientThreshold) == alloraMath.GreaterThan &&
+		i.Cmp(imax) == alloraMath.LessThan {
+		i, err = i.Add(alloraMath.OneDec())
+		if err != nil {
+			return nil, nil, err
+		}
 		copy(oldCoefficients, coefficients)
-		gradient := make([]float64, numReputers)
-		newScores := make([]float64, numReputers)
+		gradient := make([]alloraMath.Dec, numReputers)
+		newScores := make([]alloraMath.Dec, numReputers)
 
 		for l := range coefficients {
-			dcoeff := 0.001
-			if coefficients[l] == 1 {
-				dcoeff = -0.001
+			dcoeff := alloraMath.MustNewDecFromString("0.001")
+			if coefficients[l].Equal(alloraMath.OneDec()) {
+				dcoeff = alloraMath.MustNewDecFromString("-0.001")
 			}
-			coeffs := make([]float64, len(coefficients))
+			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
 			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
 			if err != nil {
 				return nil, nil, err
 			}
-			coeffs2 := make([]float64, len(coeffs))
+			coeffs2 := make([]alloraMath.Dec, len(coeffs))
 			copy(coeffs2, coeffs)
-			coeffs2[l] += dcoeff
+			coeffs2[l], err = coeffs2[l].Add(dcoeff)
+			if err != nil {
+				return nil, nil, err
+			}
 
 			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
 			if err != nil {
 				return nil, nil, err
 			}
-			gradient[l] = (1.0 - sum(scores)/sum(scores2)) / dcoeff
+			sumScores, err := sum(scores)
+			if err != nil {
+				return nil, nil, err
+			}
+			sumScores2, err := sum(scores2)
+			if err != nil {
+				return nil, nil, err
+			}
+			sumScoresOverSumScores2, err := sumScores.Quo(sumScores2)
+			if err != nil {
+				return nil, nil, err
+			}
+			oneMinusSumScoresOverSumScores2, err := alloraMath.OneDec().Sub(sumScoresOverSumScores2)
+			if err != nil {
+				return nil, nil, err
+			}
+			gradient[l], err = oneMinusSumScoresOverSumScores2.Quo(dcoeff)
+			if err != nil {
+				return nil, nil, err
+			}
 			copy(newScores, scores)
 		}
 
-		newCoefficients := make([]float64, len(coefficients))
+		newCoefficients := make([]alloraMath.Dec, len(coefficients))
 		for j := range coefficients {
-			newCoefficients[j] = math.Min(math.Max(coefficients[j]+learningRate*gradient[j], 0), 1)
+			learningRateTimesGradient, err := learningRate.Mul(gradient[j])
+			if err != nil {
+				return nil, nil, err
+			}
+			coefficientsPlusLearningRateTimesGradient, err := coefficients[j].Add(learningRateTimesGradient)
+			if err != nil {
+				return nil, nil, err
+			}
+			newCoefficients[j] = alloraMath.Min(
+				alloraMath.Max(
+					coefficientsPlusLearningRateTimesGradient,
+					alloraMath.ZeroDec(),
+				),
+				alloraMath.OneDec(),
+			)
 		}
 
-		listenedStakeFractionOld := sumWeighted(oldCoefficients, stakes) / sum(stakes)
-		listenedStakeFraction := sumWeighted(newCoefficients, stakes) / sum(stakes)
-		if listenedStakeFraction < minStakeFraction {
+		sumStakes, err := sum(stakes)
+		if err != nil {
+			return nil, nil, err
+		}
+		oldWeighted, err := sumWeighted(oldCoefficients, stakes)
+		if err != nil {
+			return nil, nil, err
+		}
+		listenedStakeFractionOld, err := oldWeighted.Quo(sumStakes)
+		if err != nil {
+			return nil, nil, err
+		}
+		newWeighted, err := sumWeighted(newCoefficients, stakes)
+		if err != nil {
+			return nil, nil, err
+		}
+		listenedStakeFraction, err := newWeighted.Quo(sumStakes)
+		if err != nil {
+			return nil, nil, err
+		}
+		if listenedStakeFraction.Cmp(minStakeFraction) == alloraMath.LessThan {
 			for l := range coefficients {
-				coefficients[l] = oldCoefficients[l] + (coefficients[l]-oldCoefficients[l])*(minStakeFraction-listenedStakeFractionOld)/(listenedStakeFraction-listenedStakeFractionOld)
+				coeffDiff, err := coefficients[l].Sub(oldCoefficients[l])
+				if err != nil {
+					return nil, nil, err
+				}
+				listenedDiff, err := minStakeFraction.Sub(listenedStakeFractionOld)
+				if err != nil {
+					return nil, nil, err
+				}
+				stakedFracDiff, err := listenedStakeFraction.Sub(listenedStakeFractionOld)
+				if err != nil {
+					return nil, nil, err
+				}
+				coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
+				if err != nil {
+					return nil, nil, err
+				}
+				coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
+				if err != nil {
+					return nil, nil, err
+				}
+				coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
+				if err != nil {
+					return nil, nil, err
+				}
 			}
 		} else {
 			coefficients = newCoefficients
 		}
-		maxGradient = maxAbsDifference(coefficients, oldCoefficients) / learningRate
+		maxAbsDiffCoeff, err := maxAbsDifference(coefficients, oldCoefficients)
+		if err != nil {
+			return nil, nil, err
+		}
+		maxGradient, err = maxAbsDiffCoeff.Quo(learningRate)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		copy(finalScores, newScores)
 	}
@@ -318,64 +633,70 @@ func GetAllReputersOutput(allLosses [][]float64, stakes []float64, initialCoeffi
 	return finalScores, coefficients, nil
 }
 
-func sum(slice []float64) float64 {
-	total := 0.0
+func sum(slice []alloraMath.Dec) (alloraMath.Dec, error) {
+	total := alloraMath.ZeroDec()
+	var err error = nil
 	for _, v := range slice {
-		total += v
+		total, err = total.Add(v)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
-	return total
+	return total, nil
 }
 
 // sumWeighted calculates the weighted sum of values based on the given weights.
 // The length of weights and values must be the same.
-func sumWeighted(weights, values []float64) float64 {
-	var sum float64
+func sumWeighted(weights, values []alloraMath.Dec) (alloraMath.Dec, error) {
+	var sum alloraMath.Dec
 	for i, weight := range weights {
-		sum += weight * values[i]
+		var err error = nil
+		weightTimesValue, err := weight.Mul(values[i])
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		sum, err = sum.Add(weightTimesValue)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
-
-	return sum
+	return sum, nil
 }
 
-func maxAbsDifference(a, b []float64) float64 {
-	maxDiff := 0.0
+func maxAbsDifference(a, b []alloraMath.Dec) (alloraMath.Dec, error) {
+	maxDiff := alloraMath.ZeroDec()
 	for i := range a {
-		diff := math.Abs(a[i] - b[i])
-		if diff > maxDiff {
+		subtraction, err := a[i].Sub(b[i])
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		diff := subtraction.Abs()
+		if diff.Cmp(maxDiff) == alloraMath.GreaterThan {
 			maxDiff = diff
 		}
 	}
-	return maxDiff
+	return maxDiff, nil
 }
 
 // Implements the potential function phi for the module
 // this is equation 6 from the litepaper:
 // ϕ_p(x) = (ln(1 + e^x))^p
-//
-// error handling:
-// float Inf can be generated for values greater than 1.7976931348623157e+308
-// e^x can create Inf
-// ln(blah)^p can create Inf for sufficiently large ln result
-// NaN is impossible as 1+e^x is always positive no matter the value of x
-// and pow only produces NaN for NaN input
-// therefore we only return one type of error and that is if phi overflows.
-func Phi(p float64, x float64) (float64, error) {
-	if math.IsNaN(p) || math.IsInf(p, 0) || math.IsNaN(x) || math.IsInf(x, 0) {
-		return 0, types.ErrPhiInvalidInput
+func Phi(p, x alloraMath.Dec) (alloraMath.Dec, error) {
+	eToTheX, err := alloraMath.Exp(x)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	eToTheX := math.Exp(x)
-	onePlusEToTheX := 1 + eToTheX
-	if math.IsInf(onePlusEToTheX, 0) {
-		return 0, types.ErrEToTheXExponentiationIsInfinity
+	onePlusEToTheX, err := alloraMath.OneDec().Add(eToTheX)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	naturalLog := math.Log(onePlusEToTheX)
-	result := math.Pow(naturalLog, p)
-	if math.IsInf(result, 0) {
-		return 0, types.ErrLnToThePExponentiationIsInfinity
+	naturalLog, err := alloraMath.Ln(onePlusEToTheX)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	// should theoretically never be possible with the above checks
-	if math.IsNaN(result) {
-		return 0, types.ErrPhiResultIsNaN
+	result, err := alloraMath.Pow(naturalLog, p)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return result, nil
 }
@@ -389,78 +710,68 @@ func Phi(p float64, x float64) (float64, error) {
 // and allListeningCoefficients are slices of the same length (a_im)
 // and the index to each slice corresponds to the same reputer
 func GetAdjustedStake(
-	stake float64,
-	allStakes []float64,
-	listeningCoefficient float64,
-	allListeningCoefficients []float64,
-	numReputers float64,
-) (float64, error) {
+	stake alloraMath.Dec,
+	allStakes []alloraMath.Dec,
+	listeningCoefficient alloraMath.Dec,
+	allListeningCoefficients []alloraMath.Dec,
+	numReputers alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	if len(allStakes) != len(allListeningCoefficients) ||
 		len(allStakes) == 0 ||
 		len(allListeningCoefficients) == 0 {
-		return 0, types.ErrAdjustedStakeInvalidSliceLength
+		return alloraMath.ZeroDec(), types.ErrAdjustedStakeInvalidSliceLength
 	}
 	eta := types.DefaultParamsSharpness()
-	denominator := sumWeighted(allListeningCoefficients, allStakes)
-	numerator := numReputers * listeningCoefficient * stake
-	stakeFraction := numerator / denominator
-	stakeFraction = stakeFraction - 1
-	stakeFraction = stakeFraction * -eta
+	denominator, err := sumWeighted(allListeningCoefficients, allStakes)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	numReputersTimesListeningCoefficent, err := numReputers.Mul(listeningCoefficient)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	numerator, err := numReputersTimesListeningCoefficent.Mul(stake)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	stakeFraction, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	stakeFraction, err = stakeFraction.Sub(alloraMath.OneDec())
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	negativeEta, err := eta.Mul(alloraMath.NewDecFromInt64(-1))
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	stakeFraction, err = stakeFraction.Mul(negativeEta)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
 
-	phi_1_stakeFraction, err := Phi(1, stakeFraction)
+	phi_1_stakeFraction, err := Phi(alloraMath.OneDec(), stakeFraction)
 	if err != nil {
-		return 0, err
+		return alloraMath.ZeroDec(), err
 	}
-	phi_1_Eta, err := Phi(1, eta)
+	phi_1_Eta, err := Phi(alloraMath.OneDec(), eta)
 	if err != nil {
-		return 0, err
+		return alloraMath.ZeroDec(), err
 	}
-	if phi_1_Eta == 0 {
-		return 0, types.ErrPhiCannotBeZero
+	if phi_1_Eta.Equal(alloraMath.ZeroDec()) {
+		return alloraMath.ZeroDec(), types.ErrPhiCannotBeZero
 	}
 	// phi_1_Eta is taken to the -1 power
 	// and then multiplied by phi_1_stakeFraction
 	// so we can just treat it as phi_1_stakeFraction / phi_1_Eta
-	phiVal := phi_1_stakeFraction / phi_1_Eta
-	ret := 1 - phiVal
-
-	if math.IsInf(ret, 0) {
-		return 0, errors.Wrapf(types.ErrAdjustedStakeIsInfinity, "stake: %f", stake)
+	phiVal, err := phi_1_stakeFraction.Quo(phi_1_Eta)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
 	}
-	if math.IsNaN(ret) {
-		return 0, errors.Wrapf(types.ErrAdjustedStakeIsNaN, "stake: %f", stake)
-	}
-	return ret, nil
-}
-
-// Used by Rewards fraction functions,
-// all the exponential moving average functions take the form
-// x_average=α*x_current + (1-α)*x_previous
-//
-// this covers the equations
-// Uij = αUij + (1 − α)Ui−1,j
-// ̃Vik = αVik + (1 − α)Vi−1,k
-// ̃Wim = αWim + (1 − α)Wi−1,m
-func ExponentialMovingAverage(alpha float64, current float64, previous float64) (float64, error) {
-	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
-		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "alpha: %f", alpha)
-	}
-	if math.IsNaN(current) || math.IsInf(current, 0) {
-		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "current: %f", current)
-	}
-	if math.IsNaN(previous) || math.IsInf(previous, 0) {
-		return 0, errors.Wrapf(types.ErrExponentialMovingAverageInvalidInput, "previous: %f", previous)
-	}
-
-	// THE ONLY LINE OF CODE IN THIS FUNCTION
-	// THAT ISN'T ERROR CHECKING IS HERE
-	ret := alpha*current + (1-alpha)*previous
-
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrExponentialMovingAverageIsInfinity
-	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrExponentialMovingAverageIsNaN
+	ret, err := alloraMath.OneDec().Sub(phiVal)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
 	}
 	return ret, nil
 }
@@ -474,31 +785,25 @@ func ExponentialMovingAverage(alpha float64, current float64, previous float64) 
 // f_ij =  (̃U_ij) / ∑_j(̃Uij)
 // f_ik = (̃Vik) / ∑_k(̃Vik)
 // fim =  (̃Wim) / ∑_m(̃Wim)
-func NormalizeAgainstSlice(value float64, allValues []float64) (float64, error) {
+func NormalizeAgainstSlice(value alloraMath.Dec, allValues []alloraMath.Dec) (alloraMath.Dec, error) {
 	if len(allValues) == 0 {
-		return 0, types.ErrFractionInvalidSliceLength
+		return alloraMath.ZeroDec(), types.ErrFractionInvalidSliceLength
 	}
-	if math.IsNaN(value) || math.IsInf(value, 0) {
-		return 0, errors.Wrapf(types.ErrFractionInvalidInput, "value: %f", value)
-	}
-	sumValues := 0.0
-	for i, v := range allValues {
-		if math.IsNaN(v) || math.IsInf(v, 0) {
-			return 0, errors.Wrapf(types.ErrFractionInvalidInput, "allValues[%d]: %f", i, v)
+	var err error = nil
+	sumValues := alloraMath.ZeroDec()
+	for _, v := range allValues {
+		sumValues, err = sumValues.Add(v)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
 		}
-		sumValues += v
 	}
-	if sumValues == 0 {
-		return 0, types.ErrFractionDivideByZero
+	if sumValues.Equal(alloraMath.ZeroDec()) {
+		return alloraMath.ZeroDec(), types.ErrFractionDivideByZero
 	}
-	ret := value / sumValues
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrFractionIsInfinity
+	ret, err := value.Quo(sumValues)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrFractionIsNaN
-	}
-
 	return ret, nil
 }
 
@@ -508,52 +813,48 @@ func NormalizeAgainstSlice(value float64, allValues []float64) (float64, error) 
 // Gi = - ∑_k( f_ik * ln(f_ik) * (N_{f,eff} / N_f)^β )
 // Hi = - ∑_m( f_im * ln(f_im) * (N_{r,eff} / N_r)^β )
 // we use beta = 0.25 as a fiducial value
-func Entropy(allFs []float64, N_eff float64, numParticipants float64, beta float64) (float64, error) {
-	if math.IsInf(N_eff, 0) ||
-		math.IsNaN(N_eff) ||
-		math.IsInf(numParticipants, 0) ||
-		math.IsNaN(numParticipants) ||
-		math.IsInf(beta, 0) ||
-		math.IsNaN(beta) {
-		return 0, errors.Wrapf(
-			types.ErrEntropyInvalidInput,
-			"N_eff: %f, numParticipants: %f, beta: %f",
-			N_eff,
-			numParticipants,
-			beta,
-		)
-	}
+func Entropy(
+	allFs []alloraMath.Dec,
+	N_eff alloraMath.Dec,
+	numParticipants alloraMath.Dec,
+	beta alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	// simple variable rename to look more like the equations,
 	// hopefully compiler is smart enough to inline it
 	N := numParticipants
 
-	multiplier := N_eff / N
-	multiplier = math.Pow(multiplier, beta)
+	multiplier, err := N_eff.Quo(N)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	multiplier, err = alloraMath.Pow(multiplier, beta)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
 
-	sum := 0.0
-	for i, f := range allFs {
-		if math.IsInf(f, 0) || math.IsNaN(f) {
-			return 0, errors.Wrapf(types.ErrEntropyInvalidInput, "allFs[%d]: %f", i, f)
+	sum := alloraMath.ZeroDec()
+	for _, f := range allFs {
+		lnF, err := alloraMath.Ln(f)
+		if err != nil {
+			return alloraMath.Dec{}, err
 		}
-		sum += f * math.Log(f)
+		fLnF, err := f.Mul(lnF)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		sum, err = sum.Add(fLnF)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
 
-	ret := -1 * sum * multiplier
-	if math.IsInf(ret, 0) {
-		return 0, errors.Wrapf(
-			types.ErrEntropyIsInfinity,
-			"sum of f: %f, multiplier: %f",
-			sum,
-			multiplier,
-		)
+	inverseSum, err := sum.Mul(alloraMath.NewDecFromInt64(-1))
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, errors.Wrapf(
-			types.ErrEntropyIsNaN,
-			"sum of f: %f, multiplier: %f",
-			sum,
-			multiplier,
-		)
+	ret, err := inverseSum.Mul(multiplier)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -564,26 +865,27 @@ func Entropy(allFs []float64, N_eff float64, numParticipants float64, beta float
 // N_{i,eff} = 1 / ∑_j( f_ij^2 )
 // N_{f,eff} = 1 / ∑_k( f_ik^2 )
 // N_{r,eff} = 1 / ∑_m( f_im^2 )
-func NumberRatio(rewardFractions []float64) (float64, error) {
+func NumberRatio(rewardFractions []alloraMath.Dec) (alloraMath.Dec, error) {
 	if len(rewardFractions) == 0 {
-		return 0, types.ErrNumberRatioInvalidSliceLength
+		return alloraMath.Dec{}, types.ErrNumberRatioInvalidSliceLength
 	}
-	sum := 0.0
-	for i, f := range rewardFractions {
-		if math.IsNaN(f) || math.IsInf(f, 0) {
-			return 0, errors.Wrapf(types.ErrNumberRatioInvalidInput, "rewardFractions[%d]: %f", i, f)
+	sum := alloraMath.ZeroDec()
+	for _, f := range rewardFractions {
+		fSquared, err := f.Mul(f)
+		if err != nil {
+			return alloraMath.Dec{}, err
 		}
-		sum += f * f
+		sum, err = sum.Add(fSquared)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
 	}
-	if sum == 0 {
-		return 0, types.ErrNumberRatioDivideByZero
+	if sum.Equal(alloraMath.ZeroDec()) {
+		return alloraMath.Dec{}, types.ErrNumberRatioDivideByZero
 	}
-	ret := 1 / sum
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrNumberRatioIsInfinity
-	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrNumberRatioIsNaN
+	ret, err := alloraMath.OneDec().Quo(sum)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -591,36 +893,40 @@ func NumberRatio(rewardFractions []float64) (float64, error) {
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func InferenceRewards(
-	chi float64,
-	gamma float64,
-	entropyInference float64,
-	entropyForecasting float64,
-	entropyReputer float64,
-	timeStep float64,
-) (float64, error) {
-	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
-		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
-		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
-		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
-		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
-		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
-		return 0, errors.Wrapf(
-			types.ErrInferenceRewardsInvalidInput,
-			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
-			chi,
-			gamma,
-			entropyInference,
-			entropyForecasting,
-			entropyReputer,
-			timeStep,
-		)
+	chi alloraMath.Dec,
+	gamma alloraMath.Dec,
+	entropyInference alloraMath.Dec,
+	entropyForecasting alloraMath.Dec,
+	entropyReputer alloraMath.Dec,
+	timeStep alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	oneMinusChi, err := alloraMath.OneDec().Sub(chi)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	ret := ((1 - chi) * gamma * entropyInference * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrInferenceRewardsIsInfinity
+	oneMinusChiGamma, err := oneMinusChi.Mul(gamma)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrInferenceRewardsIsNaN
+	oneMinusChiGammaEntropyInference, err := oneMinusChiGamma.Mul(entropyInference)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	numerator, err := oneMinusChiGammaEntropyInference.Mul(timeStep)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	entropyInferencePlusForecasting, err := entropyInference.Add(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	denominator, err := entropyInferencePlusForecasting.Add(entropyReputer)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -628,36 +934,36 @@ func InferenceRewards(
 // forecaster rewards calculation
 // V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
 func ForecastingRewards(
-	chi float64,
-	gamma float64,
-	entropyInference float64,
-	entropyForecasting float64,
-	entropyReputer float64,
-	timeStep float64,
-) (float64, error) {
-	if math.IsNaN(chi) || math.IsInf(chi, 0) ||
-		math.IsNaN(gamma) || math.IsInf(gamma, 0) ||
-		math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
-		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
-		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
-		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
-		return 0, errors.Wrapf(
-			types.ErrForecastingRewardsInvalidInput,
-			"chi: %f, gamma: %f, entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
-			chi,
-			gamma,
-			entropyInference,
-			entropyForecasting,
-			entropyReputer,
-			timeStep,
-		)
+	chi alloraMath.Dec,
+	gamma alloraMath.Dec,
+	entropyInference alloraMath.Dec,
+	entropyForecasting alloraMath.Dec,
+	entropyReputer alloraMath.Dec,
+	timeStep alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	chiGamma, err := chi.Mul(gamma)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	ret := (chi * gamma * entropyForecasting * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrForecastingRewardsIsInfinity
+	chiGammaEntropyForecasting, err := chiGamma.Mul(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrForecastingRewardsIsNaN
+	numerator, err := chiGammaEntropyForecasting.Mul(timeStep)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	entropyInferencePlusForecasting, err := entropyInference.Add(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	denominator, err := entropyInferencePlusForecasting.Add(entropyReputer)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -665,30 +971,26 @@ func ForecastingRewards(
 // reputer rewards calculation
 // W_i = (H_i * E_i) / (F_i + G_i + H_i)
 func ReputerRewards(
-	entropyInference float64,
-	entropyForecasting float64,
-	entropyReputer float64,
-	timeStep float64,
-) (float64, error) {
-	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
-		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
-		math.IsNaN(entropyReputer) || math.IsInf(entropyReputer, 0) ||
-		math.IsNaN(timeStep) || math.IsInf(timeStep, 0) {
-		return 0, errors.Wrapf(
-			types.ErrReputerRewardsInvalidInput,
-			"entropyInference: %f, entropyForecasting: %f, entropyReputer: %f, timeStep: %f",
-			entropyInference,
-			entropyForecasting,
-			entropyReputer,
-			timeStep,
-		)
+	entropyInference alloraMath.Dec,
+	entropyForecasting alloraMath.Dec,
+	entropyReputer alloraMath.Dec,
+	timeStep alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	numerator, err := entropyReputer.Mul(timeStep)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	ret := (entropyReputer * timeStep) / (entropyInference + entropyForecasting + entropyReputer)
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrReputerRewardsIsInfinity
+	denominator, err := entropyInference.Add(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrReputerRewardsIsNaN
+	denominator, err = denominator.Add(entropyReputer)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -702,41 +1004,38 @@ func ReputerRewards(
 // obtained by omitting all forecast-implied inferences
 // T_i = log L_i^- - log L_i
 func ForecastingPerformanceScore(
-	naiveNetworkInferenceLoss float64,
-	networkInferenceLoss float64,
-) (float64, error) {
-	if math.IsNaN(networkInferenceLoss) || math.IsInf(networkInferenceLoss, 0) ||
-		math.IsNaN(naiveNetworkInferenceLoss) || math.IsInf(naiveNetworkInferenceLoss, 0) {
-		return 0, errors.Wrapf(
-			types.ErrForecastingPerformanceScoreInvalidInput,
-			"networkInferenceLoss: %f, naiveNetworkInferenceLoss: %f",
-			networkInferenceLoss,
-			naiveNetworkInferenceLoss,
-		)
+	naiveNetworkInferenceLoss,
+	networkInferenceLoss alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	log10L_iHat, err := alloraMath.Log10(naiveNetworkInferenceLoss)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	ret := math.Log10(naiveNetworkInferenceLoss) - math.Log10(networkInferenceLoss)
-
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrForecastingPerformanceScoreIsInfinity
+	log10L_i, err := alloraMath.Log10(networkInferenceLoss)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrForecastingPerformanceScoreIsNaN
+	ret, err := log10L_iHat.Sub(log10L_i)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
 
 // sigmoid function
 // σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
-func Sigmoid(x float64) (float64, error) {
-	if math.IsNaN(x) || math.IsInf(x, 0) {
-		return 0, types.ErrSigmoidInvalidInput
+func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
+	expX, err := alloraMath.Exp(x)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	ret := math.Exp(x) / (1 + math.Exp(x))
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrSigmoidIsInfinity
+	onePlusExpX, err := alloraMath.OneDec().Add(expX)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrSigmoidIsNaN
+	ret, nil := expX.Quo(onePlusExpX)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -747,22 +1046,32 @@ func Sigmoid(x float64) (float64, error) {
 // sigma is the sigmoid function
 // a has fiduciary value of 8
 // b has fiduciary value of 0.5
-func ForecastingUtility(forecastingPerformanceScore float64, a float64, b float64) (float64, error) {
-	if math.IsNaN(forecastingPerformanceScore) || math.IsInf(forecastingPerformanceScore, 0) ||
-		math.IsNaN(a) || math.IsInf(a, 0) ||
-		math.IsNaN(b) || math.IsInf(b, 0) {
-		return 0, types.ErrForecastingUtilityInvalidInput
-	}
-	ret, err := Sigmoid(a*forecastingPerformanceScore - b)
+func ForecastingUtility(
+	forecastingPerformanceScore,
+	a,
+	b alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	aTimesForecastigPerformanceScore, err := a.Mul(forecastingPerformanceScore)
 	if err != nil {
-		return 0, err
+		return alloraMath.Dec{}, err
 	}
-	ret = 0.1 + 0.4*ret
-	if math.IsInf(ret, 0) {
-		return 0, types.ErrForecastingUtilityIsInfinity
+	aTimesForecastigPerformanceScoreMinusB, err := aTimesForecastigPerformanceScore.Sub(b)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, types.ErrForecastingUtilityIsNaN
+	ret, err := Sigmoid(aTimesForecastigPerformanceScoreMinusB)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
+	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
+	ret, err = zeroPointFour.Mul(ret)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err = zeroPointOne.Add(ret)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return ret, nil
 }
@@ -772,55 +1081,63 @@ func ForecastingUtility(forecastingPerformanceScore float64, a float64, b float6
 // remains constant (otherwise, this would go at the expense of reputers)
 // γ = (F_i + G_i) / ( (1 − χ)*F_i + χ*G_i)
 func NormalizationFactor(
-	entropyInference float64,
-	entropyForecasting float64,
-	forecastingUtility float64,
-) (float64, error) {
-	if math.IsNaN(entropyInference) || math.IsInf(entropyInference, 0) ||
-		math.IsNaN(entropyForecasting) || math.IsInf(entropyForecasting, 0) ||
-		math.IsNaN(forecastingUtility) || math.IsInf(forecastingUtility, 0) {
-		return 0, errors.Wrapf(
-			types.ErrNormalizationFactorInvalidInput,
-			"entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
-			entropyInference,
-			entropyForecasting,
-			forecastingUtility,
-		)
+	entropyInference alloraMath.Dec,
+	entropyForecasting alloraMath.Dec,
+	forecastingUtility alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	numerator, err := entropyInference.Add(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	numerator := entropyInference + entropyForecasting
-	denominator := (1-forecastingUtility)*entropyInference + forecastingUtility*entropyForecasting
-	ret := numerator / denominator
-	if math.IsInf(ret, 0) {
-		return 0, errors.Wrapf(
-			types.ErrNormalizationFactorIsInfinity,
-			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
-			numerator,
-			denominator,
-			entropyInference,
-			entropyForecasting,
-			forecastingUtility,
-		)
+	oneMinusForecastingUtility, err := alloraMath.OneDec().Sub(forecastingUtility)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	if math.IsNaN(ret) {
-		return 0, errors.Wrapf(
-			types.ErrNormalizationFactorIsNaN,
-			"numerator: %f, denominator: %f entropyInference: %f, entropyForecasting: %f, forecastingUtility: %f",
-			numerator,
-			denominator,
-			entropyInference,
-			entropyForecasting,
-			forecastingUtility,
-		)
+	oneMinusForecastingUtilityTimesEntropyInference, err := oneMinusForecastingUtility.Mul(entropyInference)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-
+	forecastingUtilityTimesEntropyForecasting, err := forecastingUtility.Mul(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	denominator, err := oneMinusForecastingUtilityTimesEntropyInference.Add(forecastingUtilityTimesEntropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
 	return ret, nil
 }
 
-// ExtractValues extracts all float64 values from a ValueBundle.
-func ExtractValues(bundle *types.ValueBundle) []float64 {
-	var values []float64
+// Calculate the tax of the reward
+// Fee = R_avg * N_c^(a-1)
+func CalculateWorkerTax(average alloraMath.Dec) (alloraMath.Dec, error) {
+	a := types.DefaultParamsSybilTaxExponent() - 1
+	if a == math.MaxUint64 { // overflow
+		a = 0
+	}
+	numClientsForTax := alloraMath.NewDecFromInt64(int64(types.DefaultParamsNumberExpectedInfernceSybils()))
+	aDec := alloraMath.NewDecFromInt64(int64(a))
 
-	// Extract direct float64 values
+	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	fee, err := average.Mul(N_cToTheAMinusOne)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	return fee, nil
+}
+
+// ExtractValues extracts all alloraMath.Dec values from a ValueBundle.
+func ExtractValues(bundle *types.ValueBundle) []alloraMath.Dec {
+	var values []alloraMath.Dec
+
+	// Extract direct alloraMath.Dec values
 	values = append(values, bundle.CombinedValue, bundle.NaiveValue)
 
 	// Sort and Extract values from slices of ValueBundle

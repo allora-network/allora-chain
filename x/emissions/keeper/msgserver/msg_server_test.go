@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -75,13 +76,18 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         sdk.AccAddress(PKS[0].Address()).String(),
-		Metadata:        metadata,
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
+		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Metadata:         metadata,
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)

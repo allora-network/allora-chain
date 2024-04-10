@@ -10,6 +10,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
@@ -707,13 +708,13 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
 		MaxTopicsPerBlock:             1000,
 		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:    10,
+		MaxMissingInferencePercent:    alloraMath.NewDecFromInt64(10),
 		RequiredMinimumStake:          cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:        172800,
 		MinEpochLength:                60,
 		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
 		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
-		PercentRewardsReputersWorkers: 50,
+		PercentRewardsReputersWorkers: alloraMath.NewDecFromInt64(50),
 		MaxWorkersPerTopicRequest:     10,
 		MaxReputersPerTopicRequest:    10,
 	}

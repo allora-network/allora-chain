@@ -47,7 +47,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weight
 	// Sort the slice of SortableItems
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
-		if items[i].Value == items[j].Value {
+		if items[i].Value.Id == items[j].Value.Id {
 			return items[i].Tiebreaker > items[j].Tiebreaker
 		}
 		return items[i].Weight > items[j].Weight
@@ -254,6 +254,8 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	for _, topic := range topTopicsByReturn {
 		// Log the accumulated met demand for each topic
 		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
+		// Add to the fee revenue collected for this topic for this reward epoch
+		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 
 		// Draw demand from the valid requests
 		bestPrice := topicBestPrices[topic.Id].Price

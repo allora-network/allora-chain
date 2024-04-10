@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -64,7 +65,7 @@ func NewKeeper(
 		feeCollectorName:                         feeCollectorName,
 		authority:                                authority,
 		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", LegacyDecValue),
+		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
 	}
@@ -177,4 +178,13 @@ func (k Keeper) GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin {
 func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error) {
 	ecosystemAddr := k.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	return k.bankKeeper.GetBalance(ctx, ecosystemAddr, mintDenom).Amount, nil
+}
+
+// Params getter
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
+	return k.Params.Get(ctx)
+}
+
+func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (math.LegacyDec, error) {
+	return k.emissionsKeeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
 }

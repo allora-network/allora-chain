@@ -28,6 +28,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if _, err := k.IncrementTopicId(ctx); err != nil {
 		return err
 	}
+	// reserve fee epoch 0 for errors
+	if err := k.IncrementFeeRevenueEpoch(ctx); err != nil {
+		return err
+	}
 
 	// add core team to the whitelists
 	if err := k.addCoreTeamToWhitelists(ctx, data.CoreTeamAddresses); err != nil {
