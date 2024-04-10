@@ -96,36 +96,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			},
 			expectedErr: nil,
 		},
-		{ // ROW 1
-			name: "basic functionality, two workers, one forecaster",
-			inferenceByWorker: map[string]*emissions.Inference{
-				"worker0": {Value: alloraMath.MustNewDecFromString("-0.08069823482294600")},
-				"worker1": {Value: alloraMath.MustNewDecFromString("0.07295620166600340")},
-			},
-			forecasts: &emissions.Forecasts{
-				Forecasts: []*emissions.Forecast{
-					{
-						Forecaster: "forecaster0",
-						ForecastElements: []*emissions.ForecastElement{
-							{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.0050411396925730900")},
-							{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0000331783420309334")},
-						},
-					},
-				},
-			},
-			networkCombinedLoss: alloraMath.MustNewDecFromString("0.018593036157667700"),
-			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
-			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
-			expected: map[string]*emissions.Inference{
-				"forecaster0": {Value: alloraMath.MustNewDecFromString("0.04164414697995540")},
-			},
-			expectedErr: nil,
-		},
 		{ // ROW 2
-			name: "basic functionality 2, two workers, two forecasters",
+			name: "basic functionality 2, two workers, one forecaster",
 			inferenceByWorker: map[string]*emissions.Inference{
 				"worker0": {Value: alloraMath.MustNewDecFromString("-0.2797477698393250")},
 				"worker1": {Value: alloraMath.MustNewDecFromString("0.26856211587161100")},
+				"worker2": {Value: alloraMath.MustNewDecFromString("0.003934174100448460")},
 			},
 			forecasts: &emissions.Forecasts{
 				Forecasts: []*emissions.Forecast{
@@ -134,23 +110,43 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 						ForecastElements: []*emissions.ForecastElement{
 							{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.02089366880023640")},
 							{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.3342267861383700")},
-						},
-					},
-					{
-						Forecaster: "forecaster1",
-						ForecastElements: []*emissions.ForecastElement{
-							{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.042947662325033700")},
-							{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.2816951641179930")},
+							{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.0002604615062174660")},
 						},
 					},
 				},
 			},
-			networkCombinedLoss: alloraMath.MustNewDecFromString("0.01569376583279220"),
-			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
+			networkCombinedLoss: alloraMath.MustNewDecFromString("0.018593036157667700"), // <- from Row 1
+			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 			expected: map[string]*emissions.Inference{
 				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.036824032402771200")},
-				"forecaster1": {Value: alloraMath.MustNewDecFromString("-0.025344200689386500")},
+			},
+			expectedErr: nil,
+		},
+		{ // ROW 3
+			name: "basic functionality 3, two workers, one forecaster",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker0": {Value: alloraMath.MustNewDecFromString("-0.05142348924899710")},
+				"worker1": {Value: alloraMath.MustNewDecFromString("-0.031653221198924200")},
+				"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
+			},
+			forecasts: &emissions.Forecasts{
+				Forecasts: []*emissions.Forecast{
+					{
+						Forecaster: "forecaster0",
+						ForecastElements: []*emissions.ForecastElement{
+							{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.00011708024633613200")},
+							{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.013382222402411400")},
+							{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("3.82471429104471e-05")},
+						},
+					},
+				},
+			},
+			networkCombinedLoss: alloraMath.MustNewDecFromString("0.01569376583279220"), // <- from Row 2
+			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
+			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
+			expected: map[string]*emissions.Inference{
+				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.07075177115182300")},
 			},
 			expectedErr: nil,
 		},

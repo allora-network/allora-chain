@@ -119,7 +119,7 @@ func CalcWeightedInference(
 			return InferenceValue{}, err
 		}
 		// Normalize inferer regret then calculate gradient => weight per inferer for network combined inference
-		regretFraction, err := regret.Value.Quo(maxRegret)
+		regretFraction, err := regret.Value.Quo(maxRegret.Abs())
 		if err != nil {
 			fmt.Println("Error calculating regret fraction: ", err)
 			return InferenceValue{}, err
@@ -154,18 +154,18 @@ func CalcWeightedInference(
 			return InferenceValue{}, err
 		}
 		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
-		regretFraction, err := regret.Value.Quo(maxRegret)
+		regretFrac, err := regret.Value.Quo(maxRegret.Abs())
 		if err != nil {
 			fmt.Println("Error calculating regret fraction: ", err)
 			return InferenceValue{}, err
 		}
-		weight, err := Gradient(pInferenceSynthesis, regretFraction)
+		weight, err := Gradient(pInferenceSynthesis, regretFrac)
 		if err != nil {
 			fmt.Println("Error calculating gradient: ", err)
 			return InferenceValue{}, err
 		}
-		if !weight.Equal(alloraMath.ZeroDec()) && inferenceByWorker[forecaster] != nil {
-			weightTimesInference, err := weight.Mul(inferenceByWorker[forecaster].Value) // numerator of network combined inference calculation
+		if !weight.Equal(alloraMath.ZeroDec()) && forecastImpliedInferenceByWorker[forecaster] != nil {
+			weightTimesInference, err := weight.Mul(forecastImpliedInferenceByWorker[forecaster].Value) // numerator of network combined inference calculation
 			if err != nil {
 				fmt.Println("Error calculating weight by worker value: ", err)
 				return InferenceValue{}, err
