@@ -107,7 +107,7 @@ func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
 	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(types.DefaultParamsCreateTopicFee()))))
 	senderAddr, _ := sdk.AccAddressFromBech32(sender)
 	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.ModuleName, feeCoins)
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraStakingAccountName, feeCoins)
 }
 
 func (s *KeeperTestSuite) TestCreateSeveralTopics() {
