@@ -571,14 +571,6 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.PercentRewardsReputersWorkers, nil
-}
-
 func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {

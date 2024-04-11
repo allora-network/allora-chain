@@ -21,7 +21,6 @@ func DefaultParams() Params {
 		MinEpochLength:                  1,                                          // 1 block
 		MaxInferenceRequestValidity:     int64(6 * 60 * 24 * 7 * 52),                // approximately 1 year in number of blocks
 		MaxRequestCadence:               int64(6 * 60 * 24 * 7 * 52),                // approximately 1 year in number of blocks
-		PercentRewardsReputersWorkers:   alloraMath.MustNewDecFromString("0.75"),    // 75% of rewards go to workers and reputers, 25% to cosmos validators
 		Sharpness:                       alloraMath.MustNewDecFromString("20"),      // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),    // controls resilience of reward payouts against copycat workers
 		DcoefAbs:                        alloraMath.MustNewDecFromString("0.001"),   // delta for numerical differentiation
@@ -42,6 +41,7 @@ func DefaultParams() Params {
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),     // alpha for topic reward calculation
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
+		CreateTopicFee:                  uint64(10),                                 //topic registration fee
 	}
 }
 
@@ -87,10 +87,6 @@ func DefaultParamsMaxInferenceRequestValidity() BlockHeight {
 
 func DefaultParamsMaxRequestCadence() BlockHeight {
 	return DefaultParams().MaxRequestCadence
-}
-
-func DefaultParamsPercentRewardsReputersWorkers() alloraMath.Dec {
-	return DefaultParams().PercentRewardsReputersWorkers
 }
 
 func DefaultParamsSharpness() alloraMath.Dec {
@@ -171,6 +167,10 @@ func DefaultParamsValidatorsVsAlloraPercentReward() cosmosMath.LegacyDec {
 
 func DefaultParamsMaxSamplesToScaleScores() uint64 {
 	return DefaultParams().MaxSamplesToScaleScores
+}
+
+func DefaultParamsCreateTopicFee() uint64 {
+	return DefaultParams().CreateTopicFee
 }
 
 // Validate does the sanity check on the params.
