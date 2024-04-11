@@ -20,10 +20,11 @@ type BlocklessRequest struct {
 }
 
 type Config struct {
-	Environment []EnvVar `json:"env_vars,omitempty"`
-	Stdin       *string  `json:"stdin,omitempty"`
-	NodeCount   int      `json:"number_of_nodes,omitempty"`
-	Timeout     int      `json:"timeout,omitempty"`
+	Environment        []EnvVar `json:"env_vars,omitempty"`
+	Stdin              *string  `json:"stdin,omitempty"`
+	NodeCount          int      `json:"number_of_nodes,omitempty"`
+	Timeout            int      `json:"timeout,omitempty"`
+	ConsensusAlgorithm string   `json:"consensus_algorithm,omitempty"`
 }
 
 type EnvVar struct {
@@ -85,8 +86,9 @@ func generateLosses(
 					Value: strconv.FormatInt(nonce.GetNonce(), 10),
 				},
 			},
-			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:   2,  // seconds to time out before rollcall complete
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
 
@@ -126,10 +128,13 @@ func generateInferences(
 					Value: strconv.FormatInt(nonce.GetNonce(), 10),
 				},
 			},
-			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:   2,  // seconds to time out before rollcall complete
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
+	// Print payloadJSON
+	fmt.Printf("Payload JSON: %v \n", payloadJson)
 
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
