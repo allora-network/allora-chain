@@ -74,7 +74,14 @@ func CalcForcastImpliedInferences(
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
 			forecastElementsByInferer := make(map[Worker]*emissions.ForecastElement, 0)
 			for _, el := range forecast.ForecastElements {
-				forecastElementsByInferer[el.Inferer] = el
+				for worker := range inferenceByWorker {
+					// Check that there is an inference for the worker forecasted before including the forecast element
+					// otherwise the max value below will be incorrect.
+					if el.Inferer == worker {
+						forecastElementsByInferer[el.Inferer] = el
+						break
+					}
+				}
 			}
 
 			// Approximate forecast regrets of the network inference
