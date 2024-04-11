@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -48,45 +48,9 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
-	params, err := qs.k.GetParams(ctx)
+	networkInferences, blockHeight, err := synth.GetNetworkInferencesAtBlock(ctx.(sdk.Context), qs.k, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-
-	stakesOnTopic, err := qs.k.GetStakePlacementsByTopic(ctx, req.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	// Map list of stakesOnTopic to map of stakesByReputer
-	stakesByReputer := make(map[string]types.StakePlacement)
-	for _, stake := range stakesOnTopic {
-		stakesByReputer[stake.Reputer] = stake
-	}
-
-	reputerReportedLosses, _, err := qs.k.GetReputerReportedLossesAtOrBeforeBlock(ctx, req.TopicId, req.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-
-	networkCombinedLoss, err := synth.CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
-	if err != nil {
-		return nil, err
-	}
-
-	inferences, blockHeight, err := qs.k.GetInferencesAtOrAfterBlock(ctx, req.TopicId, req.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	forecasts, _, err := qs.k.GetForecastsAtOrAfterBlock(ctx, req.TopicId, req.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-
-	networkInferences, err := synth.CalcNetworkInferences(ctx.(sdk.Context), qs.k, req.TopicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
-	if err != nil {
-		return nil, err
-	}
-
 	return &types.QueryNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences, BlockHeight: blockHeight}, nil
 }
