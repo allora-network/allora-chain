@@ -2,7 +2,9 @@ package msgserver
 
 import (
 	"context"
-	"strconv"
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	"math/big"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,6 +24,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
+	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
+	if !hasEnoughBal {
+		return nil, types.ErrTopicCreatorNotEnoughDenom
+	}
+
 	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
@@ -35,23 +42,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
 
-	alphaRegret, err := strconv.ParseFloat(msg.AlphaRegret, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardReputer, err := strconv.ParseFloat(msg.PrewardReputer, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardInference, err := strconv.ParseFloat(msg.PrewardInference, 32)
-	if err != nil {
-		return nil, err
-	}
-	prewardForecast, err := strconv.ParseFloat(msg.PrewardForecast, 32)
-	if err != nil {
-		return nil, err
-	}
-	fTolerance, err := strconv.ParseFloat(msg.FTolerance, 32)
+	// Before creating topic, transfer fee amount from creator to ecosystem bucket
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +62,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		Active:           true,
 		DefaultArg:       msg.DefaultArg,
 		Pnorm:            msg.Pnorm,
-		AlphaRegret:      alphaRegret,
-		PrewardReputer:   prewardReputer,
-		PrewardInference: prewardInference,
-		PrewardForecast:  prewardForecast,
-		FTolerance:       fTolerance,
+		AlphaRegret:      msg.AlphaRegret,
+		PrewardReputer:   msg.PrewardReputer,
+		PrewardInference: msg.PrewardInference,
+		PrewardForecast:  msg.PrewardForecast,
+		FTolerance:       msg.FTolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -111,4 +103,11 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, err
 	}
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
+}
+
+func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
+	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
+	return balance.IsGTE(fee), fee, nil
 }
