@@ -146,7 +146,7 @@ func GetRewardsWithOutTax(
 		if err != nil {
 			continue
 		}
-		if reward.Reward.Cmp(alloraMath.ZeroDec()) == alloraMath.LessThan {
+		if reward.Reward.Lt(alloraMath.ZeroDec()) {
 			reward.Reward = alloraMath.ZeroDec()
 		}
 		result = append(result, TaskRewards{

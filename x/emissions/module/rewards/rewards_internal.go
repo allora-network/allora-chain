@@ -493,8 +493,7 @@ func GetAllReputersOutput(
 	var maxGradient alloraMath.Dec = alloraMath.OneDec()
 	finalScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient.Cmp(maxGradientThreshold) == alloraMath.GreaterThan &&
-		i.Cmp(imax) == alloraMath.LessThan {
+	for maxGradient.Gt(maxGradientThreshold) && i.Lt(imax) {
 		i, err = i.Add(alloraMath.OneDec())
 		if err != nil {
 			return nil, nil, err
@@ -588,7 +587,7 @@ func GetAllReputersOutput(
 		if err != nil {
 			return nil, nil, err
 		}
-		if listenedStakeFraction.Cmp(minStakeFraction) == alloraMath.LessThan {
+		if listenedStakeFraction.Lt(minStakeFraction) {
 			for l := range coefficients {
 				coeffDiff, err := coefficients[l].Sub(oldCoefficients[l])
 				if err != nil {
@@ -671,7 +670,7 @@ func maxAbsDifference(a, b []alloraMath.Dec) (alloraMath.Dec, error) {
 			return alloraMath.Dec{}, err
 		}
 		diff := subtraction.Abs()
-		if diff.Cmp(maxDiff) == alloraMath.GreaterThan {
+		if diff.Gt(maxDiff) {
 			maxDiff = diff
 		}
 	}
