@@ -103,7 +103,7 @@ func CalcForcastImpliedInferences(
 					maxjRijk = R_ik[j]
 					first = false
 				} else {
-					if R_ik[j].Cmp(maxjRijk) == alloraMath.GreaterThan {
+					if R_ik[j].Gt(maxjRijk) {
 						maxjRijk = R_ik[j]
 					}
 				}
