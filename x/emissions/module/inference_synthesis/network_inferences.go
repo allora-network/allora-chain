@@ -281,7 +281,16 @@ func CalcOneOutInferences(
 			}
 		}
 
-		oneOutInference, err := CalcWeightedInference(ctx, k, topicId, inferenceByWorker, forecastImpliedInferences, maxRegret, epsilon, pInferenceSynthesis)
+		oneOutInference, err := CalcWeightedInference(
+			ctx,
+			k,
+			topicId,
+			inferenceByWorker,
+			forecastImpliedInferencesWithoutWorker,
+			maxRegret,
+			epsilon,
+			pInferenceSynthesis,
+		)
 		if err != nil {
 			fmt.Println("Error calculating one-out inference for forecaster: ", err)
 			return nil, nil, err

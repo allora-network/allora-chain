@@ -1,8 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
@@ -49,34 +47,32 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 			expectedNetworkCombinedInferenceValue: alloraMath.MustNewDecFromString("-0.06470631905627390"),
 			expectedErr:                           nil,
 		},
-		/*
-			{ // EPOCH 4
-				name: "normal operation 2",
-				inferenceByWorker: map[string]*emissions.Inference{
-					"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
-					"worker1": {Value: alloraMath.MustNewDecFromString("-0.23422685055675900")},
-					"worker2": {Value: alloraMath.MustNewDecFromString("-0.18201270373970600")},
-				},
-				forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
-					"worker3": {Value: alloraMath.MustNewDecFromString("-0.19840891048468800")},
-					"worker4": {Value: alloraMath.MustNewDecFromString("-0.19696044261177800")},
-					"worker5": {Value: alloraMath.MustNewDecFromString("-0.20289734770434400")},
-				},
-				maxRegret:           alloraMath.MustNewDecFromString("0.9737035757621540"),
-				epsilon:             alloraMath.MustNewDecFromString("0.0001"),
-				pInferenceSynthesis: alloraMath.NewDecFromInt64(2),
-				infererNetworkRegrets: map[string]inference_synthesis.Regret{
-					"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
-					"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
-					"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
-					"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
-					"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
-					"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
-				},
-				expectedNetworkCombinedInferenceValue: alloraMath.MustNewDecFromString("-0.19466636004515200"),
-				expectedErr:                           nil,
+		{ // EPOCH 4
+			name: "normal operation 2",
+			inferenceByWorker: map[string]*emissions.Inference{
+				"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
+				"worker1": {Value: alloraMath.MustNewDecFromString("-0.23422685055675900")},
+				"worker2": {Value: alloraMath.MustNewDecFromString("-0.18201270373970600")},
 			},
-		*/
+			forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
+				"worker3": {Value: alloraMath.MustNewDecFromString("-0.19840891048468800")},
+				"worker4": {Value: alloraMath.MustNewDecFromString("-0.19696044261177800")},
+				"worker5": {Value: alloraMath.MustNewDecFromString("-0.20289734770434400")},
+			},
+			maxRegret:           alloraMath.MustNewDecFromString("0.9737035757621540"),
+			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
+			pInferenceSynthesis: alloraMath.NewDecFromInt64(2),
+			infererNetworkRegrets: map[string]inference_synthesis.Regret{
+				"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
+				"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
+				"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
+				"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
+				"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
+				"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
+			},
+			expectedNetworkCombinedInferenceValue: alloraMath.MustNewDecFromString("-0.19466636004515200"),
+			expectedErr:                           nil,
+		},
 	}
 
 	for _, tc := range tests {
@@ -188,9 +184,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("-0.042814093565554400")},
 		},
 		expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker0", Value: alloraMath.MustNewDecFromString("0.11562305562592500")},
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.07351778409912410")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.11683957010303600")},
+			{Worker: "worker3", Value: alloraMath.MustNewDecFromString("-0.0635171449618356")},
+			{Worker: "worker4", Value: alloraMath.MustNewDecFromString("-0.06471822091625930")},
+			{Worker: "worker5", Value: alloraMath.MustNewDecFromString("-0.0649534852873976")},
 		},
 	}
 
@@ -222,7 +218,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		s.Require().Len(oneOutImpliedInferences, len(test.expectedOneOutImpliedInferences), "Unexpected number of one-out implied inferences")
 
 		for i, expected := range test.expectedOneOutInferences {
-			log.Printf("[TEST RESULT] expected: %v, actual: %v", expected, oneOutInferences[i].Value)
+			s.Require().Equal(expected.Worker, oneOutInferences[i].Worker, "Mismatch in worker for one-out inference")
 			s.Require().True(
 				alloraMath.InDelta(
 					expected.Value,
@@ -232,7 +228,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		}
 
 		for i, expected := range test.expectedOneOutImpliedInferences {
-			log.Printf("[TEST RESULT] <implied> expected: %v, actual: %v", expected, oneOutImpliedInferences[i].Value)
+			s.Require().Equal(expected.Worker, oneOutImpliedInferences[i].Worker, "Mismatch in worker for one-out implied inference")
 			s.Require().True(
 				alloraMath.InDelta(
 					expected.Value,
