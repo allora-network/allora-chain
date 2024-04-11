@@ -58,9 +58,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxRequestCadence) == 1 {
 		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
-	if len(newParams.PercentRewardsReputersWorkers) == 1 {
-		existingParams.PercentRewardsReputersWorkers = newParams.PercentRewardsReputersWorkers[0]
-	}
 	if len(newParams.Sharpness) == 1 {
 		existingParams.Sharpness = newParams.Sharpness[0]
 	}

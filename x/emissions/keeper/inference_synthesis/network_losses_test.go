@@ -5,7 +5,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 
-	"github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
