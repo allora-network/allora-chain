@@ -284,19 +284,25 @@ func GetStakeWeightedLossMatrix(
 	}
 	var err error = nil
 
-	// Calculate total stake for normalization
-	totalStake := alloraMath.ZeroDec()
-	for _, stake := range reputersAdjustedStakes {
-		totalStake, err = totalStake.Add(stake)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
 	// Ensure every loss array is non-empty and calculate geometric mean
 	stakeWeightedLoss := make([]alloraMath.Dec, len(reputersReportedLosses[0]))
 	mostDistantValues := make([]alloraMath.Dec, len(reputersReportedLosses[0]))
 	for j := 0; j < len(reputersReportedLosses[0]); j++ {
+		// Calculate total stake to consider
+		// Skip stakes of reputers with NaN losses
+		totalStakeToConsider := alloraMath.ZeroDec()
+		for i, losses := range reputersReportedLosses {
+			// Skip if loss is NaN
+			if losses[j].IsNaN() {
+				continue
+			}
+
+			totalStakeToConsider, err = totalStakeToConsider.Add(reputersAdjustedStakes[i])
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+
 		logSum := alloraMath.ZeroDec()
 		for i, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
@@ -312,7 +318,7 @@ func GetStakeWeightedLossMatrix(
 			if err != nil {
 				return nil, nil, err
 			}
-			logLossesTimesStakeOverTotalStake, err := logLossesTimesStake.Quo(totalStake)
+			logLossesTimesStakeOverTotalStake, err := logLossesTimesStake.Quo(totalStakeToConsider)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -333,7 +339,16 @@ func GetStakeWeightedLossMatrix(
 			return nil, nil, err
 		}
 		for _, losses := range reputersReportedLosses {
-			distance, err := losses[j].Sub(logSum)
+			// Skip if loss is NaN
+			if losses[j].IsNaN() {
+				continue
+			}
+
+			logLosses, err := alloraMath.Log10(losses[j])
+			if err != nil {
+				return nil, nil, err
+			}
+			distance, err := logSum.Sub(logLosses)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -350,7 +365,7 @@ func GetStakeWeightedLossMatrix(
 // GetConsensusScore calculates the proximity to consensus score for a reputer.
 // T_im
 func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []alloraMath.Dec) (alloraMath.Dec, error) {
-	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	fTolerance := alloraMath.MustNewDecFromString("0.01") // TODO: Use module param
 	if len(reputerLosses) != len(consensusLosses) {
 		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
