@@ -3,7 +3,7 @@ package msgserver
 import (
 	"context"
 
-	synth "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

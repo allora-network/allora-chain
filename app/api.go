@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"cosmossdk.io/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -42,58 +41,20 @@ type InferenceItem struct {
 	Inference string `json:"inference"`
 }
 
-type WeightInferencePayload struct {
-	Inferences    []LatestInferences `json:"inferences"`
-	LatestWeights map[string]string  `json:"latest_weights"`
+type LossesPayload struct {
+	Inferences []emissionstypes.ValueBundle `json:"inferences"`
 }
 
-func generateWeights(
-	weights map[string]map[string]*math.Uint,
-	inferences []*emissionstypes.InferenceSetForScoring,
+func generateLosses(
+	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
-	topicId uint64) {
-	inferencesByTimestamp := []LatestInferences{}
+	topicId uint64,
+	nonce emissionstypes.Nonce,
+	blocktime uint64) {
 
-	//
-	// TODO generate new nonce and add to request!
-	//
-
-	for _, infSet := range inferences {
-		timestamp := fmt.Sprintf("%d", infSet.BlockHeight)
-		inferences := []InferenceItem{}
-		for _, inf := range infSet.Inferences.Inferences {
-			inferences = append(inferences, InferenceItem{
-				Worker:    inf.Worker,
-				Inference: inf.Value.String(),
-			})
-		}
-		inferencesByTimestamp = append(inferencesByTimestamp, LatestInferences{
-			Timestamp:  timestamp,
-			Inferences: inferences,
-		})
-	}
-
-	// Format the weights map into a map of strings
-	var latestWeights map[string]string = make(map[string]string)
-	if len(weights) == 0 {
-		for _, inference := range inferences {
-			for _, inf := range inference.Inferences.Inferences {
-				latestWeights[inf.Worker] = "0"
-			}
-		}
-	} else {
-		for _, workerWeights := range weights {
-			for worker, weight := range workerWeights {
-				latestWeights[worker] = weight.String()
-			}
-		}
-	}
-
-	// Combine everything into the final JSON object
-	payloadObj := WeightInferencePayload{
-		Inferences:    inferencesByTimestamp,
-		LatestWeights: latestWeights,
+	payloadObj := LossesPayload{
+		Inferences: []emissionstypes.ValueBundle{*inferences},
 	}
 
 	payloadJSON, err := json.Marshal(payloadObj)
@@ -103,15 +64,29 @@ func generateWeights(
 	}
 
 	params := string(payloadJSON)
-
+	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
-		TopicID:    strconv.FormatUint(topicId, 10),
+		TopicID:    topicIdStr,
 		Config: Config{
-			Stdin:       &params,
-			Environment: []EnvVar{},
-			NodeCount:   1,
+			Stdin: &params,
+			Environment: []EnvVar{
+				{
+					Name:  "BLS_REQUEST_PATH",
+					Value: "/api",
+				},
+				{
+					Name:  "ALLORA_ARG_PARAMS",
+					Value: strconv.FormatUint(blocktime, 10),
+				},
+				{
+					Name:  "ALLORA_NONCE",
+					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+				},
+			},
+			NodeCount: -1, // use all nodes that reported, no minimum / max
+			Timeout:   2,  // seconds to time out before rollcall complete
 		},
 	}
 
@@ -121,14 +96,16 @@ func generateWeights(
 		return
 	}
 	payloadStr := string(payload)
-
+	fmt.Println("Making Losses Api Call, Payload: ", payloadStr)
 	makeApiCall(payloadStr)
 }
 
-func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
-	//
-	// TODO generate new nonce and add to request!
-	//
+func generateInferences(
+	functionId string,
+	functionMethod string,
+	param string,
+	topicId uint64,
+	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
 		FunctionID: functionId,
@@ -144,6 +121,10 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
 				},
+				{
+					Name:  "ALLORA_NONCE",
+					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+				},
 			},
 			NodeCount: -1, // use all nodes that reported, no minimum / max
 			Timeout:   2,  // seconds to time out before rollcall complete
@@ -153,7 +134,6 @@ func generateInferences(functionId string, functionMethod string, param string, 
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
 		fmt.Println("Error marshalling outer JSON:", err)
-		return
 	}
 	payloadStr := string(payload)
 

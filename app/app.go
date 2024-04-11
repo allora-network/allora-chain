@@ -2,13 +2,14 @@ package app
 
 import (
 	_ "embed"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	"io"
 	"math/big"
 	"os"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
@@ -255,8 +256,8 @@ func NewAlloraApp(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
 
-	// topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
-	// app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
+	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
+	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.SetInitChainer(app.InitChainer)
 
