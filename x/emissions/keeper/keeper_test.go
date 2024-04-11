@@ -703,20 +703,19 @@ func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	params := types.Params{
-		Version:                       "v1.0.0",
-		RewardCadence:                 60 * 60 * 24 * 7 * 24,
-		MinTopicUnmetDemand:           cosmosMath.NewUint(100),
-		MaxTopicsPerBlock:             1000,
-		MinRequestUnmetDemand:         cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:    alloraMath.NewDecFromInt64(10),
-		RequiredMinimumStake:          cosmosMath.NewUint(1),
-		RemoveStakeDelayWindow:        172800,
-		MinEpochLength:                60,
-		MaxInferenceRequestValidity:   60 * 60 * 24 * 7 * 24,
-		MaxRequestCadence:             60 * 60 * 24 * 7 * 24,
-		PercentRewardsReputersWorkers: alloraMath.NewDecFromInt64(50),
-		MaxWorkersPerTopicRequest:     10,
-		MaxReputersPerTopicRequest:    10,
+		Version:                     "v1.0.0",
+		RewardCadence:               60 * 60 * 24 * 7 * 24,
+		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
+		MaxTopicsPerBlock:           1000,
+		MinRequestUnmetDemand:       cosmosMath.NewUint(1),
+		MaxMissingInferencePercent:  alloraMath.NewDecFromInt64(10),
+		RequiredMinimumStake:        cosmosMath.NewUint(1),
+		RemoveStakeDelayWindow:      172800,
+		MinEpochLength:              60,
+		MaxInferenceRequestValidity: 60 * 60 * 24 * 7 * 24,
+		MaxRequestCadence:           60 * 60 * 24 * 7 * 24,
+		MaxWorkersPerTopicRequest:   10,
+		MaxReputersPerTopicRequest:  10,
 	}
 
 	// Set params
@@ -737,7 +736,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
 	s.Require().Equal(params.MaxInferenceRequestValidity, paramsFromKeeper.MaxInferenceRequestValidity, "Params should be equal to the set params: MaxInferenceRequestValidity")
 	s.Require().Equal(params.MaxRequestCadence, paramsFromKeeper.MaxRequestCadence, "Params should be equal to the set params: MaxRequestCadence")
-	s.Require().Equal(params.PercentRewardsReputersWorkers, paramsFromKeeper.PercentRewardsReputersWorkers, "Params should be equal to the set params: PercentRewardsReputersWorkers")
 	s.Require().Equal(params.MaxWorkersPerTopicRequest, paramsFromKeeper.MaxWorkersPerTopicRequest, "Params should be equal to the set params: MaxWorkersPerTopicRequest")
 	s.Require().Equal(params.MaxReputersPerTopicRequest, paramsFromKeeper.MaxReputersPerTopicRequest, "Params should be equal to the set params: MaxReputersPerTopicRequest")
 }
