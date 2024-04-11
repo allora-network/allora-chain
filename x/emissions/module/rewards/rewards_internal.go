@@ -300,7 +300,7 @@ func GetStakeWeightedLossMatrix(
 		logSum := alloraMath.ZeroDec()
 		for i, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
-			if losses[j].IsNil() {
+			if losses[j].IsNaN() {
 				continue
 			}
 
@@ -379,7 +379,7 @@ func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []allor
 	var distanceSquared alloraMath.Dec
 	for i, rLoss := range reputerLosses {
 		// Attribute most distant value if loss is NaN
-		if rLoss.IsNil() {
+		if rLoss.IsNaN() {
 			rLoss = mostDistantValues[i]
 		}
 		rLossOverConsensusLoss, err := rLoss.Quo(consensusLosses[i])

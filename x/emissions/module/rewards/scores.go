@@ -232,7 +232,7 @@ func ensureAllWorkersPresent(values []*types.WorkerAttributedValue, allWorkers m
 		if !foundWorkers[worker] {
 			values = append(values, &types.WorkerAttributedValue{
 				Worker: worker,
-				Value:  alloraMath.NewNil(),
+				Value:  alloraMath.NewNaN(),
 			})
 		}
 	}
@@ -251,7 +251,7 @@ func ensureAllWorkersPresentWithheld(values []*types.WithheldWorkerAttributedVal
 		if !foundWorkers[worker] {
 			values = append(values, &types.WithheldWorkerAttributedValue{
 				Worker: worker,
-				Value:  alloraMath.NewNil(),
+				Value:  alloraMath.NewNaN(),
 			})
 		}
 	}

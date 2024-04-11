@@ -21,7 +21,8 @@ import (
 // but when copying the big.Int structure can be shared between Decimal instances causing corruption.
 // This was originally discovered in regen0-network/mainnet#15.
 type Dec struct {
-	dec apd.Decimal
+	dec   apd.Decimal
+	isNaN bool
 }
 
 // constants for more convenient intent behind dec.Cmp values.
@@ -61,20 +62,20 @@ var dec128Context = apd.Context{
 	Traps:       apd.DefaultTraps,
 }
 
-func NewNil() Dec {
-	return Dec{}
+func NewNaN() Dec {
+	return Dec{apd.Decimal{}, true}
 }
 
 func NewDecFromString(s string) (Dec, error) {
 	if s == "" {
-		return Dec{}, nil
+		s = "0"
 	}
 	d, _, err := apd.NewFromString(s)
 	if err != nil {
 		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
 	}
 
-	d1 := Dec{*d}
+	d1 := Dec{*d, false}
 	if d1.dec.Form == apd.Infinite {
 		return d1, ErrInfiniteString.Wrapf(s)
 	}
@@ -463,9 +464,8 @@ func (x Dec) Equal(y Dec) bool {
 	return x.dec.Cmp(&y.dec) == 0
 }
 
-// True if x is nil else False
-func (x Dec) IsNil() bool {
-	return x.dec.Cmp(&apd.Decimal{}) == 0
+func (x Dec) IsNaN() bool {
+	return x.isNaN
 }
 
 // IsZero returns true if the decimal is zero.
