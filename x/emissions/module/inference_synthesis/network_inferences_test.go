@@ -217,24 +217,40 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		s.Require().Len(oneOutInferences, len(test.expectedOneOutInferences), "Unexpected number of one-out inferences")
 		s.Require().Len(oneOutImpliedInferences, len(test.expectedOneOutImpliedInferences), "Unexpected number of one-out implied inferences")
 
-		for i, expected := range test.expectedOneOutInferences {
-			s.Require().Equal(expected.Worker, oneOutInferences[i].Worker, "Mismatch in worker for one-out inference")
-			s.Require().True(
-				alloraMath.InDelta(
-					expected.Value,
-					oneOutInferences[i].Value,
-					alloraMath.MustNewDecFromString("0.0001"),
-				), "Mismatch in value for one-out inference of worker %s", expected.Worker)
+		for _, expected := range test.expectedOneOutInferences {
+			found := false
+			for _, oneOutInference := range oneOutInferences {
+				if expected.Worker == oneOutInference.Worker {
+					found = true
+					s.Require().True(
+						alloraMath.InDelta(
+							expected.Value,
+							oneOutInference.Value,
+							alloraMath.MustNewDecFromString("0.0001"),
+						), "Mismatch in value for one-out inference of worker %s", expected.Worker)
+				}
+			}
+			if !found {
+				s.FailNow("Matching worker not found", "Worker %s not found in returned inferences", expected.Worker)
+			}
 		}
 
-		for i, expected := range test.expectedOneOutImpliedInferences {
-			s.Require().Equal(expected.Worker, oneOutImpliedInferences[i].Worker, "Mismatch in worker for one-out implied inference")
-			s.Require().True(
-				alloraMath.InDelta(
-					expected.Value,
-					oneOutImpliedInferences[i].Value,
-					alloraMath.MustNewDecFromString("0.00001"),
-				), "Mismatch in value for one-out implied inference of worker %s", expected.Worker)
+		for _, expected := range test.expectedOneOutImpliedInferences {
+			found := false
+			for _, oneOutImpliedInference := range oneOutImpliedInferences {
+				if expected.Worker == oneOutImpliedInference.Worker {
+					found = true
+					s.Require().True(
+						alloraMath.InDelta(
+							expected.Value,
+							oneOutImpliedInference.Value,
+							alloraMath.MustNewDecFromString("0.00001"),
+						), "Mismatch in value for one-out implied inference of worker %s", expected.Worker)
+				}
+			}
+			if !found {
+				s.FailNow("Matching worker not found", "Worker %s not found in returned inferences", expected.Worker)
+			}
 		}
 	})
 }
