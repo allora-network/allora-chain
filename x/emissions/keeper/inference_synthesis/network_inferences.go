@@ -6,6 +6,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -407,10 +408,60 @@ func CalcNetworkInferences(
 	// Build value bundle to return all the calculated inferences
 	// Shouldn't need inferences nor forecasts because given from context (input arguments)
 	return &emissions.ValueBundle{
-		CombinedValue:          combinedNetworkInference,
+		CombinedValue: combinedNetworkInference,
+		// TODO: Add the rest of the inferences/forecasts; if not somewhere else
 		NaiveValue:             naiveInference,
 		OneOutInfererValues:    oneOutInferences,
 		OneOutForecasterValues: oneOutImpliedInferences,
 		OneInForecasterValues:  oneInInferences,
 	}, nil
+}
+
+func GetNetworkInferencesAtBlock(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	blockHeight BlockHeight,
+) (*emissions.ValueBundle, BlockHeight, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	stakesOnTopic, err := k.GetStakePlacementsByTopic(ctx, topicId)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Map list of stakesOnTopic to map of stakesByReputer
+	stakesByReputer := make(map[string]types.StakePlacement)
+	for _, stake := range stakesOnTopic {
+		stakesByReputer[stake.Reputer] = stake
+	}
+
+	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	inferences, blockHeight, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
+	if err != nil {
+		return nil, 0, err
+	}
+	forecasts, _, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	networkInferences, err := CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return networkInferences, blockHeight, nil
 }
