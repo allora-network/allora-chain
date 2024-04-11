@@ -17,6 +17,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender: reputerAddr,
+		Nonce:  &types.Nonce{1},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				Reputer: reputerAddr,
@@ -57,6 +58,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 				},
 			},
 		},
+		Signature: []byte("Test"),
 	}
 
 	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
