@@ -42,6 +42,7 @@ func DefaultParams() Params {
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),     // alpha for topic reward calculation
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
+		CreateTopicFee:                  uint64(10),                                 //topic registration fee
 	}
 }
 
@@ -171,6 +172,10 @@ func DefaultParamsValidatorsVsAlloraPercentReward() cosmosMath.LegacyDec {
 
 func DefaultParamsMaxSamplesToScaleScores() uint64 {
 	return DefaultParams().MaxSamplesToScaleScores
+}
+
+func DefaultParamsCreateTopicFee() uint64 {
+	return DefaultParams().CreateTopicFee
 }
 
 // Validate does the sanity check on the params.

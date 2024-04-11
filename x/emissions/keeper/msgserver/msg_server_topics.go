@@ -2,6 +2,9 @@ package msgserver
 
 import (
 	"context"
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
+	"math/big"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,6 +24,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
+	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
+	if !hasEnoughBal {
+		return nil, types.ErrTopicCreatorNotEnoughDenom
+	}
+
 	id, err := ms.k.GetNumTopics(ctx)
 	if err != nil {
 		return nil, err
@@ -32,6 +40,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 	if msg.EpochLength < fastestCadence {
 		return nil, types.ErrTopicCadenceBelowMinimum
+	}
+
+	// Before creating topic, transfer fee amount from creator to ecosystem bucket
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
+	if err != nil {
+		return nil, err
 	}
 
 	topic := types.Topic{
@@ -89,4 +103,11 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, err
 	}
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
+}
+
+func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
+	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
+	return balance.IsGTE(fee), fee, nil
 }

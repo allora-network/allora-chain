@@ -106,6 +106,8 @@ message Params {
     (amino.dont_omitempty) = true
   ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
   uint64 max_samples_to_scale_scores = 32;  // number of scores to use for standard deviation calculation
+  uint64 create_topic_fee = 33;
+  // topic registration fee
 }
 
 /// TOPICS

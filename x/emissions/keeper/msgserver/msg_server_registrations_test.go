@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/golang/mock/gomock"
@@ -169,13 +170,20 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         reputerAddr.String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
+		Creator:          reputerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
 
@@ -254,13 +262,20 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 
 	// Create Topic 1
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         workerAddr.String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
+		Creator:          workerAddr.String(),
+		Metadata:         "Some metadata for the new topic",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
+	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
 
