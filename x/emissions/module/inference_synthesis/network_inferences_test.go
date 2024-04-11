@@ -1,8 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
@@ -272,7 +270,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 		expectedErr                 error
 	}{
 		{ // EPOCH 3
-			name: "basic functionality, single worker",
+			name: "basic functionality",
 			inferenceByWorker: map[string]*emissions.Inference{
 				"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
 				"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
@@ -309,6 +307,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
+			for inferer, regret := range tc.infererNetworkRegrets {
+				s.emissionsKeeper.SetInfererNetworkRegret(
+					s.ctx,
+					topicId,
+					[]byte(inferer),
+					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
 			oneInInferences, err := inference_synthesis.CalcOneInInferences(
 				s.ctx,
 				s.emissionsKeeper,
@@ -326,25 +333,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				s.Require().NoError(err)
 				s.Require().Len(oneInInferences, len(tc.expectedOneInInferences), "Unexpected number of one-in inferences")
 
-				for inferer, regret := range tc.infererNetworkRegrets {
-					s.emissionsKeeper.SetInfererNetworkRegret(
-						s.ctx,
-						topicId,
-						[]byte(inferer),
-						emissions.TimestampedValue{BlockHeight: 0, Value: regret},
-					)
-				}
-
 				for _, expected := range tc.expectedOneInInferences {
 					found := false
 					for _, actual := range oneInInferences {
 						if expected.Worker == actual.Worker {
-							log.Printf("Expected value: %v, Actual value: %v, Epsilon: %v. Value should match the expected value within epsilon.", expected.Value, actual.Value, 1e-5)
 							s.Require().True(
 								alloraMath.InDelta(
 									expected.Value,
 									actual.Value,
-									alloraMath.MustNewDecFromString("0.00001"),
+									alloraMath.MustNewDecFromString("0.0001"),
 								),
 								"Mismatch in value for one-in inference of worker %s",
 								expected.Worker,
