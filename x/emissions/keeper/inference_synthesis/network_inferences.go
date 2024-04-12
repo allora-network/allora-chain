@@ -115,6 +115,7 @@ func CalcWeightedInference(
 	for inferer := range inferenceByWorker {
 		// Get the regret of the inferer
 		regret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return InferenceValue{}, err
@@ -223,14 +224,31 @@ func CalcOneOutInferences(
 				inferencesWithoutWorker[workerOfInference] = inference
 			}
 		}
+
 		// Recalculate the forecast-implied inferences without the worker's inference
-		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForcastImpliedInferences(inferencesWithoutWorker, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
+		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForcastImpliedInferences(
+			inferencesWithoutWorker,
+			forecasts,
+			networkCombinedLoss,
+			epsilon,
+			pInferenceSynthesis,
+		)
+
 		if err != nil {
 			fmt.Println("Error calculating forecast-implied inferences for held-out inference: ", err)
 			return nil, nil, err
 		}
 
-		oneOutNetworkInferenceWithoutInferer, err := CalcWeightedInference(ctx, k, topicId, inferenceByWorker, forecastImpliedInferencesWithoutWorkerByWorker, maxRegret, epsilon, pInferenceSynthesis)
+		oneOutNetworkInferenceWithoutInferer, err := CalcWeightedInference(
+			ctx,
+			k,
+			topicId,
+			inferencesWithoutWorker,
+			forecastImpliedInferencesWithoutWorkerByWorker,
+			maxRegret,
+			epsilon,
+			pInferenceSynthesis,
+		)
 		if err != nil {
 			fmt.Println("Error calculating one-out inference for inferer: ", err)
 			return nil, nil, err
@@ -285,10 +303,19 @@ func CalcOneInInferences(
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
 	for oneInForecaster := range forecastImpliedInferences {
 		// In each loop, remove all forecast-implied inferences except one
-		forecastImpliedInferencesWithoutWorker := make(map[Worker]*emissions.Inference)
-		forecastImpliedInferencesWithoutWorker[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
+		forecastImpliedInferencesWithForecaster := make(map[Worker]*emissions.Inference)
+		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
-		oneInInference, err := CalcWeightedInference(ctx, k, topicId, inferences, forecastImpliedInferencesWithoutWorker, maxRegretsByOneInForecaster[oneInForecaster], epsilon, pInferenceSynthesis)
+		oneInInference, err := CalcWeightedInference(
+			ctx,
+			k,
+			topicId,
+			inferences,
+			forecastImpliedInferencesWithForecaster,
+			maxRegretsByOneInForecaster[oneInForecaster],
+			epsilon,
+			pInferenceSynthesis,
+		)
 		if err != nil {
 			fmt.Println("Error calculating one-in inference: ", err)
 			return nil, err
