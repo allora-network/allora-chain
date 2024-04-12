@@ -34,6 +34,19 @@ func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.Q
 	return &types.QueryWorkerAddressByP2PKeyResponse{Address: workerAddr.String()}, nil
 }
 
+func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.QueryReputerAddressByP2PKeyRequest) (*types.QueryReputerAddressByP2PKeyResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("received nil request")
+	}
+
+	address, err := qs.k.GetReputerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryReputerAddressByP2PKeyResponse{Address: address.String()}, nil
+}
+
 func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.QueryRegisteredTopicIdsRequest) (*types.QueryRegisteredTopicIdsResponse, error) {
 	if req == nil {
 		return nil, fmt.Errorf("received nil request")
