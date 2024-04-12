@@ -43,7 +43,6 @@ func GetWorkersRewardsInferenceTask(
 		// Add worker address in the worker addresses array
 		workerAddresses = append(workerAddresses, workerAddr)
 
-		// Convert scores to float64
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range workerLastScores {
 			workerLastScoresDec = append(workerLastScoresDec, score.Score)
@@ -53,10 +52,10 @@ func GetWorkersRewardsInferenceTask(
 
 	// Get worker portion of rewards
 	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalInferenceRewards, workerAddresses)
-
 	if err != nil {
 		return nil, err
 	}
+
 	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
 }
 

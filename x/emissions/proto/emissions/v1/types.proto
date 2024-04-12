@@ -103,6 +103,11 @@ message Params {
   ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
   uint64 max_samples_to_scale_scores = 31;  // number of scores to use for standard deviation calculation
   uint64 create_topic_fee = 32;             // topic registration fee
+  // max this many inferences from unique workers and forecasts thereof are accepted per payload
+  uint64 max_workers_accepted_per_payload = 33;
+  uint64 max_reputers_accepted_per_payload = 34;  // max num loss bundles from unique reputers accepted per payload
+  uint64 max_top_workers_to_reward = 35;          // max number of top workers by score to reward
+  uint64 max_top_reputers_to_reward = 36;         // max number of top reputers by score to reward
 }
 
 /// TOPICS

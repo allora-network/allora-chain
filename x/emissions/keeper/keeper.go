@@ -635,6 +635,38 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
+func (k *Keeper) GetParamsMaxWorkersAcceptedPerPayload(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxWorkersAcceptedPerPayload, nil
+}
+
+func (k *Keeper) GetParamsMaxReputersAcceptedPerPayload(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxReputersAcceptedPerPayload, nil
+}
+
+func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopWorkersToReward, nil
+}
+
+func (k *Keeper) GetParamsMaxTopReputersToReward(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopReputersToReward, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {

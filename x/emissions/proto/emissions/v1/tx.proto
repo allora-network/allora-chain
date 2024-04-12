@@ -128,6 +128,10 @@ message OptionalParams {
     (amino.dont_omitempty) = true
   ];
   repeated uint64 max_samples_to_scale_scores = 31;
+  repeated uint64 max_workers_accepted_per_payload = 32;
+  repeated uint64 max_reputers_accepted_per_payload = 33;
+  repeated uint64 max_top_workers_to_reward = 34;
+  repeated uint64 max_top_reputers_to_reward = 35;
 }
 
 /// PARAMS
