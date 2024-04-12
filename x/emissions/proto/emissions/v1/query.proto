@@ -111,6 +111,11 @@ service Query {
     option (google.api.http).get = "/emissions/v1/worker_nodes/{libp2p_key}";
   }
 
+  rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest) returns (QueryReputerAddressByP2PKeyResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker_nodes/{libp2p_key}";
+  }
+
   rpc GetRegisteredTopicIds(QueryRegisteredTopicIdsRequest) returns (QueryRegisteredTopicIdsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/registered_topic_ids/{address}/{is_reputer}";
@@ -276,6 +281,14 @@ message QueryWorkerAddressByP2PKeyRequest {
 }
 
 message QueryWorkerAddressByP2PKeyResponse {
+  string address = 1;
+}
+
+message QueryReputerAddressByP2PKeyRequest {
+  string libp2p_key = 1;
+}
+
+message QueryReputerAddressByP2PKeyResponse {
   string address = 1;
 }
 

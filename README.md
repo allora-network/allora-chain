@@ -180,3 +180,4 @@ allorad --home="$APP_HOME" \
   ${STAKE_AMOUNT}uallo --from ${VALIDATOR_ACCOUNT_KEY_NAME} \
    --keyring-backend=test --chain-id ${NETWORK}
 ```
+

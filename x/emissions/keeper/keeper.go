@@ -908,9 +908,9 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TopicI
 /// LOSS BUNDLES
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reptuerLossBundles types.ReputerValueBundles) error {
+func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, reptuerLossBundles)
+	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
 
 // Get loss bundles for a topic/timestamp
@@ -1748,6 +1748,20 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	}
 
 	return workerAddress, nil
+}
+
+func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+	reputer, err := k.reputers.Get(ctx, p2pKey)
+	if err != nil {
+		return nil, err
+	}
+
+	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
+	if err != nil {
+		return nil, err
+	}
+
+	return address, nil
 }
 
 // GetTopicsByCreator returns a slice of all topics created by a given creator.
