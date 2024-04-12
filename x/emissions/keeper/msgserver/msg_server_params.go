@@ -88,6 +88,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.PInferenceSynthesis) == 1 {
 		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
 	}
+	if len(newParams.PRewardSpread) == 1 {
+		existingParams.PRewardSpread = newParams.PRewardSpread[0]
+	}
 	if len(newParams.AlphaRegret) == 1 {
 		existingParams.AlphaRegret = newParams.AlphaRegret[0]
 	}
@@ -112,6 +115,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.TopicRewardAlpha) == 1 {
 		existingParams.TopicRewardAlpha = newParams.TopicRewardAlpha[0]
 	}
+	if len(newParams.TaskRewardAlpha) == 1 {
+		existingParams.TaskRewardAlpha = newParams.TaskRewardAlpha[0]
+	}
 	if len(newParams.ValidatorsVsAlloraPercentReward) == 1 {
 		existingParams.ValidatorsVsAlloraPercentReward = newParams.ValidatorsVsAlloraPercentReward[0]
 	}
@@ -129,6 +135,15 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MaxTopReputersToReward) == 1 {
 		existingParams.MaxTopReputersToReward = newParams.MaxTopReputersToReward[0]
+	}
+	if len(newParams.CreateTopicFee) == 1 {
+		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
+	}
+	if len(newParams.SigmoidA) == 1 {
+		existingParams.SigmoidA = newParams.SigmoidA[0]
+	}
+	if len(newParams.SigmoidB) == 1 {
+		existingParams.SigmoidB = newParams.SigmoidB[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
