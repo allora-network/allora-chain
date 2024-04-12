@@ -109,25 +109,29 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string p_inference_synthesis = 21
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string alpha_regret = 22
+  repeated string p_reward_spread = 22
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_unfulfilled_worker_requests = 23;
-  repeated uint64 max_unfulfilled_reputer_requests = 24;
-  repeated uint64 number_expected_inference_sybils = 25;
-  repeated uint64 sybil_tax_exponent = 26;
-  repeated string topic_reward_stake_importance = 27
+  repeated string alpha_regret = 23
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_fee_revenue_importance = 28
+  repeated uint64 max_unfulfilled_worker_requests = 24;
+  repeated uint64 max_unfulfilled_reputer_requests = 25;
+  repeated uint64 number_expected_inference_sybils = 26;
+  repeated uint64 sybil_tax_exponent = 27;
+  repeated string topic_reward_stake_importance = 28
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_alpha = 29
+  repeated string topic_reward_fee_revenue_importance = 29
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 30 [
+  repeated string topic_reward_alpha = 30
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string task_reward_alpha = 31
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string validators_vs_allora_percent_reward = 32 [
     (cosmos_proto.scalar) = "cosmos.LegacyDec",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 max_samples_to_scale_scores = 31;
+  repeated uint64 max_samples_to_scale_scores = 33;
 }
 
 /// PARAMS

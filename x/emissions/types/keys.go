@@ -58,4 +58,7 @@ var (
 	FeeRevenueEpochKey               = collections.NewPrefix(47)
 	TopicFeeRevenueKey               = collections.NewPrefix(48)
 	PreviousTopicWeightKey           = collections.NewPrefix(49)
+	PreviousReputerRewardKey         = collections.NewPrefix(50)
+	PreviousInferenceRewardKey       = collections.NewPrefix(51)
+	PreviousForecastRewardKey        = collections.NewPrefix(52)
 )

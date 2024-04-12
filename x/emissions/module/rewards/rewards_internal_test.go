@@ -133,7 +133,7 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// U_i = 0.5 * 8 / 8
 	// U_i = 0.5
-	infRewards, err := rewards.InferenceRewards(
+	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("0.5"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("2.0"),
@@ -146,7 +146,7 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 }
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
-	result, err := rewards.InferenceRewards(
+	result, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("1"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("10"),
@@ -162,7 +162,7 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	// V_i = (2 * 3 * 4 * 5) / (6 + 4 + 10)
 	// V_i = 120 / 20
 	// V_i = 6
-	result, err := rewards.ForecastingRewards(
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("3.0"),
 		alloraMath.MustNewDecFromString("6.0"),
@@ -175,7 +175,7 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 }
 
 func (s *MathTestSuite) TestForecastRewardsZero() {
-	result, err := rewards.ForecastingRewards(
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("0"),
 		alloraMath.MustNewDecFromString("3.0"),
 		alloraMath.MustNewDecFromString("4.0"),
@@ -191,7 +191,7 @@ func (s *MathTestSuite) TestReputerRewardSimple() {
 	// W_i = (2 * 2) / (4 + 2 + 2)
 	// W_i = 4 / 8
 	// W_i = 0.5
-	result, err := rewards.ReputerRewards(
+	result, err := rewards.GetRewardForReputerTaskInTopic(
 		alloraMath.MustNewDecFromString("4.0"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("2.0"),
@@ -202,7 +202,7 @@ func (s *MathTestSuite) TestReputerRewardSimple() {
 }
 
 func (s *MathTestSuite) TestReputerRewardZero() {
-	result, err := rewards.ReputerRewards(
+	result, err := rewards.GetRewardForReputerTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("2.0"),

@@ -21,7 +21,7 @@ func DefaultParams() Params {
 		MinEpochLength:                  1,                                          // 1 block
 		MaxInferenceRequestValidity:     int64(6 * 60 * 24 * 7 * 52),                // approximately 1 year in number of blocks
 		MaxRequestCadence:               int64(6 * 60 * 24 * 7 * 52),                // approximately 1 year in number of blocks
-		Sharpness:                       alloraMath.MustNewDecFromString("20"),      // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
+		Sharpness:                       alloraMath.NewDecFromInt64(20),             // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),    // controls resilience of reward payouts against copycat workers
 		DcoefAbs:                        alloraMath.MustNewDecFromString("0.001"),   // delta for numerical differentiation
 		LearningRate:                    alloraMath.MustNewDecFromString("0.01"),    // speed of gradient descent
@@ -30,7 +30,8 @@ func DefaultParams() Params {
 		MaxWorkersPerTopicRequest:       uint64(20),                                 // maximum number of workers that can be assigned to a single inference request
 		MaxReputersPerTopicRequest:      uint64(20),                                 // maximum number of reputers that can be assigned to a single loss request
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"),  // 0 threshold to prevent div by 0 and 0-approximation errors
-		PInferenceSynthesis:             alloraMath.MustNewDecFromString("2"),       // free parameter used in the gradient function phi' for inference synthesis
+		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),              // free parameter used in the gradient function phi' for inference synthesis
+		PRewardSpread:                   alloraMath.NewDecFromInt64(1),              // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),     // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                                // maximum number of outstanding nonces for worker requests from the chain
 		MaxUnfulfilledReputerRequests:   uint64(100),                                // maximum number of outstanding nonces for reputer requests from the chain
@@ -39,6 +40,7 @@ func DefaultParams() Params {
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),     // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),     // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),     // alpha for topic reward calculation
+		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),     // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
 		CreateTopicFee:                  uint64(10),                                 //topic registration fee
@@ -127,6 +129,10 @@ func DefaultParamsEpsilon() alloraMath.Dec {
 
 func DefaultParamsPInferenceSynthesis() alloraMath.Dec {
 	return DefaultParams().PInferenceSynthesis
+}
+
+func DefaultParamsPRewardSpread() alloraMath.Dec {
+	return DefaultParams().PRewardSpread
 }
 
 func DefaultParamsAlphaRegret() alloraMath.Dec {

@@ -69,6 +69,12 @@ type Keeper struct {
 	reputerScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, Reputer], types.ListeningCoefficient]
+	// map of (topic, reputer) -> previous reward (used for EMA)
+	previousReputerReward collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
+	// map of (topic, worker) -> previous reward for inference (used for EMA)
+	previousInferenceReward collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
+	// map of (topic, worker) -> previous reward for forecast (used for EMA)
+	previousForecastReward collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
 
 	/// TAX for REWARD
 	// map of (topic, block_number, worker) -> avg_worker_reward
@@ -227,6 +233,9 @@ func NewKeeper(
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		inferenceScores:                     collections.NewMap(sb, types.InferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecastScores:                      collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		previousReputerReward:               collections.NewMap(sb, types.PreviousReputerRewardKey, "previous_reputer_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousInferenceReward:             collections.NewMap(sb, types.PreviousInferenceRewardKey, "previous_inference_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousForecastReward:              collections.NewMap(sb, types.PreviousForecastRewardKey, "previous_forecast_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		averageWorkerReward:                 collections.NewMap(sb, types.AverageWorkerRewardKey, "average_worker_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AverageWorkerReward](cdc)),
 		reputerScores:                       collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
@@ -2266,6 +2275,63 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 		return types.ListeningCoefficient{}, err
 	}
 	return coef, nil
+}
+
+// Gets the previous W_{i-1,m}
+func (k *Keeper) GetPreviousReputerReward(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, reputer)
+	reward, err := k.previousReputerReward.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous W_{i-1,m}
+func (k *Keeper) SetPreviousReputerReward(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, reputer)
+	return k.previousReputerReward.Set(ctx, key, reward)
+}
+
+// Gets the previous U_{i-1,m}
+func (k *Keeper) GetPreviousInferenceReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, worker)
+	reward, err := k.previousInferenceReward.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous U_{i-1,m}
+func (k *Keeper) SetPreviousInferenceReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, worker)
+	return k.previousInferenceReward.Set(ctx, key, reward)
+}
+
+// Gets the previous V_{i-1,m}
+func (k *Keeper) GetPreviousForecastReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, worker)
+	reward, err := k.previousForecastReward.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous V_{i-1,m}
+func (k *Keeper) SetPreviousForecastReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, worker)
+	return k.previousForecastReward.Set(ctx, key, reward)
 }
 
 /// TAX for REWARD

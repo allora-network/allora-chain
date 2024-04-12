@@ -6,6 +6,98 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func GetReputerTaskEntropy(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	emaAlpha alloraMath.Dec,
+	pRewardSpread alloraMath.Dec,
+	betaEntropy alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	numReputers := len(scoresAtBlock.Scores)
+	stakes := make([]alloraMath.Dec, numReputers)
+	scores := make([]alloraMath.Dec, numReputers)
+	reputers := make([]sdk.AccAddress, numReputers)
+	for i, scorePtr := range scoresAtBlock.Scores {
+		scores[i] = scorePtr.Score
+		addrStr := scorePtr.Address
+		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		reputers[i] = reputerAddr
+		stake, err := k.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		stakes[i], err = alloraMath.NewDecFromSdkUint(stake)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+	}
+
+	reputerRewards, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	emaReputerRewards := make([]alloraMath.Dec, numReputers)
+	for i, fraction := range reputerRewards {
+		previousReputerReward, err := k.GetPreviousReputerReward(ctx, topicId, reputers[i])
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		emaReputerRewards[i], err = alloraMath.ExponentialMovingAverage(
+			emaAlpha,
+			fraction,
+			previousReputerReward,
+		)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+	}
+	reputerNumberRatio, err := NumberRatio(emaReputerRewards)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return Entropy(
+		reputerRewards,
+		reputerNumberRatio,
+		alloraMath.NewDecFromInt64(int64(numReputers)),
+		betaEntropy,
+	)
+}
+
+// Get the reward allocated to the reputing task in this topic, W_i
+// W_i = (H_i * E_i) / (F_i + G_i + H_i)
+func GetRewardForReputerTaskInTopic(
+	entropyInference alloraMath.Dec, // F_i
+	entropyForecasting alloraMath.Dec, // G_i
+	entropyReputer alloraMath.Dec, // H_i
+	topicReward alloraMath.Dec, // E_{t,i}
+) (alloraMath.Dec, error) {
+	numerator, err := entropyReputer.Mul(topicReward)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	denominator, err := entropyInference.Add(entropyForecasting)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	denominator, err = denominator.Add(entropyReputer)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	ret, err := numerator.Quo(denominator)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return ret, nil
+}
+
 // The reputer rewards are calculated based on the reputer stake and the reputer score.
 // The reputer score is defined right after the network loss is generated.
 func GetReputerRewards(
