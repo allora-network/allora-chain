@@ -78,11 +78,17 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			ctx,
 			k,
 			topic.Id,
+			moduleParams.TaskRewardAlpha,
+			moduleParams.PRewardSpread,
+			moduleParams.BetaEntropy,
 		)
 		inferenceEntropy, err := GetInferenceTaskEntropy(
 			ctx,
 			k,
 			topic.Id,
+			moduleParams.TaskRewardAlpha,
+			moduleParams.PRewardSpread,
+			moduleParams.BetaEntropy,
 		)
 
 		// Get Total Rewards for Reputation task
@@ -160,6 +166,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		}
 	}
 
+	SetPreviousRewardFractions(ctx, k, fractions)
 	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
 	return nil
 }

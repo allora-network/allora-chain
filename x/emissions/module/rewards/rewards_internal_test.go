@@ -71,7 +71,7 @@ func (s *MathTestSuite) TestNormalizeAgainstSlice() {
 	}
 	expected := alloraMath.MustNewDecFromString("0.2")
 
-	result, err := rewards.NormalizeAgainstSlice(v, a)
+	result, err := rewards.ModifiedRewardFractions(v, a)
 
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))

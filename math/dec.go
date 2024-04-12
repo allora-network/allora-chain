@@ -539,3 +539,16 @@ func SlicesInDelta(a, b []Dec, epsilon Dec) bool {
 	}
 	return true
 }
+
+// Generic Sum function, given an array of values returns its sum
+func SumDecSlice(x []Dec) (Dec, error) {
+	sum := ZeroDec()
+	var err error = nil
+	for _, v := range x {
+		sum, err = sum.Add(v)
+		if err != nil {
+			return Dec{}, err
+		}
+	}
+	return sum, nil
+}

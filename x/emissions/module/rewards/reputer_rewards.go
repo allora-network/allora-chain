@@ -40,20 +40,20 @@ func GetReputerTaskEntropy(
 		}
 	}
 
-	reputerRewards, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
+	reputerRewardFractions, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
 	emaReputerRewards := make([]alloraMath.Dec, numReputers)
-	for i, fraction := range reputerRewards {
-		previousReputerReward, err := k.GetPreviousReputerReward(ctx, topicId, reputers[i])
+	for i, fraction := range reputerRewardFractions {
+		previousReputerRewardFraction, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputers[i])
 		if err != nil {
 			return alloraMath.Dec{}, err
 		}
 		emaReputerRewards[i], err = alloraMath.ExponentialMovingAverage(
 			emaAlpha,
 			fraction,
-			previousReputerReward,
+			previousReputerRewardFraction,
 		)
 		if err != nil {
 			return alloraMath.Dec{}, err
@@ -63,8 +63,12 @@ func GetReputerTaskEntropy(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
+	modifiedRewardFractions, err := ModifiedRewardFractions(emaReputerRewards)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
 	return Entropy(
-		reputerRewards,
+		modifiedRewardFractions,
 		reputerNumberRatio,
 		alloraMath.NewDecFromInt64(int64(numReputers)),
 		betaEntropy,

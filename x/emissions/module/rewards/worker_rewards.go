@@ -3,6 +3,7 @@ package rewards
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -11,36 +12,92 @@ type TaskRewards struct {
 	Reward  alloraMath.Dec
 }
 
+var TASK_FORECAST = true
+var TASK_INFERENCE = false
+
 func GetInferenceTaskEntropy(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
+	emaAlpha alloraMath.Dec,
+	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	return Entropy(
-		inferenceRewardFractions,
-		numberRatio,
-		numParticipants,
-		betaEntropy,
-	)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE)
 }
 
 func GetForecastingTaskEntropy(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
+	emaAlpha alloraMath.Dec,
+	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	scoresAtBlock, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST)
+}
+
+func getInferenceOrForecastTaskEntropy(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	emaAlpha alloraMath.Dec,
+	pRewardSpread alloraMath.Dec,
+	betaEntropy alloraMath.Dec,
+	which bool,
+) (alloraMath.Dec, error) {
+	var scoresAtBlock types.Scores
+	var err error
+	if which == TASK_INFERENCE {
+		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+	} else { // TASK_FORECAST
+		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+	}
+	numWorkers := len(scoresAtBlock.Scores)
+	scores := make([]alloraMath.Dec, numWorkers)
+	workers := make([]sdk.AccAddress, numWorkers)
+	for i, scorePtr := range scoresAtBlock.Scores {
+		scores[i] = scorePtr.Score
+		addrStr := scorePtr.Address
+		workerAddr, err := sdk.AccAddressFromBech32(addrStr)
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		workers[i] = workerAddr
+	}
+	var previousRewardFraction alloraMath.Dec
+	rewardFractions, err := GetScoreFractions(scores, pRewardSpread)
+	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
+	for i, fraction := range rewardFractions {
+		if which == TASK_INFERENCE {
+			previousRewardFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
+		} else { // TASK_FORECAST
+			previousRewardFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
+		}
+		if err != nil {
+			return alloraMath.Dec{}, err
+		}
+		emaRewardFractions[i], err = alloraMath.ExponentialMovingAverage(
+			emaAlpha,
+			fraction,
+			previousRewardFraction,
+		)
+	}
+	numberRatio, err := NumberRatio(rewardFractions)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numWorkers
-
+	modifiedRewardFraction, err := ModifiedRewardFractions(emaRewardFractions)
 	return Entropy(
-		forecastingRewardFractions,
+		modifiedRewardFraction,
 		numberRatio,
-		numParticipants,
+		alloraMath.NewDecFromInt64(int64(numWorkers)),
 		betaEntropy,
 	)
 }

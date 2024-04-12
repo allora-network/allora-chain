@@ -61,6 +61,58 @@ func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 	return flat
 }
 
+// RewardFractions without multiplication against total rewards are used to calculate entropy
+// note the use of lowercase u as opposed to capital
+// u_ij = M(Tij) / ∑_j M(T_ij)
+// v_ik = M(Tik) / ∑_k M(T_ik)
+func GetScoreFractions(
+	scores []alloraMath.Dec,
+	pReward alloraMath.Dec,
+) ([]alloraMath.Dec, error) {
+	mappedValues, err := GetMappingFunctionValues(scores, pReward)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(mappedValues))
+	mappedSum, err := alloraMath.SumDecSlice(mappedValues)
+	if err != nil {
+		return nil, err
+	}
+	for i, mappedValue := range mappedValues {
+		ret[i], err = mappedValue.Quo(mappedSum)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ret, nil
+}
+
+// Mapping function used by score fraction calculation
+// M(T) = φ_p[ T / σ(T) ]
+// phi is the phi function
+// sigma is NOT the sigma function but rather represents standard deviation
+func GetMappingFunctionValues(
+	scores []alloraMath.Dec, // list of T
+	pReward alloraMath.Dec, // p
+) ([]alloraMath.Dec, error) {
+	stdDev, err := StdDev(scores)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		frac, err := score.Quo(stdDev)
+		if err != nil {
+			return nil, err
+		}
+		ret[i], err = Phi(pReward, frac)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ret, nil
+}
+
 // GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
 // U_ij / V_ik * totalRewards
 func GetWorkerPortionOfRewards(
@@ -540,11 +592,11 @@ func GetAllReputersOutput(
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScores, err := sum(scores)
+			sumScores, err := alloraMath.SumDecSlice(scores)
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScores2, err := sum(scores2)
+			sumScores2, err := alloraMath.SumDecSlice(scores2)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -582,7 +634,7 @@ func GetAllReputersOutput(
 			)
 		}
 
-		sumStakes, err := sum(stakes)
+		sumStakes, err := alloraMath.SumDecSlice(stakes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -645,18 +697,6 @@ func GetAllReputersOutput(
 	}
 
 	return finalScores, coefficients, nil
-}
-
-func sum(slice []alloraMath.Dec) (alloraMath.Dec, error) {
-	total := alloraMath.ZeroDec()
-	var err error = nil
-	for _, v := range slice {
-		total, err = total.Add(v)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-	}
-	return total, nil
 }
 
 // sumWeighted calculates the weighted sum of values based on the given weights.
@@ -798,25 +838,18 @@ func GetAdjustedStake(
 // this covers equations
 // f_ij =  (̃U_ij) / ∑_j(̃Uij)
 // f_ik = (̃Vik) / ∑_k(̃Vik)
-// fim =  (̃Wim) / ∑_m(̃Wim)
-func NormalizeAgainstSlice(value alloraMath.Dec, allValues []alloraMath.Dec) (alloraMath.Dec, error) {
-	if len(allValues) == 0 {
-		return alloraMath.ZeroDec(), types.ErrFractionInvalidSliceLength
-	}
-	var err error = nil
-	sumValues := alloraMath.ZeroDec()
-	for _, v := range allValues {
-		sumValues, err = sumValues.Add(v)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-	}
-	if sumValues.Equal(alloraMath.ZeroDec()) {
-		return alloraMath.ZeroDec(), types.ErrFractionDivideByZero
-	}
-	ret, err := value.Quo(sumValues)
+// f_im =  (̃Wim) / ∑_m(̃Wim)
+func ModifiedRewardFractions(rewardFractions []alloraMath.Dec) ([]alloraMath.Dec, error) {
+	sumValues, err := alloraMath.SumDecSlice(rewardFractions)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(rewardFractions))
+	for i, value := range rewardFractions {
+		ret[i], err = value.Quo(sumValues)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return ret, nil
 }
