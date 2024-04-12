@@ -13,42 +13,47 @@ func GetReputerTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-) (alloraMath.Dec, error) {
+) (
+	entropy alloraMath.Dec,
+	modifiedRewardFractions []alloraMath.Dec,
+	reputers []sdk.AccAddress,
+	err error,
+) {
 	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight())
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, nil, nil, err
 	}
 	numReputers := len(scoresAtBlock.Scores)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
-	reputers := make([]sdk.AccAddress, numReputers)
+	reputers = make([]sdk.AccAddress, numReputers)
 	for i, scorePtr := range scoresAtBlock.Scores {
 		scores[i] = scorePtr.Score
 		addrStr := scorePtr.Address
 		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 		reputers[i] = reputerAddr
 		stake, err := k.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 		stakes[i], err = alloraMath.NewDecFromSdkUint(stake)
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 	}
 
 	reputerRewardFractions, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, nil, nil, err
 	}
 	emaReputerRewards := make([]alloraMath.Dec, numReputers)
 	for i, fraction := range reputerRewardFractions {
 		previousReputerRewardFraction, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputers[i])
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 		emaReputerRewards[i], err = alloraMath.ExponentialMovingAverage(
 			emaAlpha,
@@ -56,23 +61,27 @@ func GetReputerTaskEntropy(
 			previousReputerRewardFraction,
 		)
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 	}
 	reputerNumberRatio, err := NumberRatio(emaReputerRewards)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, nil, nil, err
 	}
-	modifiedRewardFractions, err := ModifiedRewardFractions(emaReputerRewards)
+	modifiedRewardFractions, err = ModifiedRewardFractions(emaReputerRewards)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, nil, nil, err
 	}
-	return Entropy(
+	entropy, err = Entropy(
 		modifiedRewardFractions,
 		reputerNumberRatio,
 		alloraMath.NewDecFromInt64(int64(numReputers)),
 		betaEntropy,
 	)
+	if err != nil {
+		return alloraMath.Dec{}, nil, nil, err
+	}
+	return entropy, modifiedRewardFractions, reputers, nil
 }
 
 // Get the reward allocated to the reputing task in this topic, W_i

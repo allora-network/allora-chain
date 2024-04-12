@@ -64,9 +64,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	for i := 0; i < len(activeTopics); i++ {
 		topic := activeTopics[i]
 		topicRewards := topicRewards[i] // E_{t,i}
+		lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topic.Id, blockHeight)
 
 		// Get Entropy for each task
-		reputerEntropy, err := GetReputerTaskEntropy(
+		reputerEntropy, reputerFractions, reputers, err := GetReputerTaskEntropy(
 			ctx,
 			k,
 			topic.Id,
@@ -74,7 +75,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
 		)
-		forecastingEntropy, err := GetForecastingTaskEntropy(
+		inferenceEntropy, inferenceFractions, workersInference, err := GetInferenceTaskEntropy(
 			ctx,
 			k,
 			topic.Id,
@@ -82,7 +83,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
 		)
-		inferenceEntropy, err := GetInferenceTaskEntropy(
+		forecastingEntropy, forecastFractions, workersForecast, err := GetForecastingTaskEntropy(
 			ctx,
 			k,
 			topic.Id,
@@ -98,17 +99,25 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			reputerEntropy,
 			topicRewards,
 		)
-		taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-			inferenceEntropy,
-			forecastingEntropy,
-			reputerEntropy,
-			topicRewards,
-		)
 		taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+			lossBundles.NaiveValue,
+			lossBundles.CombinedValue,
 			inferenceEntropy,
 			forecastingEntropy,
 			reputerEntropy,
 			topicRewards,
+			moduleParams.SigmoidA,
+			moduleParams.SigmoidB,
+		)
+		taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
+			lossBundles.NaiveValue,
+			lossBundles.CombinedValue,
+			inferenceEntropy,
+			forecastingEntropy,
+			reputerEntropy,
+			topicRewards,
+			moduleParams.SigmoidA,
+			moduleParams.SigmoidB,
 		)
 
 		totalRewardsDistribution := make([]TaskRewards, 0)
@@ -160,9 +169,19 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		if err != nil {
 			return err
 		}
+		SetPreviousRewardFractions(
+			ctx,
+			k,
+			topic.Id,
+			reputers,
+			reputerFractions,
+			workersInference,
+			inferenceFractions,
+			workersForecast,
+			forecastFractions,
+		)
 	}
 
-	SetPreviousRewardFractions(ctx, k, fractions)
 	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
 	return nil
 }
@@ -186,5 +205,37 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 		}
 	}
 
+	return nil
+}
+
+func SetPreviousRewardFractions(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	reputers []sdk.AccAddress,
+	reputerRewardFractions []alloraMath.Dec,
+	workersInference []sdk.AccAddress,
+	inferenceRewardFractions []alloraMath.Dec,
+	workersForecast []sdk.AccAddress,
+	forecastRewardFractions []alloraMath.Dec,
+) error {
+	for i, reputer := range reputers {
+		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, reputerRewardFractions[i])
+		if err != nil {
+			return err
+		}
+	}
+	for i, worker := range workersInference {
+		err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, inferenceRewardFractions[i])
+		if err != nil {
+			return err
+		}
+	}
+	for i, worker := range workersForecast {
+		err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, forecastRewardFractions[i])
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

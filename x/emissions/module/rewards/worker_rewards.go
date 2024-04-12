@@ -22,7 +22,12 @@ func GetInferenceTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-) (alloraMath.Dec, error) {
+) (
+	entropy alloraMath.Dec,
+	modifiedRewardFractions []alloraMath.Dec,
+	workers []sdk.AccAddress,
+	err error,
+) {
 	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE)
 }
 
@@ -33,7 +38,12 @@ func GetForecastingTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-) (alloraMath.Dec, error) {
+) (
+	entropy alloraMath.Dec,
+	modifiedRewardFractions []alloraMath.Dec,
+	workers []sdk.AccAddress,
+	err error,
+) {
 	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST)
 }
 
@@ -45,29 +55,33 @@ func getInferenceOrForecastTaskEntropy(
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 	which bool,
-) (alloraMath.Dec, error) {
+) (
+	entropy alloraMath.Dec,
+	modifiedRewardFractions []alloraMath.Dec,
+	workers []sdk.AccAddress,
+	err error,
+) {
 	var scoresAtBlock types.Scores
-	var err error
 	if which == TASK_INFERENCE {
 		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight())
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 	} else { // TASK_FORECAST
 		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight())
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 	}
 	numWorkers := len(scoresAtBlock.Scores)
 	scores := make([]alloraMath.Dec, numWorkers)
-	workers := make([]sdk.AccAddress, numWorkers)
+	workers = make([]sdk.AccAddress, numWorkers)
 	for i, scorePtr := range scoresAtBlock.Scores {
 		scores[i] = scorePtr.Score
 		addrStr := scorePtr.Address
 		workerAddr, err := sdk.AccAddressFromBech32(addrStr)
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 		workers[i] = workerAddr
 	}
@@ -81,7 +95,7 @@ func getInferenceOrForecastTaskEntropy(
 			previousRewardFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
 		}
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, nil, nil, err
 		}
 		emaRewardFractions[i], err = alloraMath.ExponentialMovingAverage(
 			emaAlpha,
@@ -91,15 +105,19 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	numberRatio, err := NumberRatio(rewardFractions)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, nil, nil, err
 	}
-	modifiedRewardFraction, err := ModifiedRewardFractions(emaRewardFractions)
-	return Entropy(
-		modifiedRewardFraction,
+	modifiedRewardFractions, err = ModifiedRewardFractions(emaRewardFractions)
+	entropy, err = Entropy(
+		modifiedRewardFractions,
 		numberRatio,
 		alloraMath.NewDecFromInt64(int64(numWorkers)),
 		betaEntropy,
 	)
+	if err != nil {
+		return alloraMath.Dec{}, nil, nil, err
+	}
+	return entropy, modifiedRewardFractions, workers, nil
 }
 
 // The performance score of the entire forecasting task T_i
@@ -203,12 +221,13 @@ func NormalizationFactor(
 
 // helper function to get chi and gamma
 func getChiAndGamma(
+	niaveNetworkInferenceLoss alloraMath.Dec,
+	networkInferenceLoss alloraMath.Dec,
 	entropyInference,
 	entropyForecasting,
 	a,
 	b alloraMath.Dec,
 ) (chi alloraMath.Dec, gamma alloraMath.Dec, err error) {
-
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
 		niaveNetworkInferenceLoss,
 		networkInferenceLoss,
@@ -238,6 +257,8 @@ func getChiAndGamma(
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func GetRewardForInferenceTaskInTopic(
+	niaveNetworkInferenceLoss alloraMath.Dec,
+	networkInferenceLoss alloraMath.Dec,
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
@@ -246,6 +267,8 @@ func GetRewardForInferenceTaskInTopic(
 	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
+		niaveNetworkInferenceLoss,
+		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,
 		a,
@@ -288,18 +311,22 @@ func GetRewardForInferenceTaskInTopic(
 // forecaster rewards calculation
 // V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
 func GetRewardForForecastingTaskInTopic(
-	chi alloraMath.Dec,
-	gamma alloraMath.Dec,
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	entropyReputer alloraMath.Dec,
-	totalReward alloraMath.Dec,
+	niaveNetworkInferenceLoss alloraMath.Dec,
+	networkInferenceLoss alloraMath.Dec,
+	entropyInference alloraMath.Dec, // F_i
+	entropyForecasting alloraMath.Dec, // G_i
+	entropyReputer alloraMath.Dec, // H_i
+	totalReward alloraMath.Dec, // E_i
+	sigmoidA alloraMath.Dec, // a used for sigmoid
+	sigmoidB alloraMath.Dec, // b used for sigmoid
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
+		niaveNetworkInferenceLoss,
+		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,
-		a,
-		b,
+		sigmoidA,
+		sigmoidB,
 	)
 	chiGamma, err := chi.Mul(gamma)
 	if err != nil {

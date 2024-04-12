@@ -124,6 +124,15 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxSamplesToScaleScores) == 1 {
 		existingParams.MaxSamplesToScaleScores = newParams.MaxSamplesToScaleScores[0]
 	}
+	if len(newParams.CreateTopicFee) == 1 {
+		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
+	}
+	if len(newParams.SigmoidA) == 1 {
+		existingParams.SigmoidA = newParams.SigmoidA[0]
+	}
+	if len(newParams.SigmoidB) == 1 {
+		existingParams.SigmoidB = newParams.SigmoidB[0]
+	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err

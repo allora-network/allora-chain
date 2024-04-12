@@ -44,6 +44,8 @@ func DefaultParams() Params {
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
 		CreateTopicFee:                  uint64(10),                                 //topic registration fee
+		SigmoidA:                        alloraMath.NewDecFromInt64(8),              // sigmoid function parameter, a = 8
+		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),     // sigmoid function parameter, b = 0.5
 	}
 }
 
