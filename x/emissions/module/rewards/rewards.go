@@ -29,20 +29,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		fmt.Println("weights error")
 		return err
 	}
-	validatorsVsAlloraPercentReward, err := k.GetParamsValidatorsVsAlloraPercentReward(ctx)
-	if err != nil {
-		fmt.Println("percent error")
-		return err
-	}
-	f_v, err := alloraMath.NewDecFromSdkLegacyDec(validatorsVsAlloraPercentReward)
-	if err != nil {
-		fmt.Println("legacyDec conversion error")
-		return err
-	}
 	topicRewards := make([]alloraMath.Dec, len(activeTopics))
 	for i := range weights {
 		topicWeight := weights[i]
-		topicRewardFraction, err := GetTopicRewardFraction(f_v, topicWeight, sumWeight)
+		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumWeight)
 		if err != nil {
 			fmt.Println("reward fraction error")
 			return err
@@ -65,6 +55,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		topic := activeTopics[i]
 		topicRewards := topicRewards[i] // E_{t,i}
 		lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topic.Id, blockHeight)
+		if err != nil {
+			return err
+		}
 
 		// Get Entropy for each task
 		reputerEntropy, reputerFractions, reputers, err := GetReputerTaskEntropy(
@@ -75,6 +68,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
 		)
+		if err != nil {
+			return err
+		}
 		inferenceEntropy, inferenceFractions, workersInference, err := GetInferenceTaskEntropy(
 			ctx,
 			k,
@@ -83,6 +79,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
 		)
+		if err != nil {
+			return err
+		}
 		forecastingEntropy, forecastFractions, workersForecast, err := GetForecastingTaskEntropy(
 			ctx,
 			k,
@@ -91,6 +90,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
 		)
+		if err != nil {
+			return err
+		}
 
 		// Get Total Rewards for Reputation task
 		taskReputerReward, err := GetRewardForReputerTaskInTopic(
@@ -99,6 +101,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			reputerEntropy,
 			topicRewards,
 		)
+		if err != nil {
+			return err
+		}
 		taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
 			lossBundles.NaiveValue,
 			lossBundles.CombinedValue,
@@ -109,6 +114,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.SigmoidA,
 			moduleParams.SigmoidB,
 		)
+		if err != nil {
+			return err
+		}
 		taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
 			lossBundles.NaiveValue,
 			lossBundles.CombinedValue,
@@ -119,6 +127,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.SigmoidA,
 			moduleParams.SigmoidB,
 		)
+		if err != nil {
+			return err
+		}
 
 		totalRewardsDistribution := make([]TaskRewards, 0)
 

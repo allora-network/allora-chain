@@ -87,27 +87,39 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	var previousRewardFraction alloraMath.Dec
 	rewardFractions, err := GetScoreFractions(scores, pRewardSpread)
+	if err != nil {
+		return alloraMath.Dec{}, nil, nil, err
+	}
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	for i, fraction := range rewardFractions {
 		if which == TASK_INFERENCE {
 			previousRewardFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
+			if err != nil {
+				return alloraMath.Dec{}, nil, nil, err
+			}
 		} else { // TASK_FORECAST
 			previousRewardFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
-		}
-		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			if err != nil {
+				return alloraMath.Dec{}, nil, nil, err
+			}
 		}
 		emaRewardFractions[i], err = alloraMath.ExponentialMovingAverage(
 			emaAlpha,
 			fraction,
 			previousRewardFraction,
 		)
+		if err != nil {
+			return alloraMath.Dec{}, nil, nil, err
+		}
 	}
 	numberRatio, err := NumberRatio(rewardFractions)
 	if err != nil {
 		return alloraMath.Dec{}, nil, nil, err
 	}
 	modifiedRewardFractions, err = ModifiedRewardFractions(emaRewardFractions)
+	if err != nil {
+		return alloraMath.Dec{}, nil, nil, err
+	}
 	entropy, err = Entropy(
 		modifiedRewardFractions,
 		numberRatio,
@@ -318,6 +330,9 @@ func GetRewardForForecastingTaskInTopic(
 		sigmoidA,
 		sigmoidB,
 	)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
 	chiGamma, err := chi.Mul(gamma)
 	if err != nil {
 		return alloraMath.Dec{}, err
