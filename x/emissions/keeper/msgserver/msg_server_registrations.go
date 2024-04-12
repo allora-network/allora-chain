@@ -68,6 +68,8 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
 	}
+	nodeInfo.Owner = msg.Owner
+	nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
 	if msg.IsReputer {
 		// add node to topicReputers
 		// add node to reputers
@@ -79,9 +81,6 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		if msg.Owner == "" {
 			return nil, types.ErrOwnerCannotBeEmpty
 		}
-		nodeInfo.Owner = msg.Owner
-		nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
-
 		// add node to topicWorkers
 		// add node to workers
 		err = ms.k.InsertWorker(ctx, msg.TopicIds, address, nodeInfo)
