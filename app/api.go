@@ -54,17 +54,13 @@ func generateLosses(
 	nonce emissionstypes.Nonce,
 	blocktime uint64) {
 
-	payloadObj := LossesPayload{
-		Inferences: []emissionstypes.ValueBundle{*inferences},
-	}
-
-	payloadJSON, err := json.Marshal(payloadObj)
+	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
 		return
 	}
 
-	params := string(payloadJSON)
+	params := string(inferencesPayloadJSON)
 	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
@@ -98,7 +94,6 @@ func generateLosses(
 		return
 	}
 	payloadStr := string(payload)
-	fmt.Println("Making Losses Api Call, Payload: ", payloadStr)
 	makeApiCall(payloadStr)
 }
 
@@ -133,9 +128,6 @@ func generateInferences(
 			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
-	// Print payloadJSON
-	fmt.Printf("Payload JSON: %v \n", payloadJson)
-
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
 		fmt.Println("Error marshalling outer JSON:", err)
