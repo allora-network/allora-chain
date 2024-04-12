@@ -46,13 +46,15 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				// Get previous topic height to repute
 				previousBlockHeight := currentBlockHeight - topic.EpochLength
 				if previousBlockHeight <= 0 {
+					fmt.Println("Previous block height is less than or equal to 0, skipping")
 					return
+				} else {
+					fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
 				}
 				// Check if the inference and loss cadence is met, then run inf and loss generation
 				if currentBlockHeight >= topic.EpochLastEnded+topic.EpochLength {
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
-					fmt.Printf("")
 					go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
 
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
