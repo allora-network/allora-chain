@@ -25,20 +25,17 @@ func GetTopicReward(
 // f{t,i} = (1 - f_v) * (w_{t,i}) / (∑_t w_{t,i})
 // where f_v is a global parameter set that controls the
 // fraction of total reward emissions for cosmos network validators
+// we don't use f_v here, because by the time the emissions module runs
+// the validator rewards have already been distributed to the fee_collector account
+// (this is done in the mint and then distribution module)
 // w_{t,i} is the weight of topic t
 // and the sum is naturally the total of all the weights for all topics
 func GetTopicRewardFraction(
-	f_v alloraMath.Dec,
+	//	f_v alloraMath.Dec,
 	topicWeight alloraMath.Dec,
 	totalWeight alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	// todo why does the formula say 1 minus f_v and we are using f_v directly?
-	// bug?
-	f_vTimesTopicWeight, err := f_v.Mul(topicWeight)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return f_vTimesTopicWeight.Quo(totalWeight)
+	return topicWeight.Quo(totalWeight)
 }
 
 // Return the target weight of a topic

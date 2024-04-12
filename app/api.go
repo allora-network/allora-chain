@@ -20,10 +20,11 @@ type BlocklessRequest struct {
 }
 
 type Config struct {
-	Environment []EnvVar `json:"env_vars,omitempty"`
-	Stdin       *string  `json:"stdin,omitempty"`
-	NodeCount   int      `json:"number_of_nodes,omitempty"`
-	Timeout     int      `json:"timeout,omitempty"`
+	Environment        []EnvVar `json:"env_vars,omitempty"`
+	Stdin              *string  `json:"stdin,omitempty"`
+	NodeCount          int      `json:"number_of_nodes,omitempty"`
+	Timeout            int      `json:"timeout,omitempty"`
+	ConsensusAlgorithm string   `json:"consensus_algorithm,omitempty"`
 }
 
 type EnvVar struct {
@@ -53,17 +54,13 @@ func generateLosses(
 	nonce emissionstypes.Nonce,
 	blocktime uint64) {
 
-	payloadObj := LossesPayload{
-		Inferences: []emissionstypes.ValueBundle{*inferences},
-	}
-
-	payloadJSON, err := json.Marshal(payloadObj)
+	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
 		return
 	}
 
-	params := string(payloadJSON)
+	params := string(inferencesPayloadJSON)
 	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
@@ -85,8 +82,9 @@ func generateLosses(
 					Value: strconv.FormatInt(nonce.GetNonce(), 10),
 				},
 			},
-			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:   2,  // seconds to time out before rollcall complete
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
 
@@ -96,7 +94,6 @@ func generateLosses(
 		return
 	}
 	payloadStr := string(payload)
-	fmt.Println("Making Losses Api Call, Payload: ", payloadStr)
 	makeApiCall(payloadStr)
 }
 
@@ -126,11 +123,11 @@ func generateInferences(
 					Value: strconv.FormatInt(nonce.GetNonce(), 10),
 				},
 			},
-			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:   2,  // seconds to time out before rollcall complete
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
-
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
 		fmt.Println("Error marshalling outer JSON:", err)

@@ -142,7 +142,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 					},
 				},
 			},
-			networkCombinedLoss: alloraMath.MustNewDecFromString("0.01569376583279220"), // <- from Row 2
+			networkCombinedLoss: alloraMath.MustNewDecFromString("0.01569376583279220"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 			expected: map[string]*emissions.Inference{

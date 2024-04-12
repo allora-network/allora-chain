@@ -27,7 +27,7 @@ func RunningWeightedAvgUpdate(
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-	if runningWeightedAvg.SumWeight.Cmp(epsilon) == alloraMath.LessThan {
+	if runningWeightedAvg.SumWeight.Lt(epsilon) {
 		return *runningWeightedAvg, emissions.ErrFractionDivideByZero
 	}
 	weightFrac, err := weight.Quo(runningWeightedAvg.SumWeight)

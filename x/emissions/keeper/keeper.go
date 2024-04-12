@@ -69,6 +69,12 @@ type Keeper struct {
 	reputerScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, Reputer], types.ListeningCoefficient]
+	// map of (topic, reputer) -> previous reward (used for EMA)
+	previousReputerRewardFraction collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
+	// map of (topic, worker) -> previous reward for inference (used for EMA)
+	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
+	// map of (topic, worker) -> previous reward for forecast (used for EMA)
+	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
 
 	/// TAX for REWARD
 	// map of (topic, block_number, worker) -> avg_worker_reward
@@ -227,6 +233,9 @@ func NewKeeper(
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		inferenceScores:                     collections.NewMap(sb, types.InferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecastScores:                      collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		previousReputerRewardFraction:       collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousInferenceRewardFraction:     collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousForecastRewardFraction:      collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		averageWorkerReward:                 collections.NewMap(sb, types.AverageWorkerRewardKey, "average_worker_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AverageWorkerReward](cdc)),
 		reputerScores:                       collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
@@ -571,14 +580,6 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 	return params.MaxRequestCadence, nil
 }
 
-func (k *Keeper) GetParamsPercentRewardsReputersWorkers(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.PercentRewardsReputersWorkers, nil
-}
-
 func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -772,6 +773,31 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
+// GetTopicWorkers returns a list of workers registered for a given topic ID.
+func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TopicId) ([]sdk.AccAddress, error) {
+	var workers []sdk.AccAddress
+
+	rng := collections.NewPrefixedPairRange[TopicId, Worker](topicId)
+
+	// Iterate over the workers registered for the given topic ID
+	iter, err := k.topicWorkers.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		pair, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+		workerAddr := pair.K2()
+		workers = append(workers, workerAddr)
+	}
+
+	return workers, nil
+}
+
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 	lastRewardsUpdate, err := k.lastRewardsUpdate.Get(ctx)
@@ -882,9 +908,9 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TopicI
 /// LOSS BUNDLES
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reptuerLossBundles types.ReputerValueBundles) error {
+func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
 	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, reptuerLossBundles)
+	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
 
 // Get loss bundles for a topic/timestamp
@@ -1724,6 +1750,20 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	return workerAddress, nil
 }
 
+func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+	reputer, err := k.reputers.Get(ctx, p2pKey)
+	if err != nil {
+		return nil, err
+	}
+
+	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
+	if err != nil {
+		return nil, err
+	}
+
+	return address, nil
+}
+
 // GetTopicsByCreator returns a slice of all topics created by a given creator.
 func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
 	var topicsByCreator []*types.Topic
@@ -2274,6 +2314,63 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 		return types.ListeningCoefficient{}, err
 	}
 	return coef, nil
+}
+
+// Gets the previous W_{i-1,m}
+func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, reputer)
+	reward, err := k.previousReputerRewardFraction.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous W_{i-1,m}
+func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, reputer)
+	return k.previousReputerRewardFraction.Set(ctx, key, reward)
+}
+
+// Gets the previous U_{i-1,m}
+func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, worker)
+	reward, err := k.previousInferenceRewardFraction.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous U_{i-1,m}
+func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, worker)
+	return k.previousInferenceRewardFraction.Set(ctx, key, reward)
+}
+
+// Gets the previous V_{i-1,m}
+func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, worker)
+	reward, err := k.previousForecastRewardFraction.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return reward, nil
+}
+
+// Sets the previous V_{i-1,m}
+func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+	key := collections.Join(topicId, worker)
+	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
 
 /// TAX for REWARD

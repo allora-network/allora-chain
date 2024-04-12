@@ -28,7 +28,6 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
 		currentNonce := emissionstypes.Nonce{Nonce: currentBlockHeight}
-		currentTime := uint64(ctx.BlockTime().Unix())
 
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
@@ -47,17 +46,21 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				// Get previous topic height to repute
 				previousBlockHeight := currentBlockHeight - topic.EpochLength
 				if previousBlockHeight <= 0 {
+					fmt.Println("Previous block height is less than or equal to 0, skipping")
 					return
+				} else {
+					fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
 				}
 				// Check if the inference and loss cadence is met, then run inf and loss generation
 				if currentBlockHeight >= topic.EpochLastEnded+topic.EpochLength {
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
-					// go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
+					go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
 
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
 					// We don't want just the latest inferences but the ValueBundle (I_i) instead
+					currentTime := uint64(ctx.BlockTime().Unix())
 					// Get from previous blockHeight
 					inferences, _, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
 					fmt.Println("Error getting latest inferences: ", err)

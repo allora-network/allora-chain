@@ -63,18 +63,23 @@ func (s *MathTestSuite) TestAdjustedStakeSimple() {
 }
 
 func (s *MathTestSuite) TestNormalizeAgainstSlice() {
-	v := alloraMath.MustNewDecFromString("2.0")
 	a := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("3.0"),
 		alloraMath.MustNewDecFromString("5.0"),
 	}
-	expected := alloraMath.MustNewDecFromString("0.2")
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
 
-	result, err := rewards.NormalizeAgainstSlice(v, a)
+	result, err := rewards.ModifiedRewardFractions(a)
 
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
+	for i := range expected {
+		s.Require().True(alloraMath.InDelta(expected[i], result[i], alloraMath.MustNewDecFromString("0.0001")))
+	}
 }
 
 func (s *MathTestSuite) TestEntropySimple() {
@@ -130,29 +135,39 @@ func (s *MathTestSuite) TestNumberRatioEmptyList() {
 }
 
 func (s *MathTestSuite) TestInferenceRewardsSimple() {
+	// T_i = log L naive - log L
+	// 1 = 2 - 1
+	//
+	// X = 0.1 + 0.4 * sigma(a * T_i - b)
+	// 0.5 = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
+	//
 	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// U_i = 0.5 * 8 / 8
 	// U_i = 0.5
-	infRewards, err := rewards.InferenceRewards(
-		alloraMath.MustNewDecFromString("0.5"),
-		alloraMath.MustNewDecFromString("2.0"),
-		alloraMath.MustNewDecFromString("2.0"),
-		alloraMath.MustNewDecFromString("2.0"),
-		alloraMath.MustNewDecFromString("4.0"),
-		alloraMath.MustNewDecFromString("2.0"),
+	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.5"), infRewards, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
-	result, err := rewards.InferenceRewards(
-		alloraMath.MustNewDecFromString("1"),
-		alloraMath.MustNewDecFromString("2.0"),
-		alloraMath.MustNewDecFromString("10"),
-		alloraMath.MustNewDecFromString("20"),
-		alloraMath.MustNewDecFromString("30"),
-		alloraMath.MustNewDecFromString("2.0"),
+	result, err := rewards.GetRewardForInferenceTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
@@ -162,26 +177,30 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	// V_i = (2 * 3 * 4 * 5) / (6 + 4 + 10)
 	// V_i = 120 / 20
 	// V_i = 6
-	result, err := rewards.ForecastingRewards(
-		alloraMath.MustNewDecFromString("2.0"),
-		alloraMath.MustNewDecFromString("3.0"),
-		alloraMath.MustNewDecFromString("6.0"),
-		alloraMath.MustNewDecFromString("4.0"),
-		alloraMath.MustNewDecFromString("10.0"),
-		alloraMath.MustNewDecFromString("5.0"),
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.NewDecFromInt64(6.0), result, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestForecastRewardsZero() {
-	result, err := rewards.ForecastingRewards(
-		alloraMath.MustNewDecFromString("0"),
-		alloraMath.MustNewDecFromString("3.0"),
-		alloraMath.MustNewDecFromString("4.0"),
-		alloraMath.MustNewDecFromString("5.0"),
-		alloraMath.MustNewDecFromString("6.0"),
-		alloraMath.MustNewDecFromString("10.0"),
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
@@ -191,7 +210,7 @@ func (s *MathTestSuite) TestReputerRewardSimple() {
 	// W_i = (2 * 2) / (4 + 2 + 2)
 	// W_i = 4 / 8
 	// W_i = 0.5
-	result, err := rewards.ReputerRewards(
+	result, err := rewards.GetRewardForReputerTaskInTopic(
 		alloraMath.MustNewDecFromString("4.0"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("2.0"),
@@ -202,7 +221,7 @@ func (s *MathTestSuite) TestReputerRewardSimple() {
 }
 
 func (s *MathTestSuite) TestReputerRewardZero() {
-	result, err := rewards.ReputerRewards(
+	result, err := rewards.GetRewardForReputerTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),
 		alloraMath.MustNewDecFromString("2.0"),
 		alloraMath.MustNewDecFromString("2.0"),
@@ -417,7 +436,49 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !alloraMath.SlicesInDelta(got, tt.want, alloraMath.MustNewDecFromString("1e-5")) {
+				t.Errorf("GetStakeWeightedLossMatrix() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetStakeWeightedLossMatrixWithMissingLosses(t *testing.T) {
+	tests := []struct {
+		name                   string
+		reputersAdjustedStakes []alloraMath.Dec
+		reputersReportedLosses [][]alloraMath.Dec
+		want                   []alloraMath.Dec
+		wantErr                bool
+	}{
+		{
+			name: "basic",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.0"),
+				alloraMath.MustNewDecFromString("1.0"),
+				alloraMath.MustNewDecFromString("1.0"),
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("2.0"), alloraMath.MustNewDecFromString("3.0"), alloraMath.MustNewDecFromString("4.0")},
+				{alloraMath.MustNewDecFromString("2.0"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("5.0"), alloraMath.MustNewDecFromString("3.0")},
+				{alloraMath.NewNaN(), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("2.0")},
+			},
+			want: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.41421"), alloraMath.MustNewDecFromString("2.00000"), alloraMath.MustNewDecFromString("2.46621"), alloraMath.MustNewDecFromString("2.88449"),
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
 				return

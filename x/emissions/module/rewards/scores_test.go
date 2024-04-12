@@ -1,11 +1,11 @@
 package rewards_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
+	//cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	//"github.com/allora-network/allora-chain/x/emissions/types"
+	//sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /*
@@ -118,6 +118,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
+/*
 // mockReputersData generates reputer stakes and losses
 func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
 	reputers := []sdk.AccAddress{
@@ -381,3 +382,4 @@ func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64
 
 	return reputerValueBundles, nil
 }
+*/
