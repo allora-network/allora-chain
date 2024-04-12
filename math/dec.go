@@ -21,7 +21,8 @@ import (
 // but when copying the big.Int structure can be shared between Decimal instances causing corruption.
 // This was originally discovered in regen0-network/mainnet#15.
 type Dec struct {
-	dec apd.Decimal
+	dec   apd.Decimal
+	isNaN bool
 }
 
 // constants for more convenient intent behind dec.Cmp values.
@@ -61,6 +62,10 @@ var dec128Context = apd.Context{
 	Traps:       apd.DefaultTraps,
 }
 
+func NewNaN() Dec {
+	return Dec{apd.Decimal{}, true}
+}
+
 func NewDecFromString(s string) (Dec, error) {
 	if s == "" {
 		s = "0"
@@ -70,7 +75,7 @@ func NewDecFromString(s string) (Dec, error) {
 		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
 	}
 
-	d1 := Dec{*d}
+	d1 := Dec{*d, false}
 	if d1.dec.Form == apd.Infinite {
 		return d1, ErrInfiniteString.Wrapf(s)
 	}
@@ -439,8 +444,28 @@ func (x Dec) Cmp(y Dec) int {
 	return x.dec.Cmp(&y.dec)
 }
 
+func (x Dec) Gt(y Dec) bool {
+	return x.dec.Cmp(&y.dec) == 1
+}
+
+func (x Dec) Gte(y Dec) bool {
+	return x.dec.Cmp(&y.dec) == 1 || x.dec.Cmp(&y.dec) == 0
+}
+
+func (x Dec) Lt(y Dec) bool {
+	return x.dec.Cmp(&y.dec) == -1
+}
+
+func (x Dec) Lte(y Dec) bool {
+	return x.dec.Cmp(&y.dec) == -1 || x.dec.Cmp(&y.dec) == 0
+}
+
 func (x Dec) Equal(y Dec) bool {
 	return x.dec.Cmp(&y.dec) == 0
+}
+
+func (x Dec) IsNaN() bool {
+	return x.isNaN
 }
 
 // IsZero returns true if the decimal is zero.

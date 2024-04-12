@@ -42,7 +42,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 			fmt.Println("Error getting inferer regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
 		}
-		if maxInfererRegret.Cmp(infererRegret.Value) == alloraMath.LessThan {
+		if maxInfererRegret.Lt(infererRegret.Value) {
 			maxInfererRegret = infererRegret.Value
 		}
 	}
@@ -54,7 +54,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 			fmt.Println("Error getting forecaster regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
 		}
-		if maxForecasterRegret.Cmp(forecasterRegret.Value) == alloraMath.LessThan {
+		if maxForecasterRegret.Lt(forecasterRegret.Value) {
 			maxForecasterRegret = forecasterRegret.Value
 		}
 	}
@@ -67,7 +67,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 				fmt.Println("Error getting forecaster regret: ", err)
 				return MaximalRegrets{}, err // TODO: THIS OR continue ??
 			}
-			if maxOneInForecasterRegret[forecaster].Cmp(oneInForecasterRegret.Value) == alloraMath.LessThan {
+			if maxOneInForecasterRegret[forecaster].Lt(oneInForecasterRegret.Value) {
 				maxOneInForecasterRegret[forecaster] = oneInForecasterRegret.Value
 			}
 		}
@@ -76,7 +76,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
 		}
-		if maxOneInForecasterRegret[forecaster].Cmp(oneInForecasterSelfRegret.Value) == alloraMath.LessThan {
+		if maxOneInForecasterRegret[forecaster].Lt(oneInForecasterSelfRegret.Value) {
 			maxOneInForecasterRegret[forecaster] = oneInForecasterSelfRegret.Value
 		}
 	}
@@ -103,7 +103,7 @@ func CalcWeightedInference(
 	epsilon alloraMath.Dec,
 	pInferenceSynthesis alloraMath.Dec,
 ) (InferenceValue, error) {
-	if maxRegret.Cmp(epsilon) == alloraMath.LessThan {
+	if maxRegret.Lt(epsilon) {
 		fmt.Println("Error maxRegret < epsilon: ", maxRegret, epsilon)
 		return InferenceValue{}, emissions.ErrFractionDivideByZero
 	}
@@ -185,7 +185,7 @@ func CalcWeightedInference(
 	}
 
 	// Normalize the network combined inference
-	if sumWeights.Cmp(epsilon) == alloraMath.LessThan {
+	if sumWeights.Lt(epsilon) {
 		return InferenceValue{}, emissions.ErrSumWeightsLessThanEta
 	}
 	ret, err := unnormalizedI_i.Quo(sumWeights)

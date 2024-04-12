@@ -417,7 +417,49 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !alloraMath.SlicesInDelta(got, tt.want, alloraMath.MustNewDecFromString("1e-5")) {
+				t.Errorf("GetStakeWeightedLossMatrix() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetStakeWeightedLossMatrixWithMissingLosses(t *testing.T) {
+	tests := []struct {
+		name                   string
+		reputersAdjustedStakes []alloraMath.Dec
+		reputersReportedLosses [][]alloraMath.Dec
+		want                   []alloraMath.Dec
+		wantErr                bool
+	}{
+		{
+			name: "basic",
+			reputersAdjustedStakes: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.0"),
+				alloraMath.MustNewDecFromString("1.0"),
+				alloraMath.MustNewDecFromString("1.0"),
+			},
+			reputersReportedLosses: [][]alloraMath.Dec{
+				{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("2.0"), alloraMath.MustNewDecFromString("3.0"), alloraMath.MustNewDecFromString("4.0")},
+				{alloraMath.MustNewDecFromString("2.0"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("5.0"), alloraMath.MustNewDecFromString("3.0")},
+				{alloraMath.NewNaN(), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("2.0")},
+			},
+			want: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1.41421"), alloraMath.MustNewDecFromString("2.00000"), alloraMath.MustNewDecFromString("2.46621"), alloraMath.MustNewDecFromString("2.88449"),
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
 				return
