@@ -90,6 +90,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetReputerAddressByP2PKey",
+					Use:       "reputer-address [libp2p_key]",
+					Short:     "Get Reputer Address by libp2p key",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "libp2p_key"},
+					},
+				},
+				{
 					RpcMethod: "GetExistingInferenceRequest",
 					Use:       "inference-request [topic_id] [request_id]",
 					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
