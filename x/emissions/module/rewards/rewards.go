@@ -99,16 +99,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			topicRewards,
 		)
 		taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-			chi,
-			gamma,
 			inferenceEntropy,
 			forecastingEntropy,
 			reputerEntropy,
 			topicRewards,
 		)
 		taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
-			chi,
-			gamma,
 			inferenceEntropy,
 			forecastingEntropy,
 			reputerEntropy,

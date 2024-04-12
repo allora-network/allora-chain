@@ -136,11 +136,11 @@ func ForecastingPerformanceScore(
 // a has fiduciary value of 8
 // b has fiduciary value of 0.5
 func ForecastingUtility(
-	forecastingPerformanceScore,
+	forecastingTaskUtilityScore,
 	a,
 	b alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	aTimesForecastigPerformanceScore, err := a.Mul(forecastingPerformanceScore)
+	aTimesForecastigPerformanceScore, err := a.Mul(forecastingTaskUtilityScore)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -201,16 +201,59 @@ func NormalizationFactor(
 	return ret, nil
 }
 
+// helper function to get chi and gamma
+func getChiAndGamma(
+	entropyInference,
+	entropyForecasting,
+	a,
+	b alloraMath.Dec,
+) (chi alloraMath.Dec, gamma alloraMath.Dec, err error) {
+
+	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
+		niaveNetworkInferenceLoss,
+		networkInferenceLoss,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	chi, err = ForecastingUtility(
+		forecastingTaskUtilityScore,
+		a,
+		b,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	gamma, err = NormalizationFactor(
+		entropyInference,
+		entropyForecasting,
+		chi,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	return chi, gamma, nil
+}
+
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func GetRewardForInferenceTaskInTopic(
-	chi alloraMath.Dec,
-	gamma alloraMath.Dec,
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	entropyReputer alloraMath.Dec,
-	timeStep alloraMath.Dec,
+	entropyInference alloraMath.Dec, // F_i
+	entropyForecasting alloraMath.Dec, // G_i
+	entropyReputer alloraMath.Dec, // H_i
+	totalReward alloraMath.Dec, // E_i
+	a alloraMath.Dec, // global param used for chi χ
+	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
+	chi, gamma, err := getChiAndGamma(
+		entropyInference,
+		entropyForecasting,
+		a,
+		b,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
 	oneMinusChi, err := alloraMath.OneDec().Sub(chi)
 	if err != nil {
 		return alloraMath.Dec{}, err
@@ -223,7 +266,7 @@ func GetRewardForInferenceTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := oneMinusChiGammaEntropyInference.Mul(timeStep)
+	numerator, err := oneMinusChiGammaEntropyInference.Mul(totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -250,8 +293,14 @@ func GetRewardForForecastingTaskInTopic(
 	entropyInference alloraMath.Dec,
 	entropyForecasting alloraMath.Dec,
 	entropyReputer alloraMath.Dec,
-	timeStep alloraMath.Dec,
+	totalReward alloraMath.Dec,
 ) (alloraMath.Dec, error) {
+	chi, gamma, err := getChiAndGamma(
+		entropyInference,
+		entropyForecasting,
+		a,
+		b,
+	)
 	chiGamma, err := chi.Mul(gamma)
 	if err != nil {
 		return alloraMath.Dec{}, err
@@ -260,7 +309,7 @@ func GetRewardForForecastingTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := chiGammaEntropyForecasting.Mul(timeStep)
+	numerator, err := chiGammaEntropyForecasting.Mul(totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
