@@ -2,6 +2,8 @@ package msgserver
 
 import (
 	"context"
+	"encoding/json"
+	"strconv"
 
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -33,6 +35,14 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 		return nil, types.ErrNonceNotUnfulfilled
 	}
 
+	// Verify nonce signature
+	pk := ms.k.AccountKeeper().GetAccount(ctx, sender)
+	stringNonce := strconv.FormatInt(msg.Nonce.Nonce, 10)
+	nonceBytes := []byte(stringNonce)
+	if !pk.GetPubKey().VerifySignature(nonceBytes, msg.Signature) {
+		return nil, types.ErrSignatureVerificationFailed
+	}
+
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// Group loss bundles by topicId - Create a map to store the grouped loss bundles
 	lossBundles := make([]*types.ReputerValueBundle, 0)
@@ -50,6 +60,15 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 		}
 
 		// TODO check signatures! throw if invalid!
+		reputerAddr, err := sdk.AccAddressFromBech32(bundle.Reputer)
+		if err != nil {
+			return nil, err
+		}
+		pk := ms.k.AccountKeeper().GetAccount(ctx, reputerAddr)
+		src, _ := json.Marshal(bundle.ValueBundle)
+		if !pk.GetPubKey().VerifySignature(src, bundle.Signature) {
+			return nil, types.ErrSignatureVerificationFailed
+		}
 	}
 
 	params, err := ms.k.GetParams(ctx)

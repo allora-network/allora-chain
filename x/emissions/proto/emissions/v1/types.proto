@@ -194,6 +194,7 @@ message ReputerValueBundle {
 
   string reputer = 1;
   ValueBundle value_bundle = 2;
+  bytes signature = 3;
 }
 
 message ReputerValueBundles {

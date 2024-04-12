@@ -1,13 +1,10 @@
 package msgserver_test
 
 import (
-	"bytes"
-	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/testutil/sims"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
@@ -15,16 +12,15 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require := s.Require()
 
 	// Mock setup for addresses
-	//workerAddr := sdk.AccAddress(PKS[0].Address()).String()
+	workerAddr := sdk.AccAddress(PKS[0].Address()).String()
 	inferencerAddr := sdk.AccAddress(PKS[0].Address()).String()
 	inferencerAddr1 := sdk.AccAddress(PKS[0].Address()).String()
 	inferencerAddr2 := sdk.AccAddress(PKS[0].Address()).String()
 	forecasterAddr := sdk.AccAddress(PKS[0].Address()).String()
 
-	test := sdk.AccAddress(simtestutil.CreateTestPubKeys(1)[0].Address())
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  test.String(),
+		Sender:  workerAddr,
 		Nonce:   &types.Nonce{1},
 		TopicId: 1,
 		Inferences: []*types.Inference{
@@ -53,10 +49,12 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 			},
 		},
 	}
-	var buffer bytes.Buffer
-	buffer.WriteString(workerMsg.Sender)
-	te := sims.NewPubKeyFromHex(buffer.String())
-	fmt.Println("te", te.Address().String())
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
+
+	senderAddr, err := sdk.AccAddressFromBech32(workerMsg.Sender)
+	if err != nil {
+		s.Require().Error(err)
+	}
+	s.authKeeper.EXPECT().GetAccount(gomock.Any(), senderAddr)
+	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 }

@@ -199,6 +199,7 @@ message MsgInsertBulkWorkerPayload {
   uint64 topic_id = 3;
   repeated Inference inferences = 4;
   repeated Forecast forecasts = 5;
+  bytes signature = 6;
 }
 
 message MsgInsertBulkWorkerPayloadResponse {}
