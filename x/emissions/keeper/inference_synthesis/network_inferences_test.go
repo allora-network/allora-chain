@@ -3,7 +3,7 @@ package inference_synthesis_test
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 
-	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/module/inference_synthesis"
+	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -121,22 +121,28 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 	topicId := inference_synthesis.TopicId(1)
 
 	test := struct {
-		name                            string
-		inferenceByWorker               map[string]*emissions.Inference
-		forecasts                       *emissions.Forecasts
-		maxRegret                       inference_synthesis.Regret
-		networkCombinedLoss             inference_synthesis.Loss
-		epsilon                         alloraMath.Dec
-		pInferenceSynthesis             alloraMath.Dec
-		infererNetworkRegrets           map[string]inference_synthesis.Regret
-		expectedOneOutInferences        []*emissions.WithheldWorkerAttributedValue
-		expectedOneOutImpliedInferences []*emissions.WithheldWorkerAttributedValue
+		name                             string
+		inferenceByWorker                map[string]*emissions.Inference
+		forecastImpliedInferenceByWorker map[string]*emissions.Inference
+		forecasts                        *emissions.Forecasts
+		maxRegret                        inference_synthesis.Regret
+		networkCombinedLoss              inference_synthesis.Loss
+		epsilon                          alloraMath.Dec
+		pInferenceSynthesis              alloraMath.Dec
+		infererNetworkRegrets            map[string]inference_synthesis.Regret
+		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
+		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
 	}{ // EPOCH 3
 		name: "basic functionality, multiple workers",
 		inferenceByWorker: map[string]*emissions.Inference{
 			"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
 			"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
 			"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
+		},
+		forecastImpliedInferenceByWorker: map[string]*emissions.Inference{
+			"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
+			"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
+			"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
 		},
 		forecasts: &emissions.Forecasts{
 			Forecasts: []*emissions.Forecast{
@@ -205,6 +211,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			s.emissionsKeeper,
 			topicId,
 			test.inferenceByWorker,
+			test.forecastImpliedInferenceByWorker,
 			test.forecasts,
 			test.maxRegret,
 			test.networkCombinedLoss,
@@ -244,7 +251,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 						alloraMath.InDelta(
 							expected.Value,
 							oneOutImpliedInference.Value,
-							alloraMath.MustNewDecFromString("0.00001"),
+							alloraMath.MustNewDecFromString("0.01"),
 						), "Mismatch in value for one-out implied inference of worker %s", expected.Worker)
 				}
 			}

@@ -206,6 +206,7 @@ func CalcOneOutInferences(
 	k keeper.Keeper,
 	topicId TopicId,
 	inferenceByWorker map[Worker]*emissions.Inference,
+	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
 	forecasts *emissions.Forecasts,
 	maxRegret Regret,
 	networkCombinedLoss Loss,
@@ -260,38 +261,19 @@ func CalcOneOutInferences(
 	}
 
 	// Loop over forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
-	forecastImpliedInferences, err := CalcForcastImpliedInferences(
-		inferenceByWorker,
-		forecasts,
-		networkCombinedLoss,
-		epsilon,
-		pInferenceSynthesis,
-	)
-	if err != nil {
-		fmt.Println("Error calculating forecast-implied inferences for held-out inference: ", err)
-		return nil, nil, err
-	}
-
 	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	for worker := range forecastImpliedInferenceByWorker {
+		// Remove the inference of the worker from the inferences
+		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
 
-	for worker := range forecastImpliedInferences {
-		forecastImpliedInferencesWithoutWorker := make(map[Worker]*emissions.Inference)
-		for worker_, inference := range forecastImpliedInferences {
-			if worker_ != worker {
-				forecastImpliedInferencesWithoutWorker[worker_] = inference
+		for workerOfImpliedInference, inference := range inferenceByWorker {
+			if workerOfImpliedInference != worker {
+				impliedInferenceWithoutWorker[workerOfImpliedInference] = inference
 			}
 		}
 
-		oneOutInference, err := CalcWeightedInference(
-			ctx,
-			k,
-			topicId,
-			inferenceByWorker,
-			forecastImpliedInferencesWithoutWorker,
-			maxRegret,
-			epsilon,
-			pInferenceSynthesis,
-		)
+		// Calculate the network inference without the worker's inference
+		oneOutInference, err := CalcWeightedInference(ctx, k, topicId, inferenceByWorker, impliedInferenceWithoutWorker, maxRegret, epsilon, pInferenceSynthesis)
 		if err != nil {
 			fmt.Println("Error calculating one-out inference for forecaster: ", err)
 			return nil, nil, err
@@ -300,7 +282,6 @@ func CalcOneOutInferences(
 			Worker: worker,
 			Value:  oneOutInference,
 		})
-
 	}
 
 	return oneOutInferences, oneOutImpliedInferences, nil
@@ -392,7 +373,7 @@ func CalcNetworkInferences(
 	}
 
 	// Calculate the one-out inference I^-_li
-	oneOutInferences, oneOutImpliedInferences, err := CalcOneOutInferences(ctx, k, topicId, inferenceByWorker, forecasts, maxCombinedRegret, networkCombinedLoss, epsilon, pInferenceSynthesis)
+	oneOutInferences, oneOutImpliedInferences, err := CalcOneOutInferences(ctx, k, topicId, inferenceByWorker, forecastImpliedInferenceByWorker, forecasts, maxCombinedRegret, networkCombinedLoss, epsilon, pInferenceSynthesis)
 	if err != nil {
 		fmt.Println("Error calculating one-out inferences: ", err)
 		return nil, err
