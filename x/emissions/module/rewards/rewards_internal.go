@@ -61,6 +61,58 @@ func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 	return flat
 }
 
+// RewardFractions without multiplication against total rewards are used to calculate entropy
+// note the use of lowercase u as opposed to capital
+// u_ij = M(Tij) / ∑_j M(T_ij)
+// v_ik = M(Tik) / ∑_k M(T_ik)
+func GetScoreFractions(
+	scores []alloraMath.Dec,
+	pReward alloraMath.Dec,
+) ([]alloraMath.Dec, error) {
+	mappedValues, err := GetMappingFunctionValues(scores, pReward)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(mappedValues))
+	mappedSum, err := alloraMath.SumDecSlice(mappedValues)
+	if err != nil {
+		return nil, err
+	}
+	for i, mappedValue := range mappedValues {
+		ret[i], err = mappedValue.Quo(mappedSum)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ret, nil
+}
+
+// Mapping function used by score fraction calculation
+// M(T) = φ_p[ T / σ(T) ]
+// phi is the phi function
+// sigma is NOT the sigma function but rather represents standard deviation
+func GetMappingFunctionValues(
+	scores []alloraMath.Dec, // list of T
+	pReward alloraMath.Dec, // p
+) ([]alloraMath.Dec, error) {
+	stdDev, err := StdDev(scores)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		frac, err := score.Quo(stdDev)
+		if err != nil {
+			return nil, err
+		}
+		ret[i], err = Phi(pReward, frac)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ret, nil
+}
+
 // GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
 // U_ij / V_ik * totalRewards
 func GetWorkerPortionOfRewards(
@@ -540,11 +592,11 @@ func GetAllReputersOutput(
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScores, err := sum(scores)
+			sumScores, err := alloraMath.SumDecSlice(scores)
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScores2, err := sum(scores2)
+			sumScores2, err := alloraMath.SumDecSlice(scores2)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -582,7 +634,7 @@ func GetAllReputersOutput(
 			)
 		}
 
-		sumStakes, err := sum(stakes)
+		sumStakes, err := alloraMath.SumDecSlice(stakes)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -645,18 +697,6 @@ func GetAllReputersOutput(
 	}
 
 	return finalScores, coefficients, nil
-}
-
-func sum(slice []alloraMath.Dec) (alloraMath.Dec, error) {
-	total := alloraMath.ZeroDec()
-	var err error = nil
-	for _, v := range slice {
-		total, err = total.Add(v)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-	}
-	return total, nil
 }
 
 // sumWeighted calculates the weighted sum of values based on the given weights.
@@ -798,25 +838,18 @@ func GetAdjustedStake(
 // this covers equations
 // f_ij =  (̃U_ij) / ∑_j(̃Uij)
 // f_ik = (̃Vik) / ∑_k(̃Vik)
-// fim =  (̃Wim) / ∑_m(̃Wim)
-func NormalizeAgainstSlice(value alloraMath.Dec, allValues []alloraMath.Dec) (alloraMath.Dec, error) {
-	if len(allValues) == 0 {
-		return alloraMath.ZeroDec(), types.ErrFractionInvalidSliceLength
-	}
-	var err error = nil
-	sumValues := alloraMath.ZeroDec()
-	for _, v := range allValues {
-		sumValues, err = sumValues.Add(v)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-	}
-	if sumValues.Equal(alloraMath.ZeroDec()) {
-		return alloraMath.ZeroDec(), types.ErrFractionDivideByZero
-	}
-	ret, err := value.Quo(sumValues)
+// f_im =  (̃Wim) / ∑_m(̃Wim)
+func ModifiedRewardFractions(rewardFractions []alloraMath.Dec) ([]alloraMath.Dec, error) {
+	sumValues, err := alloraMath.SumDecSlice(rewardFractions)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return nil, err
+	}
+	ret := make([]alloraMath.Dec, len(rewardFractions))
+	for i, value := range rewardFractions {
+		ret[i], err = value.Quo(sumValues)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return ret, nil
 }
@@ -828,16 +861,12 @@ func NormalizeAgainstSlice(value alloraMath.Dec, allValues []alloraMath.Dec) (al
 // Hi = - ∑_m( f_im * ln(f_im) * (N_{r,eff} / N_r)^β )
 // we use beta = 0.25 as a fiducial value
 func Entropy(
-	allFs []alloraMath.Dec,
-	N_eff alloraMath.Dec,
-	numParticipants alloraMath.Dec,
-	beta alloraMath.Dec,
+	rewardFractionsPerActor []alloraMath.Dec, // an array of every f_{ij}, f_{ik}, or f_{im}
+	numberRatio alloraMath.Dec, // N_{i, eff}, N_{f,eff} or N_{r,eff}
+	numParticipants alloraMath.Dec, // N_i
+	beta alloraMath.Dec, // β
 ) (alloraMath.Dec, error) {
-	// simple variable rename to look more like the equations,
-	// hopefully compiler is smart enough to inline it
-	N := numParticipants
-
-	multiplier, err := N_eff.Quo(N)
+	multiplier, err := numberRatio.Quo(numParticipants)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -847,7 +876,7 @@ func Entropy(
 	}
 
 	sum := alloraMath.ZeroDec()
-	for _, f := range allFs {
+	for _, f := range rewardFractionsPerActor {
 		lnF, err := alloraMath.Ln(f)
 		if err != nil {
 			return alloraMath.Dec{}, err
@@ -904,138 +933,6 @@ func NumberRatio(rewardFractions []alloraMath.Dec) (alloraMath.Dec, error) {
 	return ret, nil
 }
 
-// inference rewards calculation
-// U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
-func InferenceRewards(
-	chi alloraMath.Dec,
-	gamma alloraMath.Dec,
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	entropyReputer alloraMath.Dec,
-	timeStep alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	oneMinusChi, err := alloraMath.OneDec().Sub(chi)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	oneMinusChiGamma, err := oneMinusChi.Mul(gamma)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	oneMinusChiGammaEntropyInference, err := oneMinusChiGamma.Mul(entropyInference)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	numerator, err := oneMinusChiGammaEntropyInference.Mul(timeStep)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	entropyInferencePlusForecasting, err := entropyInference.Add(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	denominator, err := entropyInferencePlusForecasting.Add(entropyReputer)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := numerator.Quo(denominator)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
-// forecaster rewards calculation
-// V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
-func ForecastingRewards(
-	chi alloraMath.Dec,
-	gamma alloraMath.Dec,
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	entropyReputer alloraMath.Dec,
-	timeStep alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	chiGamma, err := chi.Mul(gamma)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	chiGammaEntropyForecasting, err := chiGamma.Mul(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	numerator, err := chiGammaEntropyForecasting.Mul(timeStep)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	entropyInferencePlusForecasting, err := entropyInference.Add(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	denominator, err := entropyInferencePlusForecasting.Add(entropyReputer)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := numerator.Quo(denominator)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
-// reputer rewards calculation
-// W_i = (H_i * E_i) / (F_i + G_i + H_i)
-func ReputerRewards(
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	entropyReputer alloraMath.Dec,
-	timeStep alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	numerator, err := entropyReputer.Mul(timeStep)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	denominator, err := entropyInference.Add(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	denominator, err = denominator.Add(entropyReputer)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := numerator.Quo(denominator)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
-// The performance score of the entire forecasting task T_i
-// is positive if the removal of the forecasting task would
-// increase the network loss, and is negative if its removal
-// would decrease the network loss
-// We subtract the log-loss of the complete network inference
-// (L_i) from that of the naive network (L_i^-), which is
-// obtained by omitting all forecast-implied inferences
-// T_i = log L_i^- - log L_i
-func ForecastingPerformanceScore(
-	naiveNetworkInferenceLoss,
-	networkInferenceLoss alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	log10L_iHat, err := alloraMath.Log10(naiveNetworkInferenceLoss)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	log10L_i, err := alloraMath.Log10(networkInferenceLoss)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := log10L_iHat.Sub(log10L_i)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
 // sigmoid function
 // σ(x) = 1/(1+e^{-x}) = e^x/(1+e^x)
 func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
@@ -1048,78 +945,6 @@ func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
 		return alloraMath.Dec{}, err
 	}
 	ret, nil := expX.Quo(onePlusExpX)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
-// we apply a utility function to the forecasting performance score
-// to let the forecasting task utility range from the interval [0.1, 0.5]
-// χ = 0.1 + 0.4σ(a*T_i − b)
-// sigma is the sigmoid function
-// a has fiduciary value of 8
-// b has fiduciary value of 0.5
-func ForecastingUtility(
-	forecastingPerformanceScore,
-	a,
-	b alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	aTimesForecastigPerformanceScore, err := a.Mul(forecastingPerformanceScore)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	aTimesForecastigPerformanceScoreMinusB, err := aTimesForecastigPerformanceScore.Sub(b)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := Sigmoid(aTimesForecastigPerformanceScoreMinusB)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
-	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
-	ret, err = zeroPointFour.Mul(ret)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err = zeroPointOne.Add(ret)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
-}
-
-// renormalize with a factor γ to ensure that the
-// total reward allocated to workers (Ui + Vi)
-// remains constant (otherwise, this would go at the expense of reputers)
-// γ = (F_i + G_i) / ( (1 − χ)*F_i + χ*G_i)
-func NormalizationFactor(
-	entropyInference alloraMath.Dec,
-	entropyForecasting alloraMath.Dec,
-	forecastingUtility alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	numerator, err := entropyInference.Add(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	oneMinusForecastingUtility, err := alloraMath.OneDec().Sub(forecastingUtility)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	oneMinusForecastingUtilityTimesEntropyInference, err := oneMinusForecastingUtility.Mul(entropyInference)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	forecastingUtilityTimesEntropyForecasting, err := forecastingUtility.Mul(entropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	denominator, err := oneMinusForecastingUtilityTimesEntropyInference.Add(forecastingUtilityTimesEntropyForecasting)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := numerator.Quo(denominator)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
