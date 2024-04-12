@@ -128,23 +128,13 @@ func getInferenceOrForecastTaskEntropy(
 // (L_i) from that of the naive network (L_i^-), which is
 // obtained by omitting all forecast-implied inferences
 // T_i = log L_i^- - log L_i
+// However we store the log based forms in the keeper
+// so we do not need to take the logs again
 func ForecastingPerformanceScore(
 	naiveNetworkInferenceLoss,
 	networkInferenceLoss alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	log10L_iHat, err := alloraMath.Log10(naiveNetworkInferenceLoss)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	log10L_i, err := alloraMath.Log10(networkInferenceLoss)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := log10L_iHat.Sub(log10L_i)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return ret, nil
+	return naiveNetworkInferenceLoss.Sub(networkInferenceLoss)
 }
 
 // we apply a utility function to the forecasting performance score
