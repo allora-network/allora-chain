@@ -57,15 +57,15 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
-			return nil, types.ErrInvalidTopicId
+			continue
 		}
 
 		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
 		if bundle.ReputerRequestNonce.WorkerNonce.Nonce != msg.ReputerRequestNonce.WorkerNonce.Nonce {
-			return nil, types.ErrInvalidWorkerNonce
+			continue
 		}
 		if bundle.ReputerRequestNonce.ReputerNonce.Nonce != msg.ReputerRequestNonce.ReputerNonce.Nonce {
-			return nil, types.ErrInvalidReputerNonce
+			continue
 		}
 
 		// Check if we've seen this reputer already in this bulk payload

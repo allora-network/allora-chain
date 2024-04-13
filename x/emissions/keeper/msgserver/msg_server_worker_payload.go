@@ -28,12 +28,12 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 
 		// Check that the inference is for the correct topic
 		if inference.TopicId != topicId {
-			return nil, types.ErrInvalidTopicId
+			continue
 		}
 
 		// Check that the inference is for the correct nonce
 		if inference.Nonce.Nonce != nonce.Nonce {
-			return nil, types.ErrInvalidWorkerNonce
+			continue
 		}
 
 		/// Now do filters on each inferer
@@ -116,12 +116,12 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 
 		// Check that the forecast is for the correct topic
 		if forecast.TopicId != topicId {
-			return types.ErrInvalidTopicId
+			continue
 		}
 
 		// Check that the forecast is for the correct nonce
 		if forecast.Nonce.Nonce != nonce.Nonce {
-			return types.ErrInvalidWorkerNonce
+			continue
 		}
 
 		/// Now do filters on each forecaster
