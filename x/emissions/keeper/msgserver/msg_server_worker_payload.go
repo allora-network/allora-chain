@@ -51,16 +51,18 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 
 	for _, forecast := range msg.Forecasts {
 		// Verify signature on every forecast
-		workerAddr, err := sdk.AccAddressFromBech32(forecast.Forecaster)
-		if err != nil {
-			return nil, err
-		}
-		pk := ms.k.AccountKeeper().GetAccount(ctx, workerAddr)
-		src, _ := json.Marshal(forecast.ForecastElements)
-		if !pk.GetPubKey().VerifySignature(src, forecast.Signature) {
-			return nil, types.ErrSignatureVerificationFailed
-		}
+		for _, forecastEle := range forecast.ForecastElements {
+			workerAddr, err := sdk.AccAddressFromBech32(forecastEle.Inferer)
+			if err != nil {
+				return nil, err
+			}
+			pk := ms.k.AccountKeeper().GetAccount(ctx, workerAddr)
+			src, _ := json.Marshal(forecastEle.Value)
+			if !pk.GetPubKey().VerifySignature(src, forecastEle.Signature) {
+				return nil, types.ErrSignatureVerificationFailed
+			}
 
+		}
 		if forecast.TopicId != msg.TopicId {
 			return nil, types.ErrInvalidTopicId
 		}

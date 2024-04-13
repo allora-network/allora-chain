@@ -246,6 +246,7 @@ message ForecastElement {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bytes extra_data = 4;
   string proof = 5;
+  bytes signature = 6;
 }
 
 message Forecast {
@@ -254,7 +255,6 @@ message Forecast {
   uint64 topic_id = 1;
   string forecaster = 2;
   repeated ForecastElement forecast_elements = 3;
-  bytes signature = 4;
 }
 
 message Forecasts {

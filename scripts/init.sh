@@ -7,6 +7,8 @@ $ALLORAD_BIN config set client chain-id demo
 $ALLORAD_BIN config set client keyring-backend test
 $ALLORAD_BIN keys add alice
 $ALLORAD_BIN keys add bob
+$ALLORAD_BIN keys worker2
+$ALLORAD_BIN keys worker3
 $ALLORAD_BIN init test --chain-id demo --default-denom uallo
 # update genesis
 # Ecosystem non-human MODULE ACCOUNT prints tokens to itself. Starts with nothing.
@@ -16,7 +18,7 @@ $ALLORAD_BIN genesis add-genesis-account allo17g6xu7z2u02f7hz0fghtqaexggrgrprhdq
 # investors and team get nothing for the first year then vesting
 # their tokens are minted at genesis,
 # they're custodialized off-chain by humans bound by legal contracts
-# their token lockup is enforced off-chain
+# their token lockup is enforced off-chaian
 # investors : 30.75% of total supply at genesis = 307500000allo
 # this is just a random test account to simulate the off-chain custodian
 $ALLORAD_BIN genesis add-genesis-account allo12cs03k0mlks4vea7qnhrktpxlj8tdw6zxsuqn3 307500000allo
@@ -28,6 +30,8 @@ $ALLORAD_BIN genesis add-genesis-account allo18jkqd9dl09ejkrsfwdzvx694spqyz2azm6
 # 12 random test accounts, so each gets 4166666.
 $ALLORAD_BIN genesis add-genesis-account alice 4166666allo --keyring-backend test
 $ALLORAD_BIN genesis add-genesis-account bob 4166666allo --keyring-backend test
+$ALLORAD_BIN genesis add-genesis-account worker2 4166666allo --keyring-backend test
+$ALLORAD_BIN genesis add-genesis-account worker3 4166666allo --keyring-backend test
 $ALLORAD_BIN genesis add-genesis-account allo1m4ssnux4kh5pfmjzzkpde0hvxfg0d37mla0pdf 4166666allo
 $ALLORAD_BIN genesis add-genesis-account allo1m8m7u5wygh8f0m55m7aj957yts44fsqdzryjmc 4166666allo
 $ALLORAD_BIN genesis add-genesis-account allo18kq56ckavhacjjxwc7lajspfgn6zf78srfx3lk 4166666allo

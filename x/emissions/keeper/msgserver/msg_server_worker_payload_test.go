@@ -45,11 +45,10 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 						Value:   alloraMath.NewDecFromInt64(300),
 					},
 				},
-				Signature: []byte("Forecasts"),
 			},
 		},
+		Signature: []byte("Forecasts"),
 	}
-
 	senderAddr, err := sdk.AccAddressFromBech32(workerMsg.Sender)
 	if err != nil {
 		s.Require().Error(err)
