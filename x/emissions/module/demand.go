@@ -17,7 +17,7 @@ import (
 type SortableItem[T any] struct {
 	Value      T
 	Weight     uint64
-	Tiebreaker float64
+	Tiebreaker uint32
 }
 
 type RequestId = string
@@ -41,7 +41,7 @@ func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weight
 	r := rand.New(rand.NewSource(randSeed))
 	items := make([]SortableItem[types.Topic], len(valsToSort))
 	for i, topic := range valsToSort {
-		items[i] = SortableItem[types.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Float64()}
+		items[i] = SortableItem[types.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Uint32()}
 	}
 
 	// Sort the slice of SortableItems

@@ -33,9 +33,15 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 		return nil, types.ErrNonceNotUnfulfilled
 	}
 
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Iterate through the array to ensure each reputer is in the whitelist
-	// Group loss bundles by topicId - Create a map to store the grouped loss bundles
+	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundles := make([]*types.ReputerValueBundle, 0)
+	latestReputerScores := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
 		reputer, err := sdk.AccAddressFromBech32(bundle.Reputer)
 		if err != nil {
@@ -49,31 +55,51 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 			lossBundles = append(lossBundles, bundle)
 		}
 
-		// TODO check signatures! throw if invalid!
+		// Get the latest score for each reputer
+		latestScore, err := ms.k.GetLatestReputerScore(ctx, msg.TopicId, reputer)
+		if err != nil {
+			return nil, err
+		}
+		latestReputerScores[bundle.Reputer] = latestScore
+
+		// If we do PoX-like anti-sybil procedure, would go here
 	}
 
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, err
+	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
+	topReputers := FindTopNByScoreDesc(params.MaxReputersPerTopicRequest, latestReputerScores, msg.Nonce.Nonce)
+
+	// Check that the reputer in teh payload is a top reputer signatures
+	stakesByReputer := make(map[string]types.StakePlacement)
+	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
+	for _, bundle := range lossBundles {
+		if _, ok := topReputers[bundle.Reputer]; !ok {
+			continue
+		}
+
+		//
+		// TODO check signatures! throw if invalid!
+		//
+
+		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, bundle)
+
+		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, sdk.AccAddress(bundle.Reputer))
+		if err != nil {
+			return nil, err
+		}
+
+		stakesByReputer[bundle.Reputer] = types.StakePlacement{
+			TopicId: msg.TopicId,
+			Reputer: bundle.Reputer,
+			Amount:  stake,
+		}
 	}
 
 	bundles := types.ReputerValueBundles{
-		ReputerValueBundles: lossBundles,
+		ReputerValueBundles: lossBundlesFromTopReputers,
 	}
 	err = ms.k.InsertReputerLossBundlesAtBlock(ctx, msg.TopicId, msg.Nonce.Nonce, bundles)
 	if err != nil {
 		return nil, err
-	}
-
-	stakesOnTopic, err := ms.k.GetStakePlacementsByTopic(ctx, msg.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	// Map list of stakesOnTopic to map of stakesByReputer
-	stakesByReputer := make(map[string]types.StakePlacement)
-	for _, stake := range stakesOnTopic {
-		stakesByReputer[stake.Reputer] = stake
 	}
 
 	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)

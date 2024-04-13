@@ -61,4 +61,7 @@ var (
 	PreviousReputerRewardFractionKey   = collections.NewPrefix(50)
 	PreviousInferenceRewardFractionKey = collections.NewPrefix(51)
 	PreviousForecastRewardFractionKey  = collections.NewPrefix(52)
+	LatestInfererScoresByWorkerKey     = collections.NewPrefix(53)
+	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(54)
+	LatestReputerScoresByReputerKey    = collections.NewPrefix(55)
 )
