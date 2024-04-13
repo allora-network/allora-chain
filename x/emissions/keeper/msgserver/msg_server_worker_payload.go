@@ -68,7 +68,8 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
 	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.Nonce)
 
-	// Build list of inferences that pass all filters AND are from top performing inferers
+	// Build list of inferences that pass all filters
+	// AND are from top performing inferers among those who have submitted inferences in this batch
 	inferencesFromTopInferers := make([]*types.Inference, 0)
 	acceptedInferers := make(map[string]bool, 0)
 	for worker, inference := range inferencesByInferer {
@@ -171,7 +172,8 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
 	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.Nonce)
 
-	// Build list of forecasts that pass all filters AND are from top performing forecasters
+	// Build list of forecasts that pass all filters
+	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
 	for worker, forecast := range forecastsByForecaster {
 		if _, ok := topForecasters[worker]; !ok {

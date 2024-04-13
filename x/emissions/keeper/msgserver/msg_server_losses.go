@@ -119,7 +119,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
 	topReputers := FindTopNByScoreDesc(params.MaxReputersPerTopicRequest, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.Nonce)
 
-	// Check that the reputer in teh payload is a top reputer signatures
+	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]types.StakePlacement)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for reputer, bundle := range lossBundlesByReputer {
