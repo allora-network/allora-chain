@@ -160,8 +160,8 @@ func CalcForcastImpliedInferences(
 				return nil, err
 			}
 			forecastImpliedInference := emissions.Inference{
-				Worker: forecast.Forecaster,
-				Value:  forecastValue,
+				Inferer: forecast.Forecaster,
+				Value:   forecastValue,
 			}
 			I_i[forecast.Forecaster] = &forecastImpliedInference
 		}

@@ -188,7 +188,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "AddNewRegistration",
+					RpcMethod: "RegisterWithExistingStake",
 					Use:       "add-registration [creator] [lib_p2p_key] [multi_address] [topic_id] [owner] [is_reputer]",
 					Short:     "Register a reputer or worker for an additional topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{

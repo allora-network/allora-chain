@@ -188,14 +188,14 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Reputer in additional topic 1
-	registerReputerMsg := &types.MsgAddNewRegistration{
+	registerReputerMsg := &types.MsgRegisterWithExistingStake{
 		Creator:      reputerAddr.String(),
 		LibP2PKey:    "reputerKey",
 		MultiAddress: "reputerAddr",
 		TopicId:      1,
 		IsReputer:    true,
 	}
-	_, err = msgServer.AddNewRegistration(ctx, registerReputerMsg)
+	_, err = msgServer.RegisterWithExistingStake(ctx, registerReputerMsg)
 	require.NoError(err, "RegisterReputer should not return an error")
 
 	// Check Topic 1 stake
@@ -282,13 +282,13 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 	require.NoError(err, "CreateTopic fails on creation")
 
 	// Register Worker in additional topic 1
-	registerWorkerMsg := &types.MsgAddNewRegistration{
+	registerWorkerMsg := &types.MsgRegisterWithExistingStake{
 		Creator:      workerAddr.String(),
 		LibP2PKey:    "workerKey",
 		MultiAddress: "workerAddr",
 		TopicId:      1,
 	}
-	_, err = msgServer.AddNewRegistration(ctx, registerWorkerMsg)
+	_, err = msgServer.RegisterWithExistingStake(ctx, registerWorkerMsg)
 	require.NoError(err, "RegisterReputer should not return an error")
 
 	// Check Topic 1 stake
