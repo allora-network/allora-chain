@@ -389,6 +389,419 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	}
 }
 
+//////////////////////////////////////////////////////////////
+//                     REGRET TESTS                         //
+//////////////////////////////////////////////////////////////
+
+func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("worker-address")
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+
+	// Set Inferer Network Regret
+	err := keeper.SetInfererNetworkRegret(ctx, topicId, worker, regret)
+	s.Require().NoError(err)
+
+	// Get Inferer Network Regret
+	gotRegret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetForecasterNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("forecaster-address") // Assuming sdk.AccAddress is initialized with a string representing the address
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(20)}
+
+	// Set Forecaster Network Regret
+	err := keeper.SetForecasterNetworkRegret(ctx, topicId, worker, regret)
+	s.Require().NoError(err)
+
+	// Get Forecaster Network Regret
+	gotRegret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := sdk.AccAddress("forecaster-address")
+	inferer := sdk.AccAddress("inferer-address")
+
+	regret := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(30)}
+
+	// Set One-In Forecaster Network Regret
+	err := keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer, regret)
+	s.Require().NoError(err)
+
+	// Get One-In Forecaster Network Regret
+	gotRegret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("nonexistent-inferer-address")
+
+	// Attempt to get Inferer Network Regret for a nonexistent worker
+	regret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent inferer")
+}
+
+func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("nonexistent-forecaster-address")
+
+	// Attempt to get Forecaster Network Regret for a nonexistent worker
+	regret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster")
+}
+
+func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := sdk.AccAddress("nonexistent-forecaster-address")
+	inferer := sdk.AccAddress("nonexistent-inferer-address")
+
+	// Attempt to get One-In Forecaster Network Regret for a nonexistent forecaster-inferer pair
+	regret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
+}
+
+func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	worker := sdk.AccAddress("worker-address")
+
+	// Topic IDs
+	topicId1 := uint64(1)
+	topicId2 := uint64(2)
+
+	// Regrets
+	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
+
+	// Set regrets for the same worker under different topic IDs
+	err := keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
+	s.Require().NoError(err)
+	err = keeper.SetInfererNetworkRegret(ctx, topicId2, worker, regret2)
+	s.Require().NoError(err)
+
+	// Get and compare regrets
+	gotRegret1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret1, gotRegret1)
+	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+
+	gotRegret2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret2, gotRegret2)
+	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+
+	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
+}
+
+func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	worker := sdk.AccAddress("forecaster-address")
+
+	// Topic IDs
+	topicId1 := uint64(1)
+	topicId2 := uint64(2)
+
+	// Regrets
+	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
+
+	// Set regrets for the same worker under different topic IDs
+	err := keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
+	s.Require().NoError(err)
+	err = keeper.SetForecasterNetworkRegret(ctx, topicId2, worker, regret2)
+	s.Require().NoError(err)
+
+	// Get and compare regrets
+	gotRegret1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret1, gotRegret1)
+	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+
+	gotRegret2, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(regret2, gotRegret2)
+	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+
+	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
+}
+
+func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	forecaster := sdk.AccAddress("forecaster-address")
+	inferer := sdk.AccAddress("inferer-address")
+
+	// Topic IDs
+	topicId1 := uint64(1)
+	topicId2 := uint64(2)
+
+	// Regrets
+	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
+
+	// Set regrets for the same forecaster-inferer pair under different topic IDs
+	err := keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
+	s.Require().NoError(err)
+	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer, regret2)
+	s.Require().NoError(err)
+
+	// Get and compare regrets
+	gotRegret1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(regret1, gotRegret1)
+	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+
+	gotRegret2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(regret2, gotRegret2)
+	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+
+	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
+}
+
+//////////////////////////////////////////////////////////////
+//                     PARAMS TESTS                         //
+//////////////////////////////////////////////////////////////
+
+func (s *KeeperTestSuite) TestSetGetMaxMissingInferencePercent() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := alloraMath.NewDecFromInt64(10)
+
+	// Set the parameter
+	params := types.Params{MaxMissingInferencePercent: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxMissingInferencePercent(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(100)
+
+	// Set the parameter
+	params := types.Params{MaxTopicsPerBlock: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxTopicsPerBlock(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestSetGetMinRequestUnmetDemand() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewUint(1000)
+
+	// Set the parameter
+	params := types.Params{MinRequestUnmetDemand: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMinRequestUnmetDemand(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := types.BlockHeight(50)
+
+	// Set the parameter
+	params := types.Params{RemoveStakeDelayWindow: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestSetGetEpsilon() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue, err := alloraMath.NewDecFromString("0.001")
+	s.Require().NoError(err)
+
+	// Set the parameter
+	params := types.Params{Epsilon: expectedValue}
+	err = keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsEpsilon(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.LegacyMustNewDecFromStr("0.25") // Assume a function to create LegacyDec
+
+	// Set the parameter
+	params := types.Params{ValidatorsVsAlloraPercentReward: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsMinTopicUnmetDemand() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewUintFromString("300")
+
+	// Set the parameter
+	params := types.Params{MinTopicUnmetDemand: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMinTopicUnmetDemand(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsRequiredMinimumStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewUintFromString("500")
+
+	// Set the parameter
+	params := types.Params{RequiredMinimumStake: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxInferenceRequestValidity() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := types.BlockHeight(1000)
+
+	// Set the parameter
+	params := types.Params{MaxInferenceRequestValidity: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxInferenceRequestValidity(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := types.BlockHeight(720)
+
+	// Set the parameter
+	params := types.Params{MinEpochLength: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMinEpochLength(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxRequestCadence() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := types.BlockHeight(360)
+
+	// Set the parameter
+	params := types.Params{MaxRequestCadence: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxRequestCadence(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsPInferenceSynthesis() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := alloraMath.NewDecFromInt64(5) // Assuming it's a value like 0.05 formatted correctly for your system
+
+	// Set the parameter
+	params := types.Params{PInferenceSynthesis: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsPInferenceSynthesis(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsStakeAndFeeRevenueImportance() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedStakeImportance := alloraMath.NewDecFromInt64(2) // Example value
+	expectedFeeImportance := alloraMath.NewDecFromInt64(3)   // Example value
+
+	// Set the parameter
+	params := types.Params{
+		TopicRewardStakeImportance:      expectedStakeImportance,
+		TopicRewardFeeRevenueImportance: expectedFeeImportance,
+	}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualStakeImportance, actualFeeImportance, err := keeper.GetParamsStakeAndFeeRevenueImportance(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedStakeImportance, actualStakeImportance)
+	s.Require().Equal(expectedFeeImportance, actualFeeImportance)
+}
+
 // ########################################
 // #           Staking tests              #
 // ########################################

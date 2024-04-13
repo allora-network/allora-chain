@@ -431,7 +431,9 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 	return nonces, nil
 }
 
-/// REGRETS
+//////////////////////////////////////////////////////////////
+//                        REGRETS                           //
+//////////////////////////////////////////////////////////////
 
 func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
@@ -440,7 +442,7 @@ func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 
 func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
-	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
+	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker, regret types.TimestampedValue) error {
@@ -493,7 +495,9 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return regret, nil
 }
 
-/// PARAMETERS
+//////////////////////////////////////////////////////////////
+//                      PARAMETERS                          //
+//////////////////////////////////////////////////////////////
 
 func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
