@@ -253,7 +253,9 @@ func NewKeeper(
 	return k
 }
 
-/// NONCES
+//////////////////////////////////////////////////////////////
+//                        NONCES                            //
+//////////////////////////////////////////////////////////////
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
@@ -284,10 +286,10 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -297,14 +299,14 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
-				return err
+				return false, err
 			}
-			return nil
+			return true, nil
 		}
 	}
 
 	// If the nonce is not present in the unfulfilled nonces
-	return nil
+	return false, nil
 }
 
 // True if nonce is unfulfilled, false otherwise.
@@ -346,6 +348,38 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
 func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Check that input nonce is not already contained in the nonces of this topic
+	for _, n := range nonces.Nonces {
+		if n.Nonce == nonce.Nonce {
+			return nil
+		}
+	}
+	nonces.Nonces = append(nonces.Nonces, nonce)
+
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
+	if err != nil {
+		return err
+	}
+
+	lenNonces := uint64(len(nonces.Nonces))
+	if lenNonces > maxUnfulfilledRequests {
+		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+		if diff > 0 {
+			nonces.Nonces = nonces.Nonces[diff:]
+		}
+	}
+
+	return k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces)
+}
+
+// Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
+// If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
@@ -370,34 +404,6 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		if diff > 0 {
 			nonces.Nonces = nonces.Nonces[diff:]
 		}
-	}
-
-	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
-}
-
-// Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
-// If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
-	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
-	// Check that input nonce is not already contained in the nonces of this topic
-	for _, n := range nonces.Nonces {
-		if n.Nonce == nonce.Nonce {
-			return nil
-		}
-	}
-	nonces.Nonces = append(nonces.Nonces, nonce)
-
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
-	if err != nil {
-		return err
-	}
-
-	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
-		nonces.Nonces = nonces.Nonces[1:]
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)

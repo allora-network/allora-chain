@@ -110,7 +110,7 @@ func (ms msgServer) InsertBulkReputerPayload(ctx context.Context, msg *types.Msg
 	}
 
 	// Update the unfulfilled nonces
-	err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.Nonce)
+	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {
 		return nil, err
 	}

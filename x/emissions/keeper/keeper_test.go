@@ -75,6 +75,320 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
+//////////////////////////////////////////////////////////////
+//                 WORKER NONCE TESTS                       //
+//////////////////////////////////////////////////////////////
+
+func (s *KeeperTestSuite) TestAddWorkerNonce() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+
+	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
+
+	// Set worker nonce
+	newNonce := &types.Nonce{Nonce: 42}
+	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	unfulfilledNonces, err = keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+
+	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
+
+	// Check that the nonce is the correct nonce
+	s.Require().Equal(newNonce.Nonce, unfulfilledNonces.Nonces[0].Nonce, "Unfulfilled nonces should contain the new nonce")
+}
+
+func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{Nonce: 42}
+
+	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().False(isUnfulfilled, "non existent nonce should not be listed as unfulfilled")
+
+	// Set worker nonce
+	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	isUnfulfilled, err = keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(isUnfulfilled, "new nonce should be unfulfilled")
+}
+
+func (s *KeeperTestSuite) TestCanFulfillNewWorkerNonce() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{Nonce: 42}
+
+	// Set worker nonce
+	err := keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(isUnfulfilled, "new nonce should not be unfulfilled")
+
+	// Fulfill the nonce
+	success, err := keeper.FulfillWorkerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(success, "nonce should be able to be fulfilled")
+
+	// Check that the nonce is no longer unfulfilled
+	isUnfulfilled, err = keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().False(isUnfulfilled, "new nonce should be fulfilled")
+}
+
+func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Initially, ensure no unfulfilled nonces exist
+	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+
+	// Set multiple worker nonces
+	nonceValues := []int64{42, 43, 44}
+	for _, val := range nonceValues {
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Failed to add worker nonce")
+	}
+
+	// Retrieve and verify the nonces
+	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after adding")
+	s.Require().Len(retrievedNonces.Nonces, len(nonceValues), "Should match the number of added nonces")
+
+	// Check that all the expected nonces are present and correct
+	for i, nonce := range retrievedNonces.Nonces {
+		s.Require().Equal(nonceValues[i], nonce.Nonce, "Nonce value should match the expected value")
+	}
+}
+
+func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Initially, ensure no unfulfilled nonces exist
+	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+
+	// Set multiple worker nonces
+	nonceValues := []int64{42, 43, 44, 45, 46}
+	for _, val := range nonceValues {
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Failed to add worker nonce")
+	}
+
+	// Fulfill some nonces: 43 and 45
+	fulfillNonces := []int64{43, 45}
+	for _, val := range fulfillNonces {
+		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().True(success, "Nonce should be successfully fulfilled")
+		s.Require().NoError(err, "Error fulfilling nonce")
+	}
+
+	// Retrieve and verify the nonces
+	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
+	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
+
+	// Check that all the expected unfulfilled nonces are present and correct
+	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
+	for i, nonce := range retrievedNonces.Nonces {
+		s.Require().Equal(expectedUnfulfilled[i], nonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+	}
+}
+
+func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	maxUnfulfilledRequests := uint64(3)
+	// Set the maximum number of unfulfilled worker nonces
+	params := types.Params{
+		MaxUnfulfilledWorkerRequests: maxUnfulfilledRequests,
+	}
+
+	// Set the maximum number of unfulfilled worker nonces via the SetParams method
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+
+	// Initially add nonces to exceed the maxUnfulfilledRequests
+	nonceValues := []int64{10, 20, 30, 40, 50}
+	for _, val := range nonceValues {
+		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Failed to add worker nonce")
+	}
+
+	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
+	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
+
+	// Check that the nonces are the most recent ones
+	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
+	for i, nonce := range unfulfilledNonces.Nonces {
+		s.Require().Equal(expectedNonces[i], nonce.Nonce, "Nonce should match the expected recent nonce")
+	}
+}
+
+//////////////////////////////////////////////////////////////
+//                 REPUTER NONCE TESTS                      //
+//////////////////////////////////////////////////////////////
+
+func (s *KeeperTestSuite) TestAddReputerNonce() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+
+	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
+
+	// Set reputer nonce
+	newNonce := &types.Nonce{Nonce: 42}
+	err = keeper.AddReputerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	unfulfilledNonces, err = keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+
+	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
+
+	// Check that the nonce is the correct nonce
+	s.Require().Equal(newNonce.Nonce, unfulfilledNonces.Nonces[0].Nonce, "Unfulfilled nonces should contain the new nonce")
+}
+
+func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{Nonce: 42}
+
+	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().False(isUnfulfilled, "Non-existent nonce should not be listed as unfulfilled")
+
+	// Set reputer nonce
+	err = keeper.AddReputerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	isUnfulfilled, err = keeper.IsReputerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(isUnfulfilled, "New nonce should be unfulfilled")
+}
+
+func (s *KeeperTestSuite) TestCanFulfillNewReputerNonce() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{Nonce: 42}
+
+	// Set reputer nonce
+	err := keeper.AddReputerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	// Check that the nonce is the correct nonce
+	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(isUnfulfilled, "New nonce should be unfulfilled")
+
+	// Fulfill the nonce
+	nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
+
+	// Check that the nonce is no longer unfulfilled
+	isUnfulfilled, err = keeper.IsReputerNonceUnfulfilled(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+	s.Require().False(isUnfulfilled, "New nonce should be fulfilled")
+}
+
+func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Initially, ensure no unfulfilled nonces exist
+	initialNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces")
+	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+
+	// Set multiple reputer nonces
+	nonceValues := []int64{42, 43, 44, 45, 46}
+	for _, val := range nonceValues {
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Failed to add reputer nonce")
+	}
+
+	// Fulfill some nonces: 43 and 45
+	fulfillNonces := []int64{43, 45}
+	for _, val := range fulfillNonces {
+		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Error fulfilling nonce")
+		s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
+	}
+
+	// Retrieve and verify the nonces
+	retrievedNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
+	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
+
+	// Check that all the expected unfulfilled nonces are present and correct
+	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
+	for i, nonce := range retrievedNonces.Nonces {
+		s.Require().Equal(expectedUnfulfilled[i], nonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+	}
+}
+
+func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	maxUnfulfilledRequests := uint64(3)
+
+	// Set the maximum number of unfulfilled reputer nonces
+	params := types.Params{
+		MaxUnfulfilledReputerRequests: maxUnfulfilledRequests,
+	}
+
+	// Set the maximum number of unfulfilled reputer nonces via the SetParams method
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Failed to set parameters")
+
+	// Initially add nonces to exceed the maxUnfulfilledRequests
+	nonceValues := []int64{10, 20, 30, 40, 50}
+	for _, val := range nonceValues {
+		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		s.Require().NoError(err, "Failed to add reputer nonce")
+	}
+
+	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
+	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
+
+	// Check that the nonces are the most recent ones
+	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
+	for i, nonce := range unfulfilledNonces.Nonces {
+		s.Require().Equal(expectedNonces[i], nonce.Nonce, "Nonce should match the expected recent nonce")
+	}
+}
+
 // ########################################
 // #           Staking tests              #
 // ########################################
