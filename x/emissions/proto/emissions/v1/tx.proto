@@ -278,7 +278,7 @@ message MsgAddStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  string stake_target = 3;
+  uint64 topic_id = 3;
 }
 
 message MsgAddStakeResponse {}
