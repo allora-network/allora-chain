@@ -163,7 +163,7 @@ type Keeper struct {
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
 
 	// map of (topic) -> unfulfilled nonces
-	unfulfilledReputerNonces collections.Map[TopicId, types.Nonces]
+	unfulfilledReputerNonces collections.Map[TopicId, types.ReputerRequestNonces]
 
 	/// REGRETS
 
@@ -249,7 +249,7 @@ func NewKeeper(
 		reputerScoresByBlock:                collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -301,7 +301,7 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.ReputerNonce.Nonce == nonce.Nonce {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -344,7 +344,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.ReputerNonce.Nonce == nonce.Nonce {
 			return true, nil
 		}
 	}
@@ -355,7 +355,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
 func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
-	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 	}
 	nonces.Nonces = append(nonces.Nonces, nonce)
 
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
 	if err != nil {
 		return err
 	}
@@ -381,24 +381,34 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		}
 	}
 
-	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
+	return k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces)
 }
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce, associatedWorkerNonce *types.Nonce) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
+	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
 	for _, n := range nonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		// Do nothing if nonce is already in the list
+		if n.ReputerNonce.Nonce == nonce.Nonce {
+			return nil
+		}
+		// Do nothing if the associated worker nonce is already in the list
+		if n.WorkerNonce.Nonce == associatedWorkerNonce.Nonce {
 			return nil
 		}
 	}
-	nonces.Nonces = append(nonces.Nonces, nonce)
+	reputerRequestNonce := &types.ReputerRequestNonce{
+		ReputerNonce: nonce,
+		WorkerNonce:  associatedWorkerNonce,
+	}
+	nonces.Nonces = append(nonces.Nonces, reputerRequestNonce)
 
 	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
 	if err != nil {
@@ -423,13 +433,13 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 	return nonces, nil
 }
 
-func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Nonces{}, nil
+			return types.ReputerRequestNonces{}, nil
 		}
-		return types.Nonces{}, err
+		return types.ReputerRequestNonces{}, err
 	}
 	return nonces, nil
 }
@@ -760,7 +770,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
 		// Update latests inferences for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Worker)
+		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Inferer)
 		if err != nil {
 			return err
 		}
@@ -1680,9 +1690,9 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 }
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+func (k *Keeper) InsertReputer(ctx context.Context, topicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
+	for _, topicId := range topicIds {
+		topicKey := collections.Join(topicId, reputer)
 		err := k.topicReputers.Set(ctx, topicKey)
 		if err != nil {
 			return err
@@ -1692,7 +1702,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, reputer, TopicIds)
+	err = k.AddAddressTopics(ctx, reputer, topicIds)
 	if err != nil {
 		return err
 	}
@@ -1701,8 +1711,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 
 // Remove a reputer to the reputer tracking data structures and topicReputers
 func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	topicKey := collections.Join(topicId, reputerAddr)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1717,8 +1726,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 
 // Remove a worker to the worker tracking data structures and topicWorkers
 func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	topicKey := collections.Join(topicId, workerAddr)
 	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1732,9 +1740,9 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
+func (k *Keeper) InsertWorker(ctx context.Context, topicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
+	for _, topicId := range topicIds {
+		topickey := collections.Join(topicId, worker)
 		err := k.topicWorkers.Set(ctx, topickey)
 		if err != nil {
 			return err
@@ -1744,11 +1752,23 @@ func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sd
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, worker, TopicIds)
+	err = k.AddAddressTopics(ctx, worker, topicIds)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// True if worker is registered in topic, else False
+func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (bool, error) {
+	topickey := collections.Join(topicId, worker)
+	return k.topicWorkers.Has(ctx, topickey)
+}
+
+// True if reputer is registered in topic, else False
+func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
+	topickey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topickey)
 }
 
 func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {

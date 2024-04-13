@@ -28,9 +28,12 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	}
 
 	// 2. check the target exists and is registered
-	err = checkNodeRegistered(ctx, ms, targetAddr)
+	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, targetAddr)
 	if err != nil {
 		return nil, err
+	}
+	if !isReputerRegistered {
+		return nil, types.ErrReputerNotRegistered
 	}
 
 	// 3. check the sender has enough funds to add the stake
@@ -195,9 +198,12 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	if err != nil {
 		return nil, err
 	}
-	err = checkNodeRegistered(ctx, ms, targetAddr)
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, sdk.AccAddress(targetAddr))
 	if err != nil {
 		return nil, err
+	}
+	if !isRegistered {
+		return nil, types.ErrReputerNotRegistered
 	}
 
 	// Check the sender has enough funds to delegate the stake

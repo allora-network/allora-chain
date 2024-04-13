@@ -23,7 +23,7 @@ service Msg {
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
+  rpc RegisterWithExistingStake(MsgRegisterWithExistingStake) returns (MsgRegisterWithExistingStakeResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
@@ -193,7 +193,7 @@ message MsgInsertBulkReputerPayload {
 
   string sender = 1;
 
-  Nonce nonce = 2;
+  ReputerRequestNonce reputer_request_nonce = 2;
   uint64 topic_id = 3;
   repeated ReputerValueBundle reputer_value_bundles = 4;
 }
@@ -237,7 +237,7 @@ message MsgRegisterResponse {
   string message = 2;
 }
 
-message MsgAddNewRegistration {
+message MsgRegisterWithExistingStake {
   option (cosmos.msg.v1.signer) = "creator";
 
   string creator = 1;
@@ -248,7 +248,7 @@ message MsgAddNewRegistration {
   bool is_reputer = 6;
 }
 
-message MsgAddNewRegistrationResponse {
+message MsgRegisterWithExistingStakeResponse {
   bool success = 1;
   string message = 2;
 }

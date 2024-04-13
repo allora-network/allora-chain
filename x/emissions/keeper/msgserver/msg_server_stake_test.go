@@ -157,14 +157,14 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	require.NoError(err, "CreateTopic fails on creation")
 
 // 	// Register Worker in topic 1
-// 	workerAddRegMsg := &state.MsgAddNewRegistration{
+// 	workerAddRegMsg := &state.MsgRegisterWithExistingStake{
 // 		Creator:      workerAddr.String(),
 // 		LibP2PKey:    "test",
 // 		MultiAddress: "test",
 // 		TopicId:      1,
 // 		Owner:        workerAddr.String(),
 // 	}
-// 	_, err = msgServer.AddNewRegistration(ctx, workerAddRegMsg)
+// 	_, err = msgServer.RegisterWithExistingStake(ctx, workerAddRegMsg)
 // 	require.NoError(err, "Registering worker should not return an error")
 
 // 	// Add stake from reputer (sender) to worker (target)
@@ -322,14 +322,14 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 // 	require.NoError(err, "CreateTopic fails on creation")
 
 // 	// Register Reputer in topic 1
-// 	reputerAddRegMsg := &state.MsgAddNewRegistration{
+// 	reputerAddRegMsg := &state.MsgRegisterWithExistingStake{
 // 		Creator:      reputerAddr.String(),
 // 		LibP2PKey:    "test",
 // 		MultiAddress: "test",
 // 		TopicId:      1,
 // 		IsReputer:    true,
 // 	}
-// 	_, err = msgServer.AddNewRegistration(ctx, reputerAddRegMsg)
+// 	_, err = msgServer.RegisterWithExistingStake(ctx, reputerAddRegMsg)
 // 	require.NoError(err, "Registering reputer should not return an error")
 
 // 	// Add stake from reputer (sender) to reputer (target)
