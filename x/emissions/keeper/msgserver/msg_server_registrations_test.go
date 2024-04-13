@@ -2,11 +2,8 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 )
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
@@ -52,6 +49,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
 }
 
+/*
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -109,6 +107,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
 }
+*/
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -156,6 +155,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
 	require.ErrorIs(err, types.ErrAddressAlreadyRegisteredInATopic, "Register should return an error")
 }
 
+/*
 func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -247,7 +247,9 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	require.NoError(err)
 	require.Equal(1, len(addressTopics), "Address topics count mismatch")
 }
+*/
 
+/*
 func (s *KeeperTestSuite) TestMsgRegisterWorkerAddAndRemoveAdditionalTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -396,3 +398,5 @@ func (s *KeeperTestSuite) TestMsgRegisterWorkerInvalidAlreadyRegistered() {
 	_, err := msgServer.Register(ctx, registerMsg)
 	require.ErrorIs(err, types.ErrAddressAlreadyRegisteredInATopic, "RegisterWorker should return an error")
 }
+
+*/

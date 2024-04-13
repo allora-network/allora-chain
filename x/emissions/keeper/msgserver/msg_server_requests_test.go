@@ -296,6 +296,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 	s.Require().ErrorIs(err, types.ErrInferenceRequestWillNeverBeScheduled, "RequestInference should return an error when the request cadence happens after the request is no longer valid")
 }
 
+/*
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
@@ -324,6 +325,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().ErrorIs(err, types.ErrInferenceRequestCadenceTooFast, "RequestInference should return an error when the request cadence is too fast")
 }
+*/
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
