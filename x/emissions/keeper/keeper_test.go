@@ -1519,6 +1519,89 @@ func (s *KeeperTestSuite) TestGetStakeRemovalQueueByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing stake removal information")
 }
 
+func (s *KeeperTestSuite) TestGetStakePlacementsByReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputerAddr := sdk.AccAddress("reputerAddress1")
+
+	// Set up stakes for the reputer
+	topicId1 := uint64(101)
+	topicId2 := uint64(102)
+	stake1 := cosmosMath.NewUint(100)
+	stake2 := cosmosMath.NewUint(200)
+
+	// Add stakes to two different topics for the same reputer
+	err := keeper.AddStake(ctx, topicId1, reputerAddr, stake1)
+	s.Require().NoError(err)
+	err = keeper.AddStake(ctx, topicId2, reputerAddr, stake2)
+	s.Require().NoError(err)
+
+	// Retrieve the stake placements for the reputer
+	stakes, err := keeper.GetStakePlacementsByReputer(ctx, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Len(stakes, 2, "Should return two stake placements")
+
+	// Check that the returned stakes contain the correct topic IDs and amounts
+	for _, stake := range stakes {
+		s.Require().True(stake.TopicId == topicId1 || stake.TopicId == topicId2, "Topic ID should be either of the two added")
+		if stake.TopicId == topicId1 {
+			s.Require().Equal(stake1, stake.Amount, "Amount should match the stake added for TopicId1")
+		} else {
+			s.Require().Equal(stake2, stake.Amount, "Amount should match the stake added for TopicId2")
+		}
+	}
+}
+
+func (s *KeeperTestSuite) TestGetStakePlacementsByTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(101)
+
+	// Reputer addresses
+	reputerAddr1 := sdk.AccAddress("reputerAddress1")
+	reputerAddr2 := sdk.AccAddress("reputerAddress2")
+
+	// Stake amounts
+	stake1 := cosmosMath.NewUint(100)
+	stake2 := cosmosMath.NewUint(200)
+
+	// Add stakes for different reputers under the same topic
+	err := keeper.AddStake(ctx, topicId, reputerAddr1, stake1)
+	s.Require().NoError(err)
+	err = keeper.AddStake(ctx, topicId, reputerAddr2, stake2)
+	s.Require().NoError(err)
+
+	// Retrieve the stake placements for the topic
+	stakes, err := keeper.GetStakePlacementsByTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Len(stakes, 2, "Should return two stake placements")
+
+	// Validate the correctness of the data retrieved
+	foundStake1 := false
+	foundStake2 := false
+	for _, stake := range stakes {
+		s.Require().Equal(topicId, stake.TopicId, "Topic ID should match the one queried")
+		if stake.Reputer == reputerAddr1.String() && stake.Amount.Equal(stake1) {
+			foundStake1 = true
+		} else if stake.Reputer == reputerAddr2.String() && stake.Amount.Equal(stake2) {
+			foundStake2 = true
+		}
+	}
+	s.Require().True(foundStake1, "Should find stake placement for Reputer1")
+	s.Require().True(foundStake2, "Should find stake placement for Reputer2")
+}
+
+func (s *KeeperTestSuite) TestGetStakePlacementsByTopicWithNoStakes() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(102)
+
+	// Ensure no stakes are set for this topic
+	stakes, err := keeper.GetStakePlacementsByTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(stakes, "Should return an empty slice when no stakes are found for the topic")
+}
+
 func (s *KeeperTestSuite) TestRewardsUpdate() {
 	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
 	s.NoError(err, "error getting un-initialized")
