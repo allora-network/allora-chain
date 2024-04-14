@@ -29,6 +29,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		fmt.Println("weights error")
 		return err
 	}
+	if sumWeight.IsZero() {
+		fmt.Println("No weights, no rewards!")
+		return nil
+	}
 	topicRewards := make([]alloraMath.Dec, len(activeTopics))
 	for i := range weights {
 		topicWeight := weights[i]
