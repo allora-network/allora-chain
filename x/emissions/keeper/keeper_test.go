@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
 
 	// "cosmossdk.io/collections"
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -1248,316 +1250,274 @@ func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	s.Require().Equal(newTotalStake, totalStake)
 }
 
-// func (s *KeeperTestSuite) TestAddStake() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	stakeAmount := cosmosMath.NewUint(500)
+func (s *KeeperTestSuite) TestAddStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	stakeAmount := cosmosMath.NewUint(500)
 
-// 	// Initial Values
-// 	initialTotalStake := cosmosMath.NewUint(0)
-// 	initialTopicStake := cosmosMath.NewUint(0)
-// 	initialTargetStake := cosmosMath.NewUint(0)
+	// Initial Values
+	initialTotalStake := cosmosMath.NewUint(0)
+	initialTopicStake := cosmosMath.NewUint(0)
 
-// 	// Add stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), stakeAmount)
-// 	s.Require().NoError(err)
+	// Add stake
+	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
 
-// 	// Check updated stake for delegator
-// 	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(stakeAmount, delegatorStake, "Delegator stake should be equal to stake amount after addition")
+	// Check updated stake for delegator
+	delegatorStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount, delegatorStake, "Delegator stake should be equal to stake amount after addition")
 
-// 	// Check updated bond stake for delegator and target
-// 	bondStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(stakeAmount, bondStake, "Bond stake should be equal to stake amount after addition")
+	// Check updated topic stake
+	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(initialTopicStake.Add(stakeAmount), topicStake, "Topic stake should be incremented by stake amount after addition")
 
-// 	// Check updated stake placed upon target
-// 	targetStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTargetStake.Add(stakeAmount), targetStake, "Target stake should be incremented by stake amount after addition")
+	// Check updated total stake
+	totalStake, err := keeper.GetTotalStake(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(initialTotalStake.Add(stakeAmount), totalStake, "Total stake should be incremented by stake amount after addition")
+}
 
-// 	// Check updated topic stake
-// 	topicStake, err := keeper.GetTopicStake(ctx, topicID[0])
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTopicStake.Add(stakeAmount), topicStake, "Topic stake should be incremented by stake amount after addition")
+func (s *KeeperTestSuite) TestAddDelegatedStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+	additionalStakeAmount := cosmosMath.NewUint(300)
 
-// 	// Check updated total stake
-// 	totalStake, err := keeper.GetTotalStake(ctx)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTotalStake.Add(stakeAmount), totalStake, "Total stake should be incremented by stake amount after addition")
-// }
+	// Setup initial stake
+	err := keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
 
-// func (s *KeeperTestSuite) TestAddStakeExistingDelegatorAndTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-// 	additionalStakeAmount := cosmosMath.NewUint(300)
+	// Check updated stake for delegator
+	delegatorStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount, delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
+	// Add additional stake
+	err = keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, additionalStakeAmount)
+	s.Require().NoError(err)
 
-// 	// Add additional stake
-// 	err = keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), additionalStakeAmount)
-// 	s.Require().NoError(err)
+	// Check updated stake for delegator
+	delegatorStake, err = keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
+}
 
-// 	// Check updated stake for delegator
-// 	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
-// }
+func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	zeroStakeAmount := cosmosMath.NewUint(0)
 
-// func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	zeroStakeAmount := cosmosMath.NewUint(0)
+	// Try to add zero stake
+	err := keeper.AddStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
+	s.Require().Error(err)
+}
 
-// 	// Try to add zero stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), zeroStakeAmount)
-// 	s.Require().Error(err)
-// }
+func (s *KeeperTestSuite) TestRemoveStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	stakeAmount := cosmosMath.NewUint(500)
 
-// func (s *KeeperTestSuite) TestRemoveStakeFromBond() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	stakeAmount := cosmosMath.NewUint(500)
+	// Setup initial stake
+	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
 
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), stakeAmount)
-// 	s.Require().NoError(err)
+	// Capture the initial total and topic stakes after adding stake
+	initialTotalStake, err := keeper.GetTotalStake(ctx)
+	s.Require().NoError(err)
 
-// 	// Capture the initial total and topic stakes after adding stake
-// 	initialTotalStake, err := keeper.GetTotalStake(ctx)
-// 	s.Require().NoError(err)
+	// Remove stake
+	err = keeper.RemoveStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
 
-// 	// Remove stake
-// 	err = keeper.RemoveStakeFromBond(ctx, topicID, delegatorAddr, targetAddr, stakeAmount)
-// 	s.Require().NoError(err)
+	// Check updated stake for delegator after removal
+	delegatorStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
 
-// 	// Check updated stake for delegator after removal
-// 	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
+	// Check updated topic stake after removal
+	topicStake, err := keeper.GetTopicStake(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), topicStake, "Topic stake should be zero after removal")
 
-// 	// Check updated bond stake for delegator and target after removal
-// 	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Bond stake should be zero after removal")
+	// Check updated total stake after removal
+	finalTotalStake, err := keeper.GetTotalStake(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(initialTotalStake.Sub(stakeAmount), finalTotalStake, "Total stake should be decremented by stake amount after removal")
+}
 
-// 	// Check updated stake placed upon target after removal
-// 	stakePlacedUponTarget, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), stakePlacedUponTarget, "Stake placed upon target should be zero after removal")
+func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(1000)
+	removeStakeAmount := cosmosMath.NewUint(500)
 
-// 	// Check updated topic stake after removal
-// 	topicStake, err := keeper.GetTopicStake(ctx, topicID[0])
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), topicStake, "Topic stake should be zero after removal")
+	// Setup initial stake
+	err := keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
 
-// 	// Check updated total stake after removal
-// 	finalTotalStake, err := keeper.GetTotalStake(ctx)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTotalStake.Sub(stakeAmount), finalTotalStake, "Total stake should be decremented by stake amount after removal")
-// }
+	// Remove a portion of stake
+	err = keeper.RemoveDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
+	s.Require().NoError(err)
 
-// func (s *KeeperTestSuite) TestRemoveStakePartialFromDelegatorAndTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(1000)
-// 	removeStakeAmount := cosmosMath.NewUint(500)
+	// Check remaining stake for delegator
+	remainingStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
+	// Check remaining stake for delegator
+	stakeUponReputer, err := keeper.GetDelegatedStakeUponReputer(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
+}
 
-// 	// Remove a portion of stake
-// 	err = keeper.RemoveStakeFromBond(ctx, topicID, delegatorAddr, targetAddr, removeStakeAmount)
-// 	s.Require().NoError(err)
+func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	initialStakeAmount := cosmosMath.NewUint(1000)
 
-// 	// Check remaining stake for delegator
-// 	remainingStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
+	// Setup initial stake
+	err := keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
 
-// 	// Check remaining bond stake for delegator and target
-// 	remainingBondStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingBondStake, "Remaining bond stake should be initial minus removed amount")
-// }
+	// Remove a portion of stake
+	err = keeper.RemoveDelegatedStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
 
-// func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegatorAndTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
+	// Check remaining stake for delegator
+	remainingStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
+	// Check remaining stake for delegator
+	stakeUponReputer, err := keeper.GetDelegatedStakeUponReputer(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(cosmosMath.ZeroUint(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
+}
 
-// 	// Remove entire stake
-// 	err = keeper.RemoveStakeFromBond(ctx, topicID, delegatorAddr, targetAddr, initialStakeAmount)
-// 	s.Require().NoError(err)
+func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	initialStakeAmount := cosmosMath.NewUint(500)
+	zeroStakeAmount := cosmosMath.NewUint(0)
 
-// 	// Check remaining stake for delegator should be zero
-// 	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
+	// Setup initial stake
+	err := keeper.AddStake(ctx, topicId, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
 
-// 	// Check remaining bond stake for delegator and target should be zero
-// 	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Bond stake should be zero after removal")
-// }
+	// Try to remove zero stake
+	err = keeper.RemoveStake(ctx, topicId, reputerAddr, zeroStakeAmount)
+	s.Require().Error(err)
+}
 
-// func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-// 	zeroStakeAmount := cosmosMath.NewUint(0)
+func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	nonExistingDelegatorAddr := sdk.AccAddress(PKS[0].Address())
+	stakeAmount := cosmosMath.NewUint(500)
 
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
+	// Try to remove stake with non-existing delegator or target
+	err := keeper.RemoveStake(ctx, topicId, nonExistingDelegatorAddr, stakeAmount)
+	s.Require().Error(err)
+}
 
-// 	// Try to remove zero stake
-// 	err = keeper.RemoveStakeFromBond(ctx, topicID, delegatorAddr, targetAddr, zeroStakeAmount)
-// 	s.Require().Error(err)
-// }
+func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	delegatorAddr := sdk.AccAddress(PKS[2].Address())
 
-// func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	nonExistingDelegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	nonExistingTargetAddr := sdk.AccAddress(PKS[1].Address())
-// 	stakeAmount := cosmosMath.NewUint(500)
+	// Mock setup
+	topicId := uint64(1)
+	targetAddr := sdk.AccAddress(PKS[1].Address())
+	stakeAmount := cosmosMath.NewUint(500)
 
-// 	// Try to remove stake with non-existing delegator or target
-// 	err := keeper.RemoveStakeFromBond(ctx, topicID, nonExistingDelegatorAddr, nonExistingTargetAddr, stakeAmount)
-// 	s.Require().Error(err)
-// }
+	// Add stake to create bonds
+	err := keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount)
+	s.Require().NoError(err)
 
-// func (s *KeeperTestSuite) TestGetAllBondsForDelegator() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	delegatorAddr := sdk.AccAddress(PKS[2].Address())
+	// Add stake to create bonds
+	err = keeper.AddDelegatedStake(ctx, topicId, delegatorAddr, targetAddr, stakeAmount.Mul(cosmosMath.NewUint(2)))
+	s.Require().NoError(err)
 
-// 	// Mock setup
-// 	topicID := []uint64{1}
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	stakeAmount := cosmosMath.NewUint(500)
+	// Get all bonds for delegator
+	amount, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
 
-// 	// Add stake to create bonds
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), stakeAmount)
-// 	s.Require().NoError(err)
+	s.Require().NoError(err, "Getting all bonds for delegator should not return an error")
+	s.Require().Equal(stakeAmount.Mul(cosmosMath.NewUint(3)), amount, "The total amount is incorrect")
+}
 
-// 	// Get all bonds for delegator
-// 	targets, amounts, err := keeper.GetAllBondsForDelegator(ctx, delegatorAddr)
+func (s *KeeperTestSuite) TestSetAndGetStakeRemovalQueueByAddressWithDetailedPlacement() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	address := sdk.AccAddress("sampleAddress1")
 
-// 	s.Require().NoError(err, "Getting all bonds for delegator should not return an error")
-// 	s.Require().NotEmpty(targets, "Targets should not be empty")
-// 	s.Require().NotEmpty(amounts, "Amounts should not be empty")
-// 	s.Require().Equal(len(targets), len(amounts), "The lengths of targets and amounts should match")
-// }
+	// Create sample stake placement information with multiple topics and reputers
+	placements := []*types.StakePlacement{
+		{
+			TopicId: 101,
+			Reputer: "reputer1",
+			Amount:  cosmosMath.NewUint(100),
+		},
+		{
+			TopicId: 102,
+			Reputer: "reputer2",
+			Amount:  cosmosMath.NewUint(200),
+		},
+	}
 
-// func (s *KeeperTestSuite) TestWalkAllTopicStake() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
+	// Create a sample stake removal information
+	removalInfo := types.StakeRemoval{
+		BlockRemovalStarted: time.Now().Unix(),
+		Placements:          placements,
+	}
 
-// 	//rather than calling keeper.InitGenesis, we just increment the topic id for 0 manually
-// 	topic0, err := keeper.IncrementTopicId(ctx)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(uint64(0), topic0)
-// 	// Mock setup for multiple topics and stakes
-// 	for i := 1; i <= 3; i++ {
-// 		topicID := uint64(i)
-// 		stakeAmount := cosmosMath.NewUint(uint64(100 * i))
-// 		keeper.SetTopicStake(ctx, topicID, stakeAmount)
-// 		keeper.IncrementTopicId(ctx)
-// 	}
+	// Set stake removal information
+	err := keeper.SetStakeRemovalQueueForAddress(ctx, address, removalInfo)
+	s.Require().NoError(err)
 
-// 	// Define a walk function to collect stakes
-// 	var collectedStakes []cosmosMath.Uint
-// 	walkFunc := func(topicID uint64, stake cosmosMath.Uint) (stop bool, err error) {
-// 		collectedStakes = append(collectedStakes, stake)
-// 		return false, nil
-// 	}
+	// Retrieve the stake removal information
+	retrievedInfo, err := keeper.GetStakeRemovalQueueByAddress(ctx, address)
+	s.Require().NoError(err)
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(len(removalInfo.Placements), len(retrievedInfo.Placements), "Number of placements should match")
 
-// 	// Walk all topic stakes
-// 	err = keeper.WalkAllTopicStake(ctx, walkFunc)
+	// Detailed check on each placement
+	for i, placement := range retrievedInfo.Placements {
+		s.Require().Equal(removalInfo.Placements[i].TopicId, placement.TopicId, "Topic IDs should match for all placements")
+		s.Require().Equal(removalInfo.Placements[i].Reputer, placement.Reputer, "Reputer addresses should match for all placements")
+		s.Require().Equal(removalInfo.Placements[i].Amount, placement.Amount, "Amounts should match for all placements")
+	}
+}
 
-// 	s.Require().NoError(err, "Walking all topic stakes should not return an error")
-// 	s.Require().Equal(3, len(collectedStakes), "The number of collected stakes should match the number of topics")
-// }
+func (s *KeeperTestSuite) TestGetStakeRemovalQueueByAddressNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	address := sdk.AccAddress("sampleAddress2")
 
-// func (s *KeeperTestSuite) TestRemoveStakeFromBondMissingTotalOrTopicStake() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	stakeAmount := cosmosMath.NewUint(500)
-
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), stakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Capture the initial total and topic stakes
-// 	initialTotalStake, err := keeper.GetTotalStake(ctx)
-// 	s.Require().NoError(err)
-// 	initialTopicStake, err := keeper.GetTopicStake(ctx, topicID[0])
-// 	s.Require().NoError(err)
-
-// 	// Remove stake without updating total or topic stake
-// 	err = keeper.RemoveStakeFromBondMissingTotalOrTopicStake(ctx, delegatorAddr, targetAddr, stakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Check stakeOwnedByDelegator after removal
-// 	delegatorStake, err := keeper.GetDelegatorStake(ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
-
-// 	// Check stakePlacement after removal
-// 	bond, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err, "Stake placement should be removed")
-// 	s.Require().Equal(cosmosMath.ZeroUint(), bond, "Stake placement should be removed")
-
-// 	targetStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err, "Stake placed upon target should be removed")
-// 	s.Require().Equal(cosmosMath.ZeroUint(), targetStake, "Stake placed upon target should be removed")
-
-// 	// Check totalStake did not change
-// 	finalTotalStake, err := keeper.GetTotalStake(ctx)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTotalStake, finalTotalStake, "Total stake should not change")
-
-// 	// Check topicStake did not change
-// 	finalTopicStake, err := keeper.GetTopicStake(ctx, topicID[0])
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialTopicStake, finalTopicStake, "Topic stake should not change")
-// }
+	// Attempt to retrieve stake removal info for an address with no set info
+	_, err := keeper.GetStakeRemovalQueueByAddress(ctx, address)
+	s.Require().Error(err)
+	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing stake removal information")
+}
 
 func (s *KeeperTestSuite) TestRewardsUpdate() {
 	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
@@ -1571,171 +1531,6 @@ func (s *KeeperTestSuite) TestRewardsUpdate() {
 	s.NoError(err, "error getting")
 	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
 }
-
-// func (s *KeeperTestSuite) TestSubStakePlacement() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Sub stake
-// 	subAmount := cosmosMath.NewUint(400)
-// 	err = keeper.SubStakePlacement(ctx, delegatorAddr, targetAddr, subAmount)
-// 	s.Require().NoError(err)
-
-// 	// Check remaining stake for delegator
-// 	remainingStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Sub(subAmount), remainingStake, "Remaining bond stake should be initial minus sub amount")
-// }
-
-// func (s *KeeperTestSuite) TestSubStakePlacementErr() {
-// 	ctx := s.ctx
-// 	k := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Setup initial stake
-// 	err := k.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Sub stake
-// 	subAmount := cosmosMath.NewUint(600)
-// 	err = k.SubStakePlacement(ctx, delegatorAddr, targetAddr, subAmount)
-// 	s.Require().ErrorIs(err, state.ErrIntegerUnderflowBonds)
-
-// 	// Check remaining stake for delegator
-// 	remainingStake, err := k.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be same after error")
-// }
-
-// func (s *KeeperTestSuite) TestAddStakePlacement() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Add stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	additionalStakeAmount := cosmosMath.NewUint(300)
-
-// 	// Add additional stake
-// 	err = keeper.AddStakePlacement(ctx, delegatorAddr, targetAddr, additionalStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Check updated stake for delegator
-// 	finalStake, err := keeper.GetBond(ctx, delegatorAddr, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
-// }
-
-// func (s *KeeperTestSuite) TestSubStakePlacedUponTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Setup initial stake
-// 	err := keeper.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Sub stake
-// 	subAmount := cosmosMath.NewUint(400)
-// 	err = keeper.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
-// 	s.Require().NoError(err)
-
-// 	// Check remaining stake for delegator
-// 	remainingStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Sub(subAmount), remainingStake, "Remaining bond stake should be initial minus sub amount")
-// }
-
-// func (s *KeeperTestSuite) TestSubStakePlacedUponTargetErr() {
-// 	ctx := s.ctx
-// 	k := s.emissionsKeeper
-// 	topicID := []uint64{1}
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Setup initial stake
-// 	err := k.AddStake(ctx, topicID, delegatorAddr.String(), targetAddr.String(), initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Sub stake
-// 	subAmount := cosmosMath.NewUint(600)
-// 	err = k.SubStakePlacedUponTarget(ctx, targetAddr, subAmount)
-// 	s.Require().ErrorIs(err, state.ErrIntegerUnderflowTarget)
-
-// 	// Check remaining stake for delegator
-// 	remainingStake, err := k.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount, remainingStake, "Remaining bond stake should be the same after error")
-// }
-
-// func (s *KeeperTestSuite) TestAddStakePlacedUponTarget() {
-// 	ctx := s.ctx
-// 	keeper := s.emissionsKeeper
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	initialStakeAmount := cosmosMath.NewUint(500)
-
-// 	// Add stake
-// 	err := keeper.AddStakePlacedUponTarget(ctx, targetAddr, initialStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	additionalStakeAmount := cosmosMath.NewUint(300)
-
-// 	// Add additional stake
-// 	err = keeper.AddStakePlacedUponTarget(ctx, targetAddr, additionalStakeAmount)
-// 	s.Require().NoError(err)
-
-// 	// Check updated stake for target
-// 	finalStake, err := keeper.GetStakePlacedUponTarget(ctx, targetAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), finalStake, "Final stake should be added to initial stake amount after addition")
-// }
-
-// func (s *KeeperTestSuite) TestSetStakeRemovalQueueForAddress() {
-// 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-// 	targetAddr := sdk.AccAddress(PKS[1].Address())
-// 	placement := state.StakeRemovalPlacement{
-// 		TopicIds: []uint64{1},
-// 		Target:   targetAddr.String(),
-// 		Amount:   cosmosMath.NewUint(500),
-// 	}
-// 	placements := []*state.StakeRemovalPlacement{&placement}
-// 	removalInfo := state.StakeRemoval{
-// 		TimestampRemovalStarted: uint64(time.Now().Unix()),
-// 		Placements:              placements,
-// 	}
-
-// 	_, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(s.ctx, delegatorAddr)
-// 	s.Require().ErrorIs(err, collections.ErrNotFound)
-
-// 	// Set stake removal queue
-// 	err = s.emissionsKeeper.SetStakeRemovalQueueForAddress(s.ctx, delegatorAddr, removalInfo)
-// 	s.Require().NoError(err)
-
-// 	// Check stake removal queue
-// 	stakeRemovalQueue, err := s.emissionsKeeper.GetStakeRemovalQueueByAddress(s.ctx, delegatorAddr)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(removalInfo, stakeRemovalQueue, "Stake removal queue should be equal to the set removal info")
-// }
 
 func (s *KeeperTestSuite) TestSetRequestDemand() {
 	ctx := s.ctx
