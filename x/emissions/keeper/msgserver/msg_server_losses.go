@@ -32,7 +32,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the nonce is unfulfilled
-	// TODO Review, now this is inside each bundle.
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
 		return nil, err
@@ -57,20 +56,17 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		//
-		// TODO Review, I think this is not necessary - Leader does not send topicId or nonce, should it?
-		//
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
-		// if bundle.ValueBundle.TopicId != msg.TopicId {
-		// 	continue
-		// }
+		if bundle.ValueBundle.TopicId != msg.TopicId {
+			continue
+		}
 		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
-		// if bundle.ValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight != msg.ReputerRequestNonce.WorkerNonce.BlockHeight {
-		// 	continue
-		// }
-		// if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
-		// 	continue
-		// }
+		if bundle.ValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight != msg.ReputerRequestNonce.WorkerNonce.BlockHeight {
+			continue
+		}
+		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
+			continue
+		}
 
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
