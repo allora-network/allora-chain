@@ -275,7 +275,7 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -301,7 +301,7 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -326,7 +326,7 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			return true, nil
 		}
 	}
@@ -344,7 +344,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return true, nil
 		}
 	}
@@ -362,7 +362,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 	// Check that input nonce is not already contained in the nonces of this topic
 	for _, n := range nonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
 	}
@@ -396,11 +396,11 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
 	for _, n := range nonces.Nonces {
 		// Do nothing if nonce is already in the list
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
 		// Do nothing if the associated worker nonce is already in the list
-		if n.WorkerNonce.Nonce == associatedWorkerNonce.Nonce {
+		if n.WorkerNonce.BlockHeight == associatedWorkerNonce.BlockHeight {
 			return nil
 		}
 	}
@@ -765,7 +765,7 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
-	block := nonce.Nonce
+	block := nonce.BlockHeight
 
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
@@ -792,7 +792,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
-	block := nonce.Nonce
+	block := nonce.BlockHeight
 
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker

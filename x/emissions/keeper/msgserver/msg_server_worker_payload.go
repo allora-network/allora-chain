@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -32,7 +33,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		}
 
 		// Check that the inference is for the correct nonce
-		if inference.Nonce.Nonce != nonce.Nonce {
+		if inference.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
@@ -75,7 +76,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.Nonce)
+	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
 
 	// Build list of inferences that pass all filters
 	// AND are from top performing inferers among those who have submitted inferences in this batch
@@ -129,7 +130,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		}
 
 		// Check that the forecast is for the correct nonce
-		if forecast.Nonce.Nonce != nonce.Nonce {
+		if forecast.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
@@ -188,7 +189,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.Nonce)
+	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
 
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch

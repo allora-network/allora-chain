@@ -33,7 +33,7 @@ func GenerateReputerScores(
 	var reputerListeningCoefficients []alloraMath.Dec
 	var losses [][]alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
+		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, err
 		}
