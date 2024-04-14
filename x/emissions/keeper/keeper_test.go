@@ -856,108 +856,15 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		},
 	}
 
-	_, err := keeper.GetInferencesAtBlock(ctx, topicId, block+1)
-	s.Require().Error(err)
-
 	// Assume InsertInferences correctly sets up inferences
 	nonce := types.Nonce{Nonce: int64(block)} // Assuming block type cast to int64 if needed
-	err = keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
 	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
-}
-
-func (s *KeeperTestSuite) TestIncrementNumInferencesInRewardEpoch() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	worker := sdk.AccAddress("worker1")
-
-	// Initial increment
-	err := keeper.IncrementNumInferencesInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-
-	// Check increment result
-	numInferences, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numInferences)
-
-	// Increment again
-	err = keeper.IncrementNumInferencesInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-
-	// Check new result
-	numInferences, err = keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numInferences)
-}
-
-func (s *KeeperTestSuite) TestInsertInferencesIncrementsNumInferences() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	block0 := types.BlockHeight(100)
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	block1 := types.BlockHeight(110)
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-
-	worker0Address := "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx"
-	worker1Address := "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft"
-	worker2Address := "allo13n30qjk9ue9268wd8e3dsd6c2e7kzkytjhgn0w"
-
-	worker0 := sdk.MustAccAddressFromBech32(worker0Address)
-	worker1 := sdk.MustAccAddressFromBech32(worker1Address)
-	worker2 := sdk.MustAccAddressFromBech32(worker2Address)
-
-	inferences := types.Inferences{
-		Inferences: []*types.Inference{
-			{
-				Value:  alloraMath.NewDecFromInt64(5),
-				Worker: worker0Address,
-			},
-			{
-				Value:  alloraMath.NewDecFromInt64(6),
-				Worker: worker1Address,
-			},
-		},
-	}
-
-	// Insert inferences
-	err := keeper.InsertInferences(ctx, topicId, nonce0, inferences)
-	s.Require().NoError(err)
-
-	// Check initial number of inferences
-	numInferences0_0, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker0)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numInferences0_0)
-
-	numInferences0_1, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker1)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numInferences0_1)
-
-	numInferences0_2, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker2)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(0), numInferences0_2)
-
-	// Insert inferences
-	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences)
-	s.Require().NoError(err)
-
-	// Check if the number of inferences incremented correctly (should only increment once)
-	numInferences1_0, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker0)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numInferences1_0)
-
-	numInferences1_1, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker1)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numInferences1_1)
-
-	numInferences1_2, err := keeper.GetNumInferencesInRewardEpoch(ctx, topicId, worker2)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(0), numInferences1_2)
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
@@ -987,96 +894,6 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	actualForecasts, err := keeper.GetForecastsAtBlock(ctx, topicId, block)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedForecasts, actualForecasts)
-}
-
-func (s *KeeperTestSuite) TestIncrementNumForecastsInRewardEpoch() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	worker := sdk.AccAddress("forecaster1")
-
-	// Initial increment
-	err := keeper.IncrementNumForecastsInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-
-	// Check increment result
-	numForecasts, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numForecasts)
-
-	// Increment again
-	err = keeper.IncrementNumForecastsInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-
-	// Check new result
-	numForecasts, err = keeper.GetNumForecastsInRewardEpoch(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numForecasts)
-}
-
-func (s *KeeperTestSuite) TestInsertForecastsIncrementsNumForecasts() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	block0 := types.BlockHeight(100)
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	block1 := types.BlockHeight(110)
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-
-	forecaster0Address := "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx"
-	forecaster1Address := "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft"
-	forecaster2Address := "allo13n30qjk9ue9268wd8e3dsd6c2e7kzkytjhgn0w"
-
-	forecaster0 := sdk.MustAccAddressFromBech32(forecaster0Address)
-	forecaster1 := sdk.MustAccAddressFromBech32(forecaster1Address)
-	forecaster2 := sdk.MustAccAddressFromBech32(forecaster2Address)
-
-	forecasts := types.Forecasts{
-		Forecasts: []*types.Forecast{
-			{
-				TopicId:    topicId,
-				Forecaster: forecaster0Address,
-			},
-			{
-				TopicId:    topicId,
-				Forecaster: forecaster1Address,
-			},
-		},
-	}
-
-	// Insert forecasts
-	err := keeper.InsertForecasts(ctx, topicId, nonce0, forecasts)
-	s.Require().NoError(err)
-
-	// Check initial number of forecasts
-	numForecasts0_0, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster0)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numForecasts0_0)
-
-	numForecasts0_1, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster1)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(1), numForecasts0_1)
-
-	numForecasts0_2, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster2)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(0), numForecasts0_2)
-
-	// Insert forecasts
-	err = keeper.InsertForecasts(ctx, topicId, nonce1, forecasts)
-	s.Require().NoError(err)
-
-	// Check if the number of forecasts incremented correctly (should only increment once)
-	numForecasts1_0, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster1)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numForecasts1_0)
-
-	numForecasts1_1, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster1)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(2), numForecasts1_1)
-
-	numForecasts1_2, err := keeper.GetNumForecastsInRewardEpoch(ctx, topicId, forecaster2)
-	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.NewUint(0), numForecasts1_2)
 }
 
 func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {

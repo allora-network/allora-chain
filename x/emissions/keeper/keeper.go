@@ -116,12 +116,6 @@ type Keeper struct {
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, Worker], types.Forecast]
 
-	// map of (topic, worker) -> num_inferences_in_reward_epoch
-	numInferencesInRewardEpoch collections.Map[collections.Pair[TopicId, Worker], Uint]
-
-	// map of (topic, worker) -> num_forecasts_in_reward_epoch
-	numForecastsInRewardEpoch collections.Map[collections.Pair[TopicId, Worker], Uint]
-
 	// map of worker id to node data about that worker
 	workers collections.Map[LibP2pKey, types.OffchainNode]
 
@@ -230,8 +224,6 @@ func NewKeeper(
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		accumulatedMetDemand:                collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, alloraMath.UintValue),
-		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		numForecastsInRewardEpoch:           collections.NewMap(sb, types.NumForecastsInRewardEpochKey, "num_forecasts_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -745,41 +737,10 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 		if err != nil {
 			return err
 		}
-		// Update the number of inferences in the reward epoch for each worker
-		err = k.IncrementNumInferencesInRewardEpoch(ctx, topicId, workerAcc)
-		if err != nil {
-			return err
-		}
 	}
 
 	key := collections.Join(topicId, block)
 	return k.allInferences.Set(ctx, key, inferences)
-}
-
-func (k *Keeper) IncrementNumInferencesInRewardEpoch(ctx context.Context, topicId TopicId, worker sdk.AccAddress) error {
-	key := collections.Join(topicId, worker)
-	currentNumInferences, err := k.numInferencesInRewardEpoch.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			currentNumInferences = cosmosMath.NewUint(0)
-		} else {
-			return err
-		}
-	}
-	newNumInferences := currentNumInferences.Add(cosmosMath.NewUint(1))
-	return k.numInferencesInRewardEpoch.Set(ctx, key, newNumInferences)
-}
-
-func (k *Keeper) GetNumInferencesInRewardEpoch(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (Uint, error) {
-	key := collections.Join(topicId, worker)
-	res, err := k.numInferencesInRewardEpoch.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return res, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -797,46 +758,44 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 		if err != nil {
 			return err
 		}
-		// increment the number of forecasts in the reward epoch for each forecaster
-		err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
-		if err != nil {
-			return err
-		}
 	}
 
 	key := collections.Join(topicId, block)
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
-// IncrementNumForecastsInRewardEpoch increases the count of forecasts a worker has made in the current reward epoch.
-func (k *Keeper) IncrementNumForecastsInRewardEpoch(ctx context.Context, topicId TopicId, worker sdk.AccAddress) error {
+func (k *Keeper) GetWorkerLatestInferenceByTopicId(
+	ctx context.Context,
+	topicId TopicId,
+	worker sdk.AccAddress) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
-	currentNumForecasts, err := k.numForecastsInRewardEpoch.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			currentNumForecasts = cosmosMath.NewUint(0) // Initialize if not found
-		} else {
-			return err
-		}
-	}
-	newNumForecasts := currentNumForecasts.Add(cosmosMath.NewUint(1)) // Increment the count
-	return k.numForecastsInRewardEpoch.Set(ctx, key, newNumForecasts) // Update the count in storage
+	return k.inferences.Get(ctx, key)
 }
 
-// GetNumForecastsInRewardEpoch returns the number of forecasts a worker has made in the current reward epoch.
-func (k *Keeper) GetNumForecastsInRewardEpoch(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (cosmosMath.Uint, error) {
-	key := collections.Join(topicId, worker)
-	res, err := k.numForecastsInRewardEpoch.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil // Return zero if no entry found
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return res, nil
-}
+// GetTopicWorkers returns a list of workers registered for a given topic ID.
+func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TopicId) ([]sdk.AccAddress, error) {
+	var workers []sdk.AccAddress
 
-/// REWARDS UPDATES
+	rng := collections.NewPrefixedPairRange[TopicId, Worker](topicId)
+
+	// Iterate over the workers registered for the given topic ID
+	iter, err := k.topicWorkers.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		pair, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+		workerAddr := pair.K2()
+		workers = append(workers, workerAddr)
+	}
+
+	return workers, nil
+}
 
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
@@ -2161,28 +2120,6 @@ func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, erro
 		return types.TopicList{}, err
 	}
 	return topicList, nil
-}
-
-// Reset the mapping entirely. Should be called at the end of every reward epoch
-func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
-	iter, err := k.numInferencesInRewardEpoch.Iterate(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	// Iterate over all keys
-	kvs, err := iter.Keys()
-	if err != nil {
-		return err
-	}
-	for _, kv := range kvs {
-		err := k.numInferencesInRewardEpoch.Remove(ctx, kv)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 /// SCORES
