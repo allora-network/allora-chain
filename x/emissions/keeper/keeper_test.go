@@ -2309,3 +2309,75 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
+
+/// FEE REVENUE
+
+func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Test getting revenue for a topic with no existing revenue
+	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err, "Should not error when revenue does not exist")
+	s.Require().Equal(cosmosMath.ZeroInt(), feeRev.Revenue, "Revenue should be zero for non-existing entries")
+	s.Require().Equal(uint64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
+
+	// Setup a topic with some revenue
+	initialRevenue := cosmosMath.NewUint(100)
+	initialRevenueInt := cosmosMath.NewInt(100)
+	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+
+	// Test getting revenue for a topic with existing revenue
+	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NoError(err, "Should not error when retrieving existing revenue")
+	s.Require().True(feeRev.Revenue.Equal(initialRevenueInt), "Revenue should match the initial setup")
+}
+
+func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Add initial revenue in the first epoch
+	initialAmount := cosmosMath.NewUint(100)
+	err := keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
+	s.Require().NoError(err, "Adding initial revenue should not fail")
+
+	// Verify initial revenue
+	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().Equal(initialAmount.BigInt(), feeRev.Revenue.BigInt(), "Initial revenue should be correctly recorded")
+
+	// Increment fee revenue epoch
+	err = keeper.IncrementFeeRevenueEpoch(ctx)
+	s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
+
+	// Add more revenue in the new epoch
+	additionalAmount := cosmosMath.NewUint(200)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
+	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
+
+	// Verify updated revenue in the new epoch
+	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
+	s.Require().NotEqual(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should be updated")
+	s.Require().Equal(additionalAmount.BigInt(), updatedFeeRev.Revenue.BigInt(), "Revenue in new epoch should match the additional amount")
+}
+
+func (s *KeeperTestSuite) TestGetFeeRevenueEpoch() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Check initial epoch
+	initialEpoch, err := keeper.GetFeeRevenueEpoch(ctx)
+	s.Require().NoError(err, "Fetching initial fee revenue epoch should not fail")
+
+	// Increment the epoch
+	err = keeper.IncrementFeeRevenueEpoch(ctx)
+	s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
+
+	// Check updated epoch
+	updatedEpoch, err := keeper.GetFeeRevenueEpoch(ctx)
+	s.Require().NoError(err, "Fetching updated fee revenue epoch should not fail")
+	s.Require().Equal(initialEpoch+1, updatedEpoch, "Updated epoch should be incremented by one")
+}
+
