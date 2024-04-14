@@ -414,8 +414,7 @@ message ReputerRequestNonces {
   repeated ReputerRequestNonce nonces = 1;
 }
 
-// stores the amount of fees collected by a topic
-// in the last reward epoch
+// stores the amount of fees collected by a topic in the last reward epoch
 message TopicFeeRevenue {
   uint64 epoch = 1;
   string revenue = 2 [
