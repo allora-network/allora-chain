@@ -2381,3 +2381,82 @@ func (s *KeeperTestSuite) TestGetFeeRevenueEpoch() {
 	s.Require().Equal(initialEpoch+1, updatedEpoch, "Updated epoch should be incremented by one")
 }
 
+/// MEMPOOL & INFERENCE REQUESTS
+
+func (s *KeeperTestSuite) TestAddUnmetDemand() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	addAmount := cosmosMath.NewUint(50)
+
+	// Initial add should set demand since it starts at zero
+	err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
+	s.Require().NoError(err, "Adding unmet demand should not fail")
+
+	// Verify the addition
+	demand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
+	s.Require().NoError(err, "Fetching unmet demand should not fail after addition")
+	s.Require().Equal(addAmount, demand, "Unmet demand should match the added amount")
+
+	// Add more to the existing demand
+	additionalAmount := cosmosMath.NewUint(30)
+	err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
+	s.Require().NoError(err, "Adding more unmet demand should not fail")
+
+	// Verify new demand
+	newDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
+	s.Require().NoError(err, "Fetching new unmet demand should not fail")
+	expectedDemand := addAmount.Add(additionalAmount)
+	s.Require().Equal(expectedDemand, newDemand, "Unmet demand should be correctly accumulated")
+}
+
+func (s *KeeperTestSuite) TestRemoveUnmetDemand() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(2)
+	initialDemand := cosmosMath.NewUint(100)
+	removeAmount := cosmosMath.NewUint(50)
+
+	// Set initial unmet demand
+	_ = keeper.SetTopicUnmetDemand(ctx, topicId, initialDemand)
+
+	// Remove some demand
+	err := keeper.RemoveUnmetDemand(ctx, topicId, removeAmount)
+	s.Require().NoError(err, "Removing unmet demand should not fail")
+
+	// Verify removal
+	remainingDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
+	s.Require().NoError(err, "Fetching remaining unmet demand should not fail")
+	s.Require().Equal(initialDemand.Sub(removeAmount), remainingDemand, "Unmet demand should be correctly subtracted")
+
+	// Attempt to remove more than exists, should fail
+	largeRemoveAmount := cosmosMath.NewUint(200)
+	err = keeper.RemoveUnmetDemand(ctx, topicId, largeRemoveAmount)
+	s.Require().Error(err, "Should error when removing more demand than exists")
+	s.Require().IsType(types.ErrIntegerUnderflowUnmetDemand, err, "Error should be of type ErrIntegerUnderflowUnmetDemand")
+}
+
+func (s *KeeperTestSuite) TestSetTopicUnmetDemand() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(3)
+	setAmount := cosmosMath.NewUint(120)
+
+	// Set specific unmet demand
+	err := keeper.SetTopicUnmetDemand(ctx, topicId, setAmount)
+	s.Require().NoError(err, "Setting unmet demand should not fail")
+
+	// Verify set demand
+	demand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
+	s.Require().NoError(err, "Fetching set unmet demand should not fail")
+	s.Require().Equal(setAmount, demand, "Unmet demand should exactly match the set amount")
+
+	// Set to zero to test removal
+	err = keeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(0))
+	s.Require().NoError(err, "Setting unmet demand to zero should not fail")
+
+	// Verify removal
+	zeroDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
+	s.Require().NoError(err, "Fetching unmet demand after setting to zero should not fail")
+	s.Require().Equal(cosmosMath.ZeroUint(), zeroDemand, "Unmet demand should be zero after being set to zero")
+}
