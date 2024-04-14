@@ -28,7 +28,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 				TopicId:   1,
 				Worker:    inferencerAddr,
 				Value:     alloraMath.NewDecFromInt64(100),
-				Signature: []byte("Inferences Signature"),
+				Signature: []byte("Inference Signature"),
 			},
 		},
 		Forecasts: []*types.Forecast{
