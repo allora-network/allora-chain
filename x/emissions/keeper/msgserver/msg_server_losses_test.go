@@ -56,9 +56,11 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 						},
 					},
 				},
+				Signature: []byte("ValueBundle Signature"),
 			},
 		},
-		Signature: []byte("Test"),
+		Signature:      []byte("ReputerValueBundles Signature"),
+		NonceSignature: []byte("Nonce Signature"),
 	}
 
 	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
