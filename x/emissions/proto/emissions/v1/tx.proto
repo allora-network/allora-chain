@@ -192,6 +192,8 @@ message MsgInsertBulkReputerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
+  ReputerRequestNonce reputer_request_nonce = 2;
+  uint64 topic_id = 3;
   repeated ReputerValueBundle reputer_value_bundles = 4;
 }
 
@@ -201,6 +203,8 @@ message MsgInsertBulkWorkerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
   repeated WorkerDataBundle worker_data_bundles = 4;
 }
 

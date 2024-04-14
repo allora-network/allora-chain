@@ -32,13 +32,14 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
-	if err != nil {
-		return nil, err
-	}
-	if nonceUnfulfilled {
-		return nil, types.ErrNonceNotUnfulfilled
-	}
+	// TODO Review, now this is inside each bundle.
+	// nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg. TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if nonceUnfulfilled {
+	// 	return nil, types.ErrNonceNotUnfulfilled
+	// }
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
@@ -56,18 +57,20 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
+		//
+		// TODO Review, I think this is not necessary - Leader does not send topicId or nonce, should it?
+		//
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
-		if bundle.ValueBundle.TopicId != msg.TopicId {
-			continue
-		}
-
+		// if bundle.ValueBundle.TopicId != msg.TopicId {
+		// 	continue
+		// }
 		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
-		if bundle.ValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight != msg.ReputerRequestNonce.WorkerNonce.BlockHeight {
-			continue
-		}
-		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
-			continue
-		}
+		// if bundle.ValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight != msg.ReputerRequestNonce.WorkerNonce.BlockHeight {
+		// 	continue
+		// }
+		// if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
+		// 	continue
+		// }
 
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
@@ -82,7 +85,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer is registered in the topic
-			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, reputer)
+			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +121,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
 
 			// Get the latest score for each reputer
-			latestScore, err := ms.k.GetLatestReputerScore(ctx, msg.TopicId, reputer)
+			latestScore, err := ms.k.GetLatestReputerScore(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
 				return nil, err
 			}
