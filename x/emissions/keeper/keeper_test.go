@@ -2460,3 +2460,55 @@ func (s *KeeperTestSuite) TestSetTopicUnmetDemand() {
 	s.Require().NoError(err, "Fetching unmet demand after setting to zero should not fail")
 	s.Require().Equal(cosmosMath.ZeroUint(), zeroDemand, "Unmet demand should be zero after being set to zero")
 }
+
+func (s *KeeperTestSuite) TestAddToMempool2() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	request := types.InferenceRequest{
+		Sender:    "allo1zf8q4lzfnavru3etczeamd3esu3yalzj2puq5p",
+		Nonce:     123,
+		TopicId:   topicId,
+		BidAmount: cosmosMath.NewUint(100),
+	}
+	requestId, err := request.GetRequestId()
+	s.Require().NoError(err, "Getting request ID should not fail")
+
+	// Add request to the mempool
+	err = keeper.AddToMempool(ctx, request)
+	s.Require().NoError(err, "Adding to mempool should not fail")
+
+	// Check if the request is now in the mempool
+	exists, err := keeper.IsRequestInMempool(ctx, topicId, requestId)
+	s.Require().NoError(err, "Checking if request is in mempool should not fail")
+	s.Require().True(exists, "Request should exist in the mempool after being added")
+}
+
+func (s *KeeperTestSuite) TestRemoveFromMempool() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	request := types.InferenceRequest{
+		Sender:    "allo1zf8q4lzfnavru3etczeamd3esu3yalzj2puq5p",
+		Nonce:     123,
+		TopicId:   topicId,
+		BidAmount: cosmosMath.NewUint(100),
+	}
+
+	requestId, err := request.GetRequestId()
+	s.Require().NoError(err, "Getting request ID should not fail")
+
+	// Assume the request is already in the mempool
+	_ = keeper.AddToMempool(ctx, request)
+
+	// Remove the request from the mempool
+	err = keeper.RemoveFromMempool(ctx, request)
+	s.Require().NoError(err, "Removing from mempool should not fail")
+
+	// Check if the request is still in the mempool
+	exists, err := keeper.IsRequestInMempool(ctx, topicId, requestId)
+	s.Require().NoError(err, "Checking if request is in mempool should not fail after removal")
+	s.Require().False(exists, "Request should not exist in the mempool after being removed")
+}
