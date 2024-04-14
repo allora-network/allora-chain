@@ -683,8 +683,7 @@ func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicI
 		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
 	var inferencesToReturn types.Inferences
-	lowestBlockHeight := BlockHeight(0) // Initialize to zero, will update with the lowest block height found
-	found := false                      // Flag to check if any inferences are found
+	currentBlockHeight := BlockHeight(0)
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
@@ -698,18 +697,13 @@ func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicI
 		if err != nil {
 			return nil, 0, err
 		}
-		currentBlockHeight := kv.Key.K2() // Current entry's block height
-		if currentBlockHeight >= block {
-			inferencesToReturn.Inferences = append(inferencesToReturn.Inferences, kv.Value.Inferences...)
-			if !found || currentBlockHeight < lowestBlockHeight {
-				lowestBlockHeight = currentBlockHeight // Update the lowest block height found
-				found = true
-			}
-		}
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		inferencesToReturn.Inferences = kv.Value.Inferences
+		break
 	}
 
 	// Return the collected inferences and the lowest block height at which they were found
-	return &inferencesToReturn, lowestBlockHeight, nil
+	return &inferencesToReturn, currentBlockHeight, nil
 }
 
 func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
@@ -718,8 +712,7 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
 	forecastsToReturn := types.Forecasts{}
-	lowestBlockHeight := BlockHeight(0)
-	found := false // Flag to check if any forecasts are found
+	currentBlockHeight := BlockHeight(0)
 
 	iter, err := k.allForecasts.Iterate(ctx, rng)
 	if err != nil {
@@ -732,17 +725,12 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 		if err != nil {
 			return nil, 0, err
 		}
-		currentBlockHeight := kv.Key.K2()
-		if currentBlockHeight >= block {
-			forecastsToReturn.Forecasts = append(forecastsToReturn.Forecasts, kv.Value.Forecasts...)
-			if !found || currentBlockHeight < lowestBlockHeight {
-				lowestBlockHeight = currentBlockHeight
-				found = true
-			}
-		}
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		forecastsToReturn.Forecasts = kv.Value.Forecasts
+		break
 	}
 
-	return &forecastsToReturn, lowestBlockHeight, nil
+	return &forecastsToReturn, currentBlockHeight, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.

@@ -929,7 +929,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 		Inferences: []*types.Inference{
 			{
 				Value:  alloraMath.NewDecFromInt64(3),
-				Worker: "allo1743237sr8yhkj3q558tyv5wdcthj34g4jdhfuf",
+				Worker: "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu",
 			},
 		},
 	}
@@ -938,11 +938,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 		Inferences: []*types.Inference{
 			{
 				Value:  alloraMath.NewDecFromInt64(4),
-				Worker: "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx",
-			},
-			{
-				Value:  alloraMath.NewDecFromInt64(5),
-				Worker: "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft",
+				Worker: "allo1743237sr8yhkj3q558tyv5wdcthj34g4jdhfuf",
 			},
 		},
 	}
@@ -950,8 +946,12 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 	inferences4 := types.Inferences{
 		Inferences: []*types.Inference{
 			{
-				Value:  alloraMath.NewDecFromInt64(4),
-				Worker: "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu",
+				Value:  alloraMath.NewDecFromInt64(5),
+				Worker: "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx",
+			},
+			{
+				Value:  alloraMath.NewDecFromInt64(6),
+				Worker: "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft",
 			},
 		},
 	}
@@ -967,27 +967,21 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 	s.Require().NoError(err)
 	err = keeper.InsertInferences(ctx, topicId, nonce0, inferences0)
 	s.Require().NoError(err)
-	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	err = keeper.InsertInferences(ctx, otherTopicId, nonce2, inferences2)
 	s.Require().NoError(err)
 	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
 	s.Require().NoError(err)
-	err = keeper.InsertInferences(ctx, otherTopicId, nonce4, inferences4) // make sure that it filters on topicId
+	err = keeper.InsertInferences(ctx, topicId, nonce4, inferences4) // make sure that it filters on topicId
 	s.Require().NoError(err)
 
 	// Retrieve latest inferences at or after the given block
 	actualInferences, actualBlock, err := keeper.GetInferencesAtOrAfterBlock(ctx, topicId, 105)
 	s.Require().NoError(err)
-	s.Require().Equal(3, len(actualInferences.Inferences))
-	s.Require().Equal(types.BlockHeight(105), actualBlock)
+	s.Require().Equal(1, len(actualInferences.Inferences))
+	s.Require().Equal(types.BlockHeight(110), actualBlock)
 
-	s.Require().Equal(inferences2.Inferences[0].Value, actualInferences.Inferences[0].Value)
-	s.Require().Equal(inferences2.Inferences[0].Worker, actualInferences.Inferences[0].Worker)
-
-	s.Require().Equal(inferences3.Inferences[0].Value, actualInferences.Inferences[1].Value)
-	s.Require().Equal(inferences3.Inferences[0].Worker, actualInferences.Inferences[1].Worker)
-
-	s.Require().Equal(inferences3.Inferences[1].Value, actualInferences.Inferences[2].Value)
-	s.Require().Equal(inferences3.Inferences[1].Worker, actualInferences.Inferences[2].Worker)
+	s.Require().Equal(inferences3.Inferences[0].Value, actualInferences.Inferences[0].Value)
+	s.Require().Equal(inferences3.Inferences[0].Worker, actualInferences.Inferences[0].Worker)
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
@@ -997,7 +991,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 	otherTopicId := uint64(2)
 	block0 := types.BlockHeight(100)
 	block1 := types.BlockHeight(102)
-	block2 := types.BlockHeight(108)
+	block2 := types.BlockHeight(105)
 	block3 := types.BlockHeight(110)
 	block4 := types.BlockHeight(112)
 
@@ -1061,23 +1055,22 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 	s.Require().NoError(err)
 	err = keeper.InsertForecasts(ctx, topicId, nonce0, forecasts0)
 	s.Require().NoError(err)
-	err = keeper.InsertForecasts(ctx, topicId, nonce2, forecasts2)
+	err = keeper.InsertForecasts(ctx, otherTopicId, nonce2, forecasts2)
 	s.Require().NoError(err)
 	err = keeper.InsertForecasts(ctx, topicId, nonce1, forecasts1)
 	s.Require().NoError(err)
-	err = keeper.InsertForecasts(ctx, otherTopicId, nonce4, forecasts4)
+	err = keeper.InsertForecasts(ctx, topicId, nonce4, forecasts4)
 	s.Require().NoError(err)
 
 	// Retrieve forecasts at or after the specified block
 	actualForecasts, actualBlock, err := keeper.GetForecastsAtOrAfterBlock(ctx, topicId, 105)
 	s.Require().NoError(err)
-	s.Require().Equal(3, len(actualForecasts.Forecasts))
-	s.Require().Equal(types.BlockHeight(108), actualBlock)
+	s.Require().Equal(2, len(actualForecasts.Forecasts))
+	s.Require().Equal(types.BlockHeight(110), actualBlock)
 
 	// Validate the retrieved forecasts
-	s.Require().Equal(forecasts2.Forecasts[0].Forecaster, actualForecasts.Forecasts[0].Forecaster)
-	s.Require().Equal(forecasts3.Forecasts[0].Forecaster, actualForecasts.Forecasts[1].Forecaster)
-	s.Require().Equal(forecasts3.Forecasts[1].Forecaster, actualForecasts.Forecasts[2].Forecaster)
+	s.Require().Equal(forecasts3.Forecasts[0].Forecaster, actualForecasts.Forecasts[0].Forecaster)
+	s.Require().Equal(forecasts3.Forecasts[1].Forecaster, actualForecasts.Forecasts[1].Forecaster)
 }
 
 // ########################################
