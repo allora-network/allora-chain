@@ -1473,22 +1473,6 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 	return nil
 }
 
-// Remove a worker to the worker tracking data structures and topicWorkers
-func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
-	err := k.topicWorkers.Remove(ctx, topicKey)
-	if err != nil {
-		return err
-	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 /// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
@@ -1505,6 +1489,22 @@ func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sd
 		return err
 	}
 	err = k.AddAddressTopics(ctx, worker, TopicIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
 	if err != nil {
 		return err
 	}

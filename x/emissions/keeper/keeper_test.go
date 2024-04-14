@@ -1995,3 +1995,317 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	s.Require().NoError(err)
 	s.Require().Equal(expectedAddress, retrievedAddress, "The retrieved address should match the expected address")
 }
+
+/// TOPICS
+
+func (s *KeeperTestSuite) TestSetAndGetPreviousTopicWeight() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Set previous topic weight
+	weightToSet := types.PreviousTopicWeight{Weight: alloraMath.NewDecFromInt64(10), Epoch: 5}
+	err := keeper.SetPreviousTopicWeight(ctx, topicId, weightToSet)
+	s.Require().NoError(err, "Setting previous topic weight should not fail")
+
+	// Get the previously set topic weight
+	retrievedWeight, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err, "Getting previous topic weight should not fail")
+	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
+}
+
+func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(2)
+
+	// Attempt to get a weight for a topic that has no set weight
+	retrievedWeight, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	s.Require().NoError(err, "Getting weight for an unset topic should not error but return zero value")
+	s.Require().Equal(types.PreviousTopicWeight{Weight: alloraMath.ZeroDec(), Epoch: 0}, retrievedWeight, "Weight for an unset topic should be zero")
+}
+
+func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(3)
+
+	// Assume topic initially active
+	initialTopic := types.Topic{Active: true}
+	_ = keeper.SetTopic(ctx, topicId, initialTopic)
+
+	// Inactivate the topic
+	err := keeper.InactivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Inactivating topic should not fail")
+
+	// Check if topic is inactive
+	updatedTopic, err := keeper.GetTopic(ctx, topicId)
+	s.Require().NoError(err, "Getting topic should not fail after inactivation")
+	s.Require().False(updatedTopic.Active, "Topic should be inactive")
+
+	// Reactivate the topic
+	err = keeper.ReactivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Reactivating topic should not fail")
+
+	// Check if topic is active again
+	reactivatedTopic, err := keeper.GetTopic(ctx, topicId)
+	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+	s.Require().True(reactivatedTopic.Active, "Topic should be active again")
+}
+
+func (s *KeeperTestSuite) TestGetAllTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Clear existing topics (if possible, depending on your system's design)
+	// This step is hypothetical and depends on your system's capabilities
+	// _ = keeper.ClearAllTopics(ctx)
+
+	// Create sample topics
+	topic1 := types.Topic{Id: 1, Active: true}
+	topic2 := types.Topic{Id: 2, Active: false}
+	topic3 := types.Topic{Id: 3, Active: true}
+
+	// Set topics in the system
+	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+
+	// Fetch all topics
+	retrievedTopics, err := keeper.GetAllTopics(ctx)
+	s.Require().NoError(err, "Fetching all topics should not produce an error")
+
+	// Verify the correct number of topics is retrieved
+	s.Require().Len(retrievedTopics, 3, "Should retrieve exactly three topics")
+
+	// Verify the correctness of the data retrieved
+	// This assumes you have a way to identify topics uniquely; adjust as needed
+	for _, topic := range retrievedTopics {
+		switch topic.Id {
+		case 1:
+			s.Require().Equal(topic1, *topic, "The details of topic 1 should match")
+		case 2:
+			s.Require().Equal(topic2, *topic, "The details of topic 2 should match")
+		case 3:
+			s.Require().Equal(topic3, *topic, "The details of topic 3 should match")
+		default:
+			s.Fail("Unexpected topic ID retrieved")
+		}
+	}
+}
+
+func (s *KeeperTestSuite) TestGetActiveTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Clear existing topics (if possible)
+	// This step is hypothetical and depends on your system's capabilities
+	// _ = keeper.ClearAllTopics(ctx)
+
+	// Create sample topics with mixed active states
+	topic1 := types.Topic{Id: 1, Active: true}
+	topic2 := types.Topic{Id: 2, Active: false} // Inactive topic
+	topic3 := types.Topic{Id: 3, Active: true}
+
+	// Set topics in the system
+	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+
+	// Fetch only active topics
+	activeTopics, err := keeper.GetActiveTopics(ctx)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+
+	// Verify the correct number of active topics is retrieved
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
+
+	// Verify the correctness of the data retrieved, specifically checking active status
+	for _, topic := range activeTopics {
+		s.Require().True(topic.Active, "Only active topics should be returned")
+		switch topic.Id {
+		case 1:
+			s.Require().Equal(topic1, *topic, "The details of topic 1 should match")
+		case 3:
+			s.Require().Equal(topic3, *topic, "The details of topic 3 should match")
+		default:
+			s.Fail("Unexpected topic ID retrieved")
+		}
+	}
+}
+
+func (s *KeeperTestSuite) TestGetTopicsByCreator() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	creatorAddress := "creator-sample-address"
+	topic1 := types.Topic{Id: 1, Creator: creatorAddress, Active: true}
+	topic2 := types.Topic{Id: 2, Creator: creatorAddress, Active: false}
+	topic3 := types.Topic{Id: 3, Creator: "other-address", Active: true}
+
+	// Setup topics
+	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+
+	// Test fetching topics by creator
+	topics, err := keeper.GetTopicsByCreator(ctx, creatorAddress)
+	s.Require().NoError(err)
+	s.Require().Len(topics, 2, "Should retrieve exactly two topics for the creator")
+
+	// Check if the correct topics are returned
+	for _, topic := range topics {
+		s.Require().Equal(creatorAddress, topic.Creator, "Creator address should match the requested address")
+	}
+}
+
+func (s *KeeperTestSuite) TestGetRegisteredTopicIdsByWorkerAddress() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	workerAddress := sdk.AccAddress("worker-sample-address")
+	workerInfo := types.OffchainNode{
+		LibP2PKey:    "worker-libp2p-key-sample",
+		MultiAddress: "worker-multi-address-sample",
+		Owner:        "worker-owner-sample",
+
+		NodeAddress: "worker-node-address-sample",
+		NodeId:      "worker-node-id-sample",
+	}
+	topicIds := []uint64{1, 3}
+
+	// Register the worker for multiple topics using InsertWorker
+	err := keeper.InsertWorker(ctx, topicIds, workerAddress, workerInfo)
+	s.Require().NoError(err, "Inserting worker should not fail")
+
+	// Test fetching topic IDs by worker address
+	registeredTopicIds, err := keeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddress)
+	s.Require().NoError(err, "Fetching registered topic IDs by worker address should not fail")
+	s.Require().Equal(len(topicIds), len(registeredTopicIds), "The number of topic IDs should match")
+	s.Require().ElementsMatch(topicIds, registeredTopicIds, "The returned topic IDs should match the expected ones")
+}
+
+func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	reputerAddress := sdk.AccAddress("reputer-sample-address")
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+	topicIds := []uint64{2, 4} // Sample topic IDs for registration
+
+	// Register the reputer for multiple topics using InsertReputer
+	err := keeper.InsertReputer(ctx, topicIds, reputerAddress, reputerInfo)
+	s.Require().NoError(err, "Inserting reputer should not fail")
+
+	// Test fetching topic IDs by reputer address
+	registeredTopicIds, err := keeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddress)
+	s.Require().NoError(err, "Fetching registered topic IDs by reputer address should not fail")
+	s.Require().Equal(len(topicIds), len(registeredTopicIds), "The number of topic IDs should match")
+	s.Require().ElementsMatch(topicIds, registeredTopicIds, "The returned topic IDs should match the expected ones")
+}
+
+func (s *KeeperTestSuite) TestIncrementTopicId() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Initial check for the current topic ID
+	initialTopicId, err := keeper.IncrementTopicId(ctx)
+	s.Require().NoError(err, "Getting initial topic ID should not fail")
+
+	// Increment the topic ID
+	newTopicId, err := keeper.IncrementTopicId(ctx)
+	s.Require().NoError(err, "Incrementing topic ID should not fail")
+	s.Require().Equal(initialTopicId+1, newTopicId, "New topic ID should be one more than the initial topic ID")
+}
+
+func (s *KeeperTestSuite) TestGetNumTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Assume IncrementTopicId is used to track the count of topics
+	_, _ = keeper.IncrementTopicId(ctx) // Simulate existing topics
+	_, _ = keeper.IncrementTopicId(ctx)
+
+	// Get the number of topics
+	numTopics, err := keeper.GetNumTopics(ctx)
+	s.Require().NoError(err, "Fetching the number of topics should not fail")
+	s.Require().Equal(uint64(2), numTopics, "The number of topics should match the number incremented")
+}
+
+func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Create multiple topics to simulate actual usage
+	topicsToCreate := 5
+	for i := 1; i <= topicsToCreate; i++ {
+		topicId, err := keeper.IncrementTopicId(ctx)
+		s.Require().NoError(err, "Incrementing topic ID should not fail")
+
+		newTopic := types.Topic{
+			Id:     topicId,
+			Active: true, // Or some other status based on your model
+		}
+
+		err = keeper.SetTopic(ctx, topicId, newTopic)
+		s.Require().NoError(err, "Setting a new topic should not fail")
+	}
+
+	// Now retrieve the total number of topics
+	numTopics, err := keeper.GetNumTopics(ctx)
+	s.Require().NoError(err, "Fetching the number of topics should not fail")
+	s.Require().Equal(uint64(topicsToCreate), numTopics, "The number of topics should exactly match the number created")
+}
+
+func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	epochLastEnded := types.BlockHeight(100)
+
+	// Setup a topic initially
+	initialTopic := types.Topic{Id: topicId, Active: true}
+	_ = keeper.SetTopic(ctx, topicId, initialTopic)
+
+	// Update the epoch last ended
+	err := keeper.UpdateTopicEpochLastEnded(ctx, topicId, epochLastEnded)
+	s.Require().NoError(err, "Updating topic epoch last ended should not fail")
+
+	// Retrieve the last ended epoch for the topic
+	retrievedEpoch, err := keeper.GetTopicEpochLastEnded(ctx, topicId)
+	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
+	s.Require().Equal(epochLastEnded, retrievedEpoch, "The retrieved epoch last ended should match the updated value")
+}
+
+func (s *KeeperTestSuite) TestTopicExists() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Test a topic ID that does not exist
+	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
+	exists, err := keeper.TopicExists(ctx, nonExistentTopicId)
+	s.Require().NoError(err, "Checking existence for a non-existent topic should not fail")
+	s.Require().False(exists, "No topic should exist for an unused topic ID")
+
+	// Create a topic to test existence
+	existentTopicId, err := keeper.IncrementTopicId(ctx)
+	s.Require().NoError(err, "Incrementing topic ID should not fail")
+
+	newTopic := types.Topic{
+		Id:     existentTopicId,
+		Active: true, // Or some other status based on your model
+	}
+
+	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
+	// Test the newly created topic ID
+	exists, err = keeper.TopicExists(ctx, existentTopicId)
+	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
+	s.Require().True(exists, "Topic should exist for a newly created topic ID")
+}
