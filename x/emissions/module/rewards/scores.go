@@ -96,6 +96,10 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, err
 		}
+		err = keeper.SetLatestReputerScore(ctx, topicId, reputerAddr, newScore)
+		if err != nil {
+			return []types.Score{}, err
+		}
 		newScores = append(newScores, newScore)
 	}
 
@@ -124,6 +128,10 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 			Score:       workerNewScore,
 		}
 		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		if err != nil {
+			return []types.Score{}, err
+		}
+		err = keeper.SetLatestInfererScore(ctx, topicId, workerAddr, newScore)
 		if err != nil {
 			return []types.Score{}, err
 		}
@@ -182,6 +190,10 @@ func GenerateForecastScores(
 			Score:       workerFinalScore,
 		}
 		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
+		if err != nil {
+			return []types.Score{}, err
+		}
+		err = keeper.SetLatestForecasterScore(ctx, topicId, workerAddr, newScore)
 		if err != nil {
 			return []types.Score{}, err
 		}

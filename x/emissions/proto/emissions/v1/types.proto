@@ -110,12 +110,17 @@ message Params {
     (amino.dont_omitempty) = true
   ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
   uint64 max_samples_to_scale_scores = 33;  // number of scores to use for standard deviation calculation
-  uint64 create_topic_fee = 34;             // topic registration fee
-  string sigmoid_a = 35 [
+  // max this many inferences from unique workers and forecasts thereof are accepted per payload
+  uint64 max_workers_accepted_per_payload = 34;
+  uint64 max_reputers_accepted_per_payload = 35;  // max num loss bundles from unique reputers accepted per payload
+  uint64 max_top_workers_to_reward = 36;          // max number of top workers by score to reward
+  uint64 max_top_reputers_to_reward = 37;         // max number of top reputers by score to reward
+  uint64 create_topic_fee = 38;                   // topic registration fee
+  string sigmoid_a = 39 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter a for sigmoid function, feducial value = 8
-  string sigmoid_b = 36 [
+  string sigmoid_b = 40 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter b for sigmoid function, feducial value = 0.5
@@ -204,7 +209,8 @@ message ReputerValueBundle {
   option (gogoproto.equal) = true;
 
   string reputer = 1;
-  ValueBundle value_bundle = 2;
+  ReputerRequestNonce reputer_request_nonce = 2;
+  ValueBundle value_bundle = 3;
 }
 
 message ReputerValueBundles {
@@ -225,11 +231,12 @@ message Inference {
   option (gogoproto.equal) = true;
 
   uint64 topic_id = 1;
-  string worker = 2;
-  string value = 3
+  string inferer = 2;
+  Nonce nonce = 3;
+  string value = 4
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bytes extra_data = 4;
-  string proof = 5;
+  bytes extra_data = 5;
+  string proof = 6;
 }
 
 message Inferences {
@@ -251,7 +258,8 @@ message Forecast {
 
   uint64 topic_id = 1;
   string forecaster = 2;
-  repeated ForecastElement forecast_elements = 3;
+  Nonce nonce = 3;
+  repeated ForecastElement forecast_elements = 4;
 }
 
 message Forecasts {
@@ -374,11 +382,24 @@ message InferenceRequest {
 /// NONCES for Worker and Reputer Requests
 
 message Nonce {
+  option (gogoproto.equal) = true;
   int64 nonce = 1;  // block height of the request
 }
 
 message Nonces {
   repeated Nonce nonces = 1;
+}
+
+message ReputerRequestNonce {
+  option (gogoproto.equal) = true;
+  // associated with the reputer request
+  Nonce reputer_nonce = 1;
+  // the reputers should respond to the reputer request with losses for work found at this worker nonce
+  Nonce worker_nonce = 2;
+}
+
+message ReputerRequestNonces {
+  repeated ReputerRequestNonce nonces = 1;
 }
 
 // stores the amount of fees collected by a topic

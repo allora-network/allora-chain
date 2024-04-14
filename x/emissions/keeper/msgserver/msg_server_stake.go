@@ -13,40 +13,34 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
-	// 1. check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-	targetAddr, err := sdk.AccAddressFromBech32(msg.StakeTarget)
+
+	// Check the target exists and is registered
+	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, senderAddr)
 	if err != nil {
 		return nil, err
 	}
-	err = checkNodeRegistered(ctx, ms, senderAddr)
-	if err != nil {
-		return nil, err
+	if !isReputerRegistered {
+		return nil, types.ErrAddressIsNotRegisteredInThisTopic
 	}
 
-	// 2. check the target exists and is registered
-	err = checkNodeRegistered(ctx, ms, targetAddr)
-	if err != nil {
-		return nil, err
-	}
-
-	// 3. check the sender has enough funds to add the stake
+	// Check the sender has enough funds to add the stake
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// 4. send the funds
+	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
 
-	// 5. get target topics Registerd
-	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, targetAddr)
+	// Get target topics Registerd
+	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, senderAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	// 6. update the stake data structures, spread the stake across all topics evenly
+	// Update the stake data structures, spread the stake across all topics evenly
 	amountToStake := cosmosMath.NewUintFromBigInt(msg.Amount.BigInt()).Quo(cosmosMath.NewUint(uint64(len(TopicIds))))
 	for _, topicId := range TopicIds {
 		err = ms.k.AddStake(ctx, topicId, senderAddr, amountToStake)
@@ -195,9 +189,12 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	if err != nil {
 		return nil, err
 	}
-	err = checkNodeRegistered(ctx, ms, targetAddr)
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, sdk.AccAddress(targetAddr))
 	if err != nil {
 		return nil, err
+	}
+	if !isRegistered {
+		return nil, types.ErrAddressIsNotRegisteredInThisTopic
 	}
 
 	// Check the sender has enough funds to delegate the stake

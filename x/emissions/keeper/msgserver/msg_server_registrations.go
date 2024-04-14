@@ -96,7 +96,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 }
 
 // Add additional topics after initial reputer or worker registration
-func (ms msgServer) AddNewRegistration(ctx context.Context, msg *types.MsgAddNewRegistration) (*types.MsgAddNewRegistrationResponse, error) {
+func (ms msgServer) RegisterWithExistingStake(ctx context.Context, msg *types.MsgRegisterWithExistingStake) (*types.MsgRegisterWithExistingStakeResponse, error) {
 	// check if topics exists and if address is already registered in any of them
 	address, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
@@ -171,7 +171,7 @@ func (ms msgServer) AddNewRegistration(ctx context.Context, msg *types.MsgAddNew
 		}
 	}
 
-	return &types.MsgAddNewRegistrationResponse{
+	return &types.MsgRegisterWithExistingStakeResponse{
 		Success: true,
 		Message: fmt.Sprintf("Node successfully registered in topic %d", msg.TopicId),
 	}, nil
@@ -239,29 +239,4 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 		Success: true,
 		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
 	}, nil
-}
-
-///
-/// PRIVATE
-///
-
-// checks if a node is registered in the system and if it is,
-// returns whether said node is a reputer or a worker
-func checkNodeRegistered(ctx context.Context, ms msgServer, node sdk.AccAddress) error {
-
-	reputerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdByReputerAddress(ctx, node)
-	if err != nil {
-		return err
-	}
-	if len(reputerRegisteredTopicIds) > 0 {
-		return nil
-	}
-	workerRegisteredTopicIds, err := ms.k.GetRegisteredTopicIdsByWorkerAddress(ctx, node)
-	if err != nil {
-		return err
-	}
-	if len(workerRegisteredTopicIds) > 0 {
-		return nil
-	}
-	return types.ErrAddressNotRegistered
 }
