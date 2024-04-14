@@ -1996,6 +1996,18 @@ func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId Topic
 	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
 }
 
+func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TopicId) (Uint, error) {
+	metDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			// Return zero value if no met demand is found
+			return cosmosMath.ZeroUint(), nil
+		}
+		return cosmosMath.Uint{}, err
+	}
+	return metDemand, nil
+}
+
 // Reset the mapping entirely. Should be called at the end of every block
 func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 	return k.churnReadyTopics.Remove(ctx)
