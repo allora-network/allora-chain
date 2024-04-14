@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -2660,4 +2661,245 @@ func (s *KeeperTestSuite) TestSetLatestScores() {
 	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
 	reputerScore, _ := keeper.GetLatestReputerScore(ctx, topicId, reputer)
 	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
+}
+
+func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+	score := types.Score{
+		TopicId:     topicId,
+		BlockNumber: blockNumber,
+		Address:     "worker1",
+		Score:       alloraMath.NewDecFromInt64(95),
+	}
+
+	// Set the maximum number of scores using system parameters
+	maxNumScores := uint64(5)
+	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Insert scores more than the max limit to test trimming
+	for i := 0; i < int(maxNumScores+2); i++ {
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, score)
+		s.Require().NoError(err, "Inserting worker inference score should not fail")
+	}
+
+	// Fetch scores to check if trimming happened
+	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching scores at block should not fail")
+	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+}
+
+func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+
+	// Set the maximum number of scores using system parameters
+	maxNumScores := uint64(5)
+	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Insert scores more than the max limit to test trimming
+	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+		scoreValue := alloraMath.NewDecFromInt64(int64(90 + i)) // Increment score value to simulate variation
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     "worker1",
+			Score:       scoreValue,
+		}
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, score)
+		s.Require().NoError(err, "Inserting worker inference score should not fail")
+	}
+
+	// Fetch scores to check if trimming happened
+	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching scores at block should not fail")
+	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+
+	// Check that the retained scores are the last five inserted
+	for idx, score := range scores.Scores {
+		expectedScoreValue := alloraMath.NewDecFromInt64(int64(92 + idx)) // Expecting the last 5 scores: 94, 95, 96, 97
+		s.Require().Equal(expectedScoreValue, score.Score, "Score should match the expected last scores")
+	}
+}
+
+func (s *KeeperTestSuite) TestGetWorkerInferenceScoresUntilBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	workerAddress := sdk.AccAddress("allo16jmt7f7r4e6j9k4ds7jgac2t4k4cz0wthv4u88")
+	otherWorkerAddress := sdk.AccAddress("allo1k2u0wy9436pz5spxww22vr95lrfr4hhuznamva")
+	blockNumber := int64(105)
+
+	// Insert scores for different workers and blocks
+	for blockNumber := int64(100); blockNumber <= 110; blockNumber++ {
+		// Scores for the targeted worker
+		scoreForWorker := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     workerAddress.String(),
+			Score:       alloraMath.NewDecFromInt64(blockNumber),
+		}
+		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, scoreForWorker)
+
+		// Scores for another worker to test filtering
+		scoreForOtherWorker := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     otherWorkerAddress.String(),
+			Score:       alloraMath.NewDecFromInt64(blockNumber),
+		}
+		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, scoreForOtherWorker)
+	}
+
+	// Get scores for the worker up to block 105
+	scores, err := keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, blockNumber, workerAddress)
+	s.Require().NoError(err, "Fetching worker inference scores until block should not fail")
+	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
+
+	// Verify that the scores are correct and ordered as expected (descending block number)
+	expectedBlock := blockNumber
+	for _, score := range scores {
+		s.Require().Equal(workerAddress.String(), score.Address, "Only scores for the specified worker should be returned")
+		s.Require().Equal(expectedBlock, score.BlockNumber, "Scores should be returned in descending order by block")
+		s.Require().Equal(alloraMath.NewDecFromInt64(expectedBlock), score.Score, "Score value should match expected")
+		expectedBlock--
+	}
+}
+
+func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+
+	// Set the maximum number of scores using system parameters
+	maxNumScores := uint64(5)
+	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Insert scores more than the max limit to test trimming
+	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     "worker1",
+			Score:       alloraMath.NewDecFromInt64(int64(90 + i)), // Increment score value to simulate variation
+		}
+		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockNumber, score)
+		s.Require().NoError(err, "Inserting worker forecast score should not fail")
+	}
+
+	// Fetch scores to check if trimming happened
+	scores, err := keeper.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
+	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+}
+
+func (s *KeeperTestSuite) TestGetWorkerForecastScoresUntilBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	workerAddress := sdk.AccAddress("allo16jmt7f7r4e6j9k4ds7jgac2t4k4cz0wthv4u88")
+	blockNumber := int64(105)
+
+	// Insert scores for the worker at various blocks
+	for i := int64(100); i <= 110; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: i,
+			Address:     workerAddress.String(),
+			Score:       alloraMath.NewDecFromInt64(i),
+		}
+		_ = keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
+	}
+
+	// Get forecast scores for the worker up to block 105
+	scores, err := keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, blockNumber, workerAddress)
+	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
+	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
+}
+
+func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+
+	// Insert scores at the block
+	for i := 0; i < 5; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     "worker" + strconv.Itoa(i+1),
+			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
+		}
+		_ = keeper.InsertWorkerForecastScore(ctx, topicId, blockNumber, score)
+	}
+
+	// Fetch scores at the specific block
+	scores, err := keeper.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
+	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
+}
+
+func (s *KeeperTestSuite) TestInsertReputerScore() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+
+	// Set the maximum number of scores using system parameters
+	maxNumScores := uint64(5)
+	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Insert scores more than the max limit to test trimming
+	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     "reputer1",
+			Score:       alloraMath.NewDecFromInt64(int64(90 + i)), // Increment score value to simulate variation
+		}
+		err := keeper.InsertReputerScore(ctx, topicId, blockNumber, score)
+		s.Require().NoError(err, "Inserting reputer score should not fail")
+	}
+
+	// Fetch scores to check if trimming happened
+	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
+	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+}
+
+func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockNumber := int64(100)
+
+	// Insert multiple scores at the block
+	for i := 0; i < 5; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockNumber,
+			Address:     "reputer" + strconv.Itoa(i+1),
+			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
+		}
+		_ = keeper.InsertReputerScore(ctx, topicId, blockNumber, score)
+	}
+
+	// Fetch scores at the specific block
+	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
+	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
+	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }

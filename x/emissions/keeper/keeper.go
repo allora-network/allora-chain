@@ -2032,18 +2032,6 @@ func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, erro
 
 /// SCORES
 
-func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
-	key := collections.Join(topicId, worker)
-	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
-		}
-		return types.Score{}, err
-	}
-	return score, nil
-}
-
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
@@ -2055,6 +2043,18 @@ func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	}
 	key := collections.Join(topicId, worker)
 	return k.latestInfererScoresByWorker.Set(ctx, key, score)
+}
+
+func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+	key := collections.Join(topicId, worker)
+	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
 }
 
 // If the new score is older than the current score, don't update
@@ -2122,59 +2122,11 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
 		diff := lenScores - maxNumScores
-		if diff > 0 {
-			scores.Scores = scores.Scores[diff:]
-		}
+		scores.Scores = scores.Scores[diff:]
 	}
 
 	key := collections.Join(topicId, blockNumber)
 	return k.infererScoresByBlock.Set(ctx, key, scores)
-}
-
-func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
-	if err != nil {
-		return err
-	}
-	scores.Scores = append(scores.Scores, &score)
-
-	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
-	if err != nil {
-		return err
-	}
-
-	lenScores := uint64(len(scores.Scores))
-	if lenScores > maxNumScores {
-		diff := uint64(len(scores.Scores)) - maxNumScores
-		if diff > 0 {
-			scores.Scores = scores.Scores[diff:]
-		}
-	}
-
-	key := collections.Join(topicId, blockNumber)
-	return k.forecasterScoresByBlock.Set(ctx, key, scores)
-}
-
-func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
-	if err != nil {
-		return err
-	}
-	scores.Scores = append(scores.Scores, &score)
-
-	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
-	if err != nil {
-		return err
-	}
-	lenScores := uint64(len(scores.Scores))
-	if lenScores > maxNumScores {
-		diff := lenScores - maxNumScores
-		if diff > 0 {
-			scores.Scores = scores.Scores[diff:]
-		}
-	}
-	key := collections.Join(topicId, blockNumber)
-	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 
 func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
@@ -2185,35 +2137,6 @@ func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId
 
 	scores := make([]*types.Score, 0)
 	iter, err := k.infererScoresByBlock.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-
-	count := 0
-	for ; iter.Valid() && count < 10; iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		for _, score := range existingScores.Value.Scores {
-			if score.Address == worker.String() {
-				scores = append(scores, score)
-				count++
-			}
-		}
-	}
-
-	return scores, nil
-}
-
-func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(blockNumber).
-		Descending()
-
-	scores := make([]*types.Score, 0)
-	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
@@ -2247,6 +2170,57 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 	return scores, nil
 }
 
+func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
+	if err != nil {
+		return err
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return err
+	}
+
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		scores.Scores = scores.Scores[diff:]
+	}
+
+	key := collections.Join(topicId, blockNumber)
+	return k.forecasterScoresByBlock.Set(ctx, key, scores)
+}
+
+func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
+	rng := collections.
+		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		EndInclusive(blockNumber).
+		Descending()
+
+	scores := make([]*types.Score, 0)
+	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+
+	count := 0
+	for ; iter.Valid() && count < 10; iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		for _, score := range existingScores.Value.Scores {
+			if score.Address == worker.String() {
+				scores = append(scores, score)
+				count++
+			}
+		}
+	}
+
+	return scores, nil
+}
+
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.forecasterScoresByBlock.Get(ctx, key)
@@ -2257,6 +2231,28 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 		return types.Scores{}, err
 	}
 	return scores, nil
+}
+
+func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
+	if err != nil {
+		return err
+	}
+	scores.Scores = append(scores.Scores, &score)
+
+	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return err
+	}
+	lenScores := uint64(len(scores.Scores))
+	if lenScores > maxNumScores {
+		diff := lenScores - maxNumScores
+		if diff > 0 {
+			scores.Scores = scores.Scores[diff:]
+		}
+	}
+	key := collections.Join(topicId, blockNumber)
+	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 
 func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
