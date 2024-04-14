@@ -2554,4 +2554,60 @@ func (s *KeeperTestSuite) TestAddTopicAccumulateMetDemand() {
 	s.Require().Equal(expectedDemand, totalDemand, "Accumulated met demand should match expected total")
 }
 
+func (s *KeeperTestSuite) TestSetChurnReadyTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Define a list of topics to set as churn ready
+	topicList := types.TopicList{
+		Topics: []*types.Topic{
+			{Id: 1, Creator: "Creator1"},
+			{Id: 2, Creator: "Creator2"},
+		},
+	}
+
+	// Set churn ready topics
+	err := keeper.SetChurnReadyTopics(ctx, topicList)
+	s.Require().NoError(err, "Setting churn ready topics should not fail")
+
+	// Retrieve and verify the set topics
+	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
+	s.Require().NoError(err, "Fetching churn ready topics should not fail")
+	s.Require().Equal(len(topicList.Topics), len(retrievedList.Topics), "The number of topics in the list should match")
+	s.Require().Equal(topicList.Topics[0].Id, retrievedList.Topics[0].Id, "The IDs of the churn ready topics should match")
+}
+
+func (s *KeeperTestSuite) TestGetChurnReadyTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Attempt to fetch churn ready topics when none are set
+	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
+	s.Require().NoError(err, "Fetching churn ready topics should not fail even if none are set")
+	s.Require().Empty(retrievedList.Topics, "No topics should be returned when none are set")
+}
+
+func (s *KeeperTestSuite) TestResetChurnReadyTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Set some churn ready topics first
+	topicList := types.TopicList{
+		Topics: []*types.Topic{
+			{Id: 1, Creator: "Creator1"},
+			{Id: 2, Creator: "Creator2"},
+		},
+	}
+	_ = keeper.SetChurnReadyTopics(ctx, topicList)
+
+	// Now reset the churn ready topics
+	err := keeper.ResetChurnReadyTopics(ctx)
+	s.Require().NoError(err, "Resetting churn ready topics should not fail")
+
+	// Verify the reset by fetching the topics
+	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
+	s.Require().NoError(err, "Fetching churn ready topics after reset should not fail")
+	s.Require().Empty(retrievedList.Topics, "Churn ready topics should be empty after reset")
+}
+
 /// SCORES
