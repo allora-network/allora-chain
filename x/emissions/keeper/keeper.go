@@ -257,9 +257,7 @@ func NewKeeper(
 	return k
 }
 
-//////////////////////////////////////////////////////////////
-//                        NONCES                            //
-//////////////////////////////////////////////////////////////
+/// NONCES
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
@@ -435,9 +433,7 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 	return nonces, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                        REGRETS                           //
-//////////////////////////////////////////////////////////////
+/// REGRETS
 
 func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
@@ -499,9 +495,7 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return regret, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                      PARAMETERS                          //
-//////////////////////////////////////////////////////////////
+/// PARAMETERS
 
 func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
@@ -658,9 +652,7 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                 INFERENCES, FORECASTS                    //
-//////////////////////////////////////////////////////////////
+/// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
@@ -844,9 +836,7 @@ func (k *Keeper) GetNumForecastsInRewardEpoch(ctx context.Context, topicId Topic
 	return res, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                   REWARDS UPDATES                        //
-//////////////////////////////////////////////////////////////
+/// REWARDS UPDATES
 
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
@@ -988,9 +978,7 @@ func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TopicI
 	return forecasts, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                     LOSS BUNDLES                         //
-//////////////////////////////////////////////////////////////
+/// LOSS BUNDLES
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
 func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
@@ -1066,9 +1054,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 	return &kv.Value, kv.Key.K2(), nil
 }
 
-//////////////////////////////////////////////////////////////
-//                        STAKING                           //
-//////////////////////////////////////////////////////////////
+/// STAKING
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
@@ -1602,9 +1588,7 @@ func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, ad
 	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
 }
 
-//////////////////////////////////////////////////////////////
-//                         REPUTERS                         //
-//////////////////////////////////////////////////////////////
+/// REPUTERS
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
@@ -1658,9 +1642,7 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 	return nil
 }
 
-//////////////////////////////////////////////////////////////
-//                         WORKERS                          //
-//////////////////////////////////////////////////////////////
+/// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
@@ -1736,9 +1718,7 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 	return address, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                         TOPICS                           //
-//////////////////////////////////////////////////////////////
+/// TOPICS
 
 // Get the previous weight during rewards calculation for a topic
 func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (types.PreviousTopicWeight, error) {
@@ -1969,9 +1949,7 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 	return topicsByAddress, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                      FEE REVENUE                         //
-//////////////////////////////////////////////////////////////
+/// FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
@@ -2011,9 +1989,7 @@ func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
 	return err
 }
 
-//////////////////////////////////////////////////////////////
-//              MEMPOOL & INFERENCE REQUESTS                //
-//////////////////////////////////////////////////////////////
+/// MEMPOOL & INFERENCE REQUESTS
 
 func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
 	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
@@ -2209,9 +2185,7 @@ func (k *Keeper) ResetNumInferencesInRewardEpoch(ctx context.Context) error {
 	return nil
 }
 
-//////////////////////////////////////////////////////////////
-//                         SCORES                           //
-//////////////////////////////////////////////////////////////
+/// SCORES
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
@@ -2395,9 +2369,7 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 	return coef, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                    REWARD FRACTION                       //
-//////////////////////////////////////////////////////////////
+/// REWARD FRACTION
 
 // Gets the previous W_{i-1,m}
 func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, error) {
@@ -2456,9 +2428,7 @@ func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId 
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
 
-//////////////////////////////////////////////////////////////
-//                    TAX for REWARD                        //
-//////////////////////////////////////////////////////////////
+/// TAX for REWARD
 
 func (k *Keeper) SetAverageWorkerReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress, value types.AverageWorkerReward) error {
 	key := collections.Join(topicId, worker)
@@ -2478,9 +2448,7 @@ func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, wo
 	return val, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                      WHITELISTS                          //
-//////////////////////////////////////////////////////////////
+/// WHITELISTS
 
 func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
 	return k.whitelistAdmins.Has(ctx, admin)
@@ -2518,9 +2486,7 @@ func (k *Keeper) RemoveFromReputerWhitelist(ctx context.Context, address sdk.Acc
 	return k.reputerWhitelist.Remove(ctx, address)
 }
 
-//////////////////////////////////////////////////////////////
-//                  BANK KEEPER WRAPPERS                    //
-//////////////////////////////////////////////////////////////
+/// BANK KEEPER WRAPPERS
 
 // SendCoinsFromModuleToModule
 func (k *Keeper) AccountKeeper() AccountKeeper {
