@@ -875,44 +875,53 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 }
 
 func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ValueBundle, BlockHeight, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block).
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		EndInclusive(block).
 		Descending()
 
 	iter, err := k.networkLossBundles.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure resources are released properly
+
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
 		return &types.ValueBundle{}, 0, nil
 	}
+
 	kv, err := iter.KeyValue()
 	if err != nil {
 		return nil, 0, err
 	}
+
+	// Return the found bundle and the associated block height
 	return &kv.Value, kv.Key.K2(), nil
 }
 
 func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, BlockHeight, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block).
+		EndInclusive(block). // Correctly set the end of the range to include the block
 		Descending()
 
 	iter, err := k.allLossBundles.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Properly manage resources by closing the iterator when done
+
 	if !iter.Valid() {
 		// Return empty loss bundle if no loss bundle is found
 		return &types.ReputerValueBundles{}, 0, nil
 	}
+
 	kv, err := iter.KeyValue()
 	if err != nil {
 		return nil, 0, err
 	}
+
+	// Return the found bundle and the associated block height
 	return &kv.Value, kv.Key.K2(), nil
 }
 

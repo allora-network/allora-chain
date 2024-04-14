@@ -1034,6 +1034,201 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 	s.Require().Equal(forecasts3.Forecasts[1].Forecaster, actualForecasts.Forecasts[1].Forecaster)
 }
 
+func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	reputerLossBundles := types.ReputerValueBundles{}
+
+	// Test inserting data
+	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+
+	// Retrieve data to verify insertion
+	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+
+	// Test getting data before any insert, should return error or nil
+	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	require.Error(err, "Should return error for non-existent data")
+	require.Nil(result, "Result should be nil for non-existent data")
+}
+
+func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	lossBundle := types.ValueBundle{}
+
+	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
+	require.NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
+
+	// Verify the insertion
+	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+
+	// Attempt to retrieve before insertion
+	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	require.Error(err, "Should return error for non-existent data")
+	require.Nil(result, "Result should be nil for non-existent data")
+}
+
+func (s *KeeperTestSuite) TestGetNetworkLossBundleAtOrBeforeBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	lossBundle := types.ValueBundle{}
+
+	// Insert data at a specific block
+	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
+
+	// Get the bundle at or before the specific block
+	result, blockResult, err := s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetReputerReportedLossesAtOrBeforeBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	reputerLossBundles := types.ReputerValueBundles{}
+
+	// Insert data at a specific block
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
+
+	// Get the losses at or before the specific block
+	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetNetworkLossBundleAtOrBeforeBlockComplex() {
+	ctx := s.ctx
+	require := s.Require()
+
+	topicId := uint64(3)
+	otherTopicId := uint64(4)
+
+	earlierBlock := types.BlockHeight(250)
+	block := types.BlockHeight(300)
+	unrelatedBlock := types.BlockHeight(310)
+	laterBlock := types.BlockHeight(350)
+
+	earlierLossBundle := types.ValueBundle{}
+	lossBundle := types.ValueBundle{}
+	unrelatedLossBundle := types.ValueBundle{}
+	laterLossBundle := types.ValueBundle{}
+
+	// Insert data for different blocks and topics
+	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, earlierBlock, earlierLossBundle)
+	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
+	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, otherTopicId, unrelatedBlock, unrelatedLossBundle)
+	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, laterBlock, laterLossBundle)
+
+	// Test the retrieval logic
+	result, blockResult, err := s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
+
+	// Test the retrieval logic for a block before any data is inserted for that block
+	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, earlierBlock-10)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(int64(0), blockResult, "No block should be returned")
+
+	// Test the retrieval logic for blocks after inserted data
+	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, laterBlock+10)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(laterBlock, blockResult, "Block returned should be the latest available block")
+
+	// Ensure it does not return data for a different topic
+	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, 320)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetReputerReportedLossesAtOrBeforeBlockComplex() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(3)
+	otherTopicId := uint64(4)
+
+	earlierBlock := types.BlockHeight(250)
+	block := types.BlockHeight(300)
+	unrelatedBlock := types.BlockHeight(310)
+	laterBlock := types.BlockHeight(350)
+
+	earlierReputerLossBundles := types.ReputerValueBundles{}
+	reputerLossBundles := types.ReputerValueBundles{}
+	unrelatedReputerLossBundles := types.ReputerValueBundles{}
+	laterReputerLossBundles := types.ReputerValueBundles{}
+
+	// Insert data at various blocks and topics
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, earlierBlock, earlierReputerLossBundles)
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, otherTopicId, unrelatedBlock, unrelatedReputerLossBundles)
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, laterBlock, laterReputerLossBundles)
+
+	// Test the retrieval logic for the specified block
+	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+
+	// Test the retrieval logic for a block before any data is inserted for that block
+	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, earlierBlock-10)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(0, len(result.ReputerValueBundles))
+	require.Equal(types.BlockHeight(0), blockResult, "No block should be returned")
+
+	// Test the retrieval logic for blocks after inserted data
+	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, laterBlock+10)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(laterBlock, blockResult, "Block returned should be the latest available block")
+
+	// Ensure it does not return data for a different topic at a nearby block
+	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, 320)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+}
+
 // ########################################
 // #           Staking tests              #
 // ########################################
