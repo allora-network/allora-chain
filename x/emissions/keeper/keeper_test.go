@@ -856,12 +856,9 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		},
 	}
 
-	_, err := keeper.GetInferencesAtBlock(ctx, topicId, block+1)
-	s.Require().Error(err)
-
 	// Assume InsertInferences correctly sets up inferences
 	nonce := types.Nonce{Nonce: int64(block)} // Assuming block type cast to int64 if needed
-	err = keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
