@@ -2903,3 +2903,47 @@ func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
 	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
+
+func (s *KeeperTestSuite) TestSetListeningCoefficient() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := sdk.AccAddress("sampleReputerAddress")
+
+	// Define a listening coefficient
+	coefficient := types.ListeningCoefficient{
+		Coefficient: alloraMath.NewDecFromInt64(10),
+	}
+
+	// Set the listening coefficient
+	err := keeper.SetListeningCoefficient(ctx, topicId, reputer, coefficient)
+	s.Require().NoError(err, "Setting listening coefficient should not fail")
+
+	// Retrieve the set coefficient to verify it was set correctly
+	retrievedCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching listening coefficient should not fail")
+	s.Require().Equal(coefficient.Coefficient, retrievedCoef.Coefficient, "The retrieved coefficient should match the set value")
+}
+
+func (s *KeeperTestSuite) TestGetListeningCoefficient() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := sdk.AccAddress("sampleReputerAddress")
+
+	// Attempt to fetch a coefficient before setting it
+	defaultCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching coefficient should not fail when not set")
+	s.Require().Equal(alloraMath.NewDecFromInt64(1), defaultCoef.Coefficient, "Should return the default coefficient when not set")
+
+	// Now set a specific coefficient
+	setCoef := types.ListeningCoefficient{
+		Coefficient: alloraMath.NewDecFromInt64(5),
+	}
+	_ = keeper.SetListeningCoefficient(ctx, topicId, reputer, setCoef)
+
+	// Fetch and verify the coefficient after setting
+	fetchedCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching coefficient should not fail after setting")
+	s.Require().Equal(setCoef.Coefficient, fetchedCoef.Coefficient, "The fetched coefficient should match the set value")
+}
