@@ -1935,7 +1935,14 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
-	return k.topicFeeRevenue.Get(ctx, topicId)
+	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.TopicFeeRevenue{
+			Epoch:   0,
+			Revenue: cosmosMath.ZeroInt(),
+		}, nil
+	}
+	return feeRev, nil
 }
 
 // Add to the fee revenue collected by a topic for this reward epoch
