@@ -2044,30 +2044,6 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	return score, nil
 }
 
-func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
-	key := collections.Join(topicId, worker)
-	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
-		}
-		return types.Score{}, err
-	}
-	return score, nil
-}
-
-func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer) (types.Score, error) {
-	key := collections.Join(topicId, reputer)
-	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
-		}
-		return types.Score{}, err
-	}
-	return score, nil
-}
-
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
@@ -2094,6 +2070,18 @@ func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
 }
 
+func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+	key := collections.Join(topicId, worker)
+	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
+}
+
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer, score types.Score) error {
 	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
@@ -2105,6 +2093,18 @@ func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	}
 	key := collections.Join(topicId, reputer)
 	return k.latestReputerScoresByReputer.Set(ctx, key, score)
+}
+
+func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer) (types.Score, error) {
+	key := collections.Join(topicId, reputer)
+	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {

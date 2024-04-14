@@ -2611,3 +2611,53 @@ func (s *KeeperTestSuite) TestResetChurnReadyTopics() {
 }
 
 /// SCORES
+
+func (s *KeeperTestSuite) TestGetLatestScores() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := "worker1"
+	forecaster := "forecaster1"
+	reputer := "reputer1"
+
+	// Test getting latest scores when none are set
+	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, sdk.AccAddress(worker))
+	s.Require().NoError(err, "Fetching latest inferer score should not fail")
+	s.Require().Equal(types.Score{}, infererScore, "Inferer score should be empty if not set")
+
+	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, sdk.AccAddress(forecaster))
+	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
+	s.Require().Equal(types.Score{}, forecasterScore, "Forecaster score should be empty if not set")
+
+	reputerScore, err := keeper.GetLatestReputerScore(ctx, topicId, sdk.AccAddress(reputer))
+	s.Require().NoError(err, "Fetching latest reputer score should not fail")
+	s.Require().Equal(types.Score{}, reputerScore, "Reputer score should be empty if not set")
+}
+
+func (s *KeeperTestSuite) TestSetLatestScores() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("worker1")
+	forecaster := sdk.AccAddress("forecaster1")
+	reputer := sdk.AccAddress("reputer1")
+	oldScore := types.Score{TopicId: topicId, BlockNumber: 1, Address: worker.String(), Score: alloraMath.NewDecFromInt64(90)}
+	newScore := types.Score{TopicId: topicId, BlockNumber: 2, Address: worker.String(), Score: alloraMath.NewDecFromInt64(95)}
+
+	// Set an initial score for inferer and attempt to update with an older score
+	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
+	err := keeper.SetLatestInfererScore(ctx, topicId, worker, oldScore)
+	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
+	updatedScore, _ := keeper.GetLatestInfererScore(ctx, topicId, worker)
+	s.Require().NotEqual(oldScore.Score, updatedScore.Score, "Older score should not replace newer score")
+
+	// Set a new score for forecaster
+	_ = keeper.SetLatestForecasterScore(ctx, topicId, forecaster, newScore)
+	forecasterScore, _ := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
+	s.Require().Equal(newScore.Score, forecasterScore.Score, "Newer forecaster score should be set")
+
+	// Set a new score for reputer
+	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
+	reputerScore, _ := keeper.GetLatestReputerScore(ctx, topicId, reputer)
+	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
+}
