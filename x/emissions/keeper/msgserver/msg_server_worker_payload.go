@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,15 +16,18 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	ctx context.Context,
 	topicId uint64,
 	nonce types.Nonce,
-	inferences []*types.Inference,
+	// inferences []*types.Inference,
+	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
-	for _, inference := range inferences {
+	for _, workerDataBundle := range workerDataBundles {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each inferer
 		/// All filters should be done in order of increasing computational complexity
+
+		inference := workerDataBundle.InferenceForecastsBundle.Inference
 
 		// Check that the inference is for the correct topic
 		if inference.TopicId != topicId {
@@ -49,16 +51,18 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 				continue
 			}
 
+			//
 			/// TODO check signatures! throw if invalid!
-			senderAddr, err := sdk.AccAddressFromBech32(inference.Inferer)
-			if err != nil {
-				return nil, err
-			}
-			pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-			src, _ := json.Marshal(inference.Value)
-			if !pk.GetPubKey().VerifySignature(src, inference.Signature) {
-				return nil, types.ErrSignatureVerificationFailed
-			}
+			//  TODO Now this needs to happen outside where the signature is.
+			// senderAddr, err := sdk.AccAddressFromBech32(inference.Inferer)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
+			// src, _ := json.Marshal(inference.Value)
+			// if !pk.GetPubKey().VerifySignature(src, inference.Signature) {
+			// 	return nil, types.ErrSignatureVerificationFailed
+			// }
 
 			/// If we do PoX-like anti-sybil procedure, would go here
 
@@ -112,18 +116,19 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	ctx context.Context,
 	topicId uint64,
 	nonce types.Nonce,
-	forecasts []*types.Forecast,
+	workerDataBundle []*types.WorkerDataBundle,
 	// Inferers in the current batch, assumed to have passed VerifyAndInsertInferencesFromTopInferers() filters
 	acceptedInferersOfBatch map[string]bool,
 	maxTopWorkersToReward uint64,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecasterScores := make(map[string]types.Score)
-	for _, forecast := range forecasts {
+	for _, workerDataBundle := range workerDataBundle {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each forecaster
 		/// All filters should be done in order of increasing computational complexity
 
+		forecast := workerDataBundle.InferenceForecastsBundle.Forecast
 		// Check that the forecast is for the correct topic
 		if forecast.TopicId != topicId {
 			continue
@@ -163,15 +168,17 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 			}
 
 			/// TODO check signatures! throw if invalid!
-			senderAddr, err := sdk.AccAddressFromBech32(forecast.Forecaster)
-			if err != nil {
-				return err
-			}
-			pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-			src, _ := json.Marshal(forecast.ForecastElements)
-			if !pk.GetPubKey().VerifySignature(src, forecast.Signature) {
-				return types.ErrSignatureVerificationFailed
-			}
+			/// TODO Now this needs to happen one step above where the signature is.
+			//
+			// senderAddr, err := sdk.AccAddressFromBech32(forecast.Forecaster)
+			// if err != nil {
+			// 	return err
+			// }
+			// pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
+			// src, _ := json.Marshal(forecast.ForecastElements)
+			// if !pk.GetPubKey().VerifySignature(src, forecast.Signature) {
+			// 	return types.ErrSignatureVerificationFailed
+			// }
 
 			/// If we do PoX-like anti-sybil procedure, would go here
 
@@ -232,12 +239,12 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
-	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.Inferences, maxTopWorkersToReward)
+	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, maxTopWorkersToReward)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.Forecasts, acceptedInferers, maxTopWorkersToReward)
+	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, acceptedInferers, maxTopWorkersToReward)
 	if err != nil {
 		return nil, err
 	}
