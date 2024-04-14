@@ -1519,6 +1519,60 @@ func (s *KeeperTestSuite) TestGetStakeRemovalQueueByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing stake removal information")
 }
 
+func (s *KeeperTestSuite) TestSetAndGetDelegatedStakeRemovalQueueByAddress() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	address := sdk.AccAddress("sampleAddress1")
+
+	// Create sample delegated stake removal information
+	removalInfo := types.DelegatedStakeRemoval{
+		BlockRemovalStarted: time.Now().Unix(),
+		Placements: []*types.DelegatedStakePlacement{
+			{
+				TopicId:   201,
+				Reputer:   "reputer3",
+				Delegator: "delegator3",
+				Amount:    cosmosMath.NewUint(300),
+			},
+			{
+				TopicId:   202,
+				Reputer:   "reputer4",
+				Delegator: "delegator4",
+				Amount:    cosmosMath.NewUint(400),
+			},
+		},
+	}
+
+	// Set delegated stake removal information
+	err := keeper.SetDelegatedStakeRemovalQueueForAddress(ctx, address, removalInfo)
+	s.Require().NoError(err)
+
+	// Retrieve the delegated stake removal information
+	retrievedInfo, err := keeper.GetDelegatedStakeRemovalQueueByAddress(ctx, address)
+	s.Require().NoError(err)
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(len(removalInfo.Placements), len(retrievedInfo.Placements), "Number of delegated placements should match")
+
+	// Detailed check on each delegated placement
+	for i, placement := range retrievedInfo.Placements {
+		s.Require().Equal(removalInfo.Placements[i].TopicId, placement.TopicId, "Topic IDs should match for all placements")
+		s.Require().Equal(removalInfo.Placements[i].Reputer, placement.Reputer, "Reputer addresses should match for all placements")
+		s.Require().Equal(removalInfo.Placements[i].Delegator, placement.Delegator, "Delegator addresses should match for all placements")
+		s.Require().Equal(removalInfo.Placements[i].Amount, placement.Amount, "Amounts should match for all placements")
+	}
+}
+
+func (s *KeeperTestSuite) TestGetDelegatedStakeRemovalQueueByAddressNotFound() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	address := sdk.AccAddress("sampleAddress2")
+
+	// Attempt to retrieve delegated stake removal info for an address with no set info
+	_, err := keeper.GetDelegatedStakeRemovalQueueByAddress(ctx, address)
+	s.Require().Error(err)
+	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing delegated stake removal information")
+}
+
 func (s *KeeperTestSuite) TestGetStakePlacementsByReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
