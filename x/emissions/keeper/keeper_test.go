@@ -1825,3 +1825,173 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.MaxWorkersPerTopicRequest, paramsFromKeeper.MaxWorkersPerTopicRequest, "Params should be equal to the set params: MaxWorkersPerTopicRequest")
 	s.Require().Equal(params.MaxReputersPerTopicRequest, paramsFromKeeper.MaxReputersPerTopicRequest, "Params should be equal to the set params: MaxReputersPerTopicRequest")
 }
+
+// / REPUTERS AND WORKER
+func (s *KeeperTestSuite) TestInsertWorker() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	worker := sdk.AccAddress("sampleWorkerAddress")
+	topicIds := []uint64{401, 402}
+
+	// Define sample OffchainNode information for a worker
+	workerInfo := types.OffchainNode{
+		LibP2PKey:    "worker-libp2p-key-sample",
+		MultiAddress: "worker-multi-address-sample",
+		Owner:        "worker-owner-sample",
+		NodeAddress:  "worker-node-address-sample",
+		NodeId:       "worker-node-id-sample",
+	}
+
+	// Attempt to insert the worker for multiple topics
+	err := keeper.InsertWorker(ctx, topicIds, worker, workerInfo)
+	s.Require().NoError(err)
+
+	node, err := keeper.FindWorkerNodesByOwner(ctx, workerInfo.Owner)
+
+	s.Require().NoError(err)
+	s.Require().Equal(workerInfo.LibP2PKey, node[0].LibP2PKey)
+	s.Require().Equal(workerInfo.MultiAddress, node[0].MultiAddress)
+	s.Require().Equal(workerInfo.Owner, node[0].Owner)
+	s.Require().Equal(workerInfo.NodeAddress, node[0].NodeAddress)
+	s.Require().Equal(workerInfo.NodeId, node[0].NodeId)
+}
+
+func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	worker := sdk.AccAddress("sampleWorkerAddress")
+	topicIds := []uint64{401, 402}
+
+	// Define sample OffchainNode information for a worker
+	workerInfo := types.OffchainNode{
+		LibP2PKey:    "worker-libp2p-key-sample",
+		MultiAddress: "worker-multi-address-sample",
+		Owner:        "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		NodeAddress:  "worker-node-address-sample",
+		NodeId:       "worker-node-id-sample",
+	}
+
+	// Attempt to insert the worker for multiple topics
+	err := keeper.InsertWorker(ctx, topicIds, worker, workerInfo)
+	s.Require().NoError(err)
+
+	// Call the function to get the worker address using the P2P key
+	retrievedAddress, err := keeper.GetWorkerAddressByP2PKey(ctx, workerInfo.LibP2PKey)
+	s.Require().NoError(err)
+	workerAddress, err := sdk.AccAddressFromBech32(workerInfo.Owner)
+	s.Require().NoError(err)
+	s.Require().Equal(workerAddress, retrievedAddress)
+}
+
+func (s *KeeperTestSuite) TestRemoveWorker() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	worker := sdk.AccAddress("sampleWorkerAddress")
+	topicId := uint64(401) // Assume the worker is associated with this topicId initially
+
+	// Define sample OffchainNode information for a worker
+	workerInfo := types.OffchainNode{
+		LibP2PKey:    "worker-libp2p-key-sample",
+		MultiAddress: "worker-multi-address-sample",
+		Owner:        "worker-owner-sample",
+		NodeAddress:  "worker-node-address-sample",
+		NodeId:       "worker-node-id-sample",
+	}
+
+	// Insert the worker
+	insertErr := keeper.InsertWorker(ctx, []uint64{topicId}, worker, workerInfo)
+	s.Require().NoError(insertErr, "Failed to insert worker initially")
+
+	// Verify the worker is registered in the topic
+	isRegisteredPre, preErr := keeper.IsWorkerRegisteredInTopic(ctx, topicId, worker)
+	s.Require().NoError(preErr, "Failed to check worker registration before removal")
+	s.Require().True(isRegisteredPre, "Worker should be registered in the topic before removal")
+
+	// Perform the removal
+	removeErr := keeper.RemoveWorker(ctx, topicId, worker)
+	s.Require().NoError(removeErr, "Failed to remove worker")
+
+	// Verify the worker is no longer registered in the topic
+	isRegisteredPost, postErr := keeper.IsWorkerRegisteredInTopic(ctx, topicId, worker)
+	s.Require().NoError(postErr, "Failed to check worker registration after removal")
+	s.Require().False(isRegisteredPost, "Worker should not be registered in the topic after removal")
+}
+
+func (s *KeeperTestSuite) TestInsertReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputer := sdk.AccAddress("sampleReputerAddress")
+	topicIds := []uint64{501, 502}
+
+	// Define sample OffchainNode information for a reputer
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	// Attempt to insert the reputer for multiple topics
+	err := keeper.InsertReputer(ctx, topicIds, reputer, reputerInfo)
+	s.Require().NoError(err)
+
+	// Optionally check if reputer is registered in each topic using an assumed IsReputerRegisteredInTopic method
+	for _, topicId := range topicIds {
+		isRegistered, regErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+		s.Require().NoError(regErr, "Checking reputer registration should not fail")
+		s.Require().True(isRegistered, "Reputer should be registered in each topic")
+	}
+}
+
+func (s *KeeperTestSuite) TestRemoveReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputer := sdk.AccAddress("sampleReputerAddress")
+	topicId := uint64(501)
+
+	// Pre-setup: Insert the reputer for initial setup
+	err := keeper.InsertReputer(ctx, []uint64{topicId}, reputer, types.OffchainNode{Owner: "sample-owner"})
+	s.Require().NoError(err, "InsertReputer failed during setup")
+
+	// Verify the reputer is registered in the topic
+	isRegisteredPre, preErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	s.Require().NoError(preErr, "Failed to check reputer registration before removal")
+	s.Require().True(isRegisteredPre, "Reputer should be registered in the topic before removal")
+
+	// Perform the removal
+	removeErr := keeper.RemoveReputer(ctx, topicId, reputer)
+	s.Require().NoError(removeErr, "Failed to remove reputer")
+
+	// Verify the reputer is no longer registered in the topic
+	isRegisteredPost, postErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	s.Require().NoError(postErr, "Failed to check reputer registration after removal")
+	s.Require().False(isRegisteredPost, "Reputer should not be registered in the topic after removal")
+}
+
+func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputer := sdk.AccAddress("sampleReputerAddress")
+	topicIds := []uint64{501, 502}
+
+	// Define sample OffchainNode information for a reputer
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	// Insert the reputer for multiple topics
+	err := keeper.InsertReputer(ctx, topicIds, reputer, reputerInfo)
+	s.Require().NoError(err)
+
+	// Retrieve the reputer address using the P2P key
+	retrievedAddress, err := keeper.GetReputerAddressByP2PKey(ctx, reputerInfo.LibP2PKey)
+	s.Require().NoError(err)
+	expectedAddress, err := sdk.AccAddressFromBech32(reputerInfo.Owner)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedAddress, retrievedAddress, "The retrieved address should match the expected address")
+}
