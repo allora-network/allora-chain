@@ -99,7 +99,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 				return nil, err
 			}
 
-			/// TODO check signatures! throw if invalid!
+			/// Check signatures! throw if invalid!
 			senderAddr, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
 			if err != nil {
 				return nil, err
