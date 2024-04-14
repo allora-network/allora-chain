@@ -15,7 +15,7 @@ import (
 func makeMapFromWorkerToTheirWork(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
 	inferencesByWorker := make(map[Worker]*emissions.Inference)
 	for _, inference := range inferences {
-		inferencesByWorker[inference.Worker] = inference
+		inferencesByWorker[inference.Inferer] = inference
 	}
 	return inferencesByWorker
 }

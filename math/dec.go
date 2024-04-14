@@ -247,6 +247,14 @@ func (x Dec) Mul(y Dec) (Dec, error) {
 	return z, errors.Wrap(err, "decimal multiplication error")
 }
 
+// Neg negates the decimal and returns a new Dec with value `-x` without
+// mutating any argument and error if there is an overflow.
+func (x Dec) Neg() (Dec, error) {
+	var z Dec
+	_, err := dec128Context.Neg(&z.dec, &x.dec)
+	return z, errors.Wrap(err, "decimal negation error")
+}
+
 // Log10 returns a new Dec with the value of the base 10 logarithm of x, without mutating x.
 func Log10(x Dec) (Dec, error) {
 	var z Dec

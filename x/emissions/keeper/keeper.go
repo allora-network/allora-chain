@@ -62,11 +62,17 @@ type Keeper struct {
 	/// SCORES
 
 	// map of (topic, block_number, worker) -> score
-	inferenceScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
+	infererScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_number, worker) -> score
-	forecastScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
+	forecasterScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_number, reputer) -> score
-	reputerScores collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
+	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
+	// map of (topic, block_number, worker) -> score
+	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, Worker], types.Score]
+	// map of (topic, block_number, worker) -> score
+	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, Worker], types.Score]
+	// map of (topic, block_number, reputer) -> score
+	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, Reputer], types.Score]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, Reputer], types.ListeningCoefficient]
 	// map of (topic, reputer) -> previous reward (used for EMA)
@@ -154,7 +160,7 @@ type Keeper struct {
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
 
 	// map of (topic) -> unfulfilled nonces
-	unfulfilledReputerNonces collections.Map[TopicId, types.Nonces]
+	unfulfilledReputerNonces collections.Map[TopicId, types.ReputerRequestNonces]
 
 	/// REGRETS
 
@@ -227,16 +233,19 @@ func NewKeeper(
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
-		inferenceScores:                     collections.NewMap(sb, types.InferenceScoresKey, "worker_inference_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		forecastScores:                      collections.NewMap(sb, types.ForecastScoresKey, "worker_forecast_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		infererScoresByBlock:                collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecasterScoresByBlock:             collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		latestInfererScoresByWorker:         collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
+		latestForecasterScoresByWorker:      collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
+		latestReputerScoresByReputer:        collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
 		previousReputerRewardFraction:       collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		previousInferenceRewardFraction:     collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		previousForecastRewardFraction:      collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		averageWorkerReward:                 collections.NewMap(sb, types.AverageWorkerRewardKey, "average_worker_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AverageWorkerReward](cdc)),
-		reputerScores:                       collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerScoresByBlock:                collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -288,7 +297,7 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.ReputerNonce.Nonce == nonce.Nonce {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -331,7 +340,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.ReputerNonce.Nonce == nonce.Nonce {
 			return true, nil
 		}
 	}
@@ -373,19 +382,29 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce, associatedWorkerNonce *types.Nonce) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
+	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
 	for _, n := range nonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		// Do nothing if nonce is already in the list
+		if n.ReputerNonce.Nonce == nonce.Nonce {
+			return nil
+		}
+		// Do nothing if the associated worker nonce is already in the list
+		if n.WorkerNonce.Nonce == associatedWorkerNonce.Nonce {
 			return nil
 		}
 	}
-	nonces.Nonces = append(nonces.Nonces, nonce)
+	reputerRequestNonce := &types.ReputerRequestNonce{
+		ReputerNonce: nonce,
+		WorkerNonce:  associatedWorkerNonce,
+	}
+	nonces.Nonces = append(nonces.Nonces, reputerRequestNonce)
 
 	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
 	if err != nil {
@@ -414,13 +433,13 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 	return nonces, nil
 }
 
-func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Nonces{}, nil
+			return types.ReputerRequestNonces{}, nil
 		}
-		return types.Nonces{}, err
+		return types.ReputerRequestNonces{}, err
 	}
 	return nonces, nil
 }
@@ -644,6 +663,38 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
+func (k *Keeper) GetParamsMaxWorkersAcceptedPerPayload(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxWorkersAcceptedPerPayload, nil
+}
+
+func (k *Keeper) GetParamsMaxReputersAcceptedPerPayload(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxReputersAcceptedPerPayload, nil
+}
+
+func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopWorkersToReward, nil
+}
+
+func (k *Keeper) GetParamsMaxTopReputersToReward(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopReputersToReward, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -728,7 +779,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
 		// Update latests inferences for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Worker)
+		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Inferer)
 		if err != nil {
 			return err
 		}
@@ -1638,9 +1689,9 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 }
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+func (k *Keeper) InsertReputer(ctx context.Context, topicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
+	for _, topicId := range topicIds {
+		topicKey := collections.Join(topicId, reputer)
 		err := k.topicReputers.Set(ctx, topicKey)
 		if err != nil {
 			return err
@@ -1650,7 +1701,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, reputer, TopicIds)
+	err = k.AddAddressTopics(ctx, reputer, topicIds)
 	if err != nil {
 		return err
 	}
@@ -1659,8 +1710,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 
 // Remove a reputer to the reputer tracking data structures and topicReputers
 func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	topicKey := collections.Join(topicId, reputerAddr)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1675,8 +1725,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 
 // Remove a worker to the worker tracking data structures and topicWorkers
 func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	topicKey := collections.Join(topicId, workerAddr)
 	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1690,9 +1739,9 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 }
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
+func (k *Keeper) InsertWorker(ctx context.Context, topicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
+	for _, topicId := range topicIds {
+		topickey := collections.Join(topicId, worker)
 		err := k.topicWorkers.Set(ctx, topickey)
 		if err != nil {
 			return err
@@ -1702,11 +1751,23 @@ func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sd
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, worker, TopicIds)
+	err = k.AddAddressTopics(ctx, worker, topicIds)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// True if worker is registered in topic, else False
+func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (bool, error) {
+	topickey := collections.Join(topicId, worker)
+	return k.topicWorkers.Has(ctx, topickey)
+}
+
+// True if reputer is registered in topic, else False
+func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
+	topickey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topickey)
 }
 
 func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
@@ -1873,7 +1934,14 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
-	return k.topicFeeRevenue.Get(ctx, topicId)
+	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.TopicFeeRevenue{
+			Epoch:   0,
+			Revenue: cosmosMath.ZeroInt(),
+		}, nil
+	}
+	return feeRev, nil
 }
 
 // Add to the fee revenue collected by a topic for this reward epoch
@@ -2085,6 +2153,81 @@ func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, erro
 
 /// SCORES
 
+func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+	key := collections.Join(topicId, worker)
+	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
+}
+
+func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+	key := collections.Join(topicId, worker)
+	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
+}
+
+func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer) (types.Score, error) {
+	key := collections.Join(topicId, reputer)
+	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
+}
+
+// If the new score is older than the current score, don't update
+func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
+	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
+	if err != nil {
+		return err
+	}
+	if oldScore.BlockNumber >= score.BlockNumber {
+		return nil
+	}
+	key := collections.Join(topicId, worker)
+	return k.latestInfererScoresByWorker.Set(ctx, key, score)
+}
+
+// If the new score is older than the current score, don't update
+func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
+	oldScore, err := k.GetLatestForecasterScore(ctx, topicId, worker)
+	if err != nil {
+		return err
+	}
+	if oldScore.BlockNumber >= score.BlockNumber {
+		return nil
+	}
+	key := collections.Join(topicId, worker)
+	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
+}
+
+// If the new score is older than the current score, don't update
+func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer, score types.Score) error {
+	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	if oldScore.BlockNumber >= score.BlockNumber {
+		return nil
+	}
+	key := collections.Join(topicId, reputer)
+	return k.latestReputerScoresByReputer.Set(ctx, key, score)
+}
+
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
@@ -2106,7 +2249,7 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	}
 
 	key := collections.Join(topicId, blockNumber)
-	return k.inferenceScores.Set(ctx, key, scores)
+	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
@@ -2130,7 +2273,7 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	}
 
 	key := collections.Join(topicId, blockNumber)
-	return k.forecastScores.Set(ctx, key, scores)
+	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
@@ -2152,7 +2295,7 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 		}
 	}
 	key := collections.Join(topicId, blockNumber)
-	return k.reputerScores.Set(ctx, key, scores)
+	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 
 func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
@@ -2162,7 +2305,7 @@ func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId
 		Descending()
 
 	scores := make([]*types.Score, 0)
-	iter, err := k.inferenceScores.Iterate(ctx, rng)
+	iter, err := k.infererScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
@@ -2191,7 +2334,7 @@ func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId 
 		Descending()
 
 	scores := make([]*types.Score, 0)
-	iter, err := k.forecastScores.Iterate(ctx, rng)
+	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
@@ -2215,7 +2358,7 @@ func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId 
 
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
-	scores, err := k.inferenceScores.Get(ctx, key)
+	scores, err := k.infererScoresByBlock.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil
@@ -2227,7 +2370,7 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
-	scores, err := k.forecastScores.Get(ctx, key)
+	scores, err := k.forecasterScoresByBlock.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil
@@ -2239,7 +2382,7 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 
 func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
-	scores, err := k.reputerScores.Get(ctx, key)
+	scores, err := k.reputerScoresByBlock.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil

@@ -112,4 +112,6 @@ var (
 	ErrSliceLengthMismatch                               = errors.Register(ModuleName, 107, "slice length mismatch")
 	ErrNonceNotUnfulfilled                               = errors.Register(ModuleName, 108, "nonce not unfuilfilled")
 	ErrTopicCreatorNotEnoughDenom                        = errors.Register(ModuleName, 109, "topic creator does not have enough denom")
+	ErrInvalidWorkerNonce                                = errors.Register(ModuleName, 110, "invalid worker nonce")
+	ErrInvalidReputerNonce                               = errors.Register(ModuleName, 111, "invalid reputer nonce")
 )
