@@ -253,9 +253,7 @@ func NewKeeper(
 	return k
 }
 
-//////////////////////////////////////////////////////////////
-//                        NONCES                            //
-//////////////////////////////////////////////////////////////
+/// NONCES
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
@@ -431,9 +429,7 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 	return nonces, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                        REGRETS                           //
-//////////////////////////////////////////////////////////////
+/// REGRETS
 
 func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
@@ -495,9 +491,7 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return regret, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                      PARAMETERS                          //
-//////////////////////////////////////////////////////////////
+/// PARAMETERS
 
 func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
@@ -654,9 +648,7 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
-//////////////////////////////////////////////////////////////
-//                 INFERENCES, FORECASTS                    //
-//////////////////////////////////////////////////////////////
+/// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
@@ -775,7 +767,6 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 		if err != nil {
 			return err
 		}
-		// TODO
 		// // Update the number of forecasts in the reward epoch for each forecaster
 		// err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
 		// if err != nil {
