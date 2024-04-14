@@ -2,6 +2,7 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	"crypto/ed25519"
 	"testing"
 	"time"
 
@@ -24,12 +25,17 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type ChainKey struct {
+	pubKey ed25519.PublicKey
+	priKey ed25519.PrivateKey
+}
+
 var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(6)
+	PKS     = simtestutil.CreateTestPubKeys(10)
 	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = sdk.ValAddress(Addr)
+	ValAddr = GeneratePrivateKeys(10)
 )
 
 type KeeperTestSuite struct {
@@ -72,8 +78,27 @@ func (s *KeeperTestSuite) SetupTest() {
 		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.Address()))
 		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.Address()))
 	}
+
+	for _, addr := range ValAddr {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.pubKey))
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.pubKey))
+		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.pubKey))
+	}
 }
 
+func GeneratePrivateKeys(numKeys int) []ChainKey {
+	testAddrs := make([]ChainKey, numKeys)
+	for i := 0; i < numKeys; i++ {
+		pk, prk, _ := ed25519.GenerateKey(nil)
+		testAddrs[i] = ChainKey{
+			pubKey: pk,
+			priKey: prk,
+		}
+	}
+
+	return testAddrs
+
+}
 func (s *KeeperTestSuite) CreateOneTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()

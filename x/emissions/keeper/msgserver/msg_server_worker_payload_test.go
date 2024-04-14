@@ -5,6 +5,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/golang/mock/gomock"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
@@ -16,9 +17,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	inferencerAddr := sdk.AccAddress(PKS[1].Address())
 	inferencerAddr1 := sdk.AccAddress(PKS[2].Address())
 	inferencerAddr2 := sdk.AccAddress(PKS[3].Address())
-	forecasterAddr := sdk.AccAddress(PKS[4].Address())
-	reputerAddr := sdk.AccAddress(PKS[5].Address())
-
+	reputerAddr := sdk.AccAddress(PKS[4].Address())
+	forecasterAddr := sdk.AccAddress(PKS[5].Address())
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Create topic 0 and register reputer in it
@@ -70,6 +70,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 			},
 		},
 	}
+	s.authKeeper.EXPECT().GetAccount(gomock.Any(), inferencerAddr)
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 }
