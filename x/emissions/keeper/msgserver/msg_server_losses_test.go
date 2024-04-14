@@ -1,77 +1,104 @@
 package msgserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-/*
 func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address()).String()
-	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddr := sdk.AccAddress(PKS[1].Address())
 
 	// TODO make this line work
-	msgServer.keeper.stakeByReputerAndTopicId.Set(s.ctx, reputerAddr, 100)
+
+	registrationInitialStake := cosmosMath.NewUint(100)
+
+	// Create topic 0 and register reputer in it
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// Try to register again
+	registerMsg := &types.MsgRegister{
+		Creator:      reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicIds:     []uint64{0},
+		InitialStake: registrationInitialStake,
+		IsReputer:    true,
+	}
+	_, err := msgServer.Register(ctx, registerMsg)
 
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
-		Sender: reputerAddr,
-		Nonce: &types.Nonce{
-			Nonce: 1,
+		Sender:  reputerAddr.String(),
+		TopicId: 0,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 2,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: 1,
+			},
 		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
-				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
-					TopicId:       1,
+					TopicId:       0,
+					Reputer:       reputerAddr.String(),
 					CombinedValue: alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{
-							Worker: workerAddr,
+							Worker: workerAddr.String(),
 							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					ForecasterValues: []*types.WorkerAttributedValue{
 						{
-							Worker: workerAddr,
+							Worker: workerAddr.String(),
 							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					NaiveValue: alloraMath.NewDecFromInt64(100),
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{
-							Worker: workerAddr,
+							Worker: workerAddr.String(),
 							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 						{
-							Worker: workerAddr,
+							Worker: workerAddr.String(),
 							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
 					OneInForecasterValues: []*types.WorkerAttributedValue{
 						{
-							Worker: workerAddr,
+							Worker: workerAddr.String(),
 							Value:  alloraMath.NewDecFromInt64(100),
 						},
 					},
+					ReputerRequestNonce: &types.ReputerRequestNonce{
+						ReputerNonce: &types.Nonce{
+							BlockHeight: 2,
+						},
+						WorkerNonce: &types.Nonce{
+							BlockHeight: 1,
+						},
+					},
 				},
-				Signature: []byte("ValueBundle Signature"),
+				Signature: []byte("Nonce + ReputerValueBundles Signature"),
 			},
 		},
-		Signature:      []byte("Nonce + ReputerValueBundles Signature"),
 	}
 
-	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
+	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
 	require.NoError(err, "InsertBulkReputerPayload should not return an error")
 }
-*/
 
 func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -84,9 +111,16 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender: reputerAddr,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 10,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: 11,
+			},
+		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
-				Reputer: reputerAddr,
 				ValueBundle: &types.ValueBundle{
 					TopicId:       1,
 					CombinedValue: alloraMath.NewDecFromInt64(100),
@@ -122,9 +156,9 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 						},
 					},
 				},
+				Signature: []byte("Nonce + ReputerValueBundles Signature"),
 			},
 		},
-		Signature: []byte("Nonce + ReputerValueBundles Signature"),
 	}
 
 	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)

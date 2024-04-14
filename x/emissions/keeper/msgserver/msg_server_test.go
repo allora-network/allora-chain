@@ -27,7 +27,7 @@ import (
 var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(4)
+	PKS     = simtestutil.CreateTestPubKeys(6)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = sdk.ValAddress(Addr)
 )
