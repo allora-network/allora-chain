@@ -117,7 +117,7 @@ func GetCalcSetNetworkRegrets(
 ) error {
 	// Convert the network losses to a networkLossesByWorker
 	networkLossesByWorker := convertValueBundleToNetworkLossesByWorker(networkLosses)
-	blockHeight := nonce.Nonce
+	blockHeight := nonce.BlockHeight
 
 	// Get old regret R_{i-1,j} and Calculate then Set the new regrets R_ij for inferers
 	for _, infererLoss := range networkLosses.InfererValues {

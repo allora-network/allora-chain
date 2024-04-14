@@ -79,7 +79,7 @@ func generateLosses(
 				},
 				{
 					Name:  "ALLORA_NONCE",
-					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+					Value: strconv.FormatInt(nonce.BlockHeight, 10),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
@@ -120,7 +120,7 @@ func generateInferences(
 				},
 				{
 					Name:  "ALLORA_NONCE",
-					Value: strconv.FormatInt(nonce.GetNonce(), 10),
+					Value: strconv.FormatInt(nonce.BlockHeight, 10),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max

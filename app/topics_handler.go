@@ -27,7 +27,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
-		currentNonce := emissionstypes.Nonce{Nonce: currentBlockHeight}
+		currentNonce := emissionstypes.Nonce{BlockHeight: currentBlockHeight}
 
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {

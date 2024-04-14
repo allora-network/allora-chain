@@ -138,7 +138,7 @@ func GetReputerRewards(
 	var reputerStakes []alloraMath.Dec
 	var scoresDec []alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.Reputer)
+		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return nil, err
 		}
