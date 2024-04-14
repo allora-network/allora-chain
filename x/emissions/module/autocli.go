@@ -212,12 +212,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddStake",
-					Use:       "add-stake [sender] [target] [amount]",
-					Short:     "Add stake [amount] from a sender [reputer or worker] to a stakeTarget [reputer or worker]",
+					Use:       "add-stake [sender] [amount] [topic_id]",
+					Short:     "Add stake [amount] to ones self sender [reputer or worker] for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "stake_target"},
 						{ProtoField: "amount"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -331,12 +331,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "InsertBulkReputerPayload",
-					Use:       "insert-bulk-reputer-payload [topic_id] [nonce] [reputer_value_bundles]",
+					Use:       "insert-bulk-reputer-payload [topic_id] [reputer_request_nonce] [reputer_value_bundles]",
 					Short:     "Insert bulk reputer payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
-						{ProtoField: "nonce"},
+						{ProtoField: "reputer_request_nonce"},
 						{ProtoField: "reputer_value_bundles"},
 					},
 				},
