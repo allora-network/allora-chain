@@ -508,14 +508,6 @@ func (k *Keeper) GetFeeCollectorName() string {
 	return k.feeCollectorName
 }
 
-func (k *Keeper) GetParamsMaxMissingInferencePercent(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.MaxMissingInferencePercent, nil
-}
-
 func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -578,22 +570,6 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 		return 0, err
 	}
 	return params.MaxRequestCadence, nil
-}
-
-func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.Epsilon, nil
-}
-
-func (k *Keeper) GetParamsPInferenceSynthesis(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.PInferenceSynthesis, nil
 }
 
 func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
@@ -772,31 +748,6 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
-// GetTopicWorkers returns a list of workers registered for a given topic ID.
-func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TopicId) ([]sdk.AccAddress, error) {
-	var workers []sdk.AccAddress
-
-	rng := collections.NewPrefixedPairRange[TopicId, Worker](topicId)
-
-	// Iterate over the workers registered for the given topic ID
-	iter, err := k.topicWorkers.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		pair, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		workerAddr := pair.K2()
-		workers = append(workers, workerAddr)
-	}
-
-	return workers, nil
-}
-
 // Returns the last block height at which rewards emissions were updated
 func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
 	lastRewardsUpdate, err := k.lastRewardsUpdate.Get(ctx)
@@ -836,72 +787,6 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return params.RewardCadence, nil
-}
-
-// A function that accepts a topicId and returns list of Inferences or error
-func (k *Keeper) GetLatestInferencesFromTopic(ctx context.Context, topicId TopicId) ([]*types.InferenceSetForScoring, error) {
-	var inferences []*types.InferenceSetForScoring
-	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
-	if err != nil {
-		latestBlock = 0
-	}
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(latestBlock).
-		Descending()
-
-	iter, err := k.allInferences.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		key := kv.Key
-		value := kv.Value
-		inferenceSet := &types.InferenceSetForScoring{
-			TopicId:     key.K1(),
-			BlockHeight: key.K2(),
-			Inferences:  &value,
-		}
-		inferences = append(inferences, inferenceSet)
-	}
-	return inferences, nil
-}
-
-// A function that accepts a topicId and returns list of Forecasts or error
-func (k *Keeper) GetLatestForecastsFromTopic(ctx context.Context, topicId TopicId) ([]*types.ForecastSetForScoring, error) {
-	var forecasts []*types.ForecastSetForScoring
-	var latestBlock, err = k.GetTopicEpochLastEnded(ctx, topicId)
-	if err != nil {
-		latestBlock = 0
-	}
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(latestBlock).
-		Descending()
-
-	iter, err := k.allForecasts.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		key := kv.Key
-		value := kv.Value
-		forecastSet := &types.ForecastSetForScoring{
-			TopicId:     key.K1(),
-			BlockHeight: key.K2(),
-			Forecasts:   &value,
-		}
-		forecasts = append(forecasts, forecastSet)
-	}
-	return forecasts, nil
 }
 
 /// LOSS BUNDLES
@@ -1299,30 +1184,6 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	// total stake does not have a zero guard because totalStake is allowed to be zero
 	// it is initialized to zero at genesis anyways.
 	return k.totalStake.Set(ctx, totalStake)
-}
-
-func (k *Keeper) IterateAllTopicStake(ctx context.Context) (collections.Iterator[uint64, cosmosMath.Uint], error) {
-	rng := collections.Range[uint64]{}
-	rng.StartInclusive(0)
-	end, err := k.nextTopicId.Peek(ctx)
-	if err != nil {
-		return collections.Iterator[uint64, cosmosMath.Uint]{}, err
-	}
-	rng.EndExclusive(end)
-	return k.topicStake.Iterate(ctx, &rng)
-}
-
-// Runs an arbitrary function for every topic in the network
-func (k *Keeper) WalkAllTopicStake(ctx context.Context, walkFunc func(topicId TopicId, stake Uint) (stop bool, err error)) error {
-	rng := collections.Range[uint64]{}
-	rng.StartInclusive(0)
-	end, err := k.nextTopicId.Peek(ctx)
-	if err != nil {
-		return err
-	}
-	rng.EndExclusive(end)
-	err = k.topicStake.Walk(ctx, &rng, walkFunc)
-	return err
 }
 
 // GetStakesForAccount returns the list of stakes for a given account address.
@@ -1748,15 +1609,6 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	return activeTopics, nil
 }
 
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (BlockHeight, error) {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return 0, err
-	}
-	ret := topic.EpochLastEnded
-	return ret, nil
-}
-
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId, epochLastEnded BlockHeight) error {
 	topic, err := k.topics.Get(ctx, topicId)
@@ -2035,17 +1887,6 @@ func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount 
 
 func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, error) {
 	return k.requestUnmetDemand.Get(ctx, requestId)
-}
-
-func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TopicId) (Uint, error) {
-	res, err := k.accumulatedMetDemand.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return res, nil
 }
 
 func (k *Keeper) AddTopicAccumulateMetDemand(ctx context.Context, topicId TopicId, metDemand Uint) error {

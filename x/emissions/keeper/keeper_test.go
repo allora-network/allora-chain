@@ -588,22 +588,6 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 //                     PARAMS TESTS                         //
 //////////////////////////////////////////////////////////////
 
-func (s *KeeperTestSuite) TestSetGetMaxMissingInferencePercent() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := alloraMath.NewDecFromInt64(10)
-
-	// Set the parameter
-	params := types.Params{MaxMissingInferencePercent: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxMissingInferencePercent(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -648,23 +632,6 @@ func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
 
 	// Get the parameter
 	actualValue, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
-func (s *KeeperTestSuite) TestSetGetEpsilon() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue, err := alloraMath.NewDecFromString("0.001")
-	s.Require().NoError(err)
-
-	// Set the parameter
-	params := types.Params{Epsilon: expectedValue}
-	err = keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsEpsilon(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
@@ -761,22 +728,6 @@ func (s *KeeperTestSuite) TestGetParamsMaxRequestCadence() {
 
 	// Get the parameter
 	actualValue, err := keeper.GetParamsMaxRequestCadence(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
-func (s *KeeperTestSuite) TestGetParamsPInferenceSynthesis() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := alloraMath.NewDecFromInt64(5) // Assuming it's a value like 0.05 formatted correctly for your system
-
-	// Set the parameter
-	params := types.Params{PInferenceSynthesis: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsPInferenceSynthesis(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
