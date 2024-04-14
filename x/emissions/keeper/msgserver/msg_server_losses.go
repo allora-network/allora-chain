@@ -33,13 +33,13 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 	// Check if the nonce is unfulfilled
 	// TODO Review, now this is inside each bundle.
-	// nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg. TopicId, msg.ReputerRequestNonce.WorkerNonce)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if nonceUnfulfilled {
-	// 	return nil, types.ErrNonceNotUnfulfilled
-	// }
+	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	if err != nil {
+		return nil, err
+	}
+	if nonceUnfulfilled {
+		return nil, types.ErrNonceNotUnfulfilled
+	}
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
