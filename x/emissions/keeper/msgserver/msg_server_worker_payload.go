@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,6 +28,18 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		/// Do filters on the per payload first, then on each inferer
 		/// All filters should be done in order of increasing computational complexity
 
+		// check signatures from the bundle throw if invalid!
+		senderAddr, err := sdk.AccAddressFromBech32(workerDataBundle.Worker)
+		if err != nil {
+			return nil, err
+		}
+		pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
+		src, _ := json.Marshal(workerDataBundle.InferenceForecastsBundle)
+		if !pk.GetPubKey().VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+			return nil, types.ErrSignatureVerificationFailed
+		}
+		/// If we do PoX-like anti-sybil procedure, would go here
+
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
 
 		// Check that the inference is for the correct topic
@@ -50,21 +63,6 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 			if !isInfererRegistered {
 				continue
 			}
-
-			//
-			/// TODO check signatures! throw if invalid!
-			//  TODO Now this needs to happen outside where the signature is.
-			// senderAddr, err := sdk.AccAddressFromBech32(inference.Inferer)
-			// if err != nil {
-			// 	return nil, err
-			// }
-			// pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-			// src, _ := json.Marshal(inference.Value)
-			// if !pk.GetPubKey().VerifySignature(src, inference.Signature) {
-			// 	return nil, types.ErrSignatureVerificationFailed
-			// }
-
-			/// If we do PoX-like anti-sybil procedure, would go here
 
 			/// Filtering done now, now write what we must for inclusion
 
@@ -128,6 +126,18 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		/// Do filters on the per payload first, then on each forecaster
 		/// All filters should be done in order of increasing computational complexity
 
+		// check signatures from the bundle throw if invalid!
+		senderAddr, err := sdk.AccAddressFromBech32(workerDataBundle.Worker)
+		if err != nil {
+			return err
+		}
+		pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
+		src, _ := json.Marshal(workerDataBundle.InferenceForecastsBundle)
+		if !pk.GetPubKey().VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+			return types.ErrSignatureVerificationFailed
+		}
+		/// If we do PoX-like anti-sybil procedure, would go here
+
 		forecast := workerDataBundle.InferenceForecastsBundle.Forecast
 		// Check that the forecast is for the correct topic
 		if forecast.TopicId != topicId {
@@ -166,21 +176,6 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 			if len(acceptedForecastElements) == 0 {
 				continue
 			}
-
-			/// TODO check signatures! throw if invalid!
-			/// TODO Now this needs to happen one step above where the signature is.
-			//
-			// senderAddr, err := sdk.AccAddressFromBech32(forecast.Forecaster)
-			// if err != nil {
-			// 	return err
-			// }
-			// pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-			// src, _ := json.Marshal(forecast.ForecastElements)
-			// if !pk.GetPubKey().VerifySignature(src, forecast.Signature) {
-			// 	return types.ErrSignatureVerificationFailed
-			// }
-
-			/// If we do PoX-like anti-sybil procedure, would go here
 
 			/// Filtering done now, now write what we must for inclusion
 
