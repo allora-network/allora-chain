@@ -802,6 +802,284 @@ func (s *KeeperTestSuite) TestGetParamsStakeAndFeeRevenueImportance() {
 	s.Require().Equal(expectedFeeImportance, actualFeeImportance)
 }
 
+func (s *KeeperTestSuite) TestGetParamsTopicRewardAlpha() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := alloraMath.NewDecFromInt64(1) // Assuming it's a value like 0.1 formatted correctly for your system
+
+	// Set the parameter
+	params := types.Params{TopicRewardAlpha: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsTopicRewardAlpha(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(1500)
+
+	// Set the parameter
+	params := types.Params{MaxSamplesToScaleScores: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxSamplesToScaleScores(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue)
+}
+
+//////////////////////////////////////////////////////////////
+//                 INFERENCES, FORECASTS                    //
+//////////////////////////////////////////////////////////////
+
+func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	expectedInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+			{
+				Value:  alloraMath.NewDecFromInt64(2),
+				Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	// Assume InsertInferences correctly sets up inferences
+	nonce := types.Nonce{Nonce: int64(block)} // Assuming block type cast to int64 if needed
+	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	s.Require().NoError(err)
+
+	// Retrieve inferences
+	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block)
+	s.Require().NoError(err)
+	s.Require().Equal(&expectedInferences, actualInferences)
+}
+
+func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	expectedForecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	// Assume InsertForecasts correctly sets up forecasts
+	nonce := types.Nonce{Nonce: int64(block)}
+	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	s.Require().NoError(err)
+
+	// Retrieve forecasts
+	actualForecasts, err := keeper.GetForecastsAtBlock(ctx, topicId, block)
+	s.Require().NoError(err)
+	s.Require().Equal(&expectedForecasts, actualForecasts)
+}
+
+func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	otherTopicId := uint64(2)
+	block0 := types.BlockHeight(100)
+	block1 := types.BlockHeight(102)
+	block2 := types.BlockHeight(105)
+	block3 := types.BlockHeight(110)
+	block4 := types.BlockHeight(112)
+
+	inferences0 := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(1),
+				Worker: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+		},
+	}
+
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(2),
+				Worker: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(3),
+				Worker: "allo1743237sr8yhkj3q558tyv5wdcthj34g4jdhfuf",
+			},
+		},
+	}
+
+	inferences3 := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(4),
+				Worker: "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx",
+			},
+			{
+				Value:  alloraMath.NewDecFromInt64(5),
+				Worker: "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft",
+			},
+		},
+	}
+
+	inferences4 := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:  alloraMath.NewDecFromInt64(4),
+				Worker: "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu",
+			},
+		},
+	}
+
+	nonce0 := types.Nonce{Nonce: int64(block0)}
+	nonce1 := types.Nonce{Nonce: int64(block1)}
+	nonce2 := types.Nonce{Nonce: int64(block2)}
+	nonce3 := types.Nonce{Nonce: int64(block3)}
+	nonce4 := types.Nonce{Nonce: int64(block4)}
+
+	// Assume latest inference is correctly set up
+	err := keeper.InsertInferences(ctx, topicId, nonce3, inferences3)
+	s.Require().NoError(err)
+	err = keeper.InsertInferences(ctx, topicId, nonce0, inferences0)
+	s.Require().NoError(err)
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err)
+	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	s.Require().NoError(err)
+	err = keeper.InsertInferences(ctx, otherTopicId, nonce4, inferences4) // make sure that it filters on topicId
+	s.Require().NoError(err)
+
+	// Retrieve latest inferences at or after the given block
+	actualInferences, actualBlock, err := keeper.GetInferencesAtOrAfterBlock(ctx, topicId, 105)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(actualInferences.Inferences))
+	s.Require().Equal(types.BlockHeight(105), actualBlock)
+
+	s.Require().Equal(inferences2.Inferences[0].Value, actualInferences.Inferences[0].Value)
+	s.Require().Equal(inferences2.Inferences[0].Worker, actualInferences.Inferences[0].Worker)
+
+	s.Require().Equal(inferences3.Inferences[0].Value, actualInferences.Inferences[1].Value)
+	s.Require().Equal(inferences3.Inferences[0].Worker, actualInferences.Inferences[1].Worker)
+
+	s.Require().Equal(inferences3.Inferences[1].Value, actualInferences.Inferences[2].Value)
+	s.Require().Equal(inferences3.Inferences[1].Worker, actualInferences.Inferences[2].Worker)
+}
+
+func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	otherTopicId := uint64(2)
+	block0 := types.BlockHeight(100)
+	block1 := types.BlockHeight(102)
+	block2 := types.BlockHeight(108)
+	block3 := types.BlockHeight(110)
+	block4 := types.BlockHeight(112)
+
+	forecasts0 := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+		},
+	}
+
+	forecasts1 := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	forecasts2 := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1743237sr8yhkj3q558tyv5wdcthj34g4jdhfuf",
+			},
+		},
+	}
+
+	forecasts3 := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo19af6agncfgj2adly0hydykm4h0ctdcvev7u5fx",
+			},
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1w89qy7xpeg3tn6rtm9rj9awc9jwv7hsc20crft",
+			},
+		},
+	}
+
+	forecasts4 := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1huwe2zxpve35z5esw4s0msg7h0kajevchdwyjp",
+			},
+		},
+	}
+
+	nonce0 := types.Nonce{Nonce: int64(block0)}
+	nonce1 := types.Nonce{Nonce: int64(block1)}
+	nonce2 := types.Nonce{Nonce: int64(block2)}
+	nonce3 := types.Nonce{Nonce: int64(block3)}
+	nonce4 := types.Nonce{Nonce: int64(block4)}
+
+	// Insert forecasts into the system
+	err := keeper.InsertForecasts(ctx, topicId, nonce3, forecasts3)
+	s.Require().NoError(err)
+	err = keeper.InsertForecasts(ctx, topicId, nonce0, forecasts0)
+	s.Require().NoError(err)
+	err = keeper.InsertForecasts(ctx, topicId, nonce2, forecasts2)
+	s.Require().NoError(err)
+	err = keeper.InsertForecasts(ctx, topicId, nonce1, forecasts1)
+	s.Require().NoError(err)
+	err = keeper.InsertForecasts(ctx, otherTopicId, nonce4, forecasts4)
+	s.Require().NoError(err)
+
+	// Retrieve forecasts at or after the specified block
+	actualForecasts, actualBlock, err := keeper.GetForecastsAtOrAfterBlock(ctx, topicId, 105)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(actualForecasts.Forecasts))
+	s.Require().Equal(types.BlockHeight(108), actualBlock)
+
+	// Validate the retrieved forecasts
+	s.Require().Equal(forecasts2.Forecasts[0].Forecaster, actualForecasts.Forecasts[0].Forecaster)
+	s.Require().Equal(forecasts3.Forecasts[0].Forecaster, actualForecasts.Forecasts[1].Forecaster)
+	s.Require().Equal(forecasts3.Forecasts[1].Forecaster, actualForecasts.Forecasts[2].Forecaster)
+}
+
 // ########################################
 // #           Staking tests              #
 // ########################################

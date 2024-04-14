@@ -654,7 +654,9 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
-/// INFERENCES, FORECASTS
+//////////////////////////////////////////////////////////////
+//                 INFERENCES, FORECASTS                    //
+//////////////////////////////////////////////////////////////
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
@@ -675,51 +677,72 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 }
 
 func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, BlockHeight, error) {
+	// Define the range query starting from the highest available block down to and including the specified block
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
-	inferencesToReturn := types.Inferences{}
-	blockHeight := int64(0)
+	var inferencesToReturn types.Inferences
+	lowestBlockHeight := BlockHeight(0) // Initialize to zero, will update with the lowest block height found
+	found := false                      // Flag to check if any inferences are found
+
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
+	// Iterate through entries in descending order and collect all inferences after the specified block
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		inferencesToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight := kv.Key.K2() // Current entry's block height
+		if currentBlockHeight >= block {
+			inferencesToReturn.Inferences = append(inferencesToReturn.Inferences, kv.Value.Inferences...)
+			if !found || currentBlockHeight < lowestBlockHeight {
+				lowestBlockHeight = currentBlockHeight // Update the lowest block height found
+				found = true
+			}
+		}
 	}
 
-	return &inferencesToReturn, blockHeight, nil
+	// Return the collected inferences and the lowest block height at which they were found
+	return &inferencesToReturn, lowestBlockHeight, nil
 }
 
 func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
 	forecastsToReturn := types.Forecasts{}
-	blockHeight := int64(0)
+	lowestBlockHeight := BlockHeight(0)
+	found := false // Flag to check if any forecasts are found
+
 	iter, err := k.allForecasts.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		forecastsToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight := kv.Key.K2()
+		if currentBlockHeight >= block {
+			forecastsToReturn.Forecasts = append(forecastsToReturn.Forecasts, kv.Value.Forecasts...)
+			if !found || currentBlockHeight < lowestBlockHeight {
+				lowestBlockHeight = currentBlockHeight
+				found = true
+			}
+		}
 	}
 
-	return &forecastsToReturn, blockHeight, nil
+	return &forecastsToReturn, lowestBlockHeight, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -764,6 +787,7 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 		if err != nil {
 			return err
 		}
+		// TODO
 		// // Update the number of forecasts in the reward epoch for each forecaster
 		// err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
 		// if err != nil {
