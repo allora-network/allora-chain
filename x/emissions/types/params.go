@@ -43,6 +43,10 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),     // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: cosmosMath.LegacyMustNewDecFromStr("0.25"), // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                 // maximum number of previous scores to store and use for standard deviation calculation
+		MaxWorkersAcceptedPerPayload:    uint64(30),                                 // max this many inferences from unique workers and forecasts thereof are accepted per payload
+		MaxReputersAcceptedPerPayload:   uint64(30),                                 // max this many loss bundles from unique reputers are accepted per payload
+		MaxTopWorkersToReward:           uint64(10),                                 // max this many top workers by score are rewarded for a topic
+		MaxTopReputersToReward:          uint64(10),                                 // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  uint64(10),                                 //topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),              // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),     // sigmoid function parameter, b = 0.5
@@ -179,6 +183,22 @@ func DefaultParamsMaxSamplesToScaleScores() uint64 {
 
 func DefaultParamsCreateTopicFee() uint64 {
 	return DefaultParams().CreateTopicFee
+}
+
+func DefaultParamsMaxWorkersAcceptedPerPayload() uint64 {
+	return DefaultParams().MaxWorkersAcceptedPerPayload
+}
+
+func DefaultParamsMaxReputersAcceptedPerPayload() uint64 {
+	return DefaultParams().MaxReputersAcceptedPerPayload
+}
+
+func DefaultParamsMaxTopWorkersToReward() uint64 {
+	return DefaultParams().MaxTopWorkersToReward
+}
+
+func DefaultParamsMaxTopReputersToReward() uint64 {
+	return DefaultParams().MaxTopReputersToReward
 }
 
 // Validate does the sanity check on the params.

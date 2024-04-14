@@ -23,7 +23,7 @@ service Msg {
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc AddNewRegistration(MsgAddNewRegistration) returns (MsgAddNewRegistrationResponse);
+  rpc RegisterWithExistingStake(MsgRegisterWithExistingStake) returns (MsgRegisterWithExistingStakeResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
@@ -132,10 +132,14 @@ message OptionalParams {
     (amino.dont_omitempty) = true
   ];
   repeated uint64 max_samples_to_scale_scores = 33;
-  repeated uint64 create_topic_fee = 34;
-  repeated string sigmoid_a = 35
+  repeated uint64 max_workers_accepted_per_payload = 34;
+  repeated uint64 max_reputers_accepted_per_payload = 35;
+  repeated uint64 max_top_workers_to_reward = 36;
+  repeated uint64 max_top_reputers_to_reward = 37;
+  repeated uint64 create_topic_fee = 38;
+  repeated string sigmoid_a = 39
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 36
+  repeated string sigmoid_b = 40
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
@@ -189,7 +193,7 @@ message MsgInsertBulkReputerPayload {
 
   string sender = 1;
 
-  Nonce nonce = 2;
+  ReputerRequestNonce reputer_request_nonce = 2;
   uint64 topic_id = 3;
   repeated ReputerValueBundle reputer_value_bundles = 4;
   bytes signature = 5;
@@ -235,7 +239,7 @@ message MsgRegisterResponse {
   string message = 2;
 }
 
-message MsgAddNewRegistration {
+message MsgRegisterWithExistingStake {
   option (cosmos.msg.v1.signer) = "creator";
 
   string creator = 1;
@@ -246,7 +250,7 @@ message MsgAddNewRegistration {
   bool is_reputer = 6;
 }
 
-message MsgAddNewRegistrationResponse {
+message MsgRegisterWithExistingStakeResponse {
   bool success = 1;
   string message = 2;
 }
@@ -276,7 +280,7 @@ message MsgAddStake {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  string stake_target = 3;
+  uint64 topic_id = 3;
 }
 
 message MsgAddStakeResponse {}

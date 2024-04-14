@@ -26,7 +26,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 		Inferences: []*types.Inference{
 			{
 				TopicId:   1,
-				Worker:    inferencerAddr,
+				Inferer:   inferencerAddr,
 				Value:     alloraMath.NewDecFromInt64(100),
 				Signature: []byte("Inference Signature"),
 			},
@@ -45,11 +45,10 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 						Value:   alloraMath.NewDecFromInt64(300),
 					},
 				},
+				Signature: []byte("Forecast Signature"),
 			},
-			Signature: []byte("Forecast Signature"),
 		},
-		Signature:      []byte("Inferences + Forecasts Signature"),
-		NonceSignature: []byte("Nonce Signature"),
+		Signature: []byte("Nonce + Inferences + Forecasts Signature"),
 	}
 	senderAddr, err := sdk.AccAddressFromBech32(workerMsg.Sender)
 	if err != nil {

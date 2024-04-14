@@ -113,4 +113,6 @@ var (
 	ErrNonceNotUnfulfilled                               = errors.Register(ModuleName, 108, "nonce not unfuilfilled")
 	ErrTopicCreatorNotEnoughDenom                        = errors.Register(ModuleName, 109, "topic creator does not have enough denom")
 	ErrSignatureVerificationFailed                       = errors.Register(ModuleName, 110, "signature verification was failed")
+	ErrInvalidWorkerNonce                                = errors.Register(ModuleName, 111, "invalid worker nonce")
+	ErrInvalidReputerNonce                               = errors.Register(ModuleName, 112, "invalid reputer nonce")
 )
