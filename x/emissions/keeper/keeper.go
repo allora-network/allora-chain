@@ -829,39 +829,6 @@ func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) er
 	return k.lastRewardsUpdate.Set(ctx, blockHeight)
 }
 
-func (k *Keeper) GetWorkerLatestInferenceByTopicId(
-	ctx context.Context,
-	topicId TopicId,
-	worker sdk.AccAddress) (types.Inference, error) {
-	key := collections.Join(topicId, worker)
-	return k.inferences.Get(ctx, key)
-}
-
-// GetTopicWorkers returns a list of workers registered for a given topic ID.
-func (k *Keeper) GetTopicWorkers(ctx context.Context, topicId TopicId) ([]sdk.AccAddress, error) {
-	var workers []sdk.AccAddress
-
-	rng := collections.NewPrefixedPairRange[TopicId, Worker](topicId)
-
-	// Iterate over the workers registered for the given topic ID
-	iter, err := k.topicWorkers.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		pair, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		workerAddr := pair.K2()
-		workers = append(workers, workerAddr)
-	}
-
-	return workers, nil
-}
-
 // return epoch length
 func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 	params, err := k.GetParams(ctx)
