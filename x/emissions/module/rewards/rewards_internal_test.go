@@ -200,7 +200,7 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 // Cross test of U_i / V_i
 func (s *MathTestSuite) TestU_iOverV_i() {
 	// U_i / V_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i) / (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
-    // U_i / V_i = ((1 - χ) * γ * F_i * E_i ) / (χ * γ * G_i * E_i)
+	// U_i / V_i = ((1 - χ) * γ * F_i * E_i ) / (χ * γ * G_i * E_i)
 	// U_i / V_i = ((1 - χ) * F_i ) / (χ  * G_i)
 	// χ = 0.1 + 0.4 * sigma(a * T_i - b) = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
 	// sigma(0.5) = 0.6224593312018959
