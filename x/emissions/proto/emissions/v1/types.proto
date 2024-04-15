@@ -290,18 +290,6 @@ message OffchainNode {
   string node_id = 5;
 }
 
-message InferenceSetForScoring {
-  uint64 topic_id = 1;
-  int64 block_height = 2;
-  Inferences inferences = 3;
-}
-
-message ForecastSetForScoring {
-  uint64 topic_id = 1;
-  int64 block_height = 2;
-  Forecasts forecasts = 3;
-}
-
 /// STAKE
 
 message StakePlacement {
