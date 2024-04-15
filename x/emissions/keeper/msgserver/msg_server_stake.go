@@ -34,7 +34,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
 
-	// Get target topics Registerd
+	// Get target topics Registered
 	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, senderAddr)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 			Amount:  stakePlacement.Amount,
 		})
 	}
-	// If no errors have occured and the removal is valid, add the stake removal to the delayed queue
+	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
 	err = ms.k.SetStakeRemovalQueueForAddress(ctx, senderAddr, stakeRemoval)
 	if err != nil {
 		return nil, err
@@ -251,7 +251,7 @@ func (ms msgServer) StartRemoveDelegatedStake(ctx context.Context, msg *types.Ms
 			Amount:  stakeAntiPlacement.Amount,
 		})
 
-		// If no errors have occured and the removal is valid, add the stake removal to the delayed queue
+		// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
 		err = ms.k.SetDelegatedStakeRemovalQueueForAddress(ctx, senderAddr, stakeRemoval)
 		if err != nil {
 			return nil, err
@@ -305,33 +305,4 @@ func (ms msgServer) ConfirmRemoveDelegatedStake(ctx context.Context, msg *types.
 		}
 	}
 	return &types.MsgConfirmRemoveDelegatedStakeResponse{}, nil
-}
-
-///
-/// PRIVATE
-///
-
-// Making common interfaces available to protobuf messages
-func moveFundsAddStake(
-	ctx context.Context,
-	ms msgServer,
-	nodeAddr sdk.AccAddress,
-	msg *types.MsgRegister) error {
-	// move funds
-	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
-	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
-	err := ms.k.SendCoinsFromAccountToModule(ctx, nodeAddr, types.AlloraStakingAccountName, amount)
-	if err != nil {
-		return err
-	}
-
-	// add stake to each topic
-	for _, topicId := range msg.TopicIds {
-		err = ms.k.AddStake(ctx, topicId, nodeAddr, msg.GetInitialStake())
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

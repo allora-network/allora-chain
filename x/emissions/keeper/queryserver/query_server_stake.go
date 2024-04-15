@@ -28,6 +28,7 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 	return &types.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
+// TODO paginate
 // GetReputerStakeList retrieves a list of stakes for a given account address.
 func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryReputerStakeListRequest) (*types.QueryReputerStakeListResponse, error) {
 	if req == nil {
@@ -52,6 +53,7 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryR
 	return &types.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
 }
 
+// TODO paginate
 // Retrieves a list of stakes for a given topic.
 func (qs queryServer) GetTopicStakeList(ctx context.Context, req *types.QueryTopicStakeListRequest) (*types.QueryTopicStakeListResponse, error) {
 	if req == nil {

@@ -225,8 +225,9 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	if err != nil {
 		return nil, err
 	}
-	if nonceUnfulfilled {
-		return nil, types.ErrNonceNotUnfulfilled
+	// If the nonce is already fulfilled, return an error
+	if !nonceUnfulfilled {
+		return nil, types.ErrNonceAlreadyFulfilled
 	}
 
 	maxTopWorkersToReward, err := ms.k.GetParamsMaxTopWorkersToReward(ctx)
@@ -240,6 +241,12 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	}
 
 	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, acceptedInferers, maxTopWorkersToReward)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update the unfulfilled worker nonce
+	_, err = ms.k.FulfillWorkerNonce(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {
 		return nil, err
 	}

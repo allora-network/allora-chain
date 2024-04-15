@@ -6,9 +6,35 @@ import (
 
 	cosmoserrors "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+// Making common interfaces available to protobuf messages
+func moveFundsAddStake(
+	ctx context.Context,
+	ms msgServer,
+	nodeAddr sdk.AccAddress,
+	msg *types.MsgRegister) error {
+	// move funds
+	initialStakeInt := cosmosMath.NewIntFromBigInt(msg.GetInitialStake().BigInt())
+	amount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, initialStakeInt))
+	err := ms.k.SendCoinsFromAccountToModule(ctx, nodeAddr, types.AlloraStakingAccountName, amount)
+	if err != nil {
+		return err
+	}
+
+	// add stake to each topic
+	for _, topicId := range msg.TopicIds {
+		err = ms.k.AddStake(ctx, topicId, nodeAddr, msg.GetInitialStake())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
