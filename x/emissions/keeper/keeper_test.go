@@ -2947,3 +2947,125 @@ func (s *KeeperTestSuite) TestGetListeningCoefficient() {
 	s.Require().NoError(err, "Fetching coefficient should not fail after setting")
 	s.Require().Equal(setCoef.Coefficient, fetchedCoef.Coefficient, "The fetched coefficient should match the set value")
 }
+
+/// REWARD FRACTION
+
+func (s *KeeperTestSuite) TestSetPreviousReputerRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := sdk.AccAddress("reputerAddressExample")
+
+	// Define a reward fraction to set
+	rewardFraction := alloraMath.NewDecFromInt64(75) // Assuming 0.75 as a fraction example
+
+	// Set the reward fraction
+	err := keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, rewardFraction)
+	s.Require().NoError(err, "Setting previous reputer reward fraction should not fail")
+
+	// Verify by fetching the same
+	fetchedReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
+	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
+}
+
+func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := sdk.AccAddress("reputerAddressExample")
+
+	// Attempt to fetch a reward fraction before setting it
+	defaultReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
+	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
+
+	// Now set a specific reward fraction
+	setReward := alloraMath.NewDecFromInt64(50) // Assuming 0.50 as a fraction example
+	_ = keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, setReward)
+
+	// Fetch and verify the reward fraction after setting
+	fetchedReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
+	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
+}
+
+func (s *KeeperTestSuite) TestSetPreviousInferenceRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("workerAddressExample")
+
+	// Define a reward fraction to set
+	rewardFraction := alloraMath.NewDecFromInt64(25)
+
+	// Set the reward fraction
+	err := keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, rewardFraction)
+	s.Require().NoError(err, "Setting previous inference reward fraction should not fail")
+
+	// Verify by fetching the same
+	fetchedReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
+	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
+}
+
+func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("workerAddressExample")
+
+	// Attempt to fetch a reward fraction before setting it
+	defaultReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
+	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
+
+	// Now set a specific reward fraction
+	setReward := alloraMath.NewDecFromInt64(75)
+	_ = keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
+
+	// Fetch and verify the reward fraction after setting
+	fetchedReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
+	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
+}
+
+func (s *KeeperTestSuite) TestSetPreviousForecastRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("forecastWorkerAddress")
+
+	// Define a reward fraction to set
+	rewardFraction := alloraMath.NewDecFromInt64(50) // Assume setting the fraction to 0.50
+
+	// Set the forecast reward fraction
+	err := keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, rewardFraction)
+	s.Require().NoError(err, "Setting previous forecast reward fraction should not fail")
+
+	// Verify by fetching the set value
+	fetchedReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching the set forecast reward fraction should not fail")
+	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched forecast reward fraction should match the set value")
+}
+
+func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := sdk.AccAddress("forecastWorkerAddress")
+
+	// Attempt to fetch the reward fraction before setting it, expecting default value
+	defaultReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching forecast reward fraction should not fail when not set")
+	s.Require().True(defaultReward.IsZero(), "Should return zero forecast reward fraction when not set")
+
+	// Now set a specific reward fraction
+	setReward := alloraMath.NewDecFromInt64(75) // Assume setting it to 0.75
+	_ = keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, setReward)
+
+	// Fetch and verify the reward fraction after setting
+	fetchedReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	s.Require().NoError(err, "Fetching forecast reward fraction should not fail after setting")
+	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
+}
