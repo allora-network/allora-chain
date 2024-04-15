@@ -1,11 +1,78 @@
 package inference_synthesis_test
 
 import (
+	"github.com/allora-network/allora-chain/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() {
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+
+	worker1 := "worker1"
+	worker2 := "worker2"
+	worker3 := "worker3"
+	worker4 := "worker4"
+	worker1Address := sdk.AccAddress(worker1)
+	worker2Address := sdk.AccAddress(worker2)
+	worker3Address := sdk.AccAddress(worker3)
+	worker4Address := sdk.AccAddress(worker4)
+
+	inferenceByWorker := map[string]*types.Inference{
+		worker1: {Value: math.MustNewDecFromString("0.5")},
+		worker2: {Value: math.MustNewDecFromString("0.7")},
+	}
+
+	forecastImpliedInferenceByWorker := map[string]*types.Inference{
+		worker3: {Value: math.MustNewDecFromString("0.6")},
+		worker4: {Value: math.MustNewDecFromString("0.8")},
+	}
+
+	epsilon := math.MustNewDecFromString("0.001")
+
+	// Set inferer network regrets
+	err := k.SetInfererNetworkRegret(s.ctx, topicId, worker1Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.2")})
+	s.Require().NoError(err)
+	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.3")})
+	s.Require().NoError(err)
+
+	// Set forecaster network regrets
+	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker3Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker4Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.5")})
+	s.Require().NoError(err)
+
+	// Set one-in forecaster network regrets
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Address, worker1Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.2")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Address, worker2Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.3")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Address, worker3Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4Address, worker1Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.6")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4Address, worker2Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4Address, worker4Address, types.TimestampedValue{Value: math.MustNewDecFromString("0.5")})
+	s.Require().NoError(err)
+
+	maxRegrets, err := inference_synthesis.FindMaxRegretAmongWorkersWithLosses(s.ctx, k, topicId, inferenceByWorker, forecastImpliedInferenceByWorker, epsilon)
+	s.Require().NoError(err)
+
+	expectedMaxInfererRegret := math.MustNewDecFromString("0.3")
+	expectedMaxForecasterRegret := math.MustNewDecFromString("0.5")
+
+	s.Require().True(maxRegrets.MaxInferenceRegret.Equal(expectedMaxInfererRegret))
+	s.Require().True(maxRegrets.MaxForecastRegret.Equal(expectedMaxForecasterRegret))
+
+	s.Require().Equal(math.MustNewDecFromString("0.4"), maxRegrets.MaxOneInForecastRegret[worker3])
+	s.Require().Equal(math.MustNewDecFromString("0.6"), maxRegrets.MaxOneInForecastRegret[worker4])
+}
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 	topicId := inference_synthesis.TopicId(1)
