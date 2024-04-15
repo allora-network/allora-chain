@@ -3118,3 +3118,77 @@ func (s *KeeperTestSuite) TestGetAverageWorkerReward() {
 	s.Require().NoError(err, "Fetching average worker reward should not fail after setting")
 	s.Require().Equal(setReward, fetchedReward, "The fetched average worker reward should match the set value")
 }
+
+/// WHITELISTS
+
+func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	adminAddress := sdk.AccAddress("adminAddressExample")
+
+	// Test Adding to whitelist
+	err := keeper.AddWhitelistAdmin(ctx, adminAddress)
+	s.Require().NoError(err, "Adding whitelist admin should not fail")
+
+	// Test Checking whitelist
+	isAdmin, err := keeper.IsWhitelistAdmin(ctx, adminAddress)
+	s.Require().NoError(err, "Checking if address is an admin should not fail")
+	s.Require().True(isAdmin, "Address should be an admin after being added")
+
+	// Test Removing from whitelist
+	err = keeper.RemoveWhitelistAdmin(ctx, adminAddress)
+	s.Require().NoError(err, "Removing whitelist admin should not fail")
+
+	// Verify removal
+	isAdmin, err = keeper.IsWhitelistAdmin(ctx, adminAddress)
+	s.Require().NoError(err, "Checking admin status after removal should not fail")
+	s.Require().False(isAdmin, "Address should not be an admin after being removed")
+}
+
+func (s *KeeperTestSuite) TestTopicCreationWhitelistOperations() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	address := sdk.AccAddress("creatorAddressExample")
+
+	// Test Adding to whitelist
+	err := keeper.AddToTopicCreationWhitelist(ctx, address)
+	s.Require().NoError(err, "Adding to topic creation whitelist should not fail")
+
+	// Test Checking whitelist
+	isInWhitelist, err := keeper.IsInTopicCreationWhitelist(ctx, address)
+	s.Require().NoError(err, "Checking if address is in topic creation whitelist should not fail")
+	s.Require().True(isInWhitelist, "Address should be in the topic creation whitelist after being added")
+
+	// Test Removing from whitelist
+	err = keeper.RemoveFromTopicCreationWhitelist(ctx, address)
+	s.Require().NoError(err, "Removing from topic creation whitelist should not fail")
+
+	// Verify removal
+	isInWhitelist, err = keeper.IsInTopicCreationWhitelist(ctx, address)
+	s.Require().NoError(err, "Checking topic creation whitelist status after removal should not fail")
+	s.Require().False(isInWhitelist, "Address should not be in the topic creation whitelist after being removed")
+}
+
+func (s *KeeperTestSuite) TestReputerWhitelistOperations() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	reputerAddress := sdk.AccAddress("reputerAddressExample")
+
+	// Test Adding to whitelist
+	err := keeper.AddToReputerWhitelist(ctx, reputerAddress)
+	s.Require().NoError(err, "Adding to reputer whitelist should not fail")
+
+	// Test Checking whitelist
+	isInWhitelist, err := keeper.IsInReputerWhitelist(ctx, reputerAddress)
+	s.Require().NoError(err, "Checking if address is in reputer whitelist should not fail")
+	s.Require().True(isInWhitelist, "Address should be in the reputer whitelist after being added")
+
+	// Test Removing from whitelist
+	err = keeper.RemoveFromReputerWhitelist(ctx, reputerAddress)
+	s.Require().NoError(err, "Removing from reputer whitelist should not fail")
+
+	// Verify removal
+	isInWhitelist, err = keeper.IsInReputerWhitelist(ctx, reputerAddress)
+	s.Require().NoError(err, "Checking reputer whitelist status after removal should not fail")
+	s.Require().False(isInWhitelist, "Address should not be in the reputer whitelist after being removed")
+}
