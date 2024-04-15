@@ -757,22 +757,20 @@ func TestInfDecString(t *testing.T) {
 	require.ErrorIs(t, err, ErrInfiniteString)
 }
 
-
 func TestInDelta(t *testing.T) {
 	// Test cases
 	testCases := []struct {
-		expected Dec
-		result   Dec
-		epsilon  Dec
+		expected       Dec
+		result         Dec
+		epsilon        Dec
 		expectedResult bool
 	}{
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(1), true},  // expected == result, within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(9), NewDecFromInt64(1), true},   // expected != result, but within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(8), NewDecFromInt64(1), false},  // expected != result, outside epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(0), true}, // epsilon is zero
-		{NewDecFromInt64(10), NewDecFromInt64(-10), NewDecFromInt64(1), false}, // epsilon is zero
-		{NewDecFromInt64(-10), NewDecFromInt64(10), NewDecFromInt64(1), false}, // epsilon is zero
-		{NewDecFromInt64(-10), NewDecFromInt64(-10), NewDecFromInt64(0), true}, // epsilon is zero
+		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(1), true},   // expected == result, within epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(9), NewDecFromInt64(1), true},    // expected != result, but within epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(8), NewDecFromInt64(1), false},   // expected != result, outside epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(0), true},   // expected == result, epsilon is zero
+		{NewDecFromInt64(10), NewDecFromInt64(-10), NewDecFromInt64(1), false}, // expected != result, outside epsilon
+		{NewDecFromInt64(-10), NewDecFromInt64(-10), NewDecFromInt64(0), true}, // expected == result, epsilon is zero
 	}
 
 	// Run test cases
@@ -785,10 +783,10 @@ func TestInDelta(t *testing.T) {
 func TestSlicesInDelta(t *testing.T) {
 	// Test cases
 	testCases := []struct {
-		name    string
-		a       []Dec
-		b       []Dec
-		epsilon Dec
+		name     string
+		a        []Dec
+		b        []Dec
+		epsilon  Dec
 		expected bool
 	}{
 		{
