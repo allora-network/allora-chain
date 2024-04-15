@@ -197,7 +197,7 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 		alloraMath.MustNewDecFromString("0.0"), // F_i
 		alloraMath.MustNewDecFromString("1.0"), // G_i
 		alloraMath.MustNewDecFromString("0.0"), // H_i
-		alloraMath.MustNewDecFromString("1"), // E_i
+		alloraMath.MustNewDecFromString("1"),   // E_i
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
