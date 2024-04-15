@@ -798,6 +798,86 @@ func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
+func (s *KeeperTestSuite) TestGetParamsMaxWorkersAcceptedPerPayload() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(100) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxWorkersAcceptedPerPayload: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxWorkersAcceptedPerPayload(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxWorkersAcceptedPerPayload should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxReputersAcceptedPerPayload() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(200) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxReputersAcceptedPerPayload: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxReputersAcceptedPerPayload(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxReputersAcceptedPerPayload should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(50) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxTopWorkersToReward: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxTopWorkersToReward(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxTopReputersToReward() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(50) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxTopReputersToReward: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxTopReputersToReward(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopReputersToReward should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedCadence := int64(86400) // Assume a daily cadence (in seconds if applicable)
+
+	// Set the parameter first to ensure there is something to retrieve
+	params := types.Params{RewardCadence: expectedCadence}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Now test getting the reward cadence
+	actualCadence, err := keeper.GetParamsRewardCadence(ctx)
+	s.Require().NoError(err, "Getting reward cadence should not fail")
+	s.Require().Equal(expectedCadence, actualCadence, "The retrieved reward cadence should match the expected value")
+}
+
 //////////////////////////////////////////////////////////////
 //                 INFERENCES, FORECASTS                    //
 //////////////////////////////////////////////////////////////
