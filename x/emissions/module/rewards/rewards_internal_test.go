@@ -139,11 +139,12 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	// 1 = 2 - 1
 	//
 	// X = 0.1 + 0.4 * sigma(a * T_i - b)
-	// 0.5 = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
-	//
-	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
-	// U_i = 0.5 * 8 / 8
-	// U_i = 0.5
+	// X = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
+	// sigma(8 * 1 - 7.5) = sigma(0.5) = 
+	// X = 0.1 + 0.4 * 0.6224593312018959 =	0.3489837324807583
+	// U_i = ((1 - 0.3489837324807583) * 2 * 2 * 2 ) / (2 + 2 + 4)
+	// U_i = 0.6510162675192417 * 8 / 8
+	// U_i = 0.6510162675192417
 	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
@@ -154,8 +155,9 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
+	println("U_i = ", infRewards.String())
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.5"), infRewards, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.6510162675192417"), infRewards, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
@@ -165,7 +167,7 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
-		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.ZeroDec(),                   // E_i
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
@@ -194,16 +196,16 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
-		alloraMath.MustNewDecFromString("0.0"), // F_i
-		alloraMath.MustNewDecFromString("1.0"), // G_i
-		alloraMath.MustNewDecFromString("0.0"), // H_i
-		alloraMath.MustNewDecFromString("1"),   // E_i
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.ZeroDec(),                   // E_i
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
 
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("1.00"), result, alloraMath.ZeroDec()))
+	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.ZeroDec()))
 }
 
 func (s *MathTestSuite) TestReputerRewardSimple() {
