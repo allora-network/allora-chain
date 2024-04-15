@@ -34,6 +34,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 	return &types.QueryTopicResponse{Topic: &topic}, nil
 }
 
+// TODO paginate
 // GetActiveTopics retrieves a list of active topics.
 func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
 	activeTopics, err := qs.k.GetActiveTopics(ctx)
@@ -44,6 +45,7 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 	return &types.QueryActiveTopicsResponse{Topics: activeTopics}, nil
 }
 
+// TODO paginate
 func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopicsRequest) (*types.QueryAllTopicsResponse, error) {
 	topics, err := qs.k.GetAllTopics(ctx)
 	if err != nil {
@@ -53,6 +55,7 @@ func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopic
 	return &types.QueryAllTopicsResponse{Topics: topics}, nil
 }
 
+// TODO paginate
 // GetTopicsByCreator retrieves a list of topics created by a given address.
 func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *types.QueryGetTopicsByCreatorRequest) (*types.QueryGetTopicsByCreatorResponse, error) {
 	if req == nil {

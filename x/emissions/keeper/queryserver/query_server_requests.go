@@ -29,6 +29,7 @@ func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *type
 	return &types.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
 }
 
+// TODO paginate
 func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *types.QueryAllExistingInferenceRequest) (*types.QueryAllExistingInferenceResponse, error) {
 	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
 	mempool, err := qs.k.GetMempool(ctx)

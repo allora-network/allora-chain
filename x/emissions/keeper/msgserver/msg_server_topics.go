@@ -2,9 +2,9 @@ package msgserver
 
 import (
 	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	"math/big"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -92,8 +92,10 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 	if err != nil {
 		return nil, err
 	}
+	minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
+
 	// If the topic does not have enough demand, return an error
-	if unmetDemand.LT(minTopicUnmentDemand) {
+	if unmetDemand.LT(minTopicUnmetDemandUint) {
 		return nil, types.ErrTopicNotEnoughDemand
 	}
 
@@ -106,7 +108,10 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 }
 
 func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
-	amountInt := cosmosMath.NewIntFromBigInt(big.NewInt(int64(types.DefaultParamsCreateTopicFee())))
+	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
+	if err != nil {
+		return false, sdk.Coin{}, err
+	}
 	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
 	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
 	return balance.IsGTE(fee), fee, nil
