@@ -528,7 +528,7 @@ func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error)
 	return params.MaxTopicsPerBlock, nil
 }
 
-func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -536,7 +536,7 @@ func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, erro
 	return params.MinRequestUnmetDemand, nil
 }
 
-func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -544,7 +544,7 @@ func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error)
 	return params.MinTopicUnmetDemand, nil
 }
 
-func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -608,10 +608,10 @@ func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec,
 	return params.TopicRewardAlpha, nil
 }
 
-func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyDec{}, err
+		return alloraMath.Dec{}, err
 	}
 	return params.ValidatorsVsAlloraPercentReward, nil
 }
@@ -630,6 +630,14 @@ func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, er
 		return 0, err
 	}
 	return params.MaxTopWorkersToReward, nil
+}
+
+func (k *Keeper) GetParamsTopicCreationFee(ctx context.Context) (cosmosMath.Int, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+	return params.CreateTopicFee, nil
 }
 
 /// INFERENCES, FORECASTS

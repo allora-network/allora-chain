@@ -127,21 +127,20 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string task_reward_alpha = 31
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 32 [
-    (cosmos_proto.scalar) = "cosmos.LegacyDec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+  repeated string validators_vs_allora_percent_reward = 32
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated uint64 max_samples_to_scale_scores = 33;
+  repeated uint64 max_top_workers_to_reward = 34;
+  repeated uint64 max_top_reputers_to_reward = 35;
+  repeated string create_topic_fee = 36 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 max_samples_to_scale_scores = 33;
-  repeated uint64 max_workers_accepted_per_payload = 34;
-  repeated uint64 max_reputers_accepted_per_payload = 35;
-  repeated uint64 max_top_workers_to_reward = 36;
-  repeated uint64 max_top_reputers_to_reward = 37;
-  repeated uint64 create_topic_fee = 38;
-  repeated string sigmoid_a = 39
+  repeated string sigmoid_a = 37
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 40
+  repeated string sigmoid_b = 38
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
