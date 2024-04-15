@@ -1,14 +1,77 @@
 package inference_synthesis_test
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/allora-network/allora-chain/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
 
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// TestMakeMapFromWorkerToTheirWork tests the makeMapFromWorkerToTheirWork function for correctly mapping workers to their inferences.
+func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
+	tests := []struct {
+		name       string
+		inferences []*emissions.Inference
+		expected   map[string]*emissions.Inference
+	}{
+		{
+			name: "multiple workers",
+			inferences: []*emissions.Inference{
+				{
+					TopicId: 101,
+					Inferer: "worker1",
+					Value:   alloraMath.MustNewDecFromString("10"),
+				},
+				{
+					TopicId: 102,
+					Inferer: "worker2",
+					Value:   alloraMath.MustNewDecFromString("20"),
+				},
+				{
+					TopicId: 103,
+					Inferer: "worker3",
+					Value:   alloraMath.MustNewDecFromString("30"),
+				},
+			},
+			expected: map[string]*emissions.Inference{
+				"worker1": {
+					TopicId: 101,
+					Inferer: "worker1",
+					Value:   alloraMath.MustNewDecFromString("10"),
+				},
+				"worker2": {
+					TopicId: 102,
+					Inferer: "worker2",
+					Value:   alloraMath.MustNewDecFromString("20"),
+				},
+				"worker3": {
+					TopicId: 103,
+					Inferer: "worker3",
+					Value:   alloraMath.MustNewDecFromString("30"),
+				},
+			},
+		},
+		{
+			name:       "empty list",
+			inferences: []*emissions.Inference{},
+			expected:   map[string]*emissions.Inference{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := inference_synthesis.MakeMapFromWorkerToTheirWork(tc.inferences)
+			assert.True(t, reflect.DeepEqual(result, tc.expected), "Expected and actual maps should be equal")
+		})
+	}
+}
 
 func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() {
 	k := s.emissionsKeeper
