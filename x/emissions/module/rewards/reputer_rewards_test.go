@@ -90,9 +90,9 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.R
 		}
 
 		reputerValueBundle := &types.ReputerValueBundle{
-			Reputer: reputerAddr.String(),
 			ValueBundle: &types.ValueBundle{
 				TopicId:       topicId,
+				Reputer:       reputerAddr.String(),
 				CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
 				NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 			},
