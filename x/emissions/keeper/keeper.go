@@ -716,11 +716,6 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 		if err != nil {
 			return err
 		}
-		// Update the number of inferences in the reward epoch for each worker
-		err = k.IncrementNumInferencesInRewardEpoch(ctx, topicId, workerAcc)
-		if err != nil {
-			return err
-		}
 	}
 
 	key := collections.Join(topicId, block)
