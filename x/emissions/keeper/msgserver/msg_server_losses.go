@@ -121,8 +121,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 			/// Check signatures! throw if invalid!
 
+			log.Printf("bundle.Pubkey just before decoding %v", bundle.Pubkey)
+
 			pk, err := hex.DecodeString(bundle.Pubkey)
-			log.Printf("err %v, len(pk) %v, secp256k1.PubKeySize %v", err, len(pk), secp256k1.PubKeySize)
+			log.Printf("bundle.Pubkey %v, err %v, len(pk) %v, secp256k1.PubKeySize %v", bundle.Pubkey, err, len(pk), secp256k1.PubKeySize)
 			if err != nil || len(pk) != secp256k1.PubKeySize {
 				return nil, types.ErrSignatureVerificationFailed
 			}
