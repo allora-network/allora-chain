@@ -751,8 +751,233 @@ func TestToSdkInt(t *testing.T) {
 	}
 }
 
+func TestToSdkLegacy(t *testing.T) {
+	i1 := "1000000000000000000000000000000000000123456789.321000000000000000"
+	tcs := []struct {
+		intStr string
+		out    string
+	}{
+		{i1, i1},
+		{"1000000000000000000000000000000000000123456789.321000000000000000", i1},
+		{"123.456e6", "123456000.000000000000000000"},
+		{"123.456e1", "1234.560000000000000000"},
+		{"123.456", "123.456000000000000000"},
+		{"123.956", "123.956000000000000000"},
+		{"-123.456", "-123.456000000000000000"},
+		{"-123.956", "-123.956000000000000000"},
+		{"-0.956", "-0.956000000000000000"},
+		{"-0.9", "-0.900000000000000000"},
+	}
+	for idx, tc := range tcs {
+		a, err := NewDecFromString(tc.intStr)
+		require.NoError(t, err)
+		b := a.SdkLegacyDec()
+		require.Equal(t, tc.out, b.String(), "test_%d", idx)
+	}
+}
 func TestInfDecString(t *testing.T) {
 	_, err := NewDecFromString("iNf")
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrInfiniteString)
+}
+
+func TestInDelta(t *testing.T) {
+	// Test cases
+	testCases := []struct {
+		expected       Dec
+		result         Dec
+		epsilon        Dec
+		expectedResult bool
+	}{
+		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(1), true},   // expected == result, within epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(9), NewDecFromInt64(1), true},    // expected != result, but within epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(8), NewDecFromInt64(1), false},   // expected != result, outside epsilon
+		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(0), true},   // expected == result, epsilon is zero
+		{NewDecFromInt64(10), NewDecFromInt64(-10), NewDecFromInt64(1), false}, // expected != result, outside epsilon
+		{NewDecFromInt64(-10), NewDecFromInt64(-10), NewDecFromInt64(0), true}, // expected == result, epsilon is zero
+	}
+
+	// Run test cases
+	for _, tc := range testCases {
+		result := InDelta(tc.expected, tc.result, tc.epsilon)
+		require.Equal(t, tc.expectedResult, result)
+	}
+}
+
+func TestSlicesInDelta(t *testing.T) {
+	// Test cases
+	testCases := []struct {
+		name     string
+		a        []Dec
+		b        []Dec
+		epsilon  Dec
+		expected bool
+	}{
+		{
+			name:     "Equal slices within epsilon",
+			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			epsilon:  NewDecFromInt64(0),
+			expected: true,
+		},
+		{
+			name:     "Equal slices within epsilon",
+			a:        []Dec{NewDecFromInt64(0), NewDecFromInt64(-1), NewDecFromInt64(4)},
+			b:        []Dec{NewDecFromInt64(-1), NewDecFromInt64(-2), NewDecFromInt64(3)},
+			epsilon:  NewDecFromInt64(1),
+			expected: true,
+		},
+		{
+			name:     "Equal slices NOT within epsilon",
+			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(5)},
+			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			epsilon:  NewDecFromInt64(1),
+			expected: false,
+		},
+		{
+			name:     "Different slices within epsilon",
+			a:        []Dec{NewDecFromInt64(-1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			b:        []Dec{NewDecFromInt64(2), NewDecFromInt64(5), NewDecFromInt64(6)},
+			epsilon:  NewDecFromInt64(3),
+			expected: true,
+		},
+		{
+			name:     "Different slices outside epsilon",
+			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			b:        []Dec{NewDecFromInt64(4), NewDecFromInt64(5), NewDecFromInt64(6)},
+			epsilon:  NewDecFromInt64(1),
+			expected: false,
+		},
+		{
+			name:     "Different slice lengths",
+			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
+			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2)},
+			epsilon:  NewDecFromInt64(0),
+			expected: false,
+		},
+		{
+			name:     "Empty slice",
+			a:        []Dec{},
+			b:        []Dec{},
+			epsilon:  NewDecFromInt64(0),
+			expected: true,
+		},
+	}
+
+	// Run test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := SlicesInDelta(tc.a, tc.b, tc.epsilon)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestSumDecSlice(t *testing.T) {
+	// Test case 1: Empty slice
+	x := []Dec{}
+	expectedSum := ZeroDec()
+
+	sum, err := SumDecSlice(x)
+	require.NoError(t, err)
+	require.True(t, sum.Equal(expectedSum), "Expected sum to be zero")
+
+	// Test case 2: Slice with positive values
+	x = []Dec{
+		NewDecFromInt64(1),
+		NewDecFromInt64(2),
+		NewDecFromInt64(3),
+	}
+	expectedSum = NewDecFromInt64(6)
+
+	sum, err = SumDecSlice(x)
+	require.NoError(t, err)
+	require.True(t, sum.Equal(expectedSum), "Expected sum to be 6")
+
+	// Test case 3: Slice with negative values
+	x = []Dec{
+		NewDecFromInt64(-1),
+		NewDecFromInt64(-2),
+		NewDecFromInt64(-3),
+	}
+	expectedSum = NewDecFromInt64(-6)
+
+	sum, err = SumDecSlice(x)
+	require.NoError(t, err)
+	require.True(t, sum.Equal(expectedSum), "Expected sum to be -6")
+
+	// Test case 4: Slice with mixed positive and negative values
+	x = []Dec{
+		NewDecFromInt64(1),
+		NewDecFromInt64(-2),
+		NewDecFromInt64(3),
+	}
+	expectedSum = NewDecFromInt64(2)
+
+	sum, err = SumDecSlice(x)
+	require.NoError(t, err)
+	require.True(t, sum.Equal(expectedSum), "Expected sum to be 2")
+}
+
+func TestDecReduce(t *testing.T) {
+	// Test case 1
+	x := NewDecFromInt64(12345678900)
+	expectedY := NewDecFromInt64(123456789)
+	expectedN := 2
+
+	y, n := x.Reduce()
+
+	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
+	require.Equal(t, expectedN, n)
+
+	// Test case 2
+	x = NewDecFromInt64(0)
+	expectedY = NewDecFromInt64(0)
+	expectedN = 0
+
+	y, n = x.Reduce()
+
+	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
+	require.Equal(t, expectedN, n)
+
+	// Test case 3
+	x = NewDecFromInt64(10000.000)
+	expectedY = NewDecFromInt64(1)
+	expectedN = 4
+
+	y, n = x.Reduce()
+
+	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
+	require.Equal(t, expectedN, n)
+
+	// Test case 4
+	x = NewDecFromInt64(0000.000)
+	expectedY = NewDecFromInt64(0)
+	expectedN = 0
+
+	y, n = x.Reduce()
+
+	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
+	require.Equal(t, expectedN, n)
+
+	// Test case 5
+	x = NewDecFromInt64(-1234560000.000)
+	expectedY = NewDecFromInt64(123456)
+	expectedN = 4
+
+	y, n = x.Reduce()
+
+	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
+	require.True(t, y.dec.Negative)
+	require.Equal(t, expectedN, n)
+
+	// Test case 6
+	x = NewDecFromInt64(-123456000000.000)
+	expectedN = 6
+	strX := "-123456000000"
+
+	y, n = x.Reduce()
+
+	require.Equal(t, strX, y.String())
+	require.Equal(t, expectedN, n)
 }

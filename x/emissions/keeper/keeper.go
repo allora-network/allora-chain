@@ -152,8 +152,6 @@ type Keeper struct {
 	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 
-	accumulatedMetDemand collections.Map[TopicId, Uint]
-
 	/// NONCES
 
 	// map of (topic) -> unfulfilled nonces
@@ -229,7 +227,6 @@ func NewKeeper(
 		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		accumulatedMetDemand:                collections.NewMap(sb, types.AccumulatedMetDemandKey, "accumulated_met_demand", collections.Uint64Key, alloraMath.UintValue),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -271,7 +268,7 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -297,7 +294,7 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for i, n := range unfulfilledNonces.Nonces {
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
@@ -322,7 +319,7 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			return true, nil
 		}
 	}
@@ -340,7 +337,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return true, nil
 		}
 	}
@@ -358,7 +355,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 	// Check that input nonce is not already contained in the nonces of this topic
 	for _, n := range nonces.Nonces {
-		if n.Nonce == nonce.Nonce {
+		if n.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
 	}
@@ -392,11 +389,11 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
 	for _, n := range nonces.Nonces {
 		// Do nothing if nonce is already in the list
-		if n.ReputerNonce.Nonce == nonce.Nonce {
+		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
 		// Do nothing if the associated worker nonce is already in the list
-		if n.WorkerNonce.Nonce == associatedWorkerNonce.Nonce {
+		if n.WorkerNonce.BlockHeight == associatedWorkerNonce.BlockHeight {
 			return nil
 		}
 	}
@@ -523,10 +520,6 @@ func (k *Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	return ret, nil
 }
 
-func (k *Keeper) GetFeeCollectorName() string {
-	return k.feeCollectorName
-}
-
 func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -535,7 +528,7 @@ func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error)
 	return params.MaxTopicsPerBlock, nil
 }
 
-func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -543,7 +536,7 @@ func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (Uint, erro
 	return params.MinRequestUnmetDemand, nil
 }
 
-func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -551,7 +544,7 @@ func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (Uint, error)
 	return params.MinTopicUnmetDemand, nil
 }
 
-func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (Uint, error) {
+func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (cosmosMath.Uint, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return cosmosMath.Uint{}, err
@@ -607,14 +600,6 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
-func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.TopicRewardAlpha, nil
-}
-
 func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -623,10 +608,18 @@ func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (ui
 	return params.MaxUnfulfilledReputerRequests, nil
 }
 
-func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (cosmosMath.LegacyDec, error) {
+func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.LegacyDec{}, err
+		return alloraMath.Dec{}, err
+	}
+	return params.TopicRewardAlpha, nil
+}
+
+func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
 	return params.ValidatorsVsAlloraPercentReward, nil
 }
@@ -639,22 +632,6 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
-func (k *Keeper) GetParamsMaxWorkersAcceptedPerPayload(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxWorkersAcceptedPerPayload, nil
-}
-
-func (k *Keeper) GetParamsMaxReputersAcceptedPerPayload(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxReputersAcceptedPerPayload, nil
-}
-
 func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -663,12 +640,12 @@ func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, er
 	return params.MaxTopWorkersToReward, nil
 }
 
-func (k *Keeper) GetParamsMaxTopReputersToReward(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsTopicCreationFee(ctx context.Context) (cosmosMath.Int, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return cosmosMath.Int{}, err
 	}
-	return params.MaxTopReputersToReward, nil
+	return params.CreateTopicFee, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -750,7 +727,7 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
-	block := nonce.Nonce
+	block := nonce.BlockHeight
 
 	for _, inference := range inferences.Inferences {
 		inferenceCopy := *inference
@@ -772,7 +749,7 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
-	block := nonce.Nonce
+	block := nonce.BlockHeight
 
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
@@ -1246,6 +1223,7 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	return k.totalStake.Set(ctx, totalStake)
 }
 
+// TODO paginate
 // GetStakesForAccount returns the list of stakes for a given account address.
 func (k *Keeper) GetStakePlacementsByReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
 	topicIds := make([]TopicId, 0)
@@ -1286,6 +1264,7 @@ func (k *Keeper) GetStakePlacementsByReputer(ctx context.Context, reputer sdk.Ac
 	return stakes, nil
 }
 
+// TODO paginate
 func (k *Keeper) GetStakePlacementsByTopic(ctx context.Context, topicId TopicId) ([]types.StakePlacement, error) {
 	reputers := make([]Reputer, 0)
 	amounts := make([]cosmosMath.Uint, 0)
@@ -1473,6 +1452,22 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 	return nil
 }
 
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 /// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
@@ -1495,22 +1490,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sd
 	return nil
 }
 
-// Remove a worker to the worker tracking data structures and topicWorkers
-func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
-	err := k.topicWorkers.Remove(ctx, topicKey)
-	if err != nil {
-		return err
-	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+// TODO paginate
 func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
 	var nodes []*types.OffchainNode
 	var nodeIdParts = strings.Split(nodeId, "|")
@@ -1632,6 +1612,7 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topi
 	return k.topics.Set(ctx, topicId, topic)
 }
 
+// TODO paginate
 // Gets every topic
 func (k *Keeper) GetAllTopics(ctx context.Context) ([]*types.Topic, error) {
 	var allTopics []*types.Topic
@@ -1655,6 +1636,7 @@ func (k *Keeper) GetNumTopics(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
+// TODO paginate
 // GetActiveTopics returns a slice of all active topics.
 func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	var activeTopics []*types.Topic
@@ -1700,6 +1682,7 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 	return k.topicReputers.Has(ctx, topickey)
 }
 
+// TODO paginate
 // GetTopicsByCreator returns a slice of all topics created by a given creator.
 func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
 	var topicsByCreator []*types.Topic
@@ -1761,6 +1744,7 @@ func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress,
 	return k.addressTopics.Set(ctx, address, filteredTopics)
 }
 
+// TODO paginate
 // GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
 func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	topics, err := k.addressTopics.Get(ctx, address)
@@ -1774,6 +1758,7 @@ func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk
 	return topics, nil
 }
 
+// TODO paginate
 // GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
 func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	var topicsByAddress []uint64
@@ -1791,6 +1776,7 @@ func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, addre
 	return topicsByAddress, nil
 }
 
+// TODO paginate
 // GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
 func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
 	var topicsByAddress []uint64
@@ -1933,6 +1919,7 @@ func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId Top
 	return k.mempool.Get(ctx, collections.Join(topicId, requestId))
 }
 
+// TODO paginate
 func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TopicId) ([]types.InferenceRequest, error) {
 	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
 	rng := collections.NewPrefixedPairRange[TopicId, RequestId](topicId)
@@ -1950,6 +1937,7 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicI
 	return ret, nil
 }
 
+// TODO paginate
 func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
 	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
 	iter, err := k.mempool.Iterate(ctx, nil)
@@ -1977,37 +1965,6 @@ func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, 
 	return k.requestUnmetDemand.Get(ctx, requestId)
 }
 
-func (k *Keeper) AddTopicAccumulateMetDemand(ctx context.Context, topicId TopicId, metDemand Uint) error {
-	currentMetDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil
-		}
-		return err
-	}
-	currentMetDemand = currentMetDemand.Add(metDemand)
-	return k.SetTopicAccumulatedMetDemand(ctx, topicId, currentMetDemand)
-}
-
-func (k *Keeper) SetTopicAccumulatedMetDemand(ctx context.Context, topicId TopicId, metDemand Uint) error {
-	if metDemand.IsZero() {
-		return k.accumulatedMetDemand.Remove(ctx, topicId)
-	}
-	return k.accumulatedMetDemand.Set(ctx, topicId, metDemand)
-}
-
-func (k *Keeper) GetTopicAccumulatedMetDemand(ctx context.Context, topicId TopicId) (Uint, error) {
-	metDemand, err := k.accumulatedMetDemand.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return zero value if no met demand is found
-			return cosmosMath.ZeroUint(), nil
-		}
-		return cosmosMath.Uint{}, err
-	}
-	return metDemand, nil
-}
-
 // Reset the mapping entirely. Should be called at the end of every block
 func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 	return k.churnReadyTopics.Remove(ctx)
@@ -2019,6 +1976,7 @@ func (k *Keeper) SetChurnReadyTopics(ctx context.Context, topicList types.TopicL
 }
 
 // Get all churn ready topics
+// In practice, shouldn't be more than a max amount, enforced by other functionality
 func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, error) {
 	topicList, err := k.churnReadyTopics.Get(ctx)
 	if err != nil {

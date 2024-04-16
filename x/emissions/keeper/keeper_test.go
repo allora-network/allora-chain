@@ -93,7 +93,7 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
 
 	// Set worker nonce
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
@@ -103,14 +103,14 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
 
 	// Check that the nonce is the correct nonce
-	s.Require().Equal(newNonce.Nonce, unfulfilledNonces.Nonces[0].Nonce, "Unfulfilled nonces should contain the new nonce")
+	s.Require().Equal(newNonce.BlockHeight, unfulfilledNonces.Nonces[0].BlockHeight, "Unfulfilled nonces should contain the new nonce")
 }
 
 func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 
 	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
@@ -129,7 +129,7 @@ func (s *KeeperTestSuite) TestCanFulfillNewWorkerNonce() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 
 	// Set worker nonce
 	err := keeper.AddWorkerNonce(ctx, topicId, newNonce)
@@ -163,7 +163,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
@@ -174,7 +174,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 
 	// Check that all the expected nonces are present and correct
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(nonceValues[i], nonce.Nonce, "Nonce value should match the expected value")
+		s.Require().Equal(nonceValues[i], nonce.BlockHeight, "Nonce value should match the expected value")
 	}
 }
 
@@ -191,14 +191,14 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().True(success, "Nonce should be successfully fulfilled")
 		s.Require().NoError(err, "Error fulfilling nonce")
 	}
@@ -211,7 +211,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	// Check that all the expected unfulfilled nonces are present and correct
 	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(expectedUnfulfilled[i], nonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+		s.Require().Equal(expectedUnfulfilled[i], nonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
 }
 
@@ -232,7 +232,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
@@ -244,7 +244,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
-		s.Require().Equal(expectedNonces[i], nonce.Nonce, "Nonce should match the expected recent nonce")
+		s.Require().Equal(expectedNonces[i], nonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
 }
 
@@ -263,8 +263,8 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
 
 	// Set reputer nonce
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
 	s.Require().NoError(err)
 
@@ -275,12 +275,12 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 
 	// Check that the nonce is the correct nonce
 	s.Require().Equal(
-		newReputerNonce.Nonce,
-		unfulfilledNonces.Nonces[0].ReputerNonce.Nonce,
+		newReputerNonce.BlockHeight,
+		unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight,
 		"Unfulfilled nonces should contain the new reputer nonce")
 	s.Require().Equal(
-		newWorkerNonce.Nonce,
-		unfulfilledNonces.Nonces[0].WorkerNonce.Nonce,
+		newWorkerNonce.BlockHeight,
+		unfulfilledNonces.Nonces[0].WorkerNonce.BlockHeight,
 		"Unfulfilled nonces should contain the new worker nonce")
 }
 
@@ -288,8 +288,8 @@ func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
@@ -308,8 +308,8 @@ func (s *KeeperTestSuite) TestCanFulfillNewReputerNonce() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	// Set reputer nonce
 	err := keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
@@ -344,14 +344,14 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val}, &types.Nonce{Nonce: val})
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Error fulfilling nonce")
 		s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
 	}
@@ -364,7 +364,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Check that all the expected unfulfilled nonces are present and correct
 	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(expectedUnfulfilled[i], nonce.ReputerNonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+		s.Require().Equal(expectedUnfulfilled[i], nonce.ReputerNonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
 }
 
@@ -386,7 +386,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val}, &types.Nonce{Nonce: val})
+		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
@@ -398,7 +398,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
-		s.Require().Equal(expectedNonces[i], nonce.ReputerNonce.Nonce, "Nonce should match the expected recent nonce")
+		s.Require().Equal(expectedNonces[i], nonce.ReputerNonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
 }
 
@@ -652,7 +652,7 @@ func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
 func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	expectedValue := cosmosMath.LegacyMustNewDecFromStr("0.25") // Assume a function to create LegacyDec
+	expectedValue := alloraMath.MustNewDecFromString("0.25") // Assume a function to create LegacyDec
 
 	// Set the parameter
 	params := types.Params{ValidatorsVsAlloraPercentReward: expectedValue}
@@ -798,86 +798,6 @@ func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestGetParamsMaxWorkersAcceptedPerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := uint64(100) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxWorkersAcceptedPerPayload: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxWorkersAcceptedPerPayload(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxWorkersAcceptedPerPayload should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsMaxReputersAcceptedPerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := uint64(200) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxReputersAcceptedPerPayload: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxReputersAcceptedPerPayload(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxReputersAcceptedPerPayload should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := uint64(50) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxTopWorkersToReward: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxTopWorkersToReward(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsMaxTopReputersToReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := uint64(50) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxTopReputersToReward: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxTopReputersToReward(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopReputersToReward should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedCadence := int64(86400) // Assume a daily cadence (in seconds if applicable)
-
-	// Set the parameter first to ensure there is something to retrieve
-	params := types.Params{RewardCadence: expectedCadence}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err, "Setting parameters should not fail")
-
-	// Now test getting the reward cadence
-	actualCadence, err := keeper.GetParamsRewardCadence(ctx)
-	s.Require().NoError(err, "Getting reward cadence should not fail")
-	s.Require().Equal(expectedCadence, actualCadence, "The retrieved reward cadence should match the expected value")
-}
-
 //////////////////////////////////////////////////////////////
 //                 INFERENCES, FORECASTS                    //
 //////////////////////////////////////////////////////////////
@@ -901,7 +821,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	}
 
 	// Assume InsertInferences correctly sets up inferences
-	nonce := types.Nonce{Nonce: int64(block)} // Assuming block type cast to int64 if needed
+	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
 	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
@@ -930,7 +850,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	}
 
 	// Assume InsertForecasts correctly sets up forecasts
-	nonce := types.Nonce{Nonce: int64(block)}
+	nonce := types.Nonce{BlockHeight: int64(block)}
 	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
@@ -1000,11 +920,11 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 		},
 	}
 
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-	nonce2 := types.Nonce{Nonce: int64(block2)}
-	nonce3 := types.Nonce{Nonce: int64(block3)}
-	nonce4 := types.Nonce{Nonce: int64(block4)}
+	nonce0 := types.Nonce{BlockHeight: block0}
+	nonce1 := types.Nonce{BlockHeight: block1}
+	nonce2 := types.Nonce{BlockHeight: block2}
+	nonce3 := types.Nonce{BlockHeight: block3}
+	nonce4 := types.Nonce{BlockHeight: block4}
 
 	// Assume latest inference is correctly set up
 	err := keeper.InsertInferences(ctx, topicId, nonce3, inferences3)
@@ -1088,11 +1008,11 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 		},
 	}
 
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-	nonce2 := types.Nonce{Nonce: int64(block2)}
-	nonce3 := types.Nonce{Nonce: int64(block3)}
-	nonce4 := types.Nonce{Nonce: int64(block4)}
+	nonce0 := types.Nonce{BlockHeight: block0}
+	nonce1 := types.Nonce{BlockHeight: block1}
+	nonce2 := types.Nonce{BlockHeight: block2}
+	nonce3 := types.Nonce{BlockHeight: block3}
+	nonce4 := types.Nonce{BlockHeight: block4}
 
 	// Insert forecasts into the system
 	err := keeper.InsertForecasts(ctx, topicId, nonce3, forecasts3)
@@ -1115,201 +1035,6 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 	// Validate the retrieved forecasts
 	s.Require().Equal(forecasts3.Forecasts[0].Forecaster, actualForecasts.Forecasts[0].Forecaster)
 	s.Require().Equal(forecasts3.Forecasts[1].Forecaster, actualForecasts.Forecasts[1].Forecaster)
-}
-
-func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
-
-	// Test inserting data
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
-
-	// Retrieve data to verify insertion
-	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
-}
-
-func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-
-	// Test getting data before any insert, should return error or nil
-	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
-}
-
-func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-	lossBundle := types.ValueBundle{}
-
-	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
-	require.NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
-
-	// Verify the insertion
-	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
-}
-
-func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-
-	// Attempt to retrieve before insertion
-	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
-}
-
-func (s *KeeperTestSuite) TestGetNetworkLossBundleAtOrBeforeBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-	lossBundle := types.ValueBundle{}
-
-	// Insert data at a specific block
-	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
-
-	// Get the bundle at or before the specific block
-	result, blockResult, err := s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
-}
-
-func (s *KeeperTestSuite) TestGetReputerReportedLossesAtOrBeforeBlock() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(1)
-	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
-
-	// Insert data at a specific block
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-
-	// Get the losses at or before the specific block
-	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
-}
-
-func (s *KeeperTestSuite) TestGetNetworkLossBundleAtOrBeforeBlockComplex() {
-	ctx := s.ctx
-	require := s.Require()
-
-	topicId := uint64(3)
-	otherTopicId := uint64(4)
-
-	earlierBlock := types.BlockHeight(250)
-	block := types.BlockHeight(300)
-	unrelatedBlock := types.BlockHeight(310)
-	laterBlock := types.BlockHeight(350)
-
-	earlierLossBundle := types.ValueBundle{}
-	lossBundle := types.ValueBundle{}
-	unrelatedLossBundle := types.ValueBundle{}
-	laterLossBundle := types.ValueBundle{}
-
-	// Insert data for different blocks and topics
-	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, earlierBlock, earlierLossBundle)
-	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
-	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, otherTopicId, unrelatedBlock, unrelatedLossBundle)
-	s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, laterBlock, laterLossBundle)
-
-	// Test the retrieval logic
-	result, blockResult, err := s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
-
-	// Test the retrieval logic for a block before any data is inserted for that block
-	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, earlierBlock-10)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(int64(0), blockResult, "No block should be returned")
-
-	// Test the retrieval logic for blocks after inserted data
-	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, laterBlock+10)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(laterBlock, blockResult, "Block returned should be the latest available block")
-
-	// Ensure it does not return data for a different topic
-	result, blockResult, err = s.emissionsKeeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, 320)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
-}
-
-func (s *KeeperTestSuite) TestGetReputerReportedLossesAtOrBeforeBlockComplex() {
-	ctx := s.ctx
-	require := s.Require()
-	topicId := uint64(3)
-	otherTopicId := uint64(4)
-
-	earlierBlock := types.BlockHeight(250)
-	block := types.BlockHeight(300)
-	unrelatedBlock := types.BlockHeight(310)
-	laterBlock := types.BlockHeight(350)
-
-	earlierReputerLossBundles := types.ReputerValueBundles{}
-	reputerLossBundles := types.ReputerValueBundles{}
-	unrelatedReputerLossBundles := types.ReputerValueBundles{}
-	laterReputerLossBundles := types.ReputerValueBundles{}
-
-	// Insert data at various blocks and topics
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, earlierBlock, earlierReputerLossBundles)
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, otherTopicId, unrelatedBlock, unrelatedReputerLossBundles)
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, laterBlock, laterReputerLossBundles)
-
-	// Test the retrieval logic for the specified block
-	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, block)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
-
-	// Test the retrieval logic for a block before any data is inserted for that block
-	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, earlierBlock-10)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(0, len(result.ReputerValueBundles))
-	require.Equal(types.BlockHeight(0), blockResult, "No block should be returned")
-
-	// Test the retrieval logic for blocks after inserted data
-	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, laterBlock+10)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(laterBlock, blockResult, "Block returned should be the latest available block")
-
-	// Ensure it does not return data for a different topic at a nearby block
-	result, blockResult, err = s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, 320)
-	require.NoError(err)
-	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }
 
 // ########################################

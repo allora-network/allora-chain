@@ -27,7 +27,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
-		currentNonce := emissionstypes.Nonce{Nonce: currentBlockHeight}
+		currentNonce := emissionstypes.Nonce{BlockHeight: currentBlockHeight}
 
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
@@ -44,7 +44,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			go func(topic *emissionstypes.Topic) {
 				defer wg.Done()
 				// Get previous topic height to repute
-				previousBlockHeight := currentBlockHeight - topic.EpochLength
+				previousBlockHeight := topic.EpochLastEnded
 				if previousBlockHeight <= 0 {
 					fmt.Println("Previous block height is less than or equal to 0, skipping")
 					return
@@ -56,6 +56,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
 					go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
+					th.emissionsKeeper.AddWorkerNonce(ctx, topic.Id, &currentNonce)
 
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
@@ -68,6 +69,8 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						return
 					}
 					go generateLosses(inferences, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, currentTime)
+					previousNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
+					th.emissionsKeeper.AddReputerNonce(ctx, topic.Id, &currentNonce, &previousNonce)
 				} else {
 					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}

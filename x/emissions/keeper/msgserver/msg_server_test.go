@@ -1,9 +1,11 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
+	"crypto/ed25519"
 	"testing"
 	"time"
+
+	cosmosMath "cosmossdk.io/math"
 
 	"cosmossdk.io/core/header"
 	storetypes "cosmossdk.io/store/types"
@@ -24,12 +26,17 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type ChainKey struct {
+	pubKey ed25519.PublicKey
+	priKey ed25519.PrivateKey
+}
+
 var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(4)
+	PKS     = simtestutil.CreateTestPubKeys(10)
 	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = sdk.ValAddress(Addr)
+	ValAddr = GeneratePrivateKeys(10)
 )
 
 type KeeperTestSuite struct {
@@ -72,8 +79,27 @@ func (s *KeeperTestSuite) SetupTest() {
 		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.Address()))
 		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.Address()))
 	}
+
+	for _, addr := range ValAddr {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.pubKey))
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.pubKey))
+		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.pubKey))
+	}
 }
 
+func GeneratePrivateKeys(numKeys int) []ChainKey {
+	testAddrs := make([]ChainKey, numKeys)
+	for i := 0; i < numKeys; i++ {
+		pk, prk, _ := ed25519.GenerateKey(nil)
+		testAddrs[i] = ChainKey{
+			pubKey: pk,
+			priKey: prk,
+		}
+	}
+
+	return testAddrs
+
+}
 func (s *KeeperTestSuite) CreateOneTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -102,9 +128,9 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 }
 
 func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
-	var initialStake = types.DefaultParamsCreateTopicFee() * 2
-	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(initialStake)))
-	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(types.DefaultParamsCreateTopicFee()))))
+	var initialStake = types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2))
+	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, initialStake)
+	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, types.DefaultParamsCreateTopicFee()))
 	senderAddr, _ := sdk.AccAddressFromBech32(sender)
 	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraStakingAccountName, feeCoins)
