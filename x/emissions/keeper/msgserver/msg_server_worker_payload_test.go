@@ -2,10 +2,10 @@ package msgserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	"encoding/hex"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
@@ -24,34 +24,23 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
-	// Try to register again
-	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicIds:     []uint64{0},
-		InitialStake: registrationInitialStake,
-		IsReputer:    false,
-	}
-	_, err := msgServer.Register(ctx, registerMsg)
-
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
 		Sender:  workerAddr.String(),
 		Nonce:   &types.Nonce{1},
-		TopicId: 1,
+		TopicId: 0,
 		WorkerDataBundles: []*types.WorkerDataBundle{
 			{
 				Worker: inferencerAddr.String(),
 				InferenceForecastsBundle: &types.InferenceForecastBundle{
 					Inference: &types.Inference{
-						TopicId:     1,
+						TopicId:     0,
 						BlockHeight: 1,
 						Inferer:     inferencerAddr1.String(),
 						Value:       alloraMath.NewDecFromInt64(100),
 					},
 					Forecast: &types.Forecast{
-						TopicId:     1,
+						TopicId:     0,
 						BlockHeight: 10,
 						Forecaster:  forecasterAddr.String(),
 						ForecastElements: []*types.ForecastElement{
@@ -66,11 +55,14 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 						},
 					},
 				},
-				InferencesForecastsBundleSignature: []byte("Signature"),
+				InferencesForecastsBundleSignature: []byte("InferenceForecastBundle Signature"),
+				Pubkey:                             "Worker Pubkey",
 			},
 		},
 	}
-	s.authKeeper.EXPECT().GetAccount(gomock.Any(), inferencerAddr)
-	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
+
+	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature, _ = hex.DecodeString("6182c6115df6c6d2c603797f7ed4ca882eb7bc8c0f1536803b9d117bb22933b578c6e093219f5c1bbe41ae2da895cbd7079e37840720f0c352541f10c162334c")
+	workerMsg.WorkerDataBundles[0].Pubkey = "031defa76703f22f4db7590df684052d2ae52ad693981304087b906a628c747996"
+	_, err := msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 }

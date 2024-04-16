@@ -1,7 +1,6 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	"crypto/ed25519"
 	"testing"
 	"time"
@@ -127,9 +126,9 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 }
 
 func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
-	var initialStake = types.DefaultParamsCreateTopicFee() * 2
-	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(initialStake)))
-	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(int64(types.DefaultParamsCreateTopicFee()))))
+	var initialStake = types.DefaultParamsCreateTopicFee().MulRaw(2)
+	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, initialStake)
+	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, types.DefaultParamsCreateTopicFee()))
 	senderAddr, _ := sdk.AccAddressFromBech32(sender)
 	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraStakingAccountName, feeCoins)
