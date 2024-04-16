@@ -122,9 +122,6 @@ type Keeper struct {
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, Worker], types.Forecast]
 
-	// map of (topic, worker) -> num_inferences_in_reward_epoch
-	numInferencesInRewardEpoch collections.Map[collections.Pair[TopicId, Worker], Uint]
-
 	// map of worker id to node data about that worker
 	workers collections.Map[LibP2pKey, types.OffchainNode]
 
@@ -230,7 +227,6 @@ func NewKeeper(
 		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -290,10 +286,10 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -303,14 +299,14 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
-				return err
+				return false, err
 			}
-			return nil
+			return true, nil
 		}
 	}
 
 	// If the nonce is not present in the unfulfilled nonces
-	return nil
+	return false, nil
 }
 
 // True if nonce is unfulfilled, false otherwise.
@@ -407,13 +403,17 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 	nonces.Nonces = append(nonces.Nonces, reputerRequestNonce)
 
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
 	if err != nil {
 		return err
 	}
 
-	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
-		nonces.Nonces = nonces.Nonces[1:]
+	lenNonces := uint64(len(nonces.Nonces))
+	if lenNonces > maxUnfulfilledRequests {
+		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+		if diff > 0 {
+			nonces.Nonces = nonces.Nonces[diff:]
+		}
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
@@ -450,7 +450,7 @@ func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 
 func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
-	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
+	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker, regret types.TimestampedValue) error {
@@ -600,6 +600,14 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
+func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxUnfulfilledReputerRequests, nil
+}
+
 func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -661,51 +669,60 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 }
 
 func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, BlockHeight, error) {
+	// Define the range query starting from the highest available block down to and including the specified block
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
-	inferencesToReturn := types.Inferences{}
-	blockHeight := int64(0)
+	var inferencesToReturn types.Inferences
+	currentBlockHeight := BlockHeight(0)
+
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
+	// Iterate through entries in descending order and collect all inferences after the specified block
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		inferencesToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		inferencesToReturn.Inferences = kv.Value.Inferences
+		break
 	}
 
-	return &inferencesToReturn, blockHeight, nil
+	// Return the collected inferences and the lowest block height at which they were found
+	return &inferencesToReturn, currentBlockHeight, nil
 }
 
 func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
 	forecastsToReturn := types.Forecasts{}
-	blockHeight := int64(0)
+	currentBlockHeight := BlockHeight(0)
+
 	iter, err := k.allForecasts.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		forecastsToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		forecastsToReturn.Forecasts = kv.Value.Forecasts
+		break
 	}
 
-	return &forecastsToReturn, blockHeight, nil
+	return &forecastsToReturn, currentBlockHeight, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -745,11 +762,6 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 		if err != nil {
 			return err
 		}
-		// // Update the number of forecasts in the reward epoch for each forecaster
-		// err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
-		// if err != nil {
-		// 	return err
-		// }
 	}
 
 	key := collections.Join(topicId, block)
