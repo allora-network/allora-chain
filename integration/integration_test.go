@@ -2,6 +2,8 @@ package integration_test
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	chain_test "github.com/allora-network/allora-chain/integration/chain"
@@ -17,15 +19,12 @@ type ExternalTestSuite struct {
 func (s *ExternalTestSuite) SetupTest() {
 	var err error
 	s.ctx = context.Background()
+	userHomeDir, _ := os.UserHomeDir()
+	home := filepath.Join(userHomeDir, ".allorad")
 	nodeConfig := chain_test.NewNodeConfig(
 		s.T(),
 		"http://localhost:26657",
-		"test",
-		"test test test test test test test test test test test test test test test test test test test test test test test test",
-		"test",
-		"",
-		"_",
-		10,
+		home,
 	)
 	s.n, err = chain_test.NewNode(nodeConfig)
 	s.Require().NoError(err)

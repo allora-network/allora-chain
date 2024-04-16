@@ -2,8 +2,6 @@ package chain_test
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -14,14 +12,9 @@ import (
 )
 
 type NodeConfig struct {
-	t                        *testing.T
-	NodeRPCAddress           string // rpc node to attach to
-	AddressKeyName           string // load a address by key from the keystore
-	AddressRestoreMnemonic   string
-	AddressAccountPassphrase string
-	AlloraHomeDir            string // home directory for the allora keystore
-	StringSeperator          string // string seperator used for key identifiers in allora
-	ReconnectSeconds         uint64 // seconds to wait for reconnection
+	t              *testing.T
+	NodeRPCAddress string // rpc node to attach to
+	AlloraHomeDir  string // home directory for the allora keystore
 }
 
 type Node struct {
@@ -34,39 +27,24 @@ type Node struct {
 func NewNodeConfig(
 	t *testing.T,
 	nodeRPCAddress,
-	addressKeyName,
-	addressRestoreMnemonic,
-	addressAccountPassphrase,
-	alloraHomeDir,
-	stringSeperator string,
-	reconnectSeconds uint64,
+	alloraHomeDir string,
 ) NodeConfig {
 	return NodeConfig{
-		t:                        t,
-		NodeRPCAddress:           nodeRPCAddress,
-		AddressKeyName:           addressKeyName,
-		AddressRestoreMnemonic:   addressRestoreMnemonic,
-		AddressAccountPassphrase: addressAccountPassphrase,
-		AlloraHomeDir:            alloraHomeDir,
-		StringSeperator:          stringSeperator,
-		ReconnectSeconds:         reconnectSeconds,
+		t:              t,
+		NodeRPCAddress: nodeRPCAddress,
+		AlloraHomeDir:  alloraHomeDir,
 	}
 }
 
 func getAlloraClient(nc NodeConfig) (*cosmosclient.Client, error) {
 	// create a allora client instance
 	ctx := context.Background()
-	userHomeDir, _ := os.UserHomeDir()
-	alloraClientHome := filepath.Join(userHomeDir, ".allorad")
-	if nc.AlloraHomeDir != "" {
-		alloraClientHome = nc.AlloraHomeDir
-	}
 
 	client, err := cosmosclient.New(
 		ctx,
 		cosmosclient.WithNodeAddress(nc.NodeRPCAddress),
 		cosmosclient.WithAddressPrefix(params.HumanCoinUnit),
-		cosmosclient.WithHome(alloraClientHome),
+		cosmosclient.WithHome(nc.AlloraHomeDir),
 	)
 	require.NoError(nc.t, err)
 	return &client, nil
@@ -81,16 +59,13 @@ func NewNode(nc NodeConfig) (Node, error) {
 		return Node{}, err
 	}
 
-	//var accounts []cosmosaccount.Account = make([]cosmosaccount.Account, 1)
+	var accounts []cosmosaccount.Account = make([]cosmosaccount.Account, 2)
 
 	//// restore from mneumonic
-	//accounts[0], err = node.Client.AccountRegistry.Import(
-	//	nc.AddressKeyName,
-	//	nc.AddressRestoreMnemonic,
-	//	nc.AddressAccountPassphrase,
-	//)
-	//require.NoError(nc.t, err)
-	//node.Accounts = accounts
+	accounts[0], err = node.Client.AccountRegistry.GetByName("alice")
+	require.NoError(nc.t, err)
+	accounts[1], err = node.Client.AccountRegistry.GetByName("bob")
+	require.NoError(nc.t, err)
 
 	// Create query client
 	node.QueryClient = emissionstypes.NewQueryClient(node.Client.Context())
