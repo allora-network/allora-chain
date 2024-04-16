@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// TODO paginate
 func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *types.QueryRegisteredWorkerNodesRequest) (*types.QueryRegisteredWorkerNodesResponse, error) {
 	if req == nil {
 		return nil, fmt.Errorf("received nil request")
@@ -47,6 +48,7 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 	return &types.QueryReputerAddressByP2PKeyResponse{Address: address.String()}, nil
 }
 
+// TODO paginate
 func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.QueryRegisteredTopicIdsRequest) (*types.QueryRegisteredTopicIdsResponse, error) {
 	if req == nil {
 		return nil, fmt.Errorf("received nil request")

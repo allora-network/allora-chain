@@ -2,8 +2,9 @@ package msgserver
 
 import (
 	"context"
-
+	"encoding/hex"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -16,15 +17,34 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	ctx context.Context,
 	topicId uint64,
 	nonce types.Nonce,
-	inferences []*types.Inference,
+	// inferences []*types.Inference,
+	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
-	for _, inference := range inferences {
+	for _, workerDataBundle := range workerDataBundles {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each inferer
 		/// All filters should be done in order of increasing computational complexity
+
+		// check signatures from the bundle throw if invalid!
+
+		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
+		if err != nil || len(pk) != secp256k1.PubKeySize {
+			return nil, types.ErrSignatureVerificationFailed
+		}
+		pubkey := secp256k1.PubKey(pk)
+
+		src := make([]byte, 0)
+		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+			return nil, types.ErrSignatureVerificationFailed
+		}
+
+		/// If we do PoX-like anti-sybil procedure, would go here
+
+		inference := workerDataBundle.InferenceForecastsBundle.Inference
 
 		// Check that the inference is for the correct topic
 		if inference.TopicId != topicId {
@@ -32,7 +52,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		}
 
 		// Check that the inference is for the correct nonce
-		if inference.Nonce.Nonce != nonce.Nonce {
+		if inference.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
@@ -48,10 +68,6 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 				continue
 			}
 
-			/// TODO check signatures! throw if invalid!
-
-			/// If we do PoX-like anti-sybil procedure, would go here
-
 			/// Filtering done now, now write what we must for inclusion
 
 			inferencesByInferer[inference.Inferer] = inference
@@ -66,7 +82,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.Nonce)
+	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
 
 	// Build list of inferences that pass all filters
 	// AND are from top performing inferers among those who have submitted inferences in this batch
@@ -102,25 +118,41 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	ctx context.Context,
 	topicId uint64,
 	nonce types.Nonce,
-	forecasts []*types.Forecast,
+	workerDataBundle []*types.WorkerDataBundle,
 	// Inferers in the current batch, assumed to have passed VerifyAndInsertInferencesFromTopInferers() filters
 	acceptedInferersOfBatch map[string]bool,
 	maxTopWorkersToReward uint64,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecasterScores := make(map[string]types.Score)
-	for _, forecast := range forecasts {
+	for _, workerDataBundle := range workerDataBundle {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each forecaster
 		/// All filters should be done in order of increasing computational complexity
 
+		// check signatures from the bundle throw if invalid!
+
+		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
+		if err != nil || len(pk) != secp256k1.PubKeySize {
+			return types.ErrSignatureVerificationFailed
+		}
+		pubkey := secp256k1.PubKey(pk)
+
+		src := make([]byte, 0)
+		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+			return types.ErrSignatureVerificationFailed
+		}
+		/// If we do PoX-like anti-sybil procedure, would go here
+
+		forecast := workerDataBundle.InferenceForecastsBundle.Forecast
 		// Check that the forecast is for the correct topic
 		if forecast.TopicId != topicId {
 			continue
 		}
 
 		// Check that the forecast is for the correct nonce
-		if forecast.Nonce.Nonce != nonce.Nonce {
+		if forecast.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
@@ -152,10 +184,6 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 				continue
 			}
 
-			/// TODO check signatures! throw if invalid!
-
-			/// If we do PoX-like anti-sybil procedure, would go here
-
 			/// Filtering done now, now write what we must for inclusion
 
 			forecastsByForecaster[forecast.Forecaster] = forecast
@@ -170,7 +198,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.Nonce)
+	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
 
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
@@ -198,13 +226,15 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 // A tx function that accepts a list of forecasts and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
+
 	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {
 		return nil, err
 	}
-	if nonceUnfulfilled {
-		return nil, types.ErrNonceNotUnfulfilled
+	// If the nonce is already fulfilled, return an error
+	if !nonceUnfulfilled {
+		return nil, types.ErrNonceAlreadyFulfilled
 	}
 
 	maxTopWorkersToReward, err := ms.k.GetParamsMaxTopWorkersToReward(ctx)
@@ -212,12 +242,18 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
-	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.Inferences, maxTopWorkersToReward)
+	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, maxTopWorkersToReward)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.Forecasts, acceptedInferers, maxTopWorkersToReward)
+	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, acceptedInferers, maxTopWorkersToReward)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update the unfulfilled worker nonce
+	_, err = ms.k.FulfillWorkerNonce(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {
 		return nil, err
 	}

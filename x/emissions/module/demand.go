@@ -252,8 +252,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*types.Topic
 	for _, topic := range topTopicsByReturn {
-		// Log the accumulated met demand for each topic
-		k.AddTopicAccumulateMetDemand(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 		// Add to the fee revenue collected for this topic for this reward epoch
 		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 

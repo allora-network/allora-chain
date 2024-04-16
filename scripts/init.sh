@@ -16,7 +16,7 @@ $ALLORAD_BIN genesis add-genesis-account allo17g6xu7z2u02f7hz0fghtqaexggrgrprhdq
 # investors and team get nothing for the first year then vesting
 # their tokens are minted at genesis,
 # they're custodialized off-chain by humans bound by legal contracts
-# their token lockup is enforced off-chain
+# their token lockup is enforced off-chaian
 # investors : 30.75% of total supply at genesis = 307500000allo
 # this is just a random test account to simulate the off-chain custodian
 $ALLORAD_BIN genesis add-genesis-account allo12cs03k0mlks4vea7qnhrktpxlj8tdw6zxsuqn3 307500000allo

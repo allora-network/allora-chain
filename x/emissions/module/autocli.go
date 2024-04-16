@@ -319,24 +319,19 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "InsertBulkWorkerPayload",
-					Use:       "insert-bulk-worker-payload [topic_id] [nonce] [inferences] [forecasts]",
+					Use:       "insert-bulk-worker-payload [worker_data_bundles]",
 					Short:     "Insert bulk worker payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "topic_id"},
-						{ProtoField: "nonce"},
-						{ProtoField: "inferences"},
-						{ProtoField: "forecasts"},
+						{ProtoField: "worker_data_bundles"},
 					},
 				},
 				{
 					RpcMethod: "InsertBulkReputerPayload",
-					Use:       "insert-bulk-reputer-payload [topic_id] [reputer_request_nonce] [reputer_value_bundles]",
+					Use:       "insert-bulk-reputer-payload [reputer_value_bundles]",
 					Short:     "Insert bulk reputer payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "topic_id"},
-						{ProtoField: "reputer_request_nonce"},
 						{ProtoField: "reputer_value_bundles"},
 					},
 				},
