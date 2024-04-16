@@ -36,7 +36,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	*/
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
+	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Address()
 	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
 
 	workerPrivateKey := secp256k1.GenPrivKey()
@@ -49,6 +49,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	// log.Printf("reputerPrivateKey: %v", reputerPrivateKey)
 	log.Printf("reputerPrivateKey: %v", reputerPrivateKey)
 	log.Printf("workerPrivateKey: %v", workerPrivateKey)
+	log.Printf("reputerPublicKeyBytes: %v", reputerPublicKeyBytes)
 	log.Printf("reputerAddr: %v", reputerAddr)
 	log.Printf("workerAddr: %v", workerAddr)
 	log.Printf("reputerAddr.String(): %v", reputerAddr.String())
@@ -159,7 +160,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 			{
 				ValueBundle: reputerValueBundle,
 				Signature:   valueBundleSignature,
-				Pubkey:      string(reputerPublicKeyBytes),
+				Pubkey:      reputerPublicKeyBytes.String(),
 			},
 		},
 	}
