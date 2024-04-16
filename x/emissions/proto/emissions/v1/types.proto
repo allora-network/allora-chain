@@ -47,81 +47,77 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // controls resilience of reward payouts against copycat workers
-  string dcoef_abs = 14 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];  // delta for numerical differentiation
-  string learning_rate = 15 [
+  string learning_rate = 14 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // speed of gradient descent
-  string max_gradient_threshold = 16 [
+  string max_gradient_threshold = 15 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // gradient descent stops when gradient falls below this
-  string min_stake_fraction = 17 [
+  string min_stake_fraction = 16 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // minimum fraction of stake to listen to when setting consensus listening coefficients
-  uint64 max_workers_per_topic_request = 18;   // max num workers whose inference are used and compensated per request
-  uint64 max_reputers_per_topic_request = 19;  // max num reputers to solicit losses from per loss request
-  string epsilon = 20 [
+  uint64 max_workers_per_topic_request = 17;   // max num workers whose inference are used and compensated per request
+  uint64 max_reputers_per_topic_request = 18;  // max num reputers to solicit losses from per loss request
+  string epsilon = 19 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // small number to prevent division by zero
-  string p_inference_synthesis = 21 [
+  string p_inference_synthesis = 20 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // fiducial value of exponent for Inference Synthesis gradient function
-  string p_reward_spread = 22 [
+  string p_reward_spread = 21 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
-  string alpha_regret = 23 [
+  string alpha_regret = 22 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // how much to weight the most recent log-loss differences in regret EMA update
-  uint64 max_unfulfilled_worker_requests = 24;   // max num worker request nonces to keep track of per topic
-  uint64 max_unfulfilled_reputer_requests = 25;  // max num reputer request nonces to keep track of per topic
-  uint64 number_expected_inference_sybils = 26;  // global number for calculation tax of worker reward
-  uint64 sybil_tax_exponent = 27;                // global parameter for calculation tax of worker reward
-  string topic_reward_stake_importance = 28 [
+  uint64 max_unfulfilled_worker_requests = 23;   // max num worker request nonces to keep track of per topic
+  uint64 max_unfulfilled_reputer_requests = 24;  // max num reputer request nonces to keep track of per topic
+  uint64 number_expected_inference_sybils = 25;  // global number for calculation tax of worker reward
+  uint64 sybil_tax_exponent = 26;                // global parameter for calculation tax of worker reward
+  string topic_reward_stake_importance = 27 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // The exponent μ represents the importance of stake in the reward of a topic and has a fiduciary value of 0.5
-  string topic_reward_fee_revenue_importance = 29 [
+  string topic_reward_fee_revenue_importance = 28 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiduciary value of
       // 0.5
-  string topic_reward_alpha = 30 [
+  string topic_reward_alpha = 29 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // global exponential moving average parameter. Fiduciary value of 0.9375 on a monthly timescale, 0.5 for weekly
       // updates
-  string task_reward_alpha = 31 [
+  string task_reward_alpha = 30 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // global exponential moving average parameter. Fiduciary value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
-  string validators_vs_allora_percent_reward = 32 [
+  string validators_vs_allora_percent_reward = 31 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
-  uint64 max_samples_to_scale_scores = 33;  // number of scores to use for standard deviation calculation
+  uint64 max_samples_to_scale_scores = 32;  // number of scores to use for standard deviation calculation
   // max this many inferences from unique workers and forecasts thereof are accepted per payload
-  uint64 max_top_workers_to_reward = 34;   // max number of top workers by score to reward
-  uint64 max_top_reputers_to_reward = 35;  // max number of top reputers by score to reward
-  string create_topic_fee = 36 [
+  uint64 max_top_workers_to_reward = 33;   // max number of top workers by score to reward
+  uint64 max_top_reputers_to_reward = 34;  // max number of top reputers by score to reward
+  string create_topic_fee = 35 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // topic registration fee
-  string sigmoid_a = 37 [
+  string sigmoid_a = 36 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter a for sigmoid function, feducial value = 8
-  string sigmoid_b = 38 [
+  string sigmoid_b = 37 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter b for sigmoid function, feducial value = 0.5
