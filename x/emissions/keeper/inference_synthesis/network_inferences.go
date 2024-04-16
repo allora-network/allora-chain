@@ -37,7 +37,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 ) (MaximalRegrets, error) {
 	maxInfererRegret := epsilon // averts div by 0 error
 	for inferer := range inferenceByWorker {
-		infererRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		infererRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -49,7 +49,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 
 	maxForecasterRegret := epsilon // averts div by 0 error
 	for forecaster := range forecastImpliedInferenceByWorker {
-		forecasterRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
+		forecasterRegret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -62,7 +62,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 	maxOneInForecasterRegret := make(map[Worker]Regret) // averts div by 0 error
 	for forecaster := range forecastImpliedInferenceByWorker {
 		for inferer := range inferenceByWorker {
-			oneInForecasterRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
+			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
 			if err != nil {
 				fmt.Println("Error getting forecaster regret: ", err)
 				return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -71,7 +71,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 				maxOneInForecasterRegret[forecaster] = oneInForecasterRegret.Value
 			}
 		}
-		oneInForecasterSelfRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
+		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -114,7 +114,7 @@ func CalcWeightedInference(
 
 	for inferer := range inferenceByWorker {
 		// Get the regret of the inferer
-		regret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
 
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
@@ -150,7 +150,7 @@ func CalcWeightedInference(
 
 	for forecaster := range forecastImpliedInferenceByWorker {
 		// Get the regret of the forecaster
-		regret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
+		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return InferenceValue{}, err

@@ -11,7 +11,7 @@ type BlockHeight = int64
 func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:                   int64(600),                                // length of an "epoch" for rewards payouts in blocks
+		RewardCadence:                   int64(600),                                // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicUnmetDemand:             cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:           cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
@@ -38,7 +38,7 @@ func DefaultParams() Params {
 		SybilTaxExponent:                uint64(3),                                 // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation

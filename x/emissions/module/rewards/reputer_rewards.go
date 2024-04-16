@@ -51,7 +51,7 @@ func GetReputerTaskEntropy(
 	}
 	emaReputerRewards := make([]alloraMath.Dec, numReputers)
 	for i, fraction := range reputerRewardFractions {
-		previousReputerRewardFraction, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputers[i])
+		previousReputerRewardFraction, noPriorRegret, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputers[i])
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
@@ -59,6 +59,7 @@ func GetReputerTaskEntropy(
 			emaAlpha,
 			fraction,
 			previousReputerRewardFraction,
+			noPriorRegret,
 		)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err

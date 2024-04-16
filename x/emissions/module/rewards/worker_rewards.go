@@ -92,13 +92,14 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	for i, fraction := range rewardFractions {
+		noPriorScore := false
 		if which == TASK_INFERENCE {
-			previousRewardFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
 				return alloraMath.Dec{}, nil, nil, err
 			}
 		} else { // TASK_FORECAST
-			previousRewardFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
 				return alloraMath.Dec{}, nil, nil, err
 			}
@@ -107,6 +108,7 @@ func getInferenceOrForecastTaskEntropy(
 			emaAlpha,
 			fraction,
 			previousRewardFraction,
+			noPriorScore,
 		)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
