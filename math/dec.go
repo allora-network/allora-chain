@@ -380,6 +380,11 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 	return sdkmath.NewIntFromBigInt(&r)
 }
 
+func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
+	y, _ := sdkmath.LegacyNewDecFromStr(x.dec.Text('f'))
+	return y
+}
+
 func (x Dec) String() string {
 	return x.dec.Text('f')
 }

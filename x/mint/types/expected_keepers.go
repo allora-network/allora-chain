@@ -2,6 +2,7 @@ package types // noalias
 
 import (
 	context "context"
+	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
@@ -36,5 +37,5 @@ type BankKeeper interface {
 
 type EmissionsKeeper interface {
 	GetTotalStake(ctx context.Context) (math.Uint, error)
-	GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (math.LegacyDec, error)
+	GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error)
 }
