@@ -124,21 +124,16 @@ func (ms msgServer) InsertBulkReputerPayload(
 			log.Printf("bundle.Pubkey just before decoding %v", bundle.Pubkey)
 
 			pk, err := hex.DecodeString(bundle.Pubkey)
-			log.Printf("bundle.Pubkey %v, err %v, len(pk) %v, secp256k1.PubKeySize %v", bundle.Pubkey, err, len(pk), secp256k1.PubKeySize)
 			if err != nil || len(pk) != secp256k1.PubKeySize {
 				return nil, types.ErrSignatureVerificationFailed
 			}
 			pubkey := secp256k1.PubKey(pk)
-
-			log.Printf("Here 1.1")
 
 			src := make([]byte, 0)
 			src, _ = bundle.ValueBundle.XXX_Marshal(src, true)
 			if !pubkey.VerifySignature(src, bundle.Signature) {
 				return nil, types.ErrSignatureVerificationFailed
 			}
-
-			log.Printf("Here 2")
 
 			/// If we do PoX-like anti-sybil procedure, would go here
 
@@ -238,25 +233,21 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	reputerRequestNonce types.ReputerRequestNonce,
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
-	log.Printf("Here A")
 	// Get the accepted inferers of the associated worker response payload
 	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Here AA11")
 	acceptedInferersOfBatch := make(map[string]bool)
 	for _, inference := range inferences.Inferences {
 		acceptedInferersOfBatch[inference.Inferer] = true
 	}
-	log.Printf("Here AA1")
 
 	// Get the accepted forecasters of the associated worker response payload
 	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Here AA")
 
 	acceptedForecastersOfBatch := make(map[string]bool)
 	for _, forecast := range forecasts.Forecasts {
@@ -271,7 +262,6 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			acceptedInfererValues = append(acceptedInfererValues, workerVal)
 		}
 	}
-	log.Printf("Here AAA")
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
