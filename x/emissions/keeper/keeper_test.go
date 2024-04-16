@@ -90,7 +90,7 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
 
 	// Set worker nonce
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
@@ -100,14 +100,14 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 1, "Unfulfilled nonces should not be empty")
 
 	// Check that the nonce is the correct nonce
-	s.Require().Equal(newNonce.Nonce, unfulfilledNonces.Nonces[0].Nonce, "Unfulfilled nonces should contain the new nonce")
+	s.Require().Equal(newNonce.BlockHeight, unfulfilledNonces.Nonces[0].BlockHeight, "Unfulfilled nonces should contain the new nonce")
 }
 
 func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 
 	isUnfulfilled, err := keeper.IsWorkerNonceUnfulfilled(ctx, topicId, newNonce)
 	s.Require().NoError(err)
@@ -126,7 +126,7 @@ func (s *KeeperTestSuite) TestCanFulfillNewWorkerNonce() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newNonce := &types.Nonce{Nonce: 42}
+	newNonce := &types.Nonce{BlockHeight: 42}
 
 	// Set worker nonce
 	err := keeper.AddWorkerNonce(ctx, topicId, newNonce)
@@ -160,7 +160,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
@@ -171,7 +171,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 
 	// Check that all the expected nonces are present and correct
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(nonceValues[i], nonce.Nonce, "Nonce value should match the expected value")
+		s.Require().Equal(nonceValues[i], nonce.BlockHeight, "Nonce value should match the expected value")
 	}
 }
 
@@ -188,14 +188,14 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		success, err := keeper.FulfillWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().True(success, "Nonce should be successfully fulfilled")
 		s.Require().NoError(err, "Error fulfilling nonce")
 	}
@@ -208,7 +208,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	// Check that all the expected unfulfilled nonces are present and correct
 	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(expectedUnfulfilled[i], nonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+		s.Require().Equal(expectedUnfulfilled[i], nonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
 }
 
@@ -229,7 +229,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
@@ -241,7 +241,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
-		s.Require().Equal(expectedNonces[i], nonce.Nonce, "Nonce should match the expected recent nonce")
+		s.Require().Equal(expectedNonces[i], nonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
 }
 
@@ -260,8 +260,8 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
 
 	// Set reputer nonce
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
 	s.Require().NoError(err)
 
@@ -272,12 +272,12 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 
 	// Check that the nonce is the correct nonce
 	s.Require().Equal(
-		newReputerNonce.Nonce,
-		unfulfilledNonces.Nonces[0].ReputerNonce.Nonce,
+		newReputerNonce.BlockHeight,
+		unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight,
 		"Unfulfilled nonces should contain the new reputer nonce")
 	s.Require().Equal(
-		newWorkerNonce.Nonce,
-		unfulfilledNonces.Nonces[0].WorkerNonce.Nonce,
+		newWorkerNonce.BlockHeight,
+		unfulfilledNonces.Nonces[0].WorkerNonce.BlockHeight,
 		"Unfulfilled nonces should contain the new worker nonce")
 }
 
@@ -285,8 +285,8 @@ func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
@@ -305,8 +305,8 @@ func (s *KeeperTestSuite) TestCanFulfillNewReputerNonce() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	newReputerNonce := &types.Nonce{Nonce: 42}
-	newWorkerNonce := &types.Nonce{Nonce: 43}
+	newReputerNonce := &types.Nonce{BlockHeight: 42}
+	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	// Set reputer nonce
 	err := keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
@@ -341,14 +341,14 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val}, &types.Nonce{Nonce: val})
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
 	for _, val := range fulfillNonces {
-		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{Nonce: val})
+		nonceIsUnfulfilled, err := keeper.FulfillReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Error fulfilling nonce")
 		s.Require().True(nonceIsUnfulfilled, "Nonce should be able to be fulfilled")
 	}
@@ -361,7 +361,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Check that all the expected unfulfilled nonces are present and correct
 	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(expectedUnfulfilled[i], nonce.ReputerNonce.Nonce, "Remaining nonce value should match the expected unfulfilled value")
+		s.Require().Equal(expectedUnfulfilled[i], nonce.ReputerNonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
 }
 
@@ -383,7 +383,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{Nonce: val}, &types.Nonce{Nonce: val})
+		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
@@ -395,7 +395,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
-		s.Require().Equal(expectedNonces[i], nonce.ReputerNonce.Nonce, "Nonce should match the expected recent nonce")
+		s.Require().Equal(expectedNonces[i], nonce.ReputerNonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
 }
 
@@ -649,7 +649,7 @@ func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
 func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	expectedValue := cosmosMath.LegacyMustNewDecFromStr("0.25") // Assume a function to create LegacyDec
+	expectedValue := alloraMath.MustNewDecFromString("0.25") // Assume a function to create LegacyDec
 
 	// Set the parameter
 	params := types.Params{ValidatorsVsAlloraPercentReward: expectedValue}
@@ -818,7 +818,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	}
 
 	// Assume InsertInferences correctly sets up inferences
-	nonce := types.Nonce{Nonce: int64(block)} // Assuming block type cast to int64 if needed
+	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
 	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
@@ -847,7 +847,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	}
 
 	// Assume InsertForecasts correctly sets up forecasts
-	nonce := types.Nonce{Nonce: int64(block)}
+	nonce := types.Nonce{BlockHeight: int64(block)}
 	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
@@ -917,11 +917,11 @@ func (s *KeeperTestSuite) TestGetInferencesAtOrAfterBlock() {
 		},
 	}
 
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-	nonce2 := types.Nonce{Nonce: int64(block2)}
-	nonce3 := types.Nonce{Nonce: int64(block3)}
-	nonce4 := types.Nonce{Nonce: int64(block4)}
+	nonce0 := types.Nonce{BlockHeight: block0}
+	nonce1 := types.Nonce{BlockHeight: block1}
+	nonce2 := types.Nonce{BlockHeight: block2}
+	nonce3 := types.Nonce{BlockHeight: block3}
+	nonce4 := types.Nonce{BlockHeight: block4}
 
 	// Assume latest inference is correctly set up
 	err := keeper.InsertInferences(ctx, topicId, nonce3, inferences3)
@@ -1005,11 +1005,11 @@ func (s *KeeperTestSuite) TestGetForecastsAtOrAfterBlock() {
 		},
 	}
 
-	nonce0 := types.Nonce{Nonce: int64(block0)}
-	nonce1 := types.Nonce{Nonce: int64(block1)}
-	nonce2 := types.Nonce{Nonce: int64(block2)}
-	nonce3 := types.Nonce{Nonce: int64(block3)}
-	nonce4 := types.Nonce{Nonce: int64(block4)}
+	nonce0 := types.Nonce{BlockHeight: block0}
+	nonce1 := types.Nonce{BlockHeight: block1}
+	nonce2 := types.Nonce{BlockHeight: block2}
+	nonce3 := types.Nonce{BlockHeight: block3}
+	nonce4 := types.Nonce{BlockHeight: block4}
 
 	// Insert forecasts into the system
 	err := keeper.InsertForecasts(ctx, topicId, nonce3, forecasts3)
