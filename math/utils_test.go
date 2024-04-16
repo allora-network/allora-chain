@@ -16,7 +16,7 @@ func TestExponentialMovingAverageSimple(t *testing.T) {
 	// 30 + 180 = 210
 	expected := alloraMath.MustNewDecFromString("210")
 
-	result, err := alloraMath.ExponentialMovingAverage(alpha, current, previous)
+	result, err := alloraMath.ExponentialMovingAverage(alpha, current, previous, false)
 	require.NoError(t, err)
 	require.True(t, alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
 }

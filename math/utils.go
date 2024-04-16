@@ -7,7 +7,16 @@ package math
 // Uij = αUij + (1 − α)Ui−1,j
 // ̃Vik = αVik + (1 − α)Vi−1,k
 // ̃Wim = αWim + (1 − α)Wi−1,m
-func ExponentialMovingAverage(alpha, current, previous Dec) (Dec, error) {
+func ExponentialMovingAverage(
+	alpha,
+	current,
+	previous Dec,
+	firstTime bool,
+) (Dec, error) {
+	// If first iteration, then return just the new value
+	if firstTime {
+		return current, nil
+	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
 		return ZeroDec(), err
