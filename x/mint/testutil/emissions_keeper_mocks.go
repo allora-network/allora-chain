@@ -5,6 +5,7 @@ import (
 	reflect "reflect"
 
 	math "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -45,10 +46,10 @@ func (mr *MockEmissionsKeeperMockRecorder) GetTotalStake(ctx interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalStake", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetTotalStake), ctx)
 }
 
-func (m *MockEmissionsKeeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (math.LegacyDec, error) {
+func (m *MockEmissionsKeeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetParamsValidatorsVsAlloraPercentReward", ctx)
-	ret0, _ := ret[0].(math.LegacyDec)
+	ret0, _ := ret[0].(alloraMath.Dec)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
