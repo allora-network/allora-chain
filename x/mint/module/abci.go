@@ -155,7 +155,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	validatorCut := vPercent.SdkLegacyDec().Mul(blockEmission.ToLegacyDec()).TruncateInt()
 	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
 	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))

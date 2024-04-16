@@ -122,9 +122,6 @@ type Keeper struct {
 	// map of (topic, worker) -> forecast[]
 	forecasts collections.Map[collections.Pair[TopicId, Worker], types.Forecast]
 
-	// map of (topic, worker) -> num_inferences_in_reward_epoch
-	numInferencesInRewardEpoch collections.Map[collections.Pair[TopicId, Worker], Uint]
-
 	// map of worker id to node data about that worker
 	workers collections.Map[LibP2pKey, types.OffchainNode]
 
@@ -230,7 +227,6 @@ func NewKeeper(
 		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		numInferencesInRewardEpoch:          collections.NewMap(sb, types.NumInferencesInRewardEpochKey, "num_inferences_in_reward_epoch", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
 		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
 		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
@@ -290,10 +286,10 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -303,14 +299,14 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
-				return err
+				return false, err
 			}
-			return nil
+			return true, nil
 		}
 	}
 
 	// If the nonce is not present in the unfulfilled nonces
-	return nil
+	return false, nil
 }
 
 // True if nonce is unfulfilled, false otherwise.
@@ -407,13 +403,17 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 	nonces.Nonces = append(nonces.Nonces, reputerRequestNonce)
 
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
+	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
 	if err != nil {
 		return err
 	}
 
-	if uint64(len(nonces.Nonces)) < maxUnfulfilledRequests {
-		nonces.Nonces = nonces.Nonces[1:]
+	lenNonces := uint64(len(nonces.Nonces))
+	if lenNonces > maxUnfulfilledRequests {
+		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
+		if diff > 0 {
+			nonces.Nonces = nonces.Nonces[diff:]
+		}
 	}
 
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
@@ -450,7 +450,7 @@ func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 
 func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
-	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
+	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker, regret types.TimestampedValue) error {
@@ -600,6 +600,14 @@ func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uin
 	return params.MaxUnfulfilledWorkerRequests, nil
 }
 
+func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxUnfulfilledReputerRequests, nil
+}
+
 func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -661,51 +669,60 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 }
 
 func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, BlockHeight, error) {
+	// Define the range query starting from the highest available block down to and including the specified block
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
-	inferencesToReturn := types.Inferences{}
-	blockHeight := int64(0)
+	var inferencesToReturn types.Inferences
+	currentBlockHeight := BlockHeight(0)
+
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
+	// Iterate through entries in descending order and collect all inferences after the specified block
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		inferencesToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		inferencesToReturn.Inferences = kv.Value.Inferences
+		break
 	}
 
-	return &inferencesToReturn, blockHeight, nil
+	// Return the collected inferences and the lowest block height at which they were found
+	return &inferencesToReturn, currentBlockHeight, nil
 }
 
 func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
+		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
 
 	forecastsToReturn := types.Forecasts{}
-	blockHeight := int64(0)
+	currentBlockHeight := BlockHeight(0)
+
 	iter, err := k.allForecasts.Iterate(ctx, rng)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer iter.Close() // Ensure that resources are released
+
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
-		forecastsToReturn = kv.Value
-		blockHeight = kv.Key.K2()
+		currentBlockHeight = kv.Key.K2() // Current entry's block height
+		forecastsToReturn.Forecasts = kv.Value.Forecasts
+		break
 	}
 
-	return &forecastsToReturn, blockHeight, nil
+	return &forecastsToReturn, currentBlockHeight, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -745,11 +762,6 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 		if err != nil {
 			return err
 		}
-		// // Update the number of forecasts in the reward epoch for each forecaster
-		// err = k.IncrementNumForecastsInRewardEpoch(ctx, topicId, workerAcc)
-		// if err != nil {
-		// 	return err
-		// }
 	}
 
 	key := collections.Join(topicId, block)
@@ -1393,6 +1405,137 @@ func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, ad
 	return k.delegatedStakeRemovalQueue.Set(ctx, address, removalInfo)
 }
 
+/// REPUTERS
+
+// Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
+func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
+	for _, topicId := range TopicIds {
+		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+		err := k.topicReputers.Set(ctx, topicKey)
+		if err != nil {
+			return err
+		}
+	}
+	err := k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+	if err != nil {
+		return err
+	}
+	err = k.AddAddressTopics(ctx, reputer, TopicIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Remove a reputer to the reputer tracking data structures and topicReputers
+func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	err := k.topicReputers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
+
+	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
+	if err != nil {
+		return err
+	}
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/// WORKERS
+
+// Adds a new worker to the worker tracking data structures, workers and topicWorkers
+func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
+	for _, topicId := range TopicIds {
+		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
+		err := k.topicWorkers.Set(ctx, topickey)
+		if err != nil {
+			return err
+		}
+	}
+	err := k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+	if err != nil {
+		return err
+	}
+	err = k.AddAddressTopics(ctx, worker, TopicIds)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO paginate
+func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
+	var nodes []*types.OffchainNode
+	var nodeIdParts = strings.Split(nodeId, "|")
+
+	if len(nodeIdParts) < 2 {
+		nodeIdParts = append(nodeIdParts, "")
+	}
+
+	owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
+
+	iterator, err := k.workers.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for ; iterator.Valid(); iterator.Next() {
+		node, _ := iterator.Value()
+		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
+			nodeCopy := node
+			nodes = append(nodes, &nodeCopy)
+		}
+	}
+
+	return nodes, nil
+}
+
+func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+	worker, err := k.workers.Get(ctx, p2pKey)
+	if err != nil {
+		return nil, err
+	}
+
+	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
+	if err != nil {
+		return nil, err
+	}
+
+	return workerAddress, nil
+}
+
+func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+	reputer, err := k.reputers.Get(ctx, p2pKey)
+	if err != nil {
+		return nil, err
+	}
+
+	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
+	if err != nil {
+		return nil, err
+	}
+
+	return address, nil
+}
+
 /// TOPICS
 
 // Get the previous weight during rewards calculation for a topic
@@ -1499,15 +1642,6 @@ func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
 	return activeTopics, nil
 }
 
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (BlockHeight, error) {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return 0, err
-	}
-	ret := topic.EpochLastEnded
-	return ret, nil
-}
-
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId, epochLastEnded BlockHeight) error {
 	topic, err := k.topics.Get(ctx, topicId)
@@ -1518,74 +1652,13 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
-	for _, topicId := range topicIds {
-		topicKey := collections.Join(topicId, reputer)
-		err := k.topicReputers.Set(ctx, topicKey)
-		if err != nil {
-			return err
-		}
-	}
-	err := k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (BlockHeight, error) {
+	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	err = k.AddAddressTopics(ctx, reputer, topicIds)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Remove a reputer to the reputer tracking data structures and topicReputers
-func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
-	topicKey := collections.Join(topicId, reputerAddr)
-	err := k.topicReputers.Remove(ctx, topicKey)
-	if err != nil {
-		return err
-	}
-
-	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Remove a worker to the worker tracking data structures and topicWorkers
-func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-	topicKey := collections.Join(topicId, workerAddr)
-	err := k.topicWorkers.Remove(ctx, topicKey)
-	if err != nil {
-		return err
-	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
-	for _, topicId := range topicIds {
-		topickey := collections.Join(topicId, worker)
-		err := k.topicWorkers.Set(ctx, topickey)
-		if err != nil {
-			return err
-		}
-	}
-	err := k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
-	if err != nil {
-		return err
-	}
-	err = k.AddAddressTopics(ctx, worker, topicIds)
-	if err != nil {
-		return err
-	}
-	return nil
+	ret := topic.EpochLastEnded
+	return ret, nil
 }
 
 // True if worker is registered in topic, else False
@@ -1598,61 +1671,6 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
-}
-
-// TODO paginate
-func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
-	var nodes []*types.OffchainNode
-	var nodeIdParts = strings.Split(nodeId, "|")
-
-	if len(nodeIdParts) < 2 {
-		nodeIdParts = append(nodeIdParts, "")
-	}
-
-	owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
-
-	iterator, err := k.workers.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for ; iterator.Valid(); iterator.Next() {
-		node, _ := iterator.Value()
-		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
-			nodeCopy := node
-			nodes = append(nodes, &nodeCopy)
-		}
-	}
-
-	return nodes, nil
-}
-
-func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	worker, err := k.workers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return workerAddress, nil
-}
-
-func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	reputer, err := k.reputers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return address, nil
 }
 
 // TODO paginate
@@ -1766,6 +1784,8 @@ func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, addre
 
 	return topicsByAddress, nil
 }
+
+/// FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
@@ -2217,6 +2237,8 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 	}
 	return coef, nil
 }
+
+/// REWARD FRACTION
 
 // Gets the previous W_{i-1,m}
 func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, error) {

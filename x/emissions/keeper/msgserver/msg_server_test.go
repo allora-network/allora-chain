@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	cosmosMath "cosmossdk.io/math"
+
 	"cosmossdk.io/core/header"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -126,7 +128,7 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 }
 
 func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
-	var initialStake = types.DefaultParamsCreateTopicFee().MulRaw(2)
+	var initialStake = types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2))
 	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, initialStake)
 	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, types.DefaultParamsCreateTopicFee()))
 	senderAddr, _ := sdk.AccAddressFromBech32(sender)
