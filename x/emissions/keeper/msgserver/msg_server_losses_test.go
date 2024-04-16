@@ -1,6 +1,7 @@
 package msgserver_test
 
 import (
+	"encoding/hex"
 	"log"
 
 	cosmosMath "cosmossdk.io/math"
@@ -141,8 +142,18 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	src := make([]byte, 0)
 	src, err = reputerValueBundle.XXX_Marshal(src, true)
 	require.NoError(err, "Marshall reputer value bundle should not return an error")
-	valueBundleSignature, err := reputerPrivateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
+
+	PrivKey := secp256k1.GenPrivKey()
+	sign, err := PrivKey.Sign(src)
+	pkStr := hex.EncodeToString(PrivKey.PubKey().Bytes())
+	pk, err := hex.DecodeString(pkStr)
+	reporterPubKey := secp256k1.PubKey(pk)
+	if reporterPubKey.VerifySignature(src, sign) {
+		require.NoError(err, "Sign should not return an error")
+	}
+
+	//valueBundleSignature, err := reputerPrivateKey.Sign(src)
+	//require.NoError(err, "Sign should not return an error")
 
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
@@ -159,8 +170,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				ValueBundle: reputerValueBundle,
-				Signature:   valueBundleSignature,
-				Pubkey:      reputerPublicKeyBytes.String(),
+				Signature:   sign,  //valueBundleSignature,
+				Pubkey:      pkStr, //reputerPublicKeyBytes.String(),
 			},
 		},
 	}
