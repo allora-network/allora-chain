@@ -2,11 +2,11 @@ package msgserver
 
 import (
 	"context"
-	"encoding/json"
-
+	"encoding/hex"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -111,13 +111,16 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			/// Check signatures! throw if invalid!
-			senderAddr, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
-			if err != nil {
-				return nil, err
+
+			pk, err := hex.DecodeString(bundle.Pubkey)
+			if err != nil || len(pk) != secp256k1.PubKeySize {
+				return nil, types.ErrSignatureVerificationFailed
 			}
-			pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-			src, _ := json.Marshal(bundle.ValueBundle)
-			if !pk.GetPubKey().VerifySignature(src, bundle.Signature) {
+			pubkey := secp256k1.PubKey(pk)
+
+			src := make([]byte, 0)
+			src, _ = bundle.ValueBundle.XXX_Marshal(src, true)
+			if !pubkey.VerifySignature(src, bundle.Signature) {
 				return nil, types.ErrSignatureVerificationFailed
 			}
 
@@ -202,8 +205,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	// Update the unfulfilled reputer nonce
-	err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	// Update the unfulfilled nonces
+	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
