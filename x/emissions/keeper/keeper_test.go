@@ -2319,47 +2319,6 @@ func (s *KeeperTestSuite) TestRemoveFromMempool() {
 	s.Require().False(exists, "Request should not exist in the mempool after being removed")
 }
 
-func (s *KeeperTestSuite) TestGetTopicAccumulatedMetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-
-	// Test getting accumulated met demand when none exists
-	demand, err := keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching met demand should not fail even if none exists")
-	s.Require().True(demand.IsZero(), "Met demand should be zero when none is accumulated")
-
-	// Set some met demand and test retrieval
-	setDemand := cosmosMath.NewUint(150)
-	_ = keeper.SetTopicAccumulatedMetDemand(ctx, topicId, setDemand)
-
-	// Fetch and verify the set demand
-	retrievedDemand, err := keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching set met demand should not fail")
-	s.Require().Equal(setDemand, retrievedDemand, "Retrieved met demand should match the set demand")
-}
-
-func (s *KeeperTestSuite) TestAddTopicAccumulateMetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	initialDemand := cosmosMath.NewUint(100)
-	additionalDemand := cosmosMath.NewUint(50)
-
-	// Set initial met demand
-	_ = keeper.SetTopicAccumulatedMetDemand(ctx, topicId, initialDemand)
-
-	// Add to the met demand
-	err := keeper.AddTopicAccumulateMetDemand(ctx, topicId, additionalDemand)
-	s.Require().NoError(err, "Adding to accumulated met demand should not fail")
-
-	// Verify the total met demand
-	totalDemand, err := keeper.GetTopicAccumulatedMetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching accumulated met demand should not fail")
-	expectedDemand := initialDemand.Add(additionalDemand)
-	s.Require().Equal(expectedDemand, totalDemand, "Accumulated met demand should match expected total")
-}
-
 func (s *KeeperTestSuite) TestSetChurnReadyTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
