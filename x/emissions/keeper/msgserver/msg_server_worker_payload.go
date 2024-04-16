@@ -2,9 +2,9 @@ package msgserver
 
 import (
 	"context"
-	"encoding/json"
-
+	"encoding/hex"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -29,15 +29,19 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		/// All filters should be done in order of increasing computational complexity
 
 		// check signatures from the bundle throw if invalid!
-		senderAddr, err := sdk.AccAddressFromBech32(workerDataBundle.Worker)
-		if err != nil {
-			return nil, err
-		}
-		pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-		src, _ := json.Marshal(workerDataBundle.InferenceForecastsBundle)
-		if !pk.GetPubKey().VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+
+		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
+		if err != nil || len(pk) != secp256k1.PubKeySize {
 			return nil, types.ErrSignatureVerificationFailed
 		}
+		pubkey := secp256k1.PubKey(pk)
+
+		src := make([]byte, 0)
+		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+			return nil, types.ErrSignatureVerificationFailed
+		}
+
 		/// If we do PoX-like anti-sybil procedure, would go here
 
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
@@ -127,13 +131,16 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		/// All filters should be done in order of increasing computational complexity
 
 		// check signatures from the bundle throw if invalid!
-		senderAddr, err := sdk.AccAddressFromBech32(workerDataBundle.Worker)
-		if err != nil {
-			return err
+
+		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
+		if err != nil || len(pk) != secp256k1.PubKeySize {
+			return types.ErrSignatureVerificationFailed
 		}
-		pk := ms.k.AccountKeeper().GetAccount(ctx, senderAddr)
-		src, _ := json.Marshal(workerDataBundle.InferenceForecastsBundle)
-		if !pk.GetPubKey().VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
+		pubkey := secp256k1.PubKey(pk)
+
+		src := make([]byte, 0)
+		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
 			return types.ErrSignatureVerificationFailed
 		}
 		/// If we do PoX-like anti-sybil procedure, would go here
