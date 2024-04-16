@@ -72,7 +72,7 @@ func computeAndBuildEMRegret(
 		return emissions.TimestampedValue{}, err
 	}
 
-	newRegret, err := alloraMath.ExponentialMovingAverage(alpha, lossDiff, previousRegret, noPreviousRegret)
+	newRegret, err := alloraMath.CalcEma(alpha, lossDiff, previousRegret, noPreviousRegret)
 	if err != nil {
 		return emissions.TimestampedValue{}, err
 	}

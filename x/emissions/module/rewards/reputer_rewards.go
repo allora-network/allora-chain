@@ -55,7 +55,7 @@ func GetReputerTaskEntropy(
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
-		emaReputerRewards[i], err = alloraMath.ExponentialMovingAverage(
+		emaReputerRewards[i], err = alloraMath.CalcEma(
 			emaAlpha,
 			fraction,
 			previousReputerRewardFraction,

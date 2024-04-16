@@ -104,7 +104,7 @@ func getInferenceOrForecastTaskEntropy(
 				return alloraMath.Dec{}, nil, nil, err
 			}
 		}
-		emaRewardFractions[i], err = alloraMath.ExponentialMovingAverage(
+		emaRewardFractions[i], err = alloraMath.CalcEma(
 			emaAlpha,
 			fraction,
 			previousRewardFraction,

@@ -7,7 +7,7 @@ package math
 // Uij = αUij + (1 − α)Ui−1,j
 // ̃Vik = αVik + (1 − α)Vi−1,k
 // ̃Wim = αWim + (1 − α)Wi−1,m
-func ExponentialMovingAverage(
+func CalcEma(
 	alpha,
 	current,
 	previous Dec,
