@@ -562,6 +562,8 @@ func GetAllReputersOutput(
 
 	for maxGradient.Gt(maxGradientThreshold) && i.Lt(imax) {
 		i, err = i.Add(alloraMath.OneDec())
+		println("i: ", i.String(), "imax: ", imax.String())
+		println("maxGradient: ", maxGradient.String(), "maxGradientThreshold: ", maxGradientThreshold.String())
 		if err != nil {
 			return nil, nil, err
 		}
