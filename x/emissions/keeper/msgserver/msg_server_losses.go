@@ -3,6 +3,8 @@ package msgserver
 import (
 	"context"
 	"encoding/hex"
+	"log"
+
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -31,6 +33,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, types.ErrNotInReputerWhitelist
 	}
 
+	log.Printf("BEFORE InsertBulkReputerPayload checking worker")
 	// Check if the worker nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
@@ -40,16 +43,19 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if nonceUnfulfilled {
 		return nil, types.ErrNonceStillUnfulfilled
 	}
+	log.Printf("AFTER InsertBulkReputerPayload checking worker")
 
+	log.Printf("BEFORE InsertBulkReputerPayload checking reputer")
 	// Check if the reputer nonce is unfulfilled
 	nonceUnfulfilled, err = ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// Throw if already fulfilled -- can't return a response twice
-	if !nonceUnfulfilled {
+	if nonceUnfulfilled {
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
+	log.Printf("AFTER InsertBulkReputerPayload checking reputer")
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
@@ -101,6 +107,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 				continue
 			}
 
+			log.Printf("Here 1")
+
 			// Examine forecast elements to verify that they're for registered inferers in the current set.
 			// A check of their registration and other filters have already been applied when their inferences were inserted.
 			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
@@ -109,20 +117,26 @@ func (ms msgServer) InsertBulkReputerPayload(
 			if err != nil {
 				return nil, err
 			}
+			log.Printf("Here 1.1.1")
 
 			/// Check signatures! throw if invalid!
 
 			pk, err := hex.DecodeString(bundle.Pubkey)
+			log.Printf("err %v, len(pk) %v, secp256k1.PubKeySize %v", err, len(pk), secp256k1.PubKeySize)
 			if err != nil || len(pk) != secp256k1.PubKeySize {
 				return nil, types.ErrSignatureVerificationFailed
 			}
 			pubkey := secp256k1.PubKey(pk)
+
+			log.Printf("Here 1.1")
 
 			src := make([]byte, 0)
 			src, _ = bundle.ValueBundle.XXX_Marshal(src, true)
 			if !pubkey.VerifySignature(src, bundle.Signature) {
 				return nil, types.ErrSignatureVerificationFailed
 			}
+
+			log.Printf("Here 2")
 
 			/// If we do PoX-like anti-sybil procedure, would go here
 
@@ -222,21 +236,26 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	reputerRequestNonce types.ReputerRequestNonce,
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
+	log.Printf("Here A")
 	// Get the accepted inferers of the associated worker response payload
 	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Here AA11")
 	acceptedInferersOfBatch := make(map[string]bool)
 	for _, inference := range inferences.Inferences {
 		acceptedInferersOfBatch[inference.Inferer] = true
 	}
+	log.Printf("Here AA1")
 
 	// Get the accepted forecasters of the associated worker response payload
 	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Here AA")
+
 	acceptedForecastersOfBatch := make(map[string]bool)
 	for _, forecast := range forecasts.Forecasts {
 		acceptedForecastersOfBatch[forecast.Forecaster] = true
@@ -250,6 +269,7 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			acceptedInfererValues = append(acceptedInfererValues, workerVal)
 		}
 	}
+	log.Printf("Here AAA")
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
@@ -278,6 +298,7 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
 		}
 	}
+	log.Printf("Here B")
 
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{

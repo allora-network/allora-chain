@@ -1,6 +1,8 @@
 package msgserver_test
 
 import (
+	"log"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -12,15 +14,48 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	require := s.Require()
 
 	// Mock setup for addresses
+	log.Printf("PKS: %v", PKS)
+
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	workerAddr := sdk.AccAddress(PKS[1].Address())
 
-	// TODO make this line work
+	log.Printf("reputerAddr: %v", reputerAddr)
+	log.Printf("workerAddr: %v", workerAddr)
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+
+	// add in inference and forecast data
+	keeper := s.emissionsKeeper
+	topicId := uint64(0)
+	block := types.BlockHeight(1)
+	expectedInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:   alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Inferer: workerAddr.String(),
+			},
+		},
+	}
+
+	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
+	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	require.NoError(err, "InsertInferences should not return an error")
+
+	expectedForecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: workerAddr.String(),
+			},
+		},
+	}
+
+	nonce = types.Nonce{BlockHeight: int64(block)}
+	err = keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	s.Require().NoError(err)
 
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
@@ -86,7 +121,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 		},
 	}
 
-	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
+	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
 	require.NoError(err, "InsertBulkReputerPayload should not return an error")
 }
 
