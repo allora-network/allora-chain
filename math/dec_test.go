@@ -751,6 +751,30 @@ func TestToSdkInt(t *testing.T) {
 	}
 }
 
+func TestToSdkLegacy(t *testing.T) {
+	i1 := "1000000000000000000000000000000000000123456789.321000000000000000"
+	tcs := []struct {
+		intStr string
+		out    string
+	}{
+		{i1, i1},
+		{"1000000000000000000000000000000000000123456789.321000000000000000", i1},
+		{"123.456e6", "123456000.000000000000000000"},
+		{"123.456e1", "1234.560000000000000000"},
+		{"123.456", "123.456000000000000000"},
+		{"123.956", "123.956000000000000000"},
+		{"-123.456", "-123.456000000000000000"},
+		{"-123.956", "-123.956000000000000000"},
+		{"-0.956", "-0.956000000000000000"},
+		{"-0.9", "-0.900000000000000000"},
+	}
+	for idx, tc := range tcs {
+		a, err := NewDecFromString(tc.intStr)
+		require.NoError(t, err)
+		b := a.SdkLegacyDec()
+		require.Equal(t, tc.out, b.String(), "test_%d", idx)
+	}
+}
 func TestInfDecString(t *testing.T) {
 	_, err := NewDecFromString("iNf")
 	require.Error(t, err)
