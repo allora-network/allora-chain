@@ -21,7 +21,18 @@ CONTINUE_LINE_NUM=$(($GENESIS_TOTAL_LINES-$CORE_TEAM_LINE_NUM+1))
 tail -n $CONTINUE_LINE_NUM $GENESIS >> $GENESIS.tmp
 mv $GENESIS.tmp $GENESIS
 
+echo "Turning on localhost GRPC-Gateway REST HTTP Server"
+APP_TOML_TOTAL_LINES=$(wc -l $APP_TOML | cut -f 1 -d " ")
+APP_TOML_GRPC_GATEWAY_LINE_NUM=$(grep -n "# Enable defines if the API server should be enabled." $APP_TOML | cut -f 1 -d ":")
+cat $APP_TOML | head -n $APP_TOML_GRPC_GATEWAY_LINE_NUM > $APP_TOML.tmp
+echo "enable = true" >> $APP_TOML.tmp
+echo "" >> $APP_TOML.tmp
+echo "# Swagger defines if swagger documentation should automatically be registered." >> $APP_TOML.tmp
+echo "swagger = true" >> $APP_TOML.tmp
+CONTINUE_LINE_NUM=$(($APP_TOML_TOTAL_LINES-$APP_TOML_GRPC_GATEWAY_LINE_NUM-4))
+tail -n $CONTINUE_LINE_NUM $APP_TOML >> $APP_TOML.tmp
+mv $APP_TOML.tmp $APP_TOML
 
-echo "Starting allorad daemon and sleep for 3 seconds to let it start"
-$ALLORAD_BIN start & disown;
-sleep 3
+#echo "Starting allorad daemon and sleep for 3 seconds to let it start"
+#$ALLORAD_BIN start & disown;
+#sleep 3

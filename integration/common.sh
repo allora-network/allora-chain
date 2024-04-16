@@ -1,6 +1,7 @@
 #!/usr/bin/env bash 
 
 GENESIS=$HOME/.allorad/config/genesis.json
+APP_TOML=$HOME/.allorad/config/app.toml
 ALLORAD_BIN=$(which allorad)
 
 ALICE_ADDRESS=$($ALLORAD_BIN keys show alice | head -n 1 | cut -f 2 -d ":" | tr -d " ")
