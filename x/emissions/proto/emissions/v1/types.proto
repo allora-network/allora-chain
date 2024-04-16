@@ -213,6 +213,7 @@ message ReputerValueBundle {
 
   ValueBundle value_bundle = 1;
   bytes signature = 2;
+  string pubkey = 3;
 }
 
 message ReputerValueBundles {
@@ -277,6 +278,7 @@ message WorkerDataBundle {
   string worker = 1;
   InferenceForecastBundle inferenceForecastsBundle = 2;
   bytes inferencesForecastsBundleSignature = 3;
+  string pubkey = 4;
 }
 
 message WorkerDataBundles {  // This will be in the incoming message, sent by leader

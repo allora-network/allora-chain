@@ -22,17 +22,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
-	// Try to register again
-	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicIds:     []uint64{0},
-		InitialStake: registrationInitialStake,
-		IsReputer:    true,
-	}
-	_, err := msgServer.Register(ctx, registerMsg)
-
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender:  reputerAddr.String(),
@@ -91,12 +80,13 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 						},
 					},
 				},
-				Signature: []byte("Nonce + ReputerValueBundles Signature"),
+				Signature: []byte("ValueBundle Signature"),
+				Pubkey:    "ValueBundle Pubkey",
 			},
 		},
 	}
 
-	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
+	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
 	require.NoError(err, "InsertBulkReputerPayload should not return an error")
 }
 
