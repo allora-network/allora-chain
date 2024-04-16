@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 	"encoding/hex"
-	"log"
 
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -33,7 +32,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, types.ErrNotInReputerWhitelist
 	}
 
-	log.Printf("BEFORE InsertBulkReputerPayload checking worker")
 	// Check if the worker nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
@@ -43,9 +41,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if nonceUnfulfilled {
 		return nil, types.ErrNonceStillUnfulfilled
 	}
-	log.Printf("AFTER InsertBulkReputerPayload checking worker")
 
-	log.Printf("BEFORE InsertBulkReputerPayload checking reputer")
 	// Check if the reputer nonce is unfulfilled
 	nonceUnfulfilled, err = ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
@@ -55,7 +51,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if nonceUnfulfilled {
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
-	log.Printf("AFTER InsertBulkReputerPayload checking reputer")
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
@@ -107,8 +102,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 				continue
 			}
 
-			log.Printf("Here 1")
-
 			// Examine forecast elements to verify that they're for registered inferers in the current set.
 			// A check of their registration and other filters have already been applied when their inferences were inserted.
 			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
@@ -117,11 +110,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 			if err != nil {
 				return nil, err
 			}
-			log.Printf("Here 1.1.1")
 
 			/// Check signatures! throw if invalid!
-
-			log.Printf("bundle.Pubkey just before decoding %v", bundle.Pubkey)
 
 			pk, err := hex.DecodeString(bundle.Pubkey)
 			if err != nil || len(pk) != secp256k1.PubKeySize {
@@ -290,7 +280,6 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
 		}
 	}
-	log.Printf("Here B")
 
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
