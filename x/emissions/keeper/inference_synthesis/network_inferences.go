@@ -12,7 +12,7 @@ import (
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
-func makeMapFromWorkerToTheirWork(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
+func MakeMapFromWorkerToTheirWork(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
 	inferencesByWorker := make(map[Worker]*emissions.Inference)
 	for _, inference := range inferences {
 		inferencesByWorker[inference.Inferer] = inference
@@ -341,7 +341,7 @@ func CalcNetworkInferences(
 	pInferenceSynthesis alloraMath.Dec,
 ) (*emissions.ValueBundle, error) {
 	// Map each worker to their inference
-	inferenceByWorker := makeMapFromWorkerToTheirWork(inferences.Inferences)
+	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
 
 	// Calculate forecast-implied inferences I_ik
 	forecastImpliedInferenceByWorker, err := CalcForcastImpliedInferences(inferenceByWorker, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
