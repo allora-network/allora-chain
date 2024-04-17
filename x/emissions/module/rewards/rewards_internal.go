@@ -546,30 +546,22 @@ func GetAllReputersOutput(
 	numReputers int64,
 	learningRate alloraMath.Dec,
 	sharpness alloraMath.Dec,
+	gradientDescentMaxIters uint64,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
 	maxGradientThreshold := alloraMath.MustNewDecFromString("0.001")
-	imax, err := alloraMath.OneDec().Quo(learningRate)
-	// imax := int(math.Round(1.0 / learningRate))
-	// is rounding really necessary?
-	if err != nil {
-		return nil, nil, err
-	}
 	minStakeFraction := alloraMath.MustNewDecFromString("0.5")
-	var i alloraMath.Dec = alloraMath.ZeroDec()
+	var i uint64 = 0
 	var maxGradient alloraMath.Dec = alloraMath.OneDec()
 	finalScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient.Gt(maxGradientThreshold) && i.Lt(imax) {
-		i, err = i.Add(alloraMath.OneDec())
-		println("i: ", i.String(), "imax: ", imax.String())
+	for maxGradient.Gt(maxGradientThreshold) && i < gradientDescentMaxIters {
+		println("i: ", i, "GradientDescentMaxIters: ", gradientDescentMaxIters)
 		println("maxGradient: ", maxGradient.String(), "maxGradientThreshold: ", maxGradientThreshold.String())
-		if err != nil {
-			return nil, nil, err
-		}
+
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
 		newScores := make([]alloraMath.Dec, numReputers)
@@ -699,6 +691,7 @@ func GetAllReputersOutput(
 		}
 
 		copy(finalScores, newScores)
+		i++
 	}
 
 	return finalScores, coefficients, nil
