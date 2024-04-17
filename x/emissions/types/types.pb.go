@@ -45,6 +45,7 @@ type Params struct {
 	// high values
 	BetaEntropy                     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,opt,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
 	LearningRate                    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,14,opt,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
+	GradientDescentMaxIters         uint64                                          `protobuf:"varint,18,opt,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"`
 	MaxGradientThreshold            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,15,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
 	MinStakeFraction                github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,opt,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
 	MaxWorkersPerTopicRequest       uint64                                          `protobuf:"varint,17,opt,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`
