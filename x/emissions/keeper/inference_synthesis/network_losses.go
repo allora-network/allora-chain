@@ -117,7 +117,7 @@ func CalcNetworkLosses(
 			// Update inferer losses
 			for _, loss := range report.ValueBundle.InfererValues {
 				runningWeightedInfererLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"), // Assuming there is a method to create a new Dec
+					SumWeight: alloraMath.MustNewDecFromString("0"),
 					Loss:      alloraMath.MustNewDecFromString("0"),
 				}
 
