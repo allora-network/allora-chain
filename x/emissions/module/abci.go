@@ -75,7 +75,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if blockNumber-topic.EpochLastEnded >= topic.EpochLength {
+			if blockNumber == topic.EpochLastEnded+topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
@@ -86,37 +86,20 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
 				}
+				// Add Worker Nonces
+				nextNonce := emissionstypes.Nonce{BlockHeight: blockNumber + topic.EpochLength}
+				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
+				if err != nil {
+					fmt.Println("Error adding worker nonce: ", err)
+					return
+				}
+				// Add Reputer Nonces
+				previousNonce := emissionstypes.Nonce{BlockHeight: blockNumber}
+				err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &nextNonce, &previousNonce)
 			}
 		}(topic)
 	}
 	wg.Wait()
-
-	var wgAddingNonces sync.WaitGroup
-	// Add unfulfilled worker nonces
-	churnReadyTopics, err := am.keeper.GetChurnReadyTopics(sdkCtx)
-	if err != nil {
-		fmt.Println("Error getting active topics and met demand: ", err)
-	} else {
-		if len(churnReadyTopics.Topics) == 0 {
-			fmt.Println("No churn ready topics.")
-		} else {
-			for _, topic := range churnReadyTopics.Topics {
-				wgAddingNonces.Add(1)
-				go func(topic *emissionstypes.Topic) {
-					defer wgAddingNonces.Done()
-					if blockNumber == topic.EpochLastEnded+topic.EpochLength {
-						nextNonce := emissionstypes.Nonce{BlockHeight: blockNumber + topic.EpochLength}
-						err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
-						if err != nil {
-							fmt.Println("Error adding worker nonce: ", err)
-							return
-						}
-					}
-				}(topic)
-			}
-		}
-	}
-	wgAddingNonces.Wait()
 
 	return nil
 }
