@@ -1689,25 +1689,6 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 	return k.topicReputers.Has(ctx, topickey)
 }
 
-// TODO paginate
-// GetTopicsByCreator returns a slice of all topics created by a given creator.
-func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
-	var topicsByCreator []*types.Topic
-
-	err := k.topics.Walk(ctx, nil, func(id TopicId, topic types.Topic) (bool, error) {
-		if topic.Creator == creator {
-			topicsByCreator = append(topicsByCreator, &topic)
-		}
-		return false, nil // Continue iterating
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByCreator, nil
-}
-
 // AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
 func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
 	// Get the current list of topics for the address

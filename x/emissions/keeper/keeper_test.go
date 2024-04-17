@@ -2181,31 +2181,6 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetTopicsByCreator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	creatorAddress := "creator-sample-address"
-	topic1 := types.Topic{Id: 1, Creator: creatorAddress, Active: true}
-	topic2 := types.Topic{Id: 2, Creator: creatorAddress, Active: false}
-	topic3 := types.Topic{Id: 3, Creator: "other-address", Active: true}
-
-	// Setup topics
-	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
-	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
-
-	// Test fetching topics by creator
-	topics, err := keeper.GetTopicsByCreator(ctx, creatorAddress)
-	s.Require().NoError(err)
-	s.Require().Len(topics, 2, "Should retrieve exactly two topics for the creator")
-
-	// Check if the correct topics are returned
-	for _, topic := range topics {
-		s.Require().Equal(creatorAddress, topic.Creator, "Creator address should match the requested address")
-	}
-}
-
 func (s *KeeperTestSuite) TestGetRegisteredTopicIdsByWorkerAddress() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

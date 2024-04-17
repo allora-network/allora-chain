@@ -43,11 +43,6 @@ service Query {
     option (google.api.http).get = "/emissions/v1/all_topics";
   }
 
-  rpc GetTopicsByCreator(QueryGetTopicsByCreatorRequest) returns (QueryGetTopicsByCreatorResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/topics/{creator}";
-  }
-
   rpc GetExistingInferenceRequest(QueryExistingInferenceRequest) returns (QueryExistingInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/requests/{request_id}";
@@ -211,14 +206,6 @@ message QueryActiveTopicsResponse {
 message QueryAllTopicsRequest {}
 
 message QueryAllTopicsResponse {
-  repeated Topic topics = 1;
-}
-
-message QueryGetTopicsByCreatorRequest {
-  string creator = 1;
-}
-
-message QueryGetTopicsByCreatorResponse {
   repeated Topic topics = 1;
 }
 
