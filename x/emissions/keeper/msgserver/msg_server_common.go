@@ -64,7 +64,7 @@ func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed Block
 	queue := &PriorityQueue{}
 	i := 0
 	for actor, score := range scoresByActor {
-		queue.Push(SortableItem{actor, score, r.Uint32(), i})
+		queue.Push(&SortableItem{actor, score, r.Uint32(), i})
 		i++
 	}
 

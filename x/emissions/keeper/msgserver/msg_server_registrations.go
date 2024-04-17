@@ -66,14 +66,6 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 			"required minimum stake: %s, existing address stake: %s, initial stake: %s",
 			requiredMinimumStake, addressExistingStake, msg.GetInitialStake())
 	}
-	// check if topics exists and if address is already registered in any of them
-	registeredTopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return nil, err
-	}
-	if len(registeredTopicIds) > 0 {
-		return nil, types.ErrAddressAlreadyRegisteredInATopic
-	}
 
 	for _, topicId := range msg.TopicIds {
 		// check if topic exists
