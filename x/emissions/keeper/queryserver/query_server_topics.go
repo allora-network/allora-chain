@@ -55,21 +55,6 @@ func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopic
 	return &types.QueryAllTopicsResponse{Topics: topics}, nil
 }
 
-// TODO paginate
-// GetTopicsByCreator retrieves a list of topics created by a given address.
-func (qs queryServer) GetTopicsByCreator(ctx context.Context, req *types.QueryGetTopicsByCreatorRequest) (*types.QueryGetTopicsByCreatorResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
-	}
-
-	topics, err := qs.k.GetTopicsByCreator(ctx, req.Creator)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryGetTopicsByCreatorResponse{Topics: topics}, nil
-}
-
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {
 	unmetDemand, err := qs.k.GetTopicUnmetDemand(ctx, req.TopicId)
 	if err != nil {

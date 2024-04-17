@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"encoding/hex"
+
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -32,22 +33,22 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the worker nonce is unfulfilled
-	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
-	if nonceUnfulfilled {
+	if workerNonceUnfulfilled {
 		return nil, types.ErrNonceStillUnfulfilled
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	nonceUnfulfilled, err = ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// Throw if already fulfilled -- can't return a response twice
-	if !nonceUnfulfilled {
+	if !reputerNonceUnfulfilled {
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
 
@@ -152,7 +153,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, bundle)
 
-		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+		reputerAccAddress, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
+		if err != nil {
+			return nil, err
+		}
+
+		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAccAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -237,6 +243,7 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	if err != nil {
 		return nil, err
 	}
+
 	acceptedForecastersOfBatch := make(map[string]bool)
 	for _, forecast := range forecasts.Forecasts {
 		acceptedForecastersOfBatch[forecast.Forecaster] = true
@@ -290,6 +297,8 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			OneOutInfererValues:    acceptedOneOutInfererValues,
 			OneOutForecasterValues: acceptedOneOutForecasterValues,
 			OneInForecasterValues:  acceptedOneInForecasterValues,
+			NaiveValue:             reputerValueBundle.ValueBundle.NaiveValue,
+			CombinedValue:          reputerValueBundle.ValueBundle.CombinedValue,
 		},
 		Signature: reputerValueBundle.Signature,
 	}

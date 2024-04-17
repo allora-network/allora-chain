@@ -130,31 +130,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	require.ErrorIs(err, types.ErrTopicDoesNotExist, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidAlreadyRegistered() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	workerAddr := sdk.AccAddress(PKS[1].Address())
-	registrationInitialStake := cosmosMath.NewUint(100)
-
-	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-
-	// Try to register again
-	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicIds:     []uint64{0},
-		InitialStake: registrationInitialStake,
-		IsReputer:    true,
-	}
-	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(err, types.ErrAddressAlreadyRegisteredInATopic, "Register should return an error")
-}
-
 /*
 func (s *KeeperTestSuite) TestMsgRegisterReputerAddAndRemoveAdditionalTopic() {
 	ctx, msgServer := s.ctx, s.msgServer

@@ -14,6 +14,14 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// instantiate a AllWorkersAreNew struct
+func NewWorkersAreNew(v bool) inference_synthesis.AllWorkersAreNew {
+	return inference_synthesis.AllWorkersAreNew{
+		AllInferersAreNew:    v,
+		AllForecastersAreNew: v,
+	}
+}
+
 // TestMakeMapFromWorkerToTheirWork tests the makeMapFromWorkerToTheirWork function for correctly mapping workers to their inferences.
 func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	tests := []struct {
@@ -222,6 +230,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				topicId,
 				tc.inferenceByWorker,
 				tc.forecastImpliedInferenceByWorker,
+				NewWorkersAreNew(false),
 				tc.maxRegret,
 				tc.epsilon,
 				tc.pInferenceSynthesis,
@@ -343,6 +352,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			test.inferenceByWorker,
 			test.forecastImpliedInferenceByWorker,
 			test.forecasts,
+			NewWorkersAreNew(false),
 			test.maxRegret,
 			test.networkCombinedLoss,
 			test.epsilon,
@@ -459,6 +469,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				topicId,
 				tc.inferenceByWorker,
 				tc.forecastImpliedInferences,
+				NewWorkersAreNew(false),
 				tc.maxRegretsByOneInForecaster,
 				tc.epsilon,
 				tc.pInferenceSynthesis,
