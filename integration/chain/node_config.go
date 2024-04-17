@@ -21,7 +21,8 @@ type Node struct {
 	NodeClient  NodeConfig
 	Client      *cosmosclient.Client
 	QueryClient emissionstypes.QueryClient
-	Accounts    []cosmosaccount.Account
+	AliceAcc    cosmosaccount.Account
+	BobAcc      cosmosaccount.Account
 }
 
 func NewNodeConfig(
@@ -59,12 +60,10 @@ func NewNode(nc NodeConfig) (Node, error) {
 		return Node{}, err
 	}
 
-	var accounts []cosmosaccount.Account = make([]cosmosaccount.Account, 2)
-
 	//// restore from mneumonic
-	accounts[0], err = node.Client.AccountRegistry.GetByName("alice")
+	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("alice")
 	require.NoError(nc.t, err)
-	accounts[1], err = node.Client.AccountRegistry.GetByName("bob")
+	node.BobAcc, err = node.Client.AccountRegistry.GetByName("bob")
 	require.NoError(nc.t, err)
 
 	// Create query client
