@@ -13,6 +13,8 @@ import (
 func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
+	keeper := s.emissionsKeeper
+	topicId := uint64(0)
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
 	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
@@ -30,8 +32,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
 	// add in inference and forecast data
-	keeper := s.emissionsKeeper
-	topicId := uint64(0)
 	block := types.BlockHeight(1)
 	expectedInferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -60,7 +60,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	s.Require().NoError(err)
 
 	reputerValueBundle := &types.ValueBundle{
-		TopicId:       0,
+		TopicId:       topicId,
 		Reputer:       reputerAddr.String(),
 		CombinedValue: alloraMath.NewDecFromInt64(100),
 		InfererValues: []*types.WorkerAttributedValue{
@@ -114,7 +114,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
 		Sender:  reputerAddr.String(),
-		TopicId: 0,
+		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
 				BlockHeight: 2,

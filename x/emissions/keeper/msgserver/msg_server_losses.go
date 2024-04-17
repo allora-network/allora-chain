@@ -153,7 +153,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, bundle)
 
-		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+		reputerAccAddress, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
+		if err != nil {
+			return nil, err
+		}
+
+		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAccAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -292,6 +297,8 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			OneOutInfererValues:    acceptedOneOutInfererValues,
 			OneOutForecasterValues: acceptedOneOutForecasterValues,
 			OneInForecasterValues:  acceptedOneInForecasterValues,
+			NaiveValue:             reputerValueBundle.ValueBundle.NaiveValue,
+			CombinedValue:          reputerValueBundle.ValueBundle.CombinedValue,
 		},
 		Signature: reputerValueBundle.Signature,
 	}
