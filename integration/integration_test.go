@@ -7,29 +7,39 @@ import (
 	"testing"
 
 	chain_test "github.com/allora-network/allora-chain/integration/chain"
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/require"
 )
 
-type ExternalTestSuite struct {
-	suite.Suite
+type TestMetadata struct {
+	t   *testing.T
 	ctx context.Context
 	n   chain_test.Node
 }
 
-func (s *ExternalTestSuite) SetupTest() {
+func Setup(t *testing.T) TestMetadata {
+	ret := TestMetadata{}
+	ret.t = t
 	var err error
-	s.ctx = context.Background()
+	ret.ctx = context.Background()
 	userHomeDir, _ := os.UserHomeDir()
 	home := filepath.Join(userHomeDir, ".allorad")
-	nodeConfig := chain_test.NewNodeConfig(
-		s.T(),
-		"http://localhost:26657",
-		home,
+	node, err := chain_test.NewNode(
+		t,
+		chain_test.NodeConfig{
+			NodeRPCAddress: "http://localhost:26657",
+			AlloraHomeDir:  home,
+		},
 	)
-	s.n, err = chain_test.NewNode(nodeConfig)
-	s.Require().NoError(err)
+	require.NoError(t, err)
+	ret.n = node
+	return ret
 }
 
 func TestExternalTestSuite(t *testing.T) {
-	suite.Run(t, new(ExternalTestSuite))
+	t.Log("Setting up connection to local node")
+	m := Setup(t)
+	t.Log("Test: GetParams")
+	GetParams(m)
+	t.Log("Test: CreateTopic")
+	CreateTopic(m)
 }
