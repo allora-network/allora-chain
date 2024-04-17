@@ -1,11 +1,10 @@
 package rewards_test
 
 import (
-	//cosmosMath "cosmossdk.io/math"
+	// sdk "github.com/cosmos/cosmos-sdk/types"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	//"github.com/allora-network/allora-chain/x/emissions/types"
-	//sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /*
