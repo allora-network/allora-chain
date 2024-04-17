@@ -62,12 +62,19 @@ func GenerateReputerScores(
 		losses = append(losses, reputerLosses)
 	}
 
+	params, err := keeper.GetParams(ctx)
+	if err != nil {
+		return []types.Score{}, err
+	}
+
 	// Get reputer output
 	scores, newCoefficients, err := GetAllReputersOutput(
 		losses,
 		reputerStakes,
 		reputerListeningCoefficients,
 		int64(len(reputerStakes)),
+		params.LearningRate,
+		params.Sharpness,
 	)
 	if err != nil {
 		return []types.Score{}, err

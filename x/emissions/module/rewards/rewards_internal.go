@@ -495,6 +495,7 @@ func GetAllConsensusScores(
 	stakes []alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers int64,
+	sharpness alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
 	var adjustedStakes []alloraMath.Dec
@@ -505,6 +506,7 @@ func GetAllConsensusScores(
 			allListeningCoefficients[i],
 			allListeningCoefficients,
 			alloraMath.NewDecFromInt64(numReputers),
+			sharpness,
 		)
 		if err != nil {
 			return nil, err
@@ -542,8 +544,9 @@ func GetAllReputersOutput(
 	stakes []alloraMath.Dec,
 	initialCoefficients []alloraMath.Dec,
 	numReputers int64,
+	learningRate alloraMath.Dec,
+	sharpness alloraMath.Dec,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
-	learningRate := types.DefaultParamsLearningRate()
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
@@ -577,7 +580,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, sharpness)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -588,7 +591,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, sharpness)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -769,13 +772,13 @@ func GetAdjustedStake(
 	listeningCoefficient alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers alloraMath.Dec,
+	sharpness alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(allStakes) != len(allListeningCoefficients) ||
 		len(allStakes) == 0 ||
 		len(allListeningCoefficients) == 0 {
 		return alloraMath.ZeroDec(), types.ErrAdjustedStakeInvalidSliceLength
 	}
-	eta := types.DefaultParamsSharpness()
 	denominator, err := sumWeighted(allListeningCoefficients, allStakes)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
@@ -796,7 +799,7 @@ func GetAdjustedStake(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	negativeEta, err := eta.Mul(alloraMath.NewDecFromInt64(-1))
+	negativeEta, err := sharpness.Mul(alloraMath.NewDecFromInt64(-1))
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -809,7 +812,7 @@ func GetAdjustedStake(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	phi_1_Eta, err := Phi(alloraMath.OneDec(), eta)
+	phi_1_Eta, err := Phi(alloraMath.OneDec(), sharpness)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -953,12 +956,16 @@ func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
 
 // Calculate the tax of the reward
 // Fee = R_avg * N_c^(a-1)
-func CalculateWorkerTax(average alloraMath.Dec) (alloraMath.Dec, error) {
-	a := types.DefaultParamsSybilTaxExponent() - 1
+func CalculateWorkerTax(
+	average alloraMath.Dec,
+	sybilTaxExponent uint64,
+	numberExpectedInfernceSybils uint64,
+) (alloraMath.Dec, error) {
+	a := sybilTaxExponent - 1
 	if a == math.MaxUint64 { // overflow
 		a = 0
 	}
-	numClientsForTax := alloraMath.NewDecFromInt64(int64(types.DefaultParamsNumberExpectedInfernceSybils()))
+	numClientsForTax := alloraMath.NewDecFromInt64(int64(numberExpectedInfernceSybils))
 	aDec := alloraMath.NewDecFromInt64(int64(a))
 
 	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)

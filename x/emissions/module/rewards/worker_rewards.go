@@ -466,6 +466,10 @@ func GetRewardsWithOutTax(
 	rewards []TaskRewards,
 	topicId uint64,
 ) ([]TaskRewards, error) {
+	params, err := keeper.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []TaskRewards
 	// Get average reward for this worker
@@ -488,7 +492,7 @@ func GetRewardsWithOutTax(
 			continue
 		}
 		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
-		fee, err := CalculateWorkerTax(avg.Value)
+		fee, err := CalculateWorkerTax(avg.Value, params.SybilTaxExponent, params.NumberExpectedInferenceSybils)
 		if err != nil {
 			continue
 		}
