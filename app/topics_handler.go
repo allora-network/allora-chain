@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -13,16 +14,31 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const approximateTimePerBlockSeconds = 5
+const secondsInAMonth uint64 = 2592000
 
 type TopicsHandler struct {
 	emissionsKeeper emissionskeeper.Keeper
+	mintKeeper      mintkeeper.Keeper
 }
 
-func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
+func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkeeper.Keeper) *TopicsHandler {
 	return &TopicsHandler{
 		emissionsKeeper: emissionsKeeper,
+		mintKeeper:      mintKeeper,
 	}
+}
+
+func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, blockDifference int64) (uint64, error) {
+	mintParams, err := th.mintKeeper.GetParams(ctx)
+	if err != nil {
+		fmt.Println("Error getting mint params: ", err)
+		return 0, err
+	}
+	BlocksPerMonth := mintParams.GetBlocksPerMonth()
+	var approximateTimePerBlockSeconds float64 = float64(secondsInAMonth) / float64(BlocksPerMonth)
+	var diffFloat = (float64(blockDifference) * approximateTimePerBlockSeconds)
+	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(diffFloat))
+	return previousBlockApproxTime, nil
 }
 
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
@@ -88,7 +104,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						return
 					}
 
-					// iterate over all the worker nonces to find if this is unfulfilled
+					// iterate over all the reputer nonces to find if this is unfulfilled
 					for _, nonce := range reputerNonces.Nonces {
 						if nonce.ReputerNonce.BlockHeight == previousBlockHeight &&
 							nonce.WorkerNonce.BlockHeight == previousToPreviousBlockHeight {
@@ -102,11 +118,13 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 								fmt.Println("Reputer value bundle is nil, skipping")
 								continue
 							}
-							// Get approximated time of the previous block
-							// Get difference of blocks from current to previous block
 							blockDifference := currentBlockHeight - inferencesBlockHeight
-							previousBlockApproxTime := uint64(ctx.BlockTime().Unix() - (blockDifference * approximateTimePerBlockSeconds))
-
+							previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
+							if err != nil {
+								fmt.Println("Error calculating previous block approx time: ", err)
+								continue
+							}
+							// Get approximated time of the previous block
 							reputerNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
 							workerNonce := emissionstypes.Nonce{BlockHeight: previousToPreviousBlockHeight}
 							// print the request of loss generation
