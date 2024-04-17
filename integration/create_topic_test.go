@@ -7,9 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// test that we can get the params from the chain
+// without any strange errors, basically just a chain connection check
 func GetParams(m TestMetadata) {
 	paramsReq := &emissionstypes.QueryParamsRequest{}
-	p, err := m.n.QueryClient.Params(
+	p, err := m.n.QueryEmissions.Params(
 		m.ctx,
 		paramsReq,
 	)
@@ -17,8 +19,9 @@ func GetParams(m TestMetadata) {
 	require.NotNil(m.t, p)
 }
 
+// test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m TestMetadata) (topicId uint64) {
-	topicIdStart, err := m.n.QueryClient.GetNextTopicId(
+	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
@@ -48,12 +51,37 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.t, err)
-	require.Equal(m.t, topicIdStart.NextTopicId, createTopicResponse.TopicId)
-	topicIdEnd, err := m.n.QueryClient.GetNextTopicId(
+	topicId = createTopicResponse.TopicId
+	require.Equal(m.t, topicIdStart.NextTopicId, topicId)
+	topicIdEnd, err := m.n.QueryEmissions.GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.t, err)
-	require.Equal(m.t, topicIdEnd.NextTopicId, createTopicResponse.TopicId+1)
-	return createTopicResponse.TopicId
+	require.Equal(m.t, topicIdEnd.NextTopicId, topicId+1)
+
+	storedTopicResponse, err := m.n.QueryEmissions.GetTopic(
+		m.ctx,
+		&emissionstypes.QueryTopicRequest{
+			TopicId: topicId,
+		},
+	)
+	require.NoError(m.t, err)
+	storedTopic := storedTopicResponse.Topic
+	require.Equal(m.t, createTopicRequest.Metadata, storedTopic.Metadata)
+	require.Equal(m.t, createTopicRequest.LossLogic, storedTopic.LossLogic)
+	require.Equal(m.t, createTopicRequest.LossMethod, storedTopic.LossMethod)
+	require.Equal(m.t, createTopicRequest.InferenceLogic, storedTopic.InferenceLogic)
+	require.Equal(m.t, createTopicRequest.InferenceMethod, storedTopic.InferenceMethod)
+	require.Equal(m.t, createTopicRequest.EpochLength, storedTopic.EpochLength)
+	require.Equal(m.t, createTopicRequest.GroundTruthLag, storedTopic.GroundTruthLag)
+	require.Equal(m.t, createTopicRequest.DefaultArg, storedTopic.DefaultArg)
+	require.Equal(m.t, createTopicRequest.Pnorm, storedTopic.Pnorm)
+	require.True(m.t, createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret), "Alpha Regret not equal %s != %s", createTopicRequest.AlphaRegret, storedTopic.AlphaRegret)
+	require.True(m.t, createTopicRequest.PrewardReputer.Equal(storedTopic.PrewardReputer), "Preward Reputer not equal %s != %s", createTopicRequest.PrewardReputer, storedTopic.PrewardReputer)
+	require.True(m.t, createTopicRequest.PrewardInference.Equal(storedTopic.PrewardInference), "Preward Inference not equal %s != %s", createTopicRequest.PrewardInference, storedTopic.PrewardInference)
+	require.True(m.t, createTopicRequest.PrewardForecast.Equal(storedTopic.PrewardForecast), "Preward Forecast not equal %s != %s", createTopicRequest.PrewardForecast, storedTopic.PrewardForecast)
+	require.True(m.t, createTopicRequest.FTolerance.Equal(storedTopic.FTolerance), "FTolerance not equal %s != %s", createTopicRequest.FTolerance, storedTopic.FTolerance)
+
+	return topicId
 }

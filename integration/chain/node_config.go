@@ -5,7 +5,17 @@ import (
 	"testing"
 
 	"github.com/allora-network/allora-chain/app/params"
+	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
+	"github.com/cosmos/cosmos-sdk/codec"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	auth "github.com/cosmos/cosmos-sdk/x/auth"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bank "github.com/cosmos/cosmos-sdk/x/bank"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distribution "github.com/cosmos/cosmos-sdk/x/distribution"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosclient"
 	"github.com/stretchr/testify/require"
@@ -19,11 +29,15 @@ type NodeConfig struct {
 
 // handle to various node data
 type Node struct {
-	NodeClient  NodeConfig
-	Client      cosmosclient.Client
-	QueryClient emissionstypes.QueryClient
-	AliceAcc    cosmosaccount.Account
-	BobAcc      cosmosaccount.Account
+	NodeClient        NodeConfig
+	Client            cosmosclient.Client
+	QueryEmissions    emissionstypes.QueryClient
+	QueryAuth         authtypes.QueryClient
+	QueryDistribution distributiontypes.QueryClient
+	QueryBank         banktypes.QueryClient
+	AliceAcc          cosmosaccount.Account
+	BobAcc            cosmosaccount.Account
+	Cdc               codec.Codec
 }
 
 // create a new appchain client that we can use
@@ -49,7 +63,19 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 	require.NoError(t, err)
 
 	// Create query client
-	node.QueryClient = emissionstypes.NewQueryClient(node.Client.Context())
+	node.QueryEmissions = emissionstypes.NewQueryClient(node.Client.Context())
+	node.QueryAuth = authtypes.NewQueryClient(node.Client.Context())
+	node.QueryDistribution = distributiontypes.NewQueryClient(node.Client.Context())
+	node.QueryBank = banktypes.NewQueryClient(node.Client.Context())
+
+	encCfg := moduletestutil.MakeTestEncodingConfig(
+		mint.AppModuleBasic{},
+		emissions.AppModule{},
+		auth.AppModule{},
+		bank.AppModule{},
+		distribution.AppModule{},
+	)
+	node.Cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
 
 	// this is terrible, no isConnected as part of this code path
 	require.NotEqual(t, node.Client.Context().ChainID, "")

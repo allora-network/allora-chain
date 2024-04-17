@@ -19,17 +19,5 @@ jobs:
     - name: Init
       run: make init
     
-    - name: PostInit
-      run: bash ./integration/postinit.sh
-    
-    - name: CreateTopic
-      run: bash ./integration/topic.sh
-
-    - name : Distribution
-      run: bash ./integration/distribution.sh
-
-    - name : Rewards
-      run: bash ./integration/rewards.sh
-    
-    - name : InferenceRequests
-      run: bash ./integration/inferencerequest.sh
+    - name: IntegrationTest
+      run: INTEGRATION=TRUE go test -v ./integration

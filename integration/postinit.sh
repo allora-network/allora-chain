@@ -33,6 +33,9 @@ CONTINUE_LINE_NUM=$(($APP_TOML_TOTAL_LINES-$APP_TOML_GRPC_GATEWAY_LINE_NUM-4))
 tail -n $CONTINUE_LINE_NUM $APP_TOML >> $APP_TOML.tmp
 mv $APP_TOML.tmp $APP_TOML
 
+echo "Setting Integration Test Mode to true"
+INTEGRATION="TRUE"
+
 #echo "Starting allorad daemon and sleep for 3 seconds to let it start"
 #$ALLORAD_BIN start & disown;
 #sleep 3
