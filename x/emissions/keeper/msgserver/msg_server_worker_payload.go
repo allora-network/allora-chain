@@ -60,7 +60,8 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		// Ensure that we only have one inference per inferer. If not, we just take the first one
 		if _, ok := inferencesByInferer[inference.Inferer]; !ok {
 			// Check if the inferer is registered
-			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, sdk.AccAddress(inference.Inferer))
+			infereraddr, _ := sdk.AccAddressFromBech32(inference.Inferer)
+			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, infereraddr)
 			if err != nil {
 				return nil, err
 			}
@@ -73,7 +74,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 			inferencesByInferer[inference.Inferer] = inference
 
 			// Get the latest score for each inferer => only take top few by score descending
-			latestScore, err := ms.k.GetLatestInfererScore(ctx, topicId, sdk.AccAddress(inference.Inferer))
+			latestScore, err := ms.k.GetLatestInfererScore(ctx, topicId, infereraddr)
 			if err != nil {
 				return nil, err
 			}
@@ -160,7 +161,8 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
 			// Check if the forecaster is registered
-			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, sdk.AccAddress(forecast.Forecaster))
+			forecsterAddr, _ := sdk.AccAddressFromBech32(forecast.Forecaster)
+			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecsterAddr)
 			if err != nil {
 				return err
 			}
@@ -189,7 +191,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 			forecastsByForecaster[forecast.Forecaster] = forecast
 
 			// Get the latest score for each forecaster => only take top few by score descending
-			latestScore, err := ms.k.GetLatestForecasterScore(ctx, topicId, sdk.AccAddress(forecast.Forecaster))
+			latestScore, err := ms.k.GetLatestForecasterScore(ctx, topicId, forecsterAddr)
 			if err != nil {
 				return err
 			}
