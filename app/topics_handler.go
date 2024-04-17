@@ -13,6 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const approximateTimePerBlockSeconds = 5
+
 type TopicsHandler struct {
 	emissionsKeeper emissionskeeper.Keeper
 }
@@ -45,7 +47,9 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				defer wg.Done()
 
 				// Check if the inference and loss cadence is met, then run inf and loss generation
-				if currentBlockHeight == topic.EpochLastEnded+topic.EpochLength {
+				if currentBlockHeight == topic.EpochLastEnded+topic.EpochLength ||
+					currentBlockHeight-topic.EpochLastEnded > 2*topic.EpochLength {
+					// WORKER
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
 
@@ -57,18 +61,24 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					// iterate over all the worker nonces to find if this is unfulfilled
 					for _, nonce := range workerNonces.Nonces {
 						if nonce.BlockHeight == currentBlockHeight {
-							fmt.Println("Current block height has been found unfulfilled, requesting inferences ", currentNonce)
+							fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", currentNonce)
 							go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
 						}
 					}
 
+					// REPUTER
 					// Get previous topic height to repute
 					previousBlockHeight := topic.EpochLastEnded
 					if previousBlockHeight < 0 {
 						fmt.Println("Previous block height is less than 0, skipping")
 						return
+					}
+					previousToPreviousBlockHeight := previousBlockHeight - topic.EpochLength
+					if previousBlockHeight < 0 {
+						fmt.Println("Previous to previous block height is less than 0, skipping")
+						return
 					} else {
-						fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
+						fmt.Println("Previous block height: ", previousBlockHeight, "Previous to previous block height: ", previousToPreviousBlockHeight)
 					}
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
@@ -78,19 +88,30 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						return
 					}
 
-					currentTime := uint64(ctx.BlockTime().Unix())
 					// iterate over all the worker nonces to find if this is unfulfilled
 					for _, nonce := range reputerNonces.Nonces {
-						if nonce.ReputerNonce.BlockHeight == currentBlockHeight &&
-							nonce.WorkerNonce.BlockHeight == previousBlockHeight {
-							fmt.Println("Current block height has been found unfulfilled, requesting reputers for block ", currentNonce)
-							reputerValueBundle, blockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
+						if nonce.ReputerNonce.BlockHeight == previousBlockHeight &&
+							nonce.WorkerNonce.BlockHeight == previousToPreviousBlockHeight {
+							fmt.Println("Current Reputer block height has been found unfulfilled, requesting reputers for block ", previousBlockHeight)
+							reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
 							if err != nil {
 								fmt.Println("Error getting latest inferences at block: ", previousBlockHeight, ", error: ", err)
 								continue
 							}
-							previousNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-							go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, previousNonce, currentTime)
+							if reputerValueBundle == nil {
+								fmt.Println("Reputer value bundle is nil, skipping")
+								continue
+							}
+							// Get approximated time of the previous block
+							// Get difference of blocks from current to previous block
+							blockDifference := currentBlockHeight - inferencesBlockHeight
+							previousBlockApproxTime := uint64(ctx.BlockTime().Unix() - (blockDifference * approximateTimePerBlockSeconds))
+
+							reputerNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
+							workerNonce := emissionstypes.Nonce{BlockHeight: previousToPreviousBlockHeight}
+							// print the request of loss generation
+							fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", reputerNonce, "worker nonce: ", workerNonce, "previous block approx time: ", previousBlockApproxTime)
+							go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, reputerNonce, workerNonce, previousBlockApproxTime)
 						} else {
 							fmt.Println("Reputer nonce not met: (", nonce.ReputerNonce.BlockHeight, ",", nonce.WorkerNonce.BlockHeight, ") for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength)
 						}

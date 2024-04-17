@@ -75,7 +75,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if blockNumber == topic.EpochLastEnded+topic.EpochLength {
+			if blockNumber == topic.EpochLastEnded+topic.EpochLength ||
+				blockNumber-topic.EpochLastEnded >= 2*topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
