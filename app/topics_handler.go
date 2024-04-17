@@ -7,7 +7,7 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	// synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,34 +43,46 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			wg.Add(1)
 			go func(topic *emissionstypes.Topic) {
 				defer wg.Done()
-				// Get previous topic height to repute
-				previousBlockHeight := topic.EpochLastEnded
-				if previousBlockHeight <= 0 {
-					fmt.Println("Previous block height is less than or equal to 0, skipping")
-					return
-				} else {
-					fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
-				}
+
 				// Check if the inference and loss cadence is met, then run inf and loss generation
-				if currentBlockHeight >= topic.EpochLastEnded+topic.EpochLength {
+				if currentBlockHeight == topic.EpochLastEnded+topic.EpochLength {
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
-					go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
-					th.emissionsKeeper.AddWorkerNonce(ctx, topic.Id, &currentNonce)
 
-					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
-						topic.Id, topic.Metadata, topic.DefaultArg)
-					// We don't want just the latest inferences but the ValueBundle (I_i) instead
-					currentTime := uint64(ctx.BlockTime().Unix())
-					// Get from previous blockHeight
-					inferences, _, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
-					fmt.Println("Error getting latest inferences: ", err)
+					workerNonces, err := th.emissionsKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
 					if err != nil {
+						fmt.Println("Error getting worker nonces: ", err)
 						return
 					}
-					go generateLosses(inferences, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, currentTime)
-					previousNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
-					th.emissionsKeeper.AddReputerNonce(ctx, topic.Id, &currentNonce, &previousNonce)
+					// iterate over all the nonces to find if this is unfulfilled
+					for _, nonce := range workerNonces.Nonces {
+						if nonce.BlockHeight == currentBlockHeight {
+							fmt.Println("Current block height has been found unfulfilled, requesting inferences ", currentNonce)
+							go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
+						}
+					}
+
+					// Get previous topic height to repute
+					// previousBlockHeight := topic.EpochLastEnded
+					// if previousBlockHeight <= 0 {
+					// 	fmt.Println("Previous block height is less than or equal to 0, skipping")
+					// 	return
+					// } else {
+					// 	fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
+					// }
+					// fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
+					// 	topic.Id, topic.Metadata, topic.DefaultArg)
+					// // We don't want just the latest inferences but the ValueBundle (I_i) instead
+					// currentTime := uint64(ctx.BlockTime().Unix())
+					// // Get from previous blockHeight
+					// previousNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
+					// inferences, _, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
+					// fmt.Println("Error getting latest inferences: ", err)
+					// if err != nil {
+					// 	return
+					// }
+					// go generateLosses(inferences, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, previousNonce, currentTime)
+					// th.emissionsKeeper.AddReputerNonce(ctx, topic.Id, &currentNonce, &previousNonce)
 				} else {
 					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}

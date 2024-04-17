@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -89,6 +90,33 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		}(topic)
 	}
 	wg.Wait()
+
+	var wgAddingNonces sync.WaitGroup
+	// Add unfulfilled worker nonces
+	churnReadyTopics, err := am.keeper.GetChurnReadyTopics(sdkCtx)
+	if err != nil {
+		fmt.Println("Error getting active topics and met demand: ", err)
+	} else {
+		if len(churnReadyTopics.Topics) == 0 {
+			fmt.Println("No churn ready topics.")
+		} else {
+			for _, topic := range churnReadyTopics.Topics {
+				wgAddingNonces.Add(1)
+				go func(topic *emissionstypes.Topic) {
+					defer wgAddingNonces.Done()
+					if blockNumber == topic.EpochLastEnded+topic.EpochLength {
+						nextNonce := emissionstypes.Nonce{BlockHeight: blockNumber + topic.EpochLength}
+						err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
+						if err != nil {
+							fmt.Println("Error adding worker nonce: ", err)
+							return
+						}
+					}
+				}(topic)
+			}
+		}
+	}
+	wgAddingNonces.Wait()
 
 	return nil
 }
