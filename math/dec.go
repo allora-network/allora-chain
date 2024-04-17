@@ -11,7 +11,7 @@ import (
 
 	"cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	"github.com/cockroachdb/apd/v2"
+	"github.com/cockroachdb/apd/v3"
 )
 
 // Dec is a wrapper struct around apd.Decimal that does no mutation of apd.Decimal's when performing
@@ -365,19 +365,19 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
 	if y.dec.Exponent != 0 {
-		decs := big.NewInt(10)
+		decs := apd.NewBigInt(10)
 		if y.dec.Exponent > 0 {
-			decs.Exp(decs, big.NewInt(int64(y.dec.Exponent)), nil)
+			decs.Exp(decs, apd.NewBigInt(int64(y.dec.Exponent)), nil)
 			r.Mul(&y.dec.Coeff, decs)
 		} else {
-			decs.Exp(decs, big.NewInt(int64(-y.dec.Exponent)), nil)
+			decs.Exp(decs, apd.NewBigInt(int64(-y.dec.Exponent)), nil)
 			r.Quo(&y.dec.Coeff, decs)
 		}
 	}
 	if x.dec.Negative {
 		r.Neg(&r)
 	}
-	return sdkmath.NewIntFromBigInt(&r)
+	return sdkmath.NewIntFromBigInt(r.MathBigInt())
 }
 
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
