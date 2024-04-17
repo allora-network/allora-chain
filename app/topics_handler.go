@@ -7,7 +7,7 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	// synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,7 +54,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting worker nonces: ", err)
 						return
 					}
-					// iterate over all the nonces to find if this is unfulfilled
+					// iterate over all the worker nonces to find if this is unfulfilled
 					for _, nonce := range workerNonces.Nonces {
 						if nonce.BlockHeight == currentBlockHeight {
 							fmt.Println("Current block height has been found unfulfilled, requesting inferences ", currentNonce)
@@ -63,26 +63,38 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					}
 
 					// Get previous topic height to repute
-					// previousBlockHeight := topic.EpochLastEnded
-					// if previousBlockHeight <= 0 {
-					// 	fmt.Println("Previous block height is less than or equal to 0, skipping")
-					// 	return
-					// } else {
-					// 	fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
-					// }
-					// fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
-					// 	topic.Id, topic.Metadata, topic.DefaultArg)
-					// // We don't want just the latest inferences but the ValueBundle (I_i) instead
-					// currentTime := uint64(ctx.BlockTime().Unix())
-					// // Get from previous blockHeight
-					// previousNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
-					// inferences, _, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
-					// fmt.Println("Error getting latest inferences: ", err)
-					// if err != nil {
-					// 	return
-					// }
-					// go generateLosses(inferences, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, previousNonce, currentTime)
-					// th.emissionsKeeper.AddReputerNonce(ctx, topic.Id, &currentNonce, &previousNonce)
+					previousBlockHeight := topic.EpochLastEnded
+					if previousBlockHeight < 0 {
+						fmt.Println("Previous block height is less than 0, skipping")
+						return
+					} else {
+						fmt.Println("Current block height: ", currentBlockHeight, "Previous block height: ", previousBlockHeight)
+					}
+					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
+						topic.Id, topic.Metadata, topic.DefaultArg)
+					reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
+					if err != nil {
+						fmt.Println("Error getting reputer nonces: ", err)
+						return
+					}
+
+					currentTime := uint64(ctx.BlockTime().Unix())
+					// iterate over all the worker nonces to find if this is unfulfilled
+					for _, nonce := range reputerNonces.Nonces {
+						if nonce.ReputerNonce.BlockHeight == currentBlockHeight &&
+							nonce.WorkerNonce.BlockHeight == previousBlockHeight {
+							fmt.Println("Current block height has been found unfulfilled, requesting reputers for block ", currentNonce)
+							reputerValueBundle, blockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
+							if err != nil {
+								fmt.Println("Error getting latest inferences at block: ", previousBlockHeight, ", error: ", err)
+								continue
+							}
+							previousNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+							go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, currentNonce, previousNonce, currentTime)
+						} else {
+							fmt.Println("Reputer nonce not met: (", nonce.ReputerNonce.BlockHeight, ",", nonce.WorkerNonce.BlockHeight, ") for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength)
+						}
+					}
 				} else {
 					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}
