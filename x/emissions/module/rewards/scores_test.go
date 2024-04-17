@@ -45,7 +45,6 @@ func (s *RewardsTestSuite) TestGenerateReputerScores() {
 	}
 }
 
-
 func (s *RewardsTestSuite) TestGetInferenceScores() {
 	topidId := uint64(1)
 	block := int64(1003)
@@ -116,7 +115,6 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 		}
 	}
 }
-
 
 // mockReputersData generates reputer stakes and losses
 func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
