@@ -33,22 +33,22 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the worker nonce is unfulfilled
-	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
-	if nonceUnfulfilled {
+	if workerNonceUnfulfilled {
 		return nil, types.ErrNonceStillUnfulfilled
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	nonceUnfulfilled, err = ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// Throw if already fulfilled -- can't return a response twice
-	if nonceUnfulfilled {
+	if !reputerNonceUnfulfilled {
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
 

@@ -31,6 +31,17 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
+	reputerNonce := &types.Nonce{
+		BlockHeight: 2,
+	}
+	workerNonce := &types.Nonce{
+		BlockHeight: 1,
+	}
+
+	keeper.AddWorkerNonce(ctx, topicId, workerNonce)
+	keeper.FulfillWorkerNonce(ctx, topicId, workerNonce)
+	keeper.AddReputerNonce(ctx, topicId, reputerNonce, workerNonce)
+
 	// add in inference and forecast data
 	block := types.BlockHeight(1)
 	expectedInferences := types.Inferences{
@@ -95,12 +106,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 			},
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: 2,
-			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: 1,
-			},
+			ReputerNonce: reputerNonce,
+			WorkerNonce:  workerNonce,
 		},
 	}
 
@@ -116,12 +123,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: 2,
-			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: 1,
-			},
+			ReputerNonce: reputerNonce,
+			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
