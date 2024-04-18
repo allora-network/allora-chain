@@ -38,7 +38,9 @@ type Node struct {
 	QueryBank         banktypes.QueryClient
 	QueryMint         minttypes.QueryClient
 	AliceAcc          cosmosaccount.Account
+	AliceAddr         string
 	BobAcc            cosmosaccount.Account
+	BobAddr           string
 	Cdc               codec.Codec
 }
 
@@ -62,6 +64,10 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("alice")
 	require.NoError(t, err)
 	node.BobAcc, err = node.Client.AccountRegistry.GetByName("bob")
+	require.NoError(t, err)
+	node.AliceAddr, err = node.AliceAcc.Address(params.HumanCoinUnit)
+	require.NoError(t, err)
+	node.BobAddr, err = node.BobAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
 
 	// Create query client

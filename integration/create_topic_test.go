@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/stretchr/testify/require"
@@ -15,10 +14,9 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	)
 	require.NoError(m.t, err)
 	require.Greater(m.t, topicIdStart.NextTopicId, uint64(0))
-	aliceAddr, err := m.n.AliceAcc.Address(params.HumanCoinUnit)
 	require.NoError(m.t, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:          aliceAddr,
+		Creator:          m.n.AliceAddr,
 		Metadata:         "ETH 24h Prediction",
 		LossLogic:        "bafybeiazhgps7ywkhouwj6m6a7bkq36w3g734kx4b5iqql4n52zf3jjdxa",
 		LossMethod:       "loss-calculation-eth.wasm",

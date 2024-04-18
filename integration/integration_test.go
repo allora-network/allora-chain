@@ -47,4 +47,6 @@ func TestExternalTestSuite(t *testing.T) {
 	CreateTopic(m)
 	t.Log(">>> Test Distribution Checks <<<")
 	DistributionChecks(m)
+	t.Log(">>> Test Actor Registration <<<")
+	RegistrationChecks(m)
 }
