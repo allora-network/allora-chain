@@ -84,21 +84,21 @@ message Params {
   string topic_reward_stake_importance = 27 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // The exponent μ represents the importance of stake in the reward of a topic and has a fiduciary value of 0.5
+  ];  // The exponent μ represents the importance of stake in the reward of a topic and has a fiducial value of 0.5
   string topic_reward_fee_revenue_importance = 28 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiduciary value of
+  ];  // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiducial value of
       // 0.5
   string topic_reward_alpha = 29 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // global exponential moving average parameter. Fiduciary value of 0.9375 on a monthly timescale, 0.5 for weekly
+  ];  // global exponential moving average parameter. Fiducial value of 0.9375 on a monthly timescale, 0.5 for weekly
       // updates
   string task_reward_alpha = 30 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // global exponential moving average parameter. Fiduciary value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
+  ];  // global exponential moving average parameter. Fiducial value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
   string validators_vs_allora_percent_reward = 31 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -116,11 +116,13 @@ message Params {
   string sigmoid_a = 36 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // parameter a for sigmoid function, feducial value = 8
+  ];  // parameter a for sigmoid function, fiducial value = 8
   string sigmoid_b = 37 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // parameter b for sigmoid function, feducial value = 0.5
+  ];  // parameter b for sigmoid function, fiducial value = 0.5
+  uint64 max_retries_to_fulfil_nonces_worker = 38;  // max number of retries to unfulfilled nonces (worker)
+  uint64 max_retries_to_fulfil_nonces_reputer = 39;  // max number of retries to unfulfilled nonces (reputer)
 }
 
 /// TOPICS
