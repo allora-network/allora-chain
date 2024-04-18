@@ -47,8 +47,8 @@ func DefaultParams() Params {
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
-		MaxRetriesToFulfilNoncesWorker:  int64(10),                                 // maximum number of retries to fulfil nonces for worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(10),                                 // maximum number of retries to fulfil nonces for reputer requests
+		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
+		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 	}
 }
 

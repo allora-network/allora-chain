@@ -365,7 +365,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 			return nil
 		}
 	}
-	nonces.Nonces = append(nonces.Nonces, nonce)
+	nonces.Nonces = append([]*types.Nonce{nonce}, nonces.Nonces...)
 
 	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
 	if err != nil {
@@ -407,13 +407,12 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 		ReputerNonce: nonce,
 		WorkerNonce:  associatedWorkerNonce,
 	}
-	nonces.Nonces = append(nonces.Nonces, reputerRequestNonce)
+	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 
 	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
 	if err != nil {
 		return err
 	}
-
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
 		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
@@ -421,7 +420,6 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 			nonces.Nonces = nonces.Nonces[diff:]
 		}
 	}
-
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
 }
 
