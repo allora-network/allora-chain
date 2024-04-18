@@ -157,6 +157,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 		pInferenceSynthesis                   alloraMath.Dec
 		expectedNetworkCombinedInferenceValue alloraMath.Dec
 		infererNetworkRegrets                 map[string]inference_synthesis.Regret
+		forecasterNetworkRegrets              map[string]inference_synthesis.Regret
 		expectedErr                           error
 	}{
 		{ // EPOCH 3
@@ -178,6 +179,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 				"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
 				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+			},
+			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 				"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 				"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -204,6 +207,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
 				"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
 				"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
+			},
+			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
 				"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
 				"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
@@ -220,6 +225,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 					s.ctx,
 					topicId,
 					[]byte(inferer),
+					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
+			for forecaster, regret := range tc.forecasterNetworkRegrets {
+				s.emissionsKeeper.SetForecasterNetworkRegret(
+					s.ctx,
+					topicId,
+					[]byte(forecaster),
 					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
 				)
 			}
@@ -269,6 +283,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		epsilon                          alloraMath.Dec
 		pInferenceSynthesis              alloraMath.Dec
 		infererNetworkRegrets            map[string]inference_synthesis.Regret
+		forecasterNetworkRegrets         map[string]inference_synthesis.Regret
 		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
 		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
 	}{ // EPOCH 3
@@ -315,6 +330,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 			"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
 			"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+		},
+		forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 			"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 			"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 			"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -341,6 +358,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				s.ctx,
 				topicId,
 				[]byte(inferer),
+				emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+			)
+		}
+
+		for forecaster, regret := range test.forecasterNetworkRegrets {
+			s.emissionsKeeper.SetForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				[]byte(forecaster),
 				emissions.TimestampedValue{BlockHeight: 0, Value: regret},
 			)
 		}
