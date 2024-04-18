@@ -107,6 +107,10 @@ func DefaultParamsLearningRate() alloraMath.Dec {
 	return DefaultParams().LearningRate
 }
 
+func DefaultParamsGradientDescentMaxIters() uint64 {
+	return DefaultParams().GradientDescentMaxIters
+}
+
 func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
 	return DefaultParams().MaxGradientThreshold
 }
