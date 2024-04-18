@@ -142,7 +142,7 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated int64 max_retries_to_fulfil_nonces_worker = 38;
   repeated int64 max_retries_to_fulfil_nonces_reputer = 39;
-  }
+}
 
 message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "sender";
