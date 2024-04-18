@@ -151,8 +151,19 @@ func accumulateNormalizedI_iAndSumWeights(
 	// If all workers are new, then the weight is 1 for all workers
 	// Otherwise, calculate the weight based on the regret of the worker
 	if allWorkersAreNew {
+		// If all workers are new, then the weight is 1 for all workers; take regular average of inferences
+		unnormalizedI_i, err = unnormalizedI_i.Add(inference.Value)
+		if err != nil {
+			fmt.Println("Error adding weight by worker value: ", err)
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), err
+		}
+		sumWeights, err = sumWeights.Add(alloraMath.OneDec())
+		if err != nil {
+			fmt.Println("Error adding weight: ", err)
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), err
+		}
+	} else {
 		// If at least one worker is not new, then we take a weighted average of all workers' inferences
-
 		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
 		regretFrac, err := regret.Value.Quo(maxRegret.Abs())
 		if err != nil {
@@ -180,18 +191,6 @@ func accumulateNormalizedI_iAndSumWeights(
 				fmt.Println("Error adding weight: ", err)
 				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), err
 			}
-		}
-	} else {
-		// If all workers are new, then the weight is 1 for all workers; take regular average if inferences
-		unnormalizedI_i, err = unnormalizedI_i.Add(inference.Value)
-		if err != nil {
-			fmt.Println("Error adding weight by worker value: ", err)
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), err
-		}
-		sumWeights, err = sumWeights.Add(alloraMath.OneDec())
-		if err != nil {
-			fmt.Println("Error adding weight: ", err)
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), err
 		}
 	}
 
