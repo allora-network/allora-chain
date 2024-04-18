@@ -165,6 +165,15 @@ message WorkerAttributedValue {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
+message ForecastAttributedValue {
+  option (gogoproto.equal) = true;
+
+  string forecaster = 1;  // worker who created the forecast
+  string inferer = 2;  // inferer for whom the forecast was made
+  string value = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
 message WithheldWorkerAttributedValue {
   option (gogoproto.equal) = true;
 
@@ -189,7 +198,7 @@ message ValueBundle {
   // R_ijm || log10 L_ijm || I_ij
   repeated WorkerAttributedValue inferer_values = 6;
   // R_ikm || log10 L_ikm || I_ik
-  repeated WorkerAttributedValue forecaster_values = 7;
+  repeated WithheldWorkerAttributedValue forecaster_values = 7;
   // R^-_im  || log10 L^-_im || I^-_i
   string naive_value = 8
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];

@@ -444,5 +444,35 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
+	// Translate inferences into InfererValues []*WorkerAttributedValue
+	networkInferences.InfererValues = TranslateInferencesToInfererValues(inferences)
+	networkInferences.ForecasterValues = TranslateForecastsToForecastValues(forecasts)
+
+	// Save the forecasts into the networkInferences object
+
 	return networkInferences, blockHeight, nil
+}
+
+// Function that receives an emissions.Inferences and returns an array of Worker with their respective Inference []*WorkerAttributedValue
+func TranslateInferencesToInfererValues(inferences *emissions.Inferences) []*emissions.WorkerAttributedValue {
+	infererValues := make([]*emissions.WorkerAttributedValue, 0)
+	for _, inference := range inferences.Inferences {
+		infererValues = append(infererValues, &emissions.WorkerAttributedValue{
+			Worker: inference.Inferer,
+			Value:  inference.Value,
+		})
+	}
+	return infererValues
+}
+
+// Function that receives an emissions.Forecast and returns an array of Worker with their respective Forecast []*WorkerAttributedValue
+func TranslateForecastsToForecastValues(forecasts *emissions.Forecasts) []*emissions.WorkerAttributedValue {
+	forecastValues := make([]*emissions.WorkerAttributedValue, 0)
+	for _, forecast := range forecasts.Forecasts {
+		forecastValues = append(forecastValues, &emissions.WorkerAttributedValue{
+			Worker: forecast.Forecaster,
+			Value:  forecast.Value,
+		})
+	}
+	return forecastValues
 }
