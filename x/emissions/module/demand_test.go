@@ -631,7 +631,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 //		requestsModuleBalanceBefore.Amount,
 //		"Initial balance of requests module should be equal to expected after requests are stored in the state machine")
 
-// 	mempool, err := s.emissionsKeeper.GetMempool(s.ctx)
+// 	mempool, err := s.emissionsKeeper.GetMempoolInferenceRequestsForTopic(s.ctx)
 // 	s.Require().NoError(err)
 // 	s.Require().Len(mempool, 1, "Mempool should have exactly 1 request")
 
@@ -658,7 +658,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.Require().Len(churnReadyTopics.Topics, 1, "There should be 1 churn-ready topic after EndBlock")
 // 	s.Equal(churnReadyTopics.Topics[0].Id, createdTopicIds[0], "Topic should be in the list of churn-ready topic")
 
-// 	mempool, err = s.emissionsKeeper.GetMempool(s.ctx)
+// 	mempool, err = s.emissionsKeeper.GetMempoolInferenceRequestsForTopic(s.ctx)
 // 	s.Require().NoError(err)
 // 	s.Require().Len(mempool, 0, "Mempool should be empty after EndBlock")
 // }

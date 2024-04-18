@@ -136,18 +136,17 @@ message Topic {
   int64 epoch_last_ended = 8;
   int64 epoch_length = 9;
   int64 ground_truth_lag = 10;
-  bool active = 11;
-  string default_arg = 12;
-  uint64 pnorm = 13;
-  string alpha_regret = 14
+  string default_arg = 11;
+  uint64 pnorm = 12;
+  string alpha_regret = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_reputer = 15
+  string preward_reputer = 14
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_inference = 16
+  string preward_inference = 15
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_forecast = 17
+  string preward_forecast = 16
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string f_tolerance = 18
+  string f_tolerance = 17
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 

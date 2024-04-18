@@ -35,11 +35,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get Active Topics",
 				},
 				{
-					RpcMethod: "GetAllTopics",
-					Use:       "all-topics",
-					Short:     "Get the full list of all topics created on the network",
-				},
-				{
 					RpcMethod: "GetReputerStakeList",
 					Use:       "reputer-stake-list [address]",
 					Short:     "Get Account Stake List",
@@ -90,7 +85,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetExistingInferenceRequest",
+					RpcMethod: "GetMempoolInferenceRequest",
 					Use:       "inference-request [topic_id] [request_id]",
 					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -99,9 +94,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetAllExistingInferenceRequests",
+					RpcMethod: "GetMempoolInferenceRequestsByTopic",
 					Use:       "all-inference-requests",
-					Short:     "Get All Inference Requests and demand left for each request in mempool",
+					Short:     "Get Inference Requests by topic and demand left for each request in mempool",
 				},
 				{
 					RpcMethod: "GetTopicUnmetDemand",

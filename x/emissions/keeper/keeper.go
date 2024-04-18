@@ -2,20 +2,24 @@ package keeper
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"strings"
 
 	cosmosMath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
-	storetypes "cosmossdk.io/core/store"
-	"github.com/cosmos/cosmos-sdk/codec"
 
+	coreStore "cosmossdk.io/core/store"
+	storeTypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 type Uint = cosmosMath.Uint
@@ -37,6 +41,8 @@ type Keeper struct {
 	addressCodec     address.Codec
 	feeCollectorName string
 
+	storeKey storeTypes.StoreKey
+
 	/// TYPES
 
 	schema     collections.Schema
@@ -49,7 +55,8 @@ type Keeper struct {
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
-	topics collections.Map[TopicId, types.Topic]
+	topics       collections.Map[TopicId, types.Topic]
+	activeTopics collections.Map[TopicId, bool]
 	// every topics that has been churned and ready to get inferences in the block
 	churnReadyTopics collections.Item[types.TopicList]
 	// for a topic, what is every worker node that has registered to it?
@@ -182,7 +189,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	addressCodec address.Codec,
-	storeService storetypes.KVStoreService,
+	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
 	feeCollectorName string) Keeper {
@@ -200,6 +207,7 @@ func NewKeeper(
 		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
+		activeTopics:                        collections.NewMap(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key, collections.BoolValue),
 		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
@@ -251,6 +259,8 @@ func NewKeeper(
 	}
 
 	k.schema = schema
+
+	k.storeKey = storeTypes.NewKVStoreKey(types.ModuleName)
 
 	return k
 }
@@ -1425,7 +1435,7 @@ func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, ad
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
 	for _, topicId := range TopicIds {
-		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
+		topicKey := collections.Join(topicId, reputer)
 		err := k.topicReputers.Set(ctx, topicKey)
 		if err != nil {
 			return err
@@ -1445,7 +1455,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 // Remove a reputer to the reputer tracking data structures and topicReputers
 func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
 
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	topicKey := collections.Join(topicId, reputerAddr)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1461,7 +1471,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 // Remove a worker to the worker tracking data structures and topicWorkers
 func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
 
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
+	topicKey := collections.Join(topicId, workerAddr)
 	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1479,7 +1489,7 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
 	for _, topicId := range TopicIds {
-		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
+		topickey := collections.Join(topicId, worker)
 		err := k.topicWorkers.Set(ctx, topickey)
 		if err != nil {
 			return err
@@ -1572,35 +1582,42 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
+// Set a topic to inactive if the topic exists and is active, else does nothing
 func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
-	topic, err := k.topics.Get(ctx, topicId)
+	present, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
-	topic.Active = false
-
-	err = k.topics.Set(ctx, topicId, topic)
+	isActive, err := k.activeTopics.Has(ctx, topicId)
 	if err != nil {
 		return err
+	}
+
+	if present && isActive {
+		err = k.activeTopics.Remove(ctx, topicId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+// Set a topic to active if the topic exists, else does nothing
 func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TopicId) error {
-	topic, err := k.topics.Get(ctx, topicId)
+	present, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
-	topic.Active = true
-
-	err = k.topics.Set(ctx, topicId, topic)
-	if err != nil {
-		return err
+	if !present {
+		return nil
 	}
 
+	if err := k.activeTopics.Set(ctx, topicId, true); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1619,20 +1636,6 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topi
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// TODO paginate
-// Gets every topic
-func (k *Keeper) GetAllTopics(ctx context.Context) ([]*types.Topic, error) {
-	var allTopics []*types.Topic
-	err := k.topics.Walk(ctx, nil, func(topicId TopicId, topic types.Topic) (bool, error) {
-		allTopics = append(allTopics, &topic)
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return allTopics, nil
-}
-
 // Checks if a topic exists
 func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error) {
 	return k.topics.Has(ctx, topicId)
@@ -1643,19 +1646,28 @@ func (k *Keeper) GetNumTopics(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
-// TODO paginate
-// GetActiveTopics returns a slice of all active topics.
-func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
+// Returns a slice of all active topics. Paginated.
+func (k *Keeper) GetActiveTopics(ctx context.Context, pagination *query.PageRequest) ([]*types.Topic, *query.PageResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := sdkCtx.KVStore(k.storeKey)
+	activeTopicsStore := prefix.NewStore(store, k.activeTopics.GetPrefix())
+
 	var activeTopics []*types.Topic
-	if err := k.topics.Walk(ctx, nil, func(topicId TopicId, topic types.Topic) (bool, error) {
-		if topic.Active { // Check if the topic is marked as active
-			activeTopics = append(activeTopics, &topic)
+	pageRes, err := query.Paginate(activeTopicsStore, pagination, func(key, _ []byte) error {
+		topicId := binary.BigEndian.Uint64(key)
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return err
 		}
-		return false, nil // Continue the iteration
-	}); err != nil {
-		return nil, err
+
+		activeTopics = append(activeTopics, &topic)
+
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
 	}
-	return activeTopics, nil
+	return activeTopics, pageRes, err
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
@@ -1912,23 +1924,6 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicI
 	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
 	rng := collections.NewPrefixedPairRange[TopicId, RequestId](topicId)
 	iter, err := k.mempool.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		value, err := iter.Value()
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, value)
-	}
-	return ret, nil
-}
-
-// TODO paginate
-func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
-	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
-	iter, err := k.mempool.Iterate(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

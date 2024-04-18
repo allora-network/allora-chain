@@ -6,7 +6,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *types.QueryExistingInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
+func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types.QueryMempoolInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
 	valid := types.IsValidRequestId(req.RequestId)
 	if !valid {
 		return nil, types.ErrInvalidRequestId
@@ -30,9 +30,9 @@ func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *type
 }
 
 // TODO paginate
-func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *types.QueryAllExistingInferenceRequest) (*types.QueryAllExistingInferenceResponse, error) {
+func (qs queryServer) GetMempoolInferenceRequestsByTopic(ctx context.Context, req *types.QueryMempoolInferenceRequestsByTopic) (*types.QueryMempoolInferenceRequestsByTopicResponse, error) {
 	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
-	mempool, err := qs.k.GetMempool(ctx)
+	mempool, err := qs.k.GetMempoolInferenceRequestsForTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -48,5 +48,5 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 		inferenceRequestCopy := inferenceRequest
 		ret = append(ret, &types.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
-	return &types.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
+	return &types.QueryMempoolInferenceRequestsByTopicResponse{InferenceRequests: ret}, nil
 }

@@ -59,7 +59,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		EpochLastEnded:   0,
 		EpochLength:      msg.EpochLength,
 		GroundTruthLag:   msg.GroundTruthLag,
-		Active:           true,
 		DefaultArg:       msg.DefaultArg,
 		Pnorm:            msg.Pnorm,
 		AlphaRegret:      msg.AlphaRegret,
@@ -73,6 +72,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
+		return nil, err
+	}
+	if err = ms.k.ReactivateTopic(ctx, id); err != nil {
 		return nil, err
 	}
 	// Rather than set latest weight-adjustment timestamp of a topic to 0

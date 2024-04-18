@@ -34,25 +34,14 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 	return &types.QueryTopicResponse{Topic: &topic}, nil
 }
 
-// TODO paginate
-// GetActiveTopics retrieves a list of active topics.
+// Retrieves a list of active topics. Paginated.
 func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
-	activeTopics, err := qs.k.GetActiveTopics(ctx)
+	activeTopics, pageRes, err := qs.k.GetActiveTopics(ctx, req.Pagination)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryActiveTopicsResponse{Topics: activeTopics}, nil
-}
-
-// TODO paginate
-func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopicsRequest) (*types.QueryAllTopicsResponse, error) {
-	topics, err := qs.k.GetAllTopics(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryAllTopicsResponse{Topics: topics}, nil
+	return &types.QueryActiveTopicsResponse{Topics: activeTopics, Pagination: pageRes}, nil
 }
 
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {

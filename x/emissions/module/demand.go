@@ -11,6 +11,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // A structure to hold the original value and a random tiebreaker
@@ -33,6 +34,10 @@ type Demand struct {
 	Requests      []types.InferenceRequest
 	FeesGenerated cosmosMath.Uint
 }
+
+const ActiveTopicsPageLimit = uint64(1000) // how many topics to view per page
+
+const MaxActiveTopicIters = uint64(10000000) // can tolerate looping over 10 million active topics max
 
 // Sorts the given slice of topics in descending order according to their corresponding return, using randomness as tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
@@ -97,34 +102,48 @@ func IsValidAtPrice(
 	return res, nil
 }
 
-// Inactivates topics with below keeper.MIN_TOPIC_UNMET_DEMAND demand
-// returns a list of topics that are still active after this operation
-func InactivateLowDemandTopics(ctx context.Context, k keeper.Keeper) (remainingActiveTopics []*types.Topic, err error) {
-	remainingActiveTopics = make([]*types.Topic, 0)
-	topicsActive, err := k.GetActiveTopics(ctx)
-	if err != nil {
-		fmt.Println("Error getting active topics: ", err)
-		return nil, err
-	}
-	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
-	if err != nil {
-		fmt.Println("Error getting min topic unmet demand: ", err)
-		return nil, err
-	}
-	for _, topic := range topicsActive {
-		topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
+// Inactivates topics with unment demand lower than minTopicUnmetDemand
+func InactivateLowDemandTopics(
+	ctx context.Context,
+	k keeper.Keeper,
+	minTopicUnmetDemand cosmosMath.Uint,
+	limit uint64,
+	maxLimit uint64,
+) error {
+	offset := uint64(0)
+	key := make([]byte, 0)
+	i := uint64(0)
+
+	for {
+		pageRequest := &query.PageRequest{Limit: limit, Offset: offset, Key: key}
+		topicsActive, pageResponse, err := k.GetActiveTopics(ctx, pageRequest)
 		if err != nil {
-			fmt.Println("Error getting unmet demand: ", err)
-			return nil, err
+			fmt.Println("Error getting active topics: ", err)
+			return err
 		}
-		if topicUnmetDemand.LT(minTopicDemand) {
-			fmt.Printf("Inactivating topic due to no demand: %v metadata: %s\n", topic.Id, topic.Metadata)
-			k.InactivateTopic(ctx, topic.Id)
-		} else {
-			remainingActiveTopics = append(remainingActiveTopics, topic)
+
+		for _, topic := range topicsActive {
+			topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
+			if err != nil {
+				fmt.Println("Error getting unmet demand: ", err)
+				return err
+			}
+			if topicUnmetDemand.LT(minTopicUnmetDemand) {
+				fmt.Printf("Inactivating topic due to no demand: %v metadata: %s\n", topic.Id, topic.Metadata)
+				k.InactivateTopic(ctx, topic.Id)
+			}
 		}
+
+		// if pageResponse.NextKey is empty then we have reached the end of the list
+		if len(pageResponse.NextKey) == 0 || i > maxLimit {
+			break
+		}
+
+		key = pageResponse.NextKey
+		offset += limit
+		i++
 	}
-	return remainingActiveTopics, nil
+	return nil
 }
 
 // Generate a demand curve, which is a data structure that captures the price
@@ -201,32 +220,67 @@ func GetRequestsThatMaxFees(
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
-func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, currentBlock BlockHeight) ([]types.Topic, cosmosMath.Uint, error) {
-	topicsActive, err := InactivateLowDemandTopics(ctx, k)
+func ChurnRequestsGetActiveTopicsAndDemand(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	currentBlock BlockHeight,
+	limit uint64,
+	maxLimit uint64,
+) ([]types.Topic, cosmosMath.Uint, error) {
+	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
 	if err != nil {
-		fmt.Println("Error getting active topics: ", err)
+		fmt.Println("Error getting min topic unmet demand: ", err)
+		return nil, cosmosMath.Uint{}, err
+	}
+
+	// Need to do this separate from loop below to avoid consequences from deleting things mid-iteration
+	err = InactivateLowDemandTopics(ctx, k, minTopicDemand, limit, maxLimit)
+	if err != nil {
 		return nil, cosmosMath.Uint{}, err
 	}
 
 	topicsActiveWithDemand := make([]types.Topic, 0)
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId][]types.InferenceRequest, 0)
-	for _, topic := range topicsActive {
-		inferenceRequests, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id)
+
+	offset := uint64(0)
+	key := make([]byte, 0)
+	i := uint64(0)
+
+	for {
+		pageRequest := &query.PageRequest{Limit: limit, Offset: offset, Key: key}
+		topicsActive, pageResponse, err := k.GetActiveTopics(ctx, pageRequest)
 		if err != nil {
-			fmt.Println("Error getting mempool inference requests: ", err)
+			fmt.Println("Error getting active topics: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
 
-		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentBlock, inferenceRequests)
-		if err != nil {
-			fmt.Println("Error getting requests that maximize fees: ", err)
-			return nil, cosmosMath.Uint{}, err
+		for _, topic := range topicsActive {
+			inferenceRequests, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id)
+			if err != nil {
+				fmt.Println("Error getting mempool inference requests: ", err)
+				return nil, cosmosMath.Uint{}, err
+			}
+
+			priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentBlock, inferenceRequests)
+			if err != nil {
+				fmt.Println("Error getting requests that maximize fees: ", err)
+				return nil, cosmosMath.Uint{}, err
+			}
+			fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
+			topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
+			topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
+			requestsToDrawDemandFrom[topic.Id] = requestsToUse
 		}
-		fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
-		topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
-		topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
-		requestsToDrawDemandFrom[topic.Id] = requestsToUse
+
+		// if pageResponse.NextKey is empty then we have reached the end of the list
+		if len(pageResponse.NextKey) == 0 || i > maxLimit {
+			break
+		}
+
+		key = pageResponse.NextKey
+		offset += limit
+		i++
 	}
 
 	// Sort topics by topicBestPrices

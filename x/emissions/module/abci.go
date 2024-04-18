@@ -23,7 +23,13 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, blockNumber)
+	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(
+		sdkCtx,
+		am.keeper,
+		blockNumber,
+		ActiveTopicsPageLimit,
+		MaxActiveTopicIters,
+	)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err

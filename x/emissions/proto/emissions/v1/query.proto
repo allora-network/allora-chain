@@ -38,17 +38,13 @@ service Query {
     option (google.api.http).get = "/emissions/v1/active_topics";
   }
 
-  rpc GetAllTopics(QueryAllTopicsRequest) returns (QueryAllTopicsResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/all_topics";
-  }
-
-  rpc GetExistingInferenceRequest(QueryExistingInferenceRequest) returns (QueryExistingInferenceResponse) {
+  rpc GetMempoolInferenceRequest(QueryMempoolInferenceRequest) returns (QueryExistingInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/requests/{request_id}";
   }
 
-  rpc GetAllExistingInferenceRequests(QueryAllExistingInferenceRequest) returns (QueryAllExistingInferenceResponse) {
+  rpc GetMempoolInferenceRequestsByTopic(QueryMempoolInferenceRequestsByTopic)
+      returns (QueryMempoolInferenceRequestsByTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/all_requests";
   }
@@ -197,16 +193,13 @@ message QueryTopicResponse {
   Topic topic = 1;
 }
 
-message QueryActiveTopicsRequest {}
+message QueryActiveTopicsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
 
 message QueryActiveTopicsResponse {
   repeated Topic topics = 1;
-}
-
-message QueryAllTopicsRequest {}
-
-message QueryAllTopicsResponse {
-  repeated Topic topics = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryRegisteredTopicIdsRequest {
@@ -279,7 +272,7 @@ message QueryReputerAddressByP2PKeyResponse {
   string address = 1;
 }
 
-message QueryExistingInferenceRequest {
+message QueryMempoolInferenceRequest {
   string request_id = 1;
   uint64 topic_id = 2;
 }
@@ -294,7 +287,10 @@ message QueryExistingInferenceResponse {
   ];
 }
 
-message QueryAllExistingInferenceRequest {}
+message QueryMempoolInferenceRequestsByTopic {
+  uint64 topic_id = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
 
 message InferenceRequestAndDemandLeft {
   InferenceRequest inference_request = 1;
@@ -306,8 +302,9 @@ message InferenceRequestAndDemandLeft {
   ];
 }
 
-message QueryAllExistingInferenceResponse {
+message QueryMempoolInferenceRequestsByTopicResponse {
   repeated InferenceRequestAndDemandLeft inference_requests = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message QueryTopicUnmetDemandRequest {

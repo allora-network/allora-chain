@@ -1794,43 +1794,6 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetMempoolSimple() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	var i uint64
-	var inferenceRequestMap = make(map[string]types.InferenceRequest)
-	for i = 0; i < 10; i++ {
-		inferenceRequest := types.InferenceRequest{
-			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
-			Nonce:                i,
-			TopicId:              i,
-			Cadence:              60 * 60 * 24,
-			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
-			BidAmount:            cosmosMath.NewUint(1446 * i),
-			BlockValidUntil:      0x14,
-			BlockLastChecked:     0x0,
-			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
-		}
-		// Add to mempool
-		err := keeper.AddToMempool(ctx, inferenceRequest)
-		s.Require().NoError(err, "Error adding to mempool")
-		requestId, err := inferenceRequest.GetRequestId()
-		s.Require().NoError(err, "error getting request id 1")
-		inferenceRequestMap[requestId] = inferenceRequest
-	}
-
-	mempool, err := keeper.GetMempool(ctx)
-	s.Require().NoError(err, "error getting mempool")
-
-	for _, request := range mempool {
-		requestId, err := request.GetRequestId()
-		s.Require().NoError(err, "error getting request id 2")
-		s.Require().Contains(inferenceRequestMap, requestId, "Mempool should contain the added inference request id")
-		expected := inferenceRequestMap[requestId]
-		s.Require().Equal(expected, request, "Mempool should contain the added inference request")
-	}
-}
-
 func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2099,47 +2062,6 @@ func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
 	reactivatedTopic, err := keeper.GetTopic(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
 	s.Require().True(reactivatedTopic.Active, "Topic should be active again")
-}
-
-func (s *KeeperTestSuite) TestGetAllTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Clear existing topics (if possible, depending on your system's design)
-	// This step is hypothetical and depends on your system's capabilities
-	// _ = keeper.ClearAllTopics(ctx)
-
-	// Create sample topics
-	topic1 := types.Topic{Id: 1, Active: true}
-	topic2 := types.Topic{Id: 2, Active: false}
-	topic3 := types.Topic{Id: 3, Active: true}
-
-	// Set topics in the system
-	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
-	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
-
-	// Fetch all topics
-	retrievedTopics, err := keeper.GetAllTopics(ctx)
-	s.Require().NoError(err, "Fetching all topics should not produce an error")
-
-	// Verify the correct number of topics is retrieved
-	s.Require().Len(retrievedTopics, 3, "Should retrieve exactly three topics")
-
-	// Verify the correctness of the data retrieved
-	// This assumes you have a way to identify topics uniquely; adjust as needed
-	for _, topic := range retrievedTopics {
-		switch topic.Id {
-		case 1:
-			s.Require().Equal(topic1, *topic, "The details of topic 1 should match")
-		case 2:
-			s.Require().Equal(topic2, *topic, "The details of topic 2 should match")
-		case 3:
-			s.Require().Equal(topic3, *topic, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
-	}
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopics() {
