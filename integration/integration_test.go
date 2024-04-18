@@ -39,11 +39,12 @@ func TestExternalTestSuite(t *testing.T) {
 	if _, isIntegration := os.LookupEnv("INTEGRATION"); isIntegration == false {
 		t.Skip("Skipping Integration Test Outside CI")
 	}
-	t.Log("Setting up connection to local node")
+	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
-	// t.Log("Test: GetParams")
-	// GetParams(m)
-	// t.Log("Test: CreateTopic")
-	// CreateTopic(m)
+	t.Log(">>> Test Getting Chain Params <<<")
+	GetParams(m)
+	t.Log(">>> Test Topic Creation <<<")
+	CreateTopic(m)
+	t.Log(">>> Test Distribution Checks <<<")
 	DistributionChecks(m)
 }

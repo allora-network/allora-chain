@@ -20,4 +20,4 @@ jobs:
       run: make init
     
     - name: IntegrationTest
-      run: INTEGRATION=TRUE go test -v ./integration
+      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v

@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"github.com/allora-network/allora-chain/app/params"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/stretchr/testify/require"
 )
@@ -33,7 +36,6 @@ func GetValidatorAddressFromGenesisFile(m TestMetadata) (string, error) {
 			trimmed := strings.TrimSpace(splitted[1])
 			trimmed = strings.Trim(trimmed, ",")
 			trimmed = strings.Trim(trimmed, "\"")
-			m.t.Log(trimmed)
 			return trimmed, nil
 		}
 	}
@@ -45,32 +47,7 @@ func GetValidatorAddressFromGenesisFile(m TestMetadata) (string, error) {
 	return "", errors.New("validator address not found")
 }
 
-// this file tests that the distribution of funds to validators
-// and rewards accounts is working as expected
-// basically testing the forked mint module that we use
-func DistributionChecks(m TestMetadata) {
-	// alloraRewardsModuleAccResponse, err := m.n.QueryAuth.ModuleAccountByName(
-	// 	m.ctx,
-	// 	&authtypes.QueryModuleAccountByNameRequest{
-	// 		Name: "allorarewards",
-	// 	},
-	// )
-	// require.NoError(m.t, err)
-	// var alloraRewardsAccount authtypes.ModuleAccount
-	// err = m.n.Cdc.Unmarshal(
-	// 	alloraRewardsModuleAccResponse.Account.Value,
-	// 	&alloraRewardsAccount,
-	// )
-	// require.NoError(m.t, err)
-	// alloraRewardsBalanceStart, err := m.n.QueryBank.Balance(
-	// 	m.ctx,
-	// 	&banktypes.QueryBalanceRequest{
-	// 		Address: alloraRewardsAccount.Address,
-	// 		Denom:   params.HumanCoinUnit,
-	// 	},
-	// )
-	// require.NoError(m.t, err)
-
+func CheckValidatorBalanceGoesUpOnNewBlock(m TestMetadata) {
 	validatorAddr, err := GetValidatorAddressFromGenesisFile(m)
 	require.NoError(m.t, err)
 	validatorBalanceBefore, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
@@ -81,7 +58,8 @@ func DistributionChecks(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 
-	WaitNumBlocks(m, 1, 10*time.Second)
+	_, err = WaitNumBlocks(m, 1, 10*time.Second)
+	require.NoError(m.t, err)
 
 	validatorBalanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
 		m.ctx,
@@ -89,15 +67,74 @@ func DistributionChecks(m TestMetadata) {
 			ValidatorAddress: validatorAddr,
 		},
 	)
+	require.NoError(m.t, err)
 
+	vba := validatorBalanceAfter.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
+	vbb := validatorBalanceBefore.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
 	require.True(
 		m.t,
-		validatorBalanceAfter.Rewards.Rewards.AmountOf(params.HumanCoinUnit).GT(
-			validatorBalanceBefore.Rewards.Rewards.AmountOf(params.HumanCoinUnit),
-		),
+		vba.GT(vbb),
 		"validator balance did not increase after a block %s %s",
-		validatorBalanceAfter.Rewards.Rewards.String(),
-		validatorBalanceBefore.Rewards.Rewards.String(),
+		vba.String(),
+		vbb.String(),
 	)
+}
 
+// the mint module pays the ecosystem module account
+// as new blocks are produced.
+func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
+	alloraRewardsModuleAccResponse, err := m.n.QueryAuth.ModuleAccountByName(
+		m.ctx,
+		&authtypes.QueryModuleAccountByNameRequest{
+			Name: emissionstypes.AlloraRewardsAccountName,
+		},
+	)
+	require.NoError(m.t, err)
+	var alloraRewardsModuleAcc authtypes.ModuleAccount
+	err = m.n.Cdc.Unmarshal(
+		alloraRewardsModuleAccResponse.Account.Value,
+		&alloraRewardsModuleAcc,
+	)
+	require.NoError(m.t, err)
+
+	alloraRewardsBalanceBefore, err := m.n.QueryBank.Balance(
+		m.ctx,
+		&banktypes.QueryBalanceRequest{
+			Address: alloraRewardsModuleAcc.Address,
+			Denom:   params.BaseCoinUnit,
+		},
+	)
+	require.NoError(m.t, err)
+
+	_, err = WaitNumBlocks(m, 1, 10*time.Second)
+	require.NoError(m.t, err)
+
+	alloraRewardsBalanceAfter, err := m.n.QueryBank.Balance(
+		m.ctx,
+		&banktypes.QueryBalanceRequest{
+			Address: alloraRewardsModuleAcc.Address,
+			Denom:   params.BaseCoinUnit,
+		},
+	)
+	require.NoError(m.t, err)
+
+	arba := alloraRewardsBalanceAfter.Balance.Amount
+	arbb := alloraRewardsBalanceBefore.Balance.Amount
+	require.True(
+		m.t,
+		arba.GT(arbb),
+		"Allora Rewards module account balance did not increase after a block %s %s",
+		arba.String(),
+		arbb.String(),
+	)
+}
+
+// this file tests that the distribution of funds to validators
+// and rewards accounts is working as expected
+// basically testing the forked mint module that we use
+func DistributionChecks(m TestMetadata) {
+	m.t.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
+	CheckValidatorBalanceGoesUpOnNewBlock(m)
+	m.t.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
+	CheckAlloraRewardsBalanceGoesUpOnNewBlock(m)
 }

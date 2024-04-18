@@ -7,18 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// test that we can get the params from the chain
-// without any strange errors, basically just a chain connection check
-func GetParams(m TestMetadata) {
-	paramsReq := &emissionstypes.QueryParamsRequest{}
-	p, err := m.n.QueryEmissions.Params(
-		m.ctx,
-		paramsReq,
-	)
-	require.NoError(m.t, err)
-	require.NotNil(m.t, p)
-}
-
 // test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m TestMetadata) (topicId uint64) {
 	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(

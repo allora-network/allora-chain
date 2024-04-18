@@ -8,6 +8,7 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	auth "github.com/cosmos/cosmos-sdk/x/auth"
@@ -35,6 +36,7 @@ type Node struct {
 	QueryAuth         authtypes.QueryClient
 	QueryDistribution distributiontypes.QueryClient
 	QueryBank         banktypes.QueryClient
+	QueryMint         minttypes.QueryClient
 	AliceAcc          cosmosaccount.Account
 	BobAcc            cosmosaccount.Account
 	Cdc               codec.Codec
@@ -67,6 +69,7 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 	node.QueryAuth = authtypes.NewQueryClient(node.Client.Context())
 	node.QueryDistribution = distributiontypes.NewQueryClient(node.Client.Context())
 	node.QueryBank = banktypes.NewQueryClient(node.Client.Context())
+	node.QueryMint = minttypes.NewQueryClient(node.Client.Context())
 
 	encCfg := moduletestutil.MakeTestEncodingConfig(
 		mint.AppModuleBasic{},
