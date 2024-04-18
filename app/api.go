@@ -51,7 +51,8 @@ func generateLosses(
 	functionId string,
 	functionMethod string,
 	topicId uint64,
-	nonce emissionstypes.Nonce,
+	blockHeight emissionstypes.Nonce,
+	blockHeightEval emissionstypes.Nonce,
 	blocktime uint64) {
 
 	inferencesPayloadJSON, err := json.Marshal(inferences)
@@ -78,8 +79,12 @@ func generateLosses(
 					Value: strconv.FormatUint(blocktime, 10),
 				},
 				{
-					Name:  "ALLORA_NONCE",
-					Value: strconv.FormatInt(nonce.BlockHeight, 10),
+					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
+					Value: strconv.FormatInt(blockHeight.BlockHeight, 10),
+				},
+				{
+					Name:  "ALLORA_BLOCK_HEIGHT_EVAL",
+					Value: strconv.FormatInt(blockHeightEval.BlockHeight, 10),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
@@ -119,7 +124,7 @@ func generateInferences(
 					Value: param,
 				},
 				{
-					Name:  "ALLORA_NONCE",
+					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
 					Value: strconv.FormatInt(nonce.BlockHeight, 10),
 				},
 			},
