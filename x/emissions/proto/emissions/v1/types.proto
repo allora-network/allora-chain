@@ -121,7 +121,7 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter b for sigmoid function, feducial value = 0.5
-  uint64 gradient_descent_max_iters = 38;  // max number of gradient desscent iterations
+  uint64 gradient_descent_max_iters = 38;  // max number of gradient descent iterations
 }
 
 /// TOPICS
