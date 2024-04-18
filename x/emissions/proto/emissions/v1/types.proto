@@ -169,7 +169,7 @@ message ForecastAttributedValue {
   option (gogoproto.equal) = true;
 
   string forecaster = 1;  // worker who created the forecast
-  string inferer = 2;  // inferer for whom the forecast was made
+  string worker = 2;  // inferer for whom the forecast was made
   string value = 3
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
