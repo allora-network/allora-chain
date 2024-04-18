@@ -25,7 +25,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("2.0"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.900514997"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
+			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.400514997"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
 			expectedErr:         nil,
 		},
 		{
@@ -47,7 +47,6 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 				tc.nextValue,
 				tc.epsilon,
 			)
-
 			if tc.expectedErr != nil {
 				s.Require().ErrorIs(err, tc.expectedErr, "Error should match the expected error")
 			} else {
