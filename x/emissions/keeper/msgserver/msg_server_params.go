@@ -64,9 +64,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.BetaEntropy) == 1 {
 		existingParams.BetaEntropy = newParams.BetaEntropy[0]
 	}
-	if len(newParams.DcoefAbs) == 1 {
-		existingParams.DcoefAbs = newParams.DcoefAbs[0]
-	}
 	if len(newParams.LearningRate) == 1 {
 		existingParams.LearningRate = newParams.LearningRate[0]
 	}

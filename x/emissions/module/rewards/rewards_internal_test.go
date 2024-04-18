@@ -135,15 +135,13 @@ func (s *MathTestSuite) TestNumberRatioEmptyList() {
 }
 
 func (s *MathTestSuite) TestInferenceRewardsSimple() {
-	// T_i = log L naive - log L
-	// 1 = 2 - 1
-	//
-	// X = 0.1 + 0.4 * sigma(a * T_i - b)
-	// 0.5 = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
-	//
-	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
-	// U_i = 0.5 * 8 / 8
-	// U_i = 0.5
+	// T_i = log L naive - log L = 2 - 1 = 1
+	// X = 0.1 + 0.4 * sigma(a * T_i - b) = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
+	// sigma(0.5) = 0.6224593312018959
+	// X = 0.1 + 0.4 * 0.6224593312018959 =	0.3489837324807583
+	// U_i = ((1 - 0.3489837324807583) * 2 * 2 * 2 ) / (2 + 2 + 4)
+	// U_i = 0.6510162675192417 * 8 / 8
+	// U_i = 0.6510162675192417
 	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
@@ -154,8 +152,9 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
+	println("U_i = ", infRewards.String())
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.5"), infRewards, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.6510162675192417"), infRewards, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
@@ -165,7 +164,7 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
-		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.ZeroDec(),                   // E_i
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
@@ -174,9 +173,14 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 }
 
 func (s *MathTestSuite) TestForecastRewardsSimple() {
-	// V_i = (2 * 3 * 4 * 5) / (6 + 4 + 10)
-	// V_i = 120 / 20
-	// V_i = 6
+	// T_i = log L naive - log L = 2 - 1 = 1
+	// X = 0.1 + 0.4 * sigma(a * T_i - b) = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
+	// sigma(0.5) = 0.6224593312018959
+	// X = 0.1 + 0.4 * 0.6224593312018959 =	0.3489837324807583
+	// V_i = (X * γ * G_i * E_i) / (F_i + G_i + H_i)
+	// V_i = (0.3489837324807583 * 2 * 2 * 2 ) / (2 + 2 + 4)
+	// V_i = 0.3489837324807583 * 8 / 8
+	// V_i = 0.3489837324807583
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
@@ -187,8 +191,50 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
+
+	println("V_i = ", result.String())
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.NewDecFromInt64(6.0), result, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.3489837324807583"), result, alloraMath.MustNewDecFromString("0.0001")))
+}
+
+// Cross test of U_i / V_i
+func (s *MathTestSuite) TestU_iOverV_i() {
+	// U_i / V_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i) / (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
+	// U_i / V_i = ((1 - χ) * γ * F_i * E_i ) / (χ * γ * G_i * E_i)
+	// U_i / V_i = ((1 - χ) * F_i ) / (χ  * G_i)
+	// χ = 0.1 + 0.4 * sigma(a * T_i - b) = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
+	// sigma(0.5) = 0.6224593312018959
+	// χ = 0.1 + 0.4 * 0.6224593312018959 =	0.3489837324807583
+	// U_i / V_i = ((1 - 0.3489837324807583) * 2 ) / (0.3489837324807583  * 2)
+	// U_i / V_i = 0.6510162675192417 / 0.3489837324807583 = 1.865
+	U_i, err := rewards.GetRewardForInferenceTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
+	)
+	s.Require().NoError(err)
+
+	V_i, err := rewards.GetRewardForForecastingTaskInTopic(
+		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.NewDecFromInt64(8),          // a
+		alloraMath.MustNewDecFromString("7.5"), // b
+	)
+	s.Require().NoError(err)
+
+	U_iOverV_i, err := U_i.Quo(V_i)
+	s.Require().NoError(err)
+	println("U_iOverV_i = ", U_iOverV_i.String())
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("1.865"), U_iOverV_i, alloraMath.MustNewDecFromString("0.001")))
 }
 
 func (s *MathTestSuite) TestForecastRewardsZero() {
@@ -198,12 +244,13 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
-		alloraMath.MustNewDecFromString("2.0"), // E_i
+		alloraMath.ZeroDec(),                   // E_i
 		alloraMath.NewDecFromInt64(8),          // a
 		alloraMath.MustNewDecFromString("7.5"), // b
 	)
+
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.ZeroDec()))
 }
 
 func (s *MathTestSuite) TestReputerRewardSimple() {
@@ -236,14 +283,14 @@ func (s *MathTestSuite) TestForecastingPerformanceScoreSimple() {
 	naiveNetworkInferenceLoss := alloraMath.MustNewDecFromString("1000.0")
 	score, err := rewards.ForecastingPerformanceScore(naiveNetworkInferenceLoss, networkInferenceLoss)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.OneDec(), score, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("900.0"), score, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestSigmoidSimple() {
-	x := alloraMath.MustNewDecFromString("0.5")
+	x := alloraMath.MustNewDecFromString("-4")
 	result, err := rewards.Sigmoid(x)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.6224593312018546"), result, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.01798621"), result, alloraMath.MustNewDecFromString("0.00000001")))
 }
 
 func (s *MathTestSuite) TestForecastingUtilitySimple() {

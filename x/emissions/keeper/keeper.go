@@ -317,8 +317,14 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 		return false, err
 	}
 
+	if nonce == nil {
+		return false, errors.New("nil nonce provided")
+	}
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
+		if n == nil {
+			return false, errors.New("nil nonce stored")
+		}
 		if n.BlockHeight == nonce.BlockHeight {
 			return true, nil
 		}
