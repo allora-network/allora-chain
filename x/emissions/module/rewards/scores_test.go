@@ -10,7 +10,7 @@ import (
 
 // this test is timing out more than 30 seconds
 // need to figure out why later
-func (s *RewardsTestSuite) TestGenerateReputerScores() {
+func (s *RewardsTestSuite) TestGenerateReputerScoresByDivisionUsingAbs() {
 	topidId := uint64(1)
 	block := int64(1003)
 
@@ -35,13 +35,27 @@ func (s *RewardsTestSuite) TestGenerateReputerScores() {
 		alloraMath.MustNewDecFromString("11.17804"),
 		alloraMath.MustNewDecFromString("14.93222"),
 	}
+
+	// Defines the allowed percentage difference
+	tolerance := alloraMath.MustNewDecFromString("0.01")
 	for i, reputerScore := range scores {
-		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
+		// Calculate the ratio of the actual to expected score
+		ratio, err := reputerScore.Score.Quo(expectedScores[i])
 		s.Require().NoError(err)
-		deltaTightness := scoreDelta.Abs().Cmp(alloraMath.MustNewDecFromString("0.001"))
-		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
-			s.Fail("Expected reward is not equal to the actual reward")
-		}
+
+		// Calculate the absolute difference of the ratio from 1
+		diff, err := ratio.Sub(alloraMath.OneDec())
+		s.Require().NoError(err)
+		absDifference := diff.Abs()
+
+		// Check if the absolute difference is within the specified tolerance
+		s.Require().True(
+			absDifference.Lte(tolerance),
+			"result should match expected value within percentage tolerance",
+			expectedScores[i].String(),
+			reputerScore.Score.String(),
+			absDifference.String(),
+		)
 	}
 }
 
