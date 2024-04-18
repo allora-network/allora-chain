@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -80,7 +81,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences
-			if blockNumber-topic.EpochLastEnded >= topic.EpochLength {
+			if blockNumber == topic.EpochLastEnded+topic.EpochLength ||
+				blockNumber-topic.EpochLastEnded >= 2*topic.EpochLength {
 				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
@@ -91,6 +93,16 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
 				}
+				// Add Worker Nonces
+				nextNonce := emissionstypes.Nonce{BlockHeight: blockNumber + topic.EpochLength}
+				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
+				if err != nil {
+					fmt.Println("Error adding worker nonce: ", err)
+					return
+				}
+				// Add Reputer Nonces
+				previousNonce := emissionstypes.Nonce{BlockHeight: blockNumber}
+				err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &nextNonce, &previousNonce)
 			}
 		}(topic)
 	}
