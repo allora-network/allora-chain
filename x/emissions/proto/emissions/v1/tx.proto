@@ -140,8 +140,8 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string sigmoid_b = 37
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_retries_to_fulfil_nonces_worker = 38;  // max number of retries to unfulfilled nonces (worker)
-  repeated uint64 max_retries_to_fulfil_nonces_reputer = 39;  // max number of retries to unfulfilled nonces (reputer)
+  repeated int64 max_retries_to_fulfil_nonces_worker = 38;  // max number of retries to unfulfilled nonces (worker)
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 39;  // max number of retries to unfulfilled nonces (reputer)
   }
 
 message MsgUpdateParams {

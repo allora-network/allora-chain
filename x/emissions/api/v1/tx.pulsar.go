@@ -1721,7 +1721,7 @@ func (x *_OptionalParams_37_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_38_list)(nil)
 
 type _OptionalParams_38_list struct {
-	list *[]uint64
+	list *[]int64
 }
 
 func (x *_OptionalParams_38_list) Len() int {
@@ -1732,17 +1732,17 @@ func (x *_OptionalParams_38_list) Len() int {
 }
 
 func (x *_OptionalParams_38_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfInt64((*x.list)[i])
 }
 
 func (x *_OptionalParams_38_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_38_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1756,8 +1756,8 @@ func (x *_OptionalParams_38_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_38_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := int64(0)
+	return protoreflect.ValueOfInt64(v)
 }
 
 func (x *_OptionalParams_38_list) IsValid() bool {
@@ -1767,7 +1767,7 @@ func (x *_OptionalParams_38_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_39_list)(nil)
 
 type _OptionalParams_39_list struct {
-	list *[]uint64
+	list *[]int64
 }
 
 func (x *_OptionalParams_39_list) Len() int {
@@ -1778,17 +1778,17 @@ func (x *_OptionalParams_39_list) Len() int {
 }
 
 func (x *_OptionalParams_39_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfInt64((*x.list)[i])
 }
 
 func (x *_OptionalParams_39_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_39_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1802,8 +1802,8 @@ func (x *_OptionalParams_39_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_39_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := int64(0)
+	return protoreflect.ValueOfInt64(v)
 }
 
 func (x *_OptionalParams_39_list) IsValid() bool {
@@ -3053,13 +3053,13 @@ func (x *fastReflection_OptionalParams) Mutable(fd protoreflect.FieldDescriptor)
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.max_retries_to_fulfil_nonces_worker":
 		if x.MaxRetriesToFulfilNoncesWorker == nil {
-			x.MaxRetriesToFulfilNoncesWorker = []uint64{}
+			x.MaxRetriesToFulfilNoncesWorker = []int64{}
 		}
 		value := &_OptionalParams_38_list{list: &x.MaxRetriesToFulfilNoncesWorker}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.max_retries_to_fulfil_nonces_reputer":
 		if x.MaxRetriesToFulfilNoncesReputer == nil {
-			x.MaxRetriesToFulfilNoncesReputer = []uint64{}
+			x.MaxRetriesToFulfilNoncesReputer = []int64{}
 		}
 		value := &_OptionalParams_39_list{list: &x.MaxRetriesToFulfilNoncesReputer}
 		return protoreflect.ValueOfList(value)
@@ -3188,10 +3188,10 @@ func (x *fastReflection_OptionalParams) NewField(fd protoreflect.FieldDescriptor
 		list := []string{}
 		return protoreflect.ValueOfList(&_OptionalParams_37_list{list: &list})
 	case "emissions.v1.OptionalParams.max_retries_to_fulfil_nonces_worker":
-		list := []uint64{}
+		list := []int64{}
 		return protoreflect.ValueOfList(&_OptionalParams_38_list{list: &list})
 	case "emissions.v1.OptionalParams.max_retries_to_fulfil_nonces_reputer":
-		list := []uint64{}
+		list := []int64{}
 		return protoreflect.ValueOfList(&_OptionalParams_39_list{list: &list})
 	default:
 		if fd.IsExtension() {
@@ -3549,7 +3549,8 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 			i -= pksize2
 			j1 := i
-			for _, num := range x.MaxRetriesToFulfilNoncesReputer {
+			for _, num1 := range x.MaxRetriesToFulfilNoncesReputer {
+				num := uint64(num1)
 				for num >= 1<<7 {
 					dAtA[j1] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
@@ -3571,7 +3572,8 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 			i -= pksize4
 			j3 := i
-			for _, num := range x.MaxRetriesToFulfilNoncesWorker {
+			for _, num1 := range x.MaxRetriesToFulfilNoncesWorker {
+				num := uint64(num1)
 				for num >= 1<<7 {
 					dAtA[j3] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
@@ -6028,7 +6030,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 38:
 				if wireType == 0 {
-					var v uint64
+					var v int64
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -6038,7 +6040,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= uint64(b&0x7F) << shift
+						v |= int64(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -6079,10 +6081,10 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 					}
 					elementCount = count
 					if elementCount != 0 && len(x.MaxRetriesToFulfilNoncesWorker) == 0 {
-						x.MaxRetriesToFulfilNoncesWorker = make([]uint64, 0, elementCount)
+						x.MaxRetriesToFulfilNoncesWorker = make([]int64, 0, elementCount)
 					}
 					for iNdEx < postIndex {
-						var v uint64
+						var v int64
 						for shift := uint(0); ; shift += 7 {
 							if shift >= 64 {
 								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -6092,7 +6094,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 							}
 							b := dAtA[iNdEx]
 							iNdEx++
-							v |= uint64(b&0x7F) << shift
+							v |= int64(b&0x7F) << shift
 							if b < 0x80 {
 								break
 							}
@@ -6104,7 +6106,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 			case 39:
 				if wireType == 0 {
-					var v uint64
+					var v int64
 					for shift := uint(0); ; shift += 7 {
 						if shift >= 64 {
 							return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -6114,7 +6116,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 						}
 						b := dAtA[iNdEx]
 						iNdEx++
-						v |= uint64(b&0x7F) << shift
+						v |= int64(b&0x7F) << shift
 						if b < 0x80 {
 							break
 						}
@@ -6155,10 +6157,10 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 					}
 					elementCount = count
 					if elementCount != 0 && len(x.MaxRetriesToFulfilNoncesReputer) == 0 {
-						x.MaxRetriesToFulfilNoncesReputer = make([]uint64, 0, elementCount)
+						x.MaxRetriesToFulfilNoncesReputer = make([]int64, 0, elementCount)
 					}
 					for iNdEx < postIndex {
-						var v uint64
+						var v int64
 						for shift := uint(0); ; shift += 7 {
 							if shift >= 64 {
 								return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -6168,7 +6170,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 							}
 							b := dAtA[iNdEx]
 							iNdEx++
-							v |= uint64(b&0x7F) << shift
+							v |= int64(b&0x7F) << shift
 							if b < 0x80 {
 								break
 							}
@@ -28021,8 +28023,8 @@ type OptionalParams struct {
 	CreateTopicFee                  []string `protobuf:"bytes,35,rep,name=create_topic_fee,json=createTopicFee,proto3" json:"create_topic_fee,omitempty"`
 	SigmoidA                        []string `protobuf:"bytes,36,rep,name=sigmoid_a,json=sigmoidA,proto3" json:"sigmoid_a,omitempty"`
 	SigmoidB                        []string `protobuf:"bytes,37,rep,name=sigmoid_b,json=sigmoidB,proto3" json:"sigmoid_b,omitempty"`
-	MaxRetriesToFulfilNoncesWorker  []uint64 `protobuf:"varint,38,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`    // max number of retries to unfulfilled nonces (worker)
-	MaxRetriesToFulfilNoncesReputer []uint64 `protobuf:"varint,39,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"` // max number of retries to unfulfilled nonces (reputer)
+	MaxRetriesToFulfilNoncesWorker  []int64  `protobuf:"varint,38,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`    // max number of retries to unfulfilled nonces (worker)
+	MaxRetriesToFulfilNoncesReputer []int64  `protobuf:"varint,39,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"` // max number of retries to unfulfilled nonces (reputer)
 }
 
 func (x *OptionalParams) Reset() {
@@ -28304,14 +28306,14 @@ func (x *OptionalParams) GetSigmoidB() []string {
 	return nil
 }
 
-func (x *OptionalParams) GetMaxRetriesToFulfilNoncesWorker() []uint64 {
+func (x *OptionalParams) GetMaxRetriesToFulfilNoncesWorker() []int64 {
 	if x != nil {
 		return x.MaxRetriesToFulfilNoncesWorker
 	}
 	return nil
 }
 
-func (x *OptionalParams) GetMaxRetriesToFulfilNoncesReputer() []uint64 {
+func (x *OptionalParams) GetMaxRetriesToFulfilNoncesReputer() []int64 {
 	if x != nil {
 		return x.MaxRetriesToFulfilNoncesReputer
 	}
@@ -30414,12 +30416,12 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x65, 0x63, 0x52, 0x08, 0x73, 0x69, 0x67, 0x6d, 0x6f, 0x69, 0x64, 0x42, 0x12, 0x4b, 0x0a, 0x23,
 	0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66,
 	0x75, 0x6c, 0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x77, 0x6f, 0x72,
-	0x6b, 0x65, 0x72, 0x18, 0x26, 0x20, 0x03, 0x28, 0x04, 0x52, 0x1e, 0x6d, 0x61, 0x78, 0x52, 0x65,
+	0x6b, 0x65, 0x72, 0x18, 0x26, 0x20, 0x03, 0x28, 0x03, 0x52, 0x1e, 0x6d, 0x61, 0x78, 0x52, 0x65,
 	0x74, 0x72, 0x69, 0x65, 0x73, 0x54, 0x6f, 0x46, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x4e, 0x6f, 0x6e,
 	0x63, 0x65, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x12, 0x4d, 0x0a, 0x24, 0x6d, 0x61, 0x78,
 	0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c, 0x66,
 	0x69, 0x6c, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65,
-	0x72, 0x18, 0x27, 0x20, 0x03, 0x28, 0x04, 0x52, 0x1f, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72,
+	0x72, 0x18, 0x27, 0x20, 0x03, 0x28, 0x03, 0x52, 0x1f, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72,
 	0x69, 0x65, 0x73, 0x54, 0x6f, 0x46, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x4e, 0x6f, 0x6e, 0x63, 0x65,
 	0x73, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x22, 0x6c, 0x0a, 0x0f, 0x4d, 0x73, 0x67, 0x55,
 	0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x73,

@@ -389,14 +389,14 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
-	if x.MaxRetriesToFulfilNoncesWorker != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxRetriesToFulfilNoncesWorker)
+	if x.MaxRetriesToFulfilNoncesWorker != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MaxRetriesToFulfilNoncesWorker)
 		if !f(fd_Params_max_retries_to_fulfil_nonces_worker, value) {
 			return
 		}
 	}
-	if x.MaxRetriesToFulfilNoncesReputer != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxRetriesToFulfilNoncesReputer)
+	if x.MaxRetriesToFulfilNoncesReputer != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MaxRetriesToFulfilNoncesReputer)
 		if !f(fd_Params_max_retries_to_fulfil_nonces_reputer, value) {
 			return
 		}
@@ -491,9 +491,9 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	case "emissions.v1.Params.sigmoid_b":
 		return x.SigmoidB != ""
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_worker":
-		return x.MaxRetriesToFulfilNoncesWorker != uint64(0)
+		return x.MaxRetriesToFulfilNoncesWorker != int64(0)
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_reputer":
-		return x.MaxRetriesToFulfilNoncesReputer != uint64(0)
+		return x.MaxRetriesToFulfilNoncesReputer != int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -585,9 +585,9 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	case "emissions.v1.Params.sigmoid_b":
 		x.SigmoidB = ""
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_worker":
-		x.MaxRetriesToFulfilNoncesWorker = uint64(0)
+		x.MaxRetriesToFulfilNoncesWorker = int64(0)
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_reputer":
-		x.MaxRetriesToFulfilNoncesReputer = uint64(0)
+		x.MaxRetriesToFulfilNoncesReputer = int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -717,10 +717,10 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 		return protoreflect.ValueOfString(value)
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_worker":
 		value := x.MaxRetriesToFulfilNoncesWorker
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_reputer":
 		value := x.MaxRetriesToFulfilNoncesReputer
-		return protoreflect.ValueOfUint64(value)
+		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -816,9 +816,9 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 	case "emissions.v1.Params.sigmoid_b":
 		x.SigmoidB = value.Interface().(string)
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_worker":
-		x.MaxRetriesToFulfilNoncesWorker = value.Uint()
+		x.MaxRetriesToFulfilNoncesWorker = value.Int()
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_reputer":
-		x.MaxRetriesToFulfilNoncesReputer = value.Uint()
+		x.MaxRetriesToFulfilNoncesReputer = value.Int()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -1005,9 +1005,9 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.sigmoid_b":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_worker":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Params.max_retries_to_fulfil_nonces_reputer":
-		return protoreflect.ValueOfUint64(uint64(0))
+		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -2584,7 +2584,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxRetriesToFulfilNoncesWorker |= uint64(b&0x7F) << shift
+					x.MaxRetriesToFulfilNoncesWorker |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -2603,7 +2603,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.MaxRetriesToFulfilNoncesReputer |= uint64(b&0x7F) << shift
+					x.MaxRetriesToFulfilNoncesReputer |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -21632,8 +21632,8 @@ type Params struct {
 	CreateTopicFee                  string `protobuf:"bytes,35,opt,name=create_topic_fee,json=createTopicFee,proto3" json:"create_topic_fee,omitempty"`                                                           // topic registration fee
 	SigmoidA                        string `protobuf:"bytes,36,opt,name=sigmoid_a,json=sigmoidA,proto3" json:"sigmoid_a,omitempty"`                                                                               // parameter a for sigmoid function, fiducial value = 8
 	SigmoidB                        string `protobuf:"bytes,37,opt,name=sigmoid_b,json=sigmoidB,proto3" json:"sigmoid_b,omitempty"`                                                                               // parameter b for sigmoid function, fiducial value = 0.5
-	MaxRetriesToFulfilNoncesWorker  uint64 `protobuf:"varint,38,opt,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`    // max number of retries to unfulfilled nonces (worker)
-	MaxRetriesToFulfilNoncesReputer uint64 `protobuf:"varint,39,opt,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"` // max number of retries to unfulfilled nonces (reputer)
+	MaxRetriesToFulfilNoncesWorker  int64  `protobuf:"varint,38,opt,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`    // max number of retries to unfulfilled nonces (worker)
+	MaxRetriesToFulfilNoncesReputer int64  `protobuf:"varint,39,opt,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"` // max number of retries to unfulfilled nonces (reputer)
 }
 
 func (x *Params) Reset() {
@@ -21915,14 +21915,14 @@ func (x *Params) GetSigmoidB() string {
 	return ""
 }
 
-func (x *Params) GetMaxRetriesToFulfilNoncesWorker() uint64 {
+func (x *Params) GetMaxRetriesToFulfilNoncesWorker() int64 {
 	if x != nil {
 		return x.MaxRetriesToFulfilNoncesWorker
 	}
 	return 0
 }
 
-func (x *Params) GetMaxRetriesToFulfilNoncesReputer() uint64 {
+func (x *Params) GetMaxRetriesToFulfilNoncesReputer() int64 {
 	if x != nil {
 		return x.MaxRetriesToFulfilNoncesReputer
 	}
@@ -23850,11 +23850,11 @@ var file_emissions_v1_types_proto_rawDesc = []byte{
 	0x6f, 0x69, 0x64, 0x42, 0x12, 0x4b, 0x0a, 0x23, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72,
 	0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f,
 	0x6e, 0x63, 0x65, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x18, 0x26, 0x20, 0x01, 0x28,
-	0x04, 0x52, 0x1e, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x54, 0x6f, 0x46,
+	0x03, 0x52, 0x1e, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x54, 0x6f, 0x46,
 	0x75, 0x6c, 0x66, 0x69, 0x6c, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65,
 	0x72, 0x12, 0x4d, 0x0a, 0x24, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73,
 	0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-	0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x27, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x27, 0x20, 0x01, 0x28, 0x03, 0x52,
 	0x1f, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x54, 0x6f, 0x46, 0x75, 0x6c,
 	0x66, 0x69, 0x6c, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72,
 	0x22, 0x89, 0x07, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,

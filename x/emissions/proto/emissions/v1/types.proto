@@ -121,8 +121,8 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter b for sigmoid function, fiducial value = 0.5
-  uint64 max_retries_to_fulfil_nonces_worker = 38;  // max number of retries to unfulfilled nonces (worker)
-  uint64 max_retries_to_fulfil_nonces_reputer = 39;  // max number of retries to unfulfilled nonces (reputer)
+  int64 max_retries_to_fulfil_nonces_worker = 38;  // max number of retries to unfulfilled nonces (worker)
+  int64 max_retries_to_fulfil_nonces_reputer = 39;  // max number of retries to unfulfilled nonces (reputer)
 }
 
 /// TOPICS
