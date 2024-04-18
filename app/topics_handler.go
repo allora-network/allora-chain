@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"sort"
 	"sync"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -43,15 +42,7 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, block
 	return previousBlockApproxTime, nil
 }
 
-func sortAndSelectTopNReputerNonces(reputerRequestNonces *emissionstypes.ReputerRequestNonces, N int) []*emissionstypes.ReputerRequestNonce {
-	// Define a custom sorting function
-	sorter := func(i, j int) bool {
-		return reputerRequestNonces.Nonces[i].ReputerNonce.BlockHeight > reputerRequestNonces.Nonces[j].ReputerNonce.BlockHeight
-	}
-
-	// Sort the nonces slice using the custom sorting function
-	sort.Slice(reputerRequestNonces.Nonces, sorter)
-
+func selectTopNReputerNonces(reputerRequestNonces *emissionstypes.ReputerRequestNonces, N int) []*emissionstypes.ReputerRequestNonce {
 	// Select the top N latest elements
 	var topN []*emissionstypes.ReputerRequestNonce
 	if len(reputerRequestNonces.Nonces) <= N {
@@ -62,15 +53,7 @@ func sortAndSelectTopNReputerNonces(reputerRequestNonces *emissionstypes.Reputer
 	return topN
 }
 
-func sortAndSelectTopNWorkerNonces(workerNonces emissionstypes.Nonces, N int) []*emissionstypes.Nonce {
-	// Define a custom sorting function
-	sorter := func(i, j int) bool {
-		return workerNonces.Nonces[i].BlockHeight > workerNonces.Nonces[j].BlockHeight
-	}
-
-	// Sort the nonces slice using the custom sorting function
-	sort.Slice(workerNonces.Nonces, sorter)
-
+func selectTopNWorkerNonces(workerNonces emissionstypes.Nonces, N int) []*emissionstypes.Nonce {
 	// Select the top N latest elements
 	var topN []*emissionstypes.Nonce
 	if len(workerNonces.Nonces) <= N {
@@ -117,7 +100,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
 						fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
 					}
-					sortedWorkerNonces := sortAndSelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
+					sortedWorkerNonces := selectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
 					fmt.Println("Iterating Top N Worker Nonces: ", len(sortedWorkerNonces))
 					// iterate over all the worker nonces to find if this is unfulfilled
 					for _, nonce := range sortedWorkerNonces {
@@ -140,7 +123,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
 						maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 					}
-					topNReputerNonces := sortAndSelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
+					topNReputerNonces := selectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
 					fmt.Println("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
 					// iterate over all the reputer nonces to find if this is unfulfilled
 					for _, nonce := range topNReputerNonces {
