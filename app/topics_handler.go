@@ -85,8 +85,6 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
-		currentNonce := emissionstypes.Nonce{BlockHeight: currentBlockHeight}
-
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting active topics and met demand: ", err)
@@ -114,29 +112,22 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting worker nonces: ", err)
 						return
 					}
-					sortedWorkerNonces := sortAndSelectTopNWorkerNonces(workerNonces, 10)
-
+					maxRetriesToFulfilNoncesWorker, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+					if err != nil {
+						maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
+						fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+					}
+					sortedWorkerNonces := sortAndSelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
+					fmt.Println("Iterating Top N Worker Nonces: ", len(sortedWorkerNonces))
 					// iterate over all the worker nonces to find if this is unfulfilled
 					for _, nonce := range sortedWorkerNonces {
-						currentNonce := nonce
-						fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", currentNonce)
-						go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, *currentNonce)
+						nonceCopy := nonce
+						fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", nonceCopy)
+						go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, *nonceCopy)
 					}
 
 					// REPUTER
 					// Get previous topic height to repute
-					previousBlockHeight := topic.EpochLastEnded
-					if previousBlockHeight < 0 {
-						fmt.Println("Previous block height is less than 0, skipping")
-						return
-					}
-					previousToPreviousBlockHeight := previousBlockHeight - topic.EpochLength
-					if previousBlockHeight < 0 {
-						fmt.Println("Previous to previous block height is less than 0, skipping")
-						return
-					} else {
-						fmt.Println("Previous block height: ", previousBlockHeight, "Previous to previous block height: ", previousToPreviousBlockHeight)
-					}
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
 					reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
@@ -144,14 +135,17 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting reputer nonces: ", err)
 						return
 					}
-					topNReputerNonces := sortAndSelectTopNReputerNonces(&reputerNonces, 10)
-
+					maxRetriesToFulfilNoncesReputer, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+					if err != nil {
+						fmt.Println("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
+						maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
+					}
+					topNReputerNonces := sortAndSelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
+					fmt.Println("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
 					// iterate over all the reputer nonces to find if this is unfulfilled
 					for _, nonce := range topNReputerNonces {
 						nonceCopy := nonce
-						// reputerBlockHeight := nonce.ReputerNonce.BlockHeight
-						// workerBlockHeight := nonce.WorkerNonce.BlockHeight
-						fmt.Println("Current Reputer block height has been found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight)
+						fmt.Println("Current Reputer block height has been found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
 						reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
 						if err != nil {
 							fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)

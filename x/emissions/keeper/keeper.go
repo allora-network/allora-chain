@@ -654,6 +654,22 @@ func (k *Keeper) GetParamsTopicCreationFee(ctx context.Context) (cosmosMath.Int,
 	return params.CreateTopicFee, nil
 }
 
+func (k *Keeper) GetParamsMaxRetriesToFulfilNoncesWorker(ctx context.Context) (int64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxRetriesToFulfilNoncesWorker, nil
+}
+
+func (k *Keeper) GetParamsMaxRetriesToFulfilNoncesReputer(ctx context.Context) (int64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxRetriesToFulfilNoncesReputer, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
