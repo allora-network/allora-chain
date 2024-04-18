@@ -136,6 +136,13 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.SigmoidB) == 1 {
 		existingParams.SigmoidB = newParams.SigmoidB[0]
 	}
+	if len(newParams.MaxRetriesToFulfilNoncesWorker) == 1 {
+		existingParams.MaxRetriesToFulfilNoncesWorker = newParams.MaxRetriesToFulfilNoncesWorker[0]
+	}
+	if len(newParams.MaxRetriesToFulfilNoncesReputer) == 1 {
+		existingParams.MaxRetriesToFulfilNoncesReputer = newParams.MaxRetriesToFulfilNoncesReputer[0]
+	}
+
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err
