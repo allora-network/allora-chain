@@ -19,5 +19,8 @@ jobs:
     - name: Init
       run: make init
     
+    - name: PostInit
+      run: bash ./integration/postinit.sh
+    
     - name: IntegrationTest
       run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v
