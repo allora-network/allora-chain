@@ -281,7 +281,6 @@ func CalcCombinedNetworkLoss(
 		fmt.Println("Error exponentiating combined loss: ", err)
 		return alloraMath.ZeroDec(), err
 	}
-	runningWeightedCombinedLoss.Loss = expRunningWeightedCombinedLoss
 
-	return runningWeightedCombinedLoss.Loss, nil
+	return expRunningWeightedCombinedLoss, nil
 }
