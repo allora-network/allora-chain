@@ -21582,7 +21582,7 @@ type Params struct {
 	CreateTopicFee          string `protobuf:"bytes,35,opt,name=create_topic_fee,json=createTopicFee,proto3" json:"create_topic_fee,omitempty"`                               // topic registration fee
 	SigmoidA                string `protobuf:"bytes,36,opt,name=sigmoid_a,json=sigmoidA,proto3" json:"sigmoid_a,omitempty"`                                                   // parameter a for sigmoid function, feducial value = 8
 	SigmoidB                string `protobuf:"bytes,37,opt,name=sigmoid_b,json=sigmoidB,proto3" json:"sigmoid_b,omitempty"`                                                   // parameter b for sigmoid function, feducial value = 0.5
-	GradientDescentMaxIters uint64 `protobuf:"varint,38,opt,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"` // max number of gradient desscent iterations
+	GradientDescentMaxIters uint64 `protobuf:"varint,38,opt,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"` // max number of gradient descent iterations
 }
 
 func (x *Params) Reset() {
