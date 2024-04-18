@@ -814,6 +814,38 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
 }
 
+func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(5) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxRetriesToFulfilNoncesWorker: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesWorker should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(5) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxRetriesToFulfilNoncesReputer: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
+}
+
 func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
