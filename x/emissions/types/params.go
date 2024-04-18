@@ -48,6 +48,8 @@ func DefaultParams() Params {
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
+		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
+		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 	}
 }
 
@@ -197,6 +199,14 @@ func DefaultParamsSigmoidA() alloraMath.Dec {
 
 func DefaultParamsSigmoidB() alloraMath.Dec {
 	return DefaultParams().SigmoidB
+}
+
+func DefaultParamsMaxRetriesToFulfilNoncesWorker() int64 {
+	return DefaultParams().MaxRetriesToFulfilNoncesWorker
+}
+
+func DefaultParamsMaxRetriesToFulfilNoncesReputer() int64 {
+	return DefaultParams().MaxRetriesToFulfilNoncesReputer
 }
 
 // Validate does the sanity check on the params.

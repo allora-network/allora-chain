@@ -174,7 +174,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 
 	// Check that all the expected nonces are present and correct
 	for i, nonce := range retrievedNonces.Nonces {
-		s.Require().Equal(nonceValues[i], nonce.BlockHeight, "Nonce value should match the expected value")
+		s.Require().Equal(nonceValues[len(nonceValues)-i-1], nonce.BlockHeight, "Nonce value should match the expected value")
 	}
 }
 
@@ -209,7 +209,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
 
 	// Check that all the expected unfulfilled nonces are present and correct
-	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
+	expectedUnfulfilled := []int64{46, 44, 42} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
 		s.Require().Equal(expectedUnfulfilled[i], nonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
@@ -242,7 +242,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
 
 	// Check that the nonces are the most recent ones
-	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
+	expectedNonces := []int64{50, 40, 30} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
 		s.Require().Equal(expectedNonces[i], nonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
@@ -362,7 +362,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
 
 	// Check that all the expected unfulfilled nonces are present and correct
-	expectedUnfulfilled := []int64{42, 44, 46} // Expected remaining unfulfilled nonces
+	expectedUnfulfilled := []int64{46, 44, 42} // Expected remaining unfulfilled nonces
 	for i, nonce := range retrievedNonces.Nonces {
 		s.Require().Equal(expectedUnfulfilled[i], nonce.ReputerNonce.BlockHeight, "Remaining nonce value should match the expected unfulfilled value")
 	}
@@ -396,7 +396,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
 
 	// Check that the nonces are the most recent ones
-	expectedNonces := []int64{30, 40, 50} // These should be the last three nonces added
+	expectedNonces := []int64{50, 40, 30} // These should be the last three nonces added
 	for i, nonce := range unfulfilledNonces.Nonces {
 		s.Require().Equal(expectedNonces[i], nonce.ReputerNonce.BlockHeight, "Nonce should match the expected recent nonce")
 	}
@@ -859,6 +859,38 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
 	actualValue, err := keeper.GetParamsMaxTopWorkersToReward(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(5) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxRetriesToFulfilNoncesWorker: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesWorker should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(5) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxRetriesToFulfilNoncesReputer: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
