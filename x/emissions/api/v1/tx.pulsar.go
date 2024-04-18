@@ -28023,8 +28023,8 @@ type OptionalParams struct {
 	CreateTopicFee                  []string `protobuf:"bytes,35,rep,name=create_topic_fee,json=createTopicFee,proto3" json:"create_topic_fee,omitempty"`
 	SigmoidA                        []string `protobuf:"bytes,36,rep,name=sigmoid_a,json=sigmoidA,proto3" json:"sigmoid_a,omitempty"`
 	SigmoidB                        []string `protobuf:"bytes,37,rep,name=sigmoid_b,json=sigmoidB,proto3" json:"sigmoid_b,omitempty"`
-	MaxRetriesToFulfilNoncesWorker  []int64  `protobuf:"varint,38,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`    // max number of retries to unfulfilled nonces (worker)
-	MaxRetriesToFulfilNoncesReputer []int64  `protobuf:"varint,39,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"` // max number of retries to unfulfilled nonces (reputer)
+	MaxRetriesToFulfilNoncesWorker  []int64  `protobuf:"varint,38,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`
+	MaxRetriesToFulfilNoncesReputer []int64  `protobuf:"varint,39,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"`
 }
 
 func (x *OptionalParams) Reset() {
