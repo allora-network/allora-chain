@@ -28,6 +28,7 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkee
 	}
 }
 
+// Calculate approximate time for the previous block as epoch timestamp
 func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, blockDifference int64) (uint64, error) {
 	mintParams, err := th.mintKeeper.GetParams(ctx)
 	if err != nil {
@@ -41,12 +42,32 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, block
 	return previousBlockApproxTime, nil
 }
 
+func selectTopNReputerNonces(reputerRequestNonces *emissionstypes.ReputerRequestNonces, N int) []*emissionstypes.ReputerRequestNonce {
+	// Select the top N latest elements
+	var topN []*emissionstypes.ReputerRequestNonce
+	if len(reputerRequestNonces.Nonces) <= N {
+		topN = reputerRequestNonces.Nonces
+	} else {
+		topN = reputerRequestNonces.Nonces[:N]
+	}
+	return topN
+}
+
+func selectTopNWorkerNonces(workerNonces emissionstypes.Nonces, N int) []*emissionstypes.Nonce {
+	// Select the top N latest elements
+	var topN []*emissionstypes.Nonce
+	if len(workerNonces.Nonces) <= N {
+		topN = workerNonces.Nonces
+	} else {
+		topN = workerNonces.Nonces[:N]
+	}
+	return topN
+}
+
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
-		currentNonce := emissionstypes.Nonce{BlockHeight: currentBlockHeight}
-
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting active topics and met demand: ", err)
@@ -74,28 +95,22 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting worker nonces: ", err)
 						return
 					}
+					maxRetriesToFulfilNoncesWorker, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+					if err != nil {
+						maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
+						fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+					}
+					sortedWorkerNonces := selectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
+					fmt.Println("Iterating Top N Worker Nonces: ", len(sortedWorkerNonces))
 					// iterate over all the worker nonces to find if this is unfulfilled
-					for _, nonce := range workerNonces.Nonces {
-						if nonce.BlockHeight == currentBlockHeight {
-							fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", currentNonce)
-							go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, currentNonce)
-						}
+					for _, nonce := range sortedWorkerNonces {
+						nonceCopy := nonce
+						fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", nonceCopy)
+						go generateInferences(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, *nonceCopy)
 					}
 
 					// REPUTER
 					// Get previous topic height to repute
-					previousBlockHeight := topic.EpochLastEnded
-					if previousBlockHeight < 0 {
-						fmt.Println("Previous block height is less than 0, skipping")
-						return
-					}
-					previousToPreviousBlockHeight := previousBlockHeight - topic.EpochLength
-					if previousBlockHeight < 0 {
-						fmt.Println("Previous to previous block height is less than 0, skipping")
-						return
-					} else {
-						fmt.Println("Previous block height: ", previousBlockHeight, "Previous to previous block height: ", previousToPreviousBlockHeight)
-					}
 					fmt.Printf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
 					reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
@@ -103,41 +118,38 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						fmt.Println("Error getting reputer nonces: ", err)
 						return
 					}
-
+					maxRetriesToFulfilNoncesReputer, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+					if err != nil {
+						fmt.Println("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
+						maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
+					}
+					topNReputerNonces := selectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
+					fmt.Println("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
 					// iterate over all the reputer nonces to find if this is unfulfilled
-					for _, nonce := range reputerNonces.Nonces {
-						if nonce.ReputerNonce.BlockHeight == previousBlockHeight &&
-							nonce.WorkerNonce.BlockHeight == previousToPreviousBlockHeight {
-							fmt.Println("Current Reputer block height has been found unfulfilled, requesting reputers for block ", previousBlockHeight)
-							reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, previousBlockHeight)
-							if err != nil {
-								fmt.Println("Error getting latest inferences at block: ", previousBlockHeight, ", error: ", err)
-								continue
-							}
-							if reputerValueBundle == nil {
-								fmt.Println("Reputer value bundle is nil, skipping")
-								continue
-							}
-							blockDifference := currentBlockHeight - inferencesBlockHeight
-							previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
-							if err != nil {
-								fmt.Println("Error calculating previous block approx time: ", err)
-								continue
-							}
-							// Get approximated time of the previous block
-							reputerNonce := emissionstypes.Nonce{BlockHeight: previousBlockHeight}
-							workerNonce := emissionstypes.Nonce{BlockHeight: previousToPreviousBlockHeight}
-							// print the request of loss generation
-							fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", reputerNonce, "worker nonce: ", workerNonce, "previous block approx time: ", previousBlockApproxTime)
-							go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, reputerNonce, workerNonce, previousBlockApproxTime)
-						} else {
-							fmt.Println("Reputer nonce not met: (", nonce.ReputerNonce.BlockHeight, ",", nonce.WorkerNonce.BlockHeight, ") for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength)
+					for _, nonce := range topNReputerNonces {
+						nonceCopy := nonce
+						fmt.Println("Reputer block height found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
+						reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
+						if err != nil {
+							fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
+							continue
 						}
+						if reputerValueBundle == nil {
+							fmt.Println("Reputer value bundle is nil, skipping")
+							continue
+						}
+						blockDifference := currentBlockHeight - inferencesBlockHeight
+						previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
+						if err != nil {
+							fmt.Println("Error calculating previous block approx time: ", err)
+							continue
+						}
+						fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.ReputerNonce, "previous block approx time: ", previousBlockApproxTime)
+						go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 					}
 				} else {
 					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}
-
 			}(topic)
 		}
 		wg.Wait()
