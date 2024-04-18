@@ -15,6 +15,8 @@ type WorkerRunningWeightedLoss struct {
 
 // Update the running weighted loss for the worker
 // Source: "Weighted mean" section of: https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
+// nextValue format - raw value
+// weigth format - logged value
 func RunningWeightedAvgUpdate(
 	runningWeightedAvg *WorkerRunningWeightedLoss,
 	weight Weight,
@@ -272,6 +274,14 @@ func CalcCombinedNetworkLoss(
 			runningWeightedCombinedLoss = nextCombinedLoss
 		}
 	}
+
+	// Exponentiate
+	expRunningWeightedCombinedLoss, err := alloraMath.Exp10(runningWeightedCombinedLoss.Loss)
+	if err != nil {
+		fmt.Println("Error exponentiating combined loss: ", err)
+		return alloraMath.ZeroDec(), err
+	}
+	runningWeightedCombinedLoss.Loss = expRunningWeightedCombinedLoss
 
 	return runningWeightedCombinedLoss.Loss, nil
 }
