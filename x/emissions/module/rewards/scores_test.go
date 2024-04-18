@@ -394,44 +394,44 @@ func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64
 	return reputerValueBundles, nil
 }
 
-// func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
-// 	allWorkers := map[string]struct{}{
-// 		"worker1": {},
-// 		"worker2": {},
-// 		"worker3": {},
-// 	}
+func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
+	allWorkers := map[string]struct{}{
+		"worker1": {},
+		"worker2": {},
+		"worker3": {},
+	}
 
-// 	values := []*types.WithheldWorkerAttributedValue{
-// 		{
-// 			Worker: "worker1",
-// 			Value:  alloraMath.MustNewDecFromString("10"),
-// 		},
-// 		{
-// 			Worker: "worker3",
-// 			Value:  alloraMath.MustNewDecFromString("20"),
-// 		},
-// 	}
+	values := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: "worker1",
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: "worker3",
+			Value:  alloraMath.MustNewDecFromString("20"),
+		},
+	}
 
-// 	expectedValues := []*types.WithheldWorkerAttributedValue{
-// 		{
-// 			Worker: "worker1",
-// 			Value:  alloraMath.MustNewDecFromString("10"),
-// 		},
-// 		{
-// 			Worker: "worker3",
-// 			Value:  alloraMath.MustNewDecFromString("20"),
-// 		},
-// 		{
-// 			Worker: "worker2",
-// 			Value:  alloraMath.NewNaN(),
-// 		},
-// 	}
+	expectedValues := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: "worker1",
+			Value:  alloraMath.MustNewDecFromString("10"),
+		},
+		{
+			Worker: "worker3",
+			Value:  alloraMath.MustNewDecFromString("20"),
+		},
+		{
+			Worker: "worker2",
+			Value:  alloraMath.NewNaN(),
+		},
+	}
 
-// 	result := rewards.ensureAllWorkersPresentWithheld(values, allWorkers)
+	result := rewards.EnsureAllWorkersPresentWithheld(values, allWorkers)
 
-// 	s.Require().Len(result, len(expectedValues))
-// 	for i, expected := range expectedValues {
-// 		s.Require().Equal(expected.Worker, result[i].Worker)
-// 		s.Require().Equal(expected.Value, result[i].Value)
-// 	}
-// }
+	s.Require().Len(result, len(expectedValues))
+	for i, expected := range expectedValues {
+		s.Require().Equal(expected.Worker, result[i].Worker)
+		s.Require().Equal(expected.Value, result[i].Value)
+	}
+}

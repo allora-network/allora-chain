@@ -233,8 +233,8 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 
 	// Ensure each set has all workers, add NaN value for missing workers
 	for _, bundle := range reportedLosses.ReputerValueBundles {
-		bundle.ValueBundle.OneOutInfererValues = ensureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
-		bundle.ValueBundle.OneOutForecasterValues = ensureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
+		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
+		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
 		bundle.ValueBundle.OneInForecasterValues = ensureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
 	}
 
@@ -261,7 +261,7 @@ func ensureAllWorkersPresent(values []*types.WorkerAttributedValue, allWorkers m
 }
 
 // ensureAllWorkersPresentWithheld checks and adds missing workers with NaN values for a given slice of WithheldWorkerAttributedValue
-func ensureAllWorkersPresentWithheld(values []*types.WithheldWorkerAttributedValue, allWorkers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
+func EnsureAllWorkersPresentWithheld(values []*types.WithheldWorkerAttributedValue, allWorkers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
 	foundWorkers := make(map[string]bool)
 	for _, value := range values {
 		foundWorkers[value.Worker] = true
