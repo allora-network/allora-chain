@@ -48,12 +48,11 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	require.NoError(m.t, err)
 	var aliceInitialStake uint64 = 100000
 	registerAliceRequest := &emissionstypes.MsgRegister{
-		Creator:      m.n.AliceAddr,
+		Sender:       m.n.AliceAddr,
+		Owner:        m.n.AliceAddr,
 		LibP2PKey:    "reputerkey",
 		MultiAddress: "reputermultiaddress",
-		TopicIds:     []uint64{1},
-		InitialStake: cosmosMath.NewUint(aliceInitialStake),
-		Owner:        m.n.AliceAddr,
+		TopicId:      1,
 		IsReputer:    true,
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, registerAliceRequest)
@@ -115,12 +114,11 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	require.NoError(m.t, err)
 	var bobInitialStake uint64 = 100000
 	registerBobRequest := &emissionstypes.MsgRegister{
-		Creator:      m.n.BobAddr,
+		Sender:       m.n.BobAddr,
+		Owner:        m.n.BobAddr,
 		LibP2PKey:    "workerkey",
 		MultiAddress: "workermultiaddress",
-		TopicIds:     []uint64{1},
-		InitialStake: cosmosMath.NewUint(bobInitialStake),
-		Owner:        m.n.BobAddr,
+		TopicId:      uint64(1),
 		IsReputer:    false,
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, registerBobRequest)

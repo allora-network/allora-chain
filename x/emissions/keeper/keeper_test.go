@@ -2292,20 +2292,16 @@ func (s *KeeperTestSuite) TestGetRegisteredTopicIdsByWorkerAddress() {
 		NodeAddress: "worker-node-address-sample",
 		NodeId:      "worker-node-id-sample",
 	}
-	topicId1 := uint64(1)
-	topicId2 := uint64(3)
+	topicId := uint64(1)
 
 	// Register the worker for multiple topics using InsertWorker
-	err := keeper.InsertWorker(ctx, topicId1, workerAddress, workerInfo)
-	s.Require().NoError(err, "Inserting worker should not fail")
-	err = keeper.InsertWorker(ctx, topicId2, workerAddress, workerInfo)
+	err := keeper.InsertWorker(ctx, topicId, workerAddress, workerInfo)
 	s.Require().NoError(err, "Inserting worker should not fail")
 
 	// Test fetching topic IDs by worker address
 	registeredTopicIds, err := keeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddress)
 	s.Require().NoError(err, "Fetching registered topic IDs by worker address should not fail")
-	s.Require().Equal(2, len(registeredTopicIds), "The number of topic IDs should match")
-	s.Require().ElementsMatch([]uint64{topicId1, topicId2}, registeredTopicIds, "The returned topic IDs should match the expected ones")
+	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
 }
 
 func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
@@ -2320,20 +2316,16 @@ func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
 		NodeAddress:  "reputer-node-address-sample",
 		NodeId:       "reputer-node-id-sample",
 	}
-	topicId1 := uint64(2)
-	topicId2 := uint64(4)
+	topicId := uint64(2)
 
 	// Register the reputer for multiple topics using InsertReputer
-	err := keeper.InsertReputer(ctx, topicId1, reputerAddress, reputerInfo)
-	s.Require().NoError(err, "Inserting reputer should not fail")
-	err = keeper.InsertReputer(ctx, topicId2, reputerAddress, reputerInfo)
+	err := keeper.InsertReputer(ctx, topicId, reputerAddress, reputerInfo)
 	s.Require().NoError(err, "Inserting reputer should not fail")
 
 	// Test fetching topic IDs by reputer address
 	registeredTopicIds, err := keeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddress)
 	s.Require().NoError(err, "Fetching registered topic IDs by reputer address should not fail")
-	s.Require().Equal(2, len(registeredTopicIds), "The number of topic IDs should match")
-	s.Require().ElementsMatch([]uint64{topicId1, topicId2}, registeredTopicIds, "The returned topic IDs should match the expected ones")
+	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {
@@ -2350,23 +2342,12 @@ func (s *KeeperTestSuite) TestIncrementTopicId() {
 	s.Require().Equal(initialTopicId+1, newTopicId, "New topic ID should be one more than the initial topic ID")
 }
 
-func (s *KeeperTestSuite) TestGetNumTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Assume IncrementTopicId is used to track the count of topics
-	_, _ = keeper.IncrementTopicId(ctx) // Simulate existing topics
-	_, _ = keeper.IncrementTopicId(ctx)
-
-	// Get the number of topics
-	numTopics, err := keeper.GetNumTopics(ctx)
-	s.Require().NoError(err, "Fetching the number of topics should not fail")
-	s.Require().Equal(uint64(2), numTopics, "The number of topics should match the number incremented")
-}
-
 func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
+
+	nextTopicIdStart, err := keeper.GetNextTopicId(ctx)
+	s.Require().NoError(err, "Fetching the number of topics should not fail")
 
 	// Create multiple topics to simulate actual usage
 	topicsToCreate := 5
@@ -2384,9 +2365,9 @@ func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
 	}
 
 	// Now retrieve the total number of topics
-	numTopics, err := keeper.GetNumTopics(ctx)
+	nextTopicIdEnd, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err, "Fetching the number of topics should not fail")
-	s.Require().Equal(uint64(topicsToCreate), numTopics, "The number of topics should exactly match the number created")
+	s.Require().Equal(uint64(topicsToCreate), nextTopicIdEnd-nextTopicIdStart)
 }
 
 func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {

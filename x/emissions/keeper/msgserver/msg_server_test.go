@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -154,8 +155,15 @@ func GeneratePrivateKeys(numKeys int) []ChainKey {
 	}
 
 	return testAddrs
-
 }
+
+func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+}
+
 func (s *KeeperTestSuite) CreateOneTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -200,8 +208,11 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
+
+	creator := sdk.AccAddress(PKS[0].Address())
+
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
 		EpochLength:      10800,
@@ -215,22 +226,30 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	creatorInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(3))
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, creatorInitialBalance))
+
+	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
+
+	initialTopicId, err := s.emissionsKeeper.GetNextTopicId(s.ctx)
+	s.Require().NoError(err)
+	s.Require().NotNil(initialTopicId)
+
+	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
-	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
+	result, err := s.emissionsKeeper.GetNextTopicId(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
+	s.Require().Equal(initialTopicId+1, result)
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
 	// Create second topic
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on second topic")
 
-	result, err = s.emissionsKeeper.GetNumTopics(s.ctx)
+	result, err = s.emissionsKeeper.GetNextTopicId(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(2), "Topic count after second topic insertion is not 2")
+	s.Require().Equal(initialTopicId+2, result)
 }
