@@ -221,14 +221,8 @@ message MsgRegister {
   string lib_p2p_key = 2;
   string multi_address = 3;
   uint64 topic_id = 4;
-  string initial_stake = 5 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  string owner = 6;
-  bool is_reputer = 7;
+  string owner = 5;
+  bool is_reputer = 6;
 }
 
 message MsgRegisterResponse {

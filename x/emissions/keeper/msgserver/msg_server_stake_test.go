@@ -1,8 +1,6 @@
 package msgserver_test
 
 import (
-	"log"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -14,8 +12,8 @@ func (s *KeeperTestSuite) commonStakingSetup(
 	ctx sdk.Context,
 	reputerAddr sdk.AccAddress,
 	workerAddr sdk.AccAddress,
-	registrationInitialStake cosmosMath.Uint,
-) {
+	reputerInitialBalanceUint cosmosMath.Uint,
+) uint64 {
 	msgServer := s.msgServer
 	require := s.Require()
 
@@ -35,7 +33,7 @@ func (s *KeeperTestSuite) commonStakingSetup(
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	reputerInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2)).Add(cosmosMath.Int(registrationInitialStake))
+	reputerInitialBalance := types.DefaultParamsCreateTopicFee().Add(cosmosMath.Int(reputerInitialBalanceUint))
 
 	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
 
@@ -53,7 +51,6 @@ func (s *KeeperTestSuite) commonStakingSetup(
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
-		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
 	_, err = msgServer.Register(ctx, reputerRegMsg)
@@ -71,23 +68,23 @@ func (s *KeeperTestSuite) commonStakingSetup(
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
-		InitialStake: registrationInitialStake,
 	}
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
+
+	return topicId
 }
 
 func (s *KeeperTestSuite) TestMsgAddStake() {
 	ctx := s.ctx
 	require := s.Require()
 
-	topicId := uint64(0)
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(10)
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialBalance := cosmosMath.NewUint(100)
 
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialBalance)
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -96,13 +93,12 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	}
 
 	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
-	log.Printf("reputerStake: %v, err: %v", reputerStake, err)
 	require.NoError(err)
-	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
+	require.Equal(cosmosMath.ZeroUint(), reputerStake, "Stake amount mismatch")
 
 	topicStake, err := s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
-	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), topicStake, "Stake amount mismatch")
+	require.Equal(cosmosMath.ZeroUint(), topicStake, "Stake amount mismatch")
 
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
@@ -110,11 +106,11 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 
 	reputerStake, err = s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
 	require.NoError(err)
-	require.Equal(registrationInitialStake.Add(stakeAmount), reputerStake, "Stake amount mismatch")
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
 	topicStake, err = s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
-	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)).Add(stakeAmount), topicStake, "Stake amount mismatch")
+	require.Equal(stakeAmount, topicStake, "Stake amount mismatch")
 }
 
 /*

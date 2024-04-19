@@ -1,7 +1,6 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -14,7 +13,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
@@ -23,7 +21,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 		LibP2PKey:    "",
 		MultiAddress: "test",
 		TopicId:      topicId,
-		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
@@ -38,7 +35,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	// Zero initial stake
-	registrationInitialStake := cosmosMath.NewUint(0)
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
@@ -47,7 +43,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
-		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
@@ -122,7 +117,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
@@ -131,7 +125,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
-		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)

@@ -18,6 +18,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -80,6 +81,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		"mint":                          {"minter"},
 		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
 		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		mintTypes.EcosystemModuleName:   {"burner", "minter", "staking"},
 		types.AlloraRewardsAccountName:  {"minter"},
 		"bonded_tokens_pool":            {"burner", "staking"},
 		"not_bonded_tokens_pool":        {"burner", "staking"},
