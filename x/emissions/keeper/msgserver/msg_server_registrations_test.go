@@ -62,7 +62,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	require.ErrorIs(err, types.ErrLibP2PKeyRequired, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegister() {
+func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := uint64(0)
@@ -83,13 +83,13 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		IsReputer:    true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
+	require.ErrorIs(types.ErrTopicRegistrantNotEnoughDenom, err, "Register should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
@@ -99,15 +99,15 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		Sender:       reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicId:      0,
+		TopicId:      topicId,
 		IsReputer:    true,
 	}
 
-	s.emissionsKeeper.AddStake(ctx, 0, reputerAddr, registrationInitialStake.QuoUint64(2))
+	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr, registrationInitialStake.QuoUint64(2))
 
 	// Try to register with zero initial stake and having half of the initial stake removed
 	_, err := msgServer.Register(ctx, reputerRegMsg)
-	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
+	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
 
 /*

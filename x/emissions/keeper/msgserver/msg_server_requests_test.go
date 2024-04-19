@@ -12,7 +12,7 @@ import (
 func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
 	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
@@ -24,7 +24,7 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -43,7 +43,7 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
-	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
+	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, topicId, requestId)
 	s.Require().NoError(err)
 	// the last checked time is not set in the request, so we can't compare it
 	// we can compare the rest of the fields
@@ -62,7 +62,7 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	var requestStake int64 = 500
@@ -77,7 +77,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(requestStake)),
@@ -86,7 +86,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 			},
 			{
 				Nonce:                1,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(requestStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(requestStake)),
@@ -105,7 +105,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[0])
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
-	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
+	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, topicId, requestId)
 	s.Require().NoError(err)
 	s.Require().Equal(r0.Sender, storedRequest.Sender, "Stored request sender should match the request")
 	s.Require().Equal(r0.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
@@ -119,7 +119,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	r1 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Requests[1])
 	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
-	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, 0, requestId)
+	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, topicId, requestId)
 	s.Require().NoError(err)
 	s.Require().Equal(r1.Sender, storedRequest.Sender, "Stored request sender should match the request")
 	s.Require().Equal(r1.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
@@ -156,7 +156,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidTopicDoesNotExist() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceSet() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	r := types.MsgRequestInference{
@@ -164,7 +164,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake + 20)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -180,7 +180,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountNotEnoughForPriceS
 func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -193,7 +193,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -212,7 +212,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -225,7 +225,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -241,7 +241,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
 	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
@@ -253,7 +253,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -269,7 +269,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterNoLongerValid() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -282,7 +282,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              1000,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -329,7 +329,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -342,7 +342,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              math.MaxInt64,
 				MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
 				BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
@@ -358,7 +358,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMinimum() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -371,7 +371,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 		Requests: []*types.RequestInferenceListItem{
 			{
 				Nonce:                0,
-				TopicId:              0,
+				TopicId:              topicId,
 				Cadence:              0,
 				MaxPricePerInference: cosmosMath.ZeroUint(),
 				BidAmount:            cosmosMath.ZeroUint(),
