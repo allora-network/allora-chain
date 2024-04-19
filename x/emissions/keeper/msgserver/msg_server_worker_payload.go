@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"encoding/hex"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -228,7 +229,6 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 // A tx function that accepts a list of forecasts and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
-
 	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {

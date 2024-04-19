@@ -124,6 +124,12 @@ message Params {
   uint64 gradient_descent_max_iters = 38;           // max number of gradient descent iterations
   int64 max_retries_to_fulfil_nonces_worker = 39;   // max number of retries to unfulfilled nonces (worker)
   int64 max_retries_to_fulfil_nonces_reputer = 40;  // max number of retries to unfulfilled nonces (reputer)
+  string registration_fee = 41 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // registration fee for workers and reputers
 }
 
 /// TOPICS

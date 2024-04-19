@@ -23,8 +23,6 @@ service Msg {
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc RegisterWithExistingStake(MsgRegisterWithExistingStake) returns (MsgRegisterWithExistingStakeResponse);
-
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
 
   rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
@@ -34,8 +32,6 @@ service Msg {
   rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
 
   rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
-
-  rpc StartRemoveAllStake(MsgStartRemoveAllStake) returns (MsgStartRemoveAllStakeResponse);
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
@@ -143,6 +139,12 @@ message OptionalParams {
   repeated uint64 gradient_descent_max_iters = 38;
   repeated int64 max_retries_to_fulfil_nonces_worker = 39;
   repeated int64 max_retries_to_fulfil_nonces_reputer = 40;
+  repeated string registration_fee = 41 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message MsgUpdateParams {
@@ -213,12 +215,12 @@ message MsgInsertBulkWorkerPayloadResponse {}
 ///  Inference Node Registration
 
 message MsgRegister {
-  option (cosmos.msg.v1.signer) = "creator";
+  option (cosmos.msg.v1.signer) = "sender";
 
-  string creator = 1;
+  string sender = 1;
   string lib_p2p_key = 2;
   string multi_address = 3;
-  repeated uint64 topic_ids = 4;
+  uint64 topic_id = 4;
   string initial_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
@@ -234,26 +236,10 @@ message MsgRegisterResponse {
   string message = 2;
 }
 
-message MsgRegisterWithExistingStake {
-  option (cosmos.msg.v1.signer) = "creator";
-
-  string creator = 1;
-  string lib_p2p_key = 2;
-  string multi_address = 3;
-  uint64 topic_id = 4;
-  string owner = 5;
-  bool is_reputer = 6;
-}
-
-message MsgRegisterWithExistingStakeResponse {
-  bool success = 1;
-  string message = 2;
-}
-
 message MsgRemoveRegistration {
-  option (cosmos.msg.v1.signer) = "creator";
+  option (cosmos.msg.v1.signer) = "sender";
 
-  string creator = 1;
+  string sender = 1;
   uint64 topic_id = 2;
   bool is_reputer = 3;
 }
@@ -295,13 +281,6 @@ message MsgConfirmRemoveStake {
 }
 
 message MsgConfirmRemoveStakeResponse {}
-
-message MsgStartRemoveAllStake {
-  option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-}
-
-message MsgStartRemoveAllStakeResponse {}
 
 message MsgDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
