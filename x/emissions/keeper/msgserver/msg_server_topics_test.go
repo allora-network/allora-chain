@@ -34,7 +34,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
+	// s.PrepareForCreateTopic(newTopicMsg.Creator)
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 

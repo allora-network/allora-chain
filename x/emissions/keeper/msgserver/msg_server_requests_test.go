@@ -7,7 +7,6 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 )
 
 func (s *KeeperTestSuite) TestRequestInferenceSimple() {
@@ -16,9 +15,9 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -35,7 +34,7 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 		},
 	}
 	blockHeightBefore := s.ctx.BlockHeight()
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, initialStakeCoins)
 	response, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().NoError(err, "RequestInference should not return an error")
 	s.Require().Equal(&types.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
@@ -68,11 +67,11 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	var initialStake int64 = 1000
 	var requestStake int64 = 500
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
-	requestStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(requestStake)))
+	// requestStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(requestStake)))
 	r := types.MsgRequestInference{
 		Sender: sender,
 		Requests: []*types.RequestInferenceListItem{
@@ -96,8 +95,8 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 			},
 		},
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, requestStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, requestStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, requestStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, requestStakeCoins)
 	response, err := s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().NoError(err, "RequestInference should not return an error")
 	s.Require().Equal(&types.MsgRequestInferenceResponse{}, response, "RequestInference should return an empty response on success")
@@ -185,9 +184,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -203,7 +202,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidSendSameRequestTwice() {
 			},
 		},
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraRequestsAccountName, initialStakeCoins)
 	s.msgServer.RequestInference(s.ctx, &r)
 
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
@@ -217,9 +216,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestInThePast() {
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -245,9 +244,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestTooFarInFuture() {
 	s.CreateOneTopic()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -274,9 +273,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceHappensAfterN
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -334,9 +333,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,
@@ -363,9 +362,9 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 	blockNow := s.ctx.BlockHeight()
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
+	// s.bankKeeper.EXPECT().MintCoins(gomock.Any(), types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	// s.bankKeeper.EXPECT().SendCoinsFromModuleToAccount(gomock.Any(), types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgRequestInference{
 		Sender: sender,

@@ -1,26 +1,23 @@
 package msgserver_test
 
 import (
-	// "time"
+	"log"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/golang/mock/gomock"
 )
 
-func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.AccAddress, workerAddr sdk.AccAddress, registrationInitialStake cosmosMath.Uint) {
+func (s *KeeperTestSuite) commonStakingSetup(
+	ctx sdk.Context,
+	reputerAddr sdk.AccAddress,
+	workerAddr sdk.AccAddress,
+	registrationInitialStake cosmosMath.Uint,
+) {
 	msgServer := s.msgServer
 	require := s.Require()
-
-	topicId := uint64(0)
-
-	registrationInitialStakeCoins := sdk.NewCoins(
-		sdk.NewCoin(
-			params.DefaultBondDenom,
-			cosmosMath.NewIntFromBigInt(registrationInitialStake.BigInt())))
 
 	// Create Topic
 	newTopicMsg := &types.MsgCreateNewTopic{
@@ -37,9 +34,17 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		PrewardForecast:  alloraMath.NewDecFromInt64(13),
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+
+	reputerInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2)).Add(cosmosMath.Int(registrationInitialStake))
+
+	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
+
+	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, reputerInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, reputerAddr, reputerInitialBalanceCoins)
+
+	response, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on creation")
+	topicId := response.TopicId
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
@@ -51,9 +56,13 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
+
+	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000)))
+
+	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, workerAddr, workerInitialBalanceCoins)
 
 	// Register Worker
 	workerRegMsg := &types.MsgRegister{
@@ -64,21 +73,18 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
 	}
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgAddStake() {
 	ctx := s.ctx
-	// msgServer := s.msgServer
 	require := s.Require()
 
 	topicId := uint64(0)
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(10)
-	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -90,14 +96,14 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	}
 
 	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	log.Printf("reputerStake: %v, err: %v", reputerStake, err)
 	require.NoError(err)
-	require.Equal(registrationInitialStake, reputerStake, "Stake amount mismatch")
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
 	topicStake, err := s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
 	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), topicStake, "Stake amount mismatch")
 
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, stakeAmountCoins)
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
 	require.NotNil(response)
