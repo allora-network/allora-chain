@@ -130,6 +130,33 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "total-stake",
 					Short:     "Get the total amount of staked tokens by all participants in the network",
 				},
+				{
+					RpcMethod: "GetForecastsAtBlock",
+					Use:       "get-forecasts-at-block [topic_id] [block]",
+					Short:     "Get the Forecasts for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkInferencesAtBlock",
+					Use:       "get-network-inferences-at-block [topic_id] [block]",
+					Short:     "Get the Network Inferences for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkLossBundleAtBlock",
+					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
+					Short:     "Get the network loss bundle for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
