@@ -7,6 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -43,7 +44,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
