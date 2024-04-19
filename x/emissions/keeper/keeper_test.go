@@ -473,7 +473,7 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
 	// Attempt to get Inferer Network Regret for a nonexistent worker
 	regret, noPrior, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent inferer")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent inferer")
 	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent inferer")
 }
 
@@ -486,7 +486,7 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
 	// Attempt to get Forecaster Network Regret for a nonexistent worker
 	regret, noPrior, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster")
 	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent forecaster")
 }
 
@@ -500,7 +500,7 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
 	// Attempt to get One-In Forecaster Network Regret for a nonexistent forecaster-inferer pair
 	regret, noPrior, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
 	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
 }
 
@@ -513,28 +513,42 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	topicId1 := uint64(1)
 	topicId2 := uint64(2)
 
-	// Regrets
+	// Zero regret for initial check
+	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
+
+	// Initial regrets should be zero
+	gotRegret1, noPrior1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
+	s.Require().Equal(true, noPrior1, "Should return true for no prior regret on Topic ID 1")
+
+	gotRegret2, noPrior2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
+	s.Require().Equal(true, noPrior2, "Should return true for no prior regret on Topic ID 2")
+
+	// Regrets to be set
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same worker under different topic IDs
-	err := keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
+	err = keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetInfererNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
-	// Get and compare regrets
-	gotRegret1, noPrior1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	// Get and compare regrets after setting them
+	gotRegret1, noPrior1, err = keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
-	s.Require().Equal(noPrior1, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(false, noPrior1, "Should return false indicating prior regret is now set for Topic ID 1")
 
-	gotRegret2, noPrior2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, noPrior2, err = keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
-	s.Require().Equal(noPrior2, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(false, noPrior2, "Should return false indicating prior regret is now set for Topic ID 2")
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
@@ -549,27 +563,33 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	topicId2 := uint64(2)
 
 	// Regrets
+	noRagret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
+	gotRegret1, noPrior1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRagret, gotRegret1)
+	s.Require().Equal(noPrior1, true)
+
 	// Set regrets for the same worker under different topic IDs
-	err := keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
+	err = keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetForecasterNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
 	// Get and compare regrets
-	gotRegret1, noPrior1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, noPrior1, err = keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
-	s.Require().Equal(noPrior1, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(noPrior1, false)
 
 	gotRegret2, noPrior2, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
-	s.Require().Equal(noPrior2, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(noPrior2, false)
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
@@ -584,28 +604,42 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	topicId1 := uint64(1)
 	topicId2 := uint64(2)
 
-	// Regrets
+	// Zero regret for initial checks
+	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
+
+	// Initial regrets should be zero
+	gotRegret1, noPrior1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
+	s.Require().Equal(true, noPrior1, "Should return true indicating no prior regret for Topic ID 1")
+
+	gotRegret2, noPrior2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
+	s.Require().Equal(true, noPrior2, "Should return true indicating no prior regret for Topic ID 2")
+
+	// Regrets to be set
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same forecaster-inferer pair under different topic IDs
-	err := keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
+	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer, regret2)
 	s.Require().NoError(err)
 
-	// Get and compare regrets
-	gotRegret1, noPrior1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	// Get and compare regrets after setting them
+	gotRegret1, noPrior1, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
-	s.Require().Equal(noPrior1, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(false, noPrior1, "Should return false now that prior regret is set for Topic ID 1")
 
-	gotRegret2, noPrior2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, noPrior2, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
-	s.Require().Equal(noPrior2, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(false, noPrior2, "Should return false now that prior regret is set for Topic ID 2")
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }

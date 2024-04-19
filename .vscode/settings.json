@@ -9,5 +9,6 @@
     "**grpc.pb.go": true,
     "**pb.go": true,
     "**pulsar.go": true,
-  }
+  },
+  "go.testFlags": ["-v"] 
 }

@@ -23,7 +23,8 @@ func DefaultParams() Params {
 		MaxRequestCadence:               int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
-		LearningRate:                    alloraMath.MustNewDecFromString("0.01"),   // speed of gradient descent
+		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
+		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:       uint64(20),                                // maximum number of workers that can be assigned to a single inference request
@@ -106,6 +107,10 @@ func DefaultParamsBetaEntropy() alloraMath.Dec {
 
 func DefaultParamsLearningRate() alloraMath.Dec {
 	return DefaultParams().LearningRate
+}
+
+func DefaultParamsGradientDescentMaxIters() uint64 {
+	return DefaultParams().GradientDescentMaxIters
 }
 
 func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
