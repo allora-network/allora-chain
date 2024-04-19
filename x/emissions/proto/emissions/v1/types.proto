@@ -313,10 +313,10 @@ message StakePlacement {
 
 message StakeRemoval {
   int64 block_removal_started = 1;
-  repeated StakePlacement placements = 2;
+  StakePlacement placement = 2;
 }
 
-message DelegatedStakePlacement {
+message DelegateStakePlacement {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -328,9 +328,9 @@ message DelegatedStakePlacement {
   ];
 }
 
-message DelegatedStakeRemoval {
+message DelegateStakeRemoval {
   int64 block_removal_started = 1;
-  repeated DelegatedStakePlacement placements = 2;
+  DelegateStakePlacement placement = 2;
 }
 
 /// SCORES

@@ -35,7 +35,7 @@ service Msg {
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
-  rpc StartRemoveDelegatedStake(MsgStartRemoveDelegatedStake) returns (MsgStartRemoveDelegatedStakeResponse);
+  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
 
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
 
@@ -264,7 +264,13 @@ message MsgStartRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  repeated StakePlacement placements_remove = 2;
+  uint64 topic_id = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message MsgStartRemoveStakeResponse {}
@@ -272,6 +278,7 @@ message MsgStartRemoveStakeResponse {}
 message MsgConfirmRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
+  uint64 topic_id = 2;
 }
 
 message MsgConfirmRemoveStakeResponse {}
@@ -291,20 +298,29 @@ message MsgDelegateStake {
 
 message MsgDelegateStakeResponse {}
 
-message MsgStartRemoveDelegatedStake {
+message MsgStartRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  repeated DelegatedStakePlacement placements_to_remove = 2;
+  string reputer = 2;
+  uint64 topic_id = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
-message MsgStartRemoveDelegatedStakeResponse {}
+message MsgStartRemoveDelegateStakeResponse {}
 
-message MsgConfirmDelegatedRemoveStake {
+message MsgConfirmDelegateRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
 }
 
-message MsgConfirmRemoveDelegatedStakeResponse {}
+message MsgConfirmRemoveDelegateStakeResponse {}
 
 message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";
