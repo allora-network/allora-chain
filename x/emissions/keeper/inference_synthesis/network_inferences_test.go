@@ -14,6 +14,14 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+// instantiate a AllWorkersAreNew struct
+func NewWorkersAreNew(v bool) inference_synthesis.AllWorkersAreNew {
+	return inference_synthesis.AllWorkersAreNew{
+		AllInferersAreNew:    v,
+		AllForecastersAreNew: v,
+	}
+}
+
 // TestMakeMapFromWorkerToTheirWork tests the makeMapFromWorkerToTheirWork function for correctly mapping workers to their inferences.
 func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	tests := []struct {
@@ -149,6 +157,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 		pInferenceSynthesis                   alloraMath.Dec
 		expectedNetworkCombinedInferenceValue alloraMath.Dec
 		infererNetworkRegrets                 map[string]inference_synthesis.Regret
+		forecasterNetworkRegrets              map[string]inference_synthesis.Regret
 		expectedErr                           error
 	}{
 		{ // EPOCH 3
@@ -170,6 +179,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 				"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
 				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+			},
+			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 				"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 				"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -196,6 +207,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
 				"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
 				"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
+			},
+			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
 				"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
 				"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
@@ -216,12 +229,22 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				)
 			}
 
+			for forecaster, regret := range tc.forecasterNetworkRegrets {
+				s.emissionsKeeper.SetForecasterNetworkRegret(
+					s.ctx,
+					topicId,
+					[]byte(forecaster),
+					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
 			networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
 				s.ctx,
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
 				tc.forecastImpliedInferenceByWorker,
+				NewWorkersAreNew(false),
 				tc.maxRegret,
 				tc.epsilon,
 				tc.pInferenceSynthesis,
@@ -260,6 +283,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		epsilon                          alloraMath.Dec
 		pInferenceSynthesis              alloraMath.Dec
 		infererNetworkRegrets            map[string]inference_synthesis.Regret
+		forecasterNetworkRegrets         map[string]inference_synthesis.Regret
 		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
 		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
 	}{ // EPOCH 3
@@ -306,6 +330,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 			"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
 			"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+		},
+		forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 			"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 			"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 			"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -336,6 +362,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			)
 		}
 
+		for forecaster, regret := range test.forecasterNetworkRegrets {
+			s.emissionsKeeper.SetForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				[]byte(forecaster),
+				emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+			)
+		}
+
 		oneOutInferences, oneOutImpliedInferences, err := inference_synthesis.CalcOneOutInferences(
 			s.ctx,
 			s.emissionsKeeper,
@@ -343,6 +378,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			test.inferenceByWorker,
 			test.forecastImpliedInferenceByWorker,
 			test.forecasts,
+			NewWorkersAreNew(false),
 			test.maxRegret,
 			test.networkCombinedLoss,
 			test.epsilon,
@@ -403,6 +439,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 		epsilon                     alloraMath.Dec
 		pInferenceSynthesis         alloraMath.Dec
 		infererNetworkRegrets       map[string]inference_synthesis.Regret
+		forecasterNetworkRegrets    map[string]inference_synthesis.Regret
 		expectedOneInInferences     []*emissions.WorkerAttributedValue
 		expectedErr                 error
 	}{
@@ -429,6 +466,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 				"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
 				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+			},
+			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 				"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 				"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -453,12 +492,22 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				)
 			}
 
+			for forecaster, regret := range tc.forecasterNetworkRegrets {
+				s.emissionsKeeper.SetForecasterNetworkRegret(
+					s.ctx,
+					topicId,
+					[]byte(forecaster),
+					emissions.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
 			oneInInferences, err := inference_synthesis.CalcOneInInferences(
 				s.ctx,
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
 				tc.forecastImpliedInferences,
+				NewWorkersAreNew(false),
 				tc.maxRegretsByOneInForecaster,
 				tc.epsilon,
 				tc.pInferenceSynthesis,

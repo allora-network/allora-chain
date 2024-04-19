@@ -154,7 +154,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			result, err := inference_synthesis.CalcForcastImpliedInferences(tc.inferenceByWorker, tc.forecasts, tc.networkCombinedLoss, tc.epsilon, tc.pInferenceSynthesis)
+			result, err := inference_synthesis.CalcForcastImpliedInferences(
+				tc.inferenceByWorker,
+				tc.forecasts,
+				tc.networkCombinedLoss,
+				false,
+				tc.epsilon,
+				tc.pInferenceSynthesis,
+			)
 
 			if tc.expectedErr != nil {
 				s.Require().ErrorIs(err, tc.expectedErr)

@@ -40,14 +40,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get the full list of all topics created on the network",
 				},
 				{
-					RpcMethod: "GetTopicsByCreator",
-					Use:       "topics-by-creator [creator]",
-					Short:     "Get Topics by Creator",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
-					},
-				},
-				{
 					RpcMethod: "GetReputerStakeList",
 					Use:       "reputer-stake-list [address]",
 					Short:     "Get Account Stake List",

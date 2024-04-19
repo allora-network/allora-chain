@@ -11,7 +11,7 @@ type BlockHeight = int64
 func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:                   int64(600),                                // length of an "epoch" for rewards payouts in blocks
+		RewardCadence:                   int64(600),                                // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicUnmetDemand:             cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:           cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
@@ -23,7 +23,8 @@ func DefaultParams() Params {
 		MaxRequestCadence:               int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
-		LearningRate:                    alloraMath.MustNewDecFromString("0.01"),   // speed of gradient descent
+		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
+		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		MaxWorkersPerTopicRequest:       uint64(20),                                // maximum number of workers that can be assigned to a single inference request
@@ -38,7 +39,7 @@ func DefaultParams() Params {
 		SybilTaxExponent:                uint64(3),                                 // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
@@ -106,6 +107,10 @@ func DefaultParamsBetaEntropy() alloraMath.Dec {
 
 func DefaultParamsLearningRate() alloraMath.Dec {
 	return DefaultParams().LearningRate
+}
+
+func DefaultParamsGradientDescentMaxIters() uint64 {
+	return DefaultParams().GradientDescentMaxIters
 }
 
 func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
