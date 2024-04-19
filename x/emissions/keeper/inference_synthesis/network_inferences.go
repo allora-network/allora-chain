@@ -386,12 +386,34 @@ func CalcNetworkInferences(
 		return nil, err
 	}
 
+	// For completeness, send the inferences and forecastImpliedInferences in the bundle
+	// Turn the forecast-implied inferences into a WorkerAttributedValue array
+	infererValues := make([]*emissions.WorkerAttributedValue, 0)
+	for _, inferer := range inferences.Inferences {
+		fmt.Println("Returning Inference: ", inferences)
+		infererValues = append(infererValues, &emissions.WorkerAttributedValue{
+			Worker: inferer.Inferer,
+			Value:  inferer.Value,
+		})
+	}
+
+	forecastImpliedInferences := make([]*emissions.WorkerAttributedValue, 0)
+	for _, forecastImpliedInference := range forecastImpliedInferenceByWorker {
+		fmt.Println("Forecast implied inference: ", forecastImpliedInference)
+		forecastImpliedInferences = append(forecastImpliedInferences, &emissions.WorkerAttributedValue{
+			Worker: forecastImpliedInference.Inferer,
+			Value:  forecastImpliedInference.Value,
+		})
+	}
+
 	// Build value bundle to return all the calculated inferences
 	// Shouldn't need inferences nor forecasts because given from context (input arguments)
 	return &emissions.ValueBundle{
 		CombinedValue: combinedNetworkInference,
 		// TODO: Add the rest of the inferences/forecasts; if not somewhere else
 		NaiveValue:             naiveInference,
+		InfererValues:          infererValues,
+		ForecasterValues:       forecastImpliedInferences,
 		OneOutInfererValues:    oneOutInferences,
 		OneOutForecasterValues: oneOutImpliedInferences,
 		OneInForecasterValues:  oneInInferences,
