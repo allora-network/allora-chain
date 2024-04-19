@@ -73,11 +73,10 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	topicId := uint64(0)
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
-	stakeAmount := cosmosMath.NewUint(100)
+	stakeAmount := cosmosMath.NewUint(10)
 	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
-
-	// Common setup for staking
 	registrationInitialStake := cosmosMath.NewUint(100)
+
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 
 	addStakeMsg := &types.MsgAddStake{
@@ -86,11 +85,26 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 		Amount:  stakeAmount,
 	}
 
+	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(registrationInitialStake, reputerStake, "Stake amount mismatch")
+
+	topicStake, err := s.emissionsKeeper.GetTopicStake(ctx, topicId)
+	require.NoError(err)
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)), topicStake, "Stake amount mismatch")
+
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, stakeAmountCoins)
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
-
 	require.NoError(err, "AddStake should not return an error")
 	require.NotNil(response)
+
+	reputerStake, err = s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(registrationInitialStake.Add(stakeAmount), reputerStake, "Stake amount mismatch")
+
+	topicStake, err = s.emissionsKeeper.GetTopicStake(ctx, topicId)
+	require.NoError(err)
+	require.Equal(registrationInitialStake.Mul(cosmosMath.NewUint(2)).Add(stakeAmount), topicStake, "Stake amount mismatch")
 }
 
 /*

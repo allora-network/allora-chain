@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 	"errors"
-	"log"
 
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
@@ -33,9 +32,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	log.Printf("HERE A")
 	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
-	log.Printf("HERE B")
 
 	// Get target topics Registered
 	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, senderAddr)
