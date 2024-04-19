@@ -14,7 +14,7 @@ func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *types.
 		return nil, fmt.Errorf("received nil request")
 	}
 
-	nodes, err := qs.k.FindWorkerNodesByOwner(ctx.(sdk.Context), req.NodeId)
+	nodes, err := qs.k.FindWorkerNodesByOwner(sdk.UnwrapSDKContext(ctx), req.NodeId)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.Q
 		return nil, fmt.Errorf("received nil request")
 	}
 
-	workerAddr, err := qs.k.GetWorkerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
+	workerAddr, err := qs.k.GetWorkerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 		return nil, fmt.Errorf("received nil request")
 	}
 
-	address, err := qs.k.GetReputerAddressByP2PKey(ctx.(sdk.Context), req.Libp2PKey)
+	address, err := qs.k.GetReputerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
 	}
@@ -61,12 +61,12 @@ func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.Quer
 
 	var TopicIds []uint64
 	if req.IsReputer {
-		TopicIds, err = qs.k.GetRegisteredTopicIdByReputerAddress(ctx.(sdk.Context), address)
+		TopicIds, err = qs.k.GetRegisteredTopicIdByReputerAddress(sdk.UnwrapSDKContext(ctx), address)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		TopicIds, err = qs.k.GetRegisteredTopicIdsByWorkerAddress(ctx.(sdk.Context), address)
+		TopicIds, err = qs.k.GetRegisteredTopicIdsByWorkerAddress(sdk.UnwrapSDKContext(ctx), address)
 		if err != nil {
 			return nil, err
 		}
