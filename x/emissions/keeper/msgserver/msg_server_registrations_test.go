@@ -1,10 +1,45 @@
 package msgserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func (s *KeeperTestSuite) TestMsgRegisterReputer() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topic1 := types.Topic{Id: 1, Creator: creatorAddress.String(), Active: true}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, 1, topic1)
+	// Reputer register
+	registerMsg := &types.MsgRegister{
+		Sender:       reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      1,
+		IsReputer:    true,
+		Owner:        "Reputer",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		reputerAddr,
+		mintAmount,
+	)
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+}
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -34,6 +69,8 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	topic1 := types.Topic{Id: topicId, Creator: reputerAddr.String(), Active: true}
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
 	// Zero initial stake
 
 	// Topic does not exist
@@ -46,6 +83,30 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 		IsReputer:    true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
+	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
+}
+
+func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+	s.CreateOneTopic()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	registrationInitialStake := cosmosMath.NewUint(100)
+	//// Register Reputer
+	reputerRegMsg := &types.MsgRegister{
+		Sender:       reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      0,
+		IsReputer:    true,
+	}
+
+	s.emissionsKeeper.AddStake(ctx, 0, reputerAddr, registrationInitialStake.QuoUint64(2))
+
+	// Try to register with zero initial stake and having half of the initial stake removed
+	_, err := msgServer.Register(ctx, reputerRegMsg)
 	require.ErrorIs(err, types.ErrInsufficientStakeToRegister, "Register should return an error")
 }
 
