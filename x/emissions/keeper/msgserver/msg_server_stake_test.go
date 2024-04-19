@@ -74,7 +74,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()) // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address())  // target
 	stakeAmount := cosmosMath.NewUint(100)
-	// stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
+	stakeAmountCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromBigInt(stakeAmount.BigInt())))
 
 	// Common setup for staking
 	registrationInitialStake := cosmosMath.NewUint(100)
@@ -86,6 +86,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 		Amount:  stakeAmount,
 	}
 
+	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), reputerAddr, types.AlloraStakingAccountName, stakeAmountCoins)
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
 
 	require.NoError(err, "AddStake should not return an error")
