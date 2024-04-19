@@ -180,7 +180,6 @@ func GetRequestsThatMaxFees(
 						Requests:      newRequests,
 						FeesGenerated: newFeesGenerated}
 					if newFeesGenerated.GT(maxFees) {
-						fmt.Println("\n >>>>>>>>>3")
 						maxFees = newFeesGenerated
 						bestPrice = price
 					}
@@ -246,7 +245,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*types.Topic
-	fmt.Printf("Top topics by return: %v\n", topTopicsByReturn)
 	for _, topic := range topTopicsByReturn {
 		// Add to the fee revenue collected for this topic for this reward epoch
 		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
