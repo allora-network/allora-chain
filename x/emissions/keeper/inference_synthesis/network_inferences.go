@@ -569,7 +569,7 @@ func CalcNetworkInferences(
 		CombinedValue:          combinedNetworkInference,
 		InfererValues:          infererValues,
 		ForecasterValues:       forecastImpliedInferences,
-    NaiveValue:             naiveInference,
+		NaiveValue:             naiveInference,
 		OneOutInfererValues:    oneOutInferences,
 		OneOutForecasterValues: oneOutImpliedInferences,
 		OneInForecasterValues:  oneInInferences,
