@@ -83,12 +83,6 @@ func IsValidAtPrice(
 		fmt.Println("Error getting request demand: ", err)
 		return false, err
 	}
-	/*
-		fmt.Println("req.LastChecked+req.Cadence <= currentTime", req.LastChecked+req.Cadence <= currentTime)
-		fmt.Println("req.TimestampValidUntil > currentTime", req.TimestampValidUntil > currentTime)
-		fmt.Println("reqUnmetDemand.GTE(price)", reqUnmetDemand.GTE(price))
-		fmt.Println("req.MaxPricePerInference.GTE(price)", req.MaxPricePerInference.GTE(price))
-	*/
 	res :=
 		req.BlockLastChecked+req.Cadence <= currentBlock &&
 			req.BlockValidUntil > currentBlock &&
@@ -158,6 +152,7 @@ func GetRequestsThatMaxFees(
 			fmt.Println("Error checking if request is valid at price: ", err)
 			return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
 		}
+		fmt.Println("isValidAtPrice ", isValidAtPrice)
 		//fmt.Println("Req id ", req.TopicId, " is valid at price ", req.MaxPricePerInference, " : ", isValidAtPrice)
 		if isValidAtPrice {
 			price := req.MaxPricePerInference
@@ -170,21 +165,25 @@ func GetRequestsThatMaxFees(
 			}
 			demandCurve[priceStr] = Demand{
 				Requests:      make([]types.InferenceRequest, 0),
-				FeesGenerated: cosmosMath.ZeroUint()}
+				FeesGenerated: cosmosMath.ZeroUint(),
+			}
 
 			for _, req2 := range requestsForGivenTopic {
+				fmt.Println("\n >>>>>>>>>1")
 				isValidAtPrice, err := IsValidAtPrice(ctx, k, req2, price, currentBlock)
 				if err != nil {
 					fmt.Println("Error checking if request is valid at price: ", err)
 					return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
 				}
 				if isValidAtPrice {
+					fmt.Println("\n >>>>>>>>>2")
 					newFeesGenerated := demandCurve[priceStr].FeesGenerated.Add(price)
 					newRequests := append(demandCurve[priceStr].Requests, req2)
 					demandCurve[priceStr] = Demand{
 						Requests:      newRequests,
 						FeesGenerated: newFeesGenerated}
 					if newFeesGenerated.GT(maxFees) {
+						fmt.Println("\n >>>>>>>>>3")
 						maxFees = newFeesGenerated
 						bestPrice = price
 					}
@@ -217,17 +216,20 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 			fmt.Println("Error getting mempool inference requests: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
-
+		fmt.Println("\n >>>> Inference Requests :: ", inferenceRequests)
 		priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentBlock, inferenceRequests)
 		if err != nil {
 			fmt.Println("Error getting requests that maximize fees: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
-		fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
+		fmt.Println("\n Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
 		topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
 		topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
 		requestsToDrawDemandFrom[topic.Id] = requestsToUse
 	}
+	fmt.Println("topicsActiveWithDemand", topicsActiveWithDemand)
+	fmt.Println("topicBestPrices", topicBestPrices)
+	fmt.Println("requestsToDrawDemandFrom", requestsToDrawDemandFrom)
 
 	// Sort topics by topicBestPrices
 	sortedTopics := SortTopicsByReturnDescWithRandomTiebreaker(topicsActiveWithDemand, topicBestPrices, currentBlock)
@@ -251,7 +253,9 @@ func ChurnRequestsGetActiveTopicsAndDemand(ctx sdk.Context, k keeper.Keeper, cur
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*types.Topic
+	fmt.Printf("Top topics by return: %v\n", topTopicsByReturn)
 	for _, topic := range topTopicsByReturn {
+		fmt.Println(">>>>>>>> topic :::", topicBestPrices[topic.Id].Return)
 		// Add to the fee revenue collected for this topic for this reward epoch
 		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
 

@@ -3,11 +3,12 @@ package msgserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
@@ -24,9 +25,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
+	// Check if the sender has enough balance to create a topic
+	fee, err := ms.GetTopicCreationFee(ctx)
+	if err != nil {
+		return nil, err
+	}
+	hasEnoughBal := ms.CheckBalanceForTopicCreation(ctx, creator, fee)
 	if !hasEnoughBal {
-		return nil, types.ErrTopicCreatorNotEnoughDenom
+		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
 	}
 
 	id, err := ms.k.GetNumTopics(ctx)
@@ -107,12 +113,15 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
 }
 
-func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+func (ms msgServer) GetTopicCreationFee(ctx context.Context) (sdk.Coin, error) {
 	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
 	if err != nil {
-		return false, sdk.Coin{}, err
+		return sdk.Coin{}, err
 	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	return sdk.NewCoin(params.DefaultBondDenom, amountInt), nil
+}
+
+func (ms msgServer) CheckBalanceForTopicCreation(ctx context.Context, address sdk.AccAddress, fee sdk.Coin) bool {
 	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
-	return balance.IsGTE(fee), fee, nil
+	return balance.IsGTE(fee)
 }

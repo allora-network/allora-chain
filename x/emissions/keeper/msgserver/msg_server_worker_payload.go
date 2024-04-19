@@ -29,7 +29,6 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		/// All filters should be done in order of increasing computational complexity
 
 		// check signatures from the bundle throw if invalid!
-
 		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
 		if err != nil || len(pk) != secp256k1.PubKeySize {
 			return nil, types.ErrSignatureVerificationFailed

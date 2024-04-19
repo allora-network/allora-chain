@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 
+	"cosmossdk.io/errors"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -39,7 +40,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
-		return nil, types.ErrNonceStillUnfulfilled
+		return nil, errors.Wrap(types.ErrNonceStillUnfulfilled, "worker nonce")
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -49,7 +50,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
-		return nil, types.ErrNonceAlreadyFulfilled
+		return nil, errors.Wrap(types.ErrNonceAlreadyFulfilled, "reputer nonce")
 	}
 
 	params, err := ms.k.GetParams(ctx)
@@ -67,6 +68,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 		if err != nil {
 			return nil, err
 		}
+
+		// TODO: need to check if parameters are not nil to avoid panic
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {

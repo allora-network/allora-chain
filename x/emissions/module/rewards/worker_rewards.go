@@ -62,13 +62,14 @@ func getInferenceOrForecastTaskEntropy(
 	err error,
 ) {
 	var scoresAtBlock types.Scores
+	// TODO: Check if we need to create GetLastestWorkerInferenceScore
 	if which == TASK_INFERENCE {
-		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
 	} else { // TASK_FORECAST
-		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
@@ -473,6 +474,7 @@ func GetRewardsWithOutTax(
 
 	var result []TaskRewards
 	// Get average reward for this worker
+	// TODO: Actually check for errors in this loop
 	for _, reward := range rewards {
 		avg, err := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
 		if err != nil {
@@ -491,7 +493,10 @@ func GetRewardsWithOutTax(
 		if err != nil {
 			continue
 		}
-		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
+		err = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
+		if err != nil {
+			continue
+		}
 		fee, err := CalculateWorkerTax(avg.Value, params.SybilTaxExponent, params.NumberExpectedInferenceSybils)
 		if err != nil {
 			continue

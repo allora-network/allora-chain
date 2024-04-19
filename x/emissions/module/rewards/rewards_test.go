@@ -4,17 +4,17 @@ import (
 	"testing"
 	"time"
 
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
-
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -45,6 +45,7 @@ type RewardsTestSuite struct {
 	appModule       module.AppModule
 	msgServer       types.MsgServer
 	key             *storetypes.KVStoreKey
+	privKeys        map[string]secp256k1.PrivKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
 }
@@ -63,6 +64,7 @@ func (s *RewardsTestSuite) SetupTest() {
 		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
 		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
 		types.AlloraRewardsAccountName:  {"minter"},
+		"ecosystem":                     {"minter"},
 		"bonded_tokens_pool":            {"burner", "staking"},
 		"not_bonded_tokens_pool":        {"burner", "staking"},
 		multiPerm:                       {"burner", "minter", "staking"},
@@ -78,17 +80,6 @@ func (s *RewardsTestSuite) SetupTest() {
 		params.Bech32PrefixAccAddr,
 		authtypes.NewModuleAddress("gov").String(),
 	)
-
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(10)
-	for i := 0; i < 10; i++ {
-		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
-		addrsStr = append(addrsStr, addrs[i].String())
-	}
-	s.addrs = addrs
-	s.addrsStr = addrsStr
-
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
 		storeService,
@@ -97,17 +88,18 @@ func (s *RewardsTestSuite) SetupTest() {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
-
-	s.ctx = ctx
-	s.accountKeeper = accountKeeper
-	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(
+	emissionsKeeper := keeper.NewKeeper(
 		encCfg.Codec,
 		addressCodec,
 		storeService,
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName)
+
+	s.ctx = ctx
+	s.accountKeeper = accountKeeper
+	s.bankKeeper = bankKeeper
+	s.emissionsKeeper = emissionsKeeper
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
@@ -115,8 +107,30 @@ func (s *RewardsTestSuite) SetupTest() {
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
 	s.appModule = appModule
 
+	// Add coins to account module
+	amount := sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(10000000000))
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, sdk.NewCoins(amount))
+	s.Require().NoError(err)
+
+	// Create accounts and fund it
+	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
+	var addrsStr []string = make([]string, 0)
+	var privKeys = make(map[string]secp256k1.PrivKey)
+	for i := 0; i < 10; i++ {
+		senderPrivKey := secp256k1.GenPrivKey()
+		pubkey := senderPrivKey.PubKey().Address()
+		err := s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraRewardsAccountName, sdk.AccAddress(pubkey), sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(10000000))))
+		s.Require().NoError(err)
+		addrs = append(addrs, sdk.AccAddress(pubkey))
+		addrsStr = append(addrsStr, addrs[i].String())
+		privKeys[addrsStr[i]] = senderPrivKey
+	}
+	s.addrs = addrs
+	s.addrsStr = addrsStr
+	s.privKeys = privKeys
+
 	// Add all tests addresses in whitelists
-	for _, addr := range addrs {
+	for _, addr := range s.addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
 		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
@@ -125,4 +139,159 @@ func (s *RewardsTestSuite) SetupTest() {
 
 func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(RewardsTestSuite))
+}
+
+func (s *RewardsTestSuite) TestStandardRewardEmission() {
+	block := int64(600)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Reputer Addresses
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Worker Addresses
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[5],
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+		s.addrs[9],
+	}
+
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Add demand for the topic
+	r := types.MsgRequestInference{
+		Sender: reputerAddrs[0].String(),
+		Requests: []*types.RequestInferenceListItem{
+			{
+				Nonce:                0,
+				TopicId:              topicId,
+				Cadence:              1,
+				MaxPricePerInference: cosmosMath.NewUint(100),
+				BidAmount:            cosmosMath.NewUint(100),
+				BlockValidUntil:      block + 10,
+				ExtraData:            []byte("Test"),
+			},
+		},
+	}
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err)
+
+	// Register 5 workers
+	registrationInitialStake := cosmosMath.NewUint(100)
+	for _, addr := range workerAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Creator:      addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicIds:     []uint64{topicId},
+			InitialStake: registrationInitialStake,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Register 5 reputers
+	for _, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Creator:      addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicIds:     []uint64{topicId},
+			InitialStake: registrationInitialStake,
+			IsReputer:    true,
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Add Stake for reputers (using simulation values => subtracting initial stake)
+	var stakes = []cosmosMath.Uint{
+		cosmosMath.NewUint(1176544),
+		cosmosMath.NewUint(384523),
+		cosmosMath.NewUint(394576),
+		cosmosMath.NewUint(207899),
+		cosmosMath.NewUint(368482),
+	}
+	for i, addr := range reputerAddrs {
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId,
+		})
+		s.Require().NoError(err)
+	}
+
+	// Insert unfullfiled nonces
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles := GenerateLossBundles(s, block, topicId)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	block += 1
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Trigger end block - rewards distribution
+	err = s.appModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 }

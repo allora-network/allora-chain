@@ -11,13 +11,14 @@ import (
 )
 
 func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) error {
-	// Get Total Emissions/ Fees Collected
+	// Get Allora Rewards Account
+	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 
 	// Get Total Allocation
 	totalReward := k.BankKeeper().GetBalance(
 		ctx,
-		sdk.AccAddress(types.AlloraRewardsAccountName),
-		sdk.DefaultBondDenom).Amount
+		alloraRewardsAccountAddr,
+		params.DefaultBondDenom).Amount
 	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
 	if err != nil {
 		return err
@@ -49,7 +50,8 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		topicRewards[i] = topicReward
 	}
 
-	blockHeight := ctx.BlockHeight()
+	// TODO: Check if we need to get the block height - 1
+	blockHeight := ctx.BlockHeight() - 1
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
@@ -203,7 +205,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 
 func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) error {
 	for _, reward := range rewards {
-		address, err := sdk.AccAddressFromBech32(string(reward.Address))
+		address, err := sdk.AccAddressFromBech32(reward.Address.String())
 		if err != nil {
 			return err
 		}

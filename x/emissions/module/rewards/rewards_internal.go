@@ -951,13 +951,13 @@ func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
 func CalculateWorkerTax(
 	average alloraMath.Dec,
 	sybilTaxExponent uint64,
-	numberExpectedInfernceSybils uint64,
+	numberExpectedInferenceSybils uint64,
 ) (alloraMath.Dec, error) {
 	a := sybilTaxExponent - 1
 	if a == math.MaxUint64 { // overflow
 		a = 0
 	}
-	numClientsForTax := alloraMath.NewDecFromInt64(int64(numberExpectedInfernceSybils))
+	numClientsForTax := alloraMath.NewDecFromInt64(int64(numberExpectedInferenceSybils))
 	aDec := alloraMath.NewDecFromInt64(int64(a))
 
 	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)

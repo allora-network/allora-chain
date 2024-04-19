@@ -19,7 +19,8 @@ func GetReputerTaskEntropy(
 	reputers []sdk.AccAddress,
 	err error,
 ) {
-	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+	// TODO: Check if we need to get the block height - 1 (we might need to create GetLatestReputersScores)
+	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
 	if err != nil {
 		return alloraMath.Dec{}, nil, nil, err
 	}
