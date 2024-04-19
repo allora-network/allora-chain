@@ -60,7 +60,6 @@ func (s *MintModuleTestSuite) SetupTest() {
 		"fee_collector":                     nil,
 		"mint":                              {"minter"},
 		emissions.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		types.EcosystemModuleName:           {"burner", "minter", "staking"},
 		emissions.AlloraRequestsAccountName: {"burner", "minter", "staking"},
 		"bonded_tokens_pool":                {"burner", "staking"},
 		"not_bonded_tokens_pool":            {"burner", "staking"},
