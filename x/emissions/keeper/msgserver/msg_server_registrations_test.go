@@ -10,16 +10,19 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
+	topicId := uint64(0)
+
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
+		Sender:       reputerAddr.String(),
+		Owner:        reputerAddr.String(),
 		LibP2PKey:    "",
 		MultiAddress: "test",
-		TopicIds:     []uint64{0},
+		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -30,6 +33,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegister() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
+	topicId := uint64(0)
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
@@ -38,10 +42,11 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
+		Sender:       reputerAddr.String(),
+		Owner:        reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicIds:     []uint64{0},
+		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -113,16 +118,19 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
+	topicId := uint64(0)
+
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	registrationInitialStake := cosmosMath.NewUint(100)
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
+		Sender:       reputerAddr.String(),
+		Owner:        reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicIds:     []uint64{0},
+		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}

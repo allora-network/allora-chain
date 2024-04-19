@@ -14,6 +14,9 @@ import (
 func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.AccAddress, workerAddr sdk.AccAddress, registrationInitialStake cosmosMath.Uint) {
 	msgServer := s.msgServer
 	require := s.Require()
+
+	topicId := uint64(0)
+
 	registrationInitialStakeCoins := sdk.NewCoins(
 		sdk.NewCoin(
 			params.DefaultBondDenom,
@@ -40,10 +43,11 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
-		Creator:      reputerAddr.String(),
+		Sender:       reputerAddr.String(),
+		Owner:        reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicIds:     []uint64{0},
+		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
 		IsReputer:    true,
 	}
@@ -53,12 +57,12 @@ func (s *KeeperTestSuite) commonStakingSetup(ctx sdk.Context, reputerAddr sdk.Ac
 
 	// Register Worker
 	workerRegMsg := &types.MsgRegister{
-		Creator:      workerAddr.String(),
+		Sender:       workerAddr.String(),
+		Owner:        workerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicIds:     []uint64{0},
+		TopicId:      topicId,
 		InitialStake: registrationInitialStake,
-		Owner:        workerAddr.String(),
 	}
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(gomock.Any(), workerAddr, types.AlloraStakingAccountName, registrationInitialStakeCoins)
 	_, err = msgServer.Register(ctx, workerRegMsg)
