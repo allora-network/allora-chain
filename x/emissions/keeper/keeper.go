@@ -1685,7 +1685,7 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 }
 
 // Returns the number of topics that are active in the network
-func (k *Keeper) GetNumTopics(ctx context.Context) (TopicId, error) {
+func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 

@@ -1943,7 +1943,7 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	worker := sdk.AccAddress("sampleWorkerAddress")
-	topicIds := []uint64{401, 402}
+	topicId := uint64(401)
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
@@ -1955,7 +1955,7 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	}
 
 	// Attempt to insert the worker for multiple topics
-	err := keeper.InsertWorker(ctx, topicIds, worker, workerInfo)
+	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
 	node, err := keeper.FindWorkerNodesByOwner(ctx, workerInfo.Owner)
@@ -1972,7 +1972,7 @@ func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	worker := sdk.AccAddress("sampleWorkerAddress")
-	topicIds := []uint64{401, 402}
+	topicId := uint64(401)
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
@@ -1984,7 +1984,7 @@ func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 	}
 
 	// Attempt to insert the worker for multiple topics
-	err := keeper.InsertWorker(ctx, topicIds, worker, workerInfo)
+	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
 	// Call the function to get the worker address using the P2P key
@@ -2011,7 +2011,7 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 	}
 
 	// Insert the worker
-	insertErr := keeper.InsertWorker(ctx, []uint64{topicId}, worker, workerInfo)
+	insertErr := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(insertErr, "Failed to insert worker initially")
 
 	// Verify the worker is registered in the topic
@@ -2033,7 +2033,7 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	reputer := sdk.AccAddress("sampleReputerAddress")
-	topicIds := []uint64{501, 502}
+	topicId := uint64(501)
 
 	// Define sample OffchainNode information for a reputer
 	reputerInfo := types.OffchainNode{
@@ -2045,15 +2045,13 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	}
 
 	// Attempt to insert the reputer for multiple topics
-	err := keeper.InsertReputer(ctx, topicIds, reputer, reputerInfo)
+	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
 	// Optionally check if reputer is registered in each topic using an assumed IsReputerRegisteredInTopic method
-	for _, topicId := range topicIds {
-		isRegistered, regErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
-		s.Require().NoError(regErr, "Checking reputer registration should not fail")
-		s.Require().True(isRegistered, "Reputer should be registered in each topic")
-	}
+	isRegistered, regErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	s.Require().NoError(regErr, "Checking reputer registration should not fail")
+	s.Require().True(isRegistered, "Reputer should be registered in each topic")
 }
 
 func (s *KeeperTestSuite) TestRemoveReputer() {
@@ -2063,7 +2061,7 @@ func (s *KeeperTestSuite) TestRemoveReputer() {
 	topicId := uint64(501)
 
 	// Pre-setup: Insert the reputer for initial setup
-	err := keeper.InsertReputer(ctx, []uint64{topicId}, reputer, types.OffchainNode{Owner: "sample-owner"})
+	err := keeper.InsertReputer(ctx, topicId, reputer, types.OffchainNode{Owner: "sample-owner"})
 	s.Require().NoError(err, "InsertReputer failed during setup")
 
 	// Verify the reputer is registered in the topic
@@ -2085,7 +2083,7 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	reputer := sdk.AccAddress("sampleReputerAddress")
-	topicIds := []uint64{501, 502}
+	topicId := uint64(501)
 
 	// Define sample OffchainNode information for a reputer
 	reputerInfo := types.OffchainNode{
@@ -2097,7 +2095,7 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	}
 
 	// Insert the reputer for multiple topics
-	err := keeper.InsertReputer(ctx, topicIds, reputer, reputerInfo)
+	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
 	// Retrieve the reputer address using the P2P key
@@ -2260,17 +2258,16 @@ func (s *KeeperTestSuite) TestGetRegisteredTopicIdsByWorkerAddress() {
 		NodeAddress: "worker-node-address-sample",
 		NodeId:      "worker-node-id-sample",
 	}
-	topicIds := []uint64{1, 3}
+	topicId := uint64(1)
 
 	// Register the worker for multiple topics using InsertWorker
-	err := keeper.InsertWorker(ctx, topicIds, workerAddress, workerInfo)
+	err := keeper.InsertWorker(ctx, topicId, workerAddress, workerInfo)
 	s.Require().NoError(err, "Inserting worker should not fail")
 
 	// Test fetching topic IDs by worker address
 	registeredTopicIds, err := keeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddress)
 	s.Require().NoError(err, "Fetching registered topic IDs by worker address should not fail")
-	s.Require().Equal(len(topicIds), len(registeredTopicIds), "The number of topic IDs should match")
-	s.Require().ElementsMatch(topicIds, registeredTopicIds, "The returned topic IDs should match the expected ones")
+	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
 }
 
 func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
@@ -2285,17 +2282,16 @@ func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
 		NodeAddress:  "reputer-node-address-sample",
 		NodeId:       "reputer-node-id-sample",
 	}
-	topicIds := []uint64{2, 4} // Sample topic IDs for registration
+	topicId := uint64(2)
 
 	// Register the reputer for multiple topics using InsertReputer
-	err := keeper.InsertReputer(ctx, topicIds, reputerAddress, reputerInfo)
+	err := keeper.InsertReputer(ctx, topicId, reputerAddress, reputerInfo)
 	s.Require().NoError(err, "Inserting reputer should not fail")
 
 	// Test fetching topic IDs by reputer address
 	registeredTopicIds, err := keeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddress)
 	s.Require().NoError(err, "Fetching registered topic IDs by reputer address should not fail")
-	s.Require().Equal(len(topicIds), len(registeredTopicIds), "The number of topic IDs should match")
-	s.Require().ElementsMatch(topicIds, registeredTopicIds, "The returned topic IDs should match the expected ones")
+	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {
@@ -2312,23 +2308,12 @@ func (s *KeeperTestSuite) TestIncrementTopicId() {
 	s.Require().Equal(initialTopicId+1, newTopicId, "New topic ID should be one more than the initial topic ID")
 }
 
-func (s *KeeperTestSuite) TestGetNumTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Assume IncrementTopicId is used to track the count of topics
-	_, _ = keeper.IncrementTopicId(ctx) // Simulate existing topics
-	_, _ = keeper.IncrementTopicId(ctx)
-
-	// Get the number of topics
-	numTopics, err := keeper.GetNumTopics(ctx)
-	s.Require().NoError(err, "Fetching the number of topics should not fail")
-	s.Require().Equal(uint64(2), numTopics, "The number of topics should match the number incremented")
-}
-
 func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
+
+	nextTopicIdStart, err := keeper.GetNextTopicId(ctx)
+	s.Require().NoError(err, "Fetching the number of topics should not fail")
 
 	// Create multiple topics to simulate actual usage
 	topicsToCreate := 5
@@ -2346,9 +2331,9 @@ func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
 	}
 
 	// Now retrieve the total number of topics
-	numTopics, err := keeper.GetNumTopics(ctx)
+	nextTopicIdEnd, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err, "Fetching the number of topics should not fail")
-	s.Require().Equal(uint64(topicsToCreate), numTopics, "The number of topics should exactly match the number created")
+	s.Require().Equal(uint64(topicsToCreate), nextTopicIdEnd-nextTopicIdStart)
 }
 
 func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {

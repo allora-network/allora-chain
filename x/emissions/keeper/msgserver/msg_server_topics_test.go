@@ -7,9 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ########################################
-// #           Topics tests              #
-// ########################################
+/// Topics tests
 
 func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -34,14 +32,23 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.NoError(err, "CreateTopic fails on first creation")
+	s.MintTokensToAddress(senderAddr, types.DefaultParamsCreateTopicFee())
 
-	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
-	s.Require().NoError(err)
+	// s.PrepareForCreateTopic(newTopicMsg.Creator)
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on first creation")
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
+
+	activeTopics, err := s.emissionsKeeper.GetActiveTopics(s.ctx)
+	require.NoError(err, "CreateTopic fails on first creation")
+	found := false
+	for _, topic := range activeTopics {
+		if topic.Id == result.TopicId {
+			found = true
+			break
+		}
+	}
+	require.True(found, "Added topic not found in active topics")
 }
 
 func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {

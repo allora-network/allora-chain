@@ -30,7 +30,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrTopicCreatorNotEnoughDenom
 	}
 
-	id, err := ms.k.GetNumTopics(ctx)
+	id, err := ms.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
