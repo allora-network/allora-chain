@@ -188,25 +188,25 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	err = synth.GetCalcSetNetworkRegrets(ctx.(sdk.Context), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate and Set the reputer scores
-	_, err = rewards.GenerateReputerScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
+	_, err = rewards.GenerateReputerScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate and Set the worker scores for their inference work
-	_, err = rewards.GenerateInferenceScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
+	_, err = rewards.GenerateInferenceScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate and Set the worker scores for their forecast work
-	_, err = rewards.GenerateForecastScores(ctx.(sdk.Context), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
+	_, err = rewards.GenerateForecastScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}

@@ -140,8 +140,9 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string sigmoid_b = 37
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated int64 max_retries_to_fulfil_nonces_worker = 38;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 39;
+  repeated uint64 gradient_descent_max_iters = 38;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 39;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 40;
 }
 
 message MsgUpdateParams {

@@ -1,8 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -51,7 +49,6 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 				s.Require().ErrorIs(err, tc.expectedErr, "Error should match the expected error")
 			} else {
 				s.Require().NoError(err, "No error expected but got one")
-				log.Printf("Expected loss: %v, Actual loss: %v, Epsilon: %v. Loss should match the expected value within epsilon.", tc.expectedLoss.Loss, updatedLoss.Loss, 1e-5)
 				s.Require().True(alloraMath.InDelta(tc.expectedLoss.Loss, updatedLoss.Loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match the expected value within epsilon")
 				s.Require().Equal(tc.expectedLoss.SumWeight, updatedLoss.SumWeight, "Sum of weights should match the expected value")
 			}

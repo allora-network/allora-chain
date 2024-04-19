@@ -55,6 +55,7 @@ func CalcForcastImpliedInferences(
 	inferenceByWorker map[Worker]*emissions.Inference,
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
+	allInferersAreNew bool,
 	epsilon alloraMath.Dec,
 	pInferenceSynthesis alloraMath.Dec,
 ) (map[Worker]*emissions.Inference, error) {
@@ -84,76 +85,104 @@ func CalcForcastImpliedInferences(
 				}
 			}
 
-			// Approximate forecast regrets of the network inference
-			// Map inferer -> regret
-			R_ik := make(map[Worker]Regret, len(forecastElementsByInferer))
-			// Weights used to map inferences to forecast-implied inferences
-			// Map inferer -> weight
-			w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
-
-			// Define variable to store maximum regret for forecast k
-			first := true
-			var maxjRijk alloraMath.Dec
-			for j, el := range forecastElementsByInferer {
-				// Calculate the approximate forecast regret of the network inference
-				networkLossPerValue, err := networkCombinedLoss.Quo(el.Value)
-				if err != nil {
-					fmt.Println("Error calculating network loss per value: ", err)
-					return nil, err
-				}
-				R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
-				if err != nil {
-					fmt.Println("Error calculating forecasted regrets: ", err)
-					return nil, err
-				}
-				if first {
-					maxjRijk = R_ik[j]
-					first = false
-				} else {
-					if R_ik[j].Gt(maxjRijk) {
-						maxjRijk = R_ik[j]
-					}
-				}
-			}
-
-			// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
-			var err error
-			for j := range forecastElementsByInferer {
-				R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
-				if err != nil {
-					fmt.Println("Error calculating normalized forecasted regrets: ", err)
-					return nil, err
-				}
-				w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
-				if err != nil {
-					fmt.Println("Error calculating gradient: ", err)
-					return nil, err
-				}
-				w_ik[j] = w_ijk
-			}
+			weightSum := alloraMath.ZeroDec()                 // denominator in calculation of forecast-implied inferences
+			weightInferenceDotProduct := alloraMath.ZeroDec() // numerator in calculation of forecast-implied inferences
+			err := error(nil)
 
 			// Calculate the forecast-implied inferences I_ik
-			weightSum := alloraMath.ZeroDec()
-			weightInferenceDotProduct := alloraMath.ZeroDec()
-			for j, w_ijk := range w_ik {
-				if inferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
-					thisDotProduct, err := w_ijk.Mul(inferenceByWorker[j].Value)
+			if allInferersAreNew {
+				// If all inferers are new, take regular average of inferences
+				// This means that forecasters won't be able to influence the network inference when all inferers are new
+				// However this seeds losses for forecasters for future rounds
+
+				for _, el := range forecastElementsByInferer {
+					if inferenceByWorker[el.Inferer] != nil {
+						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[el.Inferer].Value)
+						if err != nil {
+							fmt.Println("Error adding dot product: ", err)
+							return nil, err
+						}
+						weightSum, err = weightSum.Add(alloraMath.OneDec())
+						if err != nil {
+							fmt.Println("Error adding weight: ", err)
+							return nil, err
+						}
+					}
+				}
+			} else {
+				// If not all inferers are new, calculate forecast-implied inferences using the previous inferer regrets and previous network loss
+
+				// Approximate forecast regrets of the network inference
+				// Map inferer -> regret
+				R_ik := make(map[Worker]Regret, len(forecastElementsByInferer))
+				// Weights used to map inferences to forecast-implied inferences
+				// Map inferer -> weight
+				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
+
+				// Define variable to store maximum regret for forecast k
+				first := true
+				var maxjRijk alloraMath.Dec
+				for j, el := range forecastElementsByInferer {
+					// Calculate the approximate forecast regret of the network inference
+					networkLossPerValue, err := networkCombinedLoss.Quo(el.Value)
 					if err != nil {
-						fmt.Println("Error calculating dot product: ", err)
+						fmt.Println("Error calculating network loss per value: ", err)
 						return nil, err
 					}
-					weightInferenceDotProduct, err = weightInferenceDotProduct.Add(thisDotProduct)
+					R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
 					if err != nil {
-						fmt.Println("Error adding dot product: ", err)
+						fmt.Println("Error calculating forecasted regrets: ", err)
 						return nil, err
 					}
-					weightSum, err = weightSum.Add(w_ijk)
+					if first {
+						maxjRijk = R_ik[j]
+						first = false
+					} else {
+						if R_ik[j].Gt(maxjRijk) {
+							maxjRijk = R_ik[j]
+						}
+					}
+				}
+
+				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
+				var err error
+				for j := range forecastElementsByInferer {
+					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 					if err != nil {
-						fmt.Println("Error adding weight: ", err)
+						fmt.Println("Error calculating normalized forecasted regrets: ", err)
 						return nil, err
+					}
+					w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
+					if err != nil {
+						fmt.Println("Error calculating gradient: ", err)
+						return nil, err
+					}
+					w_ik[j] = w_ijk
+				}
+
+				// Calculate the forecast-implied inferences I_ik
+
+				for j, w_ijk := range w_ik {
+					if inferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
+						thisDotProduct, err := w_ijk.Mul(inferenceByWorker[j].Value)
+						if err != nil {
+							fmt.Println("Error calculating dot product: ", err)
+							return nil, err
+						}
+						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(thisDotProduct)
+						if err != nil {
+							fmt.Println("Error adding dot product: ", err)
+							return nil, err
+						}
+						weightSum, err = weightSum.Add(w_ijk)
+						if err != nil {
+							fmt.Println("Error adding weight: ", err)
+							return nil, err
+						}
 					}
 				}
 			}
+
 			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
 			if err != nil {
 				fmt.Println("Error calculating forecast value: ", err)
