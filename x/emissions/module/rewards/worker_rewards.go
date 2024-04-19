@@ -92,21 +92,23 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	for i, fraction := range rewardFractions {
+		noPriorScore := false
 		if which == TASK_INFERENCE {
-			previousRewardFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
 				return alloraMath.Dec{}, nil, nil, err
 			}
 		} else { // TASK_FORECAST
-			previousRewardFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
 				return alloraMath.Dec{}, nil, nil, err
 			}
 		}
-		emaRewardFractions[i], err = alloraMath.ExponentialMovingAverage(
+		emaRewardFractions[i], err = alloraMath.CalcEma(
 			emaAlpha,
 			fraction,
 			previousRewardFraction,
+			noPriorScore,
 		)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
@@ -464,6 +466,10 @@ func GetRewardsWithOutTax(
 	rewards []TaskRewards,
 	topicId uint64,
 ) ([]TaskRewards, error) {
+	params, err := keeper.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []TaskRewards
 	// Get average reward for this worker
@@ -486,7 +492,7 @@ func GetRewardsWithOutTax(
 			continue
 		}
 		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
-		fee, err := CalculateWorkerTax(avg.Value)
+		fee, err := CalculateWorkerTax(avg.Value, params.SybilTaxExponent, params.NumberExpectedInferenceSybils)
 		if err != nil {
 			continue
 		}

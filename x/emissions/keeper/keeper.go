@@ -462,49 +462,55 @@ func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, error) {
+// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns (0, true) if no regret is found
+func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(1),
-			}, nil
+				Value:       alloraMath.NewDecFromInt64(0),
+			}, true, nil
 		}
-		return types.TimestampedValue{}, err
+		return types.TimestampedValue{}, false, err
 	}
-	return regret, nil
+	return regret, false, nil
 }
 
-func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, error) {
+// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns (0, true) if no regret is found
+func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(1),
-			}, nil
+				Value:       alloraMath.NewDecFromInt64(0),
+			}, true, nil
 		}
-		return types.TimestampedValue{}, err
+		return types.TimestampedValue{}, false, err
 	}
-	return regret, nil
+	return regret, false, nil
 }
 
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker) (types.TimestampedValue, error) {
+// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns (0, true) if no regret is found
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker) (types.TimestampedValue, bool, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(1),
-			}, nil
+				Value:       alloraMath.NewDecFromInt64(0),
+			}, true, nil
 		}
-		return types.TimestampedValue{}, err
+		return types.TimestampedValue{}, false, err
 	}
-	return regret, nil
+	return regret, false, nil
 }
 
 /// PARAMETERS
@@ -586,6 +592,30 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 		return 0, err
 	}
 	return params.MaxRequestCadence, nil
+}
+
+func (k *Keeper) GetParamsSharpness(ctx context.Context) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return params.Sharpness, nil
+}
+
+func (k *Keeper) GetParamsLearningRate(ctx context.Context) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return params.LearningRate, nil
+}
+
+func (k *Keeper) GetParamsGradientDescentMaxIters(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.GradientDescentMaxIters, nil
 }
 
 func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
@@ -1568,16 +1598,17 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 /// TOPICS
 
 // Get the previous weight during rewards calculation for a topic
-func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (types.PreviousTopicWeight, error) {
+// Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
+func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (types.PreviousTopicWeight, bool, error) {
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		ret := types.PreviousTopicWeight{
 			Weight: alloraMath.ZeroDec(),
 			Epoch:  0,
 		}
-		return ret, nil
+		return ret, true, nil
 	}
-	return topicWeight, err
+	return topicWeight, false, err
 }
 
 // Set the previous weight during rewards calculation for a topic
@@ -1700,25 +1731,6 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
-}
-
-// TODO paginate
-// GetTopicsByCreator returns a slice of all topics created by a given creator.
-func (k *Keeper) GetTopicsByCreator(ctx context.Context, creator string) ([]*types.Topic, error) {
-	var topicsByCreator []*types.Topic
-
-	err := k.topics.Walk(ctx, nil, func(id TopicId, topic types.Topic) (bool, error) {
-		if topic.Creator == creator {
-			topicsByCreator = append(topicsByCreator, &topic)
-		}
-		return false, nil // Continue iterating
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByCreator, nil
 }
 
 // AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
@@ -2266,16 +2278,17 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 /// REWARD FRACTION
 
 // Gets the previous W_{i-1,m}
-func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, error) {
+// Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
+func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, reputer)
 	reward, err := k.previousReputerRewardFraction.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
+			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, false, err
 	}
-	return reward, nil
+	return reward, false, nil
 }
 
 // Sets the previous W_{i-1,m}
@@ -2285,16 +2298,17 @@ func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId T
 }
 
 // Gets the previous U_{i-1,m}
-func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+// Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
+func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousInferenceRewardFraction.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
+			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, false, err
 	}
-	return reward, nil
+	return reward, false, nil
 }
 
 // Sets the previous U_{i-1,m}
@@ -2304,16 +2318,17 @@ func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId
 }
 
 // Gets the previous V_{i-1,m}
-func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, error) {
+// Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
+func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousForecastRewardFraction.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
+			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, false, err
 	}
-	return reward, nil
+	return reward, false, nil
 }
 
 // Sets the previous V_{i-1,m}

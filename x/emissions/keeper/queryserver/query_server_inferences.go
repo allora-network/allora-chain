@@ -48,7 +48,7 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
-	networkInferences, blockHeight, err := synth.GetNetworkInferencesAtBlock(ctx.(sdk.Context), qs.k, req.TopicId, req.BlockHeight)
+	networkInferences, blockHeight, err := synth.GetNetworkInferencesAtBlock(sdk.UnwrapSDKContext(ctx), qs.k, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
 	}

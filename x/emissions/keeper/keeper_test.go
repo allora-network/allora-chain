@@ -418,7 +418,7 @@ func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Inferer Network Regret
-	gotRegret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	gotRegret, _, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
@@ -436,9 +436,11 @@ func (s *KeeperTestSuite) TestSetAndGetForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Forecaster Network Regret
-	gotRegret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	gotRegret, noPrior, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
+	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
+	s.Require().Equal(noPrior, false)
 }
 
 func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
@@ -455,9 +457,11 @@ func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get One-In Forecaster Network Regret
-	gotRegret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	gotRegret, noPrior, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
+	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
+	s.Require().Equal(noPrior, false)
 }
 
 func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
@@ -467,9 +471,10 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
 	worker := sdk.AccAddress("nonexistent-inferer-address")
 
 	// Attempt to get Inferer Network Regret for a nonexistent worker
-	regret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	regret, noPrior, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent inferer")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent inferer")
+	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent inferer")
 }
 
 func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
@@ -479,9 +484,10 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
 	worker := sdk.AccAddress("nonexistent-forecaster-address")
 
 	// Attempt to get Forecaster Network Regret for a nonexistent worker
-	regret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	regret, noPrior, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster")
+	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent forecaster")
 }
 
 func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
@@ -492,9 +498,10 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
 	inferer := sdk.AccAddress("nonexistent-inferer-address")
 
 	// Attempt to get One-In Forecaster Network Regret for a nonexistent forecaster-inferer pair
-	regret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	regret, noPrior, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(1)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
+	s.Require().Equal(noPrior, true, "No prior regret should be returned for nonexistent forecaster-inferer pair")
 }
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
@@ -506,26 +513,42 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	topicId1 := uint64(1)
 	topicId2 := uint64(2)
 
-	// Regrets
+	// Zero regret for initial check
+	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
+
+	// Initial regrets should be zero
+	gotRegret1, noPrior1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
+	s.Require().Equal(true, noPrior1, "Should return true for no prior regret on Topic ID 1")
+
+	gotRegret2, noPrior2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
+	s.Require().Equal(true, noPrior2, "Should return true for no prior regret on Topic ID 2")
+
+	// Regrets to be set
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same worker under different topic IDs
-	err := keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
+	err = keeper.SetInfererNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetInfererNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
-	// Get and compare regrets
-	gotRegret1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	// Get and compare regrets after setting them
+	gotRegret1, noPrior1, err = keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+	s.Require().Equal(false, noPrior1, "Should return false indicating prior regret is now set for Topic ID 1")
 
-	gotRegret2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, noPrior2, err = keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+	s.Require().Equal(false, noPrior2, "Should return false indicating prior regret is now set for Topic ID 2")
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
@@ -540,25 +563,33 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	topicId2 := uint64(2)
 
 	// Regrets
+	noRagret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
+	gotRegret1, noPrior1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(noRagret, gotRegret1)
+	s.Require().Equal(noPrior1, true)
+
 	// Set regrets for the same worker under different topic IDs
-	err := keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
+	err = keeper.SetForecasterNetworkRegret(ctx, topicId1, worker, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetForecasterNetworkRegret(ctx, topicId2, worker, regret2)
 	s.Require().NoError(err)
 
 	// Get and compare regrets
-	gotRegret1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, noPrior1, err = keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+	s.Require().Equal(noPrior1, false)
 
-	gotRegret2, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, noPrior2, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+	s.Require().Equal(noPrior2, false)
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
@@ -573,26 +604,42 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	topicId1 := uint64(1)
 	topicId2 := uint64(2)
 
-	// Regrets
+	// Zero regret for initial checks
+	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
+
+	// Initial regrets should be zero
+	gotRegret1, noPrior1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
+	s.Require().Equal(true, noPrior1, "Should return true indicating no prior regret for Topic ID 1")
+
+	gotRegret2, noPrior2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
+	s.Require().Equal(true, noPrior2, "Should return true indicating no prior regret for Topic ID 2")
+
+	// Regrets to be set
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
 	// Set regrets for the same forecaster-inferer pair under different topic IDs
-	err := keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
+	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer, regret1)
 	s.Require().NoError(err)
 	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer, regret2)
 	s.Require().NoError(err)
 
-	// Get and compare regrets
-	gotRegret1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	// Get and compare regrets after setting them
+	gotRegret1, noPrior1, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
+	s.Require().Equal(false, noPrior1, "Should return false now that prior regret is set for Topic ID 1")
 
-	gotRegret2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, noPrior2, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
+	s.Require().Equal(false, noPrior2, "Should return false now that prior regret is set for Topic ID 2")
 
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
@@ -2074,9 +2121,10 @@ func (s *KeeperTestSuite) TestSetAndGetPreviousTopicWeight() {
 	s.Require().NoError(err, "Setting previous topic weight should not fail")
 
 	// Get the previously set topic weight
-	retrievedWeight, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	retrievedWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err, "Getting previous topic weight should not fail")
 	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
+	s.Require().False(noPrior, "Should indicate prior weight for a set topic")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
@@ -2085,9 +2133,10 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
 	topicId := uint64(2)
 
 	// Attempt to get a weight for a topic that has no set weight
-	retrievedWeight, err := keeper.GetPreviousTopicWeight(ctx, topicId)
+	retrievedWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err, "Getting weight for an unset topic should not error but return zero value")
 	s.Require().Equal(types.PreviousTopicWeight{Weight: alloraMath.ZeroDec(), Epoch: 0}, retrievedWeight, "Weight for an unset topic should be zero")
+	s.Require().True(noPrior, "Should indicate no prior weight for an unset topic")
 }
 
 func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
@@ -2195,31 +2244,6 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 		default:
 			s.Fail("Unexpected topic ID retrieved")
 		}
-	}
-}
-
-func (s *KeeperTestSuite) TestGetTopicsByCreator() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	creatorAddress := "creator-sample-address"
-	topic1 := types.Topic{Id: 1, Creator: creatorAddress, Active: true}
-	topic2 := types.Topic{Id: 2, Creator: creatorAddress, Active: false}
-	topic3 := types.Topic{Id: 3, Creator: "other-address", Active: true}
-
-	// Setup topics
-	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
-	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
-
-	// Test fetching topics by creator
-	topics, err := keeper.GetTopicsByCreator(ctx, creatorAddress)
-	s.Require().NoError(err)
-	s.Require().Len(topics, 2, "Should retrieve exactly two topics for the creator")
-
-	// Check if the correct topics are returned
-	for _, topic := range topics {
-		s.Require().Equal(creatorAddress, topic.Creator, "Creator address should match the requested address")
 	}
 }
 
@@ -2987,9 +3011,10 @@ func (s *KeeperTestSuite) TestSetPreviousReputerRewardFraction() {
 	s.Require().NoError(err, "Setting previous reputer reward fraction should not fail")
 
 	// Verify by fetching the same
-	fetchedReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	fetchedReward, noPrior, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
@@ -2999,7 +3024,7 @@ func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
 	reputer := sdk.AccAddress("reputerAddressExample")
 
 	// Attempt to fetch a reward fraction before setting it
-	defaultReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	defaultReward, _, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
 
@@ -3008,9 +3033,10 @@ func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
 	_ = keeper.SetPreviousReputerRewardFraction(ctx, topicId, reputer, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+	fetchedReward, noPrior, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 func (s *KeeperTestSuite) TestSetPreviousInferenceRewardFraction() {
@@ -3027,9 +3053,10 @@ func (s *KeeperTestSuite) TestSetPreviousInferenceRewardFraction() {
 	s.Require().NoError(err, "Setting previous inference reward fraction should not fail")
 
 	// Verify by fetching the same
-	fetchedReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching the set reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
@@ -3039,18 +3066,20 @@ func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
 	worker := sdk.AccAddress("workerAddressExample")
 
 	// Attempt to fetch a reward fraction before setting it
-	defaultReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	defaultReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
+	s.Require().True(noPrior, "Should return no prior value when not set")
 
 	// Now set a specific reward fraction
 	setReward := alloraMath.NewDecFromInt64(75)
 	_ = keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 func (s *KeeperTestSuite) TestSetPreviousForecastRewardFraction() {
@@ -3067,9 +3096,10 @@ func (s *KeeperTestSuite) TestSetPreviousForecastRewardFraction() {
 	s.Require().NoError(err, "Setting previous forecast reward fraction should not fail")
 
 	// Verify by fetching the set value
-	fetchedReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching the set forecast reward fraction should not fail")
 	s.Require().True(fetchedReward.Equal(rewardFraction), "The fetched forecast reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value when set")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
@@ -3079,19 +3109,20 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	worker := sdk.AccAddress("forecastWorkerAddress")
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
-	defaultReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	defaultReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail when not set")
 	s.Require().True(defaultReward.IsZero(), "Should return zero forecast reward fraction when not set")
+	s.Require().True(noPrior, "Should return no prior value when not set")
 
 	// Now set a specific reward fraction
 	setReward := alloraMath.NewDecFromInt64(75) // Assume setting it to 0.75
 	_ = keeper.SetPreviousForecastRewardFraction(ctx, topicId, worker, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
+	fetchedReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
-
+	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
 /// TAX for REWARD

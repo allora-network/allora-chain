@@ -122,7 +122,7 @@ func GetActiveTopicWeights(
 			fmt.Println("target weight error")
 			return []alloraMath.Dec{}, alloraMath.Dec{}, err
 		}
-		previousTopicWeight, err := k.GetPreviousTopicWeight(ctx, topic.Id)
+		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topic.Id)
 		if err != nil {
 			fmt.Println("previous topic weight error")
 			return []alloraMath.Dec{}, alloraMath.Dec{}, err
@@ -131,7 +131,7 @@ func GetActiveTopicWeights(
 		if previousTopicWeight.Epoch == currentFeeRevenueEpoch-1 {
 			previousWeight = previousTopicWeight.Weight
 		}
-		weight, err := alloraMath.ExponentialMovingAverage(alphaTopic, targetWeight, previousWeight)
+		weight, err := alloraMath.CalcEma(alphaTopic, targetWeight, previousWeight, noPrior)
 		if err != nil {
 			fmt.Println("ema error")
 			return []alloraMath.Dec{}, alloraMath.Dec{}, err
