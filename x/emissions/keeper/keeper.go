@@ -594,6 +594,30 @@ func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, e
 	return params.MaxRequestCadence, nil
 }
 
+func (k *Keeper) GetParamsSharpness(ctx context.Context) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return params.Sharpness, nil
+}
+
+func (k *Keeper) GetParamsLearningRate(ctx context.Context) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return params.LearningRate, nil
+}
+
+func (k *Keeper) GetParamsGradientDescentMaxIters(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.GradientDescentMaxIters, nil
+}
+
 func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
