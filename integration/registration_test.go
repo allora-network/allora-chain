@@ -1,39 +1,9 @@
 package integration_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 )
-
-func getAlloraStakingModuleAccountBalance(m TestMetadata) cosmosMath.Int {
-	alloraStakingModuleAccResponse, err := m.n.QueryAuth.ModuleAccountByName(
-		m.ctx,
-		&authtypes.QueryModuleAccountByNameRequest{
-			Name: emissionstypes.AlloraStakingAccountName,
-		},
-	)
-	require.NoError(m.t, err)
-	var alloraStakingModuleAcc authtypes.ModuleAccount
-	err = m.n.Cdc.Unmarshal(
-		alloraStakingModuleAccResponse.Account.Value,
-		&alloraStakingModuleAcc,
-	)
-	require.NoError(m.t, err)
-
-	alloraStakingModuleAccBalance, err := m.n.QueryBank.Balance(
-		m.ctx,
-		&banktypes.QueryBalanceRequest{
-			Address: alloraStakingModuleAcc.Address,
-			Denom:   params.BaseCoinUnit,
-		},
-	)
-	require.NoError(m.t, err)
-	return alloraStakingModuleAccBalance.Balance.Amount
-}
 
 // register alice as a reputer in topic 1, then check success
 func RegisterAliceAsReputerTopic1(m TestMetadata) {
