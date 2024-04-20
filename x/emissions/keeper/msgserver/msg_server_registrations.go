@@ -29,9 +29,9 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, address)
+	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, address)
 	if !hasEnoughBal {
-		return nil, types.ErrTopicCreatorNotEnoughDenom
+		return nil, types.ErrTopicRegistrantNotEnoughDenom
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket

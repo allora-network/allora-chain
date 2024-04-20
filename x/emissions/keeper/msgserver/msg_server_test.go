@@ -164,15 +164,18 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
 }
 
-func (s *KeeperTestSuite) CreateOneTopic() {
+func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
+
+	creator := sdk.AccAddress(PKS[0].Address())
+
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
 		EpochLength:      10800,
@@ -186,9 +189,12 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
+
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
+
+	return result.TopicId
 }
 
 /*

@@ -25,7 +25,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
+	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
 	if !hasEnoughBal {
 		return nil, types.ErrTopicCreatorNotEnoughDenom
 	}
@@ -108,7 +108,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
 }
 
-func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
 	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

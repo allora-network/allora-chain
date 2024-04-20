@@ -80,25 +80,25 @@ func (s *KeeperTestSuite) TestMsgReactivateTopic() {
 	require := s.Require()
 
 	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 
 	// Deactivate topic
-	s.emissionsKeeper.InactivateTopic(ctx, 0)
+	s.emissionsKeeper.InactivateTopic(ctx, topicId)
 
 	// Set unmet demand for topic
-	s.emissionsKeeper.SetTopicUnmetDemand(ctx, 0, cosmosMath.NewUint(100))
+	s.emissionsKeeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(100))
 
 	// Create a MsgCreateNewTopic message
 	reactivateTopicMsg := &types.MsgReactivateTopic{
 		Sender:  topicCreator,
-		TopicId: 0,
+		TopicId: topicId,
 	}
 
 	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
 	require.NoError(err, "ReactivateTopic should not return an error")
 
 	// Check if topic is active
-	topic, err := s.emissionsKeeper.GetTopic(ctx, 0)
+	topic, err := s.emissionsKeeper.GetTopic(ctx, topicId)
 	require.NoError(err)
 	require.True(topic.Active, "Topic should be active")
 }
@@ -126,10 +126,9 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	ctx := s.ctx
 	require := s.Require()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 
 	// Mock setup for topic
-	topicId := uint64(0)
 	inferenceTs := int64(0x0)
 
 	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)

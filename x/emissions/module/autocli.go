@@ -130,6 +130,33 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "total-stake",
 					Short:     "Get the total amount of staked tokens by all participants in the network",
 				},
+				{
+					RpcMethod: "GetForecastsAtBlock",
+					Use:       "get-forecasts-at-block [topic_id] [block]",
+					Short:     "Get the Forecasts for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkInferencesAtBlock",
+					Use:       "get-network-inferences-at-block [topic_id] [block]",
+					Short:     "Get the Network Inferences for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkLossBundleAtBlock",
+					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
+					Short:     "Get the network loss bundle for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
@@ -170,11 +197,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "register [creator] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
-						{ProtoField: "topic_ids"},
-						{ProtoField: "initial_stake"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "owner"},
 						{ProtoField: "is_reputer"},
 					},
@@ -184,7 +210,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "remove-registration [creator] [owner] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "is_reputer"},
 					},
