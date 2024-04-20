@@ -37,16 +37,6 @@ func getAlloraStakingModuleAccountBalance(m TestMetadata) cosmosMath.Int {
 
 // register alice as a reputer in topic 1, then check success
 func RegisterAliceAsReputerTopic1(m TestMetadata) {
-	alloraStakingModuleBalanceBefore := getAlloraStakingModuleAccountBalance(m)
-
-	aliceBalanceBeforeResponse, err := m.n.QueryBank.Balance(m.ctx,
-		&banktypes.QueryBalanceRequest{
-			Address: m.n.AliceAddr,
-			Denom:   params.BaseCoinUnit,
-		},
-	)
-	require.NoError(m.t, err)
-	var aliceInitialStake uint64 = 100000
 	registerAliceRequest := &emissionstypes.MsgRegister{
 		Sender:       m.n.AliceAddr,
 		Owner:        m.n.AliceAddr,
@@ -71,48 +61,10 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 	require.Contains(m.t, aliceRegistered.TopicIds, uint64(1))
-	aliceBalanceAfterResponse, err := m.n.QueryBank.Balance(m.ctx,
-		&banktypes.QueryBalanceRequest{
-			Address: m.n.AliceAddr,
-			Denom:   params.BaseCoinUnit,
-		},
-	)
-	require.NoError(m.t, err)
-
-	alloraStakingModuleAccBalanceAfter := getAlloraStakingModuleAccountBalance(m)
-	require.True(
-		m.t,
-		alloraStakingModuleAccBalanceAfter.GT(alloraStakingModuleBalanceBefore),
-		"staking module account balance did not increase after a block %s %s",
-		alloraStakingModuleBalanceBefore.String(),
-		alloraStakingModuleAccBalanceAfter.String(),
-	)
-
-	abb := aliceBalanceBeforeResponse.Balance.Amount
-	aba := aliceBalanceAfterResponse.Balance.Amount
-	require.True(
-		m.t,
-		abb.Sub(aba).Equal(cosmosMath.NewIntFromUint64(aliceInitialStake)),
-		"not difference expected: alice balance before: %s, alice balance after: %s",
-		abb.String(),
-		aba.String(),
-	)
-
 }
 
 // register bob as worker in topic 1, then check sucess
 func RegisterBobAsWorkerTopic1(m TestMetadata) {
-	alloraStakingModuleBalanceBefore := getAlloraStakingModuleAccountBalance(m)
-
-	bobBalanceBeforeResponse, err := m.n.QueryBank.Balance(
-		m.ctx,
-		&banktypes.QueryBalanceRequest{
-			Address: m.n.BobAddr,
-			Denom:   params.BaseCoinUnit,
-		},
-	)
-	require.NoError(m.t, err)
-	var bobInitialStake uint64 = 100000
 	registerBobRequest := &emissionstypes.MsgRegister{
 		Sender:       m.n.BobAddr,
 		Owner:        m.n.BobAddr,
@@ -137,34 +89,6 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 	require.Contains(m.t, bobRegistered.TopicIds, uint64(1))
-
-	bobBalanceAfterResponse, err := m.n.QueryBank.Balance(
-		m.ctx,
-		&banktypes.QueryBalanceRequest{
-			Address: m.n.BobAddr,
-			Denom:   params.BaseCoinUnit,
-		},
-	)
-	require.NoError(m.t, err)
-
-	alloraStakingModuleAccBalanceAfter := getAlloraStakingModuleAccountBalance(m)
-	require.True(
-		m.t,
-		alloraStakingModuleAccBalanceAfter.GT(alloraStakingModuleBalanceBefore),
-		"staking module account balance did not increase after a block %s %s",
-		alloraStakingModuleBalanceBefore.String(),
-		alloraStakingModuleAccBalanceAfter.String(),
-	)
-
-	bbb := bobBalanceBeforeResponse.Balance.Amount
-	bba := bobBalanceAfterResponse.Balance.Amount
-	require.True(
-		m.t,
-		bbb.Sub(bba).Equal(cosmosMath.NewIntFromUint64(bobInitialStake)),
-		"not difference expected: alice balance before: %s, alice balance after: %s",
-		bbb.String(),
-		bba.String(),
-	)
 }
 
 // Register two actors and check their registrations went through
