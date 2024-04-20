@@ -89,30 +89,6 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
-	topicId := s.CreateOneTopic()
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	registrationInitialStake := cosmosMath.NewUint(100)
-	//// Register Reputer
-	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-	}
-
-	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr, registrationInitialStake.QuoUint64(2))
-
-	// Try to register with zero initial stake and having half of the initial stake removed
-	_, err := msgServer.Register(ctx, reputerRegMsg)
-	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
-}
-
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
 	s.CreateOneTopic()
 
 	// Mock setup for addresses

@@ -1649,41 +1649,66 @@ func (s *KeeperTestSuite) TestGetStakeRemovalByAddressNotFound() {
 func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	address, err := sdk.AccAddressFromHexUnsafe("sampleaddress1")
+
+	topic0 := uint64(201)
+	reputer0 := "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n"
+	delegator0 := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
+	reputerAcc0, err := sdk.AccAddressFromBech32(reputer0)
 	s.Require().NoError(err)
-	delegator3Addr, err := sdk.AccAddressFromHexUnsafe("delegator3")
+	delegatorAcc0, err := sdk.AccAddressFromBech32(delegator0)
+	s.Require().NoError(err)
+
+	topic1 := uint64(202)
+	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+	delegator1 := "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu"
+	reputerAcc1, err := sdk.AccAddressFromBech32(reputer1)
+	s.Require().NoError(err)
+	delegatorAcc1, err := sdk.AccAddressFromBech32(delegator1)
 	s.Require().NoError(err)
 
 	// Create sample delegate stake removal information
-	removalInfo1 := types.DelegateStakeRemoval{
+	removalInfo0 := types.DelegateStakeRemoval{
 		BlockRemovalStarted: time.Now().Unix(),
 		Placement: &types.DelegateStakePlacement{
-			TopicId:   201,
-			Reputer:   "reputer3",
-			Delegator: "delegator3",
+			TopicId:   topic0,
+			Reputer:   reputer0,
+			Delegator: delegator0,
 			Amount:    cosmosMath.NewUint(300),
 		},
 	}
-	removalInfo2 := types.DelegateStakeRemoval{
+	removalInfo1 := types.DelegateStakeRemoval{
 		BlockRemovalStarted: time.Now().Unix(),
 		Placement: &types.DelegateStakePlacement{
-			TopicId:   202,
-			Reputer:   "reputer4",
-			Delegator: "delegator4",
+			TopicId:   topic1,
+			Reputer:   reputer1,
+			Delegator: delegator1,
 			Amount:    cosmosMath.NewUint(400),
 		},
 	}
 
 	// Set delegate stake removal information
-	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo1)
+	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo0)
 	s.Require().NoError(err)
-	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo2)
+	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo1)
 	s.Require().NoError(err)
 
 	// Topic 201
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, 201, delegator3Addr, address)
+	retrievedInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic0, reputerAcc0, delegatorAcc0)
+	s.Require().NoError(err)
+	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
+
+	// Detailed check on each delegate placement
+	s.Require().Equal(removalInfo0.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo0.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Placement.Delegator, retrievedInfo.Placement.Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+
+	// Topic 202
+
+	// Retrieve the delegate stake removal information
+	retrievedInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic1, reputerAcc1, delegatorAcc1)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
@@ -1692,19 +1717,6 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	s.Require().Equal(removalInfo1.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
 	s.Require().Equal(removalInfo1.Placement.Delegator, retrievedInfo.Placement.Delegator, "Delegator addresses should match for all placements")
 	s.Require().Equal(removalInfo1.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
-
-	// Topic 202
-
-	// Retrieve the delegate stake removal information
-	retrievedInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, 202, delegator3Addr, address)
-	s.Require().NoError(err)
-	s.Require().Equal(removalInfo2.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
-
-	// Detailed check on each delegate placement
-	s.Require().Equal(removalInfo2.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo2.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo2.Placement.Delegator, retrievedInfo.Placement.Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo2.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
