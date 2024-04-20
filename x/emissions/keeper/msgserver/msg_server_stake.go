@@ -58,7 +58,11 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRemoveStake) (*types.MsgStartRemoveStakeResponse, error) {
 	// Check the sender is registered
-	sender := sdk.AccAddress(msg.Sender)
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
 	// Check the sender has enough stake already placed on the topic to remove the stake
 	stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, sender)
 	if err != nil {
@@ -89,7 +93,10 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfirmRemoveStake) (*types.MsgConfirmRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sender := sdk.AccAddress(msg.Sender)
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
 	// Pull the stake removal from the delayed queue
 	stakeRemoval, err := ms.k.GetStakeRemovalByTopicAndAddress(ctx, msg.TopicId, sender)
 	if err != nil {
@@ -100,15 +107,12 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	}
 	// check the timestamp is valid
 	currentBlock := sdkCtx.BlockHeight()
-	if stakeRemoval.BlockRemovalStarted > currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooEarly
-	}
 	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+delayWindow < currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooLate
+	if stakeRemoval.BlockRemovalStarted+delayWindow >= currentBlock {
+		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
