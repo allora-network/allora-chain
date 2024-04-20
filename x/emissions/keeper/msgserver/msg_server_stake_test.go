@@ -211,6 +211,40 @@ func (s *KeeperTestSuite) TestConfirmRemoveStake() {
 	require.True(finalStake.IsZero(), "Stake amount should be zero after removal is confirmed")
 }
 
+func (s *KeeperTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	require.NoError(err)
+
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
+
+	msg := &types.MsgConfirmRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+	}
+
+	ctx = ctx.WithBlockHeight(startBlock + removalDelay + 1)
+
+	// Perform the stake confirmation
+	_, err = s.msgServer.ConfirmRemoveStake(ctx, msg)
+	require.ErrorIs(err, types.ErrConfirmRemoveStakeNoRemovalStarted)
+
+	// Verifications to ensure the stake was properly removed could be included here if there are methods to query the state
+	// Example: check that the stake amount at the topic is zero or reduced appropriately
+	finalStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, senderAddr)
+	require.NoError(err)
+	require.False(finalStake.IsZero())
+}
+
 func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
 	ctx := s.ctx
 	require := s.Require()
@@ -261,6 +295,47 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
 	finalStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, senderAddr)
 	require.NoError(err)
 	require.False(finalStake.IsZero(), "Stake amount should not be zero since removal is not confirmed")
+}
+
+func (s *KeeperTestSuite) TestDelegateStakeSuccessful() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), amount0)
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, amount1)
 }
 
 /*
