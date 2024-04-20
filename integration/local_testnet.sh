@@ -18,7 +18,7 @@ docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
 popd
 
 # Download generate_genesis.sh from testnet
-curl -so- https://raw.githubusercontent.com/allora-network/networks/main/testnet/generate_genesis.sh > generate_genesis.sh
+curl -so- https://raw.githubusercontent.com/allora-network/networks/main/testnet/generate_genesis.sh > testnet/generate_genesis.sh
 chmod a+x generate_genesis.sh
 
 docker run -it \
@@ -31,11 +31,10 @@ docker run -it \
 echo "Generate genesis and accounts"
 docker run -it \
     -u $(id -u):$(id -g) \
-    -v ./generate_genesis.sh:/scripts/generate_genesis.sh \
     -v ./testnet:/data \
     -e COMMON_HOME_DIR=/data \
     -e HOME=/data \
-    --entrypoint=/scripts/generate_genesis.sh \
+    --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE
 
 echo "Generate peers.txt"
