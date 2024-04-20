@@ -698,6 +698,14 @@ func (k *Keeper) GetParamsMaxRetriesToFulfilNoncesReputer(ctx context.Context) (
 	return params.MaxRetriesToFulfilNoncesReputer, nil
 }
 
+func (k *Keeper) GetParamsRegistrationFee(ctx context.Context) (cosmosMath.Int, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return cosmosMath.Int{}, err
+	}
+	return params.RegistrationFee, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -1467,19 +1475,17 @@ func (k *Keeper) SetDelegatedStakeRemovalQueueForAddress(ctx context.Context, ad
 /// REPUTERS
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputer)
-		err := k.topicReputers.Set(ctx, topicKey)
-		if err != nil {
-			return err
-		}
-	}
-	err := k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
+	topicKey := collections.Join(topicId, reputer)
+	err := k.topicReputers.Set(ctx, topicKey)
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, reputer, TopicIds)
+	err = k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+	if err != nil {
+		return err
+	}
+	err = k.AddAddressTopic(ctx, reputer, topicId)
 	if err != nil {
 		return err
 	}
@@ -1488,8 +1494,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, TopicIds []TopicId, reputer 
 
 // Remove a reputer to the reputer tracking data structures and topicReputers
 func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
-
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, reputerAddr)
+	topicKey := collections.Join(topicId, reputerAddr)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1502,38 +1507,35 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 	return nil
 }
 
-// Remove a worker to the worker tracking data structures and topicWorkers
-func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
+/// WORKERS
 
-	topicKey := collections.Join[uint64, sdk.AccAddress](topicId, workerAddr)
-	err := k.topicWorkers.Remove(ctx, topicKey)
+// Adds a new worker to the worker tracking data structures, workers and topicWorkers
+func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
+	topickey := collections.Join(topicId, worker)
+	err := k.topicWorkers.Set(ctx, topickey)
 	if err != nil {
 		return err
 	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
+	err = k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+	if err != nil {
+		return err
+	}
+	err = k.AddAddressTopic(ctx, worker, topicId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-/// WORKERS
-
-// Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, TopicIds []TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
-	for _, topicId := range TopicIds {
-		topickey := collections.Join[uint64, sdk.AccAddress](topicId, worker)
-		err := k.topicWorkers.Set(ctx, topickey)
-		if err != nil {
-			return err
-		}
-	}
-	err := k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+// Remove a worker to the worker tracking data structures and topicWorkers
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
+	topicKey := collections.Join(topicId, workerAddr)
+	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopics(ctx, worker, TopicIds)
+
+	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
 	if err != nil {
 		return err
 	}
@@ -1683,7 +1685,7 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 }
 
 // Returns the number of topics that are active in the network
-func (k *Keeper) GetNumTopics(ctx context.Context) (TopicId, error) {
+func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
@@ -1733,31 +1735,30 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 	return k.topicReputers.Has(ctx, topickey)
 }
 
-// AddAddressTopics adds new topics to the address's list of topics, avoiding duplicates.
-func (k *Keeper) AddAddressTopics(ctx context.Context, address sdk.AccAddress, newTopics []uint64) error {
+// Adds new topics to the address's list of topics, avoiding duplicates.
+// Does nothing if the topic already exists for the address.
+func (k *Keeper) AddAddressTopic(ctx context.Context, address sdk.AccAddress, newTopic TopicId) error {
 	// Get the current list of topics for the address
 	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
 		return err
 	}
 
-	topicSet := make(map[uint64]bool)
 	for _, topic := range currentTopics {
-		topicSet[topic] = true
-	}
-
-	for _, newTopic := range newTopics {
-		if _, exists := topicSet[newTopic]; !exists {
-			currentTopics = append(currentTopics, newTopic)
+		if topic == newTopic {
+			return nil
 		}
 	}
+
+	// Topic does not already exist => Add the new topic to the list
+	currentTopics = append(currentTopics, newTopic)
 
 	// Set the updated list of topics for the address
 	return k.addressTopics.Set(ctx, address, currentTopics)
 }
 
 // RemoveAddressTopic removes a specified topic from the address's list of topics.
-func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove uint64) error {
+func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove TopicId) error {
 	// Get the current list of topics for the address
 	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
 	if err != nil {
@@ -1778,7 +1779,7 @@ func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress,
 
 // TODO paginate
 // GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
-func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
 	topics, err := k.addressTopics.Get(ctx, address)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -1792,7 +1793,7 @@ func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk
 
 // TODO paginate
 // GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
-func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
 	var topicsByAddress []uint64
 
 	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {
@@ -1810,7 +1811,7 @@ func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, addre
 
 // TODO paginate
 // GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
-func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]uint64, error) {
+func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
 	var topicsByAddress []uint64
 
 	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {

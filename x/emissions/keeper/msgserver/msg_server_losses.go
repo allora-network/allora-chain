@@ -80,6 +80,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
+		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
 			// Check if the reputer is in the reputer whitelist
@@ -99,6 +104,15 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 			// We'll keep what we can get from the payload, but we'll ignore the rest
 			if !isReputerRegistered {
+				continue
+			}
+
+			// Check that the reputer enough stake in the topic
+			stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputer)
+			if err != nil {
+				return nil, err
+			}
+			if stake.LT(requiredMinimumStake) {
 				continue
 			}
 

@@ -197,21 +197,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "register [creator] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topic_ids"},
-						{ProtoField: "initial_stake"},
-						{ProtoField: "owner"},
-						{ProtoField: "is_reputer"},
-					},
-				},
-				{
-					RpcMethod: "RegisterWithExistingStake",
-					Use:       "add-registration [creator] [lib_p2p_key] [multi_address] [topic_id] [owner] [is_reputer]",
-					Short:     "Register a reputer or worker for an additional topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
@@ -224,7 +210,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "remove-registration [creator] [owner] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "is_reputer"},
 					},
@@ -252,14 +238,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "ConfirmRemoveStake",
 					Use:       "confirm-remove-stake [sender] [target] [amount]",
 					Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
-				{
-					RpcMethod: "StartRemoveAllStake",
-					Use:       "start-remove-all-stake [sender]",
-					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 					},

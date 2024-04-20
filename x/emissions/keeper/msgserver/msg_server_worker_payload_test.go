@@ -1,8 +1,9 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	"encoding/hex"
+
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
@@ -48,8 +49,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, []uint64{0}, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, []uint64{0}, ForecasterAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -137,8 +138,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, []uint64{0}, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, []uint64{0}, ForecasterAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -220,8 +221,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, []uint64{0}, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, []uint64{0}, ForecasterAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
