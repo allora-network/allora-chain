@@ -324,6 +324,10 @@ func (s *KeeperTestSuite) TestDelegateStakeSuccessful() {
 		Amount:  stakeAmount,
 	}
 
+	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), reputerStake, "Stake amount mismatch")
+
 	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroUint(), amount0)
@@ -332,6 +336,10 @@ func (s *KeeperTestSuite) TestDelegateStakeSuccessful() {
 	response, err := s.msgServer.DelegateStake(ctx, msg)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	reputerStake, err = s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
