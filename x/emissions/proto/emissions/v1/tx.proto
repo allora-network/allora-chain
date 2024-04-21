@@ -36,6 +36,8 @@ service Msg {
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
   rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
+  
+  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
 
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
 

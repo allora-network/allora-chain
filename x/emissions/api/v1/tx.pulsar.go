@@ -28922,7 +28922,7 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x64, 0x65, 0x72, 0x22, 0x36, 0x0a, 0x1a, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x61, 0x63, 0x74, 0x69,
 	0x76, 0x61, 0x74, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xf6, 0x0f, 0x0a, 0x03,
+	0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xf6, 0x10, 0x0a, 0x03,
 	0x4d, 0x73, 0x67, 0x12, 0x54, 0x0a, 0x0c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x12, 0x1d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
 	0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61,
@@ -28996,6 +28996,14 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x31, 0x2e, 0x65, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x74,
 	0x61, 0x72, 0x74, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74,
+	0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x7e,
+	0x0a, 0x1a, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x44,
+	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x2b, 0x2e, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43,
+	0x6f, 0x6e, 0x66, 0x69, 0x72, 0x6d, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x1a, 0x33, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x43, 0x6f, 0x6e, 0x66,
+	0x69, 0x72, 0x6d, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74,
 	0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x60,
 	0x0a, 0x10, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
 	0x63, 0x65, 0x12, 0x21, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
@@ -29145,34 +29153,36 @@ var file_emissions_v1_tx_proto_depIdxs = []int32{
 	17, // 15: emissions.v1.Msg.ConfirmRemoveStake:input_type -> emissions.v1.MsgConfirmRemoveStake
 	19, // 16: emissions.v1.Msg.DelegateStake:input_type -> emissions.v1.MsgDelegateStake
 	21, // 17: emissions.v1.Msg.StartRemoveDelegateStake:input_type -> emissions.v1.MsgStartRemoveDelegateStake
-	25, // 18: emissions.v1.Msg.RequestInference:input_type -> emissions.v1.MsgRequestInference
-	28, // 19: emissions.v1.Msg.AddToWhitelistAdmin:input_type -> emissions.v1.MsgAddToWhitelistAdmin
-	30, // 20: emissions.v1.Msg.RemoveFromWhitelistAdmin:input_type -> emissions.v1.MsgRemoveFromWhitelistAdmin
-	32, // 21: emissions.v1.Msg.AddToTopicCreationWhitelist:input_type -> emissions.v1.MsgAddToTopicCreationWhitelist
-	34, // 22: emissions.v1.Msg.RemoveFromTopicCreationWhitelist:input_type -> emissions.v1.MsgRemoveFromTopicCreationWhitelist
-	36, // 23: emissions.v1.Msg.AddToReputerWhitelist:input_type -> emissions.v1.MsgAddToReputerWhitelist
-	38, // 24: emissions.v1.Msg.RemoveFromReputerWhitelist:input_type -> emissions.v1.MsgRemoveFromReputerWhitelist
-	2,  // 25: emissions.v1.Msg.UpdateParams:output_type -> emissions.v1.MsgUpdateParamsResponse
-	8,  // 26: emissions.v1.Msg.InsertBulkWorkerPayload:output_type -> emissions.v1.MsgInsertBulkWorkerPayloadResponse
-	4,  // 27: emissions.v1.Msg.CreateNewTopic:output_type -> emissions.v1.MsgCreateNewTopicResponse
-	41, // 28: emissions.v1.Msg.ReactivateTopic:output_type -> emissions.v1.MsgReactivateTopicResponse
-	10, // 29: emissions.v1.Msg.Register:output_type -> emissions.v1.MsgRegisterResponse
-	12, // 30: emissions.v1.Msg.RemoveRegistration:output_type -> emissions.v1.MsgRemoveRegistrationResponse
-	6,  // 31: emissions.v1.Msg.InsertBulkReputerPayload:output_type -> emissions.v1.MsgInsertBulkReputerPayloadResponse
-	14, // 32: emissions.v1.Msg.AddStake:output_type -> emissions.v1.MsgAddStakeResponse
-	16, // 33: emissions.v1.Msg.StartRemoveStake:output_type -> emissions.v1.MsgStartRemoveStakeResponse
-	18, // 34: emissions.v1.Msg.ConfirmRemoveStake:output_type -> emissions.v1.MsgConfirmRemoveStakeResponse
-	20, // 35: emissions.v1.Msg.DelegateStake:output_type -> emissions.v1.MsgDelegateStakeResponse
-	22, // 36: emissions.v1.Msg.StartRemoveDelegateStake:output_type -> emissions.v1.MsgStartRemoveDelegateStakeResponse
-	27, // 37: emissions.v1.Msg.RequestInference:output_type -> emissions.v1.MsgRequestInferenceResponse
-	29, // 38: emissions.v1.Msg.AddToWhitelistAdmin:output_type -> emissions.v1.MsgAddToWhitelistAdminResponse
-	31, // 39: emissions.v1.Msg.RemoveFromWhitelistAdmin:output_type -> emissions.v1.MsgRemoveFromWhitelistAdminResponse
-	33, // 40: emissions.v1.Msg.AddToTopicCreationWhitelist:output_type -> emissions.v1.MsgAddToTopicCreationWhitelistResponse
-	35, // 41: emissions.v1.Msg.RemoveFromTopicCreationWhitelist:output_type -> emissions.v1.MsgRemoveFromTopicCreationWhitelistResponse
-	37, // 42: emissions.v1.Msg.AddToReputerWhitelist:output_type -> emissions.v1.MsgAddToReputerWhitelistResponse
-	39, // 43: emissions.v1.Msg.RemoveFromReputerWhitelist:output_type -> emissions.v1.MsgRemoveFromReputerWhitelistResponse
-	25, // [25:44] is the sub-list for method output_type
-	6,  // [6:25] is the sub-list for method input_type
+	23, // 18: emissions.v1.Msg.ConfirmRemoveDelegateStake:input_type -> emissions.v1.MsgConfirmDelegateRemoveStake
+	25, // 19: emissions.v1.Msg.RequestInference:input_type -> emissions.v1.MsgRequestInference
+	28, // 20: emissions.v1.Msg.AddToWhitelistAdmin:input_type -> emissions.v1.MsgAddToWhitelistAdmin
+	30, // 21: emissions.v1.Msg.RemoveFromWhitelistAdmin:input_type -> emissions.v1.MsgRemoveFromWhitelistAdmin
+	32, // 22: emissions.v1.Msg.AddToTopicCreationWhitelist:input_type -> emissions.v1.MsgAddToTopicCreationWhitelist
+	34, // 23: emissions.v1.Msg.RemoveFromTopicCreationWhitelist:input_type -> emissions.v1.MsgRemoveFromTopicCreationWhitelist
+	36, // 24: emissions.v1.Msg.AddToReputerWhitelist:input_type -> emissions.v1.MsgAddToReputerWhitelist
+	38, // 25: emissions.v1.Msg.RemoveFromReputerWhitelist:input_type -> emissions.v1.MsgRemoveFromReputerWhitelist
+	2,  // 26: emissions.v1.Msg.UpdateParams:output_type -> emissions.v1.MsgUpdateParamsResponse
+	8,  // 27: emissions.v1.Msg.InsertBulkWorkerPayload:output_type -> emissions.v1.MsgInsertBulkWorkerPayloadResponse
+	4,  // 28: emissions.v1.Msg.CreateNewTopic:output_type -> emissions.v1.MsgCreateNewTopicResponse
+	41, // 29: emissions.v1.Msg.ReactivateTopic:output_type -> emissions.v1.MsgReactivateTopicResponse
+	10, // 30: emissions.v1.Msg.Register:output_type -> emissions.v1.MsgRegisterResponse
+	12, // 31: emissions.v1.Msg.RemoveRegistration:output_type -> emissions.v1.MsgRemoveRegistrationResponse
+	6,  // 32: emissions.v1.Msg.InsertBulkReputerPayload:output_type -> emissions.v1.MsgInsertBulkReputerPayloadResponse
+	14, // 33: emissions.v1.Msg.AddStake:output_type -> emissions.v1.MsgAddStakeResponse
+	16, // 34: emissions.v1.Msg.StartRemoveStake:output_type -> emissions.v1.MsgStartRemoveStakeResponse
+	18, // 35: emissions.v1.Msg.ConfirmRemoveStake:output_type -> emissions.v1.MsgConfirmRemoveStakeResponse
+	20, // 36: emissions.v1.Msg.DelegateStake:output_type -> emissions.v1.MsgDelegateStakeResponse
+	22, // 37: emissions.v1.Msg.StartRemoveDelegateStake:output_type -> emissions.v1.MsgStartRemoveDelegateStakeResponse
+	24, // 38: emissions.v1.Msg.ConfirmRemoveDelegateStake:output_type -> emissions.v1.MsgConfirmRemoveDelegateStakeResponse
+	27, // 39: emissions.v1.Msg.RequestInference:output_type -> emissions.v1.MsgRequestInferenceResponse
+	29, // 40: emissions.v1.Msg.AddToWhitelistAdmin:output_type -> emissions.v1.MsgAddToWhitelistAdminResponse
+	31, // 41: emissions.v1.Msg.RemoveFromWhitelistAdmin:output_type -> emissions.v1.MsgRemoveFromWhitelistAdminResponse
+	33, // 42: emissions.v1.Msg.AddToTopicCreationWhitelist:output_type -> emissions.v1.MsgAddToTopicCreationWhitelistResponse
+	35, // 43: emissions.v1.Msg.RemoveFromTopicCreationWhitelist:output_type -> emissions.v1.MsgRemoveFromTopicCreationWhitelistResponse
+	37, // 44: emissions.v1.Msg.AddToReputerWhitelist:output_type -> emissions.v1.MsgAddToReputerWhitelistResponse
+	39, // 45: emissions.v1.Msg.RemoveFromReputerWhitelist:output_type -> emissions.v1.MsgRemoveFromReputerWhitelistResponse
+	26, // [26:46] is the sub-list for method output_type
+	6,  // [6:26] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name

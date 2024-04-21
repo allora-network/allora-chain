@@ -179,14 +179,27 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
+	reputerAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
 
-	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, senderAddr)
+	// Check the reputer has enough stake already placed on the topic to remove the stake
+	stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAddr)
 	if err != nil {
 		return nil, err
 	}
 	if stakePlaced.LT(msg.Amount) {
 		return nil, types.ErrInsufficientStakeToRemove
+	}
+
+	// Check the reputer has enough stake already placed on the topic to remove the stake
+	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputerAddr)
+	if err != nil {
+		return nil, err
+	}
+	if delegateStakePlaced.LT(msg.Amount) {
+		return nil, types.ErrInsufficientDelegateStakeToRemove
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -212,9 +225,15 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.MsgConfirmDelegateRemoveStake) (*types.MsgConfirmRemoveDelegateStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Pull the stake removal from the delayed queue
-	reputer := sdk.AccAddress(msg.Reputer)
-	sender := sdk.AccAddress(msg.Sender)
-	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, reputer, sender)
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	reputerAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, reputerAddr, senderAddr)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
@@ -223,15 +242,12 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	}
 	// check the block it should start is valid
 	currentBlock := sdkCtx.BlockHeight()
-	if stakeRemoval.BlockRemovalStarted > currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooEarly
-	}
 	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+delayWindow < currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooLate
+	if stakeRemoval.BlockRemovalStarted+delayWindow >= currentBlock {
+		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 
 	// Check the module has enough funds to send back to the sender
@@ -239,10 +255,10 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, sender, coins)
+	ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, senderAddr, coins)
 
 	// Update the stake data structures
-	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, sender, reputer, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, senderAddr, reputerAddr, stakeRemoval.Placement.Amount)
 	if err != nil {
 		return nil, err
 	}
