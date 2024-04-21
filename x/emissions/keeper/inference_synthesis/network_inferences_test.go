@@ -771,5 +771,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesIncompleteData() 
 	s.Require().NotEmpty(valueBundle.OneOutInfererValues)
 	s.Require().NotEmpty(valueBundle.OneOutForecasterValues)
 	// OneInForecastValues come empty because regrets are epsilon
-	s.Require().Empty(valueBundle.OneInForecasterValues)
+	s.Require().NotEmpty(valueBundle.OneInForecasterValues)
+	s.Require().Len(valueBundle.OneInForecasterValues, 2)
 }
