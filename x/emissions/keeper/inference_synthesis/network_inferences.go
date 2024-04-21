@@ -215,7 +215,7 @@ func CalcWeightedInference(
 ) (InferenceValue, error) {
 	if maxRegret.Lt(epsilon) {
 		fmt.Println("Error maxRegret < epsilon: ", maxRegret, epsilon)
-		return InferenceValue{}, emissions.ErrFractionDivideByZero
+		maxRegret = epsilon
 	}
 
 	// Calculate the network combined inference and network worker regrets
