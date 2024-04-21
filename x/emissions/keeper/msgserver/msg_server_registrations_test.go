@@ -86,7 +86,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	require.ErrorIs(types.ErrTopicRegistrantNotEnoughDenom, err, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegisterAfterRemovingRegistration() {
+func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -94,7 +94,8 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	registrationInitialStake := cosmosMath.NewUint(100)
-	//// Register Reputer
+
+	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
 		Sender:       reputerAddr.String(),
 		LibP2PKey:    "test",
@@ -105,7 +106,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidInsufficientStakeToRegist
 
 	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr, registrationInitialStake.QuoUint64(2))
 
-	// Try to register with zero initial stake and having half of the initial stake removed
+	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
 	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
