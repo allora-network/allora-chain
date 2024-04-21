@@ -22,7 +22,7 @@ services:
     networks:
       local-net:
         aliases:
-          - inference
+          - validator0
         ipv4_address: 172.20.0.10
 
   validator1:
@@ -77,38 +77,45 @@ services:
           - validator2
         ipv4_address: 172.20.0.12
 
+  head0:
+    # 12D3KooWLnJ8DdELdx94UGYfDknTnQsZkfVYpTm576nj6uVB6G8w
+    container_name: head0
+    image: alloranetwork/allora-inference-base-head:latest
+    user: "1000:1000"
+    volumes:
+      - ./testnet/head0:/data
+    working_dir: /data
+    environment:
+      - HOME=/data
+    entrypoint:
+      # - "/bin/bash"
+      # - "-c"
+      # - |
+      #   allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
+      #     --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+      #     --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
+      - allora-node
+      - --role=head
+      - --peer-db=/data/peer-database
+      - --function-db=/data/function-database
+      - --workspace=/tmp/node
+      - --private-key=/data/key/priv.bin
+      - --log-level=debug
+      - --port=9010
+      - --rest-api=:6000
+      - --allora-node-rpc-address=http://172.20.0.10:26657
+      - --allora-chain-home-dir=/data/.allorad
+      - --allora-chain-key-name=head0
+      # - --allora-chain-topic-id={{.rootValues.alloraChainTopicId}}
 
-  # head:
-  #   # 12D3KooWPaHbkXmKQLrQ8xfQj39pvbfhrQSWMqJSCAE9WYaqcE7R
-  #   container_name: head-coin
-  #   image: alloranetwork/allora-inference-base-head:latest
-  #   environment:
-  #     - HOME=/data
-  #   entrypoint:
-  #     - "/bin/bash"
-  #     - "-c"
-  #     - |
-  #       if [ ! -f /data/keys/priv.bin ]; then
-  #         echo "Generating new private keys..."
-  #         mkdir -p /data/keys
-  #         cd /data/keys
-  #         allora-keys
-  #       fi
-  #       allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
-  #         --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
-  #         --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
-  #   ports:
-  #     - "6000:6000"
-  #   volumes:
-  #     - head-data:/data
-  #   working_dir: /data
-  #   networks:
-  #     local-net:
-  #       aliases:
-  #         - head
-  #       ipv4_address: 172.20.0.100
+    ports:
+      - "6000:6000"
 
-
+    networks:
+      local-net:
+        aliases:
+          - head0
+        ipv4_address: 172.20.0.20
 
 networks:
   local-net:
