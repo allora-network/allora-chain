@@ -2,29 +2,40 @@ package queryserver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// TODO paginate
-func (qs queryServer) GetWorkerNodeRegistration(ctx context.Context, req *types.QueryRegisteredWorkerNodesRequest) (*types.QueryRegisteredWorkerNodesResponse, error) {
+func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.QueryWorkerNodeInfoRequest) (*types.QueryWorkerNodeInfoResponse, error) {
 	if req == nil {
-		return nil, fmt.Errorf("received nil request")
+		return nil, types.ErrReceivedNilRequest
 	}
 
-	nodes, err := qs.k.FindWorkerNodesByOwner(sdk.UnwrapSDKContext(ctx), req.NodeId)
+	node, err := qs.k.GetWorkerByLibp2pKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryRegisteredWorkerNodesResponse{Nodes: nodes}, nil
+	return &types.QueryWorkerNodeInfoResponse{NodeInfo: &node}, nil
+}
+
+func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.QueryReputerNodeInfoRequest) (*types.QueryReputerNodeInfoResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
+	node, err := qs.k.GetReputerByLibp2pKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryReputerNodeInfoResponse{NodeInfo: &node}, nil
 }
 
 func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.QueryWorkerAddressByP2PKeyRequest) (*types.QueryWorkerAddressByP2PKeyResponse, error) {
 	if req == nil {
-		return nil, fmt.Errorf("received nil request")
+		return nil, types.ErrReceivedNilRequest
 	}
 
 	workerAddr, err := qs.k.GetWorkerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
@@ -37,7 +48,7 @@ func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.Q
 
 func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.QueryReputerAddressByP2PKeyRequest) (*types.QueryReputerAddressByP2PKeyResponse, error) {
 	if req == nil {
-		return nil, fmt.Errorf("received nil request")
+		return nil, types.ErrReceivedNilRequest
 	}
 
 	address, err := qs.k.GetReputerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
@@ -51,7 +62,7 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 // TODO paginate
 func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.QueryRegisteredTopicIdsRequest) (*types.QueryRegisteredTopicIdsResponse, error) {
 	if req == nil {
-		return nil, fmt.Errorf("received nil request")
+		return nil, types.ErrReceivedNilRequest
 	}
 
 	address, err := sdk.AccAddressFromBech32(req.Address)

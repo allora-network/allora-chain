@@ -1906,11 +1906,12 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	worker := sdk.AccAddress("sampleWorkerAddress")
+	key := "worker-libp2p-key-sample"
 	topicId := uint64(401)
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
+		LibP2PKey:    key,
 		MultiAddress: "worker-multi-address-sample",
 		Owner:        "worker-owner-sample",
 		NodeAddress:  "worker-node-address-sample",
@@ -1921,14 +1922,14 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
-	node, err := keeper.FindWorkerNodesByOwner(ctx, workerInfo.Owner)
+	node, err := keeper.GetWorkerByLibp2pKey(ctx, key)
 
 	s.Require().NoError(err)
-	s.Require().Equal(workerInfo.LibP2PKey, node[0].LibP2PKey)
-	s.Require().Equal(workerInfo.MultiAddress, node[0].MultiAddress)
-	s.Require().Equal(workerInfo.Owner, node[0].Owner)
-	s.Require().Equal(workerInfo.NodeAddress, node[0].NodeAddress)
-	s.Require().Equal(workerInfo.NodeId, node[0].NodeId)
+	s.Require().Equal(workerInfo.LibP2PKey, node.LibP2PKey)
+	s.Require().Equal(workerInfo.MultiAddress, node.MultiAddress)
+	s.Require().Equal(workerInfo.Owner, node.Owner)
+	s.Require().Equal(workerInfo.NodeAddress, node.NodeAddress)
+	s.Require().Equal(workerInfo.NodeId, node.NodeId)
 }
 
 func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {

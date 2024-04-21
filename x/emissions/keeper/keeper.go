@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"strings"
 
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
@@ -63,8 +62,6 @@ type Keeper struct {
 	topicWorkers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
-	// for an address, what are all the topics that it's registered for?
-	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
 	/// SCORES
 
@@ -210,7 +207,6 @@ func NewKeeper(
 		activeTopics:                        collections.NewMap(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key, collections.BoolValue),
 		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeRemovalQueue:                   collections.NewMap(sb, types.StakeRemovalQueueKey, "stake_removal_queue", sdk.AccAddressKey, codec.CollValue[types.StakeRemoval](cdc)),
@@ -1495,10 +1491,6 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer sdk
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopic(ctx, reputer, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -1509,12 +1501,11 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 	if err != nil {
 		return err
 	}
-
-	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
+}
+
+func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (types.OffchainNode, error) {
+	return k.reputers.Get(ctx, reputerKey)
 }
 
 /// WORKERS
@@ -1530,10 +1521,6 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker sdk.A
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopic(ctx, worker, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -1544,39 +1531,11 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 	if err != nil {
 		return err
 	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
-// TODO paginate
-func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
-	var nodes []*types.OffchainNode
-	var nodeIdParts = strings.Split(nodeId, "|")
-
-	if len(nodeIdParts) < 2 {
-		nodeIdParts = append(nodeIdParts, "")
-	}
-
-	owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
-
-	iterator, err := k.workers.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for ; iterator.Valid(); iterator.Next() {
-		node, _ := iterator.Value()
-		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
-			nodeCopy := node
-			nodes = append(nodes, &nodeCopy)
-		}
-	}
-
-	return nodes, nil
+func (k *Keeper) GetWorkerByLibp2pKey(ctx sdk.Context, workerKey string) (types.OffchainNode, error) {
+	return k.workers.Get(ctx, workerKey)
 }
 
 func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
@@ -1745,62 +1704,6 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
-}
-
-// Adds new topics to the address's list of topics, avoiding duplicates.
-// Does nothing if the topic already exists for the address.
-func (k *Keeper) AddAddressTopic(ctx context.Context, address sdk.AccAddress, newTopic TopicId) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-
-	for _, topic := range currentTopics {
-		if topic == newTopic {
-			return nil
-		}
-	}
-
-	// Topic does not already exist => Add the new topic to the list
-	currentTopics = append(currentTopics, newTopic)
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, currentTopics)
-}
-
-// RemoveAddressTopic removes a specified topic from the address's list of topics.
-func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove TopicId) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-
-	// Find and remove the specified topic
-	filteredTopics := make([]uint64, 0)
-	for _, topic := range currentTopics {
-		if topic != topicToRemove {
-			filteredTopics = append(filteredTopics, topic)
-		}
-	}
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, filteredTopics)
-}
-
-// TODO paginate
-// GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
-func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	topics, err := k.addressTopics.Get(ctx, address)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return an empty slice if the address is not found, or handle it differently if needed.
-			return []uint64{}, nil
-		}
-		return nil, err
-	}
-	return topics, nil
 }
 
 // TODO paginate

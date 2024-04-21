@@ -61,11 +61,19 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetWorkerNodeRegistration",
-					Use:       "worker-registration [owner|libp2p-pub-key]",
-					Short:     "Get registration for worker node id",
+					RpcMethod: "GetWorkerNodeInfo",
+					Use:       "worker-info [libp2p_key]",
+					Short:     "Get node info for worker node libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "node_id"},
+						{ProtoField: "libp2p_key"},
+					},
+				},
+				{
+					RpcMethod: "GetReputerNodeInfo",
+					Use:       "reputer-info [libp2p_key]",
+					Short:     "Get node info for reputer node libp2p key",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "libp2p_key"},
 					},
 				},
 				{

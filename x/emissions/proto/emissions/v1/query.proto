@@ -92,9 +92,14 @@ service Query {
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
   }
 
-  rpc GetWorkerNodeRegistration(QueryRegisteredWorkerNodesRequest) returns (QueryRegisteredWorkerNodesResponse) {
+  rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_nodes/{node_id}";
+    option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
+  }
+
+  rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest) returns (QueryReputerNodeInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer/{libp2p_key}";
   }
 
   rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
@@ -248,12 +253,20 @@ message QueryWorkerLatestInferenceResponse {
   Inference latest_inference = 1;
 }
 
-message QueryRegisteredWorkerNodesRequest {
-  string node_id = 1;
+message QueryWorkerNodeInfoRequest {
+  string libp2p_key = 1;
 }
 
-message QueryRegisteredWorkerNodesResponse {
-  repeated OffchainNode nodes = 1;
+message QueryWorkerNodeInfoResponse {
+  OffchainNode node_info = 1;
+}
+
+message QueryReputerNodeInfoRequest {
+  string libp2p_key = 1;
+}
+
+message QueryReputerNodeInfoResponse {
+  OffchainNode node_info = 1;
 }
 
 message QueryWorkerAddressByP2PKeyRequest {

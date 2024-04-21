@@ -60,4 +60,5 @@ var (
 	ErrTopicCreatorNotEnoughDenom                    = errors.Register(ModuleName, 55, "topic creator does not have enough denom")
 	ErrSignatureVerificationFailed                   = errors.Register(ModuleName, 56, "signature verification was failed")
 	ErrTopicRegistrantNotEnoughDenom                 = errors.Register(ModuleName, 57, "topic registrant does not have enough denom")
+	ErrReceivedNilRequest                            = errors.Register(ModuleName, 58, "received nil request")
 )
