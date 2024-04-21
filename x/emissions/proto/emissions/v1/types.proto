@@ -128,6 +128,12 @@ message Params {
   uint64 max_topic_pages = 42;
   uint64 request_page_limit = 43;
   uint64 max_request_pages = 44;
+  string registration_fee = 45 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];  // registration fee for workers and reputers
 }
 
 /// TOPICS

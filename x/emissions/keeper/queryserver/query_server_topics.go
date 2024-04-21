@@ -13,7 +13,7 @@ import (
 
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
 func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTopicIdRequest) (*types.QueryNextTopicIdResponse, error) {
-	nextTopicId, err := qs.k.GetNumTopics(ctx)
+	nextTopicId, err := qs.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}

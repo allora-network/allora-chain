@@ -157,6 +157,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxRequestPages) == 1 {
 		existingParams.MaxRequestPages = newParams.MaxRequestPages[0]
 	}
+	if len(newParams.RegistrationFee) == 1 {
+		existingParams.RegistrationFee = newParams.RegistrationFee[0]
+	}
 
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
