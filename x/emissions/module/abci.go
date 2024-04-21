@@ -95,8 +95,18 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 				// Add Reputer Nonces
-				previousNonce := emissionstypes.Nonce{BlockHeight: blockNumber}
-				err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &nextNonce, &previousNonce)
+				if blockNumber-topic.EpochLength > 0 {
+					ReputerReputerNonce := emissionstypes.Nonce{BlockHeight: blockNumber}
+					ReputerWorkerNonce := emissionstypes.Nonce{BlockHeight: blockNumber - topic.EpochLength}
+					err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &ReputerReputerNonce, &ReputerWorkerNonce)
+					if err != nil {
+						fmt.Println("Error adding reputer nonce: ", err)
+						return
+					}
+				} else {
+					fmt.Println("Not adding reputer nonce, too early in topic history", blockNumber, topic.EpochLength)
+				}
+
 			}
 		}(topic)
 	}

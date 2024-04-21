@@ -132,19 +132,15 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 						reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
 						if err != nil {
 							fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
-							continue
 						}
-						if reputerValueBundle == nil {
-							fmt.Println("Reputer value bundle is nil, skipping")
-							continue
-						}
+
 						blockDifference := currentBlockHeight - inferencesBlockHeight
 						previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
 						if err != nil {
 							fmt.Println("Error calculating previous block approx time: ", err)
 							continue
 						}
-						fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.ReputerNonce, "previous block approx time: ", previousBlockApproxTime)
+						fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.WorkerNonce, "previous block approx time: ", previousBlockApproxTime)
 						go generateLosses(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 					}
 				} else {
