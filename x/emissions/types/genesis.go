@@ -14,16 +14,16 @@ func NewGenesisState() *GenesisState {
 
 func DefaultCoreTeamAddresses() []string {
 	return []string{
-		"allo1srjcynn6jw5l709upwwx70gs3eyjdmkgufcqdt",
-		"allo1uu2fk9gmjkmy8qme46w8hr8j2exfjnsqnweznz",
-		"allo1fk0pt0fj03fxdyyq0mhj5cfq5kv9ncwmtqvy7u",
-		"allo1d6hegr59ftc43xxd2n2vn5ndley699jefwdgq8",
-		"allo1xw354nrfpsw6x3sf7aqnrek0wluyx58zv2uc75",
-		"allo1d54qdljsc3srsy8fz6zzrx90hyzuevnccg88md",
-		"allo1fumaxxyjwdv7y5uh6wxslhxmqf32jtvnr8edlf",
-		"allo1memyg7exjzjdpdv98cfm6u0y0lsz4ev8mk57hc",
-		"allo1shzv768qrxaextjwz0aj6nzhm3cyy4pdug8jy6",
-		"allo12heywwqc75mgk6qg3n0mryw58jn6ujtp7tfvs9",
+		"allo16270t36amc3y6wk2wqupg6gvg26x6dc2nr5xwl",
+		"allo1xm0jg40dcvccqvzqwv5skxlpc7t6eku69kfz6y",
+		"allo1g4y6ra95z2zewupm7p45z4ny00rs7m24rj5hn8",
+		"allo10w0jcq50ufsuy9332dkz6zf4gu00xm9zhfyn3s",
+		"allo1lvymnmzndmam00uvxq8hr63jq8jfrups4ymlg2",
+		"allo1d7vr2dxahkcz0snk28pets9uqvyxjdlysst3z3",
+		"allo19gtttc7qg50n3hjn0qxdasdudf260cx7vevk8j",
+		"allo1jc2mme2fj458kg08v2z92m8f9vsqwfzt0ju9ys",
+		"allo1uff55lgqpjkw2mlsx2q0p8q8z7k7p00w9s4s0f",
+		"allo136eeqhawxx66sjgsfeqk9gewq0e0msyu5tjmj3",
 	}
 }
 

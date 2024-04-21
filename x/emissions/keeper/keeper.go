@@ -324,14 +324,16 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 	}
 
 	if nonce == nil {
-		return false, errors.New("nil nonce provided")
+		return false, errors.New("nil worker nonce provided")
 	}
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
 		if n == nil {
-			return false, errors.New("nil nonce stored")
+			fmt.Println("warn: nil worker nonce stored")
+			continue
 		}
 		if n.BlockHeight == nonce.BlockHeight {
+			fmt.Println("Worker nonce found", nonce)
 			return true, nil
 		}
 	}
@@ -346,14 +348,20 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 	if err != nil {
 		return false, err
 	}
-
+	if nonce == nil {
+		return false, errors.New("nil reputer nonce provided")
+	}
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
+		if n == nil {
+			fmt.Println("warn: nil reputer nonce stored")
+			continue
+		}
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
+			fmt.Println("Reputer nonce found", nonce)
 			return true, nil
 		}
 	}
-
 	return false, nil
 }
 
