@@ -146,75 +146,80 @@ func InactivateLowDemandTopics(
 	return nil
 }
 
-// Generate a demand curve, which is a data structure that captures the price
-// that maximizes the demand drawn from valid requests. Each price is mapped to the list of people
-// willing to pay AT LEAST that price for inference. Then the maximum amount of fees is found
-// by multiplying the price by the number of requests willing to pay at least that price.
-// TODO: think if we can sort the data structure first, then process it in order to do O(2*n)
-// probably we can use some kind of ordered tree to do this
-// instead of what we are currently doing which is O(n^2)
-func GetRequestsThatMaxFees(
+type BestPriceData struct {
+	bestPrice     cosmosMath.Uint
+	maxFees       cosmosMath.Uint
+	validRequests []types.InferenceRequest
+}
+
+// Closure to build an online best price finder, which iteratively finds the best price for a given topic
+// when fit iterative lists of inference requests for that topic
+func BuildOnlineBestPriceFinder(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	currentBlock BlockHeight,
-	requestsForGivenTopic []types.InferenceRequest) (
-	bestPrice cosmosMath.Uint,
-	maxFees cosmosMath.Uint,
-	requests []types.InferenceRequest,
-	err error) {
+) func(requestsForGivenTopic []types.InferenceRequest) (BestPriceData, error) {
 	// Initialize a map of request price to map of valid requests
 	// map must be of type string, because the complex type of a Uint
 	// will not work for the map, equality test tests the pointer not the value
 	demandCurve := make(map[string]Demand)
-	requests = make([]types.InferenceRequest, 0)
-	maxFees = cosmosMath.NewUint(0)
-	bestPrice = cosmosMath.NewUint(0)
-	// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
-	for _, req := range requestsForGivenTopic {
-		// Check validity of current request at its own price
-		isValidAtPrice, err := IsValidAtPrice(ctx, k, req, req.MaxPricePerInference, currentBlock)
-		if err != nil {
-			fmt.Println("Error checking if request is valid at price: ", err)
-			return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
-		}
-		//fmt.Println("Req id ", req.TopicId, " is valid at price ", req.MaxPricePerInference, " : ", isValidAtPrice)
-		if isValidAtPrice {
-			price := req.MaxPricePerInference
-			priceStr := price.String()
-			_, exists := demandCurve[priceStr]
-			if exists {
-				// if the demand curve has already computed the list of buyers
-				// at this price level before, we dont need to do it again
-				continue
-			}
-			demandCurve[priceStr] = Demand{
-				Requests:      make([]types.InferenceRequest, 0),
-				FeesGenerated: cosmosMath.ZeroUint()}
 
-			for _, req2 := range requestsForGivenTopic {
-				isValidAtPrice, err := IsValidAtPrice(ctx, k, req2, price, currentBlock)
-				if err != nil {
-					fmt.Println("Error checking if request is valid at price: ", err)
-					return cosmosMath.Uint{}, cosmosMath.Uint{}, nil, err
+	bestPriceData := BestPriceData{
+		bestPrice:     cosmosMath.ZeroUint(),
+		maxFees:       cosmosMath.ZeroUint(),
+		validRequests: make([]types.InferenceRequest, 0),
+	}
+
+	return func(requestsForGivenTopic []types.InferenceRequest) (BestPriceData, error) {
+		// Loop through inference requests and then loop again (nested) checking validity of all other inferences at the first inference's max price
+		for _, req := range requestsForGivenTopic {
+			// Check validity of current request at its own price
+			isValidAtPrice, err := IsValidAtPrice(ctx, k, req, req.MaxPricePerInference, currentBlock)
+			if err != nil {
+				fmt.Println("Error checking if request is valid at price: ", err)
+				return BestPriceData{}, err
+			}
+			//fmt.Println("Req id ", req.TopicId, " is valid at price ", req.MaxPricePerInference, " : ", isValidAtPrice)
+			if isValidAtPrice {
+				price := req.MaxPricePerInference
+				priceStr := price.String()
+				_, exists := demandCurve[priceStr]
+				if exists {
+					// if the demand curve has already computed the list of buyers
+					// at this price level before, we dont need to do it again
+					continue
 				}
-				if isValidAtPrice {
-					newFeesGenerated := demandCurve[priceStr].FeesGenerated.Add(price)
-					newRequests := append(demandCurve[priceStr].Requests, req2)
-					demandCurve[priceStr] = Demand{
-						Requests:      newRequests,
-						FeesGenerated: newFeesGenerated}
-					if newFeesGenerated.GT(maxFees) {
-						maxFees = newFeesGenerated
-						bestPrice = price
+				demandCurve[priceStr] = Demand{
+					Requests:      make([]types.InferenceRequest, 0),
+					FeesGenerated: cosmosMath.ZeroUint()}
+
+				for _, req2 := range requestsForGivenTopic {
+					isValidAtPrice, err := IsValidAtPrice(ctx, k, req2, price, currentBlock)
+					if err != nil {
+						fmt.Println("Error checking if request is valid at price: ", err)
+						return BestPriceData{}, err
+					}
+					if isValidAtPrice {
+						newFeesGenerated := demandCurve[priceStr].FeesGenerated.Add(price)
+						newRequests := append(demandCurve[priceStr].Requests, req2)
+						demandCurve[priceStr] = Demand{
+							Requests:      newRequests,
+							FeesGenerated: newFeesGenerated}
+						if newFeesGenerated.GT(bestPriceData.maxFees) {
+							bestPriceData.maxFees = newFeesGenerated
+							bestPriceData.bestPrice = price
+						}
 					}
 				}
 			}
 		}
+
+		if !bestPriceData.bestPrice.IsZero() {
+			bestPriceData.validRequests = demandCurve[bestPriceData.bestPrice.String()].Requests
+		}
+
+		return bestPriceData, nil
 	}
-	if !bestPrice.IsZero() {
-		requests = demandCurve[bestPrice.String()].Requests
-	}
-	return bestPrice, maxFees, requests, nil
 }
 
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
@@ -224,8 +229,10 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	currentBlock BlockHeight,
-	limit uint64,
-	maxLimit uint64,
+	topicPageLimit uint64,
+	maxTopicPages uint64,
+	requestPageLimit uint64,
+	maxRequestPages uint64,
 ) ([]types.Topic, cosmosMath.Uint, error) {
 	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
 	if err != nil {
@@ -234,7 +241,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	}
 
 	// Need to do this separate from loop below to avoid consequences from deleting things mid-iteration
-	err = InactivateLowDemandTopics(ctx, k, minTopicDemand, limit, maxLimit)
+	err = InactivateLowDemandTopics(ctx, k, minTopicDemand, topicPageLimit, maxTopicPages)
 	if err != nil {
 		return nil, cosmosMath.Uint{}, err
 	}
@@ -243,43 +250,57 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId][]types.InferenceRequest, 0)
 
-	offset := uint64(0)
-	key := make([]byte, 0)
+	topicOffset := uint64(0)
+	topicPageKey := make([]byte, 0)
 	i := uint64(0)
 
 	for {
-		pageRequest := &query.PageRequest{Limit: limit, Offset: offset, Key: key}
-		topicsActive, pageResponse, err := k.GetActiveTopics(ctx, pageRequest)
+		topicPageRequest := &query.PageRequest{Limit: topicPageLimit, Offset: topicOffset, Key: topicPageKey}
+		topicsActive, topicPageResponse, err := k.GetActiveTopics(ctx, topicPageRequest)
 		if err != nil {
 			fmt.Println("Error getting active topics: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
 
+		requestOffset := uint64(0)
+		requestPageKey := make([]byte, 0)
+		j := uint64(0)
+		priceFinder := BuildOnlineBestPriceFinder(ctx, k, currentBlock)
 		for _, topic := range topicsActive {
-			inferenceRequests, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id)
+			requestPageRequest := &query.PageRequest{Limit: requestPageLimit, Offset: requestOffset, Key: requestPageKey}
+
+			inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id, requestPageRequest)
 			if err != nil {
 				fmt.Println("Error getting mempool inference requests: ", err)
 				return nil, cosmosMath.Uint{}, err
 			}
 
-			priceOfMaxReturn, maxReturn, requestsToUse, err := GetRequestsThatMaxFees(ctx, k, currentBlock, inferenceRequests)
+			bestPriceData, err := priceFinder(inferenceRequests)
 			if err != nil {
 				fmt.Println("Error getting requests that maximize fees: ", err)
 				return nil, cosmosMath.Uint{}, err
 			}
-			fmt.Println("Topic: ", topic.Id, " Price of max return: ", priceOfMaxReturn, " Max return: ", maxReturn, " Requests to use: ", len(requestsToUse))
+			fmt.Println("Topic: ", topic.Id, " Price of max return: ", bestPriceData.bestPrice, " Max return: ", bestPriceData.maxFees, " Requests to use: ", len(bestPriceData.validRequests))
 			topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
-			topicBestPrices[topic.Id] = PriceAndReturn{priceOfMaxReturn, maxReturn}
-			requestsToDrawDemandFrom[topic.Id] = requestsToUse
+			topicBestPrices[topic.Id] = PriceAndReturn{bestPriceData.bestPrice, bestPriceData.maxFees}
+			requestsToDrawDemandFrom[topic.Id] = bestPriceData.validRequests
+
+			if len(requestPageResponse.NextKey) == 0 || j > maxRequestPages {
+				break
+			}
+
+			requestPageKey = requestPageResponse.NextKey
+			requestOffset += requestPageLimit
+			j++
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if len(pageResponse.NextKey) == 0 || i > maxLimit {
+		if len(topicPageResponse.NextKey) == 0 || i > maxTopicPages {
 			break
 		}
 
-		key = pageResponse.NextKey
-		offset += limit
+		topicPageKey = topicPageResponse.NextKey
+		topicOffset += topicPageLimit
 		i++
 	}
 

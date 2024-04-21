@@ -29,10 +29,9 @@ func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types
 	return &types.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
 }
 
-// TODO paginate
 func (qs queryServer) GetMempoolInferenceRequestsByTopic(ctx context.Context, req *types.QueryMempoolInferenceRequestsByTopic) (*types.QueryMempoolInferenceRequestsByTopicResponse, error) {
 	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
-	mempool, err := qs.k.GetMempoolInferenceRequestsForTopic(ctx, req.TopicId)
+	mempool, pageRes, err := qs.k.GetMempoolInferenceRequestsForTopic(ctx, req.TopicId, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -48,5 +47,5 @@ func (qs queryServer) GetMempoolInferenceRequestsByTopic(ctx context.Context, re
 		inferenceRequestCopy := inferenceRequest
 		ret = append(ret, &types.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
-	return &types.QueryMempoolInferenceRequestsByTopicResponse{InferenceRequests: ret}, nil
+	return &types.QueryMempoolInferenceRequestsByTopicResponse{InferenceRequests: ret, Pagination: pageRes}, nil
 }

@@ -145,6 +145,18 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxRetriesToFulfilNoncesReputer) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesReputer = newParams.MaxRetriesToFulfilNoncesReputer[0]
 	}
+	if len(newParams.TopicPageLimit) == 1 {
+		existingParams.TopicPageLimit = newParams.TopicPageLimit[0]
+	}
+	if len(newParams.MaxTopicPages) == 1 {
+		existingParams.MaxTopicPages = newParams.MaxTopicPages[0]
+	}
+	if len(newParams.RequestPageLimit) == 1 {
+		existingParams.RequestPageLimit = newParams.RequestPageLimit[0]
+	}
+	if len(newParams.MaxRequestPages) == 1 {
+		existingParams.MaxRequestPages = newParams.MaxRequestPages[0]
+	}
 
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

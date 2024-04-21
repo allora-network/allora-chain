@@ -1963,22 +1963,33 @@ func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId Top
 	return k.mempool.Get(ctx, collections.Join(topicId, requestId))
 }
 
-// TODO paginate
-func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TopicId) ([]types.InferenceRequest, error) {
-	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
-	rng := collections.NewPrefixedPairRange[TopicId, RequestId](topicId)
-	iter, err := k.mempool.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		value, err := iter.Value()
+// Returns pages of inference requests in the mempool for a given topic
+func (k *Keeper) GetMempoolInferenceRequestsForTopic(
+	ctx context.Context,
+	topicId TopicId,
+	pagination *query.PageRequest,
+) ([]types.InferenceRequest, *query.PageResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := sdkCtx.KVStore(k.storeKey)
+	mempoolStore := prefix.NewStore(store, k.mempool.GetPrefix())
+
+	var requests []types.InferenceRequest
+	// Paginate through all requests in the mempool for the given topic
+	pageRes, err := query.Paginate(mempoolStore, pagination, func(key, _ []byte) error {
+		requestId := string(key)
+		request, err := k.GetMempoolInferenceRequestById(ctx, topicId, requestId)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		ret = append(ret, value)
+
+		requests = append(requests, request)
+
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
 	}
-	return ret, nil
+	return requests, pageRes, err
 }
 
 func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount Uint) error {

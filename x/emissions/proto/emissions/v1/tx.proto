@@ -143,6 +143,10 @@ message OptionalParams {
   repeated uint64 gradient_descent_max_iters = 38;
   repeated int64 max_retries_to_fulfil_nonces_worker = 39;
   repeated int64 max_retries_to_fulfil_nonces_reputer = 40;
+  repeated uint64 topic_page_limit = 41;
+  repeated uint64 max_topic_pages = 42;
+  repeated uint64 request_page_limit = 43;
+  repeated uint64 max_request_pages = 44;
 }
 
 message MsgUpdateParams {

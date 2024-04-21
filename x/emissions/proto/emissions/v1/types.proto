@@ -124,6 +124,10 @@ message Params {
   uint64 gradient_descent_max_iters = 38;           // max number of gradient descent iterations
   int64 max_retries_to_fulfil_nonces_worker = 39;   // max number of retries to unfulfilled nonces (worker)
   int64 max_retries_to_fulfil_nonces_reputer = 40;  // max number of retries to unfulfilled nonces (reputer)
+  uint64 topic_page_limit = 41;
+  uint64 max_topic_pages = 42;
+  uint64 request_page_limit = 43;
+  uint64 max_request_pages = 44;
 }
 
 /// TOPICS
