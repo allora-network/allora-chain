@@ -13319,16 +13319,16 @@ func (x *fastReflection_MsgRemoveRegistrationResponse) ProtoMethods() *protoifac
 var (
 	md_MsgAddStake          protoreflect.MessageDescriptor
 	fd_MsgAddStake_sender   protoreflect.FieldDescriptor
-	fd_MsgAddStake_amount   protoreflect.FieldDescriptor
 	fd_MsgAddStake_topic_id protoreflect.FieldDescriptor
+	fd_MsgAddStake_amount   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_tx_proto_init()
 	md_MsgAddStake = File_emissions_v1_tx_proto.Messages().ByName("MsgAddStake")
 	fd_MsgAddStake_sender = md_MsgAddStake.Fields().ByName("sender")
-	fd_MsgAddStake_amount = md_MsgAddStake.Fields().ByName("amount")
 	fd_MsgAddStake_topic_id = md_MsgAddStake.Fields().ByName("topic_id")
+	fd_MsgAddStake_amount = md_MsgAddStake.Fields().ByName("amount")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgAddStake)(nil)
@@ -13402,15 +13402,15 @@ func (x *fastReflection_MsgAddStake) Range(f func(protoreflect.FieldDescriptor, 
 			return
 		}
 	}
-	if x.Amount != "" {
-		value := protoreflect.ValueOfString(x.Amount)
-		if !f(fd_MsgAddStake_amount, value) {
-			return
-		}
-	}
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
 		if !f(fd_MsgAddStake_topic_id, value) {
+			return
+		}
+	}
+	if x.Amount != "" {
+		value := protoreflect.ValueOfString(x.Amount)
+		if !f(fd_MsgAddStake_amount, value) {
 			return
 		}
 	}
@@ -13431,10 +13431,10 @@ func (x *fastReflection_MsgAddStake) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	case "emissions.v1.MsgAddStake.sender":
 		return x.Sender != ""
-	case "emissions.v1.MsgAddStake.amount":
-		return x.Amount != ""
 	case "emissions.v1.MsgAddStake.topic_id":
 		return x.TopicId != uint64(0)
+	case "emissions.v1.MsgAddStake.amount":
+		return x.Amount != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13453,10 +13453,10 @@ func (x *fastReflection_MsgAddStake) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	case "emissions.v1.MsgAddStake.sender":
 		x.Sender = ""
-	case "emissions.v1.MsgAddStake.amount":
-		x.Amount = ""
 	case "emissions.v1.MsgAddStake.topic_id":
 		x.TopicId = uint64(0)
+	case "emissions.v1.MsgAddStake.amount":
+		x.Amount = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13476,12 +13476,12 @@ func (x *fastReflection_MsgAddStake) Get(descriptor protoreflect.FieldDescriptor
 	case "emissions.v1.MsgAddStake.sender":
 		value := x.Sender
 		return protoreflect.ValueOfString(value)
-	case "emissions.v1.MsgAddStake.amount":
-		value := x.Amount
-		return protoreflect.ValueOfString(value)
 	case "emissions.v1.MsgAddStake.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.MsgAddStake.amount":
+		value := x.Amount
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13504,10 +13504,10 @@ func (x *fastReflection_MsgAddStake) Set(fd protoreflect.FieldDescriptor, value 
 	switch fd.FullName() {
 	case "emissions.v1.MsgAddStake.sender":
 		x.Sender = value.Interface().(string)
-	case "emissions.v1.MsgAddStake.amount":
-		x.Amount = value.Interface().(string)
 	case "emissions.v1.MsgAddStake.topic_id":
 		x.TopicId = value.Uint()
+	case "emissions.v1.MsgAddStake.amount":
+		x.Amount = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13530,10 +13530,10 @@ func (x *fastReflection_MsgAddStake) Mutable(fd protoreflect.FieldDescriptor) pr
 	switch fd.FullName() {
 	case "emissions.v1.MsgAddStake.sender":
 		panic(fmt.Errorf("field sender of message emissions.v1.MsgAddStake is not mutable"))
-	case "emissions.v1.MsgAddStake.amount":
-		panic(fmt.Errorf("field amount of message emissions.v1.MsgAddStake is not mutable"))
 	case "emissions.v1.MsgAddStake.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v1.MsgAddStake is not mutable"))
+	case "emissions.v1.MsgAddStake.amount":
+		panic(fmt.Errorf("field amount of message emissions.v1.MsgAddStake is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13549,10 +13549,10 @@ func (x *fastReflection_MsgAddStake) NewField(fd protoreflect.FieldDescriptor) p
 	switch fd.FullName() {
 	case "emissions.v1.MsgAddStake.sender":
 		return protoreflect.ValueOfString("")
-	case "emissions.v1.MsgAddStake.amount":
-		return protoreflect.ValueOfString("")
 	case "emissions.v1.MsgAddStake.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.MsgAddStake.amount":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.MsgAddStake"))
@@ -13626,12 +13626,12 @@ func (x *fastReflection_MsgAddStake) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
 		l = len(x.Amount)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.TopicId != 0 {
-			n += 1 + runtime.Sov(uint64(x.TopicId))
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -13662,17 +13662,17 @@ func (x *fastReflection_MsgAddStake) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.TopicId != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
-			i--
-			dAtA[i] = 0x18
-		}
 		if len(x.Amount) > 0 {
 			i -= len(x.Amount)
 			copy(dAtA[i:], x.Amount)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Amount)))
 			i--
-			dAtA[i] = 0x12
+			dAtA[i] = 0x1a
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x10
 		}
 		if len(x.Sender) > 0 {
 			i -= len(x.Sender)
@@ -13763,6 +13763,25 @@ func (x *fastReflection_MsgAddStake) ProtoMethods() *protoiface.Methods {
 				x.Sender = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 				}
@@ -13794,25 +13813,6 @@ func (x *fastReflection_MsgAddStake) ProtoMethods() *protoiface.Methods {
 				}
 				x.Amount = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 3:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
-				}
-				x.TopicId = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.TopicId |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -27296,8 +27296,8 @@ type MsgAddStake struct {
 	unknownFields protoimpl.UnknownFields
 
 	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Amount  string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
-	TopicId uint64 `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	TopicId uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Amount  string `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
 }
 
 func (x *MsgAddStake) Reset() {
@@ -27327,18 +27327,18 @@ func (x *MsgAddStake) GetSender() string {
 	return ""
 }
 
-func (x *MsgAddStake) GetAmount() string {
-	if x != nil {
-		return x.Amount
-	}
-	return ""
-}
-
 func (x *MsgAddStake) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
+}
+
+func (x *MsgAddStake) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
 }
 
 type MsgAddStakeResponse struct {
@@ -28763,13 +28763,13 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x22, 0x99, 0x01,
 	0x0a, 0x0b, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x16, 0x0a,
 	0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73,
-	0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
-	0x2e, 0x55, 0x69, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
-	0x55, 0x69, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e,
-	0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x3a, 0x0b, 0x82, 0xe7,
+	0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69,
+	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x12, 0x4a, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x32, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74,
+	0xd2, 0xb4, 0x2d, 0x0b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0xa8,
+	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x3a, 0x0b, 0x82, 0xe7,
 	0xb0, 0x2a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x15, 0x0a, 0x13, 0x4d, 0x73, 0x67,
 	0x41, 0x64, 0x64, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
 	0x22, 0xa1, 0x01, 0x0a, 0x13, 0x4d, 0x73, 0x67, 0x53, 0x74, 0x61, 0x72, 0x74, 0x52, 0x65, 0x6d,

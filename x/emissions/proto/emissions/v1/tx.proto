@@ -36,7 +36,7 @@ service Msg {
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
   rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
-  
+
   rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
 
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
@@ -251,13 +251,13 @@ message MsgAddStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  string amount = 2 [
+  uint64 topic_id = 2;
+  string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  uint64 topic_id = 3;
 }
 
 message MsgAddStakeResponse {}
