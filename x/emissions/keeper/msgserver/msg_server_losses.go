@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 
+	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -158,7 +159,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	topReputers := FindTopNByScoreDesc(params.MaxReputersPerTopicRequest, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
-	stakesByReputer := make(map[string]types.StakePlacement)
+	stakesByReputer := make(map[string]cosmosMath.Uint)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for reputer, bundle := range lossBundlesByReputer {
 		if _, ok := topReputers[reputer]; !ok {
@@ -177,11 +178,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		stakesByReputer[bundle.ValueBundle.Reputer] = types.StakePlacement{
-			TopicId: msg.TopicId,
-			Reputer: bundle.ValueBundle.Reputer,
-			Amount:  stake,
-		}
+		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
 
 	bundles := types.ReputerValueBundles{

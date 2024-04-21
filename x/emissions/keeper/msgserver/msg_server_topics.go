@@ -75,7 +75,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
 		return nil, err
 	}
-	if err = ms.k.ReactivateTopic(ctx, id); err != nil {
+	if err = ms.k.ActivateTopic(ctx, id); err != nil {
 		return nil, err
 	}
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
@@ -103,7 +103,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 	}
 
 	// If the topic has enough demand, reactivate it
-	err = ms.k.ReactivateTopic(ctx, msg.TopicId)
+	err = ms.k.ActivateTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}

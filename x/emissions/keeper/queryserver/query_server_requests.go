@@ -7,6 +7,10 @@ import (
 )
 
 func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types.QueryMempoolInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	valid := types.IsValidRequestId(req.RequestId)
 	if !valid {
 		return nil, types.ErrInvalidRequestId
@@ -30,6 +34,10 @@ func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types
 }
 
 func (qs queryServer) GetMempoolInferenceRequestsByTopic(ctx context.Context, req *types.QueryMempoolInferenceRequestsByTopic) (*types.QueryMempoolInferenceRequestsByTopicResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
 	mempool, pageRes, err := qs.k.GetMempoolInferenceRequestsForTopic(ctx, req.TopicId, req.Pagination)
 	if err != nil {

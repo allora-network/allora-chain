@@ -277,22 +277,23 @@ func (m *QueryTotalStakeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryTotalStakeResponse proto.InternalMessageInfo
 
-type QueryReputerStakeListRequest struct {
+type QueryReputerStakeInTopicRequest struct {
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	TopicId uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 }
 
-func (m *QueryReputerStakeListRequest) Reset()         { *m = QueryReputerStakeListRequest{} }
-func (m *QueryReputerStakeListRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryReputerStakeListRequest) ProtoMessage()    {}
-func (*QueryReputerStakeListRequest) Descriptor() ([]byte, []int) {
+func (m *QueryReputerStakeInTopicRequest) Reset()         { *m = QueryReputerStakeInTopicRequest{} }
+func (m *QueryReputerStakeInTopicRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryReputerStakeInTopicRequest) ProtoMessage()    {}
+func (*QueryReputerStakeInTopicRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_c426af2f1e908986, []int{6}
 }
-func (m *QueryReputerStakeListRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryReputerStakeInTopicRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryReputerStakeListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryReputerStakeInTopicRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryReputerStakeListRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryReputerStakeInTopicRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -302,129 +303,48 @@ func (m *QueryReputerStakeListRequest) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *QueryReputerStakeListRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryReputerStakeListRequest.Merge(m, src)
+func (m *QueryReputerStakeInTopicRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputerStakeInTopicRequest.Merge(m, src)
 }
-func (m *QueryReputerStakeListRequest) XXX_Size() int {
+func (m *QueryReputerStakeInTopicRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryReputerStakeListRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryReputerStakeListRequest.DiscardUnknown(m)
+func (m *QueryReputerStakeInTopicRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputerStakeInTopicRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryReputerStakeListRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryReputerStakeInTopicRequest proto.InternalMessageInfo
 
-func (m *QueryReputerStakeListRequest) GetAddress() string {
+func (m *QueryReputerStakeInTopicRequest) GetAddress() string {
 	if m != nil {
 		return m.Address
 	}
 	return ""
 }
 
-type QueryReputerStakeListResponse struct {
-	Stakes []*StakePlacement `protobuf:"bytes,1,rep,name=stakes,proto3" json:"stakes,omitempty"`
-}
-
-func (m *QueryReputerStakeListResponse) Reset()         { *m = QueryReputerStakeListResponse{} }
-func (m *QueryReputerStakeListResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryReputerStakeListResponse) ProtoMessage()    {}
-func (*QueryReputerStakeListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{7}
-}
-func (m *QueryReputerStakeListResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryReputerStakeListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryReputerStakeListResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryReputerStakeListResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryReputerStakeListResponse.Merge(m, src)
-}
-func (m *QueryReputerStakeListResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryReputerStakeListResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryReputerStakeListResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryReputerStakeListResponse proto.InternalMessageInfo
-
-func (m *QueryReputerStakeListResponse) GetStakes() []*StakePlacement {
-	if m != nil {
-		return m.Stakes
-	}
-	return nil
-}
-
-type QueryTopicStakeListRequest struct {
-	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-}
-
-func (m *QueryTopicStakeListRequest) Reset()         { *m = QueryTopicStakeListRequest{} }
-func (m *QueryTopicStakeListRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryTopicStakeListRequest) ProtoMessage()    {}
-func (*QueryTopicStakeListRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{8}
-}
-func (m *QueryTopicStakeListRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryTopicStakeListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryTopicStakeListRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryTopicStakeListRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryTopicStakeListRequest.Merge(m, src)
-}
-func (m *QueryTopicStakeListRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryTopicStakeListRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryTopicStakeListRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryTopicStakeListRequest proto.InternalMessageInfo
-
-func (m *QueryTopicStakeListRequest) GetTopicId() uint64 {
+func (m *QueryReputerStakeInTopicRequest) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-type QueryTopicStakeListResponse struct {
-	Stakes []*StakePlacement `protobuf:"bytes,1,rep,name=stakes,proto3" json:"stakes,omitempty"`
+type QueryReputerStakeInTopicResponse struct {
+	Amount cosmossdk_io_math.Uint `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 
-func (m *QueryTopicStakeListResponse) Reset()         { *m = QueryTopicStakeListResponse{} }
-func (m *QueryTopicStakeListResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryTopicStakeListResponse) ProtoMessage()    {}
-func (*QueryTopicStakeListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{9}
+func (m *QueryReputerStakeInTopicResponse) Reset()         { *m = QueryReputerStakeInTopicResponse{} }
+func (m *QueryReputerStakeInTopicResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryReputerStakeInTopicResponse) ProtoMessage()    {}
+func (*QueryReputerStakeInTopicResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{7}
 }
-func (m *QueryTopicStakeListResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryReputerStakeInTopicResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryTopicStakeListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryReputerStakeInTopicResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryTopicStakeListResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryReputerStakeInTopicResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -434,24 +354,391 @@ func (m *QueryTopicStakeListResponse) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *QueryTopicStakeListResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryTopicStakeListResponse.Merge(m, src)
+func (m *QueryReputerStakeInTopicResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputerStakeInTopicResponse.Merge(m, src)
 }
-func (m *QueryTopicStakeListResponse) XXX_Size() int {
+func (m *QueryReputerStakeInTopicResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryTopicStakeListResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryTopicStakeListResponse.DiscardUnknown(m)
+func (m *QueryReputerStakeInTopicResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputerStakeInTopicResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryTopicStakeListResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryReputerStakeInTopicResponse proto.InternalMessageInfo
 
-func (m *QueryTopicStakeListResponse) GetStakes() []*StakePlacement {
-	if m != nil {
-		return m.Stakes
+type QueryDelegateStakeInTopicInReputerRequest struct {
+	ReputerAddress string `protobuf:"bytes,1,opt,name=reputer_address,json=reputerAddress,proto3" json:"reputer_address,omitempty"`
+	TopicId        uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryDelegateStakeInTopicInReputerRequest) Reset() {
+	*m = QueryDelegateStakeInTopicInReputerRequest{}
+}
+func (m *QueryDelegateStakeInTopicInReputerRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryDelegateStakeInTopicInReputerRequest) ProtoMessage() {}
+func (*QueryDelegateStakeInTopicInReputerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{8}
+}
+func (m *QueryDelegateStakeInTopicInReputerRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeInTopicInReputerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeInTopicInReputerRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
 	}
-	return nil
 }
+func (m *QueryDelegateStakeInTopicInReputerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeInTopicInReputerRequest.Merge(m, src)
+}
+func (m *QueryDelegateStakeInTopicInReputerRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeInTopicInReputerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeInTopicInReputerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeInTopicInReputerRequest proto.InternalMessageInfo
+
+func (m *QueryDelegateStakeInTopicInReputerRequest) GetReputerAddress() string {
+	if m != nil {
+		return m.ReputerAddress
+	}
+	return ""
+}
+
+func (m *QueryDelegateStakeInTopicInReputerRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryDelegateStakeInTopicInReputerResponse struct {
+	Amount cosmossdk_io_math.Uint `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+}
+
+func (m *QueryDelegateStakeInTopicInReputerResponse) Reset() {
+	*m = QueryDelegateStakeInTopicInReputerResponse{}
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryDelegateStakeInTopicInReputerResponse) ProtoMessage() {}
+func (*QueryDelegateStakeInTopicInReputerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{9}
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeInTopicInReputerResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeInTopicInReputerResponse.Merge(m, src)
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeInTopicInReputerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeInTopicInReputerResponse proto.InternalMessageInfo
+
+type QueryStakeFromDelegatorInTopicInReputerRequest struct {
+	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
+	ReputerAddress   string `protobuf:"bytes,2,opt,name=reputer_address,json=reputerAddress,proto3" json:"reputer_address,omitempty"`
+	TopicId          uint64 `protobuf:"varint,3,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) Reset() {
+	*m = QueryStakeFromDelegatorInTopicInReputerRequest{}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryStakeFromDelegatorInTopicInReputerRequest) ProtoMessage() {}
+func (*QueryStakeFromDelegatorInTopicInReputerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{10}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerRequest.Merge(m, src)
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerRequest proto.InternalMessageInfo
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) GetDelegatorAddress() string {
+	if m != nil {
+		return m.DelegatorAddress
+	}
+	return ""
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) GetReputerAddress() string {
+	if m != nil {
+		return m.ReputerAddress
+	}
+	return ""
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryStakeFromDelegatorInTopicInReputerResponse struct {
+	Amount cosmossdk_io_math.Uint `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) Reset() {
+	*m = QueryStakeFromDelegatorInTopicInReputerResponse{}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryStakeFromDelegatorInTopicInReputerResponse) ProtoMessage() {}
+func (*QueryStakeFromDelegatorInTopicInReputerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{11}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerResponse.Merge(m, src)
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeFromDelegatorInTopicInReputerResponse proto.InternalMessageInfo
+
+type QueryStakeFromDelegatorInTopicRequest struct {
+	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
+	TopicId          uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) Reset()         { *m = QueryStakeFromDelegatorInTopicRequest{} }
+func (m *QueryStakeFromDelegatorInTopicRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryStakeFromDelegatorInTopicRequest) ProtoMessage()    {}
+func (*QueryStakeFromDelegatorInTopicRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{12}
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeFromDelegatorInTopicRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicRequest.Merge(m, src)
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeFromDelegatorInTopicRequest proto.InternalMessageInfo
+
+func (m *QueryStakeFromDelegatorInTopicRequest) GetDelegatorAddress() string {
+	if m != nil {
+		return m.DelegatorAddress
+	}
+	return ""
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryStakeFromDelegatorInTopicResponse struct {
+	Amount cosmossdk_io_math.Uint `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+}
+
+func (m *QueryStakeFromDelegatorInTopicResponse) Reset() {
+	*m = QueryStakeFromDelegatorInTopicResponse{}
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryStakeFromDelegatorInTopicResponse) ProtoMessage()    {}
+func (*QueryStakeFromDelegatorInTopicResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{13}
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeFromDelegatorInTopicResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicResponse.Merge(m, src)
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeFromDelegatorInTopicResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeFromDelegatorInTopicResponse proto.InternalMessageInfo
+
+type QueryTopicStakeRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryTopicStakeRequest) Reset()         { *m = QueryTopicStakeRequest{} }
+func (m *QueryTopicStakeRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicStakeRequest) ProtoMessage()    {}
+func (*QueryTopicStakeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{14}
+}
+func (m *QueryTopicStakeRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicStakeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicStakeRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicStakeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicStakeRequest.Merge(m, src)
+}
+func (m *QueryTopicStakeRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicStakeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicStakeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicStakeRequest proto.InternalMessageInfo
+
+func (m *QueryTopicStakeRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryTopicStakeResponse struct {
+	Amount cosmossdk_io_math.Uint `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
+}
+
+func (m *QueryTopicStakeResponse) Reset()         { *m = QueryTopicStakeResponse{} }
+func (m *QueryTopicStakeResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicStakeResponse) ProtoMessage()    {}
+func (*QueryTopicStakeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{15}
+}
+func (m *QueryTopicStakeResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicStakeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicStakeResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicStakeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicStakeResponse.Merge(m, src)
+}
+func (m *QueryTopicStakeResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicStakeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicStakeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicStakeResponse proto.InternalMessageInfo
 
 type QueryNetworkLossBundleAtBlockRequest struct {
 	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
@@ -462,7 +749,7 @@ func (m *QueryNetworkLossBundleAtBlockRequest) Reset()         { *m = QueryNetwo
 func (m *QueryNetworkLossBundleAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkLossBundleAtBlockRequest) ProtoMessage()    {}
 func (*QueryNetworkLossBundleAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{10}
+	return fileDescriptor_c426af2f1e908986, []int{16}
 }
 func (m *QueryNetworkLossBundleAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -513,7 +800,7 @@ func (m *QueryNetworkLossBundleAtBlockResponse) Reset()         { *m = QueryNetw
 func (m *QueryNetworkLossBundleAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkLossBundleAtBlockResponse) ProtoMessage()    {}
 func (*QueryNetworkLossBundleAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{11}
+	return fileDescriptor_c426af2f1e908986, []int{17}
 }
 func (m *QueryNetworkLossBundleAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -556,7 +843,7 @@ func (m *QueryNextTopicIdRequest) Reset()         { *m = QueryNextTopicIdRequest
 func (m *QueryNextTopicIdRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryNextTopicIdRequest) ProtoMessage()    {}
 func (*QueryNextTopicIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{12}
+	return fileDescriptor_c426af2f1e908986, []int{18}
 }
 func (m *QueryNextTopicIdRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -593,7 +880,7 @@ func (m *QueryNextTopicIdResponse) Reset()         { *m = QueryNextTopicIdRespon
 func (m *QueryNextTopicIdResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryNextTopicIdResponse) ProtoMessage()    {}
 func (*QueryNextTopicIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{13}
+	return fileDescriptor_c426af2f1e908986, []int{19}
 }
 func (m *QueryNextTopicIdResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -637,7 +924,7 @@ func (m *QueryTopicRequest) Reset()         { *m = QueryTopicRequest{} }
 func (m *QueryTopicRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicRequest) ProtoMessage()    {}
 func (*QueryTopicRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{14}
+	return fileDescriptor_c426af2f1e908986, []int{20}
 }
 func (m *QueryTopicRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -681,7 +968,7 @@ func (m *QueryTopicResponse) Reset()         { *m = QueryTopicResponse{} }
 func (m *QueryTopicResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicResponse) ProtoMessage()    {}
 func (*QueryTopicResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{15}
+	return fileDescriptor_c426af2f1e908986, []int{21}
 }
 func (m *QueryTopicResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -725,7 +1012,7 @@ func (m *QueryActiveTopicsRequest) Reset()         { *m = QueryActiveTopicsReque
 func (m *QueryActiveTopicsRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryActiveTopicsRequest) ProtoMessage()    {}
 func (*QueryActiveTopicsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{16}
+	return fileDescriptor_c426af2f1e908986, []int{22}
 }
 func (m *QueryActiveTopicsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -770,7 +1057,7 @@ func (m *QueryActiveTopicsResponse) Reset()         { *m = QueryActiveTopicsResp
 func (m *QueryActiveTopicsResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryActiveTopicsResponse) ProtoMessage()    {}
 func (*QueryActiveTopicsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{17}
+	return fileDescriptor_c426af2f1e908986, []int{23}
 }
 func (m *QueryActiveTopicsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -813,102 +1100,6 @@ func (m *QueryActiveTopicsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-type QueryRegisteredTopicIdsRequest struct {
-	Address   string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	IsReputer bool   `protobuf:"varint,2,opt,name=is_reputer,json=isReputer,proto3" json:"is_reputer,omitempty"`
-}
-
-func (m *QueryRegisteredTopicIdsRequest) Reset()         { *m = QueryRegisteredTopicIdsRequest{} }
-func (m *QueryRegisteredTopicIdsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryRegisteredTopicIdsRequest) ProtoMessage()    {}
-func (*QueryRegisteredTopicIdsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{18}
-}
-func (m *QueryRegisteredTopicIdsRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryRegisteredTopicIdsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryRegisteredTopicIdsRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryRegisteredTopicIdsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRegisteredTopicIdsRequest.Merge(m, src)
-}
-func (m *QueryRegisteredTopicIdsRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryRegisteredTopicIdsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRegisteredTopicIdsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryRegisteredTopicIdsRequest proto.InternalMessageInfo
-
-func (m *QueryRegisteredTopicIdsRequest) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-func (m *QueryRegisteredTopicIdsRequest) GetIsReputer() bool {
-	if m != nil {
-		return m.IsReputer
-	}
-	return false
-}
-
-type QueryRegisteredTopicIdsResponse struct {
-	TopicIds []uint64 `protobuf:"varint,1,rep,packed,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
-}
-
-func (m *QueryRegisteredTopicIdsResponse) Reset()         { *m = QueryRegisteredTopicIdsResponse{} }
-func (m *QueryRegisteredTopicIdsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryRegisteredTopicIdsResponse) ProtoMessage()    {}
-func (*QueryRegisteredTopicIdsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{19}
-}
-func (m *QueryRegisteredTopicIdsResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryRegisteredTopicIdsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryRegisteredTopicIdsResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryRegisteredTopicIdsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryRegisteredTopicIdsResponse.Merge(m, src)
-}
-func (m *QueryRegisteredTopicIdsResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryRegisteredTopicIdsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryRegisteredTopicIdsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryRegisteredTopicIdsResponse proto.InternalMessageInfo
-
-func (m *QueryRegisteredTopicIdsResponse) GetTopicIds() []uint64 {
-	if m != nil {
-		return m.TopicIds
-	}
-	return nil
-}
-
 // Returns the inferences on a topic posted at a block height
 type QueryInferencesAtBlockRequest struct {
 	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
@@ -919,7 +1110,7 @@ func (m *QueryInferencesAtBlockRequest) Reset()         { *m = QueryInferencesAt
 func (m *QueryInferencesAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryInferencesAtBlockRequest) ProtoMessage()    {}
 func (*QueryInferencesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{20}
+	return fileDescriptor_c426af2f1e908986, []int{24}
 }
 func (m *QueryInferencesAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -974,7 +1165,7 @@ func (m *QueryInferencesAtBlockResponse) Reset()         { *m = QueryInferencesA
 func (m *QueryInferencesAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryInferencesAtBlockResponse) ProtoMessage()    {}
 func (*QueryInferencesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{21}
+	return fileDescriptor_c426af2f1e908986, []int{25}
 }
 func (m *QueryInferencesAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1020,7 +1211,7 @@ func (m *QueryForecastsAtBlockRequest) Reset()         { *m = QueryForecastsAtBl
 func (m *QueryForecastsAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryForecastsAtBlockRequest) ProtoMessage()    {}
 func (*QueryForecastsAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{22}
+	return fileDescriptor_c426af2f1e908986, []int{26}
 }
 func (m *QueryForecastsAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1075,7 +1266,7 @@ func (m *QueryForecastsAtBlockResponse) Reset()         { *m = QueryForecastsAtB
 func (m *QueryForecastsAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryForecastsAtBlockResponse) ProtoMessage()    {}
 func (*QueryForecastsAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{23}
+	return fileDescriptor_c426af2f1e908986, []int{27}
 }
 func (m *QueryForecastsAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1120,7 +1311,7 @@ func (m *QueryWorkerLatestInferenceRequest) Reset()         { *m = QueryWorkerLa
 func (m *QueryWorkerLatestInferenceRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerLatestInferenceRequest) ProtoMessage()    {}
 func (*QueryWorkerLatestInferenceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{24}
+	return fileDescriptor_c426af2f1e908986, []int{28}
 }
 func (m *QueryWorkerLatestInferenceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1171,7 +1362,7 @@ func (m *QueryWorkerLatestInferenceResponse) Reset()         { *m = QueryWorkerL
 func (m *QueryWorkerLatestInferenceResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerLatestInferenceResponse) ProtoMessage()    {}
 func (*QueryWorkerLatestInferenceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{25}
+	return fileDescriptor_c426af2f1e908986, []int{29}
 }
 func (m *QueryWorkerLatestInferenceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1215,7 +1406,7 @@ func (m *QueryWorkerNodeInfoRequest) Reset()         { *m = QueryWorkerNodeInfoR
 func (m *QueryWorkerNodeInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerNodeInfoRequest) ProtoMessage()    {}
 func (*QueryWorkerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{26}
+	return fileDescriptor_c426af2f1e908986, []int{30}
 }
 func (m *QueryWorkerNodeInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1259,7 +1450,7 @@ func (m *QueryWorkerNodeInfoResponse) Reset()         { *m = QueryWorkerNodeInfo
 func (m *QueryWorkerNodeInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerNodeInfoResponse) ProtoMessage()    {}
 func (*QueryWorkerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{27}
+	return fileDescriptor_c426af2f1e908986, []int{31}
 }
 func (m *QueryWorkerNodeInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1303,7 +1494,7 @@ func (m *QueryReputerNodeInfoRequest) Reset()         { *m = QueryReputerNodeInf
 func (m *QueryReputerNodeInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerNodeInfoRequest) ProtoMessage()    {}
 func (*QueryReputerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{28}
+	return fileDescriptor_c426af2f1e908986, []int{32}
 }
 func (m *QueryReputerNodeInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1347,7 +1538,7 @@ func (m *QueryReputerNodeInfoResponse) Reset()         { *m = QueryReputerNodeIn
 func (m *QueryReputerNodeInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerNodeInfoResponse) ProtoMessage()    {}
 func (*QueryReputerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{29}
+	return fileDescriptor_c426af2f1e908986, []int{33}
 }
 func (m *QueryReputerNodeInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1391,7 +1582,7 @@ func (m *QueryWorkerAddressByP2PKeyRequest) Reset()         { *m = QueryWorkerAd
 func (m *QueryWorkerAddressByP2PKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerAddressByP2PKeyRequest) ProtoMessage()    {}
 func (*QueryWorkerAddressByP2PKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{30}
+	return fileDescriptor_c426af2f1e908986, []int{34}
 }
 func (m *QueryWorkerAddressByP2PKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1435,7 +1626,7 @@ func (m *QueryWorkerAddressByP2PKeyResponse) Reset()         { *m = QueryWorkerA
 func (m *QueryWorkerAddressByP2PKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerAddressByP2PKeyResponse) ProtoMessage()    {}
 func (*QueryWorkerAddressByP2PKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{31}
+	return fileDescriptor_c426af2f1e908986, []int{35}
 }
 func (m *QueryWorkerAddressByP2PKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1479,7 +1670,7 @@ func (m *QueryReputerAddressByP2PKeyRequest) Reset()         { *m = QueryReputer
 func (m *QueryReputerAddressByP2PKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerAddressByP2PKeyRequest) ProtoMessage()    {}
 func (*QueryReputerAddressByP2PKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{32}
+	return fileDescriptor_c426af2f1e908986, []int{36}
 }
 func (m *QueryReputerAddressByP2PKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1523,7 +1714,7 @@ func (m *QueryReputerAddressByP2PKeyResponse) Reset()         { *m = QueryRepute
 func (m *QueryReputerAddressByP2PKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerAddressByP2PKeyResponse) ProtoMessage()    {}
 func (*QueryReputerAddressByP2PKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{33}
+	return fileDescriptor_c426af2f1e908986, []int{37}
 }
 func (m *QueryReputerAddressByP2PKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1568,7 +1759,7 @@ func (m *QueryMempoolInferenceRequest) Reset()         { *m = QueryMempoolInfere
 func (m *QueryMempoolInferenceRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryMempoolInferenceRequest) ProtoMessage()    {}
 func (*QueryMempoolInferenceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{34}
+	return fileDescriptor_c426af2f1e908986, []int{38}
 }
 func (m *QueryMempoolInferenceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1620,7 +1811,7 @@ func (m *QueryExistingInferenceResponse) Reset()         { *m = QueryExistingInf
 func (m *QueryExistingInferenceResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryExistingInferenceResponse) ProtoMessage()    {}
 func (*QueryExistingInferenceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{35}
+	return fileDescriptor_c426af2f1e908986, []int{39}
 }
 func (m *QueryExistingInferenceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1665,7 +1856,7 @@ func (m *QueryMempoolInferenceRequestsByTopic) Reset()         { *m = QueryMempo
 func (m *QueryMempoolInferenceRequestsByTopic) String() string { return proto.CompactTextString(m) }
 func (*QueryMempoolInferenceRequestsByTopic) ProtoMessage()    {}
 func (*QueryMempoolInferenceRequestsByTopic) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{36}
+	return fileDescriptor_c426af2f1e908986, []int{40}
 }
 func (m *QueryMempoolInferenceRequestsByTopic) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1717,7 +1908,7 @@ func (m *InferenceRequestAndDemandLeft) Reset()         { *m = InferenceRequestA
 func (m *InferenceRequestAndDemandLeft) String() string { return proto.CompactTextString(m) }
 func (*InferenceRequestAndDemandLeft) ProtoMessage()    {}
 func (*InferenceRequestAndDemandLeft) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{37}
+	return fileDescriptor_c426af2f1e908986, []int{41}
 }
 func (m *InferenceRequestAndDemandLeft) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1766,7 +1957,7 @@ func (m *QueryMempoolInferenceRequestsByTopicResponse) String() string {
 }
 func (*QueryMempoolInferenceRequestsByTopicResponse) ProtoMessage() {}
 func (*QueryMempoolInferenceRequestsByTopicResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{38}
+	return fileDescriptor_c426af2f1e908986, []int{42}
 }
 func (m *QueryMempoolInferenceRequestsByTopicResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1817,7 +2008,7 @@ func (m *QueryTopicUnmetDemandRequest) Reset()         { *m = QueryTopicUnmetDem
 func (m *QueryTopicUnmetDemandRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicUnmetDemandRequest) ProtoMessage()    {}
 func (*QueryTopicUnmetDemandRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{39}
+	return fileDescriptor_c426af2f1e908986, []int{43}
 }
 func (m *QueryTopicUnmetDemandRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1861,7 +2052,7 @@ func (m *QueryTopicUnmetDemandResponse) Reset()         { *m = QueryTopicUnmetDe
 func (m *QueryTopicUnmetDemandResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicUnmetDemandResponse) ProtoMessage()    {}
 func (*QueryTopicUnmetDemandResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{40}
+	return fileDescriptor_c426af2f1e908986, []int{44}
 }
 func (m *QueryTopicUnmetDemandResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1899,7 +2090,7 @@ func (m *QueryNetworkInferencesAtBlockRequest) Reset()         { *m = QueryNetwo
 func (m *QueryNetworkInferencesAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkInferencesAtBlockRequest) ProtoMessage()    {}
 func (*QueryNetworkInferencesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{41}
+	return fileDescriptor_c426af2f1e908986, []int{45}
 }
 func (m *QueryNetworkInferencesAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1951,7 +2142,7 @@ func (m *QueryNetworkInferencesAtBlockResponse) Reset()         { *m = QueryNetw
 func (m *QueryNetworkInferencesAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkInferencesAtBlockResponse) ProtoMessage()    {}
 func (*QueryNetworkInferencesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{42}
+	return fileDescriptor_c426af2f1e908986, []int{46}
 }
 func (m *QueryNetworkInferencesAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1994,6 +2185,208 @@ func (m *QueryNetworkInferencesAtBlockResponse) GetBlockHeight() int64 {
 	return 0
 }
 
+type QueryIsWorkerRegisteredInTopicIdRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) Reset() {
+	*m = QueryIsWorkerRegisteredInTopicIdRequest{}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIsWorkerRegisteredInTopicIdRequest) ProtoMessage()    {}
+func (*QueryIsWorkerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{47}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdRequest.Merge(m, src)
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdRequest proto.InternalMessageInfo
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type QueryIsWorkerRegisteredInTopicIdResponse struct {
+	IsRegistered bool `protobuf:"varint,1,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) Reset() {
+	*m = QueryIsWorkerRegisteredInTopicIdResponse{}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryIsWorkerRegisteredInTopicIdResponse) ProtoMessage()    {}
+func (*QueryIsWorkerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{48}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdResponse.Merge(m, src)
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsWorkerRegisteredInTopicIdResponse proto.InternalMessageInfo
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) GetIsRegistered() bool {
+	if m != nil {
+		return m.IsRegistered
+	}
+	return false
+}
+
+type QueryIsReputerRegisteredInTopicIdRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) Reset() {
+	*m = QueryIsReputerRegisteredInTopicIdRequest{}
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIsReputerRegisteredInTopicIdRequest) ProtoMessage()    {}
+func (*QueryIsReputerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{49}
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsReputerRegisteredInTopicIdRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsReputerRegisteredInTopicIdRequest.Merge(m, src)
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsReputerRegisteredInTopicIdRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsReputerRegisteredInTopicIdRequest proto.InternalMessageInfo
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type QueryIsReputerRegisteredInTopicIdResponse struct {
+	IsRegistered bool `protobuf:"varint,1,opt,name=is_registered,json=isRegistered,proto3" json:"is_registered,omitempty"`
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) Reset() {
+	*m = QueryIsReputerRegisteredInTopicIdResponse{}
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryIsReputerRegisteredInTopicIdResponse) ProtoMessage() {}
+func (*QueryIsReputerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{50}
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsReputerRegisteredInTopicIdResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsReputerRegisteredInTopicIdResponse.Merge(m, src)
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsReputerRegisteredInTopicIdResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsReputerRegisteredInTopicIdResponse proto.InternalMessageInfo
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) GetIsRegistered() bool {
+	if m != nil {
+		return m.IsRegistered
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "emissions.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "emissions.v1.QueryParamsResponse")
@@ -2001,10 +2394,16 @@ func init() {
 	proto.RegisterType((*QueryLastRewardsUpdateResponse)(nil), "emissions.v1.QueryLastRewardsUpdateResponse")
 	proto.RegisterType((*QueryTotalStakeRequest)(nil), "emissions.v1.QueryTotalStakeRequest")
 	proto.RegisterType((*QueryTotalStakeResponse)(nil), "emissions.v1.QueryTotalStakeResponse")
-	proto.RegisterType((*QueryReputerStakeListRequest)(nil), "emissions.v1.QueryReputerStakeListRequest")
-	proto.RegisterType((*QueryReputerStakeListResponse)(nil), "emissions.v1.QueryReputerStakeListResponse")
-	proto.RegisterType((*QueryTopicStakeListRequest)(nil), "emissions.v1.QueryTopicStakeListRequest")
-	proto.RegisterType((*QueryTopicStakeListResponse)(nil), "emissions.v1.QueryTopicStakeListResponse")
+	proto.RegisterType((*QueryReputerStakeInTopicRequest)(nil), "emissions.v1.QueryReputerStakeInTopicRequest")
+	proto.RegisterType((*QueryReputerStakeInTopicResponse)(nil), "emissions.v1.QueryReputerStakeInTopicResponse")
+	proto.RegisterType((*QueryDelegateStakeInTopicInReputerRequest)(nil), "emissions.v1.QueryDelegateStakeInTopicInReputerRequest")
+	proto.RegisterType((*QueryDelegateStakeInTopicInReputerResponse)(nil), "emissions.v1.QueryDelegateStakeInTopicInReputerResponse")
+	proto.RegisterType((*QueryStakeFromDelegatorInTopicInReputerRequest)(nil), "emissions.v1.QueryStakeFromDelegatorInTopicInReputerRequest")
+	proto.RegisterType((*QueryStakeFromDelegatorInTopicInReputerResponse)(nil), "emissions.v1.QueryStakeFromDelegatorInTopicInReputerResponse")
+	proto.RegisterType((*QueryStakeFromDelegatorInTopicRequest)(nil), "emissions.v1.QueryStakeFromDelegatorInTopicRequest")
+	proto.RegisterType((*QueryStakeFromDelegatorInTopicResponse)(nil), "emissions.v1.QueryStakeFromDelegatorInTopicResponse")
+	proto.RegisterType((*QueryTopicStakeRequest)(nil), "emissions.v1.QueryTopicStakeRequest")
+	proto.RegisterType((*QueryTopicStakeResponse)(nil), "emissions.v1.QueryTopicStakeResponse")
 	proto.RegisterType((*QueryNetworkLossBundleAtBlockRequest)(nil), "emissions.v1.QueryNetworkLossBundleAtBlockRequest")
 	proto.RegisterType((*QueryNetworkLossBundleAtBlockResponse)(nil), "emissions.v1.QueryNetworkLossBundleAtBlockResponse")
 	proto.RegisterType((*QueryNextTopicIdRequest)(nil), "emissions.v1.QueryNextTopicIdRequest")
@@ -2013,8 +2412,6 @@ func init() {
 	proto.RegisterType((*QueryTopicResponse)(nil), "emissions.v1.QueryTopicResponse")
 	proto.RegisterType((*QueryActiveTopicsRequest)(nil), "emissions.v1.QueryActiveTopicsRequest")
 	proto.RegisterType((*QueryActiveTopicsResponse)(nil), "emissions.v1.QueryActiveTopicsResponse")
-	proto.RegisterType((*QueryRegisteredTopicIdsRequest)(nil), "emissions.v1.QueryRegisteredTopicIdsRequest")
-	proto.RegisterType((*QueryRegisteredTopicIdsResponse)(nil), "emissions.v1.QueryRegisteredTopicIdsResponse")
 	proto.RegisterType((*QueryInferencesAtBlockRequest)(nil), "emissions.v1.QueryInferencesAtBlockRequest")
 	proto.RegisterType((*QueryInferencesAtBlockResponse)(nil), "emissions.v1.QueryInferencesAtBlockResponse")
 	proto.RegisterType((*QueryForecastsAtBlockRequest)(nil), "emissions.v1.QueryForecastsAtBlockRequest")
@@ -2038,137 +2435,156 @@ func init() {
 	proto.RegisterType((*QueryTopicUnmetDemandResponse)(nil), "emissions.v1.QueryTopicUnmetDemandResponse")
 	proto.RegisterType((*QueryNetworkInferencesAtBlockRequest)(nil), "emissions.v1.QueryNetworkInferencesAtBlockRequest")
 	proto.RegisterType((*QueryNetworkInferencesAtBlockResponse)(nil), "emissions.v1.QueryNetworkInferencesAtBlockResponse")
+	proto.RegisterType((*QueryIsWorkerRegisteredInTopicIdRequest)(nil), "emissions.v1.QueryIsWorkerRegisteredInTopicIdRequest")
+	proto.RegisterType((*QueryIsWorkerRegisteredInTopicIdResponse)(nil), "emissions.v1.QueryIsWorkerRegisteredInTopicIdResponse")
+	proto.RegisterType((*QueryIsReputerRegisteredInTopicIdRequest)(nil), "emissions.v1.QueryIsReputerRegisteredInTopicIdRequest")
+	proto.RegisterType((*QueryIsReputerRegisteredInTopicIdResponse)(nil), "emissions.v1.QueryIsReputerRegisteredInTopicIdResponse")
 }
 
 func init() { proto.RegisterFile("emissions/v1/query.proto", fileDescriptor_c426af2f1e908986) }
 
 var fileDescriptor_c426af2f1e908986 = []byte{
-	// 1986 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x99, 0xcd, 0x6f, 0x1c, 0x49,
-	0x15, 0xc0, 0xd3, 0xde, 0xac, 0xd7, 0xf3, 0xbc, 0xd9, 0x5d, 0x97, 0xbd, 0x59, 0xbb, 0x1d, 0x7f,
-	0xf5, 0xc6, 0xf9, 0x72, 0x32, 0x1d, 0x4f, 0x02, 0x9b, 0x4d, 0x56, 0x89, 0x3c, 0x40, 0xbc, 0x26,
-	0x26, 0x98, 0xce, 0x26, 0x0b, 0x11, 0xa8, 0xd5, 0x9e, 0x2e, 0x8f, 0x5b, 0xee, 0xe9, 0x9e, 0x9d,
-	0xaa, 0x49, 0x62, 0x59, 0xbe, 0x20, 0x0e, 0xac, 0xc4, 0x61, 0x11, 0x20, 0x71, 0xe0, 0x00, 0x9c,
-	0x38, 0x21, 0xc4, 0x22, 0x4e, 0x5c, 0xe0, 0x14, 0x4e, 0xac, 0x58, 0x21, 0x21, 0x0e, 0x11, 0x4a,
-	0x90, 0xe0, 0xcf, 0x40, 0x53, 0xf5, 0xba, 0x7b, 0xba, 0xbb, 0x7a, 0x66, 0x9c, 0x98, 0x03, 0x97,
-	0xc8, 0xd3, 0xf5, 0x3e, 0x7e, 0xaf, 0xea, 0xd5, 0xab, 0x7a, 0x15, 0x98, 0xa4, 0x0d, 0x8f, 0x31,
-	0x2f, 0x0c, 0x98, 0xf9, 0x60, 0xd9, 0xfc, 0xa8, 0x4d, 0x5b, 0xbb, 0xe5, 0x66, 0x2b, 0xe4, 0x21,
-	0x79, 0x35, 0x1e, 0x29, 0x3f, 0x58, 0xd6, 0xcf, 0xd5, 0x42, 0xd6, 0x08, 0x99, 0xb9, 0xe9, 0x30,
-	0x2a, 0xc5, 0xcc, 0x07, 0xcb, 0x9b, 0x94, 0x3b, 0xcb, 0x66, 0xd3, 0xa9, 0x7b, 0x81, 0xc3, 0xbd,
-	0x30, 0x90, 0x9a, 0x7a, 0xda, 0x26, 0xdf, 0x6d, 0x52, 0x86, 0x23, 0x27, 0xea, 0x61, 0x58, 0xf7,
-	0xa9, 0xe9, 0x34, 0x3d, 0xd3, 0x09, 0x82, 0x90, 0x0b, 0xb5, 0x68, 0x74, 0x1a, 0x7d, 0x44, 0xe6,
-	0xbb, 0x71, 0xf4, 0x31, 0xa7, 0xe1, 0x05, 0xa1, 0x29, 0xfe, 0xc5, 0x4f, 0x13, 0xf5, 0xb0, 0x1e,
-	0x8a, 0x3f, 0xcd, 0xce, 0x5f, 0xf8, 0x75, 0x4a, 0x5a, 0xb1, 0xe5, 0x80, 0xfc, 0x21, 0x87, 0x8c,
-	0x09, 0x20, 0xdf, 0xe8, 0x98, 0xdc, 0x70, 0x5a, 0x4e, 0x83, 0x59, 0xf4, 0xa3, 0x36, 0x65, 0xdc,
-	0xb8, 0x0d, 0xe3, 0xa9, 0xaf, 0xac, 0x19, 0x06, 0x8c, 0x92, 0x77, 0x60, 0xb8, 0x29, 0xbe, 0x4c,
-	0x6a, 0xf3, 0xda, 0x99, 0xd1, 0xca, 0x44, 0xb9, 0x7b, 0x42, 0xca, 0x52, 0xba, 0x5a, 0x7a, 0xfc,
-	0x64, 0xee, 0xc8, 0xaf, 0xfe, 0xfd, 0x9b, 0x73, 0x9a, 0x85, 0xe2, 0xc6, 0x1c, 0xcc, 0x08, 0x7b,
-	0xeb, 0x0e, 0xe3, 0x16, 0x7d, 0xe8, 0xb4, 0x5c, 0x76, 0xb7, 0xe9, 0x3a, 0x9c, 0x46, 0x0e, 0x37,
-	0x60, 0xb6, 0x48, 0x00, 0x7d, 0x97, 0x61, 0xdc, 0x77, 0x18, 0xb7, 0x5b, 0x72, 0xd4, 0x6e, 0x8b,
-	0x61, 0x01, 0xf2, 0x92, 0x35, 0xe6, 0x67, 0xf5, 0x8c, 0x49, 0x38, 0x2e, 0x2c, 0x7e, 0x10, 0x72,
-	0xc7, 0xbf, 0xc3, 0x9d, 0x9d, 0xd8, 0xd7, 0x0e, 0xbc, 0x95, 0x1b, 0x41, 0x27, 0x5f, 0x85, 0x61,
-	0xa7, 0x11, 0xb6, 0x03, 0x2e, 0xec, 0x96, 0xaa, 0x95, 0x4e, 0x28, 0xff, 0x78, 0x32, 0x77, 0x5c,
-	0xce, 0x19, 0x73, 0x77, 0xca, 0x5e, 0x68, 0x36, 0x1c, 0xbe, 0x5d, 0xbe, 0xeb, 0x05, 0xfc, 0xaf,
-	0xbf, 0xbb, 0x30, 0x8a, 0xb3, 0xd9, 0xf9, 0x89, 0x31, 0x4b, 0x0b, 0x57, 0x8f, 0xfe, 0xe7, 0xe7,
-	0x73, 0x9a, 0x71, 0x05, 0x4e, 0x08, 0x67, 0x16, 0x6d, 0xb6, 0x39, 0x6d, 0x09, 0x77, 0xeb, 0x5e,
-	0x07, 0x56, 0xc0, 0x90, 0x49, 0x78, 0xc5, 0x71, 0xdd, 0x16, 0x65, 0x72, 0x4e, 0x4b, 0x56, 0xf4,
-	0xd3, 0xb8, 0x8b, 0x73, 0x96, 0xd7, 0x44, 0xd8, 0xcb, 0x30, 0xcc, 0x3a, 0x1f, 0x3b, 0x9a, 0x2f,
-	0x9d, 0x19, 0xad, 0x9c, 0x48, 0xaf, 0x86, 0x50, 0xd8, 0xf0, 0x9d, 0x1a, 0x6d, 0xd0, 0x80, 0x5b,
-	0x28, 0x6b, 0xbc, 0x03, 0x3a, 0x46, 0xdf, 0xf4, 0x6a, 0x39, 0x9c, 0x29, 0x18, 0xe1, 0x9d, 0x01,
-	0xdb, 0x73, 0x05, 0xcf, 0x51, 0xeb, 0x15, 0xf1, 0x7b, 0xcd, 0x35, 0xee, 0xc0, 0xb4, 0x52, 0xf1,
-	0x85, 0x68, 0x5c, 0x38, 0x29, 0x8c, 0xde, 0xa6, 0xfc, 0x61, 0xd8, 0xda, 0x59, 0x0f, 0x19, 0xab,
-	0xb6, 0x03, 0xd7, 0xa7, 0x2b, 0xbc, 0xea, 0x87, 0xb5, 0x9d, 0xfe, 0x5c, 0x64, 0x01, 0x5e, 0xdd,
-	0xec, 0x88, 0xda, 0xdb, 0xd4, 0xab, 0x6f, 0xf3, 0xc9, 0x21, 0x91, 0x11, 0xa3, 0xe2, 0xdb, 0xfb,
-	0xe2, 0x93, 0x51, 0x83, 0xc5, 0x3e, 0x5e, 0x30, 0x88, 0xab, 0x30, 0xea, 0x87, 0x8c, 0xd9, 0x9b,
-	0x62, 0x14, 0xb3, 0x7c, 0x2a, 0x1d, 0xc9, 0x3d, 0xc7, 0x6f, 0x53, 0xa9, 0x6e, 0x81, 0x1f, 0x9b,
-	0x32, 0xa6, 0x30, 0xad, 0x6e, 0xd3, 0x47, 0xfc, 0x03, 0xc9, 0x16, 0x65, 0xdc, 0x75, 0x98, 0xcc,
-	0x0f, 0xa1, 0x4b, 0x03, 0x8e, 0x05, 0xf4, 0x11, 0xb7, 0x33, 0xe1, 0x8d, 0x06, 0x89, 0xac, 0x51,
-	0x86, 0xb1, 0x64, 0xea, 0x07, 0x58, 0xaa, 0x1b, 0xb8, 0xa9, 0x51, 0x1e, 0x3d, 0x9d, 0x85, 0x97,
-	0x85, 0x00, 0x86, 0x35, 0x9e, 0x0e, 0x4b, 0xca, 0x4a, 0x09, 0x63, 0x13, 0x81, 0x57, 0x6a, 0xdc,
-	0x7b, 0x40, 0xc5, 0x50, 0x54, 0x1b, 0xc8, 0x4d, 0x80, 0xa4, 0xbc, 0xa1, 0xad, 0x53, 0x65, 0xdc,
-	0x06, 0x9d, 0x5a, 0x58, 0x96, 0x35, 0x0a, 0x6b, 0x61, 0x79, 0xc3, 0xa9, 0x47, 0x5b, 0xcf, 0xea,
-	0xd2, 0x34, 0x7e, 0xa8, 0xc1, 0x94, 0xc2, 0x09, 0xc2, 0x2e, 0xc1, 0xb0, 0x40, 0x89, 0xd2, 0x49,
-	0x49, 0x8b, 0x22, 0x64, 0x35, 0x85, 0x34, 0x24, 0x90, 0x4e, 0xf7, 0x45, 0x92, 0x9e, 0x52, 0x4c,
-	0xdf, 0xc2, 0x32, 0x64, 0xd1, 0xba, 0xc7, 0x38, 0x6d, 0x51, 0x17, 0x97, 0x80, 0xf5, 0xdd, 0xaf,
-	0x64, 0x06, 0xc0, 0x63, 0x76, 0x4b, 0xee, 0x56, 0x01, 0x31, 0x62, 0x95, 0x3c, 0x86, 0xdb, 0xd7,
-	0xb8, 0x0e, 0x73, 0x85, 0xa6, 0x31, 0xe6, 0x69, 0x28, 0x45, 0x2b, 0x2a, 0xc3, 0x3e, 0x6a, 0x8d,
-	0xe0, 0x92, 0x32, 0xe3, 0x3b, 0x58, 0x0e, 0xd6, 0x82, 0x2d, 0xda, 0xa2, 0x41, 0x8d, 0xb2, 0x43,
-	0xdd, 0x22, 0xf7, 0x31, 0x72, 0x85, 0x79, 0xa4, 0xbb, 0x02, 0xe0, 0xc5, 0x83, 0xb8, 0xee, 0x93,
-	0xe9, 0x55, 0x49, 0x94, 0xad, 0x2e, 0x59, 0xe3, 0xdb, 0x58, 0x03, 0x6f, 0x86, 0x2d, 0x5a, 0x73,
-	0x18, 0x3f, 0x5c, 0xf2, 0x7b, 0x38, 0x31, 0x79, 0xeb, 0x08, 0xfe, 0x05, 0x28, 0x6d, 0x45, 0x63,
-	0xc8, 0xfd, 0x56, 0x9a, 0x3b, 0x56, 0xb5, 0x12, 0x49, 0x83, 0xc2, 0x82, 0xb0, 0xfb, 0x61, 0xd8,
-	0xda, 0xa1, 0xad, 0x75, 0x87, 0x53, 0xc6, 0xe3, 0x00, 0x07, 0x40, 0x5f, 0x84, 0xd7, 0x1e, 0x0a,
-	0x55, 0x3b, 0x4a, 0x98, 0x21, 0x91, 0x30, 0xc7, 0xe4, 0xd7, 0x15, 0x2c, 0xf3, 0xdb, 0x60, 0xf4,
-	0x72, 0x83, 0x31, 0x54, 0xe1, 0x0d, 0x5f, 0x0c, 0xd9, 0xf1, 0xbc, 0xaa, 0x43, 0x49, 0x54, 0x5f,
-	0xf7, 0xd3, 0xb6, 0x8c, 0x6b, 0x58, 0xf9, 0xa5, 0xa7, 0xdb, 0xa1, 0x4b, 0xd7, 0x82, 0xad, 0x30,
-	0x8a, 0x64, 0x06, 0xc0, 0xf7, 0x36, 0x9b, 0x95, 0xa6, 0xbd, 0x43, 0x77, 0x31, 0xb7, 0x4b, 0xf2,
-	0xcb, 0x2d, 0xba, 0x6b, 0xdc, 0xc3, 0xea, 0x9f, 0x55, 0x8e, 0x6f, 0x06, 0xa5, 0x20, 0x74, 0x69,
-	0x87, 0x2e, 0x44, 0x30, 0x3d, 0x0d, 0xf6, 0xf5, 0xad, 0xad, 0xda, 0xb6, 0xe3, 0x05, 0x1d, 0x55,
-	0x6b, 0x24, 0x40, 0x03, 0xc6, 0x7b, 0x68, 0x17, 0xb7, 0xc9, 0x01, 0xa9, 0x3e, 0x4c, 0x9f, 0xae,
-	0x87, 0x87, 0x55, 0x4d, 0x2d, 0x3e, 0xae, 0x55, 0x75, 0x77, 0xa3, 0xb2, 0x71, 0x8b, 0xee, 0x0e,
-	0x08, 0x77, 0x3d, 0xb5, 0xb2, 0x39, 0x1b, 0x88, 0x58, 0x7c, 0x01, 0xf8, 0x12, 0xea, 0x63, 0x70,
-	0xcf, 0x07, 0x71, 0x03, 0xde, 0xee, 0x69, 0xa4, 0x2f, 0xc5, 0x37, 0x71, 0x8a, 0xbf, 0x46, 0x1b,
-	0xcd, 0x30, 0xf4, 0x73, 0x3b, 0x60, 0x06, 0xa0, 0x25, 0xff, 0x8c, 0xf6, 0x40, 0xc9, 0x2a, 0xe1,
-	0x97, 0x35, 0x37, 0xb5, 0x41, 0x86, 0xd2, 0xa7, 0xd4, 0x9f, 0x34, 0xac, 0x39, 0x5f, 0x79, 0xe4,
-	0x31, 0xee, 0x05, 0xf5, 0x7c, 0xda, 0xdf, 0x82, 0xb1, 0x38, 0xdf, 0x6d, 0x34, 0x8a, 0xeb, 0x38,
-	0x5b, 0x94, 0xf7, 0x78, 0xd4, 0xbc, 0xe1, 0x65, 0x49, 0xef, 0xc0, 0xa8, 0x4b, 0x1b, 0x4e, 0xe0,
-	0xda, 0x3e, 0xdd, 0x92, 0xa5, 0xe4, 0xf9, 0x6e, 0x78, 0x20, 0xcd, 0xac, 0xd3, 0x2d, 0x6e, 0x7c,
-	0xac, 0xe1, 0x0d, 0xa6, 0x60, 0x7e, 0x58, 0x55, 0x9e, 0xc2, 0xbd, 0x2a, 0xc5, 0x4d, 0xc5, 0xf1,
-	0xf5, 0x3c, 0x27, 0xea, 0x1f, 0x35, 0x98, 0xc9, 0xfa, 0x5f, 0x09, 0xdc, 0x2f, 0xc7, 0xb4, 0xff,
-	0x07, 0xf3, 0xf9, 0xb9, 0x06, 0xe7, 0x07, 0x99, 0xcf, 0x38, 0x45, 0xee, 0x03, 0xc9, 0x85, 0x14,
-	0x5d, 0x1a, 0x96, 0x7a, 0xc7, 0x94, 0x9a, 0x1b, 0x6b, 0x2c, 0x1b, 0xe0, 0x21, 0xde, 0x2b, 0xde,
-	0xc5, 0x4d, 0x24, 0xd0, 0xef, 0x06, 0x0d, 0xca, 0xa5, 0xe3, 0x01, 0xee, 0x72, 0x1c, 0x8f, 0xb7,
-	0xbc, 0x2a, 0x4e, 0x40, 0x66, 0x19, 0xb4, 0x43, 0x59, 0x86, 0xcc, 0xbd, 0xfc, 0x7f, 0x74, 0xe9,
-	0xf8, 0xb1, 0x96, 0xbe, 0x98, 0x17, 0x5f, 0x3e, 0xde, 0x07, 0x12, 0x48, 0x19, 0x3b, 0x77, 0x09,
-	0xe9, 0x71, 0x3f, 0x1f, 0x0b, 0xb2, 0x86, 0x07, 0xc0, 0xaa, 0xfc, 0x6d, 0x1a, 0x5e, 0x16, 0x58,
-	0x64, 0x07, 0x86, 0x65, 0x53, 0x4b, 0xe6, 0xd3, 0x4e, 0xf2, 0x3d, 0xb3, 0xbe, 0xd0, 0x43, 0x42,
-	0x46, 0x61, 0x9c, 0xf8, 0xee, 0xe7, 0xff, 0xfa, 0xd1, 0xd0, 0x71, 0x32, 0x61, 0xa6, 0x9e, 0x03,
-	0x64, 0x93, 0x4c, 0x7e, 0xa1, 0xc1, 0xc4, 0x2a, 0xe5, 0xb9, 0x16, 0x98, 0x2c, 0x29, 0x2c, 0x17,
-	0x75, 0xd2, 0xfa, 0xf9, 0xc1, 0x84, 0x91, 0xa8, 0xfc, 0xfd, 0xce, 0xd2, 0x0b, 0xac, 0xb7, 0xc9,
-	0x42, 0x1a, 0x4b, 0xd1, 0x6e, 0x93, 0x8f, 0x35, 0x78, 0x6d, 0x95, 0xf2, 0xae, 0x46, 0x86, 0x2c,
-	0x2a, 0x1c, 0xe6, 0x7b, 0x20, 0xfd, 0x54, 0x3f, 0x31, 0x24, 0x3a, 0x93, 0x10, 0xcd, 0x90, 0xe9,
-	0x34, 0x51, 0xaa, 0x51, 0x22, 0x7b, 0x30, 0xb2, 0x4a, 0xa5, 0x3e, 0x99, 0x53, 0x58, 0xef, 0xee,
-	0x96, 0xf4, 0xf9, 0x62, 0x01, 0x74, 0x7c, 0x3e, 0x71, 0xbc, 0x40, 0xe6, 0xd2, 0x8e, 0x65, 0x9f,
-	0x61, 0xee, 0x45, 0xbe, 0xf7, 0xc9, 0x0f, 0x34, 0x78, 0x7d, 0x95, 0xf2, 0xee, 0xde, 0x85, 0xa8,
-	0x42, 0x54, 0x74, 0x50, 0xfa, 0xe9, 0xbe, 0x72, 0x03, 0xcc, 0x85, 0x23, 0x14, 0x6c, 0xec, 0x80,
-	0x3e, 0xd5, 0x40, 0x5f, 0xa5, 0xbc, 0xe8, 0x90, 0x3e, 0xa7, 0xf0, 0x58, 0x20, 0xab, 0x4c, 0xa0,
-	0xc2, 0x13, 0xda, 0xb8, 0x96, 0x20, 0x5e, 0x24, 0xe5, 0x34, 0x62, 0xb2, 0x53, 0xcd, 0xa8, 0x30,
-	0x9b, 0x7b, 0xc9, 0x65, 0x61, 0x9f, 0x3c, 0xd6, 0xc0, 0x28, 0xa6, 0x8e, 0x8f, 0xce, 0xca, 0xe0,
-	0xf4, 0x91, 0x8e, 0x7e, 0xf5, 0xe0, 0x3a, 0x71, 0x4c, 0x95, 0x24, 0xa6, 0xd3, 0x64, 0xb1, 0x30,
-	0x26, 0xc7, 0xf7, 0xe3, 0x03, 0x87, 0xfc, 0x52, 0x83, 0xf1, 0x28, 0x1b, 0xbb, 0xaa, 0xb4, 0x72,
-	0xe6, 0x0b, 0x4e, 0x01, 0x7d, 0x69, 0x20, 0xd9, 0x01, 0x20, 0xdb, 0x1d, 0x79, 0x5b, 0x96, 0xf3,
-	0xee, 0xa4, 0x7d, 0xa2, 0xc1, 0xc2, 0x2a, 0xe5, 0xca, 0x56, 0x03, 0x27, 0x61, 0xcd, 0x25, 0xa6,
-	0x02, 0xa3, 0x57, 0x13, 0xa4, 0x5f, 0x1c, 0x5c, 0x01, 0xe1, 0xef, 0x25, 0xf0, 0xb7, 0xc8, 0x5a,
-	0x9f, 0xbd, 0x66, 0xca, 0x86, 0x89, 0x99, 0x7b, 0xe9, 0x7e, 0x6a, 0xdf, 0xcc, 0xb6, 0x44, 0xe4,
-	0xb7, 0xb2, 0x84, 0xe6, 0xce, 0x11, 0x65, 0x09, 0x2d, 0x3a, 0xd4, 0x94, 0x3b, 0xa0, 0xf0, 0x68,
-	0x32, 0x6e, 0x24, 0xb1, 0x5c, 0x26, 0x95, 0xc2, 0x6c, 0xe9, 0x8a, 0x67, 0xaf, 0xfb, 0x00, 0xda,
-	0x27, 0xbf, 0x96, 0xa9, 0x93, 0xed, 0x5f, 0x95, 0xa9, 0x53, 0xd0, 0x42, 0x2b, 0x53, 0xa7, 0xa8,
-	0x21, 0x36, 0xae, 0x27, 0xc4, 0x97, 0xc8, 0x72, 0x9a, 0x38, 0xee, 0x7f, 0x7b, 0x00, 0xff, 0x59,
-	0x83, 0x69, 0x71, 0x08, 0xa8, 0x5f, 0xd3, 0x94, 0xfb, 0xb5, 0xcf, 0x03, 0x9f, 0x7e, 0xe9, 0x40,
-	0x3a, 0x18, 0xc8, 0x4a, 0x12, 0xc8, 0x17, 0xc9, 0xe5, 0xec, 0x59, 0x21, 0xaf, 0x0b, 0x7e, 0xc8,
-	0x7a, 0xc5, 0xf2, 0x3d, 0x0d, 0x8e, 0x89, 0x7d, 0x1b, 0xbd, 0x05, 0x93, 0x93, 0xca, 0x5d, 0x98,
-	0x79, 0x44, 0xd6, 0x17, 0xfb, 0x48, 0x21, 0xe1, 0xa9, 0x84, 0x70, 0x9a, 0x4c, 0x65, 0x13, 0x9d,
-	0x3b, 0xbe, 0x2d, 0x1e, 0x42, 0xc9, 0x27, 0x32, 0x07, 0xb2, 0x6f, 0xbd, 0xca, 0x1c, 0x28, 0x78,
-	0x4a, 0x56, 0xe6, 0x40, 0xd1, 0xe3, 0xb1, 0x31, 0x9f, 0x80, 0xbd, 0x49, 0xc6, 0xd3, 0x60, 0x12,
-	0xe9, 0x27, 0x1a, 0x8c, 0x45, 0x15, 0x2d, 0x01, 0x3a, 0x53, 0x54, 0xa3, 0x72, 0x38, 0x67, 0x07,
-	0x90, 0x44, 0x98, 0xa5, 0x04, 0x66, 0x9e, 0xcc, 0x2a, 0x60, 0xba, 0x8b, 0xd8, 0x4f, 0x25, 0x57,
-	0xfa, 0x21, 0x42, 0xc9, 0xa5, 0x7c, 0xe8, 0x50, 0x72, 0xa9, 0x5f, 0x35, 0x7a, 0xde, 0x8e, 0x64,
-	0x2d, 0x32, 0xf7, 0x92, 0xe6, 0x7b, 0x9f, 0xfc, 0x4c, 0x03, 0x92, 0xac, 0x62, 0xcc, 0x76, 0xb6,
-	0x78, 0x61, 0xb2, 0x70, 0xe7, 0x06, 0x11, 0x45, 0x3a, 0x33, 0xa1, 0x3b, 0x49, 0x8c, 0x34, 0x1d,
-	0x3e, 0x43, 0xa6, 0xf1, 0x3e, 0xd5, 0x60, 0x32, 0x9e, 0xb9, 0xcc, 0x4b, 0x40, 0x8f, 0xaa, 0xaf,
-	0x7e, 0x78, 0xe8, 0x51, 0xf5, 0x0b, 0x1e, 0x19, 0x8c, 0xcb, 0x09, 0xf0, 0x59, 0x72, 0x5a, 0x35,
-	0x9d, 0x76, 0x10, 0xba, 0x9d, 0x5a, 0xd9, 0x4d, 0xfd, 0x7b, 0x0d, 0xa6, 0x92, 0x49, 0xcd, 0x62,
-	0x5f, 0x2c, 0x9e, 0xb0, 0x02, 0xee, 0xe5, 0x03, 0x68, 0xbc, 0x10, 0xf8, 0x1f, 0x34, 0x78, 0x53,
-	0x80, 0x67, 0x1f, 0x7c, 0xc9, 0x79, 0x25, 0x42, 0xc1, 0x93, 0xb3, 0x7e, 0x61, 0x40, 0x69, 0x84,
-	0xbd, 0x99, 0xc0, 0x5e, 0x23, 0xef, 0x66, 0xd3, 0x22, 0x52, 0x8b, 0xaf, 0xd1, 0xcc, 0xdc, 0x8b,
-	0xcf, 0xd3, 0xbd, 0xe4, 0x01, 0x7b, 0x9f, 0xfc, 0x25, 0x55, 0xe5, 0xf3, 0x47, 0x6a, 0x8f, 0x2a,
-	0x5f, 0x78, 0xb2, 0x5e, 0x3a, 0x90, 0x0e, 0x06, 0xb4, 0x9a, 0x04, 0xf4, 0x1e, 0xb9, 0xaa, 0xae,
-	0xf2, 0x83, 0x1c, 0xb4, 0x55, 0xeb, 0xf1, 0xd3, 0x59, 0xed, 0xb3, 0xa7, 0xb3, 0xda, 0x3f, 0x9f,
-	0xce, 0x6a, 0x9f, 0x3c, 0x9b, 0x3d, 0xf2, 0xd9, 0xb3, 0xd9, 0x23, 0x7f, 0x7f, 0x36, 0x7b, 0xe4,
-	0xfe, 0x95, 0xba, 0xc7, 0xb7, 0xdb, 0x9b, 0xe5, 0x5a, 0xd8, 0xe8, 0x5c, 0xeb, 0xc2, 0x96, 0x73,
-	0x01, 0x2d, 0x47, 0x3f, 0xc5, 0x23, 0xa1, 0xf9, 0xa8, 0xcb, 0xbb, 0xf8, 0x4f, 0xdc, 0xcd, 0x61,
-	0xf1, 0xdf, 0xa8, 0x97, 0xfe, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x6f, 0x2d, 0x42, 0x4b, 0x35, 0x1e,
-	0x00, 0x00,
+	// 2232 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x5a, 0xcd, 0x6f, 0x1c, 0x49,
+	0x15, 0x4f, 0x3b, 0xbb, 0xd9, 0xf8, 0x39, 0x5f, 0xae, 0x58, 0x59, 0xbb, 0x1d, 0x7f, 0x75, 0xe2,
+	0xf8, 0x2b, 0x99, 0x8e, 0xed, 0x24, 0x0e, 0xf9, 0x94, 0x67, 0x97, 0x4c, 0x4c, 0xb2, 0x8e, 0x99,
+	0xdd, 0x78, 0x51, 0x04, 0x8c, 0xda, 0x33, 0xe5, 0x71, 0xcb, 0x33, 0xdd, 0xb3, 0xd3, 0xe5, 0x24,
+	0xc6, 0x32, 0x42, 0xc0, 0x81, 0x48, 0x1c, 0x40, 0x70, 0xe0, 0x80, 0x10, 0xcb, 0x89, 0x13, 0x42,
+	0x7c, 0x49, 0x1c, 0xe1, 0x14, 0x4e, 0xbb, 0x22, 0x17, 0xc4, 0x21, 0x42, 0x09, 0x08, 0xfe, 0x0c,
+	0x34, 0x55, 0xaf, 0xbb, 0xa7, 0x7a, 0xaa, 0x7b, 0x7a, 0x82, 0x7d, 0xe0, 0x12, 0x79, 0xba, 0xde,
+	0xc7, 0xef, 0xf7, 0xaa, 0xea, 0xbd, 0x57, 0x55, 0x81, 0x7e, 0x5a, 0xb5, 0x3d, 0xcf, 0x76, 0x1d,
+	0xcf, 0x7c, 0x3c, 0x6b, 0x7e, 0xb2, 0x45, 0xeb, 0xdb, 0x99, 0x5a, 0xdd, 0x65, 0x2e, 0x39, 0x12,
+	0x8c, 0x64, 0x1e, 0xcf, 0xea, 0xd3, 0x45, 0xd7, 0xab, 0xba, 0x9e, 0xb9, 0x66, 0x79, 0x54, 0x88,
+	0x99, 0x8f, 0x67, 0xd7, 0x28, 0xb3, 0x66, 0xcd, 0x9a, 0x55, 0xb6, 0x1d, 0x8b, 0xd9, 0xae, 0x23,
+	0x34, 0x75, 0xd9, 0x26, 0xdb, 0xae, 0x51, 0x0f, 0x47, 0x4e, 0x97, 0x5d, 0xb7, 0x5c, 0xa1, 0xa6,
+	0x55, 0xb3, 0x4d, 0xcb, 0x71, 0x5c, 0xc6, 0xd5, 0xfc, 0xd1, 0x41, 0xf4, 0xe1, 0x9b, 0x6f, 0x86,
+	0xa3, 0xf7, 0x5a, 0x55, 0xdb, 0x71, 0x4d, 0xfe, 0x2f, 0x7e, 0xea, 0x2b, 0xbb, 0x65, 0x97, 0xff,
+	0x69, 0x36, 0xfe, 0xc2, 0xaf, 0x03, 0xc2, 0x4a, 0x41, 0x0c, 0x88, 0x1f, 0x62, 0xc8, 0xe8, 0x03,
+	0xf2, 0xe5, 0x86, 0xc9, 0x15, 0xab, 0x6e, 0x55, 0xbd, 0x3c, 0xfd, 0x64, 0x8b, 0x7a, 0xcc, 0x58,
+	0x86, 0x93, 0xd2, 0x57, 0xaf, 0xe6, 0x3a, 0x1e, 0x25, 0x0b, 0x70, 0xa8, 0xc6, 0xbf, 0xf4, 0x6b,
+	0xa3, 0xda, 0x64, 0xcf, 0x5c, 0x5f, 0xa6, 0x39, 0x20, 0x19, 0x21, 0x9d, 0xed, 0x7e, 0xfe, 0x72,
+	0xe4, 0xc0, 0x2f, 0xff, 0xfd, 0xeb, 0x69, 0x2d, 0x8f, 0xe2, 0xc6, 0x08, 0x0c, 0x71, 0x7b, 0xf7,
+	0x2d, 0x8f, 0xe5, 0xe9, 0x13, 0xab, 0x5e, 0xf2, 0x1e, 0xd6, 0x4a, 0x16, 0xa3, 0xbe, 0xc3, 0x15,
+	0x18, 0x8e, 0x13, 0x40, 0xdf, 0x19, 0x38, 0x59, 0xb1, 0x3c, 0x56, 0xa8, 0x8b, 0xd1, 0xc2, 0x16,
+	0x1f, 0xe6, 0x40, 0x0e, 0xe6, 0x7b, 0x2b, 0x51, 0x3d, 0xa3, 0x1f, 0x4e, 0x71, 0x8b, 0x1f, 0xb9,
+	0xcc, 0xaa, 0x7c, 0xc8, 0xac, 0xcd, 0xc0, 0xd7, 0x26, 0xbc, 0xdb, 0x32, 0x82, 0x4e, 0xbe, 0x04,
+	0x87, 0xac, 0xaa, 0xbb, 0xe5, 0x30, 0x6e, 0xb7, 0x3b, 0x3b, 0xd7, 0xa0, 0xf2, 0xf7, 0x97, 0x23,
+	0xa7, 0x44, 0xcc, 0xbc, 0xd2, 0x66, 0xc6, 0x76, 0xcd, 0xaa, 0xc5, 0x36, 0x32, 0x0f, 0x6d, 0x87,
+	0xfd, 0xf5, 0x77, 0x17, 0x7a, 0x30, 0x9a, 0x8d, 0x9f, 0xc8, 0x59, 0x58, 0xb8, 0xf6, 0xd6, 0x7f,
+	0x7e, 0x3e, 0xa2, 0x19, 0xab, 0x30, 0xc2, 0x9d, 0xe5, 0x69, 0x6d, 0x8b, 0xd1, 0x3a, 0x77, 0xb7,
+	0xe4, 0x7c, 0xe4, 0xd6, 0xec, 0x22, 0xe2, 0x21, 0xfd, 0xf0, 0x8e, 0x55, 0x2a, 0xd5, 0xa9, 0x27,
+	0xc2, 0xda, 0x9d, 0xf7, 0x7f, 0x92, 0x01, 0x38, 0xcc, 0x1a, 0x92, 0x05, 0xbb, 0xd4, 0xdf, 0x35,
+	0xaa, 0x4d, 0xbe, 0x95, 0x7f, 0x87, 0xff, 0x5e, 0x2a, 0x19, 0x0c, 0x46, 0xe3, 0xed, 0xee, 0x1b,
+	0x1b, 0x17, 0xa6, 0xb8, 0xd7, 0xf7, 0x69, 0x85, 0x96, 0x2d, 0x46, 0x9b, 0xdd, 0x2e, 0x39, 0x88,
+	0xc5, 0xe7, 0x35, 0x01, 0xc7, 0xeb, 0xe2, 0x4b, 0x41, 0xe6, 0x77, 0x0c, 0x3f, 0x2f, 0xb6, 0xa7,
+	0xf9, 0x4d, 0x98, 0x4e, 0xe3, 0x70, 0xdf, 0x08, 0x7f, 0xaa, 0x41, 0x86, 0x03, 0xe0, 0x8e, 0xef,
+	0xd4, 0xdd, 0x2a, 0x22, 0x71, 0xeb, 0x71, 0xb4, 0x67, 0xa0, 0xb7, 0xe4, 0xcb, 0x44, 0x88, 0x9f,
+	0x08, 0x06, 0x7c, 0xea, 0x8a, 0x18, 0x75, 0xb5, 0x8d, 0xd1, 0x41, 0x39, 0x46, 0xdf, 0xd1, 0xc0,
+	0x4c, 0x8d, 0x71, 0x1f, 0x97, 0xc6, 0x78, 0x32, 0x88, 0x37, 0x8a, 0x4f, 0xc2, 0xd2, 0xf8, 0x06,
+	0x9c, 0x6b, 0xe7, 0x70, 0xdf, 0xc8, 0xce, 0x07, 0xc9, 0xa5, 0x66, 0x17, 0x9b, 0x93, 0x8b, 0x04,
+	0x58, 0x93, 0x01, 0x87, 0x79, 0x27, 0x54, 0xda, 0x37, 0x84, 0x25, 0x38, 0xcb, 0x9d, 0x2d, 0x53,
+	0xf6, 0xc4, 0xad, 0x6f, 0xde, 0x77, 0x3d, 0x2f, 0xbb, 0xe5, 0x94, 0x2a, 0x74, 0x91, 0x65, 0x2b,
+	0x6e, 0x71, 0xb3, 0x3d, 0x5e, 0x32, 0x06, 0x47, 0xd6, 0x1a, 0xa2, 0x85, 0x0d, 0x6a, 0x97, 0x37,
+	0x18, 0x8f, 0xff, 0xc1, 0x7c, 0x0f, 0xff, 0x76, 0x97, 0x7f, 0x32, 0x8a, 0x38, 0xe9, 0xf1, 0x5e,
+	0x90, 0xe0, 0x35, 0xe8, 0xa9, 0xb8, 0x9e, 0x57, 0x58, 0xe3, 0xa3, 0x58, 0x3e, 0x06, 0xe4, 0xf2,
+	0xb1, 0x6a, 0x55, 0xb6, 0xa8, 0x50, 0xcf, 0x43, 0x25, 0x30, 0x65, 0x0c, 0x60, 0xdc, 0x96, 0xe9,
+	0x53, 0x26, 0x96, 0x73, 0xc9, 0x4f, 0xe5, 0xb7, 0xa0, 0xbf, 0x75, 0x08, 0x5d, 0x1a, 0x70, 0xd4,
+	0xa1, 0x4f, 0x59, 0x21, 0x42, 0xaf, 0xc7, 0x09, 0x65, 0x8d, 0x0c, 0xf4, 0x86, 0x53, 0x92, 0x62,
+	0x0a, 0x6f, 0x63, 0xb5, 0x94, 0xd7, 0xd7, 0x14, 0xbc, 0xcd, 0x05, 0x90, 0xd6, 0x49, 0x99, 0x96,
+	0x90, 0x15, 0x12, 0xc6, 0x1a, 0x02, 0x5e, 0x2c, 0x32, 0xfb, 0x31, 0xe5, 0x43, 0x7e, 0xd1, 0x25,
+	0x77, 0x00, 0xc2, 0xbe, 0x01, 0x6d, 0x9d, 0xcb, 0xe0, 0x3c, 0x37, 0x9a, 0x8c, 0x8c, 0x28, 0xfe,
+	0xd8, 0x64, 0x64, 0x56, 0xac, 0xb2, 0xbf, 0xec, 0xf2, 0x4d, 0x9a, 0xc6, 0x0f, 0x35, 0x18, 0x50,
+	0x38, 0x41, 0xb0, 0x33, 0x70, 0x88, 0x43, 0x69, 0xec, 0xb9, 0x83, 0x71, 0x68, 0x51, 0x84, 0xe4,
+	0x24, 0x48, 0x5d, 0x1c, 0xd2, 0x44, 0x5b, 0x48, 0xc2, 0x93, 0x84, 0xe9, 0x6b, 0xd8, 0x00, 0x2c,
+	0x39, 0xeb, 0xb4, 0x4e, 0x9d, 0x22, 0xf5, 0xf6, 0x74, 0x1d, 0x3e, 0xc2, 0xf6, 0x41, 0x61, 0x1e,
+	0x69, 0x5f, 0x05, 0xb0, 0x83, 0x41, 0x0c, 0x6e, 0xbf, 0x4c, 0x3d, 0x54, 0xce, 0x37, 0xc9, 0x1a,
+	0x5f, 0x85, 0xd3, 0xdc, 0xf6, 0x1d, 0xb7, 0x4e, 0x8b, 0x96, 0xc7, 0xf6, 0x16, 0xf9, 0x2a, 0x06,
+	0xa6, 0xd5, 0x3a, 0x02, 0xbf, 0x0c, 0xdd, 0xeb, 0xfe, 0x18, 0xe2, 0x7e, 0x57, 0xc6, 0x1d, 0xa8,
+	0xe6, 0x43, 0x49, 0x83, 0xc2, 0x18, 0xb7, 0xfb, 0xb1, 0x5b, 0xdf, 0xa4, 0xf5, 0xfb, 0x16, 0xa3,
+	0x1e, 0x0b, 0x08, 0xa6, 0x80, 0x3e, 0x0e, 0xc7, 0x9e, 0x70, 0xd5, 0x48, 0x5d, 0x3a, 0x2a, 0xbe,
+	0x62, 0x7e, 0x36, 0x36, 0xc0, 0x48, 0x72, 0x83, 0x1c, 0xb2, 0x70, 0xa2, 0xc2, 0x87, 0x0a, 0x41,
+	0x5c, 0xd5, 0x54, 0x42, 0xd5, 0xe3, 0x15, 0xd9, 0x96, 0x71, 0x1d, 0xf4, 0x26, 0x4f, 0xcb, 0x6e,
+	0x89, 0x2e, 0x39, 0xeb, 0xae, 0xcf, 0x64, 0x08, 0xa0, 0x62, 0xaf, 0xd5, 0xe6, 0x6a, 0x85, 0x4d,
+	0xba, 0x8d, 0xd5, 0xa4, 0x5b, 0x7c, 0xb9, 0x47, 0xb7, 0x8d, 0x55, 0x18, 0x54, 0x2a, 0x07, 0x7d,
+	0x6d, 0xb7, 0xe3, 0x96, 0x68, 0x03, 0x9d, 0x8b, 0xc0, 0x74, 0x19, 0xd8, 0x83, 0xf5, 0xf5, 0xe2,
+	0x86, 0x65, 0x3b, 0x0d, 0xd5, 0xfc, 0x61, 0x07, 0x0d, 0x18, 0x37, 0xd0, 0x2e, 0x96, 0xd7, 0x0e,
+	0x51, 0x7d, 0x8c, 0x2b, 0xab, 0x45, 0xfb, 0x7f, 0x85, 0x95, 0x95, 0x26, 0x1f, 0xe7, 0x2a, 0xbb,
+	0xbd, 0x32, 0xb7, 0x72, 0x8f, 0x6e, 0xa7, 0x04, 0x77, 0x4b, 0x9a, 0xd9, 0x16, 0x1b, 0x08, 0x31,
+	0xb6, 0x77, 0x35, 0xde, 0x43, 0xfd, 0xbc, 0xd4, 0xc7, 0x74, 0x08, 0xe2, 0x36, 0x9c, 0x49, 0x34,
+	0xd2, 0x16, 0xc5, 0x57, 0x30, 0xc4, 0x1f, 0xd0, 0x6a, 0xcd, 0x75, 0x2b, 0x2d, 0x3b, 0x60, 0x08,
+	0xa0, 0x2e, 0xfe, 0xf4, 0xf7, 0x40, 0x77, 0xbe, 0x1b, 0xbf, 0x2c, 0x95, 0x92, 0xda, 0x8f, 0x3f,
+	0x6b, 0x98, 0x73, 0xbe, 0xf8, 0xd4, 0xf6, 0x98, 0xed, 0x94, 0x5b, 0x97, 0xfd, 0x3d, 0xe8, 0x0d,
+	0xd6, 0x7b, 0x01, 0x8d, 0xe2, 0x3c, 0x0e, 0xc7, 0xad, 0x7b, 0xcc, 0xe7, 0x27, 0xec, 0x28, 0xd2,
+	0x0f, 0xa1, 0xa7, 0x44, 0xab, 0x96, 0x53, 0x2a, 0x54, 0xe8, 0xba, 0x48, 0x25, 0x6f, 0xd6, 0x27,
+	0x80, 0x30, 0x73, 0x9f, 0xae, 0x33, 0xe3, 0x99, 0x86, 0x6d, 0x42, 0x4c, 0x7c, 0xbc, 0xac, 0x28,
+	0x75, 0x49, 0x99, 0xe2, 0x8e, 0xa2, 0x46, 0xbc, 0x49, 0xd9, 0xfa, 0x93, 0x06, 0x43, 0x51, 0xff,
+	0x8b, 0x4e, 0xe9, 0xfd, 0x00, 0xed, 0xff, 0x41, 0x3c, 0x5f, 0x68, 0x70, 0x3e, 0x4d, 0x3c, 0x83,
+	0x25, 0xf2, 0x08, 0x48, 0x0b, 0x25, 0xbf, 0x32, 0xcf, 0x24, 0x73, 0x92, 0x62, 0x93, 0xef, 0x8d,
+	0x12, 0xdc, 0xc3, 0xe2, 0xfd, 0x05, 0xdc, 0x44, 0x1c, 0xfa, 0x43, 0xa7, 0x4a, 0x99, 0x70, 0x9c,
+	0xa2, 0x61, 0x62, 0x58, 0xde, 0x5a, 0x55, 0x31, 0x00, 0x91, 0x69, 0xd0, 0xf6, 0x64, 0x1a, 0x22,
+	0xcd, 0xef, 0x3e, 0x35, 0x1d, 0x3f, 0xd6, 0xe4, 0xee, 0x37, 0xbe, 0xf9, 0xb8, 0x0b, 0xc4, 0x11,
+	0x32, 0x85, 0x96, 0x26, 0x24, 0xa1, 0x09, 0xee, 0x75, 0xa2, 0x86, 0xd3, 0xc0, 0xfa, 0x3a, 0x4c,
+	0x88, 0x5e, 0xc8, 0x13, 0xa9, 0x3b, 0x4f, 0xcb, 0xb6, 0xc7, 0x68, 0x9d, 0x96, 0xfc, 0xd3, 0x60,
+	0x8a, 0x89, 0x6b, 0x4e, 0xa9, 0x5d, 0x72, 0x4a, 0x7d, 0x00, 0x93, 0xed, 0xed, 0x23, 0xf1, 0x33,
+	0x70, 0xd4, 0xf6, 0x0a, 0xf5, 0x40, 0x82, 0x7b, 0x39, 0x9c, 0x3f, 0x62, 0x7b, 0xa1, 0x96, 0x51,
+	0x08, 0x0c, 0x06, 0xa7, 0xd4, 0xbd, 0x45, 0xbc, 0x82, 0xb7, 0x16, 0xc9, 0x0e, 0x3a, 0x80, 0x3c,
+	0xf7, 0xb3, 0x33, 0xf0, 0x36, 0x37, 0x49, 0x36, 0xe1, 0x90, 0xb8, 0xf6, 0x22, 0xa3, 0xf2, 0x44,
+	0xb6, 0xde, 0xaa, 0xe9, 0x63, 0x09, 0x12, 0xc2, 0xbb, 0x71, 0xfa, 0xdb, 0x2f, 0xfe, 0xf9, 0xa3,
+	0xae, 0x53, 0xa4, 0xcf, 0x94, 0x2e, 0x0c, 0xc5, 0x35, 0x1a, 0xf9, 0x54, 0x83, 0xbe, 0x1c, 0x65,
+	0x2d, 0x97, 0x64, 0x64, 0x46, 0x61, 0x39, 0xee, 0xae, 0x4d, 0x3f, 0x9f, 0x4e, 0x18, 0x11, 0x65,
+	0xbe, 0xd7, 0xd8, 0x5e, 0x1c, 0xd6, 0x19, 0x32, 0x26, 0xc3, 0x52, 0x5c, 0xc8, 0x91, 0x67, 0x1a,
+	0x1c, 0xcb, 0x51, 0xd6, 0x74, 0x22, 0x23, 0xe3, 0x0a, 0x87, 0xad, 0x87, 0x39, 0xfd, 0x5c, 0x3b,
+	0x31, 0x44, 0x34, 0x19, 0x22, 0x1a, 0x22, 0x83, 0x32, 0x22, 0xe9, 0xc4, 0x47, 0x76, 0xe0, 0x70,
+	0x8e, 0x0a, 0x7d, 0x32, 0xa2, 0xb0, 0xde, 0x7c, 0xec, 0xd3, 0x47, 0xe3, 0x05, 0xd0, 0xf1, 0xf9,
+	0xd0, 0xf1, 0x18, 0x19, 0x91, 0x1d, 0x8b, 0x03, 0x93, 0xb9, 0xe3, 0xfb, 0xde, 0x25, 0xdf, 0xd7,
+	0xe0, 0x78, 0x8e, 0xb2, 0xe6, 0x43, 0x18, 0x51, 0x51, 0x54, 0x1c, 0x05, 0xf5, 0x89, 0xb6, 0x72,
+	0x29, 0x62, 0x61, 0x71, 0x85, 0x02, 0x1e, 0xe5, 0x7e, 0xab, 0x81, 0x9e, 0xa3, 0x2c, 0xae, 0x11,
+	0x9a, 0x56, 0x78, 0x8c, 0x91, 0x55, 0x2e, 0xa0, 0xd8, 0x2e, 0xc8, 0xb8, 0x1e, 0x42, 0xbc, 0x48,
+	0x32, 0x32, 0xc4, 0x30, 0x1b, 0x9a, 0x7e, 0xf1, 0x33, 0x77, 0xc2, 0x86, 0x6c, 0x97, 0x3c, 0xd7,
+	0xc0, 0x88, 0x47, 0x1d, 0xb4, 0x27, 0x73, 0xe9, 0xd1, 0xfb, 0x3a, 0xfa, 0xb5, 0xce, 0x75, 0x02,
+	0x4e, 0x73, 0x21, 0xa7, 0x09, 0x32, 0x1e, 0xcb, 0xc9, 0xaa, 0x54, 0x82, 0xa2, 0x4e, 0x7e, 0xa1,
+	0xc1, 0x49, 0x7f, 0x35, 0x36, 0x55, 0x42, 0x65, 0xe4, 0x63, 0x2a, 0xad, 0x3e, 0x93, 0x4a, 0x36,
+	0x05, 0xc8, 0xad, 0x86, 0x7c, 0x41, 0x94, 0xcc, 0xe6, 0x45, 0xfb, 0x52, 0x83, 0xb1, 0x1c, 0x65,
+	0xca, 0xe3, 0x1c, 0x06, 0x61, 0xa9, 0x44, 0x4c, 0x05, 0x8c, 0xa4, 0x83, 0xa6, 0x7e, 0x31, 0xbd,
+	0x02, 0x82, 0x5f, 0x0d, 0xc1, 0xdf, 0x23, 0x4b, 0x6d, 0xf6, 0x9a, 0x29, 0x0e, 0xa5, 0x9e, 0xb9,
+	0x23, 0x9f, 0x59, 0x77, 0xcd, 0xe8, 0xb1, 0x93, 0xfc, 0x46, 0xa4, 0xd0, 0x96, 0x5a, 0xad, 0x4c,
+	0xa1, 0x71, 0x8d, 0x83, 0x72, 0x07, 0xc4, 0x96, 0x7f, 0xe3, 0x76, 0xc8, 0xe5, 0x12, 0x99, 0x8b,
+	0x5d, 0x2d, 0x4d, 0x7c, 0x76, 0x9a, 0x8b, 0xfc, 0x2e, 0xf9, 0x95, 0x58, 0x3a, 0xd1, 0x3b, 0x02,
+	0xe5, 0xd2, 0x89, 0xb9, 0xa6, 0x50, 0x2e, 0x9d, 0xb8, 0x4b, 0x07, 0xe3, 0x56, 0x88, 0x78, 0x9e,
+	0xcc, 0xca, 0x88, 0x83, 0x3b, 0x86, 0x04, 0xc0, 0x7f, 0xd1, 0x60, 0x90, 0x17, 0x01, 0xf5, 0xb5,
+	0xa0, 0x72, 0xbf, 0xb6, 0xb9, 0xa9, 0xd4, 0xe7, 0x3b, 0xd2, 0x41, 0x22, 0x8b, 0x21, 0x91, 0x2b,
+	0xe4, 0x52, 0xb4, 0x56, 0x88, 0x96, 0xac, 0xe2, 0x7a, 0x49, 0x5c, 0xbe, 0xab, 0xc1, 0x51, 0xbe,
+	0x6f, 0xfd, 0xd7, 0x22, 0x72, 0x56, 0xb9, 0x0b, 0x23, 0xcf, 0x4c, 0xfa, 0x78, 0x1b, 0x29, 0x44,
+	0x78, 0x2e, 0x44, 0x38, 0x48, 0x06, 0xa2, 0x0b, 0x9d, 0x59, 0x95, 0x82, 0xc7, 0x9d, 0xfe, 0x41,
+	0x83, 0x53, 0x39, 0xca, 0x14, 0xef, 0x3d, 0xe4, 0x82, 0xc2, 0x53, 0xfc, 0x7b, 0x93, 0x9e, 0x49,
+	0x2b, 0x8e, 0x08, 0x6f, 0x86, 0x08, 0xe7, 0xc8, 0x45, 0x19, 0xa1, 0xff, 0x78, 0xc1, 0x31, 0x9a,
+	0x3b, 0xc1, 0xbe, 0x6b, 0x4a, 0x29, 0xff, 0xd2, 0x60, 0x34, 0xd7, 0x48, 0x4e, 0x09, 0x2f, 0x38,
+	0x64, 0x41, 0x81, 0x29, 0xcd, 0x23, 0x93, 0x7e, 0xb5, 0x73, 0x45, 0xa4, 0xb5, 0x1c, 0xd2, 0x7a,
+	0x8f, 0x2c, 0xaa, 0x69, 0xe1, 0x7b, 0x04, 0xf5, 0xf9, 0x45, 0xde, 0x6a, 0x24, 0x9e, 0xdf, 0xea,
+	0x82, 0xf1, 0x1c, 0x65, 0xed, 0x1f, 0x61, 0xc8, 0x0d, 0x05, 0xe6, 0xd4, 0xef, 0x4b, 0xfa, 0xcd,
+	0x37, 0xd4, 0x46, 0xda, 0x8f, 0x42, 0xda, 0x0f, 0xc8, 0x07, 0x32, 0xed, 0x28, 0xdd, 0x96, 0x77,
+	0x9a, 0xdd, 0xe4, 0x10, 0xbc, 0xd0, 0xe0, 0x74, 0x52, 0x08, 0xc8, 0x7c, 0x27, 0xd8, 0x7d, 0xc2,
+	0x97, 0x3a, 0x53, 0x42, 0x9e, 0x77, 0x43, 0x9e, 0x37, 0xc9, 0xf5, 0xce, 0x79, 0x86, 0xac, 0x9e,
+	0xf9, 0x09, 0xc0, 0x7f, 0xb6, 0x89, 0x49, 0x00, 0x91, 0xa7, 0xa0, 0x98, 0x04, 0x10, 0x7d, 0xfb,
+	0x31, 0x66, 0x42, 0xa0, 0xa3, 0x64, 0x58, 0x06, 0x8a, 0xf8, 0x42, 0x2c, 0x3f, 0xd1, 0xa0, 0x37,
+	0xa8, 0xcf, 0xfe, 0x85, 0x21, 0x99, 0x8c, 0x2d, 0xaf, 0x91, 0x1b, 0x49, 0x7d, 0x2a, 0x85, 0x64,
+	0x8a, 0xc6, 0x5f, 0x94, 0x59, 0x73, 0x27, 0xbc, 0xbb, 0xdb, 0x25, 0x3f, 0xd5, 0x80, 0x84, 0x09,
+	0x2a, 0xc0, 0x36, 0x15, 0x9f, 0x6d, 0xa2, 0xe0, 0xa6, 0xd3, 0x88, 0x22, 0x3a, 0x33, 0x44, 0x77,
+	0x96, 0x18, 0xca, 0xdd, 0x2b, 0xc3, 0xfb, 0xbd, 0x06, 0xfd, 0x41, 0xe4, 0x22, 0x17, 0x89, 0x09,
+	0x0d, 0x8d, 0xfa, 0xde, 0x32, 0xa1, 0xa1, 0x89, 0xb9, 0xa3, 0x34, 0xae, 0x84, 0x80, 0x67, 0xc8,
+	0x94, 0x2a, 0x9c, 0xfe, 0xe2, 0x93, 0x71, 0xff, 0x51, 0x83, 0x81, 0x30, 0xac, 0x51, 0xe0, 0x17,
+	0xe3, 0x43, 0x16, 0x83, 0x7c, 0xb6, 0x03, 0x0d, 0x84, 0xbe, 0x10, 0x42, 0x3f, 0x4f, 0xa6, 0xd5,
+	0x99, 0x52, 0x89, 0xfd, 0x33, 0x0d, 0x06, 0x13, 0xae, 0x09, 0xc8, 0x65, 0x55, 0x1b, 0xd5, 0xf6,
+	0xda, 0x42, 0xbf, 0xd2, 0xa9, 0x5a, 0x8a, 0x66, 0x00, 0xa7, 0x20, 0x3c, 0xf7, 0x4b, 0x1d, 0x81,
+	0x9f, 0x16, 0x78, 0x86, 0x4b, 0xba, 0x46, 0x20, 0x6a, 0x6c, 0x6d, 0x2f, 0x36, 0xf4, 0x85, 0x8e,
+	0xf5, 0x90, 0x54, 0x36, 0x24, 0xb5, 0x40, 0x2e, 0xab, 0x27, 0xa7, 0x1d, 0xab, 0xcf, 0xa4, 0x76,
+	0xad, 0xb5, 0x37, 0x4e, 0x68, 0xd7, 0x62, 0x5b, 0xe4, 0xf9, 0x8e, 0x74, 0x90, 0x4c, 0x2e, 0x24,
+	0x73, 0x83, 0x5c, 0x53, 0xb7, 0x6b, 0x69, 0x3a, 0xe6, 0x6c, 0xfe, 0xf9, 0xab, 0x61, 0xed, 0xf3,
+	0x57, 0xc3, 0xda, 0x3f, 0x5e, 0x0d, 0x6b, 0x3f, 0x78, 0x3d, 0x7c, 0xe0, 0xf3, 0xd7, 0xc3, 0x07,
+	0xfe, 0xf6, 0x7a, 0xf8, 0xc0, 0xa3, 0xab, 0x65, 0x9b, 0x6d, 0x6c, 0xad, 0x65, 0x8a, 0x6e, 0xb5,
+	0x71, 0x3e, 0x73, 0xeb, 0xd6, 0x05, 0xb4, 0xec, 0xff, 0xe4, 0x2f, 0x2a, 0xe6, 0xd3, 0x26, 0xef,
+	0xfc, 0xff, 0x6b, 0xad, 0x1d, 0xe2, 0xff, 0x63, 0x6a, 0xfe, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff,
+	0xb2, 0x0d, 0x60, 0x99, 0x20, 0x26, 0x00, 0x00,
 }
 
 func (this *QueryTotalStakeResponse) Equal(that interface{}) bool {
@@ -2179,6 +2595,126 @@ func (this *QueryTotalStakeResponse) Equal(that interface{}) bool {
 	that1, ok := that.(*QueryTotalStakeResponse)
 	if !ok {
 		that2, ok := that.(QueryTotalStakeResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+func (this *QueryReputerStakeInTopicResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryReputerStakeInTopicResponse)
+	if !ok {
+		that2, ok := that.(QueryReputerStakeInTopicResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+func (this *QueryDelegateStakeInTopicInReputerResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryDelegateStakeInTopicInReputerResponse)
+	if !ok {
+		that2, ok := that.(QueryDelegateStakeInTopicInReputerResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+func (this *QueryStakeFromDelegatorInTopicInReputerResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryStakeFromDelegatorInTopicInReputerResponse)
+	if !ok {
+		that2, ok := that.(QueryStakeFromDelegatorInTopicInReputerResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+func (this *QueryStakeFromDelegatorInTopicResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryStakeFromDelegatorInTopicResponse)
+	if !ok {
+		that2, ok := that.(QueryStakeFromDelegatorInTopicResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+func (this *QueryTopicStakeResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*QueryTopicStakeResponse)
+	if !ok {
+		that2, ok := that.(QueryTopicStakeResponse)
 		if ok {
 			that1 = &that2
 		} else {
@@ -2222,13 +2758,17 @@ type QueryClient interface {
 	GetForecastsAtBlock(ctx context.Context, in *QueryForecastsAtBlockRequest, opts ...grpc.CallOption) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(ctx context.Context, in *QueryNetworkLossBundleAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
-	GetReputerStakeList(ctx context.Context, in *QueryReputerStakeListRequest, opts ...grpc.CallOption) (*QueryReputerStakeListResponse, error)
-	GetTopicStakeList(ctx context.Context, in *QueryTopicStakeListRequest, opts ...grpc.CallOption) (*QueryTopicStakeListResponse, error)
+	GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error)
+	GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
+	GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error)
 	GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error)
-	GetRegisteredTopicIds(ctx context.Context, in *QueryRegisteredTopicIdsRequest, opts ...grpc.CallOption) (*QueryRegisteredTopicIdsResponse, error)
+	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
+	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 }
 
@@ -2357,18 +2897,45 @@ func (c *queryClient) GetTotalStake(ctx context.Context, in *QueryTotalStakeRequ
 	return out, nil
 }
 
-func (c *queryClient) GetReputerStakeList(ctx context.Context, in *QueryReputerStakeListRequest, opts ...grpc.CallOption) (*QueryReputerStakeListResponse, error) {
-	out := new(QueryReputerStakeListResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetReputerStakeList", in, out, opts...)
+func (c *queryClient) GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error) {
+	out := new(QueryReputerStakeInTopicResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetReputerStakeInTopic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) GetTopicStakeList(ctx context.Context, in *QueryTopicStakeListRequest, opts ...grpc.CallOption) (*QueryTopicStakeListResponse, error) {
-	out := new(QueryTopicStakeListResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTopicStakeList", in, out, opts...)
+func (c *queryClient) GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error) {
+	out := new(QueryDelegateStakeInTopicInReputerResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetDelegateStakeInTopicInReputer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	out := new(QueryStakeFromDelegatorInTopicInReputerResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error) {
+	out := new(QueryStakeFromDelegatorInTopicResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetStakeFromDelegatorInTopic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error) {
+	out := new(QueryTopicStakeResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTopicStake", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2411,9 +2978,18 @@ func (c *queryClient) GetReputerAddressByP2PKey(ctx context.Context, in *QueryRe
 	return out, nil
 }
 
-func (c *queryClient) GetRegisteredTopicIds(ctx context.Context, in *QueryRegisteredTopicIdsRequest, opts ...grpc.CallOption) (*QueryRegisteredTopicIdsResponse, error) {
-	out := new(QueryRegisteredTopicIdsResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetRegisteredTopicIds", in, out, opts...)
+func (c *queryClient) IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
+	out := new(QueryIsWorkerRegisteredInTopicIdResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/IsWorkerRegisteredInTopicId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error) {
+	out := new(QueryIsReputerRegisteredInTopicIdResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/IsReputerRegisteredInTopicId", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2445,13 +3021,17 @@ type QueryServer interface {
 	GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(context.Context, *QueryNetworkLossBundleAtBlockRequest) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
-	GetReputerStakeList(context.Context, *QueryReputerStakeListRequest) (*QueryReputerStakeListResponse, error)
-	GetTopicStakeList(context.Context, *QueryTopicStakeListRequest) (*QueryTopicStakeListResponse, error)
+	GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error)
+	GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
+	GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error)
 	GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error)
-	GetRegisteredTopicIds(context.Context, *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error)
+	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
+	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 }
 
@@ -2498,11 +3078,20 @@ func (*UnimplementedQueryServer) GetNetworkLossBundleAtBlock(ctx context.Context
 func (*UnimplementedQueryServer) GetTotalStake(ctx context.Context, req *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalStake not implemented")
 }
-func (*UnimplementedQueryServer) GetReputerStakeList(ctx context.Context, req *QueryReputerStakeListRequest) (*QueryReputerStakeListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetReputerStakeList not implemented")
+func (*UnimplementedQueryServer) GetReputerStakeInTopic(ctx context.Context, req *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerStakeInTopic not implemented")
 }
-func (*UnimplementedQueryServer) GetTopicStakeList(ctx context.Context, req *QueryTopicStakeListRequest) (*QueryTopicStakeListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopicStakeList not implemented")
+func (*UnimplementedQueryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeInTopicInReputer not implemented")
+}
+func (*UnimplementedQueryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopicInReputer not implemented")
+}
+func (*UnimplementedQueryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopic not implemented")
+}
+func (*UnimplementedQueryServer) GetTopicStake(ctx context.Context, req *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicStake not implemented")
 }
 func (*UnimplementedQueryServer) GetWorkerNodeInfo(ctx context.Context, req *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerNodeInfo not implemented")
@@ -2516,8 +3105,11 @@ func (*UnimplementedQueryServer) GetWorkerAddressByP2PKey(ctx context.Context, r
 func (*UnimplementedQueryServer) GetReputerAddressByP2PKey(ctx context.Context, req *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerAddressByP2PKey not implemented")
 }
-func (*UnimplementedQueryServer) GetRegisteredTopicIds(ctx context.Context, req *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRegisteredTopicIds not implemented")
+func (*UnimplementedQueryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWorkerRegisteredInTopicId not implemented")
+}
+func (*UnimplementedQueryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsReputerRegisteredInTopicId not implemented")
 }
 func (*UnimplementedQueryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
@@ -2761,38 +3353,92 @@ func _Query_GetTotalStake_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetReputerStakeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryReputerStakeListRequest)
+func _Query_GetReputerStakeInTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputerStakeInTopicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetReputerStakeList(ctx, in)
+		return srv.(QueryServer).GetReputerStakeInTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/emissions.v1.Query/GetReputerStakeList",
+		FullMethod: "/emissions.v1.Query/GetReputerStakeInTopic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetReputerStakeList(ctx, req.(*QueryReputerStakeListRequest))
+		return srv.(QueryServer).GetReputerStakeInTopic(ctx, req.(*QueryReputerStakeInTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetTopicStakeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicStakeListRequest)
+func _Query_GetDelegateStakeInTopicInReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeInTopicInReputerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetTopicStakeList(ctx, in)
+		return srv.(QueryServer).GetDelegateStakeInTopicInReputer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/emissions.v1.Query/GetTopicStakeList",
+		FullMethod: "/emissions.v1.Query/GetDelegateStakeInTopicInReputer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicStakeList(ctx, req.(*QueryTopicStakeListRequest))
+		return srv.(QueryServer).GetDelegateStakeInTopicInReputer(ctx, req.(*QueryDelegateStakeInTopicInReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeFromDelegatorInTopicInReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromDelegatorInTopicInReputerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, req.(*QueryStakeFromDelegatorInTopicInReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeFromDelegatorInTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromDelegatorInTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetStakeFromDelegatorInTopic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopic(ctx, req.(*QueryStakeFromDelegatorInTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicStakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetTopicStake",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicStake(ctx, req.(*QueryTopicStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2869,20 +3515,38 @@ func _Query_GetReputerAddressByP2PKey_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetRegisteredTopicIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRegisteredTopicIdsRequest)
+func _Query_IsWorkerRegisteredInTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsWorkerRegisteredInTopicIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetRegisteredTopicIds(ctx, in)
+		return srv.(QueryServer).IsWorkerRegisteredInTopicId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/emissions.v1.Query/GetRegisteredTopicIds",
+		FullMethod: "/emissions.v1.Query/IsWorkerRegisteredInTopicId",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetRegisteredTopicIds(ctx, req.(*QueryRegisteredTopicIdsRequest))
+		return srv.(QueryServer).IsWorkerRegisteredInTopicId(ctx, req.(*QueryIsWorkerRegisteredInTopicIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_IsReputerRegisteredInTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsReputerRegisteredInTopicIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).IsReputerRegisteredInTopicId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/IsReputerRegisteredInTopicId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).IsReputerRegisteredInTopicId(ctx, req.(*QueryIsReputerRegisteredInTopicIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2962,12 +3626,24 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetTotalStake_Handler,
 		},
 		{
-			MethodName: "GetReputerStakeList",
-			Handler:    _Query_GetReputerStakeList_Handler,
+			MethodName: "GetReputerStakeInTopic",
+			Handler:    _Query_GetReputerStakeInTopic_Handler,
 		},
 		{
-			MethodName: "GetTopicStakeList",
-			Handler:    _Query_GetTopicStakeList_Handler,
+			MethodName: "GetDelegateStakeInTopicInReputer",
+			Handler:    _Query_GetDelegateStakeInTopicInReputer_Handler,
+		},
+		{
+			MethodName: "GetStakeFromDelegatorInTopicInReputer",
+			Handler:    _Query_GetStakeFromDelegatorInTopicInReputer_Handler,
+		},
+		{
+			MethodName: "GetStakeFromDelegatorInTopic",
+			Handler:    _Query_GetStakeFromDelegatorInTopic_Handler,
+		},
+		{
+			MethodName: "GetTopicStake",
+			Handler:    _Query_GetTopicStake_Handler,
 		},
 		{
 			MethodName: "GetWorkerNodeInfo",
@@ -2986,8 +3662,12 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetReputerAddressByP2PKey_Handler,
 		},
 		{
-			MethodName: "GetRegisteredTopicIds",
-			Handler:    _Query_GetRegisteredTopicIds_Handler,
+			MethodName: "IsWorkerRegisteredInTopicId",
+			Handler:    _Query_IsWorkerRegisteredInTopicId_Handler,
+		},
+		{
+			MethodName: "IsReputerRegisteredInTopicId",
+			Handler:    _Query_IsReputerRegisteredInTopicId_Handler,
 		},
 		{
 			MethodName: "GetNetworkInferencesAtBlock",
@@ -3161,7 +3841,7 @@ func (m *QueryTotalStakeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryReputerStakeListRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryReputerStakeInTopicRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -3171,16 +3851,21 @@ func (m *QueryReputerStakeListRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryReputerStakeListRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryReputerStakeInTopicRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryReputerStakeListRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryReputerStakeInTopicRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
+	}
 	if len(m.Address) > 0 {
 		i -= len(m.Address)
 		copy(dAtA[i:], m.Address)
@@ -3191,7 +3876,7 @@ func (m *QueryReputerStakeListRequest) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryReputerStakeListResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryReputerStakeInTopicResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -3201,34 +3886,30 @@ func (m *QueryReputerStakeListResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryReputerStakeListResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryReputerStakeInTopicResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryReputerStakeListResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryReputerStakeInTopicResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Stakes) > 0 {
-		for iNdEx := len(m.Stakes) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Stakes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
 		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryTopicStakeListRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryDelegateStakeInTopicInReputerRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -3238,12 +3919,223 @@ func (m *QueryTopicStakeListRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryTopicStakeListRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryDelegateStakeInTopicInReputerRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryTopicStakeListRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryDelegateStakeInTopicInReputerRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.ReputerAddress) > 0 {
+		i -= len(m.ReputerAddress)
+		copy(dAtA[i:], m.ReputerAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ReputerAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakeInTopicInReputerResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakeInTopicInReputerResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakeInTopicInReputerResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.ReputerAddress) > 0 {
+		i -= len(m.ReputerAddress)
+		copy(dAtA[i:], m.ReputerAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ReputerAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.DelegatorAddress) > 0 {
+		i -= len(m.DelegatorAddress)
+		copy(dAtA[i:], m.DelegatorAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.DelegatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.DelegatorAddress) > 0 {
+		i -= len(m.DelegatorAddress)
+		copy(dAtA[i:], m.DelegatorAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.DelegatorAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeFromDelegatorInTopicResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeFromDelegatorInTopicResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicStakeRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicStakeRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicStakeRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -3256,7 +4148,7 @@ func (m *QueryTopicStakeListRequest) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryTopicStakeListResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryTopicStakeResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -3266,30 +4158,26 @@ func (m *QueryTopicStakeListResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryTopicStakeListResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryTopicStakeResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryTopicStakeListResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryTopicStakeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Stakes) > 0 {
-		for iNdEx := len(m.Stakes) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Stakes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
 		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -3555,87 +4443,6 @@ func (m *QueryActiveTopicsResponse) MarshalToSizedBuffer(dAtA []byte) (int, erro
 			i--
 			dAtA[i] = 0xa
 		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryRegisteredTopicIdsRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryRegisteredTopicIdsRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryRegisteredTopicIdsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.IsReputer {
-		i--
-		if m.IsReputer {
-			dAtA[i] = 1
-		} else {
-			dAtA[i] = 0
-		}
-		i--
-		dAtA[i] = 0x10
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryRegisteredTopicIdsResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryRegisteredTopicIdsResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryRegisteredTopicIdsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.TopicIds) > 0 {
-		dAtA7 := make([]byte, len(m.TopicIds)*10)
-		var j6 int
-		for _, num := range m.TopicIds {
-			for num >= 1<<7 {
-				dAtA7[j6] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j6++
-			}
-			dAtA7[j6] = uint8(num)
-			j6++
-		}
-		i -= j6
-		copy(dAtA[i:], dAtA7[:j6])
-		i = encodeVarintQuery(dAtA, i, uint64(j6))
-		i--
-		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -4444,6 +5251,142 @@ func (m *QueryNetworkInferencesAtBlockResponse) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsRegistered {
+		i--
+		if m.IsRegistered {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsRegistered {
+		i--
+		if m.IsRegistered {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -4516,7 +5459,7 @@ func (m *QueryTotalStakeResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryReputerStakeListRequest) Size() (n int) {
+func (m *QueryReputerStakeInTopicRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4526,25 +5469,109 @@ func (m *QueryReputerStakeListRequest) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
 	return n
 }
 
-func (m *QueryReputerStakeListResponse) Size() (n int) {
+func (m *QueryReputerStakeInTopicResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Stakes) > 0 {
-		for _, e := range m.Stakes {
-			l = e.Size()
-			n += 1 + l + sovQuery(uint64(l))
-		}
+	l = m.Amount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryDelegateStakeInTopicInReputerRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ReputerAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
 	}
 	return n
 }
 
-func (m *QueryTopicStakeListRequest) Size() (n int) {
+func (m *QueryDelegateStakeInTopicInReputerResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Amount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.DelegatorAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.ReputerAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Amount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryStakeFromDelegatorInTopicRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.DelegatorAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryStakeFromDelegatorInTopicResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Amount.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryTopicStakeRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -4556,18 +5583,14 @@ func (m *QueryTopicStakeListRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryTopicStakeListResponse) Size() (n int) {
+func (m *QueryTopicStakeResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Stakes) > 0 {
-		for _, e := range m.Stakes {
-			l = e.Size()
-			n += 1 + l + sovQuery(uint64(l))
-		}
-	}
+	l = m.Amount.Size()
+	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
 
@@ -4673,38 +5696,6 @@ func (m *QueryActiveTopicsResponse) Size() (n int) {
 	if m.Pagination != nil {
 		l = m.Pagination.Size()
 		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
-func (m *QueryRegisteredTopicIdsRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	if m.IsReputer {
-		n += 2
-	}
-	return n
-}
-
-func (m *QueryRegisteredTopicIdsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.TopicIds) > 0 {
-		l = 0
-		for _, e := range m.TopicIds {
-			l += sovQuery(uint64(e))
-		}
-		n += 1 + sovQuery(uint64(l)) + l
 	}
 	return n
 }
@@ -5029,6 +6020,62 @@ func (m *QueryNetworkInferencesAtBlockResponse) Size() (n int) {
 	}
 	if m.BlockHeight != 0 {
 		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IsRegistered {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryIsReputerRegisteredInTopicIdResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IsRegistered {
+		n += 2
 	}
 	return n
 }
@@ -5425,7 +6472,7 @@ func (m *QueryTotalStakeResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryReputerStakeListRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryReputerStakeInTopicRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5448,10 +6495,10 @@ func (m *QueryReputerStakeListRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryReputerStakeListRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryReputerStakeInTopicRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryReputerStakeListRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryReputerStakeInTopicRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5486,6 +6533,25 @@ func (m *QueryReputerStakeListRequest) Unmarshal(dAtA []byte) error {
 			}
 			m.Address = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -5507,7 +6573,7 @@ func (m *QueryReputerStakeListRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryReputerStakeListResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryReputerStakeInTopicResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5530,17 +6596,17 @@ func (m *QueryReputerStakeListResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryReputerStakeListResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryReputerStakeInTopicResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryReputerStakeListResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryReputerStakeInTopicResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Stakes", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -5550,23 +6616,23 @@ func (m *QueryReputerStakeListResponse) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthQuery
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthQuery
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Stakes = append(m.Stakes, &StakePlacement{})
-			if err := m.Stakes[len(m.Stakes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5591,7 +6657,7 @@ func (m *QueryReputerStakeListResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryTopicStakeListRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryDelegateStakeInTopicInReputerRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5614,10 +6680,597 @@ func (m *QueryTopicStakeListRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryTopicStakeListRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryDelegateStakeInTopicInReputerRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryTopicStakeListRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryDelegateStakeInTopicInReputerRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReputerAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ReputerAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakeInTopicInReputerResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakeInTopicInReputerResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakeInTopicInReputerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicInReputerRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicInReputerRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ReputerAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ReputerAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeFromDelegatorInTopicInReputerResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicInReputerResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicInReputerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeFromDelegatorInTopicRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DelegatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeFromDelegatorInTopicResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeFromDelegatorInTopicResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicStakeRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicStakeRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicStakeRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -5660,7 +7313,7 @@ func (m *QueryTopicStakeListRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryTopicStakeListResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryTopicStakeResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5683,17 +7336,17 @@ func (m *QueryTopicStakeListResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryTopicStakeListResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryTopicStakeResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryTopicStakeListResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryTopicStakeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Stakes", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -5703,23 +7356,23 @@ func (m *QueryTopicStakeListResponse) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthQuery
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthQuery
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Stakes = append(m.Stakes, &StakePlacement{})
-			if err := m.Stakes[len(m.Stakes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6377,234 +8030,6 @@ func (m *QueryActiveTopicsResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryRegisteredTopicIdsRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRegisteredTopicIdsRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRegisteredTopicIdsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IsReputer", wireType)
-			}
-			var v int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				v |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			m.IsReputer = bool(v != 0)
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryRegisteredTopicIdsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryRegisteredTopicIdsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryRegisteredTopicIdsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowQuery
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.TopicIds = append(m.TopicIds, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowQuery
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthQuery
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthQuery
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.TopicIds) == 0 {
-					m.TopicIds = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowQuery
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.TopicIds = append(m.TopicIds, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field TopicIds", wireType)
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -8716,6 +10141,348 @@ func (m *QueryNetworkInferencesAtBlockResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsWorkerRegisteredInTopicIdRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsWorkerRegisteredInTopicIdRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsWorkerRegisteredInTopicIdRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsWorkerRegisteredInTopicIdResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsWorkerRegisteredInTopicIdResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsWorkerRegisteredInTopicIdResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsRegistered", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsRegistered = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsReputerRegisteredInTopicIdRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsReputerRegisteredInTopicIdRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsReputerRegisteredInTopicIdRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsReputerRegisteredInTopicIdResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsReputerRegisteredInTopicIdResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsReputerRegisteredInTopicIdResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsRegistered", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsRegistered = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])

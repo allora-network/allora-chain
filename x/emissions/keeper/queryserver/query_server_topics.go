@@ -22,6 +22,10 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTo
 
 // Topics defines the handler for the Query/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -45,6 +49,10 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 }
 
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	unmetDemand, err := qs.k.GetTopicUnmetDemand(ctx, req.TopicId)
 	if err != nil {
 		return nil, err

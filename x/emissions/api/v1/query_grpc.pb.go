@@ -19,27 +19,31 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                             = "/emissions.v1.Query/Params"
-	Query_GetLastRewardsUpdate_FullMethodName               = "/emissions.v1.Query/GetLastRewardsUpdate"
-	Query_GetNextTopicId_FullMethodName                     = "/emissions.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                           = "/emissions.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                    = "/emissions.v1.Query/GetActiveTopics"
-	Query_GetMempoolInferenceRequest_FullMethodName         = "/emissions.v1.Query/GetMempoolInferenceRequest"
-	Query_GetMempoolInferenceRequestsByTopic_FullMethodName = "/emissions.v1.Query/GetMempoolInferenceRequestsByTopic"
-	Query_GetTopicUnmetDemand_FullMethodName                = "/emissions.v1.Query/GetTopicUnmetDemand"
-	Query_GetWorkerLatestInferenceByTopicId_FullMethodName  = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetInferencesAtBlock_FullMethodName               = "/emissions.v1.Query/GetInferencesAtBlock"
-	Query_GetForecastsAtBlock_FullMethodName                = "/emissions.v1.Query/GetForecastsAtBlock"
-	Query_GetNetworkLossBundleAtBlock_FullMethodName        = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
-	Query_GetTotalStake_FullMethodName                      = "/emissions.v1.Query/GetTotalStake"
-	Query_GetReputerStakeList_FullMethodName                = "/emissions.v1.Query/GetReputerStakeList"
-	Query_GetTopicStakeList_FullMethodName                  = "/emissions.v1.Query/GetTopicStakeList"
-	Query_GetWorkerNodeInfo_FullMethodName                  = "/emissions.v1.Query/GetWorkerNodeInfo"
-	Query_GetReputerNodeInfo_FullMethodName                 = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_GetWorkerAddressByP2PKey_FullMethodName           = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetReputerAddressByP2PKey_FullMethodName          = "/emissions.v1.Query/GetReputerAddressByP2PKey"
-	Query_GetRegisteredTopicIds_FullMethodName              = "/emissions.v1.Query/GetRegisteredTopicIds"
-	Query_GetNetworkInferencesAtBlock_FullMethodName        = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
+	Query_Params_FullMethodName                                = "/emissions.v1.Query/Params"
+	Query_GetLastRewardsUpdate_FullMethodName                  = "/emissions.v1.Query/GetLastRewardsUpdate"
+	Query_GetNextTopicId_FullMethodName                        = "/emissions.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                              = "/emissions.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                       = "/emissions.v1.Query/GetActiveTopics"
+	Query_GetMempoolInferenceRequest_FullMethodName            = "/emissions.v1.Query/GetMempoolInferenceRequest"
+	Query_GetMempoolInferenceRequestsByTopic_FullMethodName    = "/emissions.v1.Query/GetMempoolInferenceRequestsByTopic"
+	Query_GetTopicUnmetDemand_FullMethodName                   = "/emissions.v1.Query/GetTopicUnmetDemand"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName     = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetInferencesAtBlock_FullMethodName                  = "/emissions.v1.Query/GetInferencesAtBlock"
+	Query_GetForecastsAtBlock_FullMethodName                   = "/emissions.v1.Query/GetForecastsAtBlock"
+	Query_GetNetworkLossBundleAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
+	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
+	Query_GetReputerStakeInTopic_FullMethodName                = "/emissions.v1.Query/GetReputerStakeInTopic"
+	Query_GetDelegateStakeInTopicInReputer_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
+	Query_GetTopicStake_FullMethodName                         = "/emissions.v1.Query/GetTopicStake"
+	Query_GetWorkerNodeInfo_FullMethodName                     = "/emissions.v1.Query/GetWorkerNodeInfo"
+	Query_GetReputerNodeInfo_FullMethodName                    = "/emissions.v1.Query/GetReputerNodeInfo"
+	Query_GetWorkerAddressByP2PKey_FullMethodName              = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
+	Query_GetReputerAddressByP2PKey_FullMethodName             = "/emissions.v1.Query/GetReputerAddressByP2PKey"
+	Query_IsWorkerRegisteredInTopicId_FullMethodName           = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
+	Query_IsReputerRegisteredInTopicId_FullMethodName          = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
+	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
 )
 
 // QueryClient is the client API for Query service.
@@ -60,13 +64,17 @@ type QueryClient interface {
 	GetForecastsAtBlock(ctx context.Context, in *QueryForecastsAtBlockRequest, opts ...grpc.CallOption) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(ctx context.Context, in *QueryNetworkLossBundleAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
-	GetReputerStakeList(ctx context.Context, in *QueryReputerStakeListRequest, opts ...grpc.CallOption) (*QueryReputerStakeListResponse, error)
-	GetTopicStakeList(ctx context.Context, in *QueryTopicStakeListRequest, opts ...grpc.CallOption) (*QueryTopicStakeListResponse, error)
+	GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error)
+	GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
+	GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error)
 	GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error)
-	GetRegisteredTopicIds(ctx context.Context, in *QueryRegisteredTopicIdsRequest, opts ...grpc.CallOption) (*QueryRegisteredTopicIdsResponse, error)
+	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
+	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 }
 
@@ -195,18 +203,45 @@ func (c *queryClient) GetTotalStake(ctx context.Context, in *QueryTotalStakeRequ
 	return out, nil
 }
 
-func (c *queryClient) GetReputerStakeList(ctx context.Context, in *QueryReputerStakeListRequest, opts ...grpc.CallOption) (*QueryReputerStakeListResponse, error) {
-	out := new(QueryReputerStakeListResponse)
-	err := c.cc.Invoke(ctx, Query_GetReputerStakeList_FullMethodName, in, out, opts...)
+func (c *queryClient) GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error) {
+	out := new(QueryReputerStakeInTopicResponse)
+	err := c.cc.Invoke(ctx, Query_GetReputerStakeInTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) GetTopicStakeList(ctx context.Context, in *QueryTopicStakeListRequest, opts ...grpc.CallOption) (*QueryTopicStakeListResponse, error) {
-	out := new(QueryTopicStakeListResponse)
-	err := c.cc.Invoke(ctx, Query_GetTopicStakeList_FullMethodName, in, out, opts...)
+func (c *queryClient) GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error) {
+	out := new(QueryDelegateStakeInTopicInReputerResponse)
+	err := c.cc.Invoke(ctx, Query_GetDelegateStakeInTopicInReputer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	out := new(QueryStakeFromDelegatorInTopicInReputerResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error) {
+	out := new(QueryStakeFromDelegatorInTopicResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeFromDelegatorInTopic_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error) {
+	out := new(QueryTopicStakeResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -249,9 +284,18 @@ func (c *queryClient) GetReputerAddressByP2PKey(ctx context.Context, in *QueryRe
 	return out, nil
 }
 
-func (c *queryClient) GetRegisteredTopicIds(ctx context.Context, in *QueryRegisteredTopicIdsRequest, opts ...grpc.CallOption) (*QueryRegisteredTopicIdsResponse, error) {
-	out := new(QueryRegisteredTopicIdsResponse)
-	err := c.cc.Invoke(ctx, Query_GetRegisteredTopicIds_FullMethodName, in, out, opts...)
+func (c *queryClient) IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
+	out := new(QueryIsWorkerRegisteredInTopicIdResponse)
+	err := c.cc.Invoke(ctx, Query_IsWorkerRegisteredInTopicId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error) {
+	out := new(QueryIsReputerRegisteredInTopicIdResponse)
+	err := c.cc.Invoke(ctx, Query_IsReputerRegisteredInTopicId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -285,13 +329,17 @@ type QueryServer interface {
 	GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(context.Context, *QueryNetworkLossBundleAtBlockRequest) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
-	GetReputerStakeList(context.Context, *QueryReputerStakeListRequest) (*QueryReputerStakeListResponse, error)
-	GetTopicStakeList(context.Context, *QueryTopicStakeListRequest) (*QueryTopicStakeListResponse, error)
+	GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error)
+	GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
+	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
+	GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error)
 	GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
 	GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error)
-	GetRegisteredTopicIds(context.Context, *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error)
+	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
+	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -339,11 +387,20 @@ func (UnimplementedQueryServer) GetNetworkLossBundleAtBlock(context.Context, *Qu
 func (UnimplementedQueryServer) GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalStake not implemented")
 }
-func (UnimplementedQueryServer) GetReputerStakeList(context.Context, *QueryReputerStakeListRequest) (*QueryReputerStakeListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetReputerStakeList not implemented")
+func (UnimplementedQueryServer) GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerStakeInTopic not implemented")
 }
-func (UnimplementedQueryServer) GetTopicStakeList(context.Context, *QueryTopicStakeListRequest) (*QueryTopicStakeListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopicStakeList not implemented")
+func (UnimplementedQueryServer) GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeInTopicInReputer not implemented")
+}
+func (UnimplementedQueryServer) GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopicInReputer not implemented")
+}
+func (UnimplementedQueryServer) GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopic not implemented")
+}
+func (UnimplementedQueryServer) GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicStake not implemented")
 }
 func (UnimplementedQueryServer) GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerNodeInfo not implemented")
@@ -357,8 +414,11 @@ func (UnimplementedQueryServer) GetWorkerAddressByP2PKey(context.Context, *Query
 func (UnimplementedQueryServer) GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerAddressByP2PKey not implemented")
 }
-func (UnimplementedQueryServer) GetRegisteredTopicIds(context.Context, *QueryRegisteredTopicIdsRequest) (*QueryRegisteredTopicIdsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRegisteredTopicIds not implemented")
+func (UnimplementedQueryServer) IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsWorkerRegisteredInTopicId not implemented")
+}
+func (UnimplementedQueryServer) IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsReputerRegisteredInTopicId not implemented")
 }
 func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
@@ -610,38 +670,92 @@ func _Query_GetTotalStake_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetReputerStakeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryReputerStakeListRequest)
+func _Query_GetReputerStakeInTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputerStakeInTopicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetReputerStakeList(ctx, in)
+		return srv.(QueryServer).GetReputerStakeInTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetReputerStakeList_FullMethodName,
+		FullMethod: Query_GetReputerStakeInTopic_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetReputerStakeList(ctx, req.(*QueryReputerStakeListRequest))
+		return srv.(QueryServer).GetReputerStakeInTopic(ctx, req.(*QueryReputerStakeInTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetTopicStakeList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicStakeListRequest)
+func _Query_GetDelegateStakeInTopicInReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeInTopicInReputerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetTopicStakeList(ctx, in)
+		return srv.(QueryServer).GetDelegateStakeInTopicInReputer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetTopicStakeList_FullMethodName,
+		FullMethod: Query_GetDelegateStakeInTopicInReputer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicStakeList(ctx, req.(*QueryTopicStakeListRequest))
+		return srv.(QueryServer).GetDelegateStakeInTopicInReputer(ctx, req.(*QueryDelegateStakeInTopicInReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeFromDelegatorInTopicInReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromDelegatorInTopicInReputerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, req.(*QueryStakeFromDelegatorInTopicInReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeFromDelegatorInTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromDelegatorInTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetStakeFromDelegatorInTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeFromDelegatorInTopic(ctx, req.(*QueryStakeFromDelegatorInTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicStakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicStake(ctx, req.(*QueryTopicStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -718,20 +832,38 @@ func _Query_GetReputerAddressByP2PKey_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetRegisteredTopicIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRegisteredTopicIdsRequest)
+func _Query_IsWorkerRegisteredInTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsWorkerRegisteredInTopicIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetRegisteredTopicIds(ctx, in)
+		return srv.(QueryServer).IsWorkerRegisteredInTopicId(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetRegisteredTopicIds_FullMethodName,
+		FullMethod: Query_IsWorkerRegisteredInTopicId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetRegisteredTopicIds(ctx, req.(*QueryRegisteredTopicIdsRequest))
+		return srv.(QueryServer).IsWorkerRegisteredInTopicId(ctx, req.(*QueryIsWorkerRegisteredInTopicIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_IsReputerRegisteredInTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsReputerRegisteredInTopicIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).IsReputerRegisteredInTopicId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_IsReputerRegisteredInTopicId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).IsReputerRegisteredInTopicId(ctx, req.(*QueryIsReputerRegisteredInTopicIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -814,12 +946,24 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetTotalStake_Handler,
 		},
 		{
-			MethodName: "GetReputerStakeList",
-			Handler:    _Query_GetReputerStakeList_Handler,
+			MethodName: "GetReputerStakeInTopic",
+			Handler:    _Query_GetReputerStakeInTopic_Handler,
 		},
 		{
-			MethodName: "GetTopicStakeList",
-			Handler:    _Query_GetTopicStakeList_Handler,
+			MethodName: "GetDelegateStakeInTopicInReputer",
+			Handler:    _Query_GetDelegateStakeInTopicInReputer_Handler,
+		},
+		{
+			MethodName: "GetStakeFromDelegatorInTopicInReputer",
+			Handler:    _Query_GetStakeFromDelegatorInTopicInReputer_Handler,
+		},
+		{
+			MethodName: "GetStakeFromDelegatorInTopic",
+			Handler:    _Query_GetStakeFromDelegatorInTopic_Handler,
+		},
+		{
+			MethodName: "GetTopicStake",
+			Handler:    _Query_GetTopicStake_Handler,
 		},
 		{
 			MethodName: "GetWorkerNodeInfo",
@@ -838,8 +982,12 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetReputerAddressByP2PKey_Handler,
 		},
 		{
-			MethodName: "GetRegisteredTopicIds",
-			Handler:    _Query_GetRegisteredTopicIds_Handler,
+			MethodName: "IsWorkerRegisteredInTopicId",
+			Handler:    _Query_IsWorkerRegisteredInTopicId_Handler,
+		},
+		{
+			MethodName: "IsReputerRegisteredInTopicId",
+			Handler:    _Query_IsReputerRegisteredInTopicId_Handler,
 		},
 		{
 			MethodName: "GetNetworkInferencesAtBlock",

@@ -59,8 +59,7 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 	return &types.QueryReputerAddressByP2PKeyResponse{Address: address.String()}, nil
 }
 
-// TODO paginate
-func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.QueryRegisteredTopicIdsRequest) (*types.QueryRegisteredTopicIdsResponse, error) {
+func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.QueryIsWorkerRegisteredInTopicIdRequest) (*types.QueryIsWorkerRegisteredInTopicIdResponse, error) {
 	if req == nil {
 		return nil, types.ErrReceivedNilRequest
 	}
@@ -70,18 +69,28 @@ func (qs queryServer) GetRegisteredTopicIds(ctx context.Context, req *types.Quer
 		return nil, err
 	}
 
-	var TopicIds []uint64
-	if req.IsReputer {
-		TopicIds, err = qs.k.GetRegisteredTopicIdByReputerAddress(sdk.UnwrapSDKContext(ctx), address)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		TopicIds, err = qs.k.GetRegisteredTopicIdsByWorkerAddress(sdk.UnwrapSDKContext(ctx), address)
-		if err != nil {
-			return nil, err
-		}
+	isRegistered, err := qs.k.IsWorkerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, address)
+	if err != nil {
+		return nil, err
 	}
 
-	return &types.QueryRegisteredTopicIdsResponse{TopicIds: TopicIds}, nil
+	return &types.QueryIsWorkerRegisteredInTopicIdResponse{IsRegistered: isRegistered}, nil
+}
+
+func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.QueryIsReputerRegisteredInTopicIdRequest) (*types.QueryIsReputerRegisteredInTopicIdResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
+	address, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	isRegistered, err := qs.k.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, address)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryIsReputerRegisteredInTopicIdResponse{IsRegistered: isRegistered}, nil
 }

@@ -1043,7 +1043,7 @@ func (k *Keeper) AddDelegatedStake(ctx context.Context, topicId TopicId, delegat
 		return errors.New("stake must be greater than zero")
 	}
 
-	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
 		return err
 	}
@@ -1205,7 +1205,7 @@ func (k *Keeper) RemoveDelegatedStake(
 	}
 
 	// Check stakeFromDelegator >= stake
-	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
 		return err
 	}
@@ -1287,87 +1287,6 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	return k.totalStake.Set(ctx, totalStake)
 }
 
-// TODO paginate
-// GetStakesForAccount returns the list of stakes for a given account address.
-func (k *Keeper) GetStakePlacementsByReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
-	topicIds := make([]TopicId, 0)
-	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]types.StakePlacement, 0)
-	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// iterate over all keys in stakePlacements
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		reputerKey := kv.K2()
-		// if the reputer key matches the reputer we're looking for
-		if reputerKey.Equals(reputer) {
-			amount, err := k.stakeByReputerAndTopicId.Get(ctx, kv)
-			if err != nil {
-				return nil, err
-			}
-			stakeInfo := types.StakePlacement{
-				TopicId: kv.K1(),
-				Amount:  amount,
-				Reputer: reputerKey.String(),
-			}
-			stakes = append(stakes, stakeInfo)
-			topicIds = append(topicIds, kv.K1())
-			amounts = append(amounts, amount)
-		}
-	}
-	if len(topicIds) != len(amounts) {
-		return nil, types.ErrIterationLengthDoesNotMatch
-	}
-
-	return stakes, nil
-}
-
-// TODO paginate
-func (k *Keeper) GetStakePlacementsByTopic(ctx context.Context, topicId TopicId) ([]types.StakePlacement, error) {
-	reputers := make([]Reputer, 0)
-	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]types.StakePlacement, 0)
-	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// iterate over all keys in stakePlacements
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		topicKey := kv.K1()
-		// if the topic key matches the topic we're looking for
-		if topicKey == topicId {
-			amount, err := k.stakeByReputerAndTopicId.Get(ctx, kv)
-			if err != nil {
-				return nil, err
-			}
-			stakeInfo := types.StakePlacement{
-				TopicId: topicKey,
-				Amount:  amount,
-				Reputer: kv.K2().String(),
-			}
-			stakes = append(stakes, stakeInfo)
-			reputers = append(reputers, kv.K2())
-			amounts = append(amounts, amount)
-		}
-	}
-	if len(reputers) != len(amounts) {
-		return nil, types.ErrIterationLengthDoesNotMatch
-	}
-
-	return stakes, nil
-}
-
 // Gets the stake in the network for a given topic
 func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (Uint, error) {
 	ret, err := k.topicStake.Get(ctx, topicId)
@@ -1393,7 +1312,7 @@ func (k *Keeper) GetStakeOnTopicFromReputer(ctx context.Context, topicId TopicId
 }
 
 // Returns the amount of stake placed by a specific delegator.
-func (k *Keeper) GetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator Delegator) (Uint, error) {
+func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator Delegator) (Uint, error) {
 	key := collections.Join(topicId, delegator)
 	stake, err := k.stakeFromDelegator.Get(ctx, key)
 	if err != nil {
@@ -1414,9 +1333,9 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 	return k.stakeFromDelegator.Set(ctx, key, stake)
 }
 
-// Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegatedStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (Uint, error) {
-	key := collections.Join3(topicId, delegator, target)
+// Returns the amount of stake placed by a specific delegator on a specific reputer.
+func (k *Keeper) GetDelegatedStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, reputer Reputer) (Uint, error) {
+	key := collections.Join3(topicId, delegator, reputer)
 	stake, err := k.delegatedStakePlacement.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -1427,18 +1346,18 @@ func (k *Keeper) GetDelegatedStakePlacement(ctx context.Context, topicId TopicId
 	return stake, nil
 }
 
-// Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegatedStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake Uint) error {
-	key := collections.Join3(topicId, delegator, target)
+// Sets the amount of stake placed by a specific delegator on a specific reputer.
+func (k *Keeper) SetDelegatedStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, reputer Reputer, stake Uint) error {
+	key := collections.Join3(topicId, delegator, reputer)
 	if stake.IsZero() {
 		return k.delegatedStakePlacement.Remove(ctx, key)
 	}
 	return k.delegatedStakePlacement.Set(ctx, key, stake)
 }
 
-// Returns the amount of stake placed on a specific target.
-func (k *Keeper) GetDelegatedStakeUponReputer(ctx context.Context, topicId TopicId, target Reputer) (Uint, error) {
-	key := collections.Join(topicId, target)
+// Returns the amount of stake placed on a specific reputer.
+func (k *Keeper) GetDelegatedStakeUponReputer(ctx context.Context, topicId TopicId, reputer Reputer) (Uint, error) {
+	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeUponReputer.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -1449,9 +1368,9 @@ func (k *Keeper) GetDelegatedStakeUponReputer(ctx context.Context, topicId Topic
 	return stake, nil
 }
 
-// Sets the amount of stake placed on a specific target.
-func (k *Keeper) SetDelegatedStakeUponReputer(ctx context.Context, topicId TopicId, target Reputer, stake Uint) error {
-	key := collections.Join(topicId, target)
+// Sets the amount of stake placed on a specific reputer.
+func (k *Keeper) SetDelegatedStakeUponReputer(ctx context.Context, topicId TopicId, reputer Reputer, stake Uint) error {
+	key := collections.Join(topicId, reputer)
 	if stake.IsZero() {
 		return k.stakeUponReputer.Remove(ctx, key)
 	}
@@ -1610,7 +1529,7 @@ func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
 }
 
 // Set a topic to active if the topic exists, else does nothing
-func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TopicId) error {
+func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	present, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return err
@@ -1649,6 +1568,10 @@ func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error)
 // Returns the number of topics that are active in the network
 func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
+}
+
+func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.activeTopics.Has(ctx, topicId)
 }
 
 // Returns a slice of all active topics. Paginated.
@@ -1704,42 +1627,6 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
-}
-
-// TODO paginate
-// GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
-func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	var topicsByAddress []uint64
-
-	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByAddress, nil
-}
-
-// TODO paginate
-// GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
-func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	var topicsByAddress []uint64
-
-	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByAddress, nil
 }
 
 /// FEE REVENUE

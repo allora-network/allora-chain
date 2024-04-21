@@ -24,6 +24,7 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 )
@@ -1407,7 +1408,7 @@ func (s *KeeperTestSuite) TestAddDelegatedStake() {
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	delegatorStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount, delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 
@@ -1416,7 +1417,7 @@ func (s *KeeperTestSuite) TestAddDelegatedStake() {
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err = keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	delegatorStake, err = keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 }
@@ -1486,7 +1487,7 @@ func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
-	remainingStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
@@ -1513,7 +1514,7 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
-	remainingStake, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroUint(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
@@ -1571,7 +1572,7 @@ func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
 	s.Require().NoError(err)
 
 	// Get all bonds for delegator
-	amount, err := keeper.GetStakeFromDelegator(ctx, topicId, delegatorAddr)
+	amount, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 
 	s.Require().NoError(err, "Getting all bonds for delegator should not return an error")
 	s.Require().Equal(stakeAmount.Mul(cosmosMath.NewUint(3)), amount, "The total amount is incorrect")
@@ -1685,89 +1686,6 @@ func (s *KeeperTestSuite) TestGetDelegatedStakeRemovalQueueByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing delegated stake removal information")
 }
 
-func (s *KeeperTestSuite) TestGetStakePlacementsByReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	reputerAddr := sdk.AccAddress("reputerAddress1")
-
-	// Set up stakes for the reputer
-	topicId1 := uint64(101)
-	topicId2 := uint64(102)
-	stake1 := cosmosMath.NewUint(100)
-	stake2 := cosmosMath.NewUint(200)
-
-	// Add stakes to two different topics for the same reputer
-	err := keeper.AddStake(ctx, topicId1, reputerAddr, stake1)
-	s.Require().NoError(err)
-	err = keeper.AddStake(ctx, topicId2, reputerAddr, stake2)
-	s.Require().NoError(err)
-
-	// Retrieve the stake placements for the reputer
-	stakes, err := keeper.GetStakePlacementsByReputer(ctx, reputerAddr)
-	s.Require().NoError(err)
-	s.Require().Len(stakes, 2, "Should return two stake placements")
-
-	// Check that the returned stakes contain the correct topic IDs and amounts
-	for _, stake := range stakes {
-		s.Require().True(stake.TopicId == topicId1 || stake.TopicId == topicId2, "Topic ID should be either of the two added")
-		if stake.TopicId == topicId1 {
-			s.Require().Equal(stake1, stake.Amount, "Amount should match the stake added for TopicId1")
-		} else {
-			s.Require().Equal(stake2, stake.Amount, "Amount should match the stake added for TopicId2")
-		}
-	}
-}
-
-func (s *KeeperTestSuite) TestGetStakePlacementsByTopic() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(101)
-
-	// Reputer addresses
-	reputerAddr1 := sdk.AccAddress("reputerAddress1")
-	reputerAddr2 := sdk.AccAddress("reputerAddress2")
-
-	// Stake amounts
-	stake1 := cosmosMath.NewUint(100)
-	stake2 := cosmosMath.NewUint(200)
-
-	// Add stakes for different reputers under the same topic
-	err := keeper.AddStake(ctx, topicId, reputerAddr1, stake1)
-	s.Require().NoError(err)
-	err = keeper.AddStake(ctx, topicId, reputerAddr2, stake2)
-	s.Require().NoError(err)
-
-	// Retrieve the stake placements for the topic
-	stakes, err := keeper.GetStakePlacementsByTopic(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().Len(stakes, 2, "Should return two stake placements")
-
-	// Validate the correctness of the data retrieved
-	foundStake1 := false
-	foundStake2 := false
-	for _, stake := range stakes {
-		s.Require().Equal(topicId, stake.TopicId, "Topic ID should match the one queried")
-		if stake.Reputer == reputerAddr1.String() && stake.Amount.Equal(stake1) {
-			foundStake1 = true
-		} else if stake.Reputer == reputerAddr2.String() && stake.Amount.Equal(stake2) {
-			foundStake2 = true
-		}
-	}
-	s.Require().True(foundStake1, "Should find stake placement for Reputer1")
-	s.Require().True(foundStake2, "Should find stake placement for Reputer2")
-}
-
-func (s *KeeperTestSuite) TestGetStakePlacementsByTopicWithNoStakes() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(102)
-
-	// Ensure no stakes are set for this topic
-	stakes, err := keeper.GetStakePlacementsByTopic(ctx, topicId)
-	s.Require().NoError(err)
-	s.Require().Empty(stakes, "Should return an empty slice when no stakes are found for the topic")
-}
-
 func (s *KeeperTestSuite) TestRewardsUpdate() {
 	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
 	s.NoError(err, "error getting un-initialized")
@@ -1849,7 +1767,13 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 		inferenceRequestMap[requestId] = inferenceRequest
 	}
 
-	requestsForTopic, err := keeper.GetMempoolInferenceRequestsForTopic(ctx, 1)
+	pagination := &query.PageRequest{
+		Key:        nil,
+		Offset:     0,
+		Limit:      10,
+		CountTotal: false,
+	}
+	requestsForTopic, _, err := keeper.GetMempoolInferenceRequestsForTopic(ctx, 1, pagination)
 	s.Require().NoError(err, "error getting requests for topic")
 	for _, request := range requestsForTopic {
 		requestId, err := request.GetRequestId()
@@ -2107,26 +2031,35 @@ func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
 	topicId := uint64(3)
 
 	// Assume topic initially active
-	initialTopic := types.Topic{Active: true}
+	initialTopic := types.Topic{Id: topicId}
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
+	// Activate the topic
+	err := keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Reactivating topic should not fail")
+
+	// Check if topic is active
+	topicActive, err := keeper.IsTopicActive(ctx, topicId)
+	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+	s.Require().True(topicActive, "Topic should be active again")
+
 	// Inactivate the topic
-	err := keeper.InactivateTopic(ctx, topicId)
+	err = keeper.InactivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
-	updatedTopic, err := keeper.GetTopic(ctx, topicId)
+	topicActive, err = keeper.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
-	s.Require().False(updatedTopic.Active, "Topic should be inactive")
+	s.Require().False(topicActive, "Topic should be inactive")
 
 	// Reactivate the topic
-	err = keeper.ReactivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
-	reactivatedTopic, err := keeper.GetTopic(ctx, topicId)
+	topicActive, err = keeper.IsTopicActive(ctx, topicId)
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
-	s.Require().True(reactivatedTopic.Active, "Topic should be active again")
+	s.Require().True(topicActive, "Topic should be active again")
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopics() {
@@ -2138,17 +2071,25 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	// _ = keeper.ClearAllTopics(ctx)
 
 	// Create sample topics with mixed active states
-	topic1 := types.Topic{Id: 1, Active: true}
-	topic2 := types.Topic{Id: 2, Active: false} // Inactive topic
-	topic3 := types.Topic{Id: 3, Active: true}
+	topic1 := types.Topic{Id: 1}
+	topic2 := types.Topic{Id: 2}
+	topic3 := types.Topic{Id: 3}
 
 	// Set topics in the system
 	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.ActivateTopic(ctx, topic1.Id)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2) // Inactive topic
 	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+	_ = keeper.ActivateTopic(ctx, topic1.Id)
 
 	// Fetch only active topics
-	activeTopics, err := keeper.GetActiveTopics(ctx)
+	pagination := &query.PageRequest{
+		Key:        nil,
+		Offset:     0,
+		Limit:      10,
+		CountTotal: false,
+	}
+	activeTopics, _, err := keeper.GetActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
@@ -2156,7 +2097,9 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 
 	// Verify the correctness of the data retrieved, specifically checking active status
 	for _, topic := range activeTopics {
-		s.Require().True(topic.Active, "Only active topics should be returned")
+		isActive, err := keeper.IsTopicActive(ctx, topic.Id)
+		s.Require().NoError(err, "Checking topic activity should not fail")
+		s.Require().True(isActive, "Only active topics should be returned")
 		switch topic.Id {
 		case 1:
 			s.Require().Equal(topic1, *topic, "The details of topic 1 should match")
@@ -2166,55 +2109,6 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 			s.Fail("Unexpected topic ID retrieved")
 		}
 	}
-}
-
-func (s *KeeperTestSuite) TestGetRegisteredTopicIdsByWorkerAddress() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	workerAddress := sdk.AccAddress("worker-sample-address")
-	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-
-		NodeAddress: "worker-node-address-sample",
-		NodeId:      "worker-node-id-sample",
-	}
-	topicId := uint64(1)
-
-	// Register the worker for multiple topics using InsertWorker
-	err := keeper.InsertWorker(ctx, topicId, workerAddress, workerInfo)
-	s.Require().NoError(err, "Inserting worker should not fail")
-
-	// Test fetching topic IDs by worker address
-	registeredTopicIds, err := keeper.GetRegisteredTopicIdsByWorkerAddress(ctx, workerAddress)
-	s.Require().NoError(err, "Fetching registered topic IDs by worker address should not fail")
-	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
-}
-
-func (s *KeeperTestSuite) TestGetRegisteredTopicIdByReputerAddress() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	reputerAddress := sdk.AccAddress("reputer-sample-address")
-	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
-	}
-	topicId := uint64(2)
-
-	// Register the reputer for multiple topics using InsertReputer
-	err := keeper.InsertReputer(ctx, topicId, reputerAddress, reputerInfo)
-	s.Require().NoError(err, "Inserting reputer should not fail")
-
-	// Test fetching topic IDs by reputer address
-	registeredTopicIds, err := keeper.GetRegisteredTopicIdByReputerAddress(ctx, reputerAddress)
-	s.Require().NoError(err, "Fetching registered topic IDs by reputer address should not fail")
-	s.Require().Contains(registeredTopicIds, topicId, "The returned topic IDs should match the expected ones")
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {
@@ -2244,10 +2138,7 @@ func (s *KeeperTestSuite) TestGetNumTopicsWithActualTopicCreation() {
 		topicId, err := keeper.IncrementTopicId(ctx)
 		s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-		newTopic := types.Topic{
-			Id:     topicId,
-			Active: true, // Or some other status based on your model
-		}
+		newTopic := types.Topic{Id: topicId}
 
 		err = keeper.SetTopic(ctx, topicId, newTopic)
 		s.Require().NoError(err, "Setting a new topic should not fail")
@@ -2266,7 +2157,7 @@ func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {
 	epochLastEnded := types.BlockHeight(100)
 
 	// Setup a topic initially
-	initialTopic := types.Topic{Id: topicId, Active: true}
+	initialTopic := types.Topic{Id: topicId}
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Update the epoch last ended
@@ -2293,10 +2184,7 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	existentTopicId, err := keeper.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-	newTopic := types.Topic{
-		Id:     existentTopicId,
-		Active: true, // Or some other status based on your model
-	}
+	newTopic := types.Topic{Id: existentTopicId}
 
 	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")

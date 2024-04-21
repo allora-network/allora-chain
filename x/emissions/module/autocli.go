@@ -35,11 +35,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get Active Topics",
 				},
 				{
-					RpcMethod: "GetReputerStakeList",
-					Use:       "reputer-stake-list [address]",
-					Short:     "Get Account Stake List",
+					RpcMethod: "GetReputerStake",
+					Use:       "reputer-stake [address] [topic_id]",
+					Short:     "Get Account Stake in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -246,7 +247,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "ReactivateTopic",
+					RpcMethod: "ActivateTopic",
 					Use:       "reactivate-topic [sender] [topic_id]",
 					Short:     "Reactivate a topic that has become inactivated",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{

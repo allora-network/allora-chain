@@ -94,8 +94,8 @@ func (s *KeeperTestSuite) TestMsgReactivateTopic() {
 		TopicId: topicId,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.NoError(err, "ReactivateTopic should not return an error")
+	_, err := msgServer.ActivateTopic(ctx, reactivateTopicMsg)
+	require.NoError(err, "ActivateTopic should not return an error")
 
 	// Check if topic is active
 	topic, err := s.emissionsKeeper.GetTopic(ctx, topicId)
@@ -119,8 +119,8 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 		TopicId: 0,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
+	_, err := msgServer.ActivateTopic(ctx, reactivateTopicMsg)
+	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ActivateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
