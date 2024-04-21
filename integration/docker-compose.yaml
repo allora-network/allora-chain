@@ -6,12 +6,12 @@ services:
     #   - .environment
     environment:
       - PEERS
+      - HOME=/data/validator0
     volumes:
       - ./testnet:/data
-      - ./scripts/:/scripts
     # ports:
     #   - "26656-26657:26656-26657"
-    user: "0:0"
+    user: "1000:1000"
     command:
       - --home=/data/validator0
       - start
@@ -20,7 +20,7 @@ services:
       - --rpc.laddr=tcp://0.0.0.0:26657
       - --p2p.persistent_peers=$PEERS
     networks:
-      eth-model-local:
+      local-net:
         aliases:
           - inference
         ipv4_address: 172.20.0.10
@@ -32,12 +32,12 @@ services:
     #   - .environment
     environment:
       - PEERS
+      - HOME=/data/validator1
     volumes:
       - ./testnet:/data
-      - ./scripts/:/scripts
     # ports:
     #   - "26656-26657:26656-26657"
-    user: "0:0"
+    user: "1000:1000"
     command:
       - --home=/data/validator1
       - start
@@ -46,7 +46,7 @@ services:
       - --rpc.laddr=tcp://0.0.0.0:26657
       - --p2p.persistent_peers=$PEERS
     networks:
-      eth-model-local:
+      local-net:
         aliases:
           - validator1
         ipv4_address: 172.20.0.11
@@ -58,28 +58,60 @@ services:
     #   - .environment
     environment:
       - PEERS
+      - HOME=/data/validator2
     volumes:
       - ./testnet:/data
-      - ./scripts/:/scripts
     # ports:
     #   - "26656-26657:26656-26657"
-    user: "0:0"
+    user: "1000:1000"
     command:
       - --home=/data/validator2
       - start
-      - --moniker=validator0
+      - --moniker=validator2
       - --minimum-gas-prices=0uallo
       - --rpc.laddr=tcp://0.0.0.0:26657
       - --p2p.persistent_peers=$PEERS
     networks:
-      eth-model-local:
+      local-net:
         aliases:
           - validator2
         ipv4_address: 172.20.0.12
 
 
+  # head:
+  #   # 12D3KooWPaHbkXmKQLrQ8xfQj39pvbfhrQSWMqJSCAE9WYaqcE7R
+  #   container_name: head-coin
+  #   image: alloranetwork/allora-inference-base-head:latest
+  #   environment:
+  #     - HOME=/data
+  #   entrypoint:
+  #     - "/bin/bash"
+  #     - "-c"
+  #     - |
+  #       if [ ! -f /data/keys/priv.bin ]; then
+  #         echo "Generating new private keys..."
+  #         mkdir -p /data/keys
+  #         cd /data/keys
+  #         allora-keys
+  #       fi
+  #       allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
+  #         --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+  #         --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
+  #   ports:
+  #     - "6000:6000"
+  #   volumes:
+  #     - head-data:/data
+  #   working_dir: /data
+  #   networks:
+  #     local-net:
+  #       aliases:
+  #         - head
+  #       ipv4_address: 172.20.0.100
+
+
+
 networks:
-  eth-model-local:
+  local-net:
     driver: bridge
     ipam:
       config:
