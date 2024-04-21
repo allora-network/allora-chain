@@ -35,11 +35,39 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get Active Topics",
 				},
 				{
-					RpcMethod: "GetReputerStake",
-					Use:       "reputer-stake [address] [topic_id]",
-					Short:     "Get Account Stake in a topic",
+					RpcMethod: "GetReputerStakeInTopic",
+					Use:       "reputer-topic-stake [address] [topic_id]",
+					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakeInTopicInReputer",
+					Use:       "reputer-topic-stake [reputer_address] [topic_id]",
+					Short:     "Get total delegate stake in a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopicInReputer",
+					Use:       "delegate-topic-stake-in-reputer [delegator_address] [reputer_address] [topic_id]",
+					Short:     "Get amount of stake from delegator in a topic for a reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopic",
+					Use:       "delegator-topic-stake [delegator_address] [topic_id]",
+					Short:     "Get Account Stake in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
 						{ProtoField: "topic_id"},
 					},
 				},
@@ -121,12 +149,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get timestamp of the last rewards update",
 				},
 				{
-					RpcMethod: "GetRegisteredTopicIds",
-					Use:       "registered-topic-ids [address] [bool is_reputer]",
-					Short:     "Get the list of topics that a reputer or worker is registered to",
+					RpcMethod: "IsWorkerRegisteredInTopicId",
+					Use:       "is-worker-registered [topic_id] [address]",
+					Short:     "True if worker is registered in the topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
-						{ProtoField: "is_reputer"},
+					},
+				},
+				{
+					RpcMethod: "IsReputerRegisteredInTopicId",
+					Use:       "is-reputer-registered [topic_id] [address]",
+					Short:     "True if reputer is registered in the topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
 					},
 				},
 				{
