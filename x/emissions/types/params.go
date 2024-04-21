@@ -50,6 +50,7 @@ func DefaultParams() Params {
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
+		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
 	}
 }
 
@@ -207,6 +208,10 @@ func DefaultParamsMaxRetriesToFulfilNoncesWorker() int64 {
 
 func DefaultParamsMaxRetriesToFulfilNoncesReputer() int64 {
 	return DefaultParams().MaxRetriesToFulfilNoncesReputer
+}
+
+func DefaultParamsRegistrationFee() cosmosMath.Int {
+	return DefaultParams().RegistrationFee
 }
 
 // Validate does the sanity check on the params.

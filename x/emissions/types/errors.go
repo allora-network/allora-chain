@@ -59,4 +59,5 @@ var (
 	ErrNonceStillUnfulfilled                         = errors.Register(ModuleName, 54, "nonce still unfulfilled")
 	ErrTopicCreatorNotEnoughDenom                    = errors.Register(ModuleName, 55, "topic creator does not have enough denom")
 	ErrSignatureVerificationFailed                   = errors.Register(ModuleName, 56, "signature verification was failed")
+	ErrTopicRegistrantNotEnoughDenom                 = errors.Register(ModuleName, 57, "topic registrant does not have enough denom")
 )

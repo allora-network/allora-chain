@@ -458,7 +458,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
-		return nil, err
 	}
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
@@ -472,7 +471,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error finding max regret among workers with losses: ", err)
-		return nil, err
 	}
 	maxCombinedRegret := alloraMath.Max(currentMaxRegrets.MaxInferenceRegret, currentMaxRegrets.MaxForecastRegret)
 
@@ -490,7 +488,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating network combined inference: ", err)
-		return nil, err
 	}
 
 	// Calculate the naive inference I^-_i
@@ -507,7 +504,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating naive inference: ", err)
-		return nil, err
 	}
 
 	// Calculate the one-out inference I^-_li
@@ -526,7 +522,8 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating one-out inferences: ", err)
-		return nil, err
+		oneOutInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
+		oneOutImpliedInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 	}
 
 	// Calculate the one-in inference I^+_ki
@@ -541,7 +538,7 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating one-in inferences: ", err)
-		return nil, err
+		oneInInferences = make([]*emissions.WorkerAttributedValue, 0)
 	}
 
 	// For completeness, send the inferences and forecastImpliedInferences in the bundle
@@ -563,7 +560,6 @@ func CalcNetworkInferences(
 	}
 
 	// Build value bundle to return all the calculated inferences
-	// Shouldn't need inferences nor forecasts because given from context (input arguments)
 	return &emissions.ValueBundle{
 		TopicId:                topicId,
 		CombinedValue:          combinedNetworkInference,
@@ -619,8 +615,8 @@ func GetNetworkInferencesAtBlock(
 
 	networkInferences, err := CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
 	if err != nil {
-		return nil, 0, err
+		fmt.Println("Error calculating network inferences: ", err)
 	}
-
-	return networkInferences, blockHeight, nil
+	// Even in case of error (partially filled data), the ValueBundle is returned
+	return networkInferences, blockHeight, err
 }

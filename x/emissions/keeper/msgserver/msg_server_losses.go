@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -39,7 +40,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
+		fmt.Println("Reputer's worker nonce not yet fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
 		return nil, types.ErrNonceStillUnfulfilled
+	} else {
+		fmt.Println("OK - Reputer's worker nonce already fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -49,6 +53,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
+		fmt.Println("Reputer nonce already fulfilled: ", msg.ReputerRequestNonce.ReputerNonce)
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
 
@@ -80,6 +85,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
+		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
+		if err != nil {
+			return nil, err
+		}
+
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
 			// Check if the reputer is in the reputer whitelist
@@ -99,6 +109,15 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 			// We'll keep what we can get from the payload, but we'll ignore the rest
 			if !isReputerRegistered {
+				continue
+			}
+
+			// Check that the reputer enough stake in the topic
+			stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputer)
+			if err != nil {
+				return nil, err
+			}
+			if stake.LT(requiredMinimumStake) {
 				continue
 			}
 

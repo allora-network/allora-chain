@@ -7,6 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -24,12 +25,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckBalanceForTopic(ctx, creator)
+	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
 	if !hasEnoughBal {
 		return nil, types.ErrTopicCreatorNotEnoughDenom
 	}
 
-	id, err := ms.k.GetNumTopics(ctx)
+	id, err := ms.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +108,7 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 	return &types.MsgReactivateTopicResponse{Success: true}, nil
 }
 
-func (ms msgServer) CheckBalanceForTopic(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
 	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

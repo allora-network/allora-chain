@@ -18,7 +18,16 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	// Check the target exists and is registered
+	// Check the topic exists
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
+	// Check sender is registered in topic
 	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, senderAddr)
 	if err != nil {
 		return nil, err
@@ -34,19 +43,10 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
 
-	// Get target topics Registered
-	TopicIds, err := ms.k.GetRegisteredTopicIdsByAddress(ctx, senderAddr)
+	// Update the stake data structures, spread the stake across all topics evenly
+	err = ms.k.AddStake(ctx, msg.TopicId, senderAddr, msg.Amount)
 	if err != nil {
 		return nil, err
-	}
-
-	// Update the stake data structures, spread the stake across all topics evenly
-	amountToStake := cosmosMath.NewUintFromBigInt(msg.Amount.BigInt()).Quo(cosmosMath.NewUint(uint64(len(TopicIds))))
-	for _, topicId := range TopicIds {
-		err = ms.k.AddStake(ctx, topicId, senderAddr, amountToStake)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return &types.MsgAddStakeResponse{}, nil
@@ -75,15 +75,6 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		}
 		if stakePlaced.LT(stakePlacement.Amount) {
 			return nil, types.ErrInsufficientStakeToRemove
-		}
-
-		// If user is still registered in the topic check that the stake is greater than the minimum required
-		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
-		if err != nil {
-			return nil, err
-		}
-		if stakePlaced.Sub(stakePlacement.Amount).LT(requiredMinimumStake) {
-			return nil, types.ErrInsufficientStakeAfterRemoval
 		}
 
 		// Push to the stake removal object
@@ -145,37 +136,6 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 		}
 	}
 	return &types.MsgConfirmRemoveStakeResponse{}, nil
-}
-
-// StartRemoveAllStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
-// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
-// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
-// and one must start the stake removal process again and wait the delay again.
-// RemoveAllStake is just a convenience wrapper around StartRemoveStake.
-func (ms msgServer) StartRemoveAllStake(ctx context.Context, msg *types.MsgStartRemoveAllStake) (*types.MsgStartRemoveAllStakeResponse, error) {
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	stakePlacements, err := ms.k.GetStakePlacementsByReputer(ctx, senderAddr)
-	if err != nil {
-		return nil, err
-	}
-	msgRemoveStake := &types.MsgStartRemoveStake{
-		Sender:           msg.Sender,
-		PlacementsRemove: make([]*types.StakePlacement, 0),
-	}
-	for _, stakePlacement := range stakePlacements {
-		msgRemoveStake.PlacementsRemove = append(msgRemoveStake.PlacementsRemove, &types.StakePlacement{
-			TopicId: stakePlacement.TopicId,
-			Amount:  stakePlacement.Amount,
-		})
-	}
-	_, err = ms.StartRemoveStake(ctx, msgRemoveStake)
-	if err != nil {
-		return nil, err
-	}
-	return &types.MsgStartRemoveAllStakeResponse{}, nil
 }
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.

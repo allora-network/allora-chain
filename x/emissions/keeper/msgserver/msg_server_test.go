@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	cosmosMath "cosmossdk.io/math"
-
 	"cosmossdk.io/core/header"
+	"cosmossdk.io/log"
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -17,13 +17,25 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
+	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/golang/mock/gomock"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/suite"
+)
+
+const (
+	multiPerm  = "multiple permissions account"
+	randomPerm = "random permission"
 )
 
 type ChainKey struct {
@@ -43,12 +55,14 @@ type KeeperTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
-	bankKeeper      *emissionstestutil.MockBankKeeper
-	authKeeper      *emissionstestutil.MockAccountKeeper
+	accountKeeper   keeper.AccountKeeper
+	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
+	appModule       module.AppModule
 	msgServer       types.MsgServer
-	mockCtrl        *gomock.Controller
 	key             *storetypes.KVStoreKey
+	addrs           []sdk.AccAddress
+	addrsStr        []string
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -60,30 +74,73 @@ func (s *KeeperTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
-	encCfg := moduletestutil.MakeTestEncodingConfig()
+	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-	ctrl := gomock.NewController(s.T())
 
-	s.bankKeeper = emissionstestutil.NewMockBankKeeper(ctrl)
-	s.authKeeper = emissionstestutil.NewMockAccountKeeper(ctrl)
-
-	s.ctx = ctx
-	s.emissionsKeeper = keeper.NewKeeper(encCfg.Codec, addressCodec, storeService, s.authKeeper, s.bankKeeper, "fee_collector")
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-	s.mockCtrl = ctrl
-	s.key = key
-
-	// Add all tests addresses in whitelists
-	for _, addr := range PKS {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.Address()))
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.Address()))
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.Address()))
+	maccPerms := map[string][]string{
+		"fee_collector":                 {"minter"},
+		"mint":                          {"minter"},
+		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		mintTypes.EcosystemModuleName:   {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:  {"minter"},
+		"bonded_tokens_pool":            {"burner", "staking"},
+		"not_bonded_tokens_pool":        {"burner", "staking"},
+		multiPerm:                       {"burner", "minter", "staking"},
+		randomPerm:                      {"random"},
 	}
 
-	for _, addr := range ValAddr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.pubKey))
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.pubKey))
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.pubKey))
+	accountKeeper := authkeeper.NewAccountKeeper(
+		encCfg.Codec,
+		storeService,
+		authtypes.ProtoBaseAccount,
+		maccPerms,
+		authcodec.NewBech32Codec(params.Bech32PrefixAccAddr),
+		params.Bech32PrefixAccAddr,
+		authtypes.NewModuleAddress("gov").String(),
+	)
+
+	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
+	var addrsStr []string = make([]string, 0)
+	pubkeys := simtestutil.CreateTestPubKeys(5)
+	for i := 0; i < 5; i++ {
+		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
+		addrsStr = append(addrsStr, addrs[i].String())
+	}
+	s.addrs = addrs
+	s.addrsStr = addrsStr
+
+	bankKeeper := bankkeeper.NewBaseKeeper(
+		encCfg.Codec,
+		storeService,
+		accountKeeper,
+		map[string]bool{},
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		log.NewNopLogger(),
+	)
+
+	s.ctx = ctx
+	s.accountKeeper = accountKeeper
+	s.bankKeeper = bankKeeper
+	s.emissionsKeeper = keeper.NewKeeper(
+		encCfg.Codec,
+		addressCodec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.FeeCollectorName)
+	s.key = key
+	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
+	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
+	s.appModule = appModule
+
+	// Add all tests addresses in whitelists
+	for _, addr := range addrs {
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
+		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 
@@ -98,17 +155,27 @@ func GeneratePrivateKeys(numKeys int) []ChainKey {
 	}
 
 	return testAddrs
-
 }
-func (s *KeeperTestSuite) CreateOneTopic() {
+
+func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+}
+
+func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
+
+	creator := sdk.AccAddress(PKS[0].Address())
+
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
 		EpochLength:      10800,
@@ -122,11 +189,16 @@ func (s *KeeperTestSuite) CreateOneTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
+
+	// s.PrepareForCreateTopic(newTopicMsg.Creator)
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
+
+	return result.TopicId
 }
 
+/*
 func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
 	var initialStake = types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2))
 	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, initialStake)
@@ -135,6 +207,7 @@ func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
 	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
 	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraStakingAccountName, feeCoins)
 }
+*/
 
 func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -142,8 +215,11 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
 	// Create a MsgCreateNewTopic message
+
+	creator := sdk.AccAddress(PKS[0].Address())
+
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sdk.AccAddress(PKS[0].Address()).String(),
+		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
 		EpochLength:      10800,
@@ -157,22 +233,30 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	creatorInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(3))
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, creatorInitialBalance))
+
+	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
+
+	initialTopicId, err := s.emissionsKeeper.GetNextTopicId(s.ctx)
+	s.Require().NoError(err)
+	s.Require().NotNil(initialTopicId)
+
+	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
-	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
+	result, err := s.emissionsKeeper.GetNextTopicId(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
+	s.Require().Equal(initialTopicId+1, result)
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
 	// Create second topic
 	_, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on second topic")
 
-	result, err = s.emissionsKeeper.GetNumTopics(s.ctx)
+	result, err = s.emissionsKeeper.GetNextTopicId(s.ctx)
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(2), "Topic count after second topic insertion is not 2")
+	s.Require().Equal(initialTopicId+2, result)
 }

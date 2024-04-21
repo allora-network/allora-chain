@@ -145,6 +145,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxRetriesToFulfilNoncesReputer) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesReputer = newParams.MaxRetriesToFulfilNoncesReputer[0]
 	}
+	if len(newParams.RegistrationFee) == 1 {
+		existingParams.RegistrationFee = newParams.RegistrationFee[0]
+	}
 
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
