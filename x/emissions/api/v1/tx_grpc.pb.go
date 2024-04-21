@@ -22,7 +22,7 @@ const (
 	Msg_UpdateParams_FullMethodName                     = "/emissions.v1.Msg/UpdateParams"
 	Msg_InsertBulkWorkerPayload_FullMethodName          = "/emissions.v1.Msg/InsertBulkWorkerPayload"
 	Msg_CreateNewTopic_FullMethodName                   = "/emissions.v1.Msg/CreateNewTopic"
-	Msg_ReactivateTopic_FullMethodName                  = "/emissions.v1.Msg/ReactivateTopic"
+	Msg_ActivateTopic_FullMethodName                    = "/emissions.v1.Msg/ActivateTopic"
 	Msg_Register_FullMethodName                         = "/emissions.v1.Msg/Register"
 	Msg_RemoveRegistration_FullMethodName               = "/emissions.v1.Msg/RemoveRegistration"
 	Msg_InsertBulkReputerPayload_FullMethodName         = "/emissions.v1.Msg/InsertBulkReputerPayload"
@@ -47,7 +47,7 @@ type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	InsertBulkWorkerPayload(ctx context.Context, in *MsgInsertBulkWorkerPayload, opts ...grpc.CallOption) (*MsgInsertBulkWorkerPayloadResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
-	ReactivateTopic(ctx context.Context, in *MsgReactivateTopic, opts ...grpc.CallOption) (*MsgReactivateTopicResponse, error)
+	ActivateTopic(ctx context.Context, in *MsgActivateTopic, opts ...grpc.CallOption) (*MsgActivateTopicResponse, error)
 	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
 	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
 	InsertBulkReputerPayload(ctx context.Context, in *MsgInsertBulkReputerPayload, opts ...grpc.CallOption) (*MsgInsertBulkReputerPayloadResponse, error)
@@ -100,9 +100,9 @@ func (c *msgClient) CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, o
 	return out, nil
 }
 
-func (c *msgClient) ReactivateTopic(ctx context.Context, in *MsgReactivateTopic, opts ...grpc.CallOption) (*MsgReactivateTopicResponse, error) {
-	out := new(MsgReactivateTopicResponse)
-	err := c.cc.Invoke(ctx, Msg_ReactivateTopic_FullMethodName, in, out, opts...)
+func (c *msgClient) ActivateTopic(ctx context.Context, in *MsgActivateTopic, opts ...grpc.CallOption) (*MsgActivateTopicResponse, error) {
+	out := new(MsgActivateTopicResponse)
+	err := c.cc.Invoke(ctx, Msg_ActivateTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	InsertBulkWorkerPayload(context.Context, *MsgInsertBulkWorkerPayload) (*MsgInsertBulkWorkerPayloadResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
-	ReactivateTopic(context.Context, *MsgReactivateTopic) (*MsgReactivateTopicResponse, error)
+	ActivateTopic(context.Context, *MsgActivateTopic) (*MsgActivateTopicResponse, error)
 	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
 	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
 	InsertBulkReputerPayload(context.Context, *MsgInsertBulkReputerPayload) (*MsgInsertBulkReputerPayloadResponse, error)
@@ -283,8 +283,8 @@ func (UnimplementedMsgServer) InsertBulkWorkerPayload(context.Context, *MsgInser
 func (UnimplementedMsgServer) CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
 }
-func (UnimplementedMsgServer) ReactivateTopic(context.Context, *MsgReactivateTopic) (*MsgReactivateTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReactivateTopic not implemented")
+func (UnimplementedMsgServer) ActivateTopic(context.Context, *MsgActivateTopic) (*MsgActivateTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateTopic not implemented")
 }
 func (UnimplementedMsgServer) Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
@@ -398,20 +398,20 @@ func _Msg_CreateNewTopic_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_ReactivateTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgReactivateTopic)
+func _Msg_ActivateTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgActivateTopic)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).ReactivateTopic(ctx, in)
+		return srv.(MsgServer).ActivateTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_ReactivateTopic_FullMethodName,
+		FullMethod: Msg_ActivateTopic_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ReactivateTopic(ctx, req.(*MsgReactivateTopic))
+		return srv.(MsgServer).ActivateTopic(ctx, req.(*MsgActivateTopic))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -706,8 +706,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_CreateNewTopic_Handler,
 		},
 		{
-			MethodName: "ReactivateTopic",
-			Handler:    _Msg_ReactivateTopic_Handler,
+			MethodName: "ActivateTopic",
+			Handler:    _Msg_ActivateTopic_Handler,
 		},
 		{
 			MethodName: "Register",

@@ -15,10 +15,11 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	creatorAddress := sdk.AccAddress(PKS[1].Address())
-	topic1 := types.Topic{Id: 1, Creator: creatorAddress.String(), Active: true}
+	topic1 := types.Topic{Id: 1, Creator: creatorAddress.String()}
 
 	// Topic register
 	s.emissionsKeeper.SetTopic(ctx, 1, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, 1)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
 		Sender:       reputerAddr.String(),
@@ -69,8 +70,9 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	topic1 := types.Topic{Id: topicId, Creator: reputerAddr.String(), Active: true}
+	topic1 := types.Topic{Id: topicId, Creator: reputerAddr.String()}
 	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, 1)
 	// Zero initial stake
 
 	// Topic does not exist

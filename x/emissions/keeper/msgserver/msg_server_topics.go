@@ -84,8 +84,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivateTopic) (*types.MsgReactivateTopicResponse, error) {
-	// Check that the topic has enough demand to be reactivated
+func (ms msgServer) ActivateTopic(ctx context.Context, msg *types.MsgActivateTopic) (*types.MsgActivateTopicResponse, error) {
+	// Check that the topic has enough demand to be activated
 	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -102,12 +102,12 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, types.ErrTopicNotEnoughDemand
 	}
 
-	// If the topic has enough demand, reactivate it
+	// If the topic has enough demand, activate it
 	err = ms.k.ActivateTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgReactivateTopicResponse{Success: true}, nil
+	return &types.MsgActivateTopicResponse{Success: true}, nil
 }
 
 func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {

@@ -19,7 +19,7 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
-  rpc ReactivateTopic(MsgReactivateTopic) returns (MsgReactivateTopicResponse);
+  rpc ActivateTopic(MsgActivateTopic) returns (MsgActivateTopicResponse);
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
@@ -396,13 +396,13 @@ message MsgRemoveFromReputerWhitelistResponse {}
 
 /// Topic Management
 
-message MsgReactivateTopic {
+message MsgActivateTopic {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   uint64 topic_id = 2;
 }
 
-message MsgReactivateTopicResponse {
+message MsgActivateTopicResponse {
   bool success = 1;
 }

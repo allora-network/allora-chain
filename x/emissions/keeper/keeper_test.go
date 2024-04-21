@@ -2025,7 +2025,7 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
 	s.Require().True(noPrior, "Should indicate no prior weight for an unset topic")
 }
 
-func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
+func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(3)
@@ -2052,7 +2052,7 @@ func (s *KeeperTestSuite) TestInactivateAndReactivateTopic() {
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
 	s.Require().False(topicActive, "Topic should be inactive")
 
-	// Reactivate the topic
+	// Activate the topic
 	err = keeper.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 

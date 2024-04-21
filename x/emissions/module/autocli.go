@@ -248,8 +248,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "ActivateTopic",
-					Use:       "reactivate-topic [sender] [topic_id]",
-					Short:     "Reactivate a topic that has become inactivated",
+					Use:       "activate-topic [sender] [topic_id]",
+					Short:     "Activate a topic that has become inactivated",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
