@@ -1696,8 +1696,8 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 
 // True if reputer is registered in topic, else False
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
-	topicKey := collections.Join(topicId, reputer)
-	return k.topicReputers.Has(ctx, topicKey)
+	topickey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topickey)
 }
 
 /// FEE REVENUE
@@ -1934,7 +1934,7 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 	}
 
 	// If the cursor is greater than the number of requests in the topic, return an empty list
-	if numRequestsInTopic < cursor {
+	if numRequestsInTopic <= cursor {
 		return []types.InferenceRequest{}, nil, nil
 	}
 
@@ -1955,7 +1955,7 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 
 	// If the number of requests in the topic is less than the limit, return an empty key
 	var nextKey []byte
-	if numRequestsInTopic < cursor+limit {
+	if numRequestsInTopic <= cursor+limit {
 		nextKey = nil
 	} else {
 		nextKey = make([]byte, 8)
