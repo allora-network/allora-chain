@@ -190,7 +190,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		}
 		totalRewardsDistribution = append(totalRewardsDistribution, forecastRewards...)
 
-		fmt.Println("totalRewardsDistribution :::", totalRewardsDistribution)
 		// Pay out rewards
 		err = payoutRewards(ctx, k, totalRewardsDistribution)
 		if err != nil {
