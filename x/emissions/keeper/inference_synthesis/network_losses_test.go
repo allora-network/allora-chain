@@ -1,11 +1,8 @@
 package inference_synthesis_test
 
 import (
-	"testing"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/stretchr/testify/require"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
@@ -60,7 +57,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 	}
 }
 
-func TestCalcNetworkLosses(t *testing.T) {
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 	tests := []struct {
 		name            string
 		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
@@ -155,16 +152,18 @@ func TestCalcNetworkLosses(t *testing.T) {
 		*/
 	}
 
+	require := s.Require()
+
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		s.Run(tc.name, func() {
 			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
 			if tc.expectedError != nil {
-				require.Error(t, err)
-				require.EqualError(t, err, tc.expectedError.Error())
+				require.Error(err)
+				require.EqualError(err, tc.expectedError.Error())
 			} else {
-				require.NoError(t, err)
-				require.Equal(t, tc.expectedOutput.CombinedValue, output.CombinedValue)
-				require.ElementsMatch(t, tc.expectedOutput.InfererValues, output.InfererValues)
+				require.NoError(err)
+				require.Equal(tc.expectedOutput.CombinedValue, output.CombinedValue)
+				require.ElementsMatch(tc.expectedOutput.InfererValues, output.InfererValues)
 			}
 		})
 	}
