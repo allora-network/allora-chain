@@ -1625,8 +1625,17 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 
 func (k Keeper) GetActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
 	startTopicId := uint64(0)
-	if pagination.Key != nil && len(pagination.Key) > 0 {
+	if pagination != nil && len(pagination.Key) > 0 {
 		startTopicId = binary.BigEndian.Uint64(pagination.Key)
+	} else {
+		limit, err := k.GetParamsDefaultLimit(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		pagination = &types.SimpleCursorPaginationRequest{
+			Limit: limit,
+			Key:   nil,
+		}
 	}
 	rng := new(collections.Range[uint64]).
 		StartInclusive(startTopicId)
@@ -1701,8 +1710,8 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 
 // True if reputer is registered in topic, else False
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
-	topicKey := collections.Join(topicId, reputer)
-	return k.topicReputers.Has(ctx, topicKey)
+	topickey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topickey)
 }
 
 /// FEE REVENUE
@@ -1933,9 +1942,20 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 		return nil, nil, err
 	}
 
-	// Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
+	if pagination == nil || len(pagination.Key) == 0 {
+		limit, err := k.GetParamsDefaultLimit(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		pagination = &types.SimpleCursorPaginationRequest{
+			Limit: limit,
+			Key:   nil,
+		}
+	}
+
+	// Convert pagination.key from []bytes to uint64
 	cursor := uint64(0)
-	if len(pagination.Key) > 0 {
+	if pagination.Key != nil {
 		cursor = binary.BigEndian.Uint64(pagination.Key)
 	}
 
