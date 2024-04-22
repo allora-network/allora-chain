@@ -76,7 +76,7 @@ PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
     ipAddress="${NETWORK_PREFIX}.$((VALIDATORS_IP_START+i))"
-    addr=$(docker run -it \
+    addr=$(docker run -t \
         -v ${LOCALNET_DATADIR}:/data \
         -u $(id -u):$(id -g) \
         -e HOME=/data/${valName} \

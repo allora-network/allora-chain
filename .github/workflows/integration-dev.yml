@@ -1,4 +1,4 @@
-name: Integration
+name: Integration L1
 
 on: [pull_request]
 
