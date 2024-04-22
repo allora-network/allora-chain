@@ -97,59 +97,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 			},
 			expectedError: nil,
 		},
-		/*
-			{
-				name: "multiple reputers multiple values",
-				stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-					"worker1": cosmosMath.NewUintFromString("1"),
-					"worker2": cosmosMath.NewUintFromString("2"),
-				},
-				reportedLosses: emissions.ReputerValueBundles{
-					ReputerValueBundles: []*emissions.ReputerValueBundle{
-						{
-							ValueBundle: &emissions.ValueBundle{
-								Reputer:       "worker1",
-								CombinedValue: alloraMath.MustNewDecFromString("0.5"),
-								InfererValues: []*emissions.WorkerAttributedValue{
-									{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.5")},
-								},
-							},
-						},
-						{
-							ValueBundle: &emissions.ValueBundle{
-								Reputer:       "worker2",
-								CombinedValue: alloraMath.MustNewDecFromString("0.2"),
-								InfererValues: []*emissions.WorkerAttributedValue{
-									{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.3")},
-									{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
-								},
-							},
-						},
-					},
-				},
-				epsilon: alloraMath.MustNewDecFromString("1e-4"),
-				expectedOutput: emissions.ValueBundle{
-					CombinedValue: alloraMath.MustNewDecFromString("1.412538"), // Calculated e^(weighted average of 0.5 and 0.2)
-					InfererValues: []*emissions.WorkerAttributedValue{
-						{Worker: "worker1", Value: alloraMath.MustNewDecFromString("1.481689")},
-						{Worker: "worker2", Value: alloraMath.MustNewDecFromString("1.221403")},
-					},
-				},
-				expectedError: nil,
-			},
-		*/
-		/*
-			{
-				name: "error handling invalid decimal",
-				stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-					"worker1": cosmosMath.NewUintFromString("NaN"),
-				},
-				reportedLosses: emissions.ReputerValueBundles{},
-				epsilon:        alloraMath.MustNewDecFromString("1e-4"),
-				expectedOutput: emissions.ValueBundle{},
-				expectedError:  fmt.Errorf("invalid decimal value"),
-			},
-		*/
 	}
 
 	require := s.Require()
