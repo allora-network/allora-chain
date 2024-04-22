@@ -3,10 +3,10 @@ package inference_synthesis
 import (
 	"fmt"
 
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -215,7 +215,7 @@ func CalcWeightedInference(
 ) (InferenceValue, error) {
 	if maxRegret.Lt(epsilon) {
 		fmt.Println("Error maxRegret < epsilon: ", maxRegret, epsilon)
-		return InferenceValue{}, emissions.ErrFractionDivideByZero
+		maxRegret = epsilon
 	}
 
 	// Calculate the network combined inference and network worker regrets
@@ -458,7 +458,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
-		return nil, err
 	}
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
@@ -472,7 +471,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error finding max regret among workers with losses: ", err)
-		return nil, err
 	}
 	maxCombinedRegret := alloraMath.Max(currentMaxRegrets.MaxInferenceRegret, currentMaxRegrets.MaxForecastRegret)
 
@@ -490,7 +488,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating network combined inference: ", err)
-		return nil, err
 	}
 
 	// Calculate the naive inference I^-_i
@@ -507,7 +504,6 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating naive inference: ", err)
-		return nil, err
 	}
 
 	// Calculate the one-out inference I^-_li
@@ -526,7 +522,8 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating one-out inferences: ", err)
-		return nil, err
+		oneOutInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
+		oneOutImpliedInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 	}
 
 	// Calculate the one-in inference I^+_ki
@@ -541,7 +538,7 @@ func CalcNetworkInferences(
 	)
 	if err != nil {
 		fmt.Println("Error calculating one-in inferences: ", err)
-		return nil, err
+		oneInInferences = make([]*emissions.WorkerAttributedValue, 0)
 	}
 
 	// For completeness, send the inferences and forecastImpliedInferences in the bundle
@@ -554,21 +551,20 @@ func CalcNetworkInferences(
 		})
 	}
 
-	forecastImpliedInferences := make([]*emissions.WorkerAttributedValue, 0)
+	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
 	for _, forecastImpliedInference := range forecastImpliedInferenceByWorker {
-		forecastImpliedInferences = append(forecastImpliedInferences, &emissions.WorkerAttributedValue{
+		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
 			Worker: forecastImpliedInference.Inferer,
 			Value:  forecastImpliedInference.Value,
 		})
 	}
 
 	// Build value bundle to return all the calculated inferences
-	// Shouldn't need inferences nor forecasts because given from context (input arguments)
 	return &emissions.ValueBundle{
 		TopicId:                topicId,
 		CombinedValue:          combinedNetworkInference,
 		InfererValues:          infererValues,
-		ForecasterValues:       forecastImpliedInferences,
+		ForecasterValues:       forecastImpliedValues,
 		NaiveValue:             naiveInference,
 		OneOutInfererValues:    oneOutInferences,
 		OneOutForecasterValues: oneOutImpliedInferences,
@@ -587,20 +583,19 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
-	stakesOnTopic, err := k.GetStakePlacementsByTopic(ctx, topicId)
+	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Map list of stakesOnTopic to map of stakesByReputer
-	stakesByReputer := make(map[string]types.StakePlacement)
-	for _, stake := range stakesOnTopic {
-		stakesByReputer[stake.Reputer] = stake
-	}
-
-	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		return nil, 0, err
+	stakesByReputer := make(map[string]cosmosMath.Uint)
+	for _, bundle := range reputerReportedLosses.ReputerValueBundles {
+		stakeAmount, err := k.GetStakeOnTopicFromReputer(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+		if err != nil {
+			return nil, 0, err
+		}
+		stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 	}
 
 	networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
@@ -619,8 +614,8 @@ func GetNetworkInferencesAtBlock(
 
 	networkInferences, err := CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
 	if err != nil {
-		return nil, 0, err
+		fmt.Println("Error calculating network inferences: ", err)
 	}
-
-	return networkInferences, blockHeight, nil
+	// Even in case of error (partially filled data), the ValueBundle is returned
+	return networkInferences, blockHeight, err
 }

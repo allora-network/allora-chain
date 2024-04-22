@@ -35,9 +35,9 @@ func (m *InferenceRequest) GetRequestId() (string, error) {
 	return fmt.Sprintf("0x%x", reqId), nil
 }
 
-// Convenience helper function that wraps a RequestInferenceListItem into an InferenceRequest
+// Convenience helper function that wraps a InferenceRequestInbound into an InferenceRequest
 // one is passed as the msg in a msg handler, while the other is stored in the state machine
-func CreateNewInferenceRequestFromListItem(sender string, item *RequestInferenceListItem) *InferenceRequest {
+func CreateNewInferenceRequestFromListItem(sender string, item *InferenceRequestInbound) *InferenceRequest {
 	newInferenceRequest := &InferenceRequest{
 		Sender:               sender,
 		Nonce:                item.Nonce,
@@ -49,6 +49,11 @@ func CreateNewInferenceRequestFromListItem(sender string, item *RequestInference
 		BlockLastChecked:     0,
 		ExtraData:            item.ExtraData,
 	}
+	id, err := newInferenceRequest.GetRequestId()
+	if err != nil {
+		panic(err)
+	}
+	newInferenceRequest.Id = id
 	return newInferenceRequest
 }
 

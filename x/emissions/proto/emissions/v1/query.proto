@@ -38,17 +38,13 @@ service Query {
     option (google.api.http).get = "/emissions/v1/active_topics";
   }
 
-  rpc GetAllTopics(QueryAllTopicsRequest) returns (QueryAllTopicsResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/all_topics";
-  }
-
-  rpc GetExistingInferenceRequest(QueryExistingInferenceRequest) returns (QueryExistingInferenceResponse) {
+  rpc GetMempoolInferenceRequest(QueryMempoolInferenceRequest) returns (QueryExistingInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/requests/{request_id}";
   }
 
-  rpc GetAllExistingInferenceRequests(QueryAllExistingInferenceRequest) returns (QueryAllExistingInferenceResponse) {
+  rpc GetMempoolInferenceRequestsByTopic(QueryMempoolInferenceRequestsByTopic)
+      returns (QueryMempoolInferenceRequestsByTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/all_requests";
   }
@@ -86,34 +82,64 @@ service Query {
     option (google.api.http).get = "/emissions/v1/total_stake";
   }
 
-  rpc GetReputerStakeList(QueryReputerStakeListRequest) returns (QueryReputerStakeListResponse) {
+  rpc GetReputerStakeInTopic(QueryReputerStakeInTopicRequest) returns (QueryReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/stake";
+    option (google.api.http).get = "/emissions/v1/reputer_stake/{address}/{topic_id}";
   }
 
-  rpc GetTopicStakeList(QueryTopicStakeListRequest) returns (QueryTopicStakeListResponse) {
+  rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
+      returns (QueryDelegateStakeInTopicInReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_delegate_stake/{reputer_address}/{topic_id}";
+  }
+
+  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest)
+      returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
+  }
+
+  rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest)
+      returns (QueryStakeFromDelegatorInTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{topic_id}";
+  }
+
+  rpc GetTopicStake(QueryTopicStakeRequest) returns (QueryTopicStakeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
   }
 
-  rpc GetWorkerNodeRegistration(QueryRegisteredWorkerNodesRequest) returns (QueryRegisteredWorkerNodesResponse) {
+  rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_nodes/{node_id}";
+    option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
+  }
+
+  rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest) returns (QueryReputerNodeInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer/{libp2p_key}";
   }
 
   rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_nodes/{libp2p_key}";
+    option (google.api.http).get = "/emissions/v1/worker_address/{libp2p_key}";
   }
 
   rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest) returns (QueryReputerAddressByP2PKeyResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_nodes/{libp2p_key}";
+    option (google.api.http).get = "/emissions/v1/reputer_address/{libp2p_key}";
   }
 
-  rpc GetRegisteredTopicIds(QueryRegisteredTopicIdsRequest) returns (QueryRegisteredTopicIdsResponse) {
+  rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest)
+      returns (QueryIsWorkerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/registered_topic_ids/{address}/{is_reputer}";
+    option (google.api.http).get = "/emissions/v1/worker_registered/{topic_id}/{address}";
+  }
+
+  rpc IsReputerRegisteredInTopicId(QueryIsReputerRegisteredInTopicIdRequest)
+      returns (QueryIsReputerRegisteredInTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_registered/{topic_id}/{address}";
   }
 
   rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest)
@@ -158,20 +184,79 @@ message QueryTotalStakeResponse {
   ];
 }
 
-message QueryReputerStakeListRequest {
+message QueryReputerStakeInTopicRequest {
   string address = 1;
+  uint64 topic_id = 2;
 }
 
-message QueryReputerStakeListResponse {
-  repeated StakePlacement stakes = 1;
+message QueryReputerStakeInTopicResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
-message QueryTopicStakeListRequest {
+message QueryDelegateStakeInTopicInReputerRequest {
+  string reputer_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryDelegateStakeInTopicInReputerResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryStakeFromDelegatorInTopicInReputerRequest {
+  string delegator_address = 1;
+  string reputer_address = 2;
+  uint64 topic_id = 3;
+}
+
+message QueryStakeFromDelegatorInTopicInReputerResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryStakeFromDelegatorInTopicRequest {
+  string delegator_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeFromDelegatorInTopicResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryTopicStakeRequest {
   uint64 topic_id = 1;
 }
 
-message QueryTopicStakeListResponse {
-  repeated StakePlacement stakes = 1;
+message QueryTopicStakeResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message QueryNetworkLossBundleAtBlockRequest {
@@ -197,25 +282,13 @@ message QueryTopicResponse {
   Topic topic = 1;
 }
 
-message QueryActiveTopicsRequest {}
+message QueryActiveTopicsRequest {
+  SimpleCursorPaginationRequest pagination = 1;
+}
 
 message QueryActiveTopicsResponse {
   repeated Topic topics = 1;
-}
-
-message QueryAllTopicsRequest {}
-
-message QueryAllTopicsResponse {
-  repeated Topic topics = 1;
-}
-
-message QueryRegisteredTopicIdsRequest {
-  string address = 1;
-  bool is_reputer = 2;
-}
-
-message QueryRegisteredTopicIdsResponse {
-  repeated uint64 topic_ids = 1;
+  SimpleCursorPaginationResponse pagination = 2;
 }
 
 // Returns the inferences on a topic posted at a block height
@@ -255,12 +328,20 @@ message QueryWorkerLatestInferenceResponse {
   Inference latest_inference = 1;
 }
 
-message QueryRegisteredWorkerNodesRequest {
-  string node_id = 1;
+message QueryWorkerNodeInfoRequest {
+  string libp2p_key = 1;
 }
 
-message QueryRegisteredWorkerNodesResponse {
-  repeated OffchainNode nodes = 1;
+message QueryWorkerNodeInfoResponse {
+  OffchainNode node_info = 1;
+}
+
+message QueryReputerNodeInfoRequest {
+  string libp2p_key = 1;
+}
+
+message QueryReputerNodeInfoResponse {
+  OffchainNode node_info = 1;
 }
 
 message QueryWorkerAddressByP2PKeyRequest {
@@ -279,9 +360,8 @@ message QueryReputerAddressByP2PKeyResponse {
   string address = 1;
 }
 
-message QueryExistingInferenceRequest {
+message QueryMempoolInferenceRequest {
   string request_id = 1;
-  uint64 topic_id = 2;
 }
 
 message QueryExistingInferenceResponse {
@@ -294,7 +374,10 @@ message QueryExistingInferenceResponse {
   ];
 }
 
-message QueryAllExistingInferenceRequest {}
+message QueryMempoolInferenceRequestsByTopic {
+  uint64 topic_id = 1;
+  SimpleCursorPaginationRequest pagination = 2;
+}
 
 message InferenceRequestAndDemandLeft {
   InferenceRequest inference_request = 1;
@@ -306,8 +389,9 @@ message InferenceRequestAndDemandLeft {
   ];
 }
 
-message QueryAllExistingInferenceResponse {
+message QueryMempoolInferenceRequestsByTopicResponse {
   repeated InferenceRequestAndDemandLeft inference_requests = 1;
+  SimpleCursorPaginationResponse pagination = 2;
 }
 
 message QueryTopicUnmetDemandRequest {
@@ -331,4 +415,22 @@ message QueryNetworkInferencesAtBlockRequest {
 message QueryNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
   int64 block_height = 2;
+}
+
+message QueryIsWorkerRegisteredInTopicIdRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message QueryIsWorkerRegisteredInTopicIdResponse {
+  bool is_registered = 1;
+}
+
+message QueryIsReputerRegisteredInTopicIdRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message QueryIsReputerRegisteredInTopicIdResponse {
+  bool is_registered = 1;
 }

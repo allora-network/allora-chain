@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/allora-network/allora-chain/app/params"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -58,7 +57,7 @@ func CheckValidatorBalanceGoesUpOnNewBlock(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 
-	_, err = WaitNumBlocks(m, 1, 10*time.Second)
+	err = m.n.Client.WaitForNextBlock(m.ctx)
 	require.NoError(m.t, err)
 
 	validatorBalanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
@@ -106,7 +105,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 
-	_, err = WaitNumBlocks(m, 1, 10*time.Second)
+	err = m.n.Client.WaitForNextBlock(m.ctx)
 	require.NoError(m.t, err)
 
 	alloraRewardsBalanceAfter, err := m.n.QueryBank.Balance(

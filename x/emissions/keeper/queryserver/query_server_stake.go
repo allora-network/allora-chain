@@ -28,11 +28,12 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 	return &types.QueryTotalStakeResponse{Amount: totalStake}, nil
 }
 
-// TODO paginate
-// GetReputerStakeList retrieves a list of stakes for a given account address.
-func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryReputerStakeListRequest) (*types.QueryReputerStakeListResponse, error) {
+// Retrieves all stake in a topic for a given reputer address,
+// including reputer's stake in themselves and stake delegated to them.
+// Also includes stake that is queued for removal.
+func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
+		return nil, types.ErrReceivedNilRequest
 	}
 
 	address, err := sdk.AccAddressFromBech32(req.Address)
@@ -40,35 +41,84 @@ func (qs queryServer) GetReputerStakeList(ctx context.Context, req *types.QueryR
 		return nil, err
 	}
 
-	stakes, err := qs.k.GetStakePlacementsByReputer(ctx, address)
+	stake, err := qs.k.GetStakeOnTopicFromReputer(ctx, req.TopicId, address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var stakePointers []*types.StakePlacement
-	for _, stake := range stakes {
-		stakePointers = append(stakePointers, &stake)
-	}
-
-	return &types.QueryReputerStakeListResponse{Stakes: stakePointers}, nil
+	return &types.QueryReputerStakeInTopicResponse{Amount: stake}, nil
 }
 
-// TODO paginate
-// Retrieves a list of stakes for a given topic.
-func (qs queryServer) GetTopicStakeList(ctx context.Context, req *types.QueryTopicStakeListRequest) (*types.QueryTopicStakeListResponse, error) {
+// Retrieves total delegate stake on a given reputer address in a given topic
+func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
 	if req == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "request cannot be nil")
+		return nil, types.ErrReceivedNilRequest
 	}
 
-	stakes, err := qs.k.GetStakePlacementsByTopic(ctx, req.TopicId)
+	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	stake, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, reputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var stakePointers []*types.StakePlacement
-	for _, stake := range stakes {
-		stakePointers = append(stakePointers, &stake)
+	return &types.QueryDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
+}
+
+func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
 	}
 
-	return &types.QueryTopicStakeListResponse{Stakes: stakePointers}, nil
+	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	delegatorAddress, err := sdk.AccAddressFromBech32(req.DelegatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, delegatorAddress, reputerAddress)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake}, nil
+}
+
+func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
+	delegatorAddress, err := sdk.AccAddressFromBech32(req.DelegatorAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	stake, err := qs.k.GetStakeFromDelegatorInTopic(ctx, req.TopicId, delegatorAddress)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryStakeFromDelegatorInTopicResponse{Amount: stake}, nil
+}
+
+// Retrieves total stake in a given topic
+func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicStakeRequest) (*types.QueryTopicStakeResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
+	stake, err := qs.k.GetTopicStake(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTopicStakeResponse{Amount: stake}, nil
 }

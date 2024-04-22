@@ -7,9 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ########################################
-// #           Topics tests              #
-// ########################################
+/// Topics tests
 
 func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
@@ -34,14 +32,26 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.PrepareForCreateTopic(newTopicMsg.Creator)
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.NoError(err, "CreateTopic fails on first creation")
+	s.MintTokensToAddress(senderAddr, types.DefaultParamsCreateTopicFee())
 
-	result, err := s.emissionsKeeper.GetNumTopics(s.ctx)
-	s.Require().NoError(err)
+	// s.PrepareForCreateTopic(newTopicMsg.Creator)
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err, "CreateTopic fails on first creation")
 	s.Require().NotNil(result)
-	s.Require().Equal(result, uint64(1), "Topic count after first topic is not 1.")
+
+	pagination := &types.SimpleCursorPaginationRequest{
+		Limit: 100,
+	}
+	activeTopics, _, err := s.emissionsKeeper.GetActiveTopics(s.ctx, pagination)
+	require.NoError(err, "CreateTopic fails on first creation")
+	found := false
+	for _, topicId := range activeTopics {
+		if topicId == result.TopicId {
+			found = true
+			break
+		}
+	}
+	require.True(found, "Added topic not found in active topics")
 }
 
 func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
@@ -68,35 +78,35 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgReactivateTopic() {
+func (s *KeeperTestSuite) TestMsgActivateTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 
 	// Deactivate topic
-	s.emissionsKeeper.InactivateTopic(ctx, 0)
+	s.emissionsKeeper.InactivateTopic(ctx, topicId)
 
 	// Set unmet demand for topic
-	s.emissionsKeeper.SetTopicUnmetDemand(ctx, 0, cosmosMath.NewUint(100))
+	s.emissionsKeeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(100))
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &types.MsgReactivateTopic{
+	activateTopicMsg := &types.MsgActivateTopic{
 		Sender:  topicCreator,
-		TopicId: 0,
+		TopicId: topicId,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.NoError(err, "ReactivateTopic should not return an error")
+	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
+	require.NoError(err, "ActivateTopic should not return an error")
 
 	// Check if topic is active
-	topic, err := s.emissionsKeeper.GetTopic(ctx, 0)
+	isActive, err := s.emissionsKeeper.IsTopicActive(ctx, topicId)
 	require.NoError(err)
-	require.True(topic.Active, "Topic should be active")
+	require.True(isActive, "Topic should be active")
 }
 
-func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
+func (s *KeeperTestSuite) TestMsgActivateTopicInvalidNotEnoughDemand() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -107,22 +117,21 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 	s.emissionsKeeper.InactivateTopic(ctx, 0)
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &types.MsgReactivateTopic{
+	activateTopicMsg := &types.MsgActivateTopic{
 		Sender:  topicCreator,
 		TopicId: 0,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
+	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
+	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ctivateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	ctx := s.ctx
 	require := s.Require()
-	s.CreateOneTopic()
+	topicId := s.CreateOneTopic()
 
 	// Mock setup for topic
-	topicId := uint64(0)
 	inferenceTs := int64(0x0)
 
 	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)

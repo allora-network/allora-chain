@@ -3,7 +3,6 @@ package msgserver_test
 import (
 	"encoding/hex"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
@@ -14,7 +13,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
-	topicId := uint64(0)
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
 	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
@@ -26,10 +24,19 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	s.emissionsKeeper.AddToReputerWhitelist(ctx, reputerAddr)
 
-	registrationInitialStake := cosmosMath.NewUint(100)
+	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
 
-	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStake)
+
+	require.NoError(err)
+
+	addStakeMsg := &types.MsgAddStake{
+		Sender:  reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  minStake,
+	}
+
+	_, err = msgServer.AddStake(ctx, addStakeMsg)
 
 	reputerNonce := &types.Nonce{
 		BlockHeight: 2,
@@ -54,7 +61,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	}
 
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	require.NoError(err, "InsertInferences should not return an error")
 
 	expectedForecasts := types.Forecasts{

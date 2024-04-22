@@ -69,7 +69,7 @@ func GetTargetWeight(
 func GetActiveTopicWeights(
 	ctx context.Context,
 	k keeper.Keeper,
-	activeTopics []types.Topic,
+	activeTopics []*types.Topic,
 ) (weights []alloraMath.Dec, sumWeight alloraMath.Dec, err error) {
 	alphaTopic, err := k.GetParamsTopicRewardAlpha(ctx)
 	if err != nil {
@@ -150,7 +150,7 @@ func GetActiveTopicWeights(
 func SetPreviousTopicWeights(
 	ctx context.Context,
 	k keeper.Keeper,
-	topics []types.Topic,
+	topics []*types.Topic,
 	topicWeights []alloraMath.Dec,
 ) error {
 	currentEpoch, err := k.GetFeeRevenueEpoch(ctx)

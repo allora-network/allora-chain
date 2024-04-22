@@ -187,30 +187,26 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Add demand for the topic
 	r := types.MsgRequestInference{
 		Sender: reputerAddrs[0].String(),
-		Requests: []*types.RequestInferenceListItem{
-			{
-				Nonce:                0,
-				TopicId:              topicId,
-				Cadence:              1,
-				MaxPricePerInference: cosmosMath.NewUint(100),
-				BidAmount:            cosmosMath.NewUint(100),
-				BlockValidUntil:      block + 10,
-				ExtraData:            []byte("Test"),
-			},
+		Request: &types.InferenceRequestInbound{
+			Nonce:                0,
+			TopicId:              topicId,
+			Cadence:              1,
+			MaxPricePerInference: cosmosMath.NewUint(100),
+			BidAmount:            cosmosMath.NewUint(100),
+			BlockValidUntil:      block + 10,
+			ExtraData:            []byte("Test"),
 		},
 	}
 	_, err = s.msgServer.RequestInference(s.ctx, &r)
 	s.Require().NoError(err)
 
 	// Register 5 workers
-	registrationInitialStake := cosmosMath.NewUint(100)
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Creator:      addr.String(),
+			Sender:      addr.String(),
 			LibP2PKey:    "test",
 			MultiAddress: "test",
-			TopicIds:     []uint64{topicId},
-			InitialStake: registrationInitialStake,
+			TopicId:      topicId,
 			IsReputer:    false,
 			Owner:        addr.String(),
 		}
@@ -221,24 +217,23 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Creator:      addr.String(),
+			Sender:      addr.String(),
 			LibP2PKey:    "test",
 			MultiAddress: "test",
-			TopicIds:     []uint64{topicId},
-			InitialStake: registrationInitialStake,
+			TopicId:      topicId,
 			IsReputer:    true,
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
 	}
 
-	// Add Stake for reputers (using simulation values => subtracting initial stake)
+	// Add Stake for reputers
 	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176544),
-		cosmosMath.NewUint(384523),
-		cosmosMath.NewUint(394576),
-		cosmosMath.NewUint(207899),
-		cosmosMath.NewUint(368482),
+		cosmosMath.NewUint(1176644),
+		cosmosMath.NewUint(384623),
+		cosmosMath.NewUint(394676),
+		cosmosMath.NewUint(207999),
+		cosmosMath.NewUint(368582),
 	}
 	for i, addr := range reputerAddrs {
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{

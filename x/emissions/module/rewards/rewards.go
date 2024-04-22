@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) error {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 
@@ -190,6 +190,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		}
 		totalRewardsDistribution = append(totalRewardsDistribution, forecastRewards...)
 
+		fmt.Println("totalRewardsDistribution :::", totalRewardsDistribution)
 		// Pay out rewards
 		err = payoutRewards(ctx, k, totalRewardsDistribution)
 		if err != nil {

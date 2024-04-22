@@ -7,6 +7,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -25,17 +26,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
-	// Check if the sender has enough balance to create a topic
-	fee, err := ms.GetTopicCreationFee(ctx)
-	if err != nil {
-		return nil, err
-	}
-	hasEnoughBal := ms.CheckBalanceForTopicCreation(ctx, creator, fee)
+	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
 	if !hasEnoughBal {
 		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
 	}
 
-	id, err := ms.k.GetNumTopics(ctx)
+	id, err := ms.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +45,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, types.AlloraStakingAccountName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +61,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		EpochLastEnded:   0,
 		EpochLength:      msg.EpochLength,
 		GroundTruthLag:   msg.GroundTruthLag,
-		Active:           true,
 		DefaultArg:       msg.DefaultArg,
 		Pnorm:            msg.Pnorm,
 		AlphaRegret:      msg.AlphaRegret,
@@ -81,14 +76,17 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
 		return nil, err
 	}
+	if err = ms.k.ActivateTopic(ctx, id); err != nil {
+		return nil, err
+	}
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivateTopic) (*types.MsgReactivateTopicResponse, error) {
-	// Check that the topic has enough demand to be reactivated
+func (ms msgServer) ActivateTopic(ctx context.Context, msg *types.MsgActivateTopic) (*types.MsgActivateTopicResponse, error) {
+	// Check that the topic has enough demand to be activated
 	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -105,23 +103,20 @@ func (ms msgServer) ReactivateTopic(ctx context.Context, msg *types.MsgReactivat
 		return nil, types.ErrTopicNotEnoughDemand
 	}
 
-	// If the topic has enough demand, reactivate it
-	err = ms.k.ReactivateTopic(ctx, msg.TopicId)
+	// If the topic has enough demand, activate it
+	err = ms.k.ActivateTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgReactivateTopicResponse{Success: true}, nil
+	return &types.MsgActivateTopicResponse{Success: true}, nil
 }
 
-func (ms msgServer) GetTopicCreationFee(ctx context.Context) (sdk.Coin, error) {
+func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
 	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
 	if err != nil {
-		return sdk.Coin{}, err
+		return false, sdk.Coin{}, err
 	}
-	return sdk.NewCoin(params.DefaultBondDenom, amountInt), nil
-}
-
-func (ms msgServer) CheckBalanceForTopicCreation(ctx context.Context, address sdk.AccAddress, fee sdk.Coin) bool {
+	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
 	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
-	return balance.IsGTE(fee)
+	return balance.IsGTE(fee), fee, nil
 }

@@ -14,7 +14,7 @@ import (
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
 func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *types.QueryWorkerLatestInferenceRequest) (*types.QueryWorkerLatestInferenceResponse, error) {
 	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+		return nil, types.ErrReceivedNilRequest
 	}
 
 	workerAddr, err := sdk.AccAddressFromBech32(req.WorkerAddress)
@@ -38,6 +38,10 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 }
 
 func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.QueryInferencesAtBlockRequest) (*types.QueryInferencesAtBlockResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -48,6 +52,10 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	networkInferences, blockHeight, err := synth.GetNetworkInferencesAtBlock(sdk.UnwrapSDKContext(ctx), qs.k, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err

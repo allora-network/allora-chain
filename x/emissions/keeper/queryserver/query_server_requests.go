@@ -6,19 +6,23 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *types.QueryExistingInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
+func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types.QueryMempoolInferenceRequest) (*types.QueryExistingInferenceResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	valid := types.IsValidRequestId(req.RequestId)
 	if !valid {
 		return nil, types.ErrInvalidRequestId
 	}
-	inMempool, err := qs.k.IsRequestInMempool(ctx, req.TopicId, req.RequestId)
+	inMempool, err := qs.k.IsRequestInMempool(ctx, req.RequestId)
 	if err != nil {
 		return nil, err
 	}
 	if !inMempool {
 		return nil, types.ErrInferenceRequestNotInMempool
 	}
-	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.TopicId, req.RequestId)
+	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.RequestId)
 	if err != nil {
 		return nil, err
 	}
@@ -29,10 +33,13 @@ func (qs queryServer) GetExistingInferenceRequest(ctx context.Context, req *type
 	return &types.QueryExistingInferenceResponse{InferenceRequest: &inferenceRequest, DemandLeft: demandLeft}, nil
 }
 
-// TODO paginate
-func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *types.QueryAllExistingInferenceRequest) (*types.QueryAllExistingInferenceResponse, error) {
+func (qs queryServer) GetMempoolInferenceRequestsByTopic(ctx context.Context, req *types.QueryMempoolInferenceRequestsByTopic) (*types.QueryMempoolInferenceRequestsByTopicResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	ret := make([]*types.InferenceRequestAndDemandLeft, 0)
-	mempool, err := qs.k.GetMempool(ctx)
+	mempool, pageRes, err := qs.k.GetMempoolInferenceRequestsForTopic(ctx, req.TopicId, req.Pagination)
 	if err != nil {
 		return nil, err
 	}
@@ -48,5 +55,5 @@ func (qs queryServer) GetAllExistingInferenceRequests(ctx context.Context, req *
 		inferenceRequestCopy := inferenceRequest
 		ret = append(ret, &types.InferenceRequestAndDemandLeft{InferenceRequest: &inferenceRequestCopy, DemandLeft: demandLeft})
 	}
-	return &types.QueryAllExistingInferenceResponse{InferenceRequests: ret}, nil
+	return &types.QueryMempoolInferenceRequestsByTopicResponse{InferenceRequests: ret, Pagination: pageRes}, nil
 }
