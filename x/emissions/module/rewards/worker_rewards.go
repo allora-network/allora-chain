@@ -22,13 +22,14 @@ func GetInferenceTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE, blockHeight)
 }
 
 func GetForecastingTaskEntropy(
@@ -38,13 +39,14 @@ func GetForecastingTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST, blockHeight)
 }
 
 func getInferenceOrForecastTaskEntropy(
@@ -55,6 +57,7 @@ func getInferenceOrForecastTaskEntropy(
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 	which bool,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
@@ -62,14 +65,13 @@ func getInferenceOrForecastTaskEntropy(
 	err error,
 ) {
 	var scoresAtBlock types.Scores
-	// TODO: Check if we need to create GetLastestWorkerInferenceScore
 	if which == TASK_INFERENCE {
-		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
+		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
 	} else { // TASK_FORECAST
-		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
+		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}

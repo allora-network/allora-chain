@@ -50,8 +50,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 		topicRewards[i] = topicReward
 	}
 
-	// TODO: Check if we need to get the block height - 1
-	blockHeight := ctx.BlockHeight() - 1
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
@@ -60,7 +58,15 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 	for i := 0; i < len(activeTopics); i++ {
 		topic := activeTopics[i]
 		topicRewards := topicRewards[i] // E_{t,i}
-		lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topic.Id, blockHeight)
+
+		// Get topic reward nonce/block height
+		// If the topic has no reward nonce, skip it
+		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topic.Id)
+		if err != nil || topicRewardNonce == 0 {
+			continue
+		}
+
+		lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topic.Id, topicRewardNonce)
 		if err != nil {
 			return err
 		}
@@ -73,6 +79,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.TaskRewardAlpha,
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
+			topicRewardNonce,
 		)
 		if err != nil {
 			return err
@@ -84,6 +91,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.TaskRewardAlpha,
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
+			topicRewardNonce,
 		)
 		if err != nil {
 			return err
@@ -95,6 +103,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			moduleParams.TaskRewardAlpha,
 			moduleParams.PRewardSpread,
 			moduleParams.BetaEntropy,
+			topicRewardNonce,
 		)
 		if err != nil {
 			return err
@@ -144,7 +153,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			ctx,
 			k,
 			topic.Id,
-			blockHeight,
+			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskReputerReward,
 		)
@@ -158,7 +167,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			ctx,
 			k,
 			topic.Id,
-			blockHeight,
+			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskInferenceReward,
 		)
@@ -172,7 +181,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			ctx,
 			k,
 			topic.Id,
-			blockHeight,
+			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskForecastingReward,
 		)
@@ -197,6 +206,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) e
 			workersForecast,
 			forecastFractions,
 		)
+
+		// Delete topic reward nonce
+		err = k.DeleteTopicRewardNonce(ctx, topic.Id)
+		if err != nil {
+			return err
+		}
 	}
 
 	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
@@ -210,7 +225,6 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 			return err
 		}
 
-		// TODO: Check precision of rewards
 		err = k.BankKeeper().SendCoinsFromModuleToAccount(
 			ctx,
 			types.AlloraRewardsAccountName,

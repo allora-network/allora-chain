@@ -58,6 +58,8 @@ type Keeper struct {
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// for an address, what are all the topics that it's registered for?
 	addressTopics collections.Map[sdk.AccAddress, []uint64]
+	// map of (topic) -> nonce/block height
+	topicRewardNonce collections.Map[TopicId, int64]
 
 	/// SCORES
 
@@ -238,6 +240,7 @@ func NewKeeper(
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		topicRewardNonce:                    collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -860,6 +863,30 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return params.RewardCadence, nil
+}
+
+/// TOPIC REWARD NONCE
+
+// GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
+func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (int64, error) {
+    nonce, err := k.topicRewardNonce.Get(ctx, topicId)
+    if err != nil {
+        if errors.Is(err, collections.ErrNotFound) {
+            return 0, nil // Return 0 if not found
+        }
+        return 0, err
+    }
+    return nonce, nil
+}
+
+// SetTopicRewardNonce sets the reward nonce for a given topic ID.
+func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce int64) error {
+    return k.topicRewardNonce.Set(ctx, topicId, nonce)
+}
+
+// DeleteTopicRewardNonce removes the reward nonce entry for a given topic ID.
+func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) error {
+    return k.topicRewardNonce.Remove(ctx, topicId)
 }
 
 /// LOSS BUNDLES
@@ -2090,6 +2117,23 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 		return types.Score{}, err
 	}
 	return score, nil
+}
+
+func (k *Keeper) GetAllLatestReputersScores(ctx context.Context, topicId TopicId) ([]types.Score, error) {
+	var scores []types.Score
+	rng := collections.NewPrefixedPairRange[TopicId, Reputer](topicId)
+	iter, err := k.latestReputerScoresByReputer.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	for ; iter.Valid(); iter.Next() {
+		score, err := iter.Value()
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, score)
+	}
+	return scores, nil
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {

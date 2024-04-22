@@ -13,22 +13,22 @@ func GetReputerTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	reputers []sdk.AccAddress,
 	err error,
 ) {
-	// TODO: Check if we need to get the block height - 1 (we might need to create GetLatestReputersScores)
-	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight()-1)
+	latestScores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return alloraMath.Dec{}, nil, nil, err
 	}
-	numReputers := len(scoresAtBlock.Scores)
+	numReputers := len(latestScores.Scores)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
 	reputers = make([]sdk.AccAddress, numReputers)
-	for i, scorePtr := range scoresAtBlock.Scores {
+	for i, scorePtr := range latestScores.Scores {
 		scores[i] = scorePtr.Score
 		addrStr := scorePtr.Address
 		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)

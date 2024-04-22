@@ -61,4 +61,5 @@ var (
 	LatestInfererScoresByWorkerKey     = collections.NewPrefix(50)
 	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(51)
 	LatestReputerScoresByReputerKey    = collections.NewPrefix(52)
+	TopicRewardNonceKey                = collections.NewPrefix(53)
 )

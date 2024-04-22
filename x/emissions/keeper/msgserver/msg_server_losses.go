@@ -220,6 +220,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	// Update topic reward nonce
+	err = ms.k.SetTopicRewardNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
 }
 
