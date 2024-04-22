@@ -100,12 +100,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxUnfulfilledReputerRequests) == 1 {
 		existingParams.MaxUnfulfilledReputerRequests = newParams.MaxUnfulfilledReputerRequests[0]
 	}
-	if len(newParams.NumberExpectedInferenceSybils) == 1 {
-		existingParams.NumberExpectedInferenceSybils = newParams.NumberExpectedInferenceSybils[0]
-	}
-	if len(newParams.SybilTaxExponent) == 1 {
-		existingParams.SybilTaxExponent = newParams.SybilTaxExponent[0]
-	}
 	if len(newParams.TopicRewardStakeImportance) == 1 {
 		existingParams.TopicRewardStakeImportance = newParams.TopicRewardStakeImportance[0]
 	}

@@ -35,8 +35,6 @@ func DefaultParams() Params {
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests from the chain
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests from the chain
-		NumberExpectedInferenceSybils:   uint64(10),                                // global number for calculation tax of worker reward
-		SybilTaxExponent:                uint64(3),                                 // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
@@ -151,14 +149,6 @@ func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {
 
 func DefaultParamsMaxUnfulfilledReputerRequestNonces() uint64 {
 	return DefaultParams().MaxUnfulfilledReputerRequests
-}
-
-func DefaultParamsNumberExpectedInfernceSybils() uint64 {
-	return DefaultParams().NumberExpectedInferenceSybils
-}
-
-func DefaultParamsSybilTaxExponent() uint64 {
-	return DefaultParams().SybilTaxExponent
 }
 
 func DefaultParamsTopicRewardStakeImportance() alloraMath.Dec {

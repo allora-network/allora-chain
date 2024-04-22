@@ -408,7 +408,7 @@ func GetWorkersRewardsInferenceTask(
 		return nil, err
 	}
 
-	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
+	return rewards, nil
 }
 
 func GetWorkersRewardsForecastTask(
@@ -458,61 +458,5 @@ func GetWorkersRewardsForecastTask(
 		return nil, err
 	}
 
-	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
-}
-
-func GetRewardsWithOutTax(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	rewards []TaskRewards,
-	topicId uint64,
-) ([]TaskRewards, error) {
-	params, err := keeper.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []TaskRewards
-	// Get average reward for this worker
-	// TODO: Actually check for errors in this loop
-	for _, reward := range rewards {
-		avg, err := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
-		if err != nil {
-			continue
-		}
-		avgValueTimesCount, err := avg.Value.Mul(alloraMath.NewDecFromInt64(int64(avg.Count)))
-		if err != nil {
-			continue
-		}
-		totalRewards, err := avgValueTimesCount.Add(reward.Reward)
-		if err != nil {
-			continue
-		}
-		avg.Count += 1
-		avg.Value, err = totalRewards.Quo(alloraMath.NewDecFromInt64(int64(avg.Count)))
-		if err != nil {
-			continue
-		}
-		err = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
-		if err != nil {
-			continue
-		}
-		fee, err := CalculateWorkerTax(avg.Value, params.SybilTaxExponent, params.NumberExpectedInferenceSybils)
-		if err != nil {
-			continue
-		}
-		reward.Reward, err = reward.Reward.Sub(fee)
-		if err != nil {
-			continue
-		}
-		if reward.Reward.Lt(alloraMath.ZeroDec()) {
-			reward.Reward = alloraMath.ZeroDec()
-		}
-		result = append(result, TaskRewards{
-			Address: reward.Address,
-			Reward:  reward.Reward,
-		})
-	}
-
-	return result, nil
+	return rewards, nil
 }

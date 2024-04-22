@@ -1,7 +1,6 @@
 package rewards
 
 import (
-	"math"
 	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -944,31 +943,6 @@ func Sigmoid(x alloraMath.Dec) (alloraMath.Dec, error) {
 		return alloraMath.Dec{}, err
 	}
 	return ret, nil
-}
-
-// Calculate the tax of the reward
-// Fee = R_avg * N_c^(a-1)
-func CalculateWorkerTax(
-	average alloraMath.Dec,
-	sybilTaxExponent uint64,
-	numberExpectedInferenceSybils uint64,
-) (alloraMath.Dec, error) {
-	a := sybilTaxExponent - 1
-	if a == math.MaxUint64 { // overflow
-		a = 0
-	}
-	numClientsForTax := alloraMath.NewDecFromInt64(int64(numberExpectedInferenceSybils))
-	aDec := alloraMath.NewDecFromInt64(int64(a))
-
-	N_cToTheAMinusOne, err := alloraMath.Pow(numClientsForTax, aDec)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	fee, err := average.Mul(N_cToTheAMinusOne)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	return fee, nil
 }
 
 // ExtractValues extracts all alloraMath.Dec values from a ValueBundle.
