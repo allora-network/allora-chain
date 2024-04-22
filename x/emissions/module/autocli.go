@@ -31,8 +31,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetActiveTopics",
-					Use:       "active-topics",
+					Use:       "active-topics [pagination]",
 					Short:     "Get Active Topics",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "pagination"},
+					},
 				},
 				{
 					RpcMethod: "GetReputerStakeInTopic",
@@ -131,10 +134,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetMempoolInferenceRequestsByTopic",
-					Use:       "all-inference-requests",
+					Use:       "inference-requests-per-topic [topic_id] [pagination]",
 					Short:     "Get Inference Requests by topic and unmet demand left for each request in mempool",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "pagination"},
 					},
 				},
 				{
