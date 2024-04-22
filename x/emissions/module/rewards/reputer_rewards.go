@@ -20,15 +20,15 @@ func GetReputerTaskEntropy(
 	reputers []sdk.AccAddress,
 	err error,
 ) {
-	latestScores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
+	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return alloraMath.Dec{}, nil, nil, err
 	}
-	numReputers := len(latestScores.Scores)
+	numReputers := len(scoresAtBlock.Scores)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
 	reputers = make([]sdk.AccAddress, numReputers)
-	for i, scorePtr := range latestScores.Scores {
+	for i, scorePtr := range scoresAtBlock.Scores {
 		scores[i] = scorePtr.Score
 		addrStr := scorePtr.Address
 		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)

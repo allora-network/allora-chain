@@ -203,7 +203,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:      addr.String(),
+			Sender:       addr.String(),
 			LibP2PKey:    "test",
 			MultiAddress: "test",
 			TopicId:      topicId,
@@ -217,7 +217,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:      addr.String(),
+			Sender:       addr.String(),
 			LibP2PKey:    "test",
 			MultiAddress: "test",
 			TopicId:      topicId,
