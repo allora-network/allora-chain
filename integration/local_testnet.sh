@@ -11,13 +11,18 @@ CHAIN_ID="testnet"
 LOCALNET_DATADIR="./$CHAIN_ID"
 # VALIDATORS_IP_START=10
 # PEERS=peers.txt
-ALLORA_RPC="http://localhost:26657"
+# ALLORA_RPC="http://localhost:26657"
 ACCOUNTS_TOKENS=1000000
 
-# echo "Build the docker image"
-# pushd ..
-# docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
-# popd
+ALLORA_RPC="http://172.20.0.10:26657"  # Take validator0
+
+WEIGHT_CADENCE=10800
+INFERENCE_CADENCE=61
+
+echo "Build the docker image"
+pushd ..
+docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
+popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
@@ -42,21 +47,21 @@ docker run -it \
     $DOCKER_IMAGE
 
 echo "Whitelist faucet account"
-faucet_address=$(docker run -it \
+FAUCET_ADDRESS=$(docker run -it \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     -e HOME=/data/genesis \
     $DOCKER_IMAGE \
         --home=/data/genesis keys show faucet -a --keyring-backend=test)
-faucet_address="${faucet_address%%[[:cntrl:]]}"
+FAUCET_ADDRESS="${FAUCET_ADDRESS%%[[:cntrl:]]}"
 
 docker run -it \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     --entrypoint=dasel \
     $DOCKER_IMAGE \
-        put -t string -v "$faucet_address" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
-echo "Faucet addr: $faucet_address"
+        put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
+echo "Faucet addr: $FAUCET_ADDRESS"
 
 echo "Generate peers.txt"
 PEERS=""
@@ -109,7 +114,6 @@ else
     echo "and connect to the validators ..."
     exit 1
 fi
-ALLORA_RPC="http://172.20.0.10:26657"
 
 echo "Generating allora account keys for heads and workers and funding them"
 accounts=("head0" "worker0")
@@ -157,22 +161,42 @@ for account in "${accounts[@]}"; do
         alloranetwork/allora-inference-base-head:latest \
         -c "mkdir -p /data/$account/key && cd /data/$account/key && allora-keys"
 done
-###########################################
-# echo "Register topics"
+##########################################
+echo "Register topics Linear function"
+docker run -it \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    -e HOME=/data/genesis \
+    --network host \
+    $DOCKER_IMAGE \
+        --home=/data/genesis tx emissions push-topic $FAUCET_ADDRESS "Linear 24h Prediction" \
+        bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq eth-price-weights-calc.wasm $WEIGHT_CADENCE \
+        bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm allora-inference-function.wasm $INFERENCE_CADENCE \
+        "ETH" --node=$ALLORA_RPC --keyring-backend=test --keyring-dir=/data/genesis --chain-id $CHAIN_ID --yes
+sleep 5
 
-# # ETH Prediction
-# yes | allorad --home=$HOME_DIR tx emissions push-topic $WHITELISTED_ADDRESS "ETH 24h Prediction" bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq eth-price-weights-calc.wasm $WEIGHT_CADENCE bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm allora-inference-function.wasm $INFERENCE_CADENCE "ETH" --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
+docker run -it \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    -e HOME=/data/genesis \
+    --network host \
+    $DOCKER_IMAGE \
+        --home=/data/genesis tx emissions request-inference $FAUCET_ADDRESS \
+        '{"nonce": "1","topic_id":"1","cadence":"60","max_price_per_inference":"1","bid_amount":"10000","timestamp_valid_until":"'$(date -d "$(date -d '1 day' +%Y-%m-%d)" +%s)'"}' \
+        --node=$ALLORA_RPC --keyring-backend=test --keyring-dir=/data/genesis --chain-id $CHAIN_ID --yes
+sleep 5
 
-# yes | allorad --home=$HOME_DIR tx emissions request-inference $WHITELISTED_ADDRESS \
-#     '{"nonce": "1","topic_id":"1","cadence":"60","max_price_per_inference":"1","bid_amount":"10000","timestamp_valid_until":"'$(date -d "$(date -d '1 day' +%Y-%m-%d)" +%s)'"}' \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
+docker run -it \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    -e HOME=/data/genesis \
+    --network host \
+    $DOCKER_IMAGE \
+        --home=/data/genesis  tx emissions reactivate-topic $FAUCET_ADDRESS 1 \
+        --node=$ALLORA_RPC --keyring-backend=test --keyring-dir=/data/genesis --chain-id $CHAIN_ID --yes
+sleep 5
 
-# yes | allorad --home=$HOME_DIR tx emissions reactivate-topic $WHITELISTED_ADDRESS 1 \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-
+exit
 
 # HEAD0_IDENTITY=$(cat ${LOCALNET_DATADIR}/head0/key/identity)
 
