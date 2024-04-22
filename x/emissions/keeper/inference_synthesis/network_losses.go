@@ -112,6 +112,15 @@ func CalcNetworkLosses(
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
+			oneE18, err := alloraMath.NewDecFromString("1000000000000000000")
+			if err != nil {
+				return emissions.ValueBundle{}, err
+			}
+			stakeAmount, err = stakeAmount.Quo(oneE18)
+			if err != nil {
+				return emissions.ValueBundle{}, err
+			}
+
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
