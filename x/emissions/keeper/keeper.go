@@ -1933,9 +1933,9 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 		return nil, nil, err
 	}
 
-	// Convert pagination.key from []bytes to uint64
+	// Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 	cursor := uint64(0)
-	if pagination.Key != nil {
+	if len(pagination.Key) > 0 {
 		cursor = binary.BigEndian.Uint64(pagination.Key)
 	}
 
