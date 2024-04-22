@@ -27,9 +27,9 @@ echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.10:26657" >> ${ENV_L1}  # Take validator0
 
 echo "Build the docker image"
-pushd ..
-docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
-popd
+# pushd ..
+# docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
+# popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
@@ -71,7 +71,7 @@ docker run -it \
         put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
 echo "Faucet addr: $FAUCET_ADDRESS"
 
-echo "Generate peers.txt"
+echo "Generate L1 peers"
 PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
@@ -101,11 +101,16 @@ curl -o /dev/null --connect-timeout 5 \
 
 echo "Checking the network is up and running"
 heights=()
+validators=()
 for ((v=0; v<$VALIDATOR_NUMBER; v++)); do
     height=$(curl -s http://${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v)):26657/status|jq -r .result.sync_info.latest_block_height)
     heights+=($height)
+    echo "Got height: ${heights[$v]} from validator: ${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))"
+    validators+=("${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))")
     sleep 5
 done
+echo "Populate validators.json with validators addresses"
+jq --compact-output --null-input '$ARGS.positional' --args -- "${validators[@]}" > ${LOCALNET_DATADIR}/validators.json
 
 chain_status=0
 if [ ${#heights[@]} -eq $VALIDATOR_NUMBER ]; then
