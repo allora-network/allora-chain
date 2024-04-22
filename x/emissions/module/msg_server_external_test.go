@@ -1,11 +1,9 @@
 package module_test
 
-import (
 // "time"
 
 // cosmosMath "cosmossdk.io/math"
 // state "github.com/allora-network/allora-chain/x/emissions"
-)
 
 // this test must live in the module_test repo to actually do real non-mocked funds transfer tests
 // func (s *ModuleTestSuite) TestRequestInferenceInvalidCustomerNotEnoughFunds() {
@@ -15,7 +13,7 @@ import (
 // 	s.Require().NoError(err)
 // 	r := state.MsgRequestInference{
 // 		Sender: s.addrsStr[0],
-// 		Requests: []*state.RequestInferenceListItem{
+// 		Request: &state.InferenceRequestInbound{
 // 			{
 // 				Nonce:                0,
 // 				TopicId:              1,

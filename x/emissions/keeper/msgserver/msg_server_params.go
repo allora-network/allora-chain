@@ -160,6 +160,15 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]
 	}
+	if len(newParams.MaxRequestsPerTopic) == 1 {
+		existingParams.MaxRequestsPerTopic = newParams.MaxRequestsPerTopic[0]
+	}
+	if len(newParams.DefaultLimit) == 1 {
+		existingParams.DefaultLimit = newParams.DefaultLimit[0]
+	}
+	if len(newParams.MaxLimit) == 1 {
+		existingParams.MaxLimit = newParams.MaxLimit[0]
+	}
 
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

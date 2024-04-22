@@ -7,6 +7,15 @@ import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
+message SimpleCursorPaginationRequest {
+  bytes key = 1;
+  uint64 limit = 2;
+}
+
+message SimpleCursorPaginationResponse {
+  bytes next_key = 1;
+}
+
 // Params defines the parameters of the module.
 message Params {
   string version = 1;        // version of the protocol should be in lockstep with github release tag version
@@ -133,7 +142,10 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // registration fee for workers and reputers
+  ];                                   // registration fee for workers and reputers
+  uint64 max_requests_per_topic = 46;  // max number of requests per topic
+  uint64 default_limit = 47;           // default limit for pagination
+  uint64 max_limit = 48;               // max limit for pagination
 }
 
 /// TOPICS
@@ -316,10 +328,10 @@ message StakePlacement {
 
 message StakeRemoval {
   int64 block_removal_started = 1;
-  repeated StakePlacement placements = 2;
+  StakePlacement placement = 2;
 }
 
-message DelegatedStakePlacement {
+message DelegateStakePlacement {
   uint64 topic_id = 1;
   string reputer = 2;
   string delegator = 3;
@@ -331,9 +343,9 @@ message DelegatedStakePlacement {
   ];
 }
 
-message DelegatedStakeRemoval {
+message DelegateStakeRemoval {
   int64 block_removal_started = 1;
-  repeated DelegatedStakePlacement placements = 2;
+  DelegateStakePlacement placement = 2;
 }
 
 /// SCORES
@@ -369,25 +381,30 @@ message ListeningCoefficient {
 // num_inference_possible = bid_amount / max_price_per_inference,
 // length of time this inference repeats for =  num_inference_possible * cadence
 message InferenceRequest {
-  string sender = 1;
-  uint64 nonce = 2;
-  uint64 topic_id = 3;
-  int64 cadence = 4;  // blocks between inferences, zero means oneshot inference
-  string max_price_per_inference = 5 [
+  string id = 1;
+  string sender = 2;
+  uint64 nonce = 3;
+  uint64 topic_id = 4;
+  int64 cadence = 5;  // blocks between inferences, zero means oneshot inference
+  string max_price_per_inference = 6 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // the maximum price per inference that alice is willing to pay
-  string bid_amount = 6 [
+  string bid_amount = 7 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                             // how many funds to send from alice with this Inference Request
-  int64 block_last_checked = 7;  // last block the inference was checked and was possibly drawn from
-  int64 block_valid_until = 8;
-  bytes extra_data = 9;
+  int64 block_last_checked = 8;  // last block the inference was checked and was possibly drawn from
+  int64 block_valid_until = 9;
+  bytes extra_data = 10;
+}
+
+message InferenceRequests {
+  repeated InferenceRequest inference_requests = 1;
 }
 
 /// NONCES for Worker and Reputer Requests

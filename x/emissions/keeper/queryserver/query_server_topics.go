@@ -44,8 +44,16 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	topics := make([]*types.Topic, len(activeTopics))
+	for _, topicId := range activeTopics {
+		topic, err := qs.k.GetTopic(ctx, topicId)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		topics = append(topics, &topic)
+	}
 
-	return &types.QueryActiveTopicsResponse{Topics: activeTopics, Pagination: pageRes}, nil
+	return &types.QueryActiveTopicsResponse{Topics: topics, Pagination: pageRes}, nil
 }
 
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {

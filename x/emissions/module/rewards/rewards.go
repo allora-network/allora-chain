@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []types.Topic) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) error {
 	// Get Total Emissions/ Fees Collected
 
 	// Get Total Allocation

@@ -60,7 +60,7 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 		return nil, err
 	}
 
-	stake, err := qs.k.GetDelegatedStakeUponReputer(ctx, req.TopicId, reputerAddress)
+	stake, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, reputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -83,7 +83,7 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 		return nil, err
 	}
 
-	stake, err := qs.k.GetDelegatedStakePlacement(ctx, req.TopicId, delegatorAddress, reputerAddress)
+	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, delegatorAddress, reputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

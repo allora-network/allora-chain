@@ -413,7 +413,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
 // 	r := state.MsgRequestInference{
 // 		Sender: s.addrsStr[0],
-// 		Requests: []*state.RequestInferenceListItem{
+// 		Request: &state.InferenceRequestInbound{
 // 			{
 // 				Nonce:                0,
 // 				TopicId:              createdTopicIds[0],
@@ -457,7 +457,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 //	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
 //	r := state.MsgRequestInference{
 //		Sender: s.addrsStr[0],
-//		Requests: []*state.RequestInferenceListItem{
+// 		Request: &state.InferenceRequestInbound{
 //			{
 //				Nonce:                0,
 //				TopicId:              createdTopicIds[0],
@@ -523,7 +523,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 // 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, state.AlloraStakingAccountName, s.addrs[0], initialStakeCoins)
 // 	r := state.MsgRequestInference{
 // 		Sender: s.addrsStr[0],
-// 		Requests: []*state.RequestInferenceListItem{
+// 		Request: &state.InferenceRequestInbound{
 // 			{
 // 				Nonce:                0,
 // 				TopicId:              createdTopicIds[0],
@@ -604,7 +604,7 @@ func (s *ModuleTestSuite) UtilSetParams() {
 //	s.UtilSetParams()
 //	r := state.MsgRequestInference{
 //		Sender: s.addrsStr[0],
-//		Requests: []*state.RequestInferenceListItem{
+// 		Request: &state.InferenceRequestInbound{
 //			{
 //				Nonce:                0,
 //				TopicId:              createdTopicIds[0],

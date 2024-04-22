@@ -55,6 +55,9 @@ func DefaultParams() Params {
 		RequestPageLimit:                uint64(100),                               // how many requests to return per page during churn of requests
 		MaxRequestPages:                 uint64(100),                               // max number of requests to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
+		MaxRequestsPerTopic:             uint64(100),                               // max number of requests per topic
+		DefaultLimit:                    uint64(100),                               // default limit for pagination
+		MaxLimit:                        uint64(1000),                              // max limit for pagination
 	}
 }
 
@@ -232,6 +235,18 @@ func DefaultParamsMaxRequestPages() uint64 {
 
 func DefaultParamsRegistrationFee() cosmosMath.Int {
 	return DefaultParams().RegistrationFee
+}
+
+func DefaultParamsMaxRequestsPerTopic() uint64 {
+	return DefaultParams().MaxRequestsPerTopic
+}
+
+func DefaultParamsDefaultLimit() uint64 {
+	return DefaultParams().DefaultLimit
+}
+
+func DefaultParamsMaxLimit() uint64 {
+	return DefaultParams().MaxLimit
 }
 
 // Validate does the sanity check on the params.

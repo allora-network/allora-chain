@@ -283,12 +283,12 @@ message QueryTopicResponse {
 }
 
 message QueryActiveTopicsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  SimpleCursorPaginationRequest pagination = 1;
 }
 
 message QueryActiveTopicsResponse {
   repeated Topic topics = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  SimpleCursorPaginationResponse pagination = 2;
 }
 
 // Returns the inferences on a topic posted at a block height
@@ -362,7 +362,6 @@ message QueryReputerAddressByP2PKeyResponse {
 
 message QueryMempoolInferenceRequest {
   string request_id = 1;
-  uint64 topic_id = 2;
 }
 
 message QueryExistingInferenceResponse {
@@ -377,7 +376,7 @@ message QueryExistingInferenceResponse {
 
 message QueryMempoolInferenceRequestsByTopic {
   uint64 topic_id = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  SimpleCursorPaginationRequest pagination = 2;
 }
 
 message InferenceRequestAndDemandLeft {
@@ -392,7 +391,7 @@ message InferenceRequestAndDemandLeft {
 
 message QueryMempoolInferenceRequestsByTopicResponse {
   repeated InferenceRequestAndDemandLeft inference_requests = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  SimpleCursorPaginationResponse pagination = 2;
 }
 
 message QueryTopicUnmetDemandRequest {

@@ -30,7 +30,8 @@ const (
 	Msg_StartRemoveStake_FullMethodName                 = "/emissions.v1.Msg/StartRemoveStake"
 	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.v1.Msg/ConfirmRemoveStake"
 	Msg_DelegateStake_FullMethodName                    = "/emissions.v1.Msg/DelegateStake"
-	Msg_StartRemoveDelegatedStake_FullMethodName        = "/emissions.v1.Msg/StartRemoveDelegatedStake"
+	Msg_StartRemoveDelegateStake_FullMethodName         = "/emissions.v1.Msg/StartRemoveDelegateStake"
+	Msg_ConfirmRemoveDelegateStake_FullMethodName       = "/emissions.v1.Msg/ConfirmRemoveDelegateStake"
 	Msg_RequestInference_FullMethodName                 = "/emissions.v1.Msg/RequestInference"
 	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.v1.Msg/AddToWhitelistAdmin"
 	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
@@ -55,7 +56,8 @@ type MsgClient interface {
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
-	StartRemoveDelegatedStake(ctx context.Context, in *MsgStartRemoveDelegatedStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegatedStakeResponse, error)
+	StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error)
+	ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error)
 	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -172,9 +174,18 @@ func (c *msgClient) DelegateStake(ctx context.Context, in *MsgDelegateStake, opt
 	return out, nil
 }
 
-func (c *msgClient) StartRemoveDelegatedStake(ctx context.Context, in *MsgStartRemoveDelegatedStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegatedStakeResponse, error) {
-	out := new(MsgStartRemoveDelegatedStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_StartRemoveDelegatedStake_FullMethodName, in, out, opts...)
+func (c *msgClient) StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error) {
+	out := new(MsgStartRemoveDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_StartRemoveDelegateStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error) {
+	out := new(MsgConfirmRemoveDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_ConfirmRemoveDelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +270,8 @@ type MsgServer interface {
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
-	StartRemoveDelegatedStake(context.Context, *MsgStartRemoveDelegatedStake) (*MsgStartRemoveDelegatedStakeResponse, error)
+	StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error)
+	ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error)
 	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -307,8 +319,11 @@ func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRem
 func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegateStake not implemented")
 }
-func (UnimplementedMsgServer) StartRemoveDelegatedStake(context.Context, *MsgStartRemoveDelegatedStake) (*MsgStartRemoveDelegatedStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveDelegatedStake not implemented")
+func (UnimplementedMsgServer) StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveDelegateStake not implemented")
+}
+func (UnimplementedMsgServer) ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveDelegateStake not implemented")
 }
 func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
@@ -542,20 +557,38 @@ func _Msg_DelegateStake_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_StartRemoveDelegatedStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgStartRemoveDelegatedStake)
+func _Msg_StartRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgStartRemoveDelegateStake)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).StartRemoveDelegatedStake(ctx, in)
+		return srv.(MsgServer).StartRemoveDelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_StartRemoveDelegatedStake_FullMethodName,
+		FullMethod: Msg_StartRemoveDelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).StartRemoveDelegatedStake(ctx, req.(*MsgStartRemoveDelegatedStake))
+		return srv.(MsgServer).StartRemoveDelegateStake(ctx, req.(*MsgStartRemoveDelegateStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ConfirmRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgConfirmDelegateRemoveStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ConfirmRemoveDelegateStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ConfirmRemoveDelegateStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ConfirmRemoveDelegateStake(ctx, req.(*MsgConfirmDelegateRemoveStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -738,8 +771,12 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_DelegateStake_Handler,
 		},
 		{
-			MethodName: "StartRemoveDelegatedStake",
-			Handler:    _Msg_StartRemoveDelegatedStake_Handler,
+			MethodName: "StartRemoveDelegateStake",
+			Handler:    _Msg_StartRemoveDelegateStake_Handler,
+		},
+		{
+			MethodName: "ConfirmRemoveDelegateStake",
+			Handler:    _Msg_ConfirmRemoveDelegateStake_Handler,
 		},
 		{
 			MethodName: "RequestInference",

@@ -15,14 +15,14 @@ func (qs queryServer) GetMempoolInferenceRequest(ctx context.Context, req *types
 	if !valid {
 		return nil, types.ErrInvalidRequestId
 	}
-	inMempool, err := qs.k.IsRequestInMempool(ctx, req.TopicId, req.RequestId)
+	inMempool, err := qs.k.IsRequestInMempool(ctx, req.RequestId)
 	if err != nil {
 		return nil, err
 	}
 	if !inMempool {
 		return nil, types.ErrInferenceRequestNotInMempool
 	}
-	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.TopicId, req.RequestId)
+	inferenceRequest, err := qs.k.GetMempoolInferenceRequestById(ctx, req.RequestId)
 	if err != nil {
 		return nil, err
 	}

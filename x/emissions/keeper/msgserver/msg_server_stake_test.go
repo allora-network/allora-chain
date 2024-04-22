@@ -1,6 +1,8 @@
 package msgserver_test
 
 import (
+	"errors"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -111,6 +113,421 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	topicStake, err = s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
 	require.Equal(stakeAmount, topicStake, "Stake amount mismatch")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	// Assuming you have methods to directly manipulate the state
+	// Simulate that sender has already staked the required amount
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
+
+	msg := &types.MsgStartRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	response, err := s.msgServer.StartRemoveStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response)
+
+	retrievedInfo, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr)
+	require.NoError(err)
+	require.NotNil(retrievedInfo)
+	s.Require().Equal(msg.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(msg.Sender, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(msg.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveStakeInsufficientStake() {
+	ctx := s.ctx
+	require := s.Require()
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	msg := &types.MsgStartRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	_, err := s.msgServer.StartRemoveStake(ctx, msg)
+	require.ErrorIs(err, types.ErrInsufficientStakeToRemove)
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	require.NoError(err)
+
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
+
+	// Simulate the stake removal request.
+	placement := &types.StakePlacement{
+		TopicId: topicId,
+		Reputer: senderAddr.String(),
+		Amount:  stakeAmount,
+	}
+	stakeRemoval := types.StakeRemoval{
+		BlockRemovalStarted: startBlock,
+		Placement:           placement,
+	}
+
+	// Manually setting the removal in state (this part would normally involve interacting with the keeper to set up state).
+	keeper.SetStakeRemoval(ctx, senderAddr, stakeRemoval) // This assumes such a method exists.
+
+	msg := &types.MsgConfirmRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+	}
+
+	ctx = ctx.WithBlockHeight(startBlock + removalDelay + 1)
+
+	// Perform the stake confirmation
+	response, err := s.msgServer.ConfirmRemoveStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after confirming stake removal")
+
+	// Verifications to ensure the stake was properly removed could be included here if there are methods to query the state
+	// Example: check that the stake amount at the topic is zero or reduced appropriately
+	finalStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, senderAddr)
+	require.NoError(err)
+	require.True(finalStake.IsZero(), "Stake amount should be zero after removal is confirmed")
+}
+
+func (s *KeeperTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	require.NoError(err)
+
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
+
+	msg := &types.MsgConfirmRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+	}
+
+	ctx = ctx.WithBlockHeight(startBlock + removalDelay + 1)
+
+	// Perform the stake confirmation
+	_, err = s.msgServer.ConfirmRemoveStake(ctx, msg)
+	require.ErrorIs(err, types.ErrConfirmRemoveStakeNoRemovalStarted)
+
+	// Verifications to ensure the stake was properly removed could be included here if there are methods to query the state
+	// Example: check that the stake amount at the topic is zero or reduced appropriately
+	finalStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, senderAddr)
+	require.NoError(err)
+	require.False(finalStake.IsZero())
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	// Fetch the delay window for removing stake
+	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	require.NoError(err)
+
+	// Simulate that sender has already staked the required amount
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
+
+	// Simulate the stake removal request
+	placement := &types.StakePlacement{
+		TopicId: topicId,
+		Reputer: senderAddr.String(),
+		Amount:  stakeAmount,
+	}
+	stakeRemoval := types.StakeRemoval{
+		BlockRemovalStarted: startBlock,
+		Placement:           placement,
+	}
+
+	// Manually setting the removal in state (this part would normally involve interacting with the keeper to set up state).
+	keeper.SetStakeRemoval(ctx, senderAddr, stakeRemoval) // This assumes such a method exists.
+
+	msg := &types.MsgConfirmRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+	}
+
+	// Set the current block height to simulate an attempt to confirm removal too early, before the delay has fully passed.
+	ctx = ctx.WithBlockHeight(startBlock + removalDelay - 1) // Attempting to confirm just before the delay period ends
+
+	// Perform the stake confirmation
+	response, err := s.msgServer.ConfirmRemoveStake(ctx, msg)
+	require.Error(err, "Should error because the stake removal is being confirmed too early")
+	require.Nil(response, "Response should be nil when confirming too early")
+	require.ErrorIs(types.ErrConfirmRemoveStakeTooEarly, err, "Error should be ErrConfirmRemoveStakeTooEarly")
+
+	// Verify the stake has not been removed
+	finalStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, senderAddr)
+	require.NoError(err)
+	require.False(finalStake.IsZero(), "Stake amount should not be zero since removal is not confirmed")
+}
+
+func (s *KeeperTestSuite) TestDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), reputerStake, "Stake amount mismatch")
+
+	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), amount0)
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	reputerStake, err = s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
+
+	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, amount1)
+}
+
+func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
+	ctx := s.ctx
+	require := s.Require()
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	// Do not register the reputer to simulate failure case
+
+	msg := &types.MsgDelegateStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	// Attempt to perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.Error(err)
+	require.Nil(response, "Response should be nil when delegation fails due to unregistered reputer")
+	require.True(errors.Is(err, types.ErrAddressIsNotRegisteredInThisTopic), "Error should indicate that the reputer is not registered in the topic")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	msg2 := &types.MsgStartRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	removalInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
+	require.Error(err)
+
+	// Perform the stake removal initiation
+	response2, err := s.msgServer.StartRemoveDelegateStake(ctx, msg2)
+	require.NoError(err)
+	require.NotNil(response2, "Response should not be nil after successful stake removal initiation")
+
+	// Verification: Check if the removal has been queued
+	removalInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
+	require.NoError(err)
+	require.NotNil(removalInfo, "Stake removal should be recorded in the state")
+}
+
+func (s *KeeperTestSuite) TestStartRemoveDelegateStakeError() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	msg2 := &types.MsgStartRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount.Mul(cosmosMath.NewUint(2)),
+	}
+
+	// Perform the stake removal initiation
+	_, err = s.msgServer.StartRemoveDelegateStake(ctx, msg2)
+	require.Error(err, types.ErrInsufficientStakeToRemove)
+}
+
+func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	// Simulate adding a reputer and delegating stake to them
+	keeper.InsertReputer(ctx, topicId, reputerAddr, types.OffchainNode{})
+	_, err := s.msgServer.DelegateStake(ctx, &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	// Start removing the delegated stake
+	_, err = s.msgServer.StartRemoveDelegateStake(ctx, &types.MsgStartRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	// Try to confirm removal too early
+	_, err = s.msgServer.ConfirmRemoveDelegateStake(ctx, &types.MsgConfirmDelegateRemoveStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+	})
+	require.Error(err, types.ErrConfirmRemoveStakeTooEarly)
+
+	// Simulate passing of time to surpass the withdrawal delay
+	delayWindow, _ := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+
+	ctx = ctx.WithBlockHeight(startBlock + delayWindow + 1)
+
+	// Try to confirm removal after delay window
+	response, err := s.msgServer.ConfirmRemoveDelegateStake(ctx, &types.MsgConfirmDelegateRemoveStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+	})
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful confirmation of stake removal")
+
+	// Check that the stake was actually removed
+	delegateStakePlaced, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.True(delegateStakePlaced.IsZero(), "Delegate stake should be zero after successful removal")
 }
 
 /*

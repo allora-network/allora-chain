@@ -123,17 +123,19 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetMempoolInferenceRequest",
-					Use:       "inference-request [topic_id] [request_id]",
-					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
+					Use:       "inference-request [request_id]",
+					Short:     "Get a specific Inference Request and demand left in the mempool by request id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
 						{ProtoField: "request_id"},
 					},
 				},
 				{
 					RpcMethod: "GetMempoolInferenceRequestsByTopic",
 					Use:       "all-inference-requests",
-					Short:     "Get Inference Requests by topic and demand left for each request in mempool",
+					Short:     "Get Inference Requests by topic and unmet demand left for each request in mempool",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
 				},
 				{
 					RpcMethod: "GetTopicUnmetDemand",
@@ -258,21 +260,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "AddStake",
-					Use:       "add-stake [sender] [amount] [topic_id]",
+					Use:       "add-stake [sender] [topic_id] [amount]",
 					Short:     "Add stake [amount] to ones self sender [reputer or worker] for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "amount"},
 						{ProtoField: "topic_id"},
+						{ProtoField: "amount"},
 					},
 				},
 				{
 					RpcMethod: "StartRemoveStake",
-					Use:       "start-remove-stake [sender] [placements_remove]",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove]",
+					Use:       "start-remove-stake [sender] [topic_id] [amount]",
+					Short:     "modify sender's [reputer] stake position by removing [amount] stake from a topic [topic_id]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "amount"},
 					},
 				},
 				{
@@ -281,6 +284,38 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Proceed with removing stake [amount] from a stakeTarget [reputer or worker] back to a sender [reputer or worker]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
+					},
+				},
+				{
+					RpcMethod: "DelegateStake",
+					Use:       "delegate-stake [sender] [topic_id] [reputer] [amount]",
+					Short:     "Delegate stake [amount] to a reputer for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+						{ProtoField: "amount"},
+					},
+				},
+				{
+					RpcMethod: "StartRemoveDelegateStake",
+					Use:       "start-remove-delegate-stake [sender] [topic_id] [reputer] [amount]",
+					Short:     "Modify sender's [reputer] delegate stake position by removing [amount] stake from a topic [topic_id] from a reputer [reputer]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+						{ProtoField: "amount"},
+					},
+				},
+				{
+					RpcMethod: "ConfirmRemoveDelegateStake",
+					Use:       "confirm-remove-delegate-stake [sender] [topic_id] [reputer]",
+					Short:     "Proceed with removing stake from a stakeTarget [reputer] back to the sender",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
 					},
 				},
 				{
@@ -294,11 +329,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RequestInference",
-					Use:       "request-inference [sender] [requests]",
-					Short:     "Request a batch of inferences to be kicked off",
+					Use:       "request-inference [sender] [request]",
+					Short:     "Request an inference ",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "requests"},
+						{ProtoField: "request"},
 					},
 				},
 				{

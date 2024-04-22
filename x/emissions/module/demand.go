@@ -11,7 +11,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // A structure to hold the original value and a random tiebreaker
@@ -35,31 +34,27 @@ type Demand struct {
 	FeesGenerated cosmosMath.Uint
 }
 
-const ActiveTopicsPageLimit = uint64(1000) // how many topics to view per page
-
-const MaxActiveTopicIters = uint64(10000000) // can tolerate looping over 10 million active topics max
-
 // Sorts the given slice of topics in descending order according to their corresponding return, using randomness as tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
-func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []types.Topic, weights map[TopicId]PriceAndReturn, randSeed BlockHeight) []types.Topic {
+func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []TopicId, weights map[TopicId]PriceAndReturn, randSeed BlockHeight) []TopicId {
 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
 	r := rand.New(rand.NewSource(randSeed))
-	items := make([]SortableItem[types.Topic], len(valsToSort))
-	for i, topic := range valsToSort {
-		items[i] = SortableItem[types.Topic]{topic, weights[topic.Id].Price.Uint64(), r.Uint32()}
+	items := make([]SortableItem[TopicId], len(valsToSort))
+	for i, topicId := range valsToSort {
+		items[i] = SortableItem[TopicId]{topicId, weights[topicId].Price.Uint64(), r.Uint32()}
 	}
 
 	// Sort the slice of SortableItems
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
-		if items[i].Value.Id == items[j].Value.Id {
+		if items[i].Value == items[j].Value {
 			return items[i].Tiebreaker > items[j].Tiebreaker
 		}
 		return items[i].Weight > items[j].Weight
 	})
 
 	// Extract and print the sorted values to demonstrate the sorting
-	sortedValues := make([]types.Topic, len(valsToSort))
+	sortedValues := make([]TopicId, len(valsToSort))
 	for i, item := range items {
 		sortedValues[i] = item.Value
 	}
@@ -115,22 +110,22 @@ func InactivateLowDemandTopics(
 	i := uint64(0)
 
 	for {
-		pageRequest := &query.PageRequest{Limit: limit, Offset: offset, Key: key}
+		pageRequest := &types.SimpleCursorPaginationRequest{Limit: limit, Key: key}
 		topicsActive, pageResponse, err := k.GetActiveTopics(ctx, pageRequest)
 		if err != nil {
 			fmt.Println("Error getting active topics: ", err)
 			return err
 		}
 
-		for _, topic := range topicsActive {
-			topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topic.Id)
+		for _, topicId := range topicsActive {
+			topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
 			if err != nil {
 				fmt.Println("Error getting unmet demand: ", err)
 				return err
 			}
 			if topicUnmetDemand.LT(minTopicUnmetDemand) {
-				fmt.Printf("Inactivating topic due to no demand: %v metadata: %s\n", topic.Id, topic.Metadata)
-				k.InactivateTopic(ctx, topic.Id)
+				fmt.Printf("Inactivating topic due to no demand: %v\n", topicId)
+				k.InactivateTopic(ctx, topicId)
 			}
 		}
 
@@ -233,7 +228,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	maxTopicPages uint64,
 	requestPageLimit uint64,
 	maxRequestPages uint64,
-) ([]types.Topic, cosmosMath.Uint, error) {
+) ([]*types.Topic, cosmosMath.Uint, error) {
 	minTopicDemand, err := k.GetParamsMinTopicUnmetDemand(ctx)
 	if err != nil {
 		fmt.Println("Error getting min topic unmet demand: ", err)
@@ -246,7 +241,7 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 		return nil, cosmosMath.Uint{}, err
 	}
 
-	topicsActiveWithDemand := make([]types.Topic, 0)
+	topicsActiveWithDemand := make([]TopicId, 0)
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId][]types.InferenceRequest, 0)
 
@@ -255,21 +250,20 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	i := uint64(0)
 
 	for {
-		topicPageRequest := &query.PageRequest{Limit: topicPageLimit, Offset: topicOffset, Key: topicPageKey}
+		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetActiveTopics(ctx, topicPageRequest)
 		if err != nil {
 			fmt.Println("Error getting active topics: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
 
-		requestOffset := uint64(0)
 		requestPageKey := make([]byte, 0)
 		j := uint64(0)
 		priceFinder := BuildOnlineBestPriceFinder(ctx, k, currentBlock)
-		for _, topic := range topicsActive {
-			requestPageRequest := &query.PageRequest{Limit: requestPageLimit, Offset: requestOffset, Key: requestPageKey}
+		for _, topicId := range topicsActive {
+			requestPageRequest := &types.SimpleCursorPaginationRequest{Limit: requestPageLimit, Key: requestPageKey}
 
-			inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topic.Id, requestPageRequest)
+			inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topicId, requestPageRequest)
 			if err != nil {
 				fmt.Println("Error getting mempool inference requests: ", err)
 				return nil, cosmosMath.Uint{}, err
@@ -280,17 +274,16 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 				fmt.Println("Error getting requests that maximize fees: ", err)
 				return nil, cosmosMath.Uint{}, err
 			}
-			fmt.Println("Topic: ", topic.Id, " Price of max return: ", bestPriceData.bestPrice, " Max return: ", bestPriceData.maxFees, " Requests to use: ", len(bestPriceData.validRequests))
-			topicsActiveWithDemand = append(topicsActiveWithDemand, *topic)
-			topicBestPrices[topic.Id] = PriceAndReturn{bestPriceData.bestPrice, bestPriceData.maxFees}
-			requestsToDrawDemandFrom[topic.Id] = bestPriceData.validRequests
+			fmt.Println("Topic: ", topicId, " Price of max return: ", bestPriceData.bestPrice, " Max return: ", bestPriceData.maxFees, " Requests to use: ", len(bestPriceData.validRequests))
+			topicsActiveWithDemand = append(topicsActiveWithDemand, topicId)
+			topicBestPrices[topicId] = PriceAndReturn{bestPriceData.bestPrice, bestPriceData.maxFees}
+			requestsToDrawDemandFrom[topicId] = bestPriceData.validRequests
 
 			if len(requestPageResponse.NextKey) == 0 || j > maxRequestPages {
 				break
 			}
 
 			requestPageKey = requestPageResponse.NextKey
-			requestOffset += requestPageLimit
 			j++
 		}
 
@@ -326,20 +319,15 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	// Determine how many funds to draw from demand and Remove depleted/insufficiently funded requests
 	totalFundsToDrawFromDemand := cosmosMath.NewUint(0)
 	var topicsToSetChurn []*types.Topic
-	for _, topic := range topTopicsByReturn {
+	for _, topicId := range topTopicsByReturn {
 		// Add to the fee revenue collected for this topic for this reward epoch
-		k.AddTopicFeeRevenue(ctx, topic.Id, topicBestPrices[topic.Id].Return)
+		k.AddTopicFeeRevenue(ctx, topicId, topicBestPrices[topicId].Return)
 
 		// Draw demand from the valid requests
-		bestPrice := topicBestPrices[topic.Id].Price
+		bestPrice := topicBestPrices[topicId].Price
 		numRequestsServed := 0
-		for _, req := range requestsToDrawDemandFrom[topic.Id] {
-			reqId, err := req.GetRequestId()
-			if err != nil {
-				fmt.Println("Error getting request demand: ", err)
-				return nil, cosmosMath.Uint{}, err
-			}
-			reqDemand, err := k.GetRequestDemand(ctx, reqId)
+		for _, req := range requestsToDrawDemandFrom[topicId] {
+			reqDemand, err := k.GetRequestDemand(ctx, req.Id)
 			if err != nil {
 				fmt.Println("Error getting request demand: ", err)
 				return nil, cosmosMath.Uint{}, err
@@ -347,11 +335,11 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 			// all the previous conditionals were already applied to the requests in the previous loop
 			// => should never be negative
 			newReqDemand := reqDemand.Sub(bestPrice)
-			k.SetRequestDemand(ctx, reqId, newReqDemand)
+			k.SetRequestDemand(ctx, req.Id, newReqDemand)
 			// if the request is a one-shot request, remove it from the mempool
 
 			if req.Cadence == 0 {
-				k.RemoveFromMempool(ctx, req)
+				k.RemoveFromMempool(ctx, req.Id)
 			} else { // if it is a subscription check that the subscription has enough funds left to be worth serving
 				minRequestUnmetDemand, err := k.GetParamsMinRequestUnmetDemand(ctx)
 				if err != nil {
@@ -362,14 +350,18 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 					// Should convey to users to not surprise them. This helps prevent spamming the mempool with requests that are not worth serving
 					// The effectively burned dust is 1-time "cost" the consumer incurs when they create "subscriptions" they don't ever refill nor fill enough
 					// This encourages consumers to maximize how much they fund any single request, discouraging a pattern of many less-funded requests
-					k.RemoveFromMempool(ctx, req)
+					k.RemoveFromMempool(ctx, req.Id)
 				}
 			}
 			numRequestsServed++
 		}
 		totalFundsToDrawFromDemand = totalFundsToDrawFromDemand.Add(bestPrice.Mul(cosmosMath.NewUint(uint64(numRequestsServed))))
-		topicCopy := topic
-		topicsToSetChurn = append(topicsToSetChurn, &topicCopy)
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			fmt.Println("Error getting topic: ", err)
+			return nil, cosmosMath.Uint{}, err
+		}
+		topicsToSetChurn = append(topicsToSetChurn, &topic)
 	}
 
 	// Set the topics as churn ready
@@ -379,5 +371,5 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 		return nil, cosmosMath.Uint{}, err
 	}
 
-	return topTopicsByReturn, totalFundsToDrawFromDemand, nil
+	return topicsToSetChurn, totalFundsToDrawFromDemand, nil
 }

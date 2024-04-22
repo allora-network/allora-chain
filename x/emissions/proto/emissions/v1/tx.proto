@@ -35,7 +35,9 @@ service Msg {
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
-  rpc StartRemoveDelegatedStake(MsgStartRemoveDelegatedStake) returns (MsgStartRemoveDelegatedStakeResponse);
+  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
+
+  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
 
   rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
 
@@ -149,6 +151,9 @@ message OptionalParams {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  repeated uint64 max_requests_per_topic = 46;
+  repeated uint64 default_limit = 47;
+  repeated uint64 max_limit = 48;
 }
 
 message MsgUpdateParams {
@@ -253,13 +258,13 @@ message MsgAddStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  string amount = 2 [
+  uint64 topic_id = 2;
+  string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  uint64 topic_id = 3;
 }
 
 message MsgAddStakeResponse {}
@@ -268,7 +273,13 @@ message MsgStartRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  repeated StakePlacement placements_remove = 2;
+  uint64 topic_id = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message MsgStartRemoveStakeResponse {}
@@ -276,6 +287,7 @@ message MsgStartRemoveStakeResponse {}
 message MsgConfirmRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
+  uint64 topic_id = 2;
 }
 
 message MsgConfirmRemoveStakeResponse {}
@@ -295,28 +307,37 @@ message MsgDelegateStake {
 
 message MsgDelegateStakeResponse {}
 
-message MsgStartRemoveDelegatedStake {
+message MsgStartRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  repeated DelegatedStakePlacement placements_to_remove = 2;
+  string reputer = 2;
+  uint64 topic_id = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
-message MsgStartRemoveDelegatedStakeResponse {}
+message MsgStartRemoveDelegateStakeResponse {}
 
-message MsgConfirmDelegatedRemoveStake {
+message MsgConfirmDelegateRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
 }
 
-message MsgConfirmRemoveDelegatedStakeResponse {}
+message MsgConfirmRemoveDelegateStakeResponse {}
 
 message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  repeated RequestInferenceListItem requests = 2;
+  InferenceRequestInbound request = 2;
 }
 
-message RequestInferenceListItem {
+message InferenceRequestInbound {
   uint64 nonce = 1;
   uint64 topic_id = 2;
   int64 cadence = 3;  // blocks between inferences, zero means oneshot inference
@@ -336,7 +357,9 @@ message RequestInferenceListItem {
   bytes extra_data = 7;
 }
 
-message MsgRequestInferenceResponse {}
+message MsgRequestInferenceResponse {
+  string request_id = 1;
+}
 
 ///  Whitelist
 

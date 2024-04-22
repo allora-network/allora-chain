@@ -14,15 +14,13 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 		m.n.BobAcc,
 		&emissionstypes.MsgRequestInference{
 			Sender: m.n.BobAddr,
-			Requests: []*emissionstypes.RequestInferenceListItem{
-				{
-					Nonce:                1,
-					TopicId:              1,
-					Cadence:              10800,
-					MaxPricePerInference: cosmosMath.NewUint(10000),
-					BidAmount:            cosmosMath.NewUint(10000),
-					BlockValidUntil:      currBlock + 10805,
-				},
+			Request: &emissionstypes.InferenceRequestInbound{
+				Nonce:                1,
+				TopicId:              1,
+				Cadence:              10800,
+				MaxPricePerInference: cosmosMath.NewUint(10000),
+				BidAmount:            cosmosMath.NewUint(10000),
+				BlockValidUntil:      currBlock + 10805,
 			},
 		},
 	)
@@ -35,12 +33,11 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 	// and then query for it that way, esp given wanting to delete that endpoint
 
 	// query for the request
-	allInferenceRequestsResponse, err := m.n.QueryEmissions.GetAllExistingInferenceRequests(
+	_, err = m.n.QueryEmissions.GetMempoolInferenceRequest(
 		m.ctx,
-		&emissionstypes.QueryAllExistingInferenceRequest{},
+		&emissionstypes.QueryMempoolInferenceRequest{RequestId: resp.RequestId},
 	)
 	require.NoError(m.t, err)
-	require.Greater(m.t, len(allInferenceRequestsResponse.InferenceRequests), 0)
 }
 
 func ActivateTopic1(m TestMetadata) {

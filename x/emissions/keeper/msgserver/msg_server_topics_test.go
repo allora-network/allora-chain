@@ -5,7 +5,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 /// Topics tests
@@ -40,15 +39,14 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	require.NoError(err, "CreateTopic fails on first creation")
 	s.Require().NotNil(result)
 
-	pagination := &query.PageRequest{
-		Limit:  100,
-		Offset: 0,
+	pagination := &types.SimpleCursorPaginationRequest{
+		Limit: 100,
 	}
 	activeTopics, _, err := s.emissionsKeeper.GetActiveTopics(s.ctx, pagination)
 	require.NoError(err, "CreateTopic fails on first creation")
 	found := false
-	for _, topic := range activeTopics {
-		if topic.Id == result.TopicId {
+	for _, topicId := range activeTopics {
+		if topicId == result.TopicId {
 			found = true
 			break
 		}

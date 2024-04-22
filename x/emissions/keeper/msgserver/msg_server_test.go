@@ -191,7 +191,6 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 
 	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 

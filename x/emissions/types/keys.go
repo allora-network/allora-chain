@@ -2,10 +2,13 @@ package types
 
 import "cosmossdk.io/collections"
 
-const ModuleName = "emissions"
-const AlloraStakingAccountName = "allorastaking"
-const AlloraRequestsAccountName = "allorarequests"
-const AlloraRewardsAccountName = "allorarewards"
+const (
+	ModuleName                = "emissions"
+	StoreKey                  = "emissions"
+	AlloraStakingAccountName  = "allorastaking"
+	AlloraRequestsAccountName = "allorarequests"
+	AlloraRewardsAccountName  = "allorarewards"
+)
 
 var (
 	ParamsKey                          = collections.NewPrefix(0)
@@ -18,22 +21,22 @@ var (
 	TopicWorkersKey                    = collections.NewPrefix(7)
 	TopicReputersKey                   = collections.NewPrefix(8)
 	DelegatorStakeKey                  = collections.NewPrefix(9)
-	DelegatedStakePlacementKey         = collections.NewPrefix(10)
+	DelegateStakePlacementKey          = collections.NewPrefix(10)
 	TargetStakeKey                     = collections.NewPrefix(11)
 	InferencesKey                      = collections.NewPrefix(12)
 	ForecastsKey                       = collections.NewPrefix(13)
 	WorkerNodesKey                     = collections.NewPrefix(14)
 	ReputerNodesKey                    = collections.NewPrefix(15)
 	LatestInferencesTsKey              = collections.NewPrefix(16)
-	MempoolKey                         = collections.NewPrefix(17)
+	ActiveTopicsKey                    = collections.NewPrefix(17)
 	RequestUnmetDemandKey              = collections.NewPrefix(18)
 	TopicUnmetDemandKey                = collections.NewPrefix(19)
 	AllInferencesKey                   = collections.NewPrefix(20)
 	AllForecastsKey                    = collections.NewPrefix(21)
 	AllLossBundlesKey                  = collections.NewPrefix(22)
-	StakeRemovalQueueKey               = collections.NewPrefix(23)
+	StakeRemovalKey                    = collections.NewPrefix(23)
 	StakeByReputerAndTopicId           = collections.NewPrefix(24)
-	DelegatedStakeRemovalQueueKey      = collections.NewPrefix(25)
+	DelegateStakeRemovalKey            = collections.NewPrefix(25)
 	AllTopicStakeSumKey                = collections.NewPrefix(26)
 	WhitelistAdminsKey                 = collections.NewPrefix(27)
 	TopicCreationWhitelistKey          = collections.NewPrefix(28)
@@ -61,5 +64,7 @@ var (
 	LatestInfererScoresByWorkerKey     = collections.NewPrefix(50)
 	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(51)
 	LatestReputerScoresByReputerKey    = collections.NewPrefix(52)
-	ActiveTopicsKey                    = collections.NewPrefix(53)
+	RequestsKey                        = collections.NewPrefix(53)
+	TopicRequestsKey                   = collections.NewPrefix(54)
+	NumRequestsPerTopicKey             = collections.NewPrefix(55)
 )

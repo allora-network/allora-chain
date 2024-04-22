@@ -117,7 +117,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 
 			}
-		}(topic)
+		}(*topic)
 	}
 	wg.Wait()
 
