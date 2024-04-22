@@ -22,13 +22,14 @@ func GetInferenceTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE, blockHeight)
 }
 
 func GetForecastingTaskEntropy(
@@ -38,13 +39,14 @@ func GetForecastingTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST, blockHeight)
 }
 
 func getInferenceOrForecastTaskEntropy(
@@ -55,6 +57,7 @@ func getInferenceOrForecastTaskEntropy(
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 	which bool,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
@@ -63,12 +66,12 @@ func getInferenceOrForecastTaskEntropy(
 ) {
 	var scoresAtBlock types.Scores
 	if which == TASK_INFERENCE {
-		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
 	} else { // TASK_FORECAST
-		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
 			return alloraMath.Dec{}, nil, nil, err
 		}
@@ -407,7 +410,7 @@ func GetWorkersRewardsInferenceTask(
 		return nil, err
 	}
 
-	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
+	return rewards, nil
 }
 
 func GetWorkersRewardsForecastTask(
@@ -457,57 +460,5 @@ func GetWorkersRewardsForecastTask(
 		return nil, err
 	}
 
-	return GetRewardsWithOutTax(ctx, keeper, rewards, topicId)
-}
-
-func GetRewardsWithOutTax(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	rewards []TaskRewards,
-	topicId uint64,
-) ([]TaskRewards, error) {
-	params, err := keeper.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []TaskRewards
-	// Get average reward for this worker
-	for _, reward := range rewards {
-		avg, err := keeper.GetAverageWorkerReward(ctx, topicId, reward.Address)
-		if err != nil {
-			continue
-		}
-		avgValueTimesCount, err := avg.Value.Mul(alloraMath.NewDecFromInt64(int64(avg.Count)))
-		if err != nil {
-			continue
-		}
-		totalRewards, err := avgValueTimesCount.Add(reward.Reward)
-		if err != nil {
-			continue
-		}
-		avg.Count += 1
-		avg.Value, err = totalRewards.Quo(alloraMath.NewDecFromInt64(int64(avg.Count)))
-		if err != nil {
-			continue
-		}
-		_ = keeper.SetAverageWorkerReward(ctx, topicId, reward.Address, avg)
-		fee, err := CalculateWorkerTax(avg.Value, params.SybilTaxExponent, params.NumberExpectedInferenceSybils)
-		if err != nil {
-			continue
-		}
-		reward.Reward, err = reward.Reward.Sub(fee)
-		if err != nil {
-			continue
-		}
-		if reward.Reward.Lt(alloraMath.ZeroDec()) {
-			reward.Reward = alloraMath.ZeroDec()
-		}
-		result = append(result, TaskRewards{
-			Address: reward.Address,
-			Reward:  reward.Reward,
-		})
-	}
-
-	return result, nil
+	return rewards, nil
 }

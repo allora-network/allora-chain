@@ -13,13 +13,14 @@ func GetReputerTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
+	blockHeight int64,
 ) (
 	entropy alloraMath.Dec,
 	modifiedRewardFractions []alloraMath.Dec,
 	reputers []sdk.AccAddress,
 	err error,
 ) {
-	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, ctx.BlockHeight())
+	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return alloraMath.Dec{}, nil, nil, err
 	}

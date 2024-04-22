@@ -3,12 +3,13 @@ package msgserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
@@ -27,7 +28,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 
 	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
 	if !hasEnoughBal {
-		return nil, types.ErrTopicCreatorNotEnoughDenom
+		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
 	}
 
 	id, err := ms.k.GetNextTopicId(ctx)

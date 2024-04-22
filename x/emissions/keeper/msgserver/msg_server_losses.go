@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -42,7 +43,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
 		fmt.Println("Reputer's worker nonce not yet fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, types.ErrNonceStillUnfulfilled
+		return nil, errors.Wrap(types.ErrNonceStillUnfulfilled, "worker nonce")
 	} else {
 		fmt.Println("OK - Reputer's worker nonce already fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
 	}
@@ -55,7 +56,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
 		fmt.Println("Reputer nonce already fulfilled: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, types.ErrNonceAlreadyFulfilled
+		return nil, errors.Wrap(types.ErrNonceAlreadyFulfilled, "reputer nonce")
 	}
 
 	params, err := ms.k.GetParams(ctx)
@@ -73,6 +74,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 		if err != nil {
 			return nil, err
 		}
+
+		// TODO: need to check if parameters are not nil to avoid panic
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
@@ -229,6 +232,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 	// Update the unfulfilled nonces
 	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update topic reward nonce
+	err = ms.k.SetTopicRewardNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}

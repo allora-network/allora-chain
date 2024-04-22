@@ -11,7 +11,7 @@ type BlockHeight = int64
 func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:                   int64(600),                                // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
+		RewardCadence:                   int64(1),                                  // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicUnmetDemand:             cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:           cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
@@ -35,8 +35,6 @@ func DefaultParams() Params {
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests from the chain
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests from the chain
-		NumberExpectedInferenceSybils:   uint64(10),                                // global number for calculation tax of worker reward
-		SybilTaxExponent:                uint64(3),                                 // global parameter for calculation tax of worker reward
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
@@ -159,14 +157,6 @@ func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {
 
 func DefaultParamsMaxUnfulfilledReputerRequestNonces() uint64 {
 	return DefaultParams().MaxUnfulfilledReputerRequests
-}
-
-func DefaultParamsNumberExpectedInfernceSybils() uint64 {
-	return DefaultParams().NumberExpectedInferenceSybils
-}
-
-func DefaultParamsSybilTaxExponent() uint64 {
-	return DefaultParams().SybilTaxExponent
 }
 
 func DefaultParamsTopicRewardStakeImportance() alloraMath.Dec {

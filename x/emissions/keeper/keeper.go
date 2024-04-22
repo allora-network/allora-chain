@@ -58,6 +58,8 @@ type Keeper struct {
 	topicWorkers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
+	// map of (topic) -> nonce/block height
+	topicRewardNonce collections.Map[TopicId, int64]
 
 	/// SCORES
 
@@ -81,10 +83,6 @@ type Keeper struct {
 	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
-
-	/// TAX for REWARD
-	// map of (topic, block_number, worker) -> avg_worker_reward
-	averageWorkerReward collections.Map[collections.Pair[TopicId, sdk.AccAddress], types.AverageWorkerReward]
 
 	/// STAKING
 
@@ -245,11 +243,11 @@ func NewKeeper(
 		previousReputerRewardFraction:       collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		previousInferenceRewardFraction:     collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		previousForecastRewardFraction:      collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		averageWorkerReward:                 collections.NewMap(sb, types.AverageWorkerRewardKey, "average_worker_reward", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.AverageWorkerReward](cdc)),
 		reputerScoresByBlock:                collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		topicRewardNonce:                    collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -912,6 +910,30 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return params.RewardCadence, nil
+}
+
+/// TOPIC REWARD NONCE
+
+// GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
+func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (int64, error) {
+	nonce, err := k.topicRewardNonce.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil // Return 0 if not found
+		}
+		return 0, err
+	}
+	return nonce, nil
+}
+
+// SetTopicRewardNonce sets the reward nonce for a given topic ID.
+func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce int64) error {
+	return k.topicRewardNonce.Set(ctx, topicId, nonce)
+}
+
+// DeleteTopicRewardNonce removes the reward nonce entry for a given topic ID.
+func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) error {
+	return k.topicRewardNonce.Remove(ctx, topicId)
 }
 
 /// LOSS BUNDLES
@@ -2316,26 +2338,6 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
 	key := collections.Join(topicId, worker)
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
-}
-
-/// TAX for REWARD
-
-func (k *Keeper) SetAverageWorkerReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress, value types.AverageWorkerReward) error {
-	key := collections.Join(topicId, worker)
-	return k.averageWorkerReward.Set(ctx, key, value)
-}
-
-func (k *Keeper) GetAverageWorkerReward(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (types.AverageWorkerReward, error) {
-	key := collections.Join(topicId, worker)
-	val, err := k.averageWorkerReward.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return a default value
-			return types.AverageWorkerReward{Count: 0, Value: alloraMath.ZeroDec()}, nil
-		}
-		return types.AverageWorkerReward{}, err
-	}
-	return val, nil
 }
 
 /// WHITELISTS

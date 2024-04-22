@@ -83,12 +83,6 @@ func IsValidAtPrice(
 		fmt.Println("Error getting request demand: ", err)
 		return false, err
 	}
-	/*
-		fmt.Println("req.LastChecked+req.Cadence <= currentTime", req.LastChecked+req.Cadence <= currentTime)
-		fmt.Println("req.TimestampValidUntil > currentTime", req.TimestampValidUntil > currentTime)
-		fmt.Println("reqUnmetDemand.GTE(price)", reqUnmetDemand.GTE(price))
-		fmt.Println("req.MaxPricePerInference.GTE(price)", req.MaxPricePerInference.GTE(price))
-	*/
 	res :=
 		req.BlockLastChecked+req.Cadence <= currentBlock &&
 			req.BlockValidUntil > currentBlock &&

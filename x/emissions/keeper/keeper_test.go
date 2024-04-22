@@ -2979,54 +2979,6 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
-/// TAX for REWARD
-
-func (s *KeeperTestSuite) TestSetAverageWorkerReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	worker := sdk.AccAddress("uniqueWorkerAddress")
-
-	// Define an average worker reward to set
-	averageReward := types.AverageWorkerReward{
-		Count: 5,
-		Value: alloraMath.NewDecFromInt64(100), // Assume the average reward value is 100
-	}
-
-	// Set the average worker reward
-	err := keeper.SetAverageWorkerReward(ctx, topicId, worker, averageReward)
-	s.Require().NoError(err, "Setting average worker reward should not fail")
-
-	// Verify by fetching the set value
-	fetchedReward, err := keeper.GetAverageWorkerReward(ctx, topicId, worker)
-	s.Require().NoError(err, "Fetching the set average worker reward should not fail")
-	s.Require().Equal(averageReward, fetchedReward, "The fetched average worker reward should match the set value")
-}
-
-func (s *KeeperTestSuite) TestGetAverageWorkerReward() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	worker := sdk.AccAddress("uniqueWorkerAddress")
-
-	// Attempt to fetch the average reward before setting it, expecting a default value
-	defaultReward, err := keeper.GetAverageWorkerReward(ctx, topicId, worker)
-	s.Require().NoError(err, "Fetching average worker reward should not fail when not set")
-	s.Require().Equal(types.AverageWorkerReward{Count: 0, Value: alloraMath.ZeroDec()}, defaultReward, "Should return default average worker reward when not set")
-
-	// Now set a specific average worker reward
-	setReward := types.AverageWorkerReward{
-		Count: 10,
-		Value: alloraMath.NewDecFromInt64(200), // Assume setting it to 200
-	}
-	_ = keeper.SetAverageWorkerReward(ctx, topicId, worker, setReward)
-
-	// Fetch and verify the average worker reward after setting
-	fetchedReward, err := keeper.GetAverageWorkerReward(ctx, topicId, worker)
-	s.Require().NoError(err, "Fetching average worker reward should not fail after setting")
-	s.Require().Equal(setReward, fetchedReward, "The fetched average worker reward should match the set value")
-}
-
 /// WHITELISTS
 
 func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
@@ -3099,4 +3051,36 @@ func (s *KeeperTestSuite) TestReputerWhitelistOperations() {
 	isInWhitelist, err = keeper.IsInReputerWhitelist(ctx, reputerAddress)
 	s.Require().NoError(err, "Checking reputer whitelist status after removal should not fail")
 	s.Require().False(isInWhitelist, "Address should not be in the reputer whitelist after being removed")
+}
+
+/// TOPIC REWARD NONCE
+
+func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Test Get on an unset topicId, should return 0
+	nonce, err := keeper.GetTopicRewardNonce(ctx, topicId)
+	s.Require().NoError(err, "Getting an unset topic reward nonce should not fail")
+	s.Require().Equal(int64(0), nonce, "Nonce for an unset topicId should be 0")
+
+	// Test Set
+	expectedNonce := int64(12345)
+	err = keeper.SetTopicRewardNonce(ctx, topicId, expectedNonce)
+	s.Require().NoError(err, "Setting topic reward nonce should not fail")
+
+	// Test Get after Set, should return the set value
+	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
+	s.Require().NoError(err, "Getting set topic reward nonce should not fail")
+	s.Require().Equal(expectedNonce, nonce, "Nonce should match the value set earlier")
+
+	// Test Delete
+	err = keeper.DeleteTopicRewardNonce(ctx, topicId)
+	s.Require().NoError(err, "Deleting topic reward nonce should not fail")
+
+	// Test Get after Delete, should return 0
+	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
+	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
+	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
 }
