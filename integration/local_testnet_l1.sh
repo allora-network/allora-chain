@@ -27,9 +27,9 @@ echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.10:26657" >> ${ENV_L1}  # Take validator0
 
 echo "Build the docker image"
-# pushd ..
-# docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
-# popd
+pushd ..
+docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
+popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
