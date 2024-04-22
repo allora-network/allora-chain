@@ -1701,8 +1701,8 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 
 // True if reputer is registered in topic, else False
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
-	topickey := collections.Join(topicId, reputer)
-	return k.topicReputers.Has(ctx, topickey)
+	topicKey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topicKey)
 }
 
 /// FEE REVENUE

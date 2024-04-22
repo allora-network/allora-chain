@@ -25,6 +25,8 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 		},
 	)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	resp := &emissionstypes.MsgRequestInferenceResponse{}
 	err = txResp.Decode(resp)
 	require.NoError(m.t, err)
@@ -49,6 +51,8 @@ func ActivateTopic1(m TestMetadata) {
 			TopicId: 1,
 		},
 	)
+	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
 	activateTopicResponse := &emissionstypes.MsgActivateTopicResponse{}
 	err = txResp.Decode(activateTopicResponse)

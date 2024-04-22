@@ -17,6 +17,8 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, registerAliceRequest)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	registerAliceResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.t, err)
@@ -27,6 +29,7 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	aliceRegistered, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
+			TopicId: 1,
 			Address: m.n.AliceAddr,
 		},
 	)
@@ -56,6 +59,8 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, registerBobRequest)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	registerBobResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.t, err)
@@ -65,6 +70,7 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	bobRegistered, err := m.n.QueryEmissions.IsWorkerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
+			TopicId: 1,
 			Address: m.n.BobAddr,
 		},
 	)
