@@ -72,7 +72,9 @@ func TestCalcNetworkLosses(t *testing.T) {
 		{
 			name: "single reputer single inferer",
 			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"worker0": cosmosMath.NewUintFromString("1"),
+				"worker0": cosmosMath.NewUintFromString("310715328455942000000000"),
+				"worker1": cosmosMath.NewUintFromString("228581799970775000000000"),
+				"worker2": cosmosMath.NewUintFromString("325215447990159000000000"),
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -81,7 +83,9 @@ func TestCalcNetworkLosses(t *testing.T) {
 							Reputer:       "worker0",
 							CombinedValue: alloraMath.MustNewDecFromString("0.5"),
 							InfererValues: []*emissions.WorkerAttributedValue{
-								{Worker: "worker0", Value: alloraMath.MustNewDecFromString("0.5")},
+								{Worker: "worker0", Value: alloraMath.MustNewDecFromString("0.0582574614709027")},
+								{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.00346904774644242")},
+								{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.002316368340926880")},
 							},
 						},
 					},
