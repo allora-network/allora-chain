@@ -44,7 +44,7 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	topics := make([]*types.Topic, len(activeTopics))
+	topics := make([]*types.Topic, 0)
 	for _, topicId := range activeTopics {
 		topic, err := qs.k.GetTopic(ctx, topicId)
 		if err != nil {
