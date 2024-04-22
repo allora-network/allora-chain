@@ -107,15 +107,57 @@ services:
       - --allora-chain-home-dir=/data/.allorad
       - --allora-chain-key-name=head0
       # - --allora-chain-topic-id={{.rootValues.alloraChainTopicId}}
-
-    ports:
-      - "6000:6000"
-
+    # ports:
+    #   - "6000:6000"
     networks:
       local-net:
         aliases:
           - head0
         ipv4_address: 172.20.0.20
+
+  topic0:
+    container_name: worker0
+    image: alloranetwork/allora-inference-base:latest
+    user: "1000:1000"
+    volumes:
+      - ./testnet/worker0:/app
+      - ./inference_linear.py:/app/main.py
+    working_dir: /app
+    entrypoint:
+      # - "/bin/bash"
+      # - "-c"
+      # - |
+      #   allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
+      #     --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+      #     --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
+      - allora-node
+      - --role=worker
+      - --peer-db=/data/pdb
+      - --function-db=/data/fdb
+      - --runtime-path=/app/runtime
+      - --runtime-cli=bls-runtime
+      - --workspace=workspace
+      - --private-key=/data/keys/priv.bin
+      - --log-level=debug
+      - --port=9010
+      - --boot-nodes=12D3KooWLnJ8DdELdx94UGYfDknTnQsZkfVYpTm576nj6uVB6G8w@172.20.0.20:9010
+      - --allora-chain-home-dir=/data/.allorad
+      - --allora-node-rpc-address=http://172.20.0.10:26657
+      - --allora-chain-key-name=worker0
+      - --allora-chain-topic-id=1
+      - --topic=1
+
+    # ports:
+    #   - "6000:6000"
+    networks:
+      local-net:
+        aliases:
+          - head0
+        ipv4_address: 172.20.0.20
+
+
+
+
 
 networks:
   local-net:

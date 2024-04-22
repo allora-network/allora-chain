@@ -14,10 +14,10 @@ LOCALNET_DATADIR="./$CHAIN_ID"
 ALLORA_RPC="http://localhost:26657"
 ACCOUNTS_TOKENS=1000000
 
-echo "Build the docker image"
-pushd ..
-docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
-popd
+# echo "Build the docker image"
+# pushd ..
+# docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
+# popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
@@ -40,6 +40,23 @@ docker run -it \
     -e HOME=/data \
     --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE
+
+echo "Whitelist faucet account"
+faucet_address=$(docker run -it \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    -e HOME=/data/genesis \
+    $DOCKER_IMAGE \
+        --home=/data/genesis keys show faucet -a --keyring-backend=test)
+faucet_address="${faucet_address%%[[:cntrl:]]}"
+
+docker run -it \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=dasel \
+    $DOCKER_IMAGE \
+        put -t string -v "$faucet_address" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
+echo "Faucet addr: $faucet_address"
 
 echo "Generate peers.txt"
 PEERS=""
@@ -95,7 +112,7 @@ fi
 ALLORA_RPC="http://172.20.0.10:26657"
 
 echo "Generating allora account keys for heads and workers and funding them"
-accounts=("head0" "coin-prediction" "index-provider" "nft-appraisals")
+accounts=("head0" "worker0")
 
 for account in "${accounts[@]}"; do
     echo "Generating allora account key for $account"
@@ -131,11 +148,17 @@ for account in "${accounts[@]}"; do
             --fees=200000uallo --yes --node $ALLORA_RPC --chain-id $CHAIN_ID
 
     sleep 5
+
+    echo "Initializing $account p2p keys"
+    docker run -it \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=bash \
+        alloranetwork/allora-inference-base-head:latest \
+        -c "mkdir -p /data/$account/key && cd /data/$account/key && allora-keys"
 done
 ###########################################
 # echo "Register topics"
-
-
 
 # # ETH Prediction
 # yes | allorad --home=$HOME_DIR tx emissions push-topic $WHITELISTED_ADDRESS "ETH 24h Prediction" bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq eth-price-weights-calc.wasm $WEIGHT_CADENCE bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm allora-inference-function.wasm $INFERENCE_CADENCE "ETH" --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
@@ -150,37 +173,6 @@ done
 #     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
 # sleep 5
 
-# # Yuga Index
-# yes | allorad --home=$HOME_DIR tx emissions push-topic $WHITELISTED_ADDRESS "Upshot Yuga Index Valuation" bafybeih6yjjjf2v7qp3wm6hodvjcdljj7galu7dufirvcekzip5gd7bthq eth-price-weights-calc.wasm $WEIGHT_CADENCE bafybeigpiwl3o73zvvl6dxdqu7zqcub5mhg65jiky2xqb4rdhfmikswzqm allora-inference-function.wasm $INFERENCE_CADENCE "yuga" \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-# yes | allorad --home=$HOME_DIR tx emissions request-inference $WHITELISTED_ADDRESS  '{"nonce": "2","topic_id":"2","cadence":"60","max_price_per_inference":"1","bid_amount":"10000","timestamp_valid_until":"'$(date -d "$(date -d '1 day' +%Y-%m-%d)" +%s)'"}' \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-# yes | allorad --home=$HOME_DIR tx emissions reactivate-topic $WHITELISTED_ADDRESS 2 \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-
-# # NFT Appraisals
-# yes | allorad --home=$HOME_DIR tx emissions push-topic $WHITELISTED_ADDRESS "NFT appraisals topic" "bafybeie64jdoxioewcng7fy3mgx3n2xly6soffolxywrw4htpt4r3aen34" "nft-appraisals-weights-calc.wasm" $WEIGHT_CADENCE "bafybeihvikwjuqtijpurgsyiv5uwmmzg7ksibcwx6s3gjmkneasdn5kndy" "nft-appraisals-inference.wasm" $INFERENCE_CADENCE "0x42069abfe407c60cf4ae4112bedead391dba1cdb/2921" \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-# yes | allorad --home=$HOME_DIR tx emissions  request-inference $WHITELISTED_ADDRESS  '{"nonce": "3","topic_id":"3","cadence":"60","max_price_per_inference":"1","bid_amount":"10000","timestamp_valid_until":"'$(date -d "$(date -d '1 day' +%Y-%m-%d)" +%s)'"}' \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-# yes | allorad --home=$HOME_DIR tx emissions reactivate-topic $WHITELISTED_ADDRESS 3 \
-#     --node=$NODE_RPC_URL --keyring-backend=$KEYRING_BACKEND --keyring-dir=$HOME_DIR --chain-id $NETWORK
-# sleep 5
-
-
-# #############################################
-# echo "Initializing head p2p keys"
-# docker run -it \
-#     -u $(id -u):$(id -g) \
-#     -v ${LOCALNET_DATADIR}:/data \
-#     --entrypoint=bash \
-#     alloranetwork/allora-inference-base-head:latest \
-#     -c "mkdir -p /data/head0/key && cd /data/head0/key && allora-keys"
 
 # HEAD0_IDENTITY=$(cat ${LOCALNET_DATADIR}/head0/key/identity)
 
