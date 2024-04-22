@@ -17,20 +17,34 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, registerAliceRequest)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	registerAliceResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.t, err)
 	require.True(m.t, registerAliceResponse.Success)
 	require.Equal(m.t, "Node successfully registered", registerAliceResponse.Message)
-	aliceRegistered, err := m.n.QueryEmissions.GetRegisteredTopicIds(
+
+	// Check Alice registered as reputer
+	aliceRegistered, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
 		m.ctx,
-		&emissionstypes.QueryRegisteredTopicIdsRequest{
-			Address:   m.n.AliceAddr,
-			IsReputer: true,
+		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
+			TopicId: 1,
+			Address: m.n.AliceAddr,
 		},
 	)
 	require.NoError(m.t, err)
-	require.Contains(m.t, aliceRegistered.TopicIds, uint64(1))
+	require.True(m.t, aliceRegistered.IsRegistered)
+
+	// Check Alice not registered as worker
+	aliceNotRegisteredAsWorker, err := m.n.QueryEmissions.IsWorkerRegisteredInTopicId(
+		m.ctx,
+		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
+			Address: m.n.AliceAddr,
+		},
+	)
+	require.NoError(m.t, err)
+	require.False(m.t, aliceNotRegisteredAsWorker.IsRegistered)
 }
 
 // register bob as worker in topic 1, then check sucess
@@ -45,20 +59,33 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, registerBobRequest)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	registerBobResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.t, err)
 	require.True(m.t, registerBobResponse.Success)
 	require.Equal(m.t, "Node successfully registered", registerBobResponse.Message)
-	bobRegistered, err := m.n.QueryEmissions.GetRegisteredTopicIds(
+	// Check Bob registered as worker
+	bobRegistered, err := m.n.QueryEmissions.IsWorkerRegisteredInTopicId(
 		m.ctx,
-		&emissionstypes.QueryRegisteredTopicIdsRequest{
-			Address:   m.n.BobAddr,
-			IsReputer: false,
+		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
+			TopicId: 1,
+			Address: m.n.BobAddr,
 		},
 	)
 	require.NoError(m.t, err)
-	require.Contains(m.t, bobRegistered.TopicIds, uint64(1))
+	require.True(m.t, bobRegistered.IsRegistered)
+
+	// Check Bob not registered as reputer
+	aliceNotRegisteredAsWorker, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
+		m.ctx,
+		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
+			Address: m.n.BobAddr,
+		},
+	)
+	require.NoError(m.t, err)
+	require.False(m.t, aliceNotRegisteredAsWorker.IsRegistered)
 }
 
 // Register two actors and check their registrations went through

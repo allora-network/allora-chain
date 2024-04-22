@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
+	chainParams "github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -24,7 +24,20 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(sdkCtx, am.keeper, blockNumber)
+	params, err := am.keeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(
+		sdkCtx,
+		am.keeper,
+		blockNumber,
+		params.TopicPageLimit,
+		params.MaxTopicPages,
+		params.RequestPageLimit,
+		params.MaxRequestPages,
+	)
 	if err != nil {
 		fmt.Println("Error getting active topics and met demand: ", err)
 		return err
@@ -36,7 +49,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		ctx,
 		types.AlloraRequestsAccountName,
 		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
+		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
 		return err
@@ -46,11 +59,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	if blocksSinceLastUpdate < 0 {
 		panic("Block number is less than last rewards update block number")
 	}
-	rewardCadence, err := am.keeper.GetParamsRewardCadence(ctx)
-	if err != nil {
-		return err
-	}
-	if blocksSinceLastUpdate >= rewardCadence {
+	if blocksSinceLastUpdate >= params.RewardCadence {
 		err = rewards.EmitRewards(sdkCtx, am.keeper, topTopicsActiveWithDemand)
 		// the following code does NOT halt the chain in case of an error in rewards payments
 		// if an error occurs and rewards payments are not made, globally they will still accumulate
@@ -108,7 +117,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 
 			}
-		}(topic)
+		}(*topic)
 	}
 	wg.Wait()
 

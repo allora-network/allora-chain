@@ -31,20 +31,47 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetActiveTopics",
-					Use:       "active-topics",
+					Use:       "active-topics [pagination]",
 					Short:     "Get Active Topics",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "pagination"},
+					},
 				},
 				{
-					RpcMethod: "GetAllTopics",
-					Use:       "all-topics",
-					Short:     "Get the full list of all topics created on the network",
-				},
-				{
-					RpcMethod: "GetReputerStakeList",
-					Use:       "reputer-stake-list [address]",
-					Short:     "Get Account Stake List",
+					RpcMethod: "GetReputerStakeInTopic",
+					Use:       "reputer-topic-stake [address] [topic_id]",
+					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakeInTopicInReputer",
+					Use:       "reputer-topic-stake [reputer_address] [topic_id]",
+					Short:     "Get total delegate stake in a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopicInReputer",
+					Use:       "delegate-topic-stake-in-reputer [delegator_address] [reputer_address] [topic_id]",
+					Short:     "Get amount of stake from delegator in a topic for a reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopic",
+					Use:       "delegator-topic-stake [delegator_address] [topic_id]",
+					Short:     "Get Account Stake in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -66,11 +93,19 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetWorkerNodeRegistration",
-					Use:       "worker-registration [owner|libp2p-pub-key]",
-					Short:     "Get registration for worker node id",
+					RpcMethod: "GetWorkerNodeInfo",
+					Use:       "worker-info [libp2p_key]",
+					Short:     "Get node info for worker node libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "node_id"},
+						{ProtoField: "libp2p_key"},
+					},
+				},
+				{
+					RpcMethod: "GetReputerNodeInfo",
+					Use:       "reputer-info [libp2p_key]",
+					Short:     "Get node info for reputer node libp2p key",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "libp2p_key"},
 					},
 				},
 				{
@@ -90,18 +125,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetExistingInferenceRequest",
-					Use:       "inference-request [topic_id] [request_id]",
-					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
+					RpcMethod: "GetMempoolInferenceRequest",
+					Use:       "inference-request [request_id]",
+					Short:     "Get a specific Inference Request and demand left in the mempool by request id",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
 						{ProtoField: "request_id"},
 					},
 				},
 				{
-					RpcMethod: "GetAllExistingInferenceRequests",
-					Use:       "all-inference-requests",
-					Short:     "Get All Inference Requests and demand left for each request in mempool",
+					RpcMethod: "GetMempoolInferenceRequestsByTopic",
+					Use:       "inference-requests-per-topic [topic_id] [pagination]",
+					Short:     "Get Inference Requests by topic and unmet demand left for each request in mempool",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "pagination"},
+					},
 				},
 				{
 					RpcMethod: "GetTopicUnmetDemand",
@@ -117,12 +155,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get timestamp of the last rewards update",
 				},
 				{
-					RpcMethod: "GetRegisteredTopicIds",
-					Use:       "registered-topic-ids [address] [bool is_reputer]",
-					Short:     "Get the list of topics that a reputer or worker is registered to",
+					RpcMethod: "IsWorkerRegisteredInTopicId",
+					Use:       "is-worker-registered [topic_id] [address]",
+					Short:     "True if worker is registered in the topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
-						{ProtoField: "is_reputer"},
+					},
+				},
+				{
+					RpcMethod: "IsReputerRegisteredInTopicId",
+					Use:       "is-reputer-registered [topic_id] [address]",
+					Short:     "True if reputer is registered in the topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
 					},
 				},
 				{
@@ -276,9 +323,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "ReactivateTopic",
-					Use:       "reactivate-topic [sender] [topic_id]",
-					Short:     "Reactivate a topic that has become inactivated",
+					RpcMethod: "ActivateTopic",
+					Use:       "activate-topic [sender] [topic_id]",
+					Short:     "Activate a topic that has become inactivated",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
@@ -286,11 +333,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RequestInference",
-					Use:       "request-inference [sender] [requests]",
-					Short:     "Request a batch of inferences to be kicked off",
+					Use:       "request-inference [sender] [request]",
+					Short:     "Request an inference ",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "requests"},
+						{ProtoField: "request"},
 					},
 				},
 				{

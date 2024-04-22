@@ -34,6 +34,8 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, createTopicRequest)
 	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.t, err)

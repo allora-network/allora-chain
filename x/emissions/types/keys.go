@@ -2,10 +2,13 @@ package types
 
 import "cosmossdk.io/collections"
 
-const ModuleName = "emissions"
-const AlloraStakingAccountName = "allorastaking"
-const AlloraRequestsAccountName = "allorarequests"
-const AlloraRewardsAccountName = "allorarewards"
+const (
+	ModuleName                = "emissions"
+	StoreKey                  = "emissions"
+	AlloraStakingAccountName  = "allorastaking"
+	AlloraRequestsAccountName = "allorarequests"
+	AlloraRewardsAccountName  = "allorarewards"
+)
 
 var (
 	ParamsKey                          = collections.NewPrefix(0)
@@ -25,7 +28,7 @@ var (
 	WorkerNodesKey                     = collections.NewPrefix(14)
 	ReputerNodesKey                    = collections.NewPrefix(15)
 	LatestInferencesTsKey              = collections.NewPrefix(16)
-	MempoolKey                         = collections.NewPrefix(17)
+	ActiveTopicsKey                    = collections.NewPrefix(17)
 	RequestUnmetDemandKey              = collections.NewPrefix(18)
 	TopicUnmetDemandKey                = collections.NewPrefix(19)
 	AllInferencesKey                   = collections.NewPrefix(20)
@@ -35,31 +38,33 @@ var (
 	StakeByReputerAndTopicId           = collections.NewPrefix(24)
 	DelegateStakeRemovalKey            = collections.NewPrefix(25)
 	AllTopicStakeSumKey                = collections.NewPrefix(26)
-	AddressTopicsKey                   = collections.NewPrefix(27)
-	WhitelistAdminsKey                 = collections.NewPrefix(28)
-	TopicCreationWhitelistKey          = collections.NewPrefix(29)
-	ReputerWhitelistKey                = collections.NewPrefix(30)
-	ChurnReadyTopicsKey                = collections.NewPrefix(31)
-	NetworkLossBundlesKey              = collections.NewPrefix(32)
-	NetworkRegretsKey                  = collections.NewPrefix(33)
-	StakeByReputerAndTopicIdKey        = collections.NewPrefix(34)
-	ReputerScoresKey                   = collections.NewPrefix(35)
-	InferenceScoresKey                 = collections.NewPrefix(36)
-	ForecastScoresKey                  = collections.NewPrefix(37)
-	ReputerListeningCoefficientKey     = collections.NewPrefix(38)
-	InfererNetworkRegretsKey           = collections.NewPrefix(39)
-	ForecasterNetworkRegretsKey        = collections.NewPrefix(40)
-	OneInForecasterNetworkRegretsKey   = collections.NewPrefix(41)
-	UnfulfilledWorkerNoncesKey         = collections.NewPrefix(42)
-	UnfulfilledReputerNoncesKey        = collections.NewPrefix(43)
-	AverageWorkerRewardKey             = collections.NewPrefix(44)
-	FeeRevenueEpochKey                 = collections.NewPrefix(45)
-	TopicFeeRevenueKey                 = collections.NewPrefix(46)
-	PreviousTopicWeightKey             = collections.NewPrefix(47)
-	PreviousReputerRewardFractionKey   = collections.NewPrefix(48)
-	PreviousInferenceRewardFractionKey = collections.NewPrefix(49)
-	PreviousForecastRewardFractionKey  = collections.NewPrefix(50)
-	LatestInfererScoresByWorkerKey     = collections.NewPrefix(51)
-	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(52)
-	LatestReputerScoresByReputerKey    = collections.NewPrefix(53)
+	WhitelistAdminsKey                 = collections.NewPrefix(27)
+	TopicCreationWhitelistKey          = collections.NewPrefix(28)
+	ReputerWhitelistKey                = collections.NewPrefix(29)
+	ChurnReadyTopicsKey                = collections.NewPrefix(30)
+	NetworkLossBundlesKey              = collections.NewPrefix(31)
+	NetworkRegretsKey                  = collections.NewPrefix(32)
+	StakeByReputerAndTopicIdKey        = collections.NewPrefix(33)
+	ReputerScoresKey                   = collections.NewPrefix(34)
+	InferenceScoresKey                 = collections.NewPrefix(35)
+	ForecastScoresKey                  = collections.NewPrefix(36)
+	ReputerListeningCoefficientKey     = collections.NewPrefix(37)
+	InfererNetworkRegretsKey           = collections.NewPrefix(38)
+	ForecasterNetworkRegretsKey        = collections.NewPrefix(39)
+	OneInForecasterNetworkRegretsKey   = collections.NewPrefix(40)
+	UnfulfilledWorkerNoncesKey         = collections.NewPrefix(41)
+	UnfulfilledReputerNoncesKey        = collections.NewPrefix(42)
+	AverageWorkerRewardKey             = collections.NewPrefix(43)
+	FeeRevenueEpochKey                 = collections.NewPrefix(44)
+	TopicFeeRevenueKey                 = collections.NewPrefix(45)
+	PreviousTopicWeightKey             = collections.NewPrefix(46)
+	PreviousReputerRewardFractionKey   = collections.NewPrefix(47)
+	PreviousInferenceRewardFractionKey = collections.NewPrefix(48)
+	PreviousForecastRewardFractionKey  = collections.NewPrefix(49)
+	LatestInfererScoresByWorkerKey     = collections.NewPrefix(50)
+	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(51)
+	LatestReputerScoresByReputerKey    = collections.NewPrefix(52)
+	RequestsKey                        = collections.NewPrefix(53)
+	TopicRequestsKey                   = collections.NewPrefix(54)
+	NumRequestsPerTopicKey             = collections.NewPrefix(55)
 )

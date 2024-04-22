@@ -14,18 +14,18 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 		m.n.BobAcc,
 		&emissionstypes.MsgRequestInference{
 			Sender: m.n.BobAddr,
-			Requests: []*emissionstypes.RequestInferenceListItem{
-				{
-					Nonce:                1,
-					TopicId:              1,
-					Cadence:              10800,
-					MaxPricePerInference: cosmosMath.NewUint(10000),
-					BidAmount:            cosmosMath.NewUint(10000),
-					BlockValidUntil:      currBlock + 10805,
-				},
+			Request: &emissionstypes.InferenceRequestInbound{
+				Nonce:                1,
+				TopicId:              1,
+				Cadence:              10800,
+				MaxPricePerInference: cosmosMath.NewUint(10000),
+				BidAmount:            cosmosMath.NewUint(10000),
+				BlockValidUntil:      currBlock + 10805,
 			},
 		},
 	)
+	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
 	resp := &emissionstypes.MsgRequestInferenceResponse{}
 	err = txResp.Decode(resp)
@@ -35,33 +35,34 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 	// and then query for it that way, esp given wanting to delete that endpoint
 
 	// query for the request
-	allInferenceRequestsResponse, err := m.n.QueryEmissions.GetAllExistingInferenceRequests(
+	_, err = m.n.QueryEmissions.GetMempoolInferenceRequest(
 		m.ctx,
-		&emissionstypes.QueryAllExistingInferenceRequest{},
+		&emissionstypes.QueryMempoolInferenceRequest{RequestId: resp.RequestId},
 	)
 	require.NoError(m.t, err)
-	require.Greater(m.t, len(allInferenceRequestsResponse.InferenceRequests), 0)
 }
 
-func ReactivateTopic1(m TestMetadata) {
+func ActivateTopic1(m TestMetadata) {
 	txResp, err := m.n.Client.BroadcastTx(
 		m.ctx,
 		m.n.AliceAcc,
-		&emissionstypes.MsgReactivateTopic{
+		&emissionstypes.MsgActivateTopic{
 			Sender:  m.n.AliceAddr,
 			TopicId: 1,
 		},
 	)
 	require.NoError(m.t, err)
-	reactivateTopicResponse := &emissionstypes.MsgReactivateTopicResponse{}
-	err = txResp.Decode(reactivateTopicResponse)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
-	require.True(m.t, reactivateTopicResponse.Success)
+	activateTopicResponse := &emissionstypes.MsgActivateTopicResponse{}
+	err = txResp.Decode(activateTopicResponse)
+	require.NoError(m.t, err)
+	require.True(m.t, activateTopicResponse.Success)
 }
 
 func InferenceRequestsChecks(m TestMetadata) {
 	m.t.Log("--- Check creating an Inference Request on Topic 1 ---")
 	CreateInferenceRequestOnTopic1(m)
 	m.t.Log("--- Check reactivating Topic 1 ---")
-	ReactivateTopic1(m)
+	ActivateTopic1(m)
 }

@@ -108,7 +108,7 @@ func CalcNetworkLosses(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer].Amount)
+			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
@@ -255,7 +255,7 @@ func CalcCombinedNetworkLoss(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer].Amount)
+			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err

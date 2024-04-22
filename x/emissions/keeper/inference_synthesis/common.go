@@ -1,8 +1,8 @@
 package inference_synthesis
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type Worker = string
@@ -12,4 +12,4 @@ type Regret = alloraMath.Dec
 type Loss = alloraMath.Dec
 type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
-type Stake = emissions.StakePlacement
+type Stake = cosmosMath.Uint

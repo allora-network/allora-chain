@@ -2,19 +2,19 @@ package keeper
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
-	"strings"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
-	storetypes "cosmossdk.io/core/store"
-	"github.com/cosmos/cosmos-sdk/codec"
 
+	coreStore "cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -31,6 +31,7 @@ type Workers = string
 type Reputers = string
 type BlockHeight = int64
 type RequestId = string
+type RequestIndex = uint64 // A concept completely internal to the keeper. Each request in a topic is indexed by a unique request index.
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
@@ -49,15 +50,14 @@ type Keeper struct {
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
-	topics collections.Map[TopicId, types.Topic]
+	topics       collections.Map[TopicId, types.Topic]
+	activeTopics collections.KeySet[TopicId]
 	// every topics that has been churned and ready to get inferences in the block
 	churnReadyTopics collections.Item[types.TopicList]
 	// for a topic, what is every worker node that has registered to it?
 	topicWorkers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
-	// for an address, what are all the topics that it's registered for?
-	addressTopics collections.Map[sdk.AccAddress, []uint64]
 
 	/// SCORES
 
@@ -107,8 +107,12 @@ type Keeper struct {
 
 	/// INFERENCE REQUEST MEMPOOL
 
-	// map of (topic, request_id) -> full InferenceRequest information for that request
-	mempool collections.Map[collections.Pair[TopicId, RequestId], types.InferenceRequest]
+	// map of (request_id) -> full InferenceRequest information for that request
+	requests collections.Map[RequestId, types.InferenceRequest]
+	// map of (topic, request_index) -> bounded list of request_ids
+	topicRequests collections.Map[collections.Pair[TopicId, uint64], RequestId]
+	// map of (topic) -> number of active requests in a topic
+	numRequestsPerTopic collections.Map[TopicId, uint64]
 	// amount of money available for an inference request id that has been placed in the mempool but has not yet been fully satisfied
 	requestUnmetDemand collections.Map[RequestId, Uint]
 	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
@@ -182,10 +186,11 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	addressCodec address.Codec,
-	storeService storetypes.KVStoreService,
+	storeService coreStore.KVStoreService,
 	ak AccountKeeper,
 	bk BankKeeper,
-	feeCollectorName string) Keeper {
+	feeCollectorName string,
+) Keeper {
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
@@ -200,9 +205,9 @@ func NewKeeper(
 		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
+		activeTopics:                        collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
 		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		addressTopics:                       collections.NewMap(sb, types.AddressTopicsKey, "address_topics", sdk.AccAddressKey, TopicIdListValue),
 		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeRemoval:                        collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
@@ -210,7 +215,9 @@ func NewKeeper(
 		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		mempool:                             collections.NewMap(sb, types.MempoolKey, "mempool", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.InferenceRequest](cdc)),
+		requests:                            collections.NewMap(sb, types.RequestsKey, "requests", collections.StringKey, codec.CollValue[types.InferenceRequest](cdc)),
+		topicRequests:                       collections.NewMap(sb, types.TopicRequestsKey, "topic_requests", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), collections.StringValue),
+		numRequestsPerTopic:                 collections.NewMap(sb, types.NumRequestsPerTopicKey, "num_requests_per_topic", collections.Uint64Key, collections.Uint64Value),
 		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, alloraMath.UintValue),
 		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, alloraMath.UintValue),
 		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
@@ -714,6 +721,30 @@ func (k *Keeper) GetParamsRegistrationFee(ctx context.Context) (cosmosMath.Int, 
 	return params.RegistrationFee, nil
 }
 
+func (k *Keeper) GetParamsMaxRequestsPerTopic(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxRequestsPerTopic, nil
+}
+
+func (k *Keeper) GetParamsDefaultLimit(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return uint64(0), err
+	}
+	return params.DefaultLimit, nil
+}
+
+func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return uint64(0), err
+	}
+	return params.MaxLimit, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -1045,7 +1076,7 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 		return errors.New("stake must be greater than zero")
 	}
 
-	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
 		return err
 	}
@@ -1207,7 +1238,7 @@ func (k *Keeper) RemoveDelegateStake(
 	}
 
 	// Check stakeFromDelegator >= stake
-	stakeFromDelegator, err := k.GetStakeFromDelegator(ctx, topicId, delegator)
+	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
 		return err
 	}
@@ -1289,87 +1320,6 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake Uint) error {
 	return k.totalStake.Set(ctx, totalStake)
 }
 
-// TODO paginate
-// GetStakesForAccount returns the list of stakes for a given account address.
-func (k *Keeper) GetStakePlacementsByReputer(ctx context.Context, reputer sdk.AccAddress) ([]types.StakePlacement, error) {
-	topicIds := make([]TopicId, 0)
-	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]types.StakePlacement, 0)
-	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// iterate over all keys in stakePlacements
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		reputerKey := kv.K2()
-		// if the reputer key matches the reputer we're looking for
-		if reputerKey.Equals(reputer) {
-			amount, err := k.stakeByReputerAndTopicId.Get(ctx, kv)
-			if err != nil {
-				return nil, err
-			}
-			stakeInfo := types.StakePlacement{
-				TopicId: kv.K1(),
-				Amount:  amount,
-				Reputer: reputerKey.String(),
-			}
-			stakes = append(stakes, stakeInfo)
-			topicIds = append(topicIds, kv.K1())
-			amounts = append(amounts, amount)
-		}
-	}
-	if len(topicIds) != len(amounts) {
-		return nil, types.ErrIterationLengthDoesNotMatch
-	}
-
-	return stakes, nil
-}
-
-// TODO paginate
-func (k *Keeper) GetStakePlacementsByTopic(ctx context.Context, topicId TopicId) ([]types.StakePlacement, error) {
-	reputers := make([]Reputer, 0)
-	amounts := make([]cosmosMath.Uint, 0)
-	stakes := make([]types.StakePlacement, 0)
-	iter, err := k.stakeByReputerAndTopicId.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// iterate over all keys in stakePlacements
-	kvs, err := iter.Keys()
-	if err != nil {
-		return nil, err
-	}
-	for _, kv := range kvs {
-		topicKey := kv.K1()
-		// if the topic key matches the topic we're looking for
-		if topicKey == topicId {
-			amount, err := k.stakeByReputerAndTopicId.Get(ctx, kv)
-			if err != nil {
-				return nil, err
-			}
-			stakeInfo := types.StakePlacement{
-				TopicId: topicKey,
-				Amount:  amount,
-				Reputer: kv.K2().String(),
-			}
-			stakes = append(stakes, stakeInfo)
-			reputers = append(reputers, kv.K2())
-			amounts = append(amounts, amount)
-		}
-	}
-	if len(reputers) != len(amounts) {
-		return nil, types.ErrIterationLengthDoesNotMatch
-	}
-
-	return stakes, nil
-}
-
 // Gets the stake in the network for a given topic
 func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (Uint, error) {
 	ret, err := k.topicStake.Get(ctx, topicId)
@@ -1395,7 +1345,7 @@ func (k *Keeper) GetStakeOnTopicFromReputer(ctx context.Context, topicId TopicId
 }
 
 // Returns the amount of stake placed by a specific delegator.
-func (k *Keeper) GetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator Delegator) (Uint, error) {
+func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator Delegator) (Uint, error) {
 	key := collections.Join(topicId, delegator)
 	stake, err := k.stakeFromDelegator.Get(ctx, key)
 	if err != nil {
@@ -1509,10 +1459,6 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer sdk
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopic(ctx, reputer, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -1523,12 +1469,11 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr
 	if err != nil {
 		return err
 	}
-
-	err = k.RemoveAddressTopic(ctx, reputerAddr, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
+}
+
+func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (types.OffchainNode, error) {
+	return k.reputers.Get(ctx, reputerKey)
 }
 
 /// WORKERS
@@ -1544,10 +1489,6 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker sdk.A
 	if err != nil {
 		return err
 	}
-	err = k.AddAddressTopic(ctx, worker, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -1558,39 +1499,11 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr s
 	if err != nil {
 		return err
 	}
-
-	err = k.RemoveAddressTopic(ctx, workerAddr, topicId)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
-// TODO paginate
-func (k *Keeper) FindWorkerNodesByOwner(ctx sdk.Context, nodeId string) ([]*types.OffchainNode, error) {
-	var nodes []*types.OffchainNode
-	var nodeIdParts = strings.Split(nodeId, "|")
-
-	if len(nodeIdParts) < 2 {
-		nodeIdParts = append(nodeIdParts, "")
-	}
-
-	owner, libp2pkey := nodeIdParts[0], nodeIdParts[1]
-
-	iterator, err := k.workers.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for ; iterator.Valid(); iterator.Next() {
-		node, _ := iterator.Value()
-		if node.Owner == owner && len(libp2pkey) == 0 || node.Owner == owner && node.LibP2PKey == libp2pkey {
-			nodeCopy := node
-			nodes = append(nodes, &nodeCopy)
-		}
-	}
-
-	return nodes, nil
+func (k *Keeper) GetWorkerByLibp2pKey(ctx sdk.Context, workerKey string) (types.OffchainNode, error) {
+	return k.workers.Get(ctx, workerKey)
 }
 
 func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
@@ -1642,35 +1555,42 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
+// Set a topic to inactive if the topic exists and is active, else does nothing
 func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
-	topic, err := k.topics.Get(ctx, topicId)
+	present, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
-	topic.Active = false
-
-	err = k.topics.Set(ctx, topicId, topic)
+	isActive, err := k.activeTopics.Has(ctx, topicId)
 	if err != nil {
 		return err
+	}
+
+	if present && isActive {
+		err = k.activeTopics.Remove(ctx, topicId)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (k *Keeper) ReactivateTopic(ctx context.Context, topicId TopicId) error {
-	topic, err := k.topics.Get(ctx, topicId)
+// Set a topic to active if the topic exists, else does nothing
+func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
+	present, err := k.topics.Has(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
-	topic.Active = true
-
-	err = k.topics.Set(ctx, topicId, topic)
-	if err != nil {
-		return err
+	if !present {
+		return nil
 	}
 
+	if err := k.activeTopics.Set(ctx, topicId); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1689,20 +1609,6 @@ func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topi
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-// TODO paginate
-// Gets every topic
-func (k *Keeper) GetAllTopics(ctx context.Context) ([]*types.Topic, error) {
-	var allTopics []*types.Topic
-	err := k.topics.Walk(ctx, nil, func(topicId TopicId, topic types.Topic) (bool, error) {
-		allTopics = append(allTopics, &topic)
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return allTopics, nil
-}
-
 // Checks if a topic exists
 func (k *Keeper) TopicExists(ctx context.Context, topicId TopicId) (bool, error) {
 	return k.topics.Has(ctx, topicId)
@@ -1713,19 +1619,54 @@ func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
-// TODO paginate
-// GetActiveTopics returns a slice of all active topics.
-func (k *Keeper) GetActiveTopics(ctx context.Context) ([]*types.Topic, error) {
-	var activeTopics []*types.Topic
-	if err := k.topics.Walk(ctx, nil, func(topicId TopicId, topic types.Topic) (bool, error) {
-		if topic.Active { // Check if the topic is marked as active
-			activeTopics = append(activeTopics, &topic)
-		}
-		return false, nil // Continue the iteration
-	}); err != nil {
-		return nil, err
+func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
+	return k.activeTopics.Has(ctx, topicId)
+}
+
+func (k Keeper) GetActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
+	limit, startTopicId, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	if err != nil {
+		return nil, nil, err
 	}
-	return activeTopics, nil
+
+	rng := new(collections.Range[uint64]).StartInclusive(startTopicId)
+
+	iter, err := k.activeTopics.Iterate(ctx, rng)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer iter.Close()
+
+	activeTopics := make([]TopicId, 0)
+	count := uint64(0)
+	for ; iter.Valid(); iter.Next() {
+		newKey, err := iter.Key()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		activeTopics = append(activeTopics, newKey)
+
+		if count >= limit {
+			break
+		}
+		count++
+	}
+
+	// If there are no more topics, we return the same cursor as the last one
+	if !iter.Valid() {
+		return activeTopics, &types.SimpleCursorPaginationResponse{
+			NextKey: pagination.Key,
+		}, nil
+	}
+
+	// If there are more topics, we return the next key
+	nextKey := make([]byte, 8)
+	binary.BigEndian.PutUint64(nextKey, startTopicId+limit)
+
+	return activeTopics, &types.SimpleCursorPaginationResponse{
+		NextKey: nextKey,
+	}, nil
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
@@ -1757,98 +1698,6 @@ func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId,
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
-}
-
-// Adds new topics to the address's list of topics, avoiding duplicates.
-// Does nothing if the topic already exists for the address.
-func (k *Keeper) AddAddressTopic(ctx context.Context, address sdk.AccAddress, newTopic TopicId) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-
-	for _, topic := range currentTopics {
-		if topic == newTopic {
-			return nil
-		}
-	}
-
-	// Topic does not already exist => Add the new topic to the list
-	currentTopics = append(currentTopics, newTopic)
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, currentTopics)
-}
-
-// RemoveAddressTopic removes a specified topic from the address's list of topics.
-func (k *Keeper) RemoveAddressTopic(ctx context.Context, address sdk.AccAddress, topicToRemove TopicId) error {
-	// Get the current list of topics for the address
-	currentTopics, err := k.GetRegisteredTopicIdsByAddress(ctx, address)
-	if err != nil {
-		return err
-	}
-
-	// Find and remove the specified topic
-	filteredTopics := make([]uint64, 0)
-	for _, topic := range currentTopics {
-		if topic != topicToRemove {
-			filteredTopics = append(filteredTopics, topic)
-		}
-	}
-
-	// Set the updated list of topics for the address
-	return k.addressTopics.Set(ctx, address, filteredTopics)
-}
-
-// TODO paginate
-// GetRegisteredTopicsByAddress returns a slice of all topics ids registered by a given address.
-func (k *Keeper) GetRegisteredTopicIdsByAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	topics, err := k.addressTopics.Get(ctx, address)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return an empty slice if the address is not found, or handle it differently if needed.
-			return []uint64{}, nil
-		}
-		return nil, err
-	}
-	return topics, nil
-}
-
-// TODO paginate
-// GetRegisteredTopicIdsByWorkerAddress returns a slice of all topics ids registered by a given worker address.
-func (k *Keeper) GetRegisteredTopicIdsByWorkerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	var topicsByAddress []uint64
-
-	err := k.topicWorkers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByAddress, nil
-}
-
-// TODO paginate
-// GetRegisteredTopicIdByReputerAddress returns a slice of all topics ids registered by a given reputer address.
-func (k *Keeper) GetRegisteredTopicIdByReputerAddress(ctx context.Context, address sdk.AccAddress) ([]TopicId, error) {
-	var topicsByAddress []uint64
-
-	err := k.topicReputers.Walk(ctx, nil, func(pair collections.Pair[TopicId, sdk.AccAddress]) (bool, error) {
-		if pair.K2().String() == address.String() {
-			topicsByAddress = append(topicsByAddress, pair.K1())
-		}
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return topicsByAddress, nil
 }
 
 /// FEE REVENUE
@@ -1940,13 +1789,91 @@ func (k *Keeper) GetTopicUnmetDemand(ctx context.Context, topicId TopicId) (Uint
 	return topicUnmetDemand, nil
 }
 
+func (k *Keeper) GetTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
+	num, err := k.numRequestsPerTopic.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return uint64(0), nil
+		} else {
+			return uint64(0), err
+		}
+	}
+	return num, nil
+}
+
+func (k *Keeper) IncrementTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
+	num, err := k.GetTopicMempoolRequestCount(ctx, topicId)
+	if err != nil {
+		return uint64(0), err
+	}
+	num++
+	err = k.numRequestsPerTopic.Set(ctx, topicId, num)
+	if err != nil {
+		return uint64(0), err
+	}
+	return num, nil
+}
+
+func (k *Keeper) DecrementTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
+	num, err := k.GetTopicMempoolRequestCount(ctx, topicId)
+	if err != nil {
+		return uint64(0), err
+	}
+	num--
+	if num < 0 {
+		return uint64(0), nil
+	}
+	err = k.numRequestsPerTopic.Set(ctx, topicId, num)
+	if err != nil {
+		return uint64(0), err
+	}
+	return num, nil
+}
+
+func (k *Keeper) addToTopicMempool(ctx context.Context, topicId TopicId, requestIndex RequestIndex, requestId RequestId) error {
+	key := collections.Join(topicId, requestIndex)
+	return k.topicRequests.Set(ctx, key, requestId)
+}
+
+func (k *Keeper) removeFromTopicMempool(ctx context.Context, topicId TopicId, requestIndex RequestIndex) error {
+	key := collections.Join(topicId, requestIndex)
+	return k.topicRequests.Remove(ctx, key)
+}
+
+// Throws an error if we are already at capacity
+// Does not check for pre-existing inclusion in the topic mempool before adding!
 func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceRequest) error {
-	requestId, err := request.GetRequestId()
+	hasRequest, err := k.requests.Has(ctx, request.Id)
 	if err != nil {
 		return err
 	}
-	key := collections.Join(request.TopicId, requestId)
-	err = k.mempool.Set(ctx, key, request)
+	if hasRequest {
+		return types.ErrRequestAlreadyExists
+	}
+
+	count, err := k.GetTopicMempoolRequestCount(ctx, request.TopicId)
+	if err != nil {
+		return err
+	}
+	maxCount, err := k.GetParamsMaxRequestsPerTopic(ctx)
+	if err != nil {
+		return err
+	}
+	if count >= maxCount {
+		return types.ErrTopicMempoolAtCapacity
+	}
+
+	err = k.requests.Set(ctx, request.Id, request)
+	if err != nil {
+		return err
+	}
+
+	newIndex, err := k.IncrementTopicMempoolRequestCount(ctx, request.TopicId)
+	if err != nil {
+		return err
+	}
+
+	err = k.addToTopicMempool(ctx, request.TopicId, newIndex-1, request.Id)
 	if err != nil {
 		return err
 	}
@@ -1954,13 +1881,27 @@ func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceReques
 	return k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
 }
 
-func (k *Keeper) RemoveFromMempool(ctx context.Context, request types.InferenceRequest) error {
-	requestId, err := request.GetRequestId()
+// Does not check for pre-existing exclusion in the topic mempool before removing!
+func (k *Keeper) RemoveFromMempool(ctx context.Context, requestId RequestId) error {
+	request, err := k.GetMempoolInferenceRequestById(ctx, requestId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.ErrRequestDoesNotExist
+		}
+		return err
+	}
+
+	err = k.requests.Remove(ctx, requestId)
 	if err != nil {
 		return err
 	}
-	key := collections.Join(request.TopicId, requestId)
-	err = k.mempool.Remove(ctx, key)
+
+	newCount, err := k.DecrementTopicMempoolRequestCount(ctx, request.TopicId)
+	if err != nil {
+		return err
+	}
+
+	err = k.removeFromTopicMempool(ctx, request.TopicId, newCount)
 	if err != nil {
 		return err
 	}
@@ -1968,47 +1909,62 @@ func (k *Keeper) RemoveFromMempool(ctx context.Context, request types.InferenceR
 	return k.RemoveUnmetDemand(ctx, request.TopicId, request.BidAmount)
 }
 
-func (k *Keeper) IsRequestInMempool(ctx context.Context, topicId TopicId, requestId string) (bool, error) {
-	return k.mempool.Has(ctx, collections.Join(topicId, requestId))
+func (k *Keeper) IsRequestInMempool(ctx context.Context, requestId RequestId) (bool, error) {
+	return k.requests.Has(ctx, requestId)
 }
 
-func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, topicId TopicId, requestId string) (types.InferenceRequest, error) {
-	return k.mempool.Get(ctx, collections.Join(topicId, requestId))
+func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, requestId RequestId) (types.InferenceRequest, error) {
+	return k.requests.Get(ctx, requestId)
 }
 
-// TODO paginate
-func (k *Keeper) GetMempoolInferenceRequestsForTopic(ctx context.Context, topicId TopicId) ([]types.InferenceRequest, error) {
-	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
-	rng := collections.NewPrefixedPairRange[TopicId, RequestId](topicId)
-	iter, err := k.mempool.Iterate(ctx, rng)
+// Returns pages of inference requests in the mempool for a given topic
+func (k *Keeper) GetMempoolInferenceRequestsForTopic(
+	ctx context.Context,
+	topicId TopicId,
+	pagination *types.SimpleCursorPaginationRequest,
+) ([]types.InferenceRequest, *types.SimpleCursorPaginationResponse, error) {
+	limit, cursor, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for ; iter.Valid(); iter.Next() {
-		value, err := iter.Value()
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, value)
-	}
-	return ret, nil
-}
 
-// TODO paginate
-func (k *Keeper) GetMempool(ctx context.Context) ([]types.InferenceRequest, error) {
-	var ret []types.InferenceRequest = make([]types.InferenceRequest, 0)
-	iter, err := k.mempool.Iterate(ctx, nil)
+	numRequestsInTopic, err := k.numRequestsPerTopic.Get(ctx, topicId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	for ; iter.Valid(); iter.Next() {
-		value, err := iter.Value()
+
+	// If the cursor is greater than the number of requests in the topic, return an empty list
+	if numRequestsInTopic <= cursor {
+		return []types.InferenceRequest{}, nil, nil
+	}
+
+	// Get the requests in the page
+	requests := make([]types.InferenceRequest, 0)
+	for i := cursor; i < k.Uint64Min(numRequestsInTopic, limit+numRequestsInTopic); i++ {
+		key := collections.Join(topicId, i)
+		requestId, err := k.topicRequests.Get(ctx, key)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		ret = append(ret, value)
+		request, err := k.GetMempoolInferenceRequestById(ctx, requestId)
+		if err != nil {
+			return nil, nil, err
+		}
+		requests = append(requests, request)
 	}
-	return ret, nil
+
+	// If the number of requests in the topic is less than the limit, return an empty key
+	var nextKey []byte
+	if numRequestsInTopic <= cursor+limit {
+		nextKey = nil
+	} else {
+		nextKey = make([]byte, 8)
+		binary.BigEndian.PutUint64(nextKey, cursor+limit)
+	}
+
+	return requests, &types.SimpleCursorPaginationResponse{
+		NextKey: nextKey,
+	}, nil
 }
 
 func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount Uint) error {
@@ -2439,4 +2395,42 @@ func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule 
 // SendCoinsFromAccountToModule
 func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
+}
+
+/// UTILS
+
+func (k *Keeper) Uint64Min(a, b uint64) uint64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
+// Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
+func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
+	cursor := uint64(0)
+	limit, err := k.GetParamsDefaultLimit(ctx)
+	if err != nil {
+		return uint64(0), uint64(0), err
+	}
+	if pagination != nil {
+		if len(pagination.Key) > 0 {
+			cursor = binary.BigEndian.Uint64(pagination.Key)
+		}
+		if pagination.Limit == 0 {
+			return limit, cursor, nil
+		} else {
+			maxLimit, err := k.GetParamsMaxLimit(ctx)
+			if err != nil {
+				return uint64(0), uint64(0), err
+			}
+			if limit > maxLimit {
+				limit = maxLimit
+			}
+			return limit, cursor, nil
+		}
+	}
+
+	return limit, cursor, nil
 }

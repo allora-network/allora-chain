@@ -19,7 +19,7 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
-  rpc ReactivateTopic(MsgReactivateTopic) returns (MsgReactivateTopicResponse);
+  rpc ActivateTopic(MsgActivateTopic) returns (MsgActivateTopicResponse);
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
@@ -141,12 +141,19 @@ message OptionalParams {
   repeated uint64 gradient_descent_max_iters = 38;
   repeated int64 max_retries_to_fulfil_nonces_worker = 39;
   repeated int64 max_retries_to_fulfil_nonces_reputer = 40;
-  repeated string registration_fee = 41 [
+  repeated uint64 topic_page_limit = 41;
+  repeated uint64 max_topic_pages = 42;
+  repeated uint64 request_page_limit = 43;
+  repeated uint64 max_request_pages = 44;
+  repeated string registration_fee = 45 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  repeated uint64 max_requests_per_topic = 46;
+  repeated uint64 default_limit = 47;
+  repeated uint64 max_limit = 48;
 }
 
 message MsgUpdateParams {
@@ -327,10 +334,10 @@ message MsgConfirmRemoveDelegateStakeResponse {}
 message MsgRequestInference {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  repeated RequestInferenceListItem requests = 2;
+  InferenceRequestInbound request = 2;
 }
 
-message RequestInferenceListItem {
+message InferenceRequestInbound {
   uint64 nonce = 1;
   uint64 topic_id = 2;
   int64 cadence = 3;  // blocks between inferences, zero means oneshot inference
@@ -350,7 +357,9 @@ message RequestInferenceListItem {
   bytes extra_data = 7;
 }
 
-message MsgRequestInferenceResponse {}
+message MsgRequestInferenceResponse {
+  string request_id = 1;
+}
 
 ///  Whitelist
 
@@ -410,13 +419,13 @@ message MsgRemoveFromReputerWhitelistResponse {}
 
 /// Topic Management
 
-message MsgReactivateTopic {
+message MsgActivateTopic {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   uint64 topic_id = 2;
 }
 
-message MsgReactivateTopicResponse {
+message MsgActivateTopicResponse {
   bool success = 1;
 }

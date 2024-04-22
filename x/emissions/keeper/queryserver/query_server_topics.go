@@ -22,6 +22,10 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTo
 
 // Topics defines the handler for the Query/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -34,28 +38,29 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 	return &types.QueryTopicResponse{Topic: &topic}, nil
 }
 
-// TODO paginate
-// GetActiveTopics retrieves a list of active topics.
+// Retrieves a list of active topics. Paginated.
 func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
-	activeTopics, err := qs.k.GetActiveTopics(ctx)
+	activeTopics, pageRes, err := qs.k.GetActiveTopics(ctx, req.Pagination)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	return &types.QueryActiveTopicsResponse{Topics: activeTopics}, nil
-}
-
-// TODO paginate
-func (qs queryServer) GetAllTopics(ctx context.Context, req *types.QueryAllTopicsRequest) (*types.QueryAllTopicsResponse, error) {
-	topics, err := qs.k.GetAllTopics(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	topics := make([]*types.Topic, len(activeTopics))
+	for _, topicId := range activeTopics {
+		topic, err := qs.k.GetTopic(ctx, topicId)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		topics = append(topics, &topic)
 	}
 
-	return &types.QueryAllTopicsResponse{Topics: topics}, nil
+	return &types.QueryActiveTopicsResponse{Topics: topics, Pagination: pageRes}, nil
 }
 
 func (qs queryServer) GetTopicUnmetDemand(ctx context.Context, req *types.QueryTopicUnmetDemandRequest) (*types.QueryTopicUnmetDemandResponse, error) {
+	if req == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	unmetDemand, err := qs.k.GetTopicUnmetDemand(ctx, req.TopicId)
 	if err != nil {
 		return nil, err

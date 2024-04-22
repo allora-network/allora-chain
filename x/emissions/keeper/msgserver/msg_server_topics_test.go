@@ -39,11 +39,14 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	require.NoError(err, "CreateTopic fails on first creation")
 	s.Require().NotNil(result)
 
-	activeTopics, err := s.emissionsKeeper.GetActiveTopics(s.ctx)
+	pagination := &types.SimpleCursorPaginationRequest{
+		Limit: 100,
+	}
+	activeTopics, _, err := s.emissionsKeeper.GetActiveTopics(s.ctx, pagination)
 	require.NoError(err, "CreateTopic fails on first creation")
 	found := false
-	for _, topic := range activeTopics {
-		if topic.Id == result.TopicId {
+	for _, topicId := range activeTopics {
+		if topicId == result.TopicId {
 			found = true
 			break
 		}
@@ -75,7 +78,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgReactivateTopic() {
+func (s *KeeperTestSuite) TestMsgActivateTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -89,21 +92,21 @@ func (s *KeeperTestSuite) TestMsgReactivateTopic() {
 	s.emissionsKeeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(100))
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &types.MsgReactivateTopic{
+	activateTopicMsg := &types.MsgActivateTopic{
 		Sender:  topicCreator,
 		TopicId: topicId,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.NoError(err, "ReactivateTopic should not return an error")
+	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
+	require.NoError(err, "ActivateTopic should not return an error")
 
 	// Check if topic is active
-	topic, err := s.emissionsKeeper.GetTopic(ctx, topicId)
+	isActive, err := s.emissionsKeeper.IsTopicActive(ctx, topicId)
 	require.NoError(err)
-	require.True(topic.Active, "Topic should be active")
+	require.True(isActive, "Topic should be active")
 }
 
-func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
+func (s *KeeperTestSuite) TestMsgActivateTopicInvalidNotEnoughDemand() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -114,13 +117,13 @@ func (s *KeeperTestSuite) TestMsgReactivateTopicInvalidNotEnoughDemand() {
 	s.emissionsKeeper.InactivateTopic(ctx, 0)
 
 	// Create a MsgCreateNewTopic message
-	reactivateTopicMsg := &types.MsgReactivateTopic{
+	activateTopicMsg := &types.MsgActivateTopic{
 		Sender:  topicCreator,
 		TopicId: 0,
 	}
 
-	_, err := msgServer.ReactivateTopic(ctx, reactivateTopicMsg)
-	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ReactivateTopic should return an error")
+	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
+	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ctivateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {

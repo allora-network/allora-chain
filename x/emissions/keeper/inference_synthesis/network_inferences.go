@@ -3,10 +3,10 @@ package inference_synthesis
 import (
 	"fmt"
 
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -551,9 +551,9 @@ func CalcNetworkInferences(
 		})
 	}
 
-	forecastImpliedInferences := make([]*emissions.WorkerAttributedValue, 0)
+	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
 	for _, forecastImpliedInference := range forecastImpliedInferenceByWorker {
-		forecastImpliedInferences = append(forecastImpliedInferences, &emissions.WorkerAttributedValue{
+		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
 			Worker: forecastImpliedInference.Inferer,
 			Value:  forecastImpliedInference.Value,
 		})
@@ -564,7 +564,7 @@ func CalcNetworkInferences(
 		TopicId:                topicId,
 		CombinedValue:          combinedNetworkInference,
 		InfererValues:          infererValues,
-		ForecasterValues:       forecastImpliedInferences,
+		ForecasterValues:       forecastImpliedValues,
 		NaiveValue:             naiveInference,
 		OneOutInfererValues:    oneOutInferences,
 		OneOutForecasterValues: oneOutImpliedInferences,
@@ -583,20 +583,19 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
-	stakesOnTopic, err := k.GetStakePlacementsByTopic(ctx, topicId)
+	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Map list of stakesOnTopic to map of stakesByReputer
-	stakesByReputer := make(map[string]types.StakePlacement)
-	for _, stake := range stakesOnTopic {
-		stakesByReputer[stake.Reputer] = stake
-	}
-
-	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		return nil, 0, err
+	stakesByReputer := make(map[string]cosmosMath.Uint)
+	for _, bundle := range reputerReportedLosses.ReputerValueBundles {
+		stakeAmount, err := k.GetStakeOnTopicFromReputer(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+		if err != nil {
+			return nil, 0, err
+		}
+		stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 	}
 
 	networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
