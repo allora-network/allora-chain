@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"

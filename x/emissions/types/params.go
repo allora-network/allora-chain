@@ -11,7 +11,7 @@ type BlockHeight = int64
 func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:                   int64(1),                                // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
+		RewardCadence:                   int64(1),                                  // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicUnmetDemand:             cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
 		MinRequestUnmetDemand:           cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
