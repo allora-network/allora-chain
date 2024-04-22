@@ -37,7 +37,7 @@ curl -so- https://raw.githubusercontent.com/allora-network/networks/main/testnet
 chmod a+x ${LOCALNET_DATADIR}/generate_genesis.sh
 
 echo "Set permissions on data folder"
-docker run -it \
+docker run \
     -u 0:0 \
     -v ${LOCALNET_DATADIR}:/data \
     -e COMMON_HOME_DIR=/data \
@@ -45,7 +45,7 @@ docker run -it \
     $DOCKER_IMAGE -R $(id -u):$(id -g) /data
 
 echo "Generate genesis and accounts"
-docker run -it \
+docker run \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     -e COMMON_HOME_DIR=/data \
@@ -54,7 +54,7 @@ docker run -it \
     $DOCKER_IMAGE
 
 echo "Whitelist faucet account"
-FAUCET_ADDRESS=$(docker run -it \
+FAUCET_ADDRESS=$(docker run -t \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     -e HOME=/data/genesis \
@@ -63,7 +63,7 @@ FAUCET_ADDRESS=$(docker run -it \
 FAUCET_ADDRESS="${FAUCET_ADDRESS%%[[:cntrl:]]}"
 
 echo FAUCET_ADDRESS=$FAUCET_ADDRESS >> ${ENV_L1}
-docker run -it \
+docker run -t \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     --entrypoint=dasel \
