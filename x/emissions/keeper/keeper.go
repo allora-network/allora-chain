@@ -916,24 +916,24 @@ func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
 
 // GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
 func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (int64, error) {
-    nonce, err := k.topicRewardNonce.Get(ctx, topicId)
-    if err != nil {
-        if errors.Is(err, collections.ErrNotFound) {
-            return 0, nil // Return 0 if not found
-        }
-        return 0, err
-    }
-    return nonce, nil
+	nonce, err := k.topicRewardNonce.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil // Return 0 if not found
+		}
+		return 0, err
+	}
+	return nonce, nil
 }
 
 // SetTopicRewardNonce sets the reward nonce for a given topic ID.
 func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce int64) error {
-    return k.topicRewardNonce.Set(ctx, topicId, nonce)
+	return k.topicRewardNonce.Set(ctx, topicId, nonce)
 }
 
 // DeleteTopicRewardNonce removes the reward nonce entry for a given topic ID.
 func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) error {
-    return k.topicRewardNonce.Remove(ctx, topicId)
+	return k.topicRewardNonce.Remove(ctx, topicId)
 }
 
 /// LOSS BUNDLES
@@ -2098,23 +2098,6 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 		return types.Score{}, err
 	}
 	return score, nil
-}
-
-func (k *Keeper) GetAllLatestReputersScores(ctx context.Context, topicId TopicId) ([]types.Score, error) {
-	var scores []types.Score
-	rng := collections.NewPrefixedPairRange[TopicId, Reputer](topicId)
-	iter, err := k.latestReputerScoresByReputer.Iterate(ctx, rng)
-	if err != nil {
-		return nil, err
-	}
-	for ; iter.Valid(); iter.Next() {
-		score, err := iter.Value()
-		if err != nil {
-			return nil, err
-		}
-		scores = append(scores, score)
-	}
-	return scores, nil
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
