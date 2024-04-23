@@ -1430,7 +1430,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 
 	// Try to add zero stake
 	err := keeper.AddStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
-	s.Require().Error(err)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveStake() {
@@ -1537,7 +1537,7 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 
 	// Try to remove zero stake
 	err = keeper.RemoveStake(ctx, topicId, reputerAddr, zeroStakeAmount)
-	s.Require().Error(err)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {

@@ -32,10 +32,6 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 // including reputer's stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	address, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
 		return nil, err
@@ -51,10 +47,6 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 
 // Retrieves total delegate stake on a given reputer address in a given topic
 func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
 	if err != nil {
 		return nil, err
@@ -69,10 +61,6 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
 	if err != nil {
 		return nil, err
@@ -92,10 +80,6 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	delegatorAddress, err := sdk.AccAddressFromBech32(req.DelegatorAddress)
 	if err != nil {
 		return nil, err
@@ -111,10 +95,6 @@ func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *typ
 
 // Retrieves total stake in a given topic
 func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicStakeRequest) (*types.QueryTopicStakeResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	stake, err := qs.k.GetTopicStake(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

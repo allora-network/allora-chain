@@ -51,6 +51,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -140,6 +141,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -223,6 +225,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{

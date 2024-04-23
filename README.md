@@ -184,3 +184,13 @@ allorad --home="$APP_HOME" \
    --keyring-backend=test --chain-id ${NETWORK}
 ```
 
+## Run Integration Tests
+
+To run integration tests, execute the following commands:
+
+```bash
+make install
+make init
+bash integration/postinit.sh
+INTEGRATION=TRUE go test -timeout 10m ./integration -v
+```

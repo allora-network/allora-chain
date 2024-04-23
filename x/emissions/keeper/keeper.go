@@ -1027,7 +1027,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
 	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return nil
 	}
 
 	// Get new reputer stake in topic
@@ -1155,10 +1155,8 @@ func (k *Keeper) RemoveStake(
 	topicId TopicId,
 	reputer sdk.AccAddress,
 	stake Uint) error {
-	// Run checks to ensure that the stake can be removed, and then update the types all at once, applying rollbacks if necessary
-
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return nil
 	}
 
 	// Check reputerStakeInTopic >= stake
@@ -1201,8 +1199,6 @@ func (k *Keeper) RemoveStake(
 		return types.ErrIntegerUnderflowTotalStake
 	}
 
-	// types updates -- done all at once after all checks
-
 	// Set topic-reputer stake
 	if reputerStakeNew.IsZero() {
 		err = k.stakeByReputerAndTopicId.Remove(ctx, topicReputerKey)
@@ -1210,6 +1206,7 @@ func (k *Keeper) RemoveStake(
 		err = k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeNew)
 	}
 	if err != nil {
+		fmt.Println("Setting reputer stake in topic failed")
 		return err
 	}
 
@@ -1220,26 +1217,14 @@ func (k *Keeper) RemoveStake(
 		err = k.topicStake.Set(ctx, topicId, topicStakeNew)
 	}
 	if err != nil {
-		fmt.Println("Setting topic stake failed -- rolling back topic-reputer stake")
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			fmt.Println("Error rolling back topic-reputer stake")
-		}
+		fmt.Println("Setting topic stake failed")
 		return err
 	}
 
 	// Set total stake
 	err = k.SetTotalStake(ctx, totalStake.Sub(stake))
 	if err != nil {
-		fmt.Println("Setting total stake failed -- rolling back topic-reputer and topic stake")
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			fmt.Println("Error rolling back topic-reputer stake")
-		}
-		err2 = k.topicStake.Set(ctx, topicId, topicStake)
-		if err2 != nil {
-			fmt.Println("Error rolling back topic stake")
-		}
+		fmt.Println("Setting total stake failed")
 		return err
 	}
 
@@ -1253,10 +1238,8 @@ func (k *Keeper) RemoveDelegateStake(
 	delegator sdk.AccAddress,
 	reputer sdk.AccAddress,
 	stake Uint) error {
-	// Run checks to ensure that the delegate stake can be removed, and then update the types all at once, applying rollbacks if necessary
-
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return nil
 	}
 
 	// Check stakeFromDelegator >= stake
@@ -1289,34 +1272,21 @@ func (k *Keeper) RemoveDelegateStake(
 	}
 	stakeUponReputerNew := stakeUponReputer.Sub(stake)
 
-	// types updates -- done all at once after all checks
-
 	// Set new stake from delegator
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
+		fmt.Println("Setting stake from delegator failed")
 		return err
 	}
 
 	// Set new delegate stake placement
 	if err := k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
-		fmt.Println("Setting delegate stake placement failed -- rolling back stake from delegator")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
+		fmt.Println("Setting delegate stake placement failed")
 		return err
 	}
 
 	// Set new delegate stake upon reputer
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
-		fmt.Println("Setting delegate stake upon reputer failed -- rolling back stake from delegator and delegate stake placement")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
-		err2 = k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacement)
-		if err2 != nil {
-			return err2
-		}
+		fmt.Println("Setting delegate stake upon reputer failed")
 		return err
 	}
 

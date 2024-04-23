@@ -12,6 +12,7 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
+
 	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
