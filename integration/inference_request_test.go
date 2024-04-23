@@ -42,27 +42,27 @@ func CreateInferenceRequestOnTopic1(m TestMetadata) {
 	require.NoError(m.t, err)
 }
 
-func ActivateTopic1(m TestMetadata) {
-	txResp, err := m.n.Client.BroadcastTx(
-		m.ctx,
-		m.n.AliceAcc,
-		&emissionstypes.MsgActivateTopic{
-			Sender:  m.n.AliceAddr,
-			TopicId: 1,
+func CheckTopic1Activated(m TestMetadata) {
+
+	// Fetch only active topics
+	pagi := &emissionstypes.QueryActiveTopicsRequest{
+		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
+			Limit: 10,
 		},
-	)
-	require.NoError(m.t, err)
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
-	activateTopicResponse := &emissionstypes.MsgActivateTopicResponse{}
-	err = txResp.Decode(activateTopicResponse)
-	require.NoError(m.t, err)
-	require.True(m.t, activateTopicResponse.Success)
+	}
+	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
+		m.ctx,
+		pagi)
+	require.NoError(m.t, err, "Fetching active topics should not produce an error")
+
+	// Verify the correct number of active topics is retrieved
+	// s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
+	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topics")
 }
 
 func InferenceRequestsChecks(m TestMetadata) {
 	m.t.Log("--- Check creating an Inference Request on Topic 1 ---")
 	CreateInferenceRequestOnTopic1(m)
 	m.t.Log("--- Check reactivating Topic 1 ---")
-	ActivateTopic1(m)
+	CheckTopic1Activated(m)
 }

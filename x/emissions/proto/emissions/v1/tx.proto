@@ -19,8 +19,6 @@ service Msg {
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
-  rpc ActivateTopic(MsgActivateTopic) returns (MsgActivateTopicResponse);
-
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
@@ -416,16 +414,3 @@ message MsgRemoveFromReputerWhitelist {
 }
 
 message MsgRemoveFromReputerWhitelistResponse {}
-
-/// Topic Management
-
-message MsgActivateTopic {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  uint64 topic_id = 2;
-}
-
-message MsgActivateTopicResponse {
-  bool success = 1;
-}
