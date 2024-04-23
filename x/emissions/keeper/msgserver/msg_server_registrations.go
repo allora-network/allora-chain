@@ -12,6 +12,10 @@ import (
 
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
+	if msg == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	if msg.GetLibP2PKey() == "" {
 		return nil, types.ErrLibP2PKeyRequired
 	}
@@ -74,6 +78,10 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 
 // Remove registration from a topic
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
+	if msg == nil {
+		return nil, types.ErrReceivedNilRequest
+	}
+
 	// Check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
