@@ -1790,7 +1790,7 @@ func (s *KeeperTestSuite) TestAddToMempool() {
 	s.Require().NoError(err, "error getting request id")
 
 	// Add to mempool
-	err = keeper.AddToMempool(ctx, inferenceRequest)
+	_, err = keeper.AddToMempool(ctx, inferenceRequest)
 	s.Require().NoError(err, "Error adding to mempool")
 
 	// Check mempool
@@ -1821,7 +1821,7 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 		s.Require().NoError(err, "error getting request id")
 		inferenceRequest.Id = requestId
 		// Add to mempool
-		err = keeper.AddToMempool(ctx, inferenceRequest)
+		_, err = keeper.AddToMempool(ctx, inferenceRequest)
 		s.Require().NoError(err, "Error adding to mempool")
 		inferenceRequestMap[requestId] = inferenceRequest
 	}
@@ -2418,7 +2418,7 @@ func (s *KeeperTestSuite) TestAddToMempool2() {
 	request.Id = requestId
 
 	// Add request to the mempool
-	err = keeper.AddToMempool(ctx, request)
+	_, err = keeper.AddToMempool(ctx, request)
 	s.Require().NoError(err, "Adding to mempool should not fail")
 
 	// Check if the request is now in the mempool
@@ -2444,7 +2444,7 @@ func (s *KeeperTestSuite) TestRemoveFromMempool() {
 	request.Id = requestId
 
 	// Assume the request is already in the mempool
-	_ = keeper.AddToMempool(ctx, request)
+	_, _ = keeper.AddToMempool(ctx, request)
 
 	// Remove the request from the mempool
 	err = keeper.RemoveFromMempool(ctx, requestId)
