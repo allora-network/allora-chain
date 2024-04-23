@@ -220,7 +220,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [default_arg] [pnorm] [alpha_regret] [preward_reputer] [preward_inference] [preward_forecast] [f_tolerance]",
+					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [pnorm] [alpha_regret] [preward_reputer] [preward_inference] [preward_forecast] [f_tolerance]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -230,6 +230,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
 						{ProtoField: "epoch_length"},
+						{ProtoField: "ground_truth_lag"},
 						{ProtoField: "default_arg"},
 						{ProtoField: "pnorm"},
 						{ProtoField: "alpha_regret"},
