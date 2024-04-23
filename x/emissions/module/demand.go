@@ -72,13 +72,9 @@ func IsValidAtPrice(
 	k keeper.Keeper,
 	req types.InferenceRequest,
 	price cosmosMath.Uint,
-	currentBlock BlockHeight) (bool, error) {
-	reqId, err := req.GetRequestId()
-	if err != nil {
-		fmt.Println("Error getting request id: ", err)
-		return false, err
-	}
-	reqUnmetDemand, err := k.GetRequestDemand(ctx, reqId)
+	currentBlock BlockHeight,
+) (bool, error) {
+	reqUnmetDemand, err := k.GetRequestDemand(ctx, req.Id)
 	if err != nil {
 		fmt.Println("Error getting request demand: ", err)
 		return false, err
@@ -133,6 +129,51 @@ func InactivateLowDemandTopics(
 		i++
 	}
 	return nil
+}
+
+// True if the request has expired and successfully popped and depleted of its unmet demand, false otherwise
+func PopAndDepleteExpiredRequests(ctx sdk.Context, k keeper.Keeper, request types.InferenceRequest) (bool, error) {
+	// Check if request has expired
+	if request.BlockValidUntil > ctx.BlockHeight() {
+		return false, nil
+	}
+
+	requestUnmetDemand, err := k.GetRequestDemand(ctx, request.Id)
+	if err != nil {
+		fmt.Println("Error getting request demand: ", err)
+		return false, err
+	}
+
+	// Deplete the request -- Forward all remaining funds to the ecosystem bucket
+	err = k.AddTopicFeeRevenue(ctx, request.TopicId, requestUnmetDemand)
+	if err != nil {
+		fmt.Println("Error adding topic fee revenue: ", err)
+		return false, err
+	}
+
+	// Pop the request from the mempool
+	err = k.RemoveFromMempool(ctx, request.Id)
+	if err != nil {
+		fmt.Println("Error removing request from mempool")
+		return false, err
+	}
+
+	return true, nil
+}
+
+func FilterAndResolveExpiredRequests(ctx sdk.Context, k keeper.Keeper, requests []types.InferenceRequest) ([]types.InferenceRequest, error) {
+	var validRequests []types.InferenceRequest
+	for _, req := range requests {
+		expired, err := PopAndDepleteExpiredRequests(ctx, k, req)
+		if err != nil {
+			fmt.Println("Error popping and depleting expired requests: ", err)
+			return nil, err
+		}
+		if !expired {
+			validRequests = append(validRequests, req)
+		}
+	}
+	return validRequests, nil
 }
 
 type BestPriceData struct {
@@ -260,6 +301,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 			inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topicId, requestPageRequest)
 			if err != nil {
 				fmt.Println("Error getting mempool inference requests: ", err)
+				return nil, cosmosMath.Uint{}, err
+			}
+
+			// Filter out expired requests and deplete them
+			inferenceRequests, err = FilterAndResolveExpiredRequests(ctx, k, inferenceRequests)
+			if err != nil {
+				fmt.Println("Error filtering and resolving expired requests: ", err)
 				return nil, cosmosMath.Uint{}, err
 			}
 
