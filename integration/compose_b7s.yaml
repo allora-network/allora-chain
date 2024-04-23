@@ -1,0 +1,122 @@
+services:
+  head0:
+    # 12D3KooWLnJ8DdELdx94UGYfDknTnQsZkfVYpTm576nj6uVB6G8w
+    container_name: head0
+    image: alloranetwork/allora-inference-base-head:latest
+    volumes:
+      - ./testnet:/data  #! Mount the testnet directory to the container due to symlinks
+    working_dir: /app
+    environment:
+      - HOME=/app
+    entrypoint:
+      # - "/bin/bash"
+      # - "-c"
+      # - |
+      #   allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
+      #     --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+      #     --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
+      - allora-node
+      - --role=head
+      - --peer-db=/data/head0/peer-database
+      - --function-db=/data/head0/function-database
+      - --workspace=/tmp/node
+      - --private-key=/data/head0/key/priv.bin
+      - --log-level=debug
+      - --port=9010
+      - --rest-api=:6000
+      - --allora-node-rpc-address=${ALLORA_RPC}
+      - --allora-chain-home-dir=/data/head0/.allorad
+      - --allora-chain-key-name=head0
+      # - --allora-chain-topic-id=1
+    # ports:
+    #   - "6000:6000"
+    networks:
+      local-net:
+        aliases:
+          - head0
+        ipv4_address: ${NETWORK_PREFIX}.20
+
+# GOOD performer due to low MAX_DEVIATION
+  worker0:
+    container_name: worker0
+    image: alloranetwork/allora-inference-base:latest
+    volumes:
+      - ./testnet:/data
+      - ./inference_linear.py:/app/main.py
+      - ./requirements.txt:/app/requirements.txt
+    environment:
+      - MAX_DEVIATION=1
+      - HOME=/app
+      - NAME=worker0
+    working_dir: /app
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        pip install -r /app/requirements.txt
+
+        allora-node \
+        --role=worker \
+        --peer-db=/data/$$NAME/pdb \
+        --function-db=/data/$$NAME/fdb \
+        --runtime-path=/app/runtime \
+        --runtime-cli=bls-runtime \
+        --workspace=workspace \
+        --private-key=/data/$$NAME/key/priv.bin \
+        --log-level=debug \
+        --port=9010 \
+        --boot-nodes=${HEADS} \
+        --allora-chain-home-dir=/data/$$NAME/.allorad \
+        --allora-node-rpc-address=${ALLORA_RPC} \
+        --allora-chain-key-name=$$NAME \
+        --allora-chain-topic-id=1 \
+        --topic=1
+    networks:
+      local-net:
+        ipv4_address: ${NETWORK_PREFIX}.30
+
+# "BAD"  performer due to low MAX_DEVIATION
+  worker1:
+    container_name: worker1
+    image: alloranetwork/allora-inference-base:latest
+    volumes:
+      - ./testnet:/data
+      - ./inference_linear.py:/app/main.py
+      - ./requirements.txt:/app/requirements.txt
+    environment:
+      - MAX_DEVIATION=5
+      - NAME=worker1
+      - HOME=/app
+    working_dir: /app
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        pip install -r /app/requirements.txt
+
+        allora-node \
+        --role=worker \
+        --peer-db=/data/$$NAME/pdb \
+        --function-db=/data/$$NAME/fdb \
+        --runtime-path=/app/runtime \
+        --runtime-cli=bls-runtime \
+        --workspace=workspace \
+        --private-key=/data/$$NAME/key/priv.bin \
+        --log-level=debug \
+        --port=9010 \
+        --boot-nodes="${HEADS}" \
+        --allora-chain-home-dir=/data/$$NAME/.allorad \
+        --allora-node-rpc-address=${ALLORA_RPC} \
+        --allora-chain-key-name=$$NAME \
+        --allora-chain-topic-id=1 \
+        --topic=1
+    networks:
+      local-net:
+        ipv4_address: ${NETWORK_PREFIX}.31
+
+networks:
+  local-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_PREFIX}.0/24
