@@ -22,9 +22,6 @@ func (ms msgServer) IsTopicMempoolFull(ctx context.Context, topicId uint64) (boo
 }
 
 func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestInference) (*types.MsgRequestInferenceResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	request := types.CreateNewInferenceRequestFromListItem(msg.Sender, msg.Request)
 	// 1. check the topic is valid

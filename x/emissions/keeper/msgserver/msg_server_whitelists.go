@@ -8,10 +8,6 @@ import (
 )
 
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -37,10 +33,6 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddTo
 }
 
 func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.MsgRemoveFromWhitelistAdmin) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -66,10 +58,6 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Msg
 }
 
 func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *types.MsgAddToTopicCreationWhitelist) (*types.MsgAddToTopicCreationWhitelistResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -95,10 +83,6 @@ func (ms msgServer) AddToTopicCreationWhitelist(ctx context.Context, msg *types.
 }
 
 func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *types.MsgRemoveFromTopicCreationWhitelist) (*types.MsgRemoveFromTopicCreationWhitelistResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -124,10 +108,6 @@ func (ms msgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, msg *t
 }
 
 func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *types.MsgAddToReputerWhitelist) (*types.MsgAddToReputerWhitelistResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -153,10 +133,6 @@ func (ms msgServer) AddToReputerWhitelist(ctx context.Context, msg *types.MsgAdd
 }
 
 func (ms msgServer) RemoveFromReputerWhitelist(ctx context.Context, msg *types.MsgRemoveFromReputerWhitelist) (*types.MsgRemoveFromReputerWhitelistResponse, error) {
-	if msg == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	// Check that sender is also a whitelist admin
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {

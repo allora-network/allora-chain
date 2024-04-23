@@ -1027,7 +1027,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
 	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return nil
 	}
 
 	// Get new reputer stake in topic
