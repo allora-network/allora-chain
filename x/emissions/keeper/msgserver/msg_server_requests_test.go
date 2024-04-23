@@ -13,6 +13,7 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
+	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
@@ -34,6 +35,9 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.Require().NoError(err, "RequestInference should not return an error")
 	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
 
+	// Check if the topic is activated
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.Request.TopicId)
+	s.Require().Equal(res, true, "TopicId is not activated")
 	// Check updated stake for delegator
 	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Request)
 	requestId, err := r0.GetRequestId()

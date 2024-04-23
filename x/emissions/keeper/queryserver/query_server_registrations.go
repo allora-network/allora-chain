@@ -8,10 +8,6 @@ import (
 )
 
 func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.QueryWorkerNodeInfoRequest) (*types.QueryWorkerNodeInfoResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	node, err := qs.k.GetWorkerByLibp2pKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
@@ -21,10 +17,6 @@ func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.QueryWor
 }
 
 func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.QueryReputerNodeInfoRequest) (*types.QueryReputerNodeInfoResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	node, err := qs.k.GetReputerByLibp2pKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
@@ -34,10 +26,6 @@ func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.QueryRe
 }
 
 func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.QueryWorkerAddressByP2PKeyRequest) (*types.QueryWorkerAddressByP2PKeyResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	workerAddr, err := qs.k.GetWorkerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
@@ -47,10 +35,6 @@ func (qs queryServer) GetWorkerAddressByP2PKey(ctx context.Context, req *types.Q
 }
 
 func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.QueryReputerAddressByP2PKeyRequest) (*types.QueryReputerAddressByP2PKeyResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	address, err := qs.k.GetReputerAddressByP2PKey(sdk.UnwrapSDKContext(ctx), req.Libp2PKey)
 	if err != nil {
 		return nil, err
@@ -60,10 +44,6 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 }
 
 func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.QueryIsWorkerRegisteredInTopicIdRequest) (*types.QueryIsWorkerRegisteredInTopicIdResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	address, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
 		return nil, err
@@ -78,10 +58,6 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 }
 
 func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.QueryIsReputerRegisteredInTopicIdRequest) (*types.QueryIsReputerRegisteredInTopicIdResponse, error) {
-	if req == nil {
-		return nil, types.ErrReceivedNilRequest
-	}
-
 	address, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
 		return nil, err

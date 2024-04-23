@@ -1430,7 +1430,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 
 	// Try to add zero stake
 	err := keeper.AddStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
-	s.Require().Error(err)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveStake() {
@@ -1537,7 +1537,7 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 
 	// Try to remove zero stake
 	err = keeper.RemoveStake(ctx, topicId, reputerAddr, zeroStakeAmount)
-	s.Require().Error(err)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
@@ -1790,7 +1790,7 @@ func (s *KeeperTestSuite) TestAddToMempool() {
 	s.Require().NoError(err, "error getting request id")
 
 	// Add to mempool
-	err = keeper.AddToMempool(ctx, inferenceRequest)
+	_, err = keeper.AddToMempool(ctx, inferenceRequest)
 	s.Require().NoError(err, "Error adding to mempool")
 
 	// Check mempool
@@ -1821,7 +1821,7 @@ func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
 		s.Require().NoError(err, "error getting request id")
 		inferenceRequest.Id = requestId
 		// Add to mempool
-		err = keeper.AddToMempool(ctx, inferenceRequest)
+		_, err = keeper.AddToMempool(ctx, inferenceRequest)
 		s.Require().NoError(err, "Error adding to mempool")
 		inferenceRequestMap[requestId] = inferenceRequest
 	}
@@ -2331,7 +2331,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 	addAmount := cosmosMath.NewUint(50)
 
 	// Initial add should set demand since it starts at zero
-	err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
+	_, err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
 	s.Require().NoError(err, "Adding unmet demand should not fail")
 
 	// Verify the addition
@@ -2341,7 +2341,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 
 	// Add more to the existing demand
 	additionalAmount := cosmosMath.NewUint(30)
-	err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
+	_, err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding more unmet demand should not fail")
 
 	// Verify new demand
@@ -2418,7 +2418,7 @@ func (s *KeeperTestSuite) TestAddToMempool2() {
 	request.Id = requestId
 
 	// Add request to the mempool
-	err = keeper.AddToMempool(ctx, request)
+	_, err = keeper.AddToMempool(ctx, request)
 	s.Require().NoError(err, "Adding to mempool should not fail")
 
 	// Check if the request is now in the mempool
@@ -2444,7 +2444,7 @@ func (s *KeeperTestSuite) TestRemoveFromMempool() {
 	request.Id = requestId
 
 	// Assume the request is already in the mempool
-	_ = keeper.AddToMempool(ctx, request)
+	_, _ = keeper.AddToMempool(ctx, request)
 
 	// Remove the request from the mempool
 	err = keeper.RemoveFromMempool(ctx, requestId)

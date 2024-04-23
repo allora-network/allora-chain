@@ -13,6 +13,10 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
+	if msg.Amount.IsZero() {
+		return nil, types.ErrReceivedZeroAmount
+	}
+
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -57,6 +61,10 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRemoveStake) (*types.MsgStartRemoveStakeResponse, error) {
+	if msg.Amount.IsZero() {
+		return nil, types.ErrReceivedZeroAmount
+	}
+
 	// Check the sender is registered
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -131,6 +139,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
+	if msg.Amount.IsZero() {
+		return nil, types.ErrReceivedZeroAmount
+	}
+
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -174,6 +186,10 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
 func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.MsgStartRemoveDelegateStake) (*types.MsgStartRemoveDelegateStakeResponse, error) {
+	if msg.Amount.IsZero() {
+		return nil, types.ErrReceivedZeroAmount
+	}
+
 	// Check the sender is registered
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {

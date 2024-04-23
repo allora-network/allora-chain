@@ -1,7 +1,6 @@
 package msgserver_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -76,54 +75,6 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
 
 	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
-}
-
-func (s *KeeperTestSuite) TestMsgActivateTopic() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
-	topicId := s.CreateOneTopic()
-
-	// Deactivate topic
-	s.emissionsKeeper.InactivateTopic(ctx, topicId)
-
-	// Set unmet demand for topic
-	s.emissionsKeeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(100))
-
-	// Create a MsgCreateNewTopic message
-	activateTopicMsg := &types.MsgActivateTopic{
-		Sender:  topicCreator,
-		TopicId: topicId,
-	}
-
-	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
-	require.NoError(err, "ActivateTopic should not return an error")
-
-	// Check if topic is active
-	isActive, err := s.emissionsKeeper.IsTopicActive(ctx, topicId)
-	require.NoError(err)
-	require.True(isActive, "Topic should be active")
-}
-
-func (s *KeeperTestSuite) TestMsgActivateTopicInvalidNotEnoughDemand() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	topicCreator := sdk.AccAddress(PKS[0].Address()).String()
-	s.CreateOneTopic()
-
-	// Deactivate topic
-	s.emissionsKeeper.InactivateTopic(ctx, 0)
-
-	// Create a MsgCreateNewTopic message
-	activateTopicMsg := &types.MsgActivateTopic{
-		Sender:  topicCreator,
-		TopicId: 0,
-	}
-
-	_, err := msgServer.ActivateTopic(ctx, activateTopicMsg)
-	require.ErrorIs(err, types.ErrTopicNotEnoughDemand, "ctivateTopic should return an error")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {

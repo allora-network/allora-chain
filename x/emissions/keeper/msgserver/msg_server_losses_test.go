@@ -153,6 +153,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 	// Mock setup for addresses
 	reputerAddr := nonAdminAccounts[0].String()
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
+	s.emissionsKeeper.SetTopic(ctx, 1, types.Topic{Id: 1})
 
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertBulkReputerPayload{
@@ -165,6 +166,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
 				BlockHeight: 11,
 			},
 		},
+		TopicId: 1,
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
 				ValueBundle: &types.ValueBundle{
