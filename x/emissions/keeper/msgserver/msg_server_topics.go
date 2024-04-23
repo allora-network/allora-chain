@@ -17,13 +17,13 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if err != nil {
 		return nil, err
 	}
-	//isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//if !isTopicCreator {
-	//	return nil, types.ErrNotInTopicCreationWhitelist
-	//}
+	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
+	if err != nil {
+		return nil, err
+	}
+	if !isTopicCreator {
+		return nil, types.ErrNotInTopicCreationWhitelist
+	}
 
 	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
 	if !hasEnoughBal {
