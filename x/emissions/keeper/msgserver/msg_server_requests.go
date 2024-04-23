@@ -124,17 +124,20 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 		return nil, err
 	}
 	// 13. Activate topic if meet demand
-	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
-	if err != nil {
-		return nil, err
-	}
-	minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
 	isActivated, err := ms.k.IsTopicActive(ctx, request.TopicId)
 	if err != nil {
 		return nil, err
 	}
-	if unmetDemand.GTE(minTopicUnmetDemandUint) && !isActivated {
-		_ = ms.k.ActivateTopic(ctx, request.TopicId)
+	if !isActivated {
+		minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
+		if err != nil {
+			return nil, err
+		}
+		minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
+
+		if unmetDemand.GTE(minTopicUnmetDemandUint) {
+			_ = ms.k.ActivateTopic(ctx, request.TopicId)
+		}
 	}
 	return &types.MsgRequestInferenceResponse{RequestId: requestId}, nil
 }
