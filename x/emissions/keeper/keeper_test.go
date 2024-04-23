@@ -2331,7 +2331,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 	addAmount := cosmosMath.NewUint(50)
 
 	// Initial add should set demand since it starts at zero
-	err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
+	_, err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
 	s.Require().NoError(err, "Adding unmet demand should not fail")
 
 	// Verify the addition
@@ -2341,7 +2341,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 
 	// Add more to the existing demand
 	additionalAmount := cosmosMath.NewUint(30)
-	err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
+	_, err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding more unmet demand should not fail")
 
 	// Verify new demand

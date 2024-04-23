@@ -134,9 +134,11 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 			return nil, err
 		}
 		minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
-
 		if unmetDemand.GTE(minTopicUnmetDemandUint) {
-			_ = ms.k.ActivateTopic(ctx, request.TopicId)
+			err = ms.k.ActivateTopic(ctx, request.TopicId)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return &types.MsgRequestInferenceResponse{RequestId: requestId}, nil

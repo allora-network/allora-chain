@@ -1771,13 +1771,13 @@ func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
 
 /// MEMPOOL & INFERENCE REQUESTS
 
-func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
+func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) (Uint, error) {
 	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 	topicUnmetDemand = topicUnmetDemand.Add(amt)
-	return k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
+	return topicUnmetDemand, k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
 }
 
 func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
@@ -1900,12 +1900,12 @@ func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceReques
 		return cosmosMath.Uint{}, err
 	}
 
-	err = k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
+	unmetDemand, err := k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
 	if err != nil {
 		return cosmosMath.Uint{}, err
 	}
 
-	return k.GetTopicUnmetDemand(ctx, request.TopicId)
+	return unmetDemand, nil
 }
 
 // Does not check for pre-existing exclusion in the topic mempool before removing!
