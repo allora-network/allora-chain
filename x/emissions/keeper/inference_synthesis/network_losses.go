@@ -165,7 +165,7 @@ func CalcNetworkLosses(
 				fmt.Println("Error updating running weighted average for naive loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
-			runningWeightedCombinedLoss = nextNaiveLoss
+			runningWeightedNaiveLoss = nextNaiveLoss
 
 			// Update one-out inferer losses
 			for _, loss := range report.ValueBundle.OneOutInfererValues {
