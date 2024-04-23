@@ -21,6 +21,32 @@ func (ms msgServer) IsTopicMempoolFull(ctx context.Context, topicId uint64) (boo
 	return mempoolSize >= maxMempoolSize, nil
 }
 
+func (ms msgServer) ActivateTopic(ctx context.Context, topicId uint64) error {
+	// Check that the topic has enough demand to be activated
+	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
+	if err != nil {
+		return err
+	}
+	minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
+
+	// If the topic does not have enough demand, return an error
+	if unmetDemand.LT(minTopicUnmetDemandUint) {
+		return types.ErrTopicNotEnoughDemand
+	}
+
+	// If the topic has enough demand, activate it
+	err = ms.k.ActivateTopic(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestInference) (*types.MsgRequestInferenceResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	request := types.CreateNewInferenceRequestFromListItem(msg.Sender, msg.Request)
@@ -120,6 +146,11 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 	// 12. Write request state into the mempool state
 	request.BlockLastChecked = currentBlock
 	err = ms.k.AddToMempool(ctx, *request)
+	if err != nil {
+		return nil, err
+	}
+	// 13. Activate topic
+	err = ms.ActivateTopic(ctx, request.TopicId)
 	if err != nil {
 		return nil, err
 	}
