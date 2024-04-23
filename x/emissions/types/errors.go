@@ -65,4 +65,5 @@ var (
 	ErrRequestAlreadyExists                          = errors.Register(ModuleName, 60, "request already exists")
 	ErrRequestDoesNotExist                           = errors.Register(ModuleName, 61, "request does not exist")
 	ErrTopicMempoolAtCapacity                        = errors.Register(ModuleName, 62, "topic mempool at capacity")
+	ErrReceivedZeroAmount                            = errors.Register(ModuleName, 63, "received zero amount")
 )
