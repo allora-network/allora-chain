@@ -53,7 +53,14 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		feeCollectorName = authtypes.FeeCollectorName
 	}
 
-	k := keeper.NewKeeper(in.Cdc, in.AddressCodec, in.StoreService, in.AccountKeeper, in.BankKeeper, feeCollectorName)
+	k := keeper.NewKeeper(
+		in.Cdc,
+		in.AddressCodec,
+		in.StoreService,
+		in.AccountKeeper,
+		in.BankKeeper,
+		feeCollectorName,
+	)
 	m := NewAppModule(in.Cdc, k)
 
 	return ModuleOutputs{Module: m, Keeper: k}

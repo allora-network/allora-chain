@@ -25,3 +25,6 @@ data/
 # Account info
 *.account_info
 integration/testnet
+
+# coverage
+coverage

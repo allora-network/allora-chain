@@ -4,19 +4,19 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
-func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) error {
+func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
 
 	// ensure the module account exists
-	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingAccountName)
+	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraStakingAccountName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsAccountName)
+	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRequestsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
-	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRewardsAccountName)
+	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
@@ -26,6 +26,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 	}
 	// reserve topic ID 0 for future use
 	if _, err := k.IncrementTopicId(ctx); err != nil {
+		return err
+	}
+	// reserve fee epoch 0 for errors
+	if err := k.IncrementFeeRevenueEpoch(ctx); err != nil {
 		return err
 	}
 
@@ -38,13 +42,13 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 }
 
 // ExportGenesis exports the module state to a genesis state.
-func (k *Keeper) ExportGenesis(ctx context.Context) (*state.GenesisState, error) {
+func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &state.GenesisState{
+	return &types.GenesisState{
 		Params: params,
 	}, nil
 }
@@ -57,7 +61,7 @@ func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses 
 		}
 		k.AddWhitelistAdmin(ctx, accAddress)
 		k.AddToTopicCreationWhitelist(ctx, accAddress)
-		k.AddToWeightSettingWhitelist(ctx, accAddress)
+		k.AddToReputerWhitelist(ctx, accAddress)
 	}
 
 	return nil

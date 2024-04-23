@@ -13,41 +13,71 @@ import (
 // NewParams returns Params instance with the given values.
 func NewParams(
 	mintDenom string,
-	inflationRateChange,
-	inflationMax,
-	inflationMin,
-	goalBonded math.LegacyDec,
-	blocksPerYear uint64,
-	maxSupply math.Uint,
-	halvingInterval uint64,
-	currentBlockProvision math.Uint,
+	blocksPerMonth uint64,
+	emissionCalibrationTimestepPerMonth uint64,
+	maxSupply math.Int,
+	fEmission math.LegacyDec,
+	oneMonthSmoothingDegree math.LegacyDec,
+	ecosystemPercentOfTotalSupply math.LegacyDec,
+	foundationPercentOfTotalSupply math.LegacyDec,
+	participantsPercentOfTotalSupply math.LegacyDec,
+	investorsPercentOfTotalSupply math.LegacyDec,
+	teamPercentOfTotalSupply math.LegacyDec,
 ) Params {
 	return Params{
-		MintDenom:             mintDenom,
-		InflationRateChange:   inflationRateChange,
-		InflationMax:          inflationMax,
-		InflationMin:          inflationMin,
-		GoalBonded:            goalBonded,
-		BlocksPerYear:         blocksPerYear,
-		MaxSupply:             maxSupply,
-		HalvingInterval:       halvingInterval,
-		CurrentBlockProvision: currentBlockProvision,
+		MintDenom:                              mintDenom,
+		BlocksPerMonth:                         blocksPerMonth,
+		EmissionCalibrationsTimestepPerMonth:   emissionCalibrationTimestepPerMonth,
+		MaxSupply:                              maxSupply,
+		FEmission:                              fEmission,
+		OneMonthSmoothingDegree:                oneMonthSmoothingDegree,
+		EcosystemTreasuryPercentOfTotalSupply:  ecosystemPercentOfTotalSupply,
+		FoundationTreasuryPercentOfTotalSupply: foundationPercentOfTotalSupply,
+		ParticipantsPercentOfTotalSupply:       participantsPercentOfTotalSupply,
+		InvestorsPercentOfTotalSupply:          investorsPercentOfTotalSupply,
+		TeamPercentOfTotalSupply:               teamPercentOfTotalSupply,
 	}
 }
 
 // DefaultParams returns default x/mint module parameters.
 func DefaultParams() Params {
-	return Params{
-		MintDenom:             sdk.DefaultBondDenom,
-		InflationRateChange:   math.LegacyNewDecWithPrec(3573582624, 7),
-		InflationMax:          math.LegacyNewDecWithPrec(3573582624, 7),
-		InflationMin:          math.LegacyNewDecWithPrec(0, 2),
-		GoalBonded:            math.LegacyNewDecWithPrec(67, 2),
-		BlocksPerYear:         uint64(60 * 60 * 8766 / 5),                             // assuming 5 second block times
-		MaxSupply:             math.NewUintFromString("1000000000000000000000000000"), // 1 billion allo * 1e18 (exponent) = 1e27 uallo
-		HalvingInterval:       uint64(25246080),
-		CurrentBlockProvision: math.NewUintFromString("2831000000000000000"), // uallo per block
+	maxSupply, ok := math.NewIntFromString("1000000000000000000000000000") // 1e27
+	if !ok {
+		panic("failed to parse max supply")
 	}
+	return Params{
+		MintDenom:                              sdk.DefaultBondDenom,
+		BlocksPerMonth:                         DefaultBlocksPerMonth(),
+		EmissionCalibrationsTimestepPerMonth:   uint64(30),                             // "daily" emission calibration
+		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmission:                              math.LegacyMustNewDecFromStr("0.015"),  // 0.015 per month
+		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
+		EcosystemTreasuryPercentOfTotalSupply:  math.LegacyMustNewDecFromStr("0.3675"), // 36.75%
+		FoundationTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.1"),    // 10%
+		ParticipantsPercentOfTotalSupply:       math.LegacyMustNewDecFromStr("0.05"),   // 5%
+		InvestorsPercentOfTotalSupply:          math.LegacyMustNewDecFromStr("0.3075"), // 30.75%
+		TeamPercentOfTotalSupply:               math.LegacyMustNewDecFromStr("0.175"),  // 17.5%
+	}
+}
+
+// Default previous emission per token is zero
+func DefaultPreviousRewardEmissionPerUnitStakedToken() math.LegacyDec {
+	return math.ZeroInt().ToLegacyDec()
+}
+
+// no emission happened last block at genesis
+func DefaultPreviousBlockEmission() math.Int {
+	return math.ZeroInt()
+}
+
+// at genesis, nothing has been minted yet
+func DefaultEcosystemTokensMinted() math.Int {
+	return math.ZeroInt()
+}
+
+// ~5 seconds block time, 6311520 per year, 525960 per month
+func DefaultBlocksPerMonth() uint64 {
+	return uint64(525960)
 }
 
 // Validate does the sanity check on the params.
@@ -55,37 +85,45 @@ func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {
 		return err
 	}
-	if err := validateInflationRateChange(p.InflationRateChange); err != nil {
+	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
-	}
-	if err := validateInflationMax(p.InflationMax); err != nil {
-		return err
-	}
-	if err := validateInflationMin(p.InflationMin); err != nil {
-		return err
-	}
-	if err := validateGoalBonded(p.GoalBonded); err != nil {
-		return err
-	}
-	if err := validateBlocksPerYear(p.BlocksPerYear); err != nil {
-		return err
-	}
-	if p.InflationMax.LT(p.InflationMin) {
-		return fmt.Errorf(
-			"max inflation (%s) must be greater than or equal to min inflation (%s)",
-			p.InflationMax, p.InflationMin,
-		)
 	}
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
 		return err
 	}
-	if err := validateHalvingInterval(p.HalvingInterval); err != nil {
+	if err := validateEmissionCalibrationTimestepPerMonth(p.EmissionCalibrationsTimestepPerMonth); err != nil {
 		return err
 	}
-	if err := validateCurrentBlockProvision(p.CurrentBlockProvision); err != nil {
+	if err := validateAFractionValue(p.FEmission); err != nil {
 		return err
 	}
-
+	if err := validateAFractionValue(p.OneMonthSmoothingDegree); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.EcosystemTreasuryPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.FoundationTreasuryPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.ParticipantsPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.InvestorsPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.TeamPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateTokenSupplyAddsTo100Percent(
+		p.EcosystemTreasuryPercentOfTotalSupply,
+		p.FoundationTreasuryPercentOfTotalSupply,
+		p.ParticipantsPercentOfTotalSupply,
+		p.InvestorsPercentOfTotalSupply,
+		p.TeamPercentOfTotalSupply,
+	); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -105,127 +143,91 @@ func validateMintDenom(i interface{}) error {
 	return nil
 }
 
-func validateInflationRateChange(i interface{}) error {
-	v, ok := i.(math.LegacyDec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.IsNil() {
-		return fmt.Errorf("inflation rate change cannot be nil: %s", v)
-	}
-	if v.IsNegative() {
-		return fmt.Errorf("inflation rate change cannot be negative: %s", v)
-	}
-
-	return nil
-}
-
-func validateInflationMax(i interface{}) error {
-	v, ok := i.(math.LegacyDec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.IsNil() {
-		return fmt.Errorf("max inflation cannot be nil: %s", v)
-	}
-	if v.IsNegative() {
-		return fmt.Errorf("max inflation cannot be negative: %s", v)
-	}
-
-	return nil
-}
-
-func validateInflationMin(i interface{}) error {
-	v, ok := i.(math.LegacyDec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.IsNil() {
-		return fmt.Errorf("min inflation cannot be nil: %s", v)
-	}
-	if v.IsNegative() {
-		return fmt.Errorf("min inflation cannot be negative: %s", v)
-	}
-	if v.GT(math.LegacyOneDec()) {
-		return fmt.Errorf("min inflation too large: %s", v)
-	}
-
-	return nil
-}
-
-func validateGoalBonded(i interface{}) error {
-	v, ok := i.(math.LegacyDec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.IsNil() {
-		return fmt.Errorf("goal bonded cannot be nil: %s", v)
-	}
-	if v.IsNegative() || v.IsZero() {
-		return fmt.Errorf("goal bonded must be positive: %s", v)
-	}
-	if v.GT(math.LegacyOneDec()) {
-		return fmt.Errorf("goal bonded too large: %s", v)
-	}
-
-	return nil
-}
-
-func validateBlocksPerYear(i interface{}) error {
+func validateBlocksPerMonth(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	if v == 0 {
-		return fmt.Errorf("blocks per year must be positive: %d", v)
+		return fmt.Errorf("blocks per month must be positive: %d", v)
 	}
 
 	return nil
 }
 
 func validateMaxSupply(i interface{}) error {
-	v, ok := i.(math.Uint)
+	v, ok := i.(math.Int)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 	if v.IsNil() {
 		return fmt.Errorf("max supply cannot be nil: %s", v)
 	}
-	if v.LTE(math.NewUint(0)) {
+	if v.LTE(math.NewInt(0)) {
 		return fmt.Errorf("max supply must be positive: %s", v)
 	}
 
 	return nil
 }
 
-func validateHalvingInterval(i interface{}) error {
+func validateEmissionCalibrationTimestepPerMonth(i interface{}) error {
 	v, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
+
 	if v == 0 {
-		return fmt.Errorf("halving interval must be positive: %d", v)
+		return fmt.Errorf("emission calibration timestep per month must be positive: %d", v)
+	}
+	if v > 35 {
+		return fmt.Errorf("lets not do x to the power more than 35 times: %d", v)
+	}
+	return nil
+}
+
+func validateAFractionValue(i interface{}) error {
+	v, ok := i.(math.LegacyDec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNil() {
+		return fmt.Errorf("fractional value cannot be nil: %s", v)
+	}
+	if v.LT(math.LegacyNewDec(0)) {
+		return fmt.Errorf("fractional value should be between 0 and 1, greater or equal to 0: %s", v)
+	}
+	if v.GT(math.LegacyNewDec(1)) {
+		return fmt.Errorf("fractional value should be between 0 and 1, less or equal to 1: %s", v)
 	}
 
 	return nil
 }
 
-func validateCurrentBlockProvision(i interface{}) error {
-	v, ok := i.(math.Uint)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
+func validateTokenSupplyAddsTo100Percent(
+	ecosystem math.LegacyDec,
+	foundation math.LegacyDec,
+	participants math.LegacyDec,
+	investors math.LegacyDec,
+	team math.LegacyDec,
+) error {
+	one := math.OneInt().ToLegacyDec()
+	equal100Percent := one.Equal(
+		ecosystem.
+			Add(foundation).
+			Add(participants).
+			Add(investors).
+			Add(team),
+	)
+	if !equal100Percent {
+		return fmt.Errorf(
+			"total supply percentages do not add up to 100 percent: %s %s %s %s %s",
+			ecosystem,
+			foundation,
+			participants,
+			investors,
+			team,
+		)
 	}
-	if v.IsNil() {
-		return fmt.Errorf("current block provision cannot be nil: %s", v)
-	}
-	if v.LT(math.NewUint(0)) {
-		return fmt.Errorf("current block provision cannot be negative: %s", v)
-	}
-
 	return nil
 }

@@ -3,11 +3,10 @@ package keeper_test
 import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestUpdateParams() {
+	defaultParams := types.DefaultParams()
 	testCases := []struct {
 		name      string
 		request   *types.MsgUpdateParams
@@ -27,20 +26,23 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			},
 			expectErr: true,
 		},
+		//todo do all failing testcases for each validity check against each param one by one
 		{
 			name: "set invalid params",
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:             sdk.DefaultBondDenom,
-					InflationRateChange:   sdkmath.LegacyNewDecWithPrec(-13, 2),
-					InflationMax:          sdkmath.LegacyNewDecWithPrec(20, 2),
-					InflationMin:          sdkmath.LegacyNewDecWithPrec(7, 2),
-					GoalBonded:            sdkmath.LegacyNewDecWithPrec(67, 2),
-					BlocksPerYear:         uint64(60 * 60 * 8766 / 5),
-					MaxSupply:             sdkmath.NewUintFromString("1000000000000000000000000000"),
-					HalvingInterval:       uint64(25246080),
-					CurrentBlockProvision: sdkmath.NewUintFromString("2831000000000000000000"),
+					MintDenom:                              defaultParams.MintDenom,
+					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
+					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
+					MaxSupply:                              sdkmath.NewIntFromUint64(0),
+					FEmission:                              defaultParams.FEmission,
+					OneMonthSmoothingDegree:                defaultParams.OneMonthSmoothingDegree,
+					EcosystemTreasuryPercentOfTotalSupply:  defaultParams.EcosystemTreasuryPercentOfTotalSupply,
+					FoundationTreasuryPercentOfTotalSupply: defaultParams.FoundationTreasuryPercentOfTotalSupply,
+					ParticipantsPercentOfTotalSupply:       defaultParams.ParticipantsPercentOfTotalSupply,
+					InvestorsPercentOfTotalSupply:          defaultParams.InvestorsPercentOfTotalSupply,
+					TeamPercentOfTotalSupply:               defaultParams.TeamPercentOfTotalSupply,
 				},
 			},
 			expectErr: true,
@@ -50,15 +52,17 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
-					MintDenom:             sdk.DefaultBondDenom,
-					InflationRateChange:   sdkmath.LegacyNewDecWithPrec(8, 2),
-					InflationMax:          sdkmath.LegacyNewDecWithPrec(20, 2),
-					InflationMin:          sdkmath.LegacyNewDecWithPrec(2, 2),
-					GoalBonded:            sdkmath.LegacyNewDecWithPrec(37, 2),
-					BlocksPerYear:         uint64(60 * 60 * 8766 / 5),
-					MaxSupply:             sdkmath.NewUintFromString("1000000000000000000000000000"),
-					HalvingInterval:       uint64(25246080),
-					CurrentBlockProvision: sdkmath.NewUintFromString("2831000000000000000000"),
+					MintDenom:                              defaultParams.MintDenom,
+					MaxSupply:                              defaultParams.MaxSupply,
+					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
+					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
+					FEmission:                              defaultParams.FEmission,
+					OneMonthSmoothingDegree:                defaultParams.OneMonthSmoothingDegree,
+					EcosystemTreasuryPercentOfTotalSupply:  defaultParams.EcosystemTreasuryPercentOfTotalSupply,
+					FoundationTreasuryPercentOfTotalSupply: defaultParams.FoundationTreasuryPercentOfTotalSupply,
+					ParticipantsPercentOfTotalSupply:       defaultParams.ParticipantsPercentOfTotalSupply,
+					InvestorsPercentOfTotalSupply:          defaultParams.InvestorsPercentOfTotalSupply,
+					TeamPercentOfTotalSupply:               defaultParams.TeamPercentOfTotalSupply,
 				},
 			},
 			expectErr: false,

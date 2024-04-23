@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	state "github.com/allora-network/allora-chain/x/emissions"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func TestTopicIdListValueCodec_Encode(t *testing.T) {
@@ -63,7 +63,7 @@ func TestTopicIdListValueCodec_Decode(t *testing.T) {
 			name:  "InvalidLength",
 			input: []byte{0, 0, 0, 0, 0, 0, 0},
 			want:  nil,
-			err:   state.ErrTopicIdListValueDecodeInvalidLength,
+			err:   types.ErrTopicIdListValueDecodeInvalidLength,
 		},
 		{
 			name:  "MultipleValues",
@@ -194,7 +194,7 @@ func TestTopicIdListValueCodec_DecodeJSON(t *testing.T) {
 			name:  "InvalidLength",
 			input: []byte(""),
 			want:  nil,
-			err:   state.ErrTopicIdListValueDecodeJsonInvalidLength,
+			err:   types.ErrTopicIdListValueDecodeJsonInvalidLength,
 		},
 		{
 			name:  "InvalidValue",

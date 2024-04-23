@@ -159,9 +159,10 @@ type ModuleInputs struct {
 	StoreService store.KVStoreService
 	Cdc          codec.Codec
 
-	AccountKeeper types.AccountKeeper
-	BankKeeper    types.BankKeeper
-	StakingKeeper types.StakingKeeper
+	AccountKeeper   types.AccountKeeper
+	BankKeeper      types.BankKeeper
+	StakingKeeper   types.StakingKeeper
+	EmissionsKeeper types.EmissionsKeeper
 }
 
 type ModuleOutputs struct {
@@ -194,6 +195,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.StakingKeeper,
 		in.AccountKeeper,
 		in.BankKeeper,
+		in.EmissionsKeeper,
 		feeCollectorName,
 		as,
 	)

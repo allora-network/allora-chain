@@ -6,10 +6,8 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
-	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	state "github.com/allora-network/allora-chain/x/emissions"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -19,6 +17,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -57,14 +57,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                 nil,
-		"mint":                          {"minter"},
-		state.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		state.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":            {"burner", "staking"},
-		"not_bonded_tokens_pool":        {"burner", "staking"},
-		multiPerm:                       {"burner", "minter", "staking"},
-		randomPerm:                      {"random"},
+		"fee_collector":                     nil,
+		"mint":                              {"minter"},
+		emissions.AlloraStakingAccountName:  {"burner", "minter", "staking"},
+		emissions.AlloraRequestsAccountName: {"burner", "minter", "staking"},
+		"bonded_tokens_pool":                {"burner", "staking"},
+		"not_bonded_tokens_pool":            {"burner", "staking"},
+		multiPerm:                           {"burner", "minter", "staking"},
+		randomPerm:                          {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -95,6 +95,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
+	emissionsKeeper := emissionskeeper.NewKeeper(
+		encCfg.Codec,
+		addresscodec.NewBech32Codec(sdk.Bech32PrefixAccAddr),
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		"fee_collector",
+	)
 
 	mintKeeper := keeper.NewKeeper(
 		encCfg.Codec,
@@ -102,6 +110,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		stakingKeeper,
 		accountKeeper,
 		bankKeeper,
+		emissionsKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress("gov").String(),
 	)
@@ -122,64 +131,6 @@ func TestMintModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(MintModuleTestSuite))
 }
 
-func (s *MintModuleTestSuite) TestMintingBelowMaxSupplyInHalvingBlock() {
-	defaultMintModuleParams := types.DefaultParams()
-	s.mintKeeper.Params.Set(s.ctx, defaultMintModuleParams)
-
-	// Fetch updated minter and params
-	minterBeforeUpdate, err := s.mintKeeper.Minter.Get(s.ctx)
-	s.Require().NoError(err)
-	paramBeforeUpdate, err := s.mintKeeper.Params.Get(s.ctx)
-	s.Require().NoError(err)
-	expectedBlockProvision := paramBeforeUpdate.CurrentBlockProvision.QuoUint64(2)
-
-	// Set block height and existing supply for the test case
-	blockHeight := int64(25246080)
-	existingSupply := cosmosMath.NewIntFromBigInt(cosmosMath.NewUintFromString("50000000000000000000000000").BigInt()) // Equivalent 50 million * 1e18 uallo
-
-	ctx := s.ctx.WithBlockHeight(blockHeight)
-	s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, existingSupply)))
-
-	// Call BeginBlocker
-	err = mint.BeginBlocker(ctx, s.mintKeeper)
-	s.Require().NoError(err)
-
-	// Fetch updated minter and params
-	minter, err := s.mintKeeper.Minter.Get(ctx)
-	s.Require().NoError(err)
-	params, err := s.mintKeeper.Params.Get(ctx)
-	s.Require().NoError(err)
-
-	// Verify minting occurred and current block provision remains as set
-	s.Require().Less(minter.Inflation.String(), minterBeforeUpdate.Inflation.String(), "New Inflation should be less than previous value")
-	s.Require().Equal(minterBeforeUpdate.AnnualProvisions.QuoInt64(2), minter.AnnualProvisions, "Annual should equal half of previous value")
-	s.Require().Equal(expectedBlockProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should equal half of previous value")
-}
-
 func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
-	defaultMintModuleParams := types.DefaultParams()
-	s.mintKeeper.Params.Set(s.ctx, defaultMintModuleParams)
-
-	// Set block height and existing supply for the test case
-	blockHeight := int64(2)
-	existingSupply := cosmosMath.NewIntFromBigInt(defaultMintModuleParams.MaxSupply.BigInt())
-	expectedProvision := cosmosMath.NewUint(0) // Expecting no minting, hence provision should be zero.
-
-	ctx := s.ctx.WithBlockHeight(blockHeight)
-	s.mintKeeper.MintCoins(ctx, sdk.NewCoins(sdk.NewCoin(params.BaseCoinUnit, existingSupply)))
-
-	// Call BeginBlocker
-	err := mint.BeginBlocker(ctx, s.mintKeeper)
-	s.Require().NoError(err)
-
-	// Fetch updated minter and params
-	minter, err := s.mintKeeper.Minter.Get(ctx)
-	s.Require().NoError(err)
-	params, err := s.mintKeeper.Params.Get(ctx)
-	s.Require().NoError(err)
-
-	// Verify no minting occurred and current block provision is zero
-	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.Inflation, "Inflation should be zero")
-	s.Require().Equal(cosmosMath.LegacyZeroDec(), minter.AnnualProvisions, "Annual provisions should be zero")
-	s.Require().Equal(expectedProvision.String(), params.CurrentBlockProvision.String(), "CurrentBlockProvision should be zero")
+	//todo add a test here
 }
