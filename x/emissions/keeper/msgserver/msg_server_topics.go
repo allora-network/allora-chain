@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -87,32 +86,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	// we do nothing, since no value in the map means zero
 
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
-}
-
-func (ms msgServer) ActivateTopic(ctx context.Context, msg *types.MsgActivateTopic) (*types.MsgActivateTopicResponse, error) {
-	// Check that the topic has enough demand to be activated
-	unmetDemand, err := ms.k.GetTopicUnmetDemand(ctx, msg.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
-	if err != nil {
-		return nil, err
-	}
-	minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
-
-	// If the topic does not have enough demand, return an error
-	if unmetDemand.LT(minTopicUnmetDemandUint) {
-		return nil, types.ErrTopicNotEnoughDemand
-	}
-
-	// If the topic has enough demand, activate it
-	err = ms.k.ActivateTopic(ctx, msg.TopicId)
-	if err != nil {
-		return nil, err
-	}
-	return &types.MsgActivateTopicResponse{Success: true}, nil
 }
 
 func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {

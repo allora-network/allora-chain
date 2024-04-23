@@ -1741,13 +1741,13 @@ func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
 
 /// MEMPOOL & INFERENCE REQUESTS
 
-func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
+func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) (Uint, error) {
 	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 	topicUnmetDemand = topicUnmetDemand.Add(amt)
-	return k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
+	return topicUnmetDemand, k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
 }
 
 func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
@@ -1834,43 +1834,48 @@ func (k *Keeper) removeFromTopicMempool(ctx context.Context, topicId TopicId, re
 
 // Throws an error if we are already at capacity
 // Does not check for pre-existing inclusion in the topic mempool before adding!
-func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceRequest) error {
+func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceRequest) (Uint, error) {
 	hasRequest, err := k.requests.Has(ctx, request.Id)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 	if hasRequest {
-		return types.ErrRequestAlreadyExists
+		return cosmosMath.Uint{}, types.ErrRequestAlreadyExists
 	}
 
 	count, err := k.GetTopicMempoolRequestCount(ctx, request.TopicId)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 	maxCount, err := k.GetParamsMaxRequestsPerTopic(ctx)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 	if count >= maxCount {
-		return types.ErrTopicMempoolAtCapacity
+		return cosmosMath.Uint{}, types.ErrTopicMempoolAtCapacity
 	}
 
 	err = k.requests.Set(ctx, request.Id, request)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 
 	newIndex, err := k.IncrementTopicMempoolRequestCount(ctx, request.TopicId)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 
 	err = k.addToTopicMempool(ctx, request.TopicId, newIndex-1, request.Id)
 	if err != nil {
-		return err
+		return cosmosMath.Uint{}, err
 	}
 
-	return k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
+	unmetDemand, err := k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+
+	return unmetDemand, nil
 }
 
 // Does not check for pre-existing exclusion in the topic mempool before removing!

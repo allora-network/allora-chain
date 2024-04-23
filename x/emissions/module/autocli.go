@@ -324,15 +324,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "ActivateTopic",
-					Use:       "activate-topic [sender] [topic_id]",
-					Short:     "Activate a topic that has become inactivated",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
 					RpcMethod: "RequestInference",
 					Use:       "request-inference [sender] [request]",
 					Short:     "Request an inference ",

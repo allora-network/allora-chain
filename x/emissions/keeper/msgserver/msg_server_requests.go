@@ -122,9 +122,27 @@ func (ms msgServer) RequestInference(ctx context.Context, msg *types.MsgRequestI
 	}
 	// 12. Write request state into the mempool state
 	request.BlockLastChecked = currentBlock
-	err = ms.k.AddToMempool(ctx, *request)
+	unmetDemand, err := ms.k.AddToMempool(ctx, *request)
 	if err != nil {
 		return nil, err
+	}
+	// 13. Activate topic if meet demand
+	isActivated, err := ms.k.IsTopicActive(ctx, request.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !isActivated {
+		minTopicUnmentDemand, err := ms.k.GetParamsMinTopicUnmetDemand(ctx)
+		if err != nil {
+			return nil, err
+		}
+		minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
+		if unmetDemand.GTE(minTopicUnmetDemandUint) {
+			err = ms.k.ActivateTopic(ctx, request.TopicId)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	return &types.MsgRequestInferenceResponse{RequestId: requestId}, nil
 }
