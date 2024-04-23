@@ -269,6 +269,14 @@ func CalcCombinedNetworkLoss(
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err
 			}
+			oneE18, err := alloraMath.NewDecFromString("1000000000000000000")
+			if err != nil {
+				return Loss{}, err
+			}
+			stakeAmount, err = stakeAmount.Quo(oneE18)
+			if err != nil {
+				return Loss{}, err
+			}
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(
 				&runningWeightedCombinedLoss,
