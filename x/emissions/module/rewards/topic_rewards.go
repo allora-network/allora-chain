@@ -2,7 +2,8 @@ package rewards
 
 import (
 	"context"
-	"fmt"
+
+	"cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -73,43 +74,36 @@ func GetActiveTopicWeights(
 ) (weights []alloraMath.Dec, sumWeight alloraMath.Dec, err error) {
 	alphaTopic, err := k.GetParamsTopicRewardAlpha(ctx)
 	if err != nil {
-		fmt.Println("alpha error")
-		return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get alpha")
 	}
 	currentFeeRevenueEpoch, err := k.GetFeeRevenueEpoch(ctx)
 	if err != nil {
-		fmt.Println("epoch error")
-		return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get fee revenue epoch")
 	}
 	stakeImportance, feeImportance, err := k.GetParamsStakeAndFeeRevenueImportance(ctx)
 	if err != nil {
-		fmt.Println("importance error")
-		return []alloraMath.Dec{}, alloraMath.Dec{}, err
+		return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get stake and fee revenue importance")
 	}
 	sumWeight = alloraMath.ZeroDec()
 	weights = make([]alloraMath.Dec, len(activeTopics))
 	for i, topic := range activeTopics {
 		topicStake, err := k.GetTopicStake(ctx, topic.Id)
 		if err != nil {
-			fmt.Println("stake error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get topic stake")
 		}
 		topicStakeDec, err := alloraMath.NewDecFromSdkUint(topicStake)
 		if err != nil {
-			fmt.Println("dec error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to convert topic stake to dec")
 		}
 		topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
 		if err != nil {
-			fmt.Println("revenue error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get topic fee revenue")
 		}
 		feeRevenue := alloraMath.ZeroDec()
 		if topicFeeRevenue.Epoch == currentFeeRevenueEpoch {
 			feeRevenue, err = alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
 			if err != nil {
-				fmt.Println("dec error")
-				return []alloraMath.Dec{}, alloraMath.Dec{}, err
+				return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
 			}
 		}
 		targetWeight, err := GetTargetWeight(
@@ -119,13 +113,11 @@ func GetActiveTopicWeights(
 			feeImportance,
 		)
 		if err != nil {
-			fmt.Println("target weight error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get target weight")
 		}
 		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topic.Id)
 		if err != nil {
-			fmt.Println("previous topic weight error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous topic weight")
 		}
 		previousWeight := alloraMath.ZeroDec()
 		if previousTopicWeight.Epoch == currentFeeRevenueEpoch-1 {
@@ -133,13 +125,12 @@ func GetActiveTopicWeights(
 		}
 		weight, err := alloraMath.CalcEma(alphaTopic, targetWeight, previousWeight, noPrior)
 		if err != nil {
-			fmt.Println("ema error")
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate EMA")
 		}
 		weights[i] = weight
 		sumWeight, err = sumWeight.Add(weight)
 		if err != nil {
-			return []alloraMath.Dec{}, alloraMath.Dec{}, err
+			return []alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to add weight to sum")
 		}
 	}
 	return weights, sumWeight, nil
@@ -155,12 +146,10 @@ func SetPreviousTopicWeights(
 ) error {
 	currentEpoch, err := k.GetFeeRevenueEpoch(ctx)
 	if err != nil {
-		fmt.Println("epoch error")
-		return err
+		return errors.Wrapf(err, "failed to get current epoch")
 	}
 	if len(topics) != len(topicWeights) {
-		fmt.Println("length error")
-		return types.ErrSliceLengthMismatch
+		return errors.Wrapf(types.ErrSliceLengthMismatch, "len of topics and topicWeights not match")
 	}
 	for i, tw := range topicWeights {
 		ptw := types.PreviousTopicWeight{
@@ -170,8 +159,7 @@ func SetPreviousTopicWeights(
 		topicId := topics[i].Id
 		err := k.SetPreviousTopicWeight(ctx, topicId, ptw)
 		if err != nil {
-			fmt.Println("set previous weight error")
-			return err
+			return errors.Wrapf(err, "failed to set previous topic weight")
 		}
 	}
 	return nil
