@@ -112,6 +112,7 @@ func CalcNetworkLosses(
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
+
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
@@ -123,9 +124,11 @@ func CalcNetworkLosses(
 			// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
 			// Update inferer losses
 			for _, loss := range report.ValueBundle.InfererValues {
-				runningWeightedInfererLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"),
-					Loss:      alloraMath.MustNewDecFromString("0"),
+				if runningWeightedInfererLosses[loss.Worker] == nil {
+					runningWeightedInfererLosses[loss.Worker] = &WorkerRunningWeightedLoss{
+						SumWeight: alloraMath.MustNewDecFromString("0"),
+						Loss:      alloraMath.MustNewDecFromString("0"),
+					}
 				}
 
 				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedInfererLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
@@ -138,10 +141,13 @@ func CalcNetworkLosses(
 
 			// Update forecaster losses
 			for _, loss := range report.ValueBundle.ForecasterValues {
-				runningWeightedForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"),
-					Loss:      alloraMath.MustNewDecFromString("0"),
+				if runningWeightedForecasterLosses[loss.Worker] == nil {
+					runningWeightedForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
+						SumWeight: alloraMath.MustNewDecFromString("0"),
+						Loss:      alloraMath.MustNewDecFromString("0"),
+					}
 				}
+
 				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for forecaster: ", err)
@@ -156,13 +162,15 @@ func CalcNetworkLosses(
 				fmt.Println("Error updating running weighted average for naive loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
-			runningWeightedCombinedLoss = nextNaiveLoss
+			runningWeightedNaiveLoss = nextNaiveLoss
 
 			// Update one-out inferer losses
 			for _, loss := range report.ValueBundle.OneOutInfererValues {
-				runningWeightedOneOutInfererLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"),
-					Loss:      alloraMath.MustNewDecFromString("0"),
+				if runningWeightedOneOutInfererLosses[loss.Worker] == nil {
+					runningWeightedOneOutInfererLosses[loss.Worker] = &WorkerRunningWeightedLoss{
+						SumWeight: alloraMath.MustNewDecFromString("0"),
+						Loss:      alloraMath.MustNewDecFromString("0"),
+					}
 				}
 				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
@@ -174,10 +182,13 @@ func CalcNetworkLosses(
 
 			// Update one-out forecaster losses
 			for _, loss := range report.ValueBundle.OneOutForecasterValues {
-				runningWeightedOneOutForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"),
-					Loss:      alloraMath.MustNewDecFromString("0"),
+				if runningWeightedOneOutForecasterLosses[loss.Worker] == nil {
+					runningWeightedOneOutForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
+						SumWeight: alloraMath.MustNewDecFromString("0"),
+						Loss:      alloraMath.MustNewDecFromString("0"),
+					}
 				}
+
 				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out forecaster: ", err)
@@ -188,10 +199,13 @@ func CalcNetworkLosses(
 
 			// Update one-in forecaster losses
 			for _, loss := range report.ValueBundle.OneOutForecasterValues {
-				runningWeightedOneInForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
-					SumWeight: alloraMath.MustNewDecFromString("0"),
-					Loss:      alloraMath.MustNewDecFromString("0"),
+				if runningWeightedOneInForecasterLosses[loss.Worker] == nil {
+					runningWeightedOneInForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
+						SumWeight: alloraMath.MustNewDecFromString("0"),
+						Loss:      alloraMath.MustNewDecFromString("0"),
+					}
 				}
+
 				nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneInForecasterLosses[loss.Worker], stakeAmount, loss.Value, epsilon)
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-in forecaster: ", err)
@@ -260,6 +274,7 @@ func CalcCombinedNetworkLoss(
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err
 			}
+
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(
 				&runningWeightedCombinedLoss,

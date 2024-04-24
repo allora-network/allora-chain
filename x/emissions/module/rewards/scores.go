@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -42,18 +43,18 @@ func GenerateReputerScores(
 		// Get reputer topic stake
 		reputerStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnTopicFromReputer")
 		}
 		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error converting reputer stake to Dec")
 		}
 		reputerStakes = append(reputerStakes, reputerStakeDec)
 
 		// Get reputer listening coefficient
 		res, err := keeper.GetListeningCoefficient(ctx, topicId, reputerAddr)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting GetListeningCoefficient")
 		}
 		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
 
@@ -64,7 +65,7 @@ func GenerateReputerScores(
 
 	params, err := keeper.GetParams(ctx)
 	if err != nil {
-		return []types.Score{}, err
+		return []types.Score{}, errors.Wrapf(err, "Error getting GetParams")
 	}
 
 	// Get reputer output
@@ -78,7 +79,7 @@ func GenerateReputerScores(
 		params.GradientDescentMaxIters,
 	)
 	if err != nil {
-		return []types.Score{}, err
+		return []types.Score{}, errors.Wrapf(err, "Error getting GetAllReputersOutput")
 	}
 
 	// Insert new coeffients and scores
@@ -91,7 +92,7 @@ func GenerateReputerScores(
 			types.ListeningCoefficient{Coefficient: newCoefficients[i]},
 		)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error setting listening coefficient")
 		}
 
 		newScore := types.Score{
@@ -102,11 +103,11 @@ func GenerateReputerScores(
 		}
 		err = keeper.InsertReputerScore(ctx, topicId, block, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
 		err = keeper.SetLatestReputerScore(ctx, topicId, reputerAddr, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
 		}
 		newScores = append(newScores, newScore)
 	}
@@ -126,7 +127,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		// Calculate new score
 		workerNewScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
 		newScore := types.Score{
@@ -137,11 +138,11 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		}
 		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		err = keeper.SetLatestInfererScore(ctx, topicId, workerAddr, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
 		}
 		newScores = append(newScores, newScore)
 	}
@@ -161,7 +162,7 @@ func GenerateForecastScores(
 	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
 		workerScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
 		workersScoresOneOut = append(workersScoresOneOut, workerScore)
@@ -170,7 +171,7 @@ func GenerateForecastScores(
 	numForecasters := int64(len(workersScoresOneOut))
 	fUniqueAgg, err := GetfUniqueAgg(alloraMath.NewDecFromInt64(numForecasters))
 	if err != nil {
-		return []types.Score{}, err
+		return []types.Score{}, errors.Wrapf(err, "Error getting fUniqueAgg")
 	}
 	var newScores []types.Score
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
@@ -182,13 +183,13 @@ func GenerateForecastScores(
 		// Get worker score for one in loss
 		workerScoreOneIn, err := GetWorkerScore(oneInNaiveLoss.Value, networkLosses.NaiveValue)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
 		// Calculate forecast score
 		workerFinalScore, err := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
 		}
 
 		newScore := types.Score{
@@ -199,11 +200,11 @@ func GenerateForecastScores(
 		}
 		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
 		err = keeper.SetLatestForecasterScore(ctx, topicId, workerAddr, newScore)
 		if err != nil {
-			return []types.Score{}, err
+			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
 		}
 		newScores = append(newScores, newScore)
 	}
@@ -241,8 +242,12 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 	return reportedLosses
 }
 
-// ensureAllWorkersPresent checks and adds missing workers with NaN values for a given slice of WorkerAttributedValue
-func ensureAllWorkersPresent(values []*types.WorkerAttributedValue, allWorkers map[string]struct{}) []*types.WorkerAttributedValue {
+// ensureAllWorkersPresent checks and adds missing
+// workers with NaN values for a given slice of WorkerAttributedValue
+func ensureAllWorkersPresent(
+	values []*types.WorkerAttributedValue,
+	allWorkers map[string]struct{},
+) []*types.WorkerAttributedValue {
 	foundWorkers := make(map[string]bool)
 	for _, value := range values {
 		foundWorkers[value.Worker] = true
@@ -260,8 +265,12 @@ func ensureAllWorkersPresent(values []*types.WorkerAttributedValue, allWorkers m
 	return values
 }
 
-// ensureAllWorkersPresentWithheld checks and adds missing workers with NaN values for a given slice of WithheldWorkerAttributedValue
-func EnsureAllWorkersPresentWithheld(values []*types.WithheldWorkerAttributedValue, allWorkers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
+// ensureAllWorkersPresentWithheld checks and adds missing
+// workers with NaN values for a given slice of WithheldWorkerAttributedValue
+func EnsureAllWorkersPresentWithheld(
+	values []*types.WithheldWorkerAttributedValue,
+	allWorkers map[string]struct{},
+) []*types.WithheldWorkerAttributedValue {
 	foundWorkers := make(map[string]bool)
 	for _, value := range values {
 		foundWorkers[value.Worker] = true

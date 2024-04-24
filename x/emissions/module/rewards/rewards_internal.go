@@ -3,6 +3,8 @@ package rewards
 import (
 	"sort"
 
+	"cosmossdk.io/errors"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -70,17 +72,17 @@ func GetScoreFractions(
 ) ([]alloraMath.Dec, error) {
 	mappedValues, err := GetMappingFunctionValues(scores, pReward)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
 	ret := make([]alloraMath.Dec, len(mappedValues))
 	mappedSum, err := alloraMath.SumDecSlice(mappedValues)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error in SumDecSlice:")
 	}
 	for i, mappedValue := range mappedValues {
 		ret[i], err = mappedValue.Quo(mappedSum)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error doing division of mappedValues")
 		}
 	}
 	return ret, nil
@@ -96,7 +98,7 @@ func GetMappingFunctionValues(
 ) ([]alloraMath.Dec, error) {
 	stdDev, err := StdDev(scores)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "err getting stdDev")
 	}
 	ret := make([]alloraMath.Dec, len(scores))
 	for i, score := range scores {
@@ -106,7 +108,7 @@ func GetMappingFunctionValues(
 		}
 		ret[i], err = Phi(pReward, frac)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "err calculating phi")
 		}
 	}
 	return ret, nil
@@ -132,23 +134,23 @@ func GetWorkerPortionOfRewards(
 
 	stdDev, err := StdDev(flatten(lastScores))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error getting StdDev")
 	}
 	smoothedScores := make([]alloraMath.Dec, len(lastScores))
 	total := alloraMath.ZeroDec()
 	for i, score := range lastScores {
 		normalizedScore, err := score[len(score)-1].Quo(stdDev)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "err normalizing score")
 		}
 		res, err := Phi(preward, normalizedScore)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "err calculating phi")
 		}
 		smoothedScores[i] = res
 		total, err = total.Add(res)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "err adding to total")
 		}
 	}
 
@@ -508,7 +510,7 @@ func GetAllConsensusScores(
 			sharpness,
 		)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error in GetAdjustedStake")
 		}
 		adjustedStakes = append(adjustedStakes, adjustedStake)
 	}
@@ -516,7 +518,7 @@ func GetAllConsensusScores(
 	// Get consensus loss vector and retrieve most distant values from
 	consensus, mostDistantValues, err := GetStakeWeightedLossMatrix(adjustedStakes, allLosses)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "error in GetStakeWeightedLossMatrix")
 	}
 
 	// Get reputers scores
@@ -525,7 +527,7 @@ func GetAllConsensusScores(
 		losses := allLosses[i]
 		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "error in GetConsensusScore")
 		}
 	}
 
@@ -572,7 +574,7 @@ func GetAllReputersOutput(
 
 			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, sharpness)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
 			coeffs2 := make([]alloraMath.Dec, len(coeffs))
 			copy(coeffs2, coeffs)
@@ -583,7 +585,7 @@ func GetAllReputersOutput(
 
 			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, sharpness)
 			if err != nil {
-				return nil, nil, err
+				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
 			sumScores, err := alloraMath.SumDecSlice(scores)
 			if err != nil {
@@ -711,6 +713,9 @@ func sumWeighted(weights, values []alloraMath.Dec) (alloraMath.Dec, error) {
 	return sum, nil
 }
 
+// maxAbsDifference calculates the maximum absolute difference value
+// between every pair of values in two slices of alloraMath.Dec.
+// it assumes that a and b are of the same length
 func maxAbsDifference(a, b []alloraMath.Dec) (alloraMath.Dec, error) {
 	maxDiff := alloraMath.ZeroDec()
 	for i := range a {
