@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -68,12 +69,12 @@ func getInferenceOrForecastTaskEntropy(
 	if which == TASK_INFERENCE {
 		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get worker inference scores at block")
 		}
 	} else { // TASK_FORECAST
 		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get worker forecast scores at block")
 		}
 	}
 	numWorkers := len(scoresAtBlock.Scores)
@@ -91,7 +92,7 @@ func getInferenceOrForecastTaskEntropy(
 	var previousRewardFraction alloraMath.Dec
 	rewardFractions, err := GetScoreFractions(scores, pRewardSpread)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get score fractions")
 	}
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	for i, fraction := range rewardFractions {
@@ -99,12 +100,12 @@ func getInferenceOrForecastTaskEntropy(
 		if which == TASK_INFERENCE {
 			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
-				return alloraMath.Dec{}, nil, nil, err
+				return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get previous inference reward fraction")
 			}
 		} else { // TASK_FORECAST
 			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
 			if err != nil {
-				return alloraMath.Dec{}, nil, nil, err
+				return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get previous forecast reward fraction")
 			}
 		}
 		emaRewardFractions[i], err = alloraMath.CalcEma(
@@ -114,16 +115,16 @@ func getInferenceOrForecastTaskEntropy(
 			noPriorScore,
 		)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate EMA")
 		}
 	}
 	numberRatio, err := NumberRatio(rewardFractions)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate number ratio")
 	}
 	modifiedRewardFractions, err = ModifiedRewardFractions(emaRewardFractions)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate modified reward fractions")
 	}
 	entropy, err = Entropy(
 		modifiedRewardFractions,
@@ -132,7 +133,7 @@ func getInferenceOrForecastTaskEntropy(
 		betaEntropy,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate entropy")
 	}
 	return entropy, modifiedRewardFractions, workers, nil
 }
@@ -175,7 +176,7 @@ func ForecastingUtility(
 	}
 	ret, err := Sigmoid(aTimesForecastigPerformanceScoreMinusB)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate sigmoid")
 	}
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
@@ -240,7 +241,7 @@ func getChiAndGamma(
 		networkInferenceLoss,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
 	}
 	chi, err = ForecastingUtility(
 		forecastingTaskUtilityScore,
@@ -248,7 +249,7 @@ func getChiAndGamma(
 		b,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
 	}
 	gamma, err = NormalizationFactor(
 		entropyInference,
@@ -256,7 +257,7 @@ func getChiAndGamma(
 		chi,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
 	}
 	return chi, gamma, nil
 }
@@ -282,7 +283,7 @@ func GetRewardForInferenceTaskInTopic(
 		b,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
 	}
 	oneMinusChi, err := alloraMath.OneDec().Sub(chi)
 	if err != nil {
@@ -336,7 +337,7 @@ func GetRewardForForecastingTaskInTopic(
 		sigmoidB,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
 	}
 	chiGamma, err := chi.Mul(gamma)
 	if err != nil {
@@ -376,7 +377,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get network loss
 	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get network loss bundle at or before block")
 	}
 
 	// Get last score for each worker
@@ -391,7 +392,7 @@ func GetWorkersRewardsInferenceTask(
 		// Get worker last scores
 		workerLastScores, err := keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to get worker inference scores until block")
 		}
 
 		// Add worker address in the worker addresses array
@@ -407,7 +408,7 @@ func GetWorkersRewardsInferenceTask(
 	// Get worker portion of rewards
 	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalInferenceRewards, workerAddresses)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
 	}
 
 	return rewards, nil
@@ -424,7 +425,7 @@ func GetWorkersRewardsForecastTask(
 	// Get network loss
 	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get network loss bundle at or before block")
 	}
 
 	// Get new score for each worker
@@ -439,7 +440,7 @@ func GetWorkersRewardsForecastTask(
 		// Get worker last scores
 		workerLastScores, err := keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, block, workerAddr)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to get worker forecast scores until block")
 		}
 
 		// Add worker address in the worker addresses array
@@ -457,7 +458,7 @@ func GetWorkersRewardsForecastTask(
 	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalForecastRewards, workerAddresses)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
 	}
 
 	return rewards, nil
