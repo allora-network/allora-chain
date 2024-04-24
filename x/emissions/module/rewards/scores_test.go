@@ -144,7 +144,7 @@ func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64
 		}
 	}
 
-	reputerValueBundles := GenerateLossBundles(s, block, topicId)
+	reputerValueBundles := GenerateLossBundles(s, block, topicId, reputers)
 	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
 	if err != nil {
 		return types.ReputerValueBundles{}, err
@@ -177,15 +177,7 @@ func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress,
 	return nil
 }
 
-func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) types.ReputerValueBundles {
-	reputers := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
-	}
-
+func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputers []sdk.AccAddress) types.ReputerValueBundles {
 	workers := []sdk.AccAddress{
 		s.addrs[5],
 		s.addrs[6],
