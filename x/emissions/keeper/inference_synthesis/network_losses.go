@@ -112,7 +112,7 @@ func CalcNetworkLosses(
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
-			oneE18, err := alloraMath.NewDecFromString("1000000000000000000")
+			oneE18, err := AlloraOneE18()
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
@@ -282,7 +282,10 @@ func CalcCombinedNetworkLoss(
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err
 			}
-			oneE18, err := alloraMath.NewDecFromString("1000000000000000000")
+			if err != nil {
+				return Loss{}, err
+			}
+			oneE18, err := AlloraOneE18()
 			if err != nil {
 				return Loss{}, err
 			}

@@ -3,8 +3,8 @@ package msgserver_test
 import (
 	"encoding/hex"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +28,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(cosmosMath.NewUint(1000000000000000000))
+	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
 

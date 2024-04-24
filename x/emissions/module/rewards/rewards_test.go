@@ -11,6 +11,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -227,13 +228,15 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		s.Require().NoError(err)
 	}
 
+	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
+
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644).Mul(cosmosMath.NewUint(1000000000000000000)),
-		cosmosMath.NewUint(384623).Mul(cosmosMath.NewUint(1000000000000000000)),
-		cosmosMath.NewUint(394676).Mul(cosmosMath.NewUint(1000000000000000000)),
-		cosmosMath.NewUint(207999).Mul(cosmosMath.NewUint(1000000000000000000)),
-		cosmosMath.NewUint(368582).Mul(cosmosMath.NewUint(1000000000000000000)),
+		cosmosMath.NewUint(1176644).Mul(cosmosOneE18),
+		cosmosMath.NewUint(384623).Mul(cosmosOneE18),
+		cosmosMath.NewUint(394676).Mul(cosmosOneE18),
+		cosmosMath.NewUint(207999).Mul(cosmosOneE18),
+		cosmosMath.NewUint(368582).Mul(cosmosOneE18),
 	}
 	for i, addr := range reputerAddrs {
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
