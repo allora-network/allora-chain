@@ -12,8 +12,16 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	topidId := uint64(1)
 	block := int64(1003)
 
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topidId, block)
+	_, err := mockReputersData(s, topidId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -46,8 +54,11 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 }
 
-// mockReputersData generates reputer scores, stakes and losses
-func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
+// After removing the number of reputers, the rewards should increase for the remaining reputers
+func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemovingReputer() {
+	topidId := uint64(1)
+	block := int64(1003)
+
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -56,6 +67,79 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64) (types.R
 		s.addrs[4],
 	}
 
+	// Generate reputers data for tests
+	_, err := mockReputersData(s, topidId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Get reputer rewards
+	reputerRewards, err := rewards.GetReputerRewards(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		block,
+		alloraMath.OneDec(),
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(reputerRewards))
+
+	expectedRewards := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("456.49"),
+		alloraMath.MustNewDecFromString("172.71"),
+		alloraMath.MustNewDecFromString("211.93"),
+		alloraMath.MustNewDecFromString("52.31"),
+		alloraMath.MustNewDecFromString("124.10"),
+	}
+
+	for i, reputerReward := range reputerRewards {
+		s.Require().True(
+			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			"expected: %s, got: %s",
+			expectedRewards[i].String(),
+			reputerReward.Reward.String(),
+		)
+	}
+
+	// New Topic, block and reputer addresses
+	topidId = uint64(2)
+	block = int64(1004)
+	// Reduce number of reputer addresses
+	reputerAddrs = []sdk.AccAddress{
+		s.addrs[5],
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+	}
+
+	// Generate reputers same loss data for less reputers
+	_, err = mockReputersData(s, topidId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Get reputer rewards
+	newReputerRewards, err := rewards.GetReputerRewards(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		block,
+		alloraMath.OneDec(),
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(4, len(newReputerRewards))
+
+	for i, newReputerReward := range newReputerRewards {
+		newReputerReward.Reward.Gt(reputerRewards[i].Reward)
+		s.Require().True(
+			newReputerReward.Reward.Gt(reputerRewards[i].Reward),
+			"expected: %s, got: %s",
+			newReputerReward.Reward.String(),
+			reputerRewards[i].Reward.String(),
+		)
+	}
+}
+
+// mockReputersData generates reputer scores, stakes and losses
+func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerAddrs []sdk.AccAddress) (types.ReputerValueBundles, error) {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),
 		alloraMath.MustNewDecFromString("20.29489"),
