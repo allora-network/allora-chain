@@ -34,6 +34,8 @@ type Demand struct {
 	FeesGenerated cosmosMath.Uint
 }
 
+type BuildBestPrice func(requestsForGivenTopic []types.InferenceRequest) (BestPriceData, error)
+
 // Sorts the given slice of topics in descending order according to their corresponding return, using randomness as tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
 func SortTopicsByReturnDescWithRandomTiebreaker(valsToSort []TopicId, weights map[TopicId]PriceAndReturn, randSeed BlockHeight) []TopicId {
@@ -188,7 +190,7 @@ func BuildOnlineBestPriceFinder(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	currentBlock BlockHeight,
-) func(requestsForGivenTopic []types.InferenceRequest) (BestPriceData, error) {
+) BuildBestPrice {
 	// Initialize a map of request price to map of valid requests
 	// map must be of type string, because the complex type of a Uint
 	// will not work for the map, equality test tests the pointer not the value
@@ -252,6 +254,54 @@ func BuildOnlineBestPriceFinder(
 	}
 }
 
+func BuildBestPricePerTopicId(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	requestPageLimit uint64,
+	maxRequestPages uint64,
+	topicId uint64,
+	buildFunc BuildBestPrice,
+) (BestPriceData, error) {
+
+	bestPriceData := BestPriceData{
+		bestPrice:     cosmosMath.ZeroUint(),
+		maxFees:       cosmosMath.ZeroUint(),
+		validRequests: make([]types.InferenceRequest, 0),
+	}
+	requestPageKey := make([]byte, 0)
+	j := uint64(0)
+	for {
+		requestPageRequest := &types.SimpleCursorPaginationRequest{Limit: requestPageLimit, Key: requestPageKey}
+		inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topicId, requestPageRequest)
+		if err != nil {
+			fmt.Println("Error getting mempool inference requests: ", err)
+			return BestPriceData{}, err
+		}
+		// Filter out expired requests and deplete them
+		inferenceRequests, err = FilterAndResolveExpiredRequests(ctx, k, inferenceRequests)
+		if err != nil {
+			fmt.Println("Error filtering and resolving expired requests: ", err)
+			return BestPriceData{}, err
+		}
+		bestData, err := buildFunc(inferenceRequests)
+		if err != nil {
+			fmt.Println("Error getting requests that maximize fees: ", err)
+			return BestPriceData{}, err
+		}
+		// Update bestPriceData from last bundle
+		if bestData.maxFees.GTE(bestPriceData.maxFees) {
+			bestPriceData = bestData
+		}
+		if len(requestPageResponse.NextKey) == 0 || j > maxRequestPages {
+			break
+		}
+		requestPageKey = requestPageResponse.NextKey
+		j++
+	}
+
+	return bestPriceData, nil
+}
+
 // The price of inference for a topic is determined by the price that maximizes the demand drawn from valid requests.
 // Which topics get processed (inference solicitation and weight-adjustment) is based on ordering topics by their return
 // at their optimal prices and then skimming the top.
@@ -269,7 +319,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 		fmt.Println("Error getting min topic unmet demand: ", err)
 		return nil, cosmosMath.Uint{}, err
 	}
-
 	// Need to do this separate from loop below to avoid consequences from deleting things mid-iteration
 	err = InactivateLowDemandTopics(ctx, k, minTopicDemand, topicPageLimit, maxTopicPages)
 	if err != nil {
@@ -280,7 +329,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	topicBestPrices := make(map[TopicId]PriceAndReturn)
 	requestsToDrawDemandFrom := make(map[TopicId][]types.InferenceRequest, 0)
 
-	topicOffset := uint64(0)
 	topicPageKey := make([]byte, 0)
 	i := uint64(0)
 
@@ -291,27 +339,11 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 			fmt.Println("Error getting active topics: ", err)
 			return nil, cosmosMath.Uint{}, err
 		}
-
-		requestPageKey := make([]byte, 0)
-		j := uint64(0)
 		priceFinder := BuildOnlineBestPriceFinder(ctx, k, currentBlock)
 		for _, topicId := range topicsActive {
-			requestPageRequest := &types.SimpleCursorPaginationRequest{Limit: requestPageLimit, Key: requestPageKey}
 
-			inferenceRequests, requestPageResponse, err := k.GetMempoolInferenceRequestsForTopic(ctx, topicId, requestPageRequest)
-			if err != nil {
-				fmt.Println("Error getting mempool inference requests: ", err)
-				return nil, cosmosMath.Uint{}, err
-			}
-
-			// Filter out expired requests and deplete them
-			inferenceRequests, err = FilterAndResolveExpiredRequests(ctx, k, inferenceRequests)
-			if err != nil {
-				fmt.Println("Error filtering and resolving expired requests: ", err)
-				return nil, cosmosMath.Uint{}, err
-			}
-
-			bestPriceData, err := priceFinder(inferenceRequests)
+			bestPriceData, err := BuildBestPricePerTopicId(
+				ctx, k, requestPageLimit, maxRequestPages, topicId, priceFinder)
 			if err != nil {
 				fmt.Println("Error getting requests that maximize fees: ", err)
 				return nil, cosmosMath.Uint{}, err
@@ -320,22 +352,13 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 			topicsActiveWithDemand = append(topicsActiveWithDemand, topicId)
 			topicBestPrices[topicId] = PriceAndReturn{bestPriceData.bestPrice, bestPriceData.maxFees}
 			requestsToDrawDemandFrom[topicId] = bestPriceData.validRequests
-
-			if len(requestPageResponse.NextKey) == 0 || j > maxRequestPages {
-				break
-			}
-
-			requestPageKey = requestPageResponse.NextKey
-			j++
 		}
-
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if len(topicPageResponse.NextKey) == 0 || i > maxTopicPages {
+		if topicsActive == nil || i > maxTopicPages {
 			break
 		}
 
 		topicPageKey = topicPageResponse.NextKey
-		topicOffset += topicPageLimit
 		i++
 	}
 
@@ -351,7 +374,6 @@ func ChurnRequestsGetActiveTopicsAndDemand(
 	cutoff := uint(math.Min(float64(len(sortedTopics)), float64(maxTopicsPerBlock)))
 
 	topTopicsByReturn := sortedTopics[:cutoff]
-
 	// Reset Churn Ready Topics
 	err = k.ResetChurnReadyTopics(ctx)
 	if err != nil {
