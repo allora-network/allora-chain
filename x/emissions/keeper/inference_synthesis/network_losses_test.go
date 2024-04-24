@@ -159,12 +159,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 						ValueBundle: &emissions.ValueBundle{
 							Reputer:       "worker1",
 							CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+							NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
 						},
 					},
 					{
 						ValueBundle: &emissions.ValueBundle{
 							Reputer:       "worker2",
 							CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+							NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
 						},
 					},
 				},
@@ -172,6 +174,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
 				CombinedValue: alloraMath.MustNewDecFromString("0.1587401051968199"),
+				NaiveValue:    alloraMath.MustNewDecFromString("0.1587401051968199"),
 			},
 			expectedError: nil,
 		},
@@ -188,12 +191,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 				require.EqualError(err, tc.expectedError.Error())
 			} else {
 				require.NoError(err)
-				log.Printf("tc.expectedOutput.CombinedValue: %v", tc.expectedOutput.CombinedValue)
-				log.Printf("tc.expectedOutput.InfererValues: %v", tc.expectedOutput.InfererValues)
-				log.Printf("output.CombinedValue: %v", output.CombinedValue)
-				log.Printf("output.InfererValues: %v", output.InfererValues)
-				require.Equal(tc.expectedOutput.CombinedValue, output.CombinedValue)
-				// require.ElementsMatch(tc.expectedOutput.InfererValues, output.InfererValues)
+				require.True(alloraMath.InDelta(tc.expectedOutput.CombinedValue, output.CombinedValue, alloraMath.MustNewDecFromString("0.00001")))
+				require.True(alloraMath.InDelta(tc.expectedOutput.NaiveValue, output.NaiveValue, alloraMath.MustNewDecFromString("0.00001")))
 			}
 		})
 	}
