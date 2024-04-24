@@ -112,14 +112,6 @@ func CalcNetworkLosses(
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
-			oneE18, err := AlloraOneE18()
-			if err != nil {
-				return emissions.ValueBundle{}, err
-			}
-			stakeAmount, err = stakeAmount.Quo(oneE18)
-			if err != nil {
-				return emissions.ValueBundle{}, err
-			}
 
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
@@ -282,17 +274,7 @@ func CalcCombinedNetworkLoss(
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err
 			}
-			if err != nil {
-				return Loss{}, err
-			}
-			oneE18, err := AlloraOneE18()
-			if err != nil {
-				return Loss{}, err
-			}
-			stakeAmount, err = stakeAmount.Quo(oneE18)
-			if err != nil {
-				return Loss{}, err
-			}
+
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(
 				&runningWeightedCombinedLoss,
