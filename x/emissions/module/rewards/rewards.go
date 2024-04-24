@@ -66,82 +66,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 			continue
 		}
 
-		lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topic.Id, topicRewardNonce)
-		if err != nil {
-			return err
-		}
-
-		// Get Entropy for each task
-		reputerEntropy, reputerFractions, reputers, err := GetReputerTaskEntropy(
-			ctx,
-			k,
-			topic.Id,
-			moduleParams.TaskRewardAlpha,
-			moduleParams.PRewardSpread,
-			moduleParams.BetaEntropy,
-			topicRewardNonce,
-		)
-		if err != nil {
-			return err
-		}
-		inferenceEntropy, inferenceFractions, workersInference, err := GetInferenceTaskEntropy(
-			ctx,
-			k,
-			topic.Id,
-			moduleParams.TaskRewardAlpha,
-			moduleParams.PRewardSpread,
-			moduleParams.BetaEntropy,
-			topicRewardNonce,
-		)
-		if err != nil {
-			return err
-		}
-		forecastingEntropy, forecastFractions, workersForecast, err := GetForecastingTaskEntropy(
-			ctx,
-			k,
-			topic.Id,
-			moduleParams.TaskRewardAlpha,
-			moduleParams.PRewardSpread,
-			moduleParams.BetaEntropy,
-			topicRewardNonce,
-		)
-		if err != nil {
-			return err
-		}
-
-		// Get Total Rewards for Reputation task
-		taskReputerReward, err := GetRewardForReputerTaskInTopic(
-			inferenceEntropy,
-			forecastingEntropy,
-			reputerEntropy,
-			topicRewards,
-		)
-		if err != nil {
-			return err
-		}
-		taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
-			lossBundles.NaiveValue,
-			lossBundles.CombinedValue,
-			inferenceEntropy,
-			forecastingEntropy,
-			reputerEntropy,
-			topicRewards,
-			moduleParams.SigmoidA,
-			moduleParams.SigmoidB,
-		)
-		if err != nil {
-			return err
-		}
-		taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-			lossBundles.NaiveValue,
-			lossBundles.CombinedValue,
-			inferenceEntropy,
-			forecastingEntropy,
-			reputerEntropy,
-			topicRewards,
-			moduleParams.SigmoidA,
-			moduleParams.SigmoidB,
-		)
+		taskReputerReward, taskInferenceReward, taskForecastingReward, err := GenerateTasksRewards(ctx, k, topic.Id, topicRewards, topicRewardNonce, moduleParams)
 		if err != nil {
 			return err
 		}
@@ -195,17 +120,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		if err != nil {
 			return err
 		}
-		SetPreviousRewardFractions(
-			ctx,
-			k,
-			topic.Id,
-			reputers,
-			reputerFractions,
-			workersInference,
-			inferenceFractions,
-			workersForecast,
-			forecastFractions,
-		)
 
 		// Delete topic reward nonce
 		err = k.DeleteTopicRewardNonce(ctx, topic.Id)
@@ -218,25 +132,111 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 	return nil
 }
 
-func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) error {
-	for _, reward := range rewards {
-		address, err := sdk.AccAddressFromBech32(reward.Address.String())
-		if err != nil {
-			return err
-		}
-
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(
-			ctx,
-			types.AlloraRewardsAccountName,
-			address,
-			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reward.Reward.SdkIntTrim())),
-		)
-		if err != nil {
-			return err
-		}
+func GenerateTasksRewards(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	topicRewards alloraMath.Dec,
+	block int64,
+	moduleParams types.Params,
+) (
+	alloraMath.Dec,
+	alloraMath.Dec,
+	alloraMath.Dec,
+	error,
+) {
+	lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
-	return nil
+	reputerEntropy, reputerFractions, reputers, err := GetReputerTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		moduleParams.TaskRewardAlpha,
+		moduleParams.PRewardSpread,
+		moduleParams.BetaEntropy,
+		block,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	inferenceEntropy, inferenceFractions, workersInference, err := GetInferenceTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		moduleParams.TaskRewardAlpha,
+		moduleParams.PRewardSpread,
+		moduleParams.BetaEntropy,
+		block,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	forecastingEntropy, forecastFractions, workersForecast, err := GetForecastingTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		moduleParams.TaskRewardAlpha,
+		moduleParams.PRewardSpread,
+		moduleParams.BetaEntropy,
+		block,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+
+	// Get Total Rewards for Reputation task
+	taskReputerReward, err := GetRewardForReputerTaskInTopic(
+		inferenceEntropy,
+		forecastingEntropy,
+		reputerEntropy,
+		topicRewards,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+		lossBundles.NaiveValue,
+		lossBundles.CombinedValue,
+		inferenceEntropy,
+		forecastingEntropy,
+		reputerEntropy,
+		topicRewards,
+		moduleParams.SigmoidA,
+		moduleParams.SigmoidB,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+	taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
+		lossBundles.NaiveValue,
+		lossBundles.CombinedValue,
+		inferenceEntropy,
+		forecastingEntropy,
+		reputerEntropy,
+		topicRewards,
+		moduleParams.SigmoidA,
+		moduleParams.SigmoidB,
+	)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+	}
+
+	SetPreviousRewardFractions(
+		ctx,
+		k,
+		topicId,
+		reputers,
+		reputerFractions,
+		workersInference,
+		inferenceFractions,
+		workersForecast,
+		forecastFractions,
+	)
+
+	return taskReputerReward, taskInferenceReward, taskForecastingReward, nil
 }
 
 func SetPreviousRewardFractions(
@@ -268,5 +268,26 @@ func SetPreviousRewardFractions(
 			return err
 		}
 	}
+	return nil
+}
+
+func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) error {
+	for _, reward := range rewards {
+		address, err := sdk.AccAddressFromBech32(reward.Address.String())
+		if err != nil {
+			return err
+		}
+
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(
+			ctx,
+			types.AlloraRewardsAccountName,
+			address,
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reward.Reward.SdkIntTrim())),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
