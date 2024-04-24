@@ -64,6 +64,7 @@ func (s *ModuleTestSuite) SetupTest() {
 		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
 		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
 		types.AlloraRewardsAccountName:  {"minter"},
+		"ecosystem":                     {"minter"},
 		"bonded_tokens_pool":            {"burner", "staking"},
 		"not_bonded_tokens_pool":        {"burner", "staking"},
 		multiPerm:                       {"burner", "minter", "staking"},
