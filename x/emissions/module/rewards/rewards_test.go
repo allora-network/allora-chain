@@ -229,11 +229,11 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644),
-		cosmosMath.NewUint(384623),
-		cosmosMath.NewUint(394676),
-		cosmosMath.NewUint(207999),
-		cosmosMath.NewUint(368582),
+		cosmosMath.NewUint(1176644).Mul(cosmosMath.NewUint(1000000000000000000)),
+		cosmosMath.NewUint(384623).Mul(cosmosMath.NewUint(1000000000000000000)),
+		cosmosMath.NewUint(394676).Mul(cosmosMath.NewUint(1000000000000000000)),
+		cosmosMath.NewUint(207999).Mul(cosmosMath.NewUint(1000000000000000000)),
+		cosmosMath.NewUint(368582).Mul(cosmosMath.NewUint(1000000000000000000)),
 	}
 	for i, addr := range reputerAddrs {
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
