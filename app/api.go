@@ -9,8 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type BlocklessRequest struct {
@@ -21,10 +20,11 @@ type BlocklessRequest struct {
 }
 
 type Config struct {
-	Environment []EnvVar `json:"env_vars,omitempty"`
-	Stdin       *string  `json:"stdin,omitempty"`
-	NodeCount   int      `json:"number_of_nodes,omitempty"`
-	Timeout     int      `json:"timeout,omitempty"`
+	Environment        []EnvVar `json:"env_vars,omitempty"`
+	Stdin              *string  `json:"stdin,omitempty"`
+	NodeCount          int      `json:"number_of_nodes,omitempty"`
+	Timeout            int      `json:"timeout,omitempty"`
+	ConsensusAlgorithm string   `json:"consensus_algorithm,omitempty"`
 }
 
 type EnvVar struct {
@@ -42,72 +42,54 @@ type InferenceItem struct {
 	Inference string `json:"inference"`
 }
 
-type WeightInferencePayload struct {
-	Inferences    []LatestInferences `json:"inferences"`
-	LatestWeights map[string]string  `json:"latest_weights"`
+type LossesPayload struct {
+	Inferences []emissionstypes.ValueBundle `json:"inferences"`
 }
 
-func generateWeights(
-	weights map[string]map[string]*math.Uint,
-	inferences []*state.InferenceSetForScoring,
+func generateLosses(
+	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
-	topicId uint64) {
-	inferencesByTimestamp := []LatestInferences{}
+	topicId uint64,
+	blockHeight emissionstypes.Nonce,
+	blockHeightEval emissionstypes.Nonce,
+	blocktime uint64) {
 
-	for _, infSet := range inferences {
-		timestamp := fmt.Sprintf("%d", infSet.Timestamp)
-		inferences := []InferenceItem{}
-		for _, inf := range infSet.Inferences.Inferences {
-			inferences = append(inferences, InferenceItem{
-				Worker:    inf.Worker,
-				Inference: inf.Value.String(),
-			})
-		}
-		inferencesByTimestamp = append(inferencesByTimestamp, LatestInferences{
-			Timestamp:  timestamp,
-			Inferences: inferences,
-		})
-	}
-
-	// Format the weights map into a map of strings
-	var latestWeights map[string]string = make(map[string]string)
-	if len(weights) == 0 {
-		for _, inference := range inferences {
-			for _, inf := range inference.Inferences.Inferences {
-				latestWeights[inf.Worker] = "0"
-			}
-		}
-	} else {
-		for _, workerWeights := range weights {
-			for worker, weight := range workerWeights {
-				latestWeights[worker] = weight.String()
-			}
-		}
-	}
-
-	// Combine everything into the final JSON object
-	payloadObj := WeightInferencePayload{
-		Inferences:    inferencesByTimestamp,
-		LatestWeights: latestWeights,
-	}
-
-	payloadJSON, err := json.Marshal(payloadObj)
+	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
 		return
 	}
 
-	params := string(payloadJSON)
-
+	params := string(inferencesPayloadJSON)
+	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
-		TopicID:    strconv.FormatUint(topicId, 10),
+		TopicID:    topicIdStr,
 		Config: Config{
-			Stdin:       &params,
-			Environment: []EnvVar{},
-			NodeCount:   1,
+			Stdin: &params,
+			Environment: []EnvVar{
+				{
+					Name:  "BLS_REQUEST_PATH",
+					Value: "/api",
+				},
+				{
+					Name:  "ALLORA_ARG_PARAMS",
+					Value: strconv.FormatUint(blocktime, 10),
+				},
+				{
+					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
+					Value: strconv.FormatInt(blockHeight.BlockHeight, 10),
+				},
+				{
+					Name:  "ALLORA_BLOCK_HEIGHT_EVAL",
+					Value: strconv.FormatInt(blockHeightEval.BlockHeight, 10),
+				},
+			},
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
 
@@ -117,11 +99,15 @@ func generateWeights(
 		return
 	}
 	payloadStr := string(payload)
-
 	makeApiCall(payloadStr)
 }
 
-func generateInferences(functionId string, functionMethod string, param string, topicId uint64) {
+func generateInferences(
+	functionId string,
+	functionMethod string,
+	param string,
+	topicId uint64,
+	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
 		FunctionID: functionId,
@@ -137,16 +123,19 @@ func generateInferences(functionId string, functionMethod string, param string, 
 					Name:  "ALLORA_ARG_PARAMS",
 					Value: param,
 				},
+				{
+					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
+					Value: strconv.FormatInt(nonce.BlockHeight, 10),
+				},
 			},
-			NodeCount: -1, // use all nodes that reported, no minimum / max
-			Timeout:   2,  // seconds to time out before rollcall complete
+			NodeCount:          -1,     // use all nodes that reported, no minimum / max
+			Timeout:            2,      // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
 		},
 	}
-
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
 		fmt.Println("Error marshalling outer JSON:", err)
-		return
 	}
 	payloadStr := string(payload)
 

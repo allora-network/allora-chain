@@ -1,6 +1,9 @@
 # Allora Network
 <p align="center">
 <img src='assets/AlloraLogo.jpeg' width='200'>
+<a href="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+    <img src="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+</a>
 </p>
 
 ![Docker!](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
@@ -179,4 +182,15 @@ allorad --home="$APP_HOME" \
   tx staking unbond ${VALIDATOR_OPERATOR_ADDRESS} \
   ${STAKE_AMOUNT}uallo --from ${VALIDATOR_ACCOUNT_KEY_NAME} \
    --keyring-backend=test --chain-id ${NETWORK}
+```
+
+## Run Integration Tests
+
+To run integration tests, execute the following commands:
+
+```bash
+make install
+make init
+bash integration/postinit.sh
+INTEGRATION=TRUE go test -timeout 10m ./integration -v
 ```

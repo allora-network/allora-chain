@@ -24,4 +24,9 @@ go.work
 data/
 # Account info
 *.account_info
+# Integration testing data
 integration/testnet
+
+# coverage
+coverage
+

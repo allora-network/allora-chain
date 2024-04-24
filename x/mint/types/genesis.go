@@ -1,18 +1,29 @@
 package types
 
+import "cosmossdk.io/math"
+
 // NewGenesisState creates a new GenesisState object
-func NewGenesisState(minter Minter, params Params) *GenesisState {
+func NewGenesisState(
+	params Params,
+	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
+	previousBlockEmission math.Int,
+	ecosystemTokensMinted math.Int,
+) *GenesisState {
 	return &GenesisState{
-		Minter: minter,
-		Params: params,
+		Params:                                   params,
+		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
+		PreviousBlockEmission:                    previousBlockEmission,
+		EcosystemTokensMinted:                    ecosystemTokensMinted,
 	}
 }
 
 // DefaultGenesisState creates a default GenesisState object
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Minter: DefaultInitialMinter(),
-		Params: DefaultParams(),
+		Params:                                   DefaultParams(),
+		PreviousRewardEmissionPerUnitStakedToken: DefaultPreviousRewardEmissionPerUnitStakedToken(),
+		PreviousBlockEmission:                    DefaultPreviousBlockEmission(),
+		EcosystemTokensMinted:                    DefaultEcosystemTokensMinted(),
 	}
 }
 
@@ -23,5 +34,13 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	return ValidateMinter(data.Minter)
+	if data.PreviousRewardEmissionPerUnitStakedToken.IsNegative() {
+		return ErrInvalidPreviousRewardEmissionPerUnitStakedToken
+	}
+
+	if data.EcosystemTokensMinted.IsNegative() {
+		return ErrInvalidEcosystemTokensMinted
+	}
+
+	return nil
 }

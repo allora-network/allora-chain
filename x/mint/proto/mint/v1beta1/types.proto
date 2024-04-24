@@ -7,71 +7,74 @@ import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-// Minter represents the minting state.
-message Minter {
-  // current annual inflation rate
-  string inflation = 1 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
-  ];
-  // current annual expected provisions
-  string annual_provisions = 2 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
-  ];
-}
-
 // Params defines the parameters for the x/mint module.
 message Params {
   option (amino.name) = "allora-chain/x/mint/Params";
 
   // type of coin to mint
   string mint_denom = 1;
-  // maximum annual change in inflation rate
-  string inflation_rate_change = 2 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // maximum inflation rate
-  string inflation_max = 3 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // minimum inflation rate
-  string inflation_min = 4 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // goal of percent bonded atoms
-  string goal_bonded = 5 [
-    (cosmos_proto.scalar) = "cosmos.Dec",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  // expected blocks per year
-  uint64 blocks_per_year = 6;
+
+  // block emission rate in number of blocks expected per month
+  uint64 blocks_per_month = 2;
+
+  // timestep to recalibrate the emission rate
+  // in units of "times per month" e.g. 30 for daily
+  // or 4 for weekly
+  uint64 emission_calibrations_timestep_per_month = 3;
+
   // maximum total supply of the coin
-  string max_supply = 7 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+  string max_supply = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  // halving interval in blocks
-  uint64 halving_interval = 8;
-  // current provision per block
-  string current_block_provision = 9 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+  // ecosystem treasury fraction ideally emitted per unit time
+  string f_emission = 5 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // exponential moving average smoothing factor for one month
+  string one_month_smoothing_degree = 6 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // percentage of the total supply is reserved and locked in the ecosystem treasury
+  string ecosystem_treasury_percent_of_total_supply = 7 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // percentage of the total supply that is unlocked and usable in the foundation treasury
+  string foundation_treasury_percent_of_total_supply = 8 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // percentage of the total supply that is unlocked and usable by partipicants at the genesis
+  string participants_percent_of_total_supply = 9 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // percentage of the total supply that is locked in the investors bucket at the genesis
+  string investors_percent_of_total_supply = 10 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // percentage of the total supply that is locked in the team bucket at the genesis
+  string team_percent_of_total_supply = 11 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

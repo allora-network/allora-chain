@@ -1,0 +1,436 @@
+syntax = "proto3";
+package emissions.v1;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "emissions/v1/types.proto";
+import "google/api/annotations.proto";
+import "cosmos/query/v1/query.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+// Msg defines the module Msg service.
+service Query {
+  // Params returns the module parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/emissions/v1/params";
+  }
+
+  rpc GetLastRewardsUpdate(QueryLastRewardsUpdateRequest) returns (QueryLastRewardsUpdateResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/last_rewards_update";
+  }
+
+  rpc GetNextTopicId(QueryNextTopicIdRequest) returns (QueryNextTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/next_topic_id";
+  }
+
+  rpc GetTopic(QueryTopicRequest) returns (QueryTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topics/{topic_id}";
+  }
+
+  rpc GetActiveTopics(QueryActiveTopicsRequest) returns (QueryActiveTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/active_topics";
+  }
+
+  rpc GetMempoolInferenceRequest(QueryMempoolInferenceRequest) returns (QueryExistingInferenceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inferences/requests/{request_id}";
+  }
+
+  rpc GetMempoolInferenceRequestsByTopic(QueryMempoolInferenceRequestsByTopic)
+      returns (QueryMempoolInferenceRequestsByTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inferences/all_requests";
+  }
+
+  rpc GetTopicUnmetDemand(QueryTopicUnmetDemandRequest) returns (QueryTopicUnmetDemandResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/unmet_demand/{topic_id}";
+  }
+
+  rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest)
+      returns (QueryWorkerLatestInferenceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topics/{topic_id}/"
+                                   "workers/{worker_address}/latest_inference";
+  }
+
+  rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest) returns (QueryInferencesAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{block_height}";
+  }
+
+  rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest) returns (QueryForecastsAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}/{block_height}";
+  }
+
+  rpc GetNetworkLossBundleAtBlock(QueryNetworkLossBundleAtBlockRequest)
+      returns (QueryNetworkLossBundleAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/network_loss/{topic_id}/{block_height}";
+  }
+
+  rpc GetTotalStake(QueryTotalStakeRequest) returns (QueryTotalStakeResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/total_stake";
+  }
+
+  rpc GetReputerStakeInTopic(QueryReputerStakeInTopicRequest) returns (QueryReputerStakeInTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_stake/{address}/{topic_id}";
+  }
+
+  rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
+      returns (QueryDelegateStakeInTopicInReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_delegate_stake/{reputer_address}/{topic_id}";
+  }
+
+  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest)
+      returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
+  }
+
+  rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest)
+      returns (QueryStakeFromDelegatorInTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{topic_id}";
+  }
+
+  rpc GetTopicStake(QueryTopicStakeRequest) returns (QueryTopicStakeResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
+  }
+
+  rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
+  }
+
+  rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest) returns (QueryReputerNodeInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer/{libp2p_key}";
+  }
+
+  rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker_address/{libp2p_key}";
+  }
+
+  rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest) returns (QueryReputerAddressByP2PKeyResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_address/{libp2p_key}";
+  }
+
+  rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest)
+      returns (QueryIsWorkerRegisteredInTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker_registered/{topic_id}/{address}";
+  }
+
+  rpc IsReputerRegisteredInTopicId(QueryIsReputerRegisteredInTopicIdRequest)
+      returns (QueryIsReputerRegisteredInTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_registered/{topic_id}/{address}";
+  }
+
+  rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest)
+      returns (QueryNetworkInferencesAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}/{block_height}";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// returns the last time the rewards inflation calculation ran
+message QueryLastRewardsUpdateRequest {}
+
+// returns the last time the rewards inflation calculation ran
+// last_rewards_update is an int64 because it is a block number
+message QueryLastRewardsUpdateResponse {
+  int64 last_rewards_update = 1;
+}
+
+// Total Stake returns the total amount of stake in the system
+message QueryTotalStakeRequest {}
+
+// Total Stake returns the total amount of stake in the system
+//
+// NOTE: The amount field is a Uint which implements the custom method
+// signatures required by gogoproto.
+message QueryTotalStakeResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryReputerStakeInTopicRequest {
+  string address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryReputerStakeInTopicResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryDelegateStakeInTopicInReputerRequest {
+  string reputer_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryDelegateStakeInTopicInReputerResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryStakeFromDelegatorInTopicInReputerRequest {
+  string delegator_address = 1;
+  string reputer_address = 2;
+  uint64 topic_id = 3;
+}
+
+message QueryStakeFromDelegatorInTopicInReputerResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryStakeFromDelegatorInTopicRequest {
+  string delegator_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeFromDelegatorInTopicResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryTopicStakeRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicStakeResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryNetworkLossBundleAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryNetworkLossBundleAtBlockResponse {
+  ValueBundle loss_bundle = 1;
+}
+
+message QueryNextTopicIdRequest {}
+
+message QueryNextTopicIdResponse {
+  uint64 next_topic_id = 1;
+}
+
+message QueryTopicRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicResponse {
+  Topic topic = 1;
+}
+
+message QueryActiveTopicsRequest {
+  SimpleCursorPaginationRequest pagination = 1;
+}
+
+message QueryActiveTopicsResponse {
+  repeated Topic topics = 1;
+  SimpleCursorPaginationResponse pagination = 2;
+}
+
+// Returns the inferences on a topic posted at a block height
+message QueryInferencesAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+// Returns the inferences on a topic posted at a block height
+//
+// NOTE: The amount field is a Uint which implements the custom method
+// signatures required by gogoproto.
+message QueryInferencesAtBlockResponse {
+  Inferences inferences = 1;
+}
+
+// Returns the forecasts on a topic posted at a block height
+message QueryForecastsAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+// Returns the forecasts on a topic posted at a block height
+//
+// NOTE: The amount field is a Uint which implements the custom method
+// signatures required by gogoproto.
+message QueryForecastsAtBlockResponse {
+  Forecasts forecasts = 1;
+}
+
+message QueryWorkerLatestInferenceRequest {
+  uint64 topic_id = 1;
+  string worker_address = 2;
+}
+
+message QueryWorkerLatestInferenceResponse {
+  Inference latest_inference = 1;
+}
+
+message QueryWorkerNodeInfoRequest {
+  string libp2p_key = 1;
+}
+
+message QueryWorkerNodeInfoResponse {
+  OffchainNode node_info = 1;
+}
+
+message QueryReputerNodeInfoRequest {
+  string libp2p_key = 1;
+}
+
+message QueryReputerNodeInfoResponse {
+  OffchainNode node_info = 1;
+}
+
+message QueryWorkerAddressByP2PKeyRequest {
+  string libp2p_key = 1;
+}
+
+message QueryWorkerAddressByP2PKeyResponse {
+  string address = 1;
+}
+
+message QueryReputerAddressByP2PKeyRequest {
+  string libp2p_key = 1;
+}
+
+message QueryReputerAddressByP2PKeyResponse {
+  string address = 1;
+}
+
+message QueryMempoolInferenceRequest {
+  string request_id = 1;
+}
+
+message QueryExistingInferenceResponse {
+  InferenceRequest inference_request = 1;
+  string demand_left = 2 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryMempoolInferenceRequestsByTopic {
+  uint64 topic_id = 1;
+  SimpleCursorPaginationRequest pagination = 2;
+}
+
+message InferenceRequestAndDemandLeft {
+  InferenceRequest inference_request = 1;
+  string demand_left = 2 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryMempoolInferenceRequestsByTopicResponse {
+  repeated InferenceRequestAndDemandLeft inference_requests = 1;
+  SimpleCursorPaginationResponse pagination = 2;
+}
+
+message QueryTopicUnmetDemandRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicUnmetDemandResponse {
+  string demand_left = 1 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryNetworkInferencesAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryNetworkInferencesAtBlockResponse {
+  ValueBundle network_inferences = 1;
+  int64 block_height = 2;
+}
+
+message QueryIsWorkerRegisteredInTopicIdRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message QueryIsWorkerRegisteredInTopicIdResponse {
+  bool is_registered = 1;
+}
+
+message QueryIsReputerRegisteredInTopicIdRequest {
+  uint64 topic_id = 1;
+  string address = 2;
+}
+
+message QueryIsReputerRegisteredInTopicIdResponse {
+  bool is_registered = 1;
+}

@@ -31,38 +31,47 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetActiveTopics",
-					Use:       "active-topics",
+					Use:       "active-topics [pagination]",
 					Short:     "Get Active Topics",
-				},
-				{
-					RpcMethod: "GetAllTopics",
-					Use:       "all-topics",
-					Short:     "Get the full list of all topics created on the network",
-				},
-				{
-					RpcMethod: "GetTopicsByCreator",
-					Use:       "topics-by-creator [creator]",
-					Short:     "Get Topics by Creator",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "pagination"},
 					},
 				},
 				{
-					RpcMethod: "GetAccountStakeList",
-					Use:       "account-stake-list [address]",
-					Short:     "Get Account Stake List",
+					RpcMethod: "GetReputerStakeInTopic",
+					Use:       "reputer-topic-stake [address] [topic_id]",
+					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
-					RpcMethod: "GetWeight",
-					Use:       "weight [topic_id] [reputer] [worker]",
-					Short:     "Get Weight From a Reputer to a Worker for a Topic",
+					RpcMethod: "GetDelegateStakeInTopicInReputer",
+					Use:       "reputer-topic-stake [reputer_address] [topic_id]",
+					Short:     "Get total delegate stake in a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer_address"},
 						{ProtoField: "topic_id"},
-						{ProtoField: "reputer"},
-						{ProtoField: "worker"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopicInReputer",
+					Use:       "delegate-topic-stake-in-reputer [delegator_address] [reputer_address] [topic_id]",
+					Short:     "Get amount of stake from delegator in a topic for a reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeFromDelegatorInTopic",
+					Use:       "delegator-topic-stake [delegator_address] [topic_id]",
+					Short:     "Get Account Stake in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -75,28 +84,28 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetAllInferences",
-					Use:       "inference [topic_id] [timestamp]",
+					RpcMethod: "GetInferencesAtBlock",
+					Use:       "inference [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
-						{ProtoField: "timestamp"},
+						{ProtoField: "block_height"},
 					},
 				},
 				{
-					RpcMethod: "GetInferencesToScore",
-					Use:       "inferences-to-score [topic_id]",
-					Short:     "Get Latest Inferences for a Topic to be scored",
+					RpcMethod: "GetWorkerNodeInfo",
+					Use:       "worker-info [libp2p_key]",
+					Short:     "Get node info for worker node libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
+						{ProtoField: "libp2p_key"},
 					},
 				},
 				{
-					RpcMethod: "GetWorkerNodeRegistration",
-					Use:       "worker-registration [owner|libp2p-pub-key]",
-					Short:     "Get registration for worker node id",
+					RpcMethod: "GetReputerNodeInfo",
+					Use:       "reputer-info [libp2p_key]",
+					Short:     "Get node info for reputer node libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "node_id"},
+						{ProtoField: "libp2p_key"},
 					},
 				},
 				{
@@ -108,18 +117,29 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetExistingInferenceRequest",
-					Use:       "inference-request [topic_id] [request_id]",
-					Short:     "Get a specific Inference Request and demand left in the mempool by topic id and request id",
+					RpcMethod: "GetReputerAddressByP2PKey",
+					Use:       "reputer-address [libp2p_key]",
+					Short:     "Get Reputer Address by libp2p key",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
+						{ProtoField: "libp2p_key"},
+					},
+				},
+				{
+					RpcMethod: "GetMempoolInferenceRequest",
+					Use:       "inference-request [request_id]",
+					Short:     "Get a specific Inference Request and demand left in the mempool by request id",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "request_id"},
 					},
 				},
 				{
-					RpcMethod: "GetAllExistingInferenceRequests",
-					Use:       "all-inference-requests",
-					Short:     "Get All Inference Requests and demand left for each request in mempool",
+					RpcMethod: "GetMempoolInferenceRequestsByTopic",
+					Use:       "inference-requests-per-topic [topic_id] [pagination]",
+					Short:     "Get Inference Requests by topic and unmet demand left for each request in mempool",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "pagination"},
+					},
 				},
 				{
 					RpcMethod: "GetTopicUnmetDemand",
@@ -135,18 +155,54 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get timestamp of the last rewards update",
 				},
 				{
-					RpcMethod: "GetRegisteredTopicIds",
-					Use:       "registered-topic-ids [address] [bool is_reputer]",
-					Short:     "Get the list of topics that a reputer or worker is registered to",
+					RpcMethod: "IsWorkerRegisteredInTopicId",
+					Use:       "is-worker-registered [topic_id] [address]",
+					Short:     "True if worker is registered in the topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
 						{ProtoField: "address"},
-						{ProtoField: "is_reputer"},
+					},
+				},
+				{
+					RpcMethod: "IsReputerRegisteredInTopicId",
+					Use:       "is-reputer-registered [topic_id] [address]",
+					Short:     "True if reputer is registered in the topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "address"},
 					},
 				},
 				{
 					RpcMethod: "GetTotalStake",
 					Use:       "total-stake",
 					Short:     "Get the total amount of staked tokens by all participants in the network",
+				},
+				{
+					RpcMethod: "GetForecastsAtBlock",
+					Use:       "get-forecasts-at-block [topic_id] [block]",
+					Short:     "Get the Forecasts for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkInferencesAtBlock",
+					Use:       "get-network-inferences-at-block [topic_id] [block]",
+					Short:     "Get the Network Inferences for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNetworkLossBundleAtBlock",
+					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
+					Short:     "Get the network loss bundle for a topic at block height ",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
 				},
 			},
 		},
@@ -164,18 +220,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "push-topic [creator] [metadata] [weight_logic] [weight_method] [weight_cadence] [inference_logic] [inference_method] [inference_cadence] [default_arg]",
+					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [pnorm] [alpha_regret] [preward_reputer] [preward_inference] [preward_forecast] [f_tolerance]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "weight_logic"},
-						{ProtoField: "weight_method"},
-						{ProtoField: "weight_cadence"},
+						{ProtoField: "loss_logic"},
+						{ProtoField: "loss_method"},
 						{ProtoField: "inference_logic"},
 						{ProtoField: "inference_method"},
-						{ProtoField: "inference_cadence"},
+						{ProtoField: "epoch_length"},
+						{ProtoField: "ground_truth_lag"},
 						{ProtoField: "default_arg"},
+						{ProtoField: "pnorm"},
+						{ProtoField: "alpha_regret"},
+						{ProtoField: "preward_reputer"},
+						{ProtoField: "preward_inference"},
+						{ProtoField: "preward_forecast"},
+						{ProtoField: "f_tolerance"},
 					},
 				},
 				{
@@ -183,21 +245,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "register [creator] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
-						{ProtoField: "topic_ids"},
-						{ProtoField: "initial_stake"},
-						{ProtoField: "owner"},
-						{ProtoField: "is_reputer"},
-					},
-				},
-				{
-					RpcMethod: "AddNewRegistration",
-					Use:       "add-registration [creator] [lib_p2p_key] [multi_address] [topic_id] [owner] [is_reputer]",
-					Short:     "Register a reputer or worker for an additional topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "lib_p2p_key"},
 						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
@@ -210,38 +258,29 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "remove-registration [creator] [owner] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "creator"},
+						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "is_reputer"},
 					},
 				},
 				{
 					RpcMethod: "AddStake",
-					Use:       "add-stake [sender] [target] [amount]",
-					Short:     "Add stake [amount] from a sender [reputer or worker] to a stakeTarget [reputer or worker]",
+					Use:       "add-stake [sender] [topic_id] [amount]",
+					Short:     "Add stake [amount] to ones self sender [reputer or worker] for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "stake_target"},
+						{ProtoField: "topic_id"},
 						{ProtoField: "amount"},
 					},
 				},
 				{
-					RpcMethod: "ModifyStake",
-					Use:       "modify-stake [sender] [placements_remove] [placements_add]",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove] and moving that stake to [placements_add]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
-						{ProtoField: "placements_add"},
-					},
-				},
-				{
 					RpcMethod: "StartRemoveStake",
-					Use:       "start-remove-stake [sender] [placements_remove]",
-					Short:     "modify sender's [reputer or worker] stake position by removing stake from [placements_remove]",
+					Use:       "start-remove-stake [sender] [topic_id] [amount]",
+					Short:     "modify sender's [reputer] stake position by removing [amount] stake from a topic [topic_id]",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "placements_remove"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "amount"},
 					},
 				},
 				{
@@ -253,47 +292,44 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "StartRemoveAllStake",
-					Use:       "start-remove-all-stake [sender]",
-					Short:     "Start the process to remove all stake from a sender [reputer or worker]",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-					},
-				},
-				{
-					RpcMethod: "ProcessInferences",
-					Use:       "process-inferences [sender] [inferences]",
-					Short:     "Process a batch of inferences",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "inferences"},
-					},
-				},
-				{
-					RpcMethod: "SetWeights",
-					Use:       "set-weights [sender] [weights]",
-					Short:     "Set a batch of weights",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "weights"},
-					},
-				},
-				{
-					RpcMethod: "ReactivateTopic",
-					Use:       "reactivate-topic [sender] [topic_id]",
-					Short:     "Reactivate a topic that has become inactivated",
+					RpcMethod: "DelegateStake",
+					Use:       "delegate-stake [sender] [topic_id] [reputer] [amount]",
+					Short:     "Delegate stake [amount] to a reputer for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+						{ProtoField: "amount"},
+					},
+				},
+				{
+					RpcMethod: "StartRemoveDelegateStake",
+					Use:       "start-remove-delegate-stake [sender] [topic_id] [reputer] [amount]",
+					Short:     "Modify sender's [reputer] delegate stake position by removing [amount] stake from a topic [topic_id] from a reputer [reputer]",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+						{ProtoField: "amount"},
+					},
+				},
+				{
+					RpcMethod: "ConfirmRemoveDelegateStake",
+					Use:       "confirm-remove-delegate-stake [sender] [topic_id] [reputer]",
+					Short:     "Proceed with removing stake from a stakeTarget [reputer] back to the sender",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
 					},
 				},
 				{
 					RpcMethod: "RequestInference",
-					Use:       "request-inference [sender] [requests]",
-					Short:     "Request a batch of inferences to be kicked off",
+					Use:       "request-inference [sender] [request]",
+					Short:     "Request an inference ",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "requests"},
+						{ProtoField: "request"},
 					},
 				},
 				{
@@ -333,7 +369,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "AddToWeightSettingWhitelist",
+					RpcMethod: "AddToReputerWhitelist",
 					Use:       "add-to-weight-setting-whitelist [sender] [address]",
 					Short:     "add an address to the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -342,12 +378,30 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "RemoveFromWeightSettingWhitelist",
+					RpcMethod: "RemoveFromReputerWhitelist",
 					Use:       "remove-from-weight-setting-whitelist [sender] [address]",
 					Short:     "remove an address from the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "address"},
+					},
+				},
+				{
+					RpcMethod: "InsertBulkWorkerPayload",
+					Use:       "insert-bulk-worker-payload [worker_data_bundles]",
+					Short:     "Insert bulk worker payload",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "worker_data_bundles"},
+					},
+				},
+				{
+					RpcMethod: "InsertBulkReputerPayload",
+					Use:       "insert-bulk-reputer-payload [reputer_value_bundles]",
+					Short:     "Insert bulk reputer payload",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "reputer_value_bundles"},
 					},
 				},
 			},

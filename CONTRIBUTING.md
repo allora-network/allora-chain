@@ -16,3 +16,16 @@ Contributors must sign-off each commit by adding a `Signed-off-by: ...`
 line to commit messages to certify that they have the right to submit
 the code they are contributing to the project according to the
 [Developer Certificate of Origin (DCO)](https://developercertificate.org/).
+
+Contributors are encouraged to enable our pre-commit hooks to facilitate
+teh passage of CI/CD-related checks in our repositories. To enable them,
+please run the following command in the root of the repository:
+
+```bash
+chmod +x .hooks/pre-commit
+git config core.hooksPath .hooks/pre-commit 
+```
+
+This will enable the pre-commit hooks for the repository and ensure that
+all commits are checked for compliance with our formatter and other
+checks before they are accepted into the repository.

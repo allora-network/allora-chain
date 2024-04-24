@@ -11,3 +11,4 @@ jobs:
     - name: Run allora l1 chain
       run: bash ./integration/local_testnet_l1.sh
 # Add more tests here
+

@@ -11,7 +11,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.21
+        go-version: 1.22
 
     - name: Make
       run: make install
@@ -22,14 +22,5 @@ jobs:
     - name: PostInit
       run: bash ./integration/postinit.sh
     
-    - name: CreateTopic
-      run: bash ./integration/topic.sh
-
-    - name : Distribution
-      run: bash ./integration/distribution.sh
-
-    - name : Rewards
-      run: bash ./integration/rewards.sh
-    
-    - name : InferenceRequests
-      run: bash ./integration/inferencerequest.sh
+    - name: IntegrationTest
+      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v
