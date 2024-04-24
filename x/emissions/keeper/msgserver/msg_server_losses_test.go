@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,15 +26,16 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	s.emissionsKeeper.AddToReputerWhitelist(ctx, reputerAddr)
 
 	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
-
-	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStake)
-
 	require.NoError(err)
+
+	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
+
+	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
-		Amount:  minStake,
+		Amount:  minStakeScaled,
 	}
 
 	_, err = msgServer.AddStake(ctx, addStakeMsg)

@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,10 @@ func GetReputerTaskEntropy(
 ) {
 	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{},
+			nil,
+			nil,
+			errors.Wrapf(err, "failed to get reputers scores at block %d", blockHeight)
 	}
 	numReputers := len(scoresAtBlock.Scores)
 	stakes := make([]alloraMath.Dec, numReputers)
@@ -33,28 +37,43 @@ func GetReputerTaskEntropy(
 		addrStr := scorePtr.Address
 		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{},
+				nil,
+				nil,
+				errors.Wrapf(err, "failed to convert reputer address %s", addrStr)
 		}
 		reputers[i] = reputerAddr
 		stake, err := k.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{},
+				nil,
+				nil,
+				errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
 		stakes[i], err = alloraMath.NewDecFromSdkUint(stake)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{},
+				nil,
+				nil,
+				errors.Wrapf(err, "failed to convert reputer stake %d", stake)
 		}
 	}
 
 	reputerRewardFractions, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{},
+			nil,
+			nil,
+			errors.Wrapf(err, "failed to get reputer reward fractions")
 	}
 	emaReputerRewards := make([]alloraMath.Dec, numReputers)
 	for i, fraction := range reputerRewardFractions {
 		previousReputerRewardFraction, noPriorRegret, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputers[i])
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{},
+				nil,
+				nil,
+				errors.Wrapf(err, "failed to get previous reputer reward fraction")
 		}
 		emaReputerRewards[i], err = alloraMath.CalcEma(
 			emaAlpha,
@@ -63,16 +82,22 @@ func GetReputerTaskEntropy(
 			noPriorRegret,
 		)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
+			return alloraMath.Dec{},
+				nil,
+				nil,
+				errors.Wrapf(err, "failed to calculate EMA reputer rewards")
 		}
 	}
 	reputerNumberRatio, err := NumberRatio(emaReputerRewards)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{},
+			nil,
+			nil,
+			errors.Wrapf(err, "failed to calculate reputer number ratio")
 	}
 	modifiedRewardFractions, err = ModifiedRewardFractions(emaReputerRewards)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate modified reward fractions")
 	}
 	entropy, err = Entropy(
 		modifiedRewardFractions,
@@ -81,7 +106,7 @@ func GetReputerTaskEntropy(
 		betaEntropy,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, err
+		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate entropy")
 	}
 	return entropy, modifiedRewardFractions, reputers, nil
 }
@@ -126,13 +151,13 @@ func GetReputerRewards(
 	// Get All reported losses from last block
 	reportedLosses, err := keeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get reputer loss bundles at block %d", block)
 	}
 
 	// Get reputer scores at block
 	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, block)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get reputers scores at block %d", block)
 	}
 
 	// Get reputers informations
@@ -142,18 +167,18 @@ func GetReputerRewards(
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.ValueBundle.Reputer)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to convert reputer address %s", reportedLoss.ValueBundle.Reputer)
 		}
 		reputerAddresses = append(reputerAddresses, reputerAddr)
 
 		// Get reputer topic stake
 		reputerStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
 		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to convert reputer stake %d", reputerStake)
 		}
 		reputerStakes = append(reputerStakes, reputerStakeDec)
 
@@ -168,7 +193,7 @@ func GetReputerRewards(
 	// Get reputer rewards fractions
 	reputersFractions, err := GetReputerRewardFractions(reputerStakes, scoresDec, preward)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get reputer reward fractions")
 	}
 
 	// Calculate reputer rewards
@@ -176,7 +201,7 @@ func GetReputerRewards(
 	for i, reputerFraction := range reputersFractions {
 		reward, err := reputerFraction.Mul(totalReputerRewards)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to calculate reputer rewards")
 		}
 		reputerRewards = append(reputerRewards, TaskRewards{
 			Address: reputerAddresses[i],

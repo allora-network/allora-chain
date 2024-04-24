@@ -1616,45 +1616,24 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 }
 
 func (k Keeper) GetActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
-	limit, startTopicId, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rng := new(collections.Range[uint64]).StartInclusive(startTopicId)
+	startKey := make([]byte, binary.MaxVarintLen64)
+	binary.BigEndian.PutUint64(startKey, start)
+	nextKey := make([]byte, binary.MaxVarintLen64)
+	binary.BigEndian.PutUint64(nextKey, start+limit)
 
-	iter, err := k.activeTopics.Iterate(ctx, rng)
-	if err != nil {
-		return nil, nil, err
+	rng, _ := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
+	activeTopics, _ := rng.Keys()
+	defer rng.Close()
+
+	// If there are no topics, we return the nil for next key
+	if activeTopics == nil {
+		nextKey = make([]byte, 0)
 	}
-	defer iter.Close()
-
-	activeTopics := make([]TopicId, 0)
-	count := uint64(0)
-	for ; iter.Valid(); iter.Next() {
-		newKey, err := iter.Key()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		activeTopics = append(activeTopics, newKey)
-
-		if count >= limit {
-			break
-		}
-		count++
-	}
-
-	// If there are no more topics, we return the same cursor as the last one
-	if !iter.Valid() {
-		return activeTopics, &types.SimpleCursorPaginationResponse{
-			NextKey: pagination.Key,
-		}, nil
-	}
-
-	// If there are more topics, we return the next key
-	nextKey := make([]byte, 8)
-	binary.BigEndian.PutUint64(nextKey, startTopicId+limit)
 
 	return activeTopics, &types.SimpleCursorPaginationResponse{
 		NextKey: nextKey,
@@ -1924,7 +1903,6 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 	if err != nil {
 		return nil, nil, err
 	}
-
 	numRequestsInTopic, err := k.numRequestsPerTopic.Get(ctx, topicId)
 	if err != nil {
 		return nil, nil, err
@@ -1937,7 +1915,7 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 
 	// Get the requests in the page
 	requests := make([]types.InferenceRequest, 0)
-	for i := cursor; i < k.Uint64Min(numRequestsInTopic, limit+numRequestsInTopic); i++ {
+	for i := cursor; i < k.Uint64Min(numRequestsInTopic, cursor+limit); i++ {
 		key := collections.Join(topicId, i)
 		requestId, err := k.topicRequests.Get(ctx, key)
 		if err != nil {
@@ -1952,10 +1930,10 @@ func (k *Keeper) GetMempoolInferenceRequestsForTopic(
 
 	// If the number of requests in the topic is less than the limit, return an empty key
 	var nextKey []byte
-	if numRequestsInTopic <= cursor+limit {
-		nextKey = nil
+	if uint64(len(requests)) < limit {
+		nextKey = make([]byte, 0)
 	} else {
-		nextKey = make([]byte, 8)
+		nextKey = make([]byte, binary.MaxVarintLen64)
 		binary.BigEndian.PutUint64(nextKey, cursor+limit)
 	}
 
@@ -2387,7 +2365,8 @@ func (k *Keeper) Uint64Min(a, b uint64) uint64 {
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
 	cursor := uint64(0)
-	limit, err := k.GetParamsDefaultLimit(ctx)
+	defaultLimit, err := k.GetParamsDefaultLimit(ctx)
+	limit := pagination.Limit
 	if err != nil {
 		return uint64(0), uint64(0), err
 	}
@@ -2395,8 +2374,8 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 		if len(pagination.Key) > 0 {
 			cursor = binary.BigEndian.Uint64(pagination.Key)
 		}
-		if pagination.Limit == 0 {
-			return limit, cursor, nil
+		if limit == 0 {
+			return defaultLimit, cursor, nil
 		} else {
 			maxLimit, err := k.GetParamsMaxLimit(ctx)
 			if err != nil {

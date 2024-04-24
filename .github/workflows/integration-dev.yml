@@ -1,45 +1,14 @@
-name: Integration
+name: Integration L1
 
-# on: [pull_request]
-on: workflow_dispatch
-
-env:
-  DOCKER_IMAGE: allorad
+on: [pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-      with:
-        path: allora-chain
 
-    # Checkout scripts repo
-    - uses: actions/checkout@v3
-      with:
-        repository: upshot-tech/scripts
-        path: scripts
+    - name: Run allora l1 chain
+      run: bash ./integration/local_testnet_l1.sh
+# Add more tests here
 
-    - name: Build Docker image
-      run: |
-        cd allora-chain
-        docker build --pull -t $DOCKERHUB_USERNAME -f ./Dockerfile.development .
-
-    - name: Generate genesis and accounts
-      run: |
-        docker run -it \
-          -u 0:0 \ # To not fight with permisions
-          -v ./scripts:/scripts \
-          -v ./demonet:/data \
-          -e COMMON_HOME_DIR=/data \
-          --entrypoint=/scripts/generate_genesis.sh \
-          $DOCKER_IMAGE
-
-    - name: Init
-      run: make init
-    
-    - name: PostInit
-      run: bash ./integration/postinit.sh
-    
-    - name: IntegrationTest
-      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v

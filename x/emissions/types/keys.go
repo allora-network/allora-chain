@@ -10,6 +10,10 @@ const (
 	AlloraRewardsAccountName  = "allorarewards"
 )
 
+const (
+	oneE18 = "1000000000000000000"
+)
+
 var (
 	ParamsKey                          = collections.NewPrefix(0)
 	TotalStakeKey                      = collections.NewPrefix(1)
