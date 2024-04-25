@@ -10,15 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Get timestamp of the last rewards update
-func (qs queryServer) GetLastRewardsUpdate(ctx context.Context, req *types.QueryLastRewardsUpdateRequest) (*types.QueryLastRewardsUpdateResponse, error) {
-	lastRewardsUpdate, err := qs.k.GetLastRewardsUpdate(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &types.QueryLastRewardsUpdateResponse{LastRewardsUpdate: lastRewardsUpdate}, nil
-}
-
 // TotalStake defines the handler for the Query/TotalStake RPC method.
 func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalStakeRequest) (*types.QueryTotalStakeResponse, error) {
 	totalStake, err := qs.k.GetTotalStake(ctx)

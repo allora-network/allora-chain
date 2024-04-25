@@ -718,12 +718,12 @@ func (s *KeeperTestSuite) TestGetParamsMinTopicUnmetDemand() {
 	expectedValue := cosmosMath.NewUintFromString("300")
 
 	// Set the parameter
-	params := types.Params{MinTopicUnmetDemand: expectedValue}
+	params := types.Params{MinTopicWeight: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMinTopicUnmetDemand(ctx)
+	actualValue, err := keeper.GetParamsMinTopicWeight(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
@@ -891,22 +891,6 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedCadence := int64(86400) // Assume a daily cadence (in seconds if applicable)
-
-	// Set the parameter first to ensure there is something to retrieve
-	params := types.Params{RewardCadence: expectedCadence}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err, "Setting parameters should not fail")
-
-	// Now test getting the reward cadence
-	actualCadence, err := keeper.GetParamsRewardCadence(ctx)
-	s.Require().NoError(err, "Getting reward cadence should not fail")
-	s.Require().Equal(expectedCadence, actualCadence, "The retrieved reward cadence should match the expected value")
 }
 
 //////////////////////////////////////////////////////////////
@@ -1742,19 +1726,6 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing delegate stake removal information")
 }
 
-func (s *KeeperTestSuite) TestRewardsUpdate() {
-	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
-	s.NoError(err, "error getting un-initialized")
-	s.Require().Equal(int64(0), noInitLastRewardsUpdate, "Last rewards update should be zero")
-
-	err = s.emissionsKeeper.SetLastRewardsUpdate(s.ctx, 100)
-	s.NoError(err, "error setting")
-
-	lastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
-	s.NoError(err, "error getting")
-	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
-}
-
 func (s *KeeperTestSuite) TestSetRequestDemand() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -1847,7 +1818,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	params := types.Params{
 		Version:                     "v1.0.0",
 		RewardCadence:               60 * 60 * 24 * 7 * 24,
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
+		MinTopicWeight:              cosmosMath.NewUint(100),
 		MaxTopicsPerBlock:           1000,
 		MinRequestUnmetDemand:       cosmosMath.NewUint(1),
 		MaxMissingInferencePercent:  alloraMath.NewDecFromInt64(10),
@@ -1869,7 +1840,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
 	s.Require().Equal(params.RewardCadence, paramsFromKeeper.RewardCadence, "Params should be equal to the set params: EpochLength")
-	s.Require().True(params.MinTopicUnmetDemand.Equal(paramsFromKeeper.MinTopicUnmetDemand), "Params should be equal to the set params: MinTopicUnmetDemand")
+	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
 	s.Require().True(params.MinRequestUnmetDemand.Equal(paramsFromKeeper.MinRequestUnmetDemand), "Params should be equal to the set params: MinRequestUnmetDemand")
 	s.Require().Equal(params.MaxMissingInferencePercent, paramsFromKeeper.MaxMissingInferencePercent, "Params should be equal to the set params: MaxMissingInferencePercent")
@@ -2144,7 +2115,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 		Key:   nil,
 		Limit: 10,
 	}
-	activeTopics, _, err := keeper.GetActiveTopics(ctx, pagination)
+	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
@@ -2331,7 +2302,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 	addAmount := cosmosMath.NewUint(50)
 
 	// Initial add should set demand since it starts at zero
-	_, err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
+	_, err := keeper.AddTopicUnmetDemand(ctx, topicId, addAmount)
 	s.Require().NoError(err, "Adding unmet demand should not fail")
 
 	// Verify the addition
@@ -2341,7 +2312,7 @@ func (s *KeeperTestSuite) TestAddUnmetDemand() {
 
 	// Add more to the existing demand
 	additionalAmount := cosmosMath.NewUint(30)
-	_, err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
+	_, err = keeper.AddTopicUnmetDemand(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding more unmet demand should not fail")
 
 	// Verify new demand
@@ -2362,7 +2333,7 @@ func (s *KeeperTestSuite) TestRemoveUnmetDemand() {
 	_ = keeper.SetTopicUnmetDemand(ctx, topicId, initialDemand)
 
 	// Remove some demand
-	err := keeper.RemoveUnmetDemand(ctx, topicId, removeAmount)
+	err := keeper.RemoveTopicUnmetDemand(ctx, topicId, removeAmount)
 	s.Require().NoError(err, "Removing unmet demand should not fail")
 
 	// Verify removal
@@ -2372,7 +2343,7 @@ func (s *KeeperTestSuite) TestRemoveUnmetDemand() {
 
 	// Attempt to remove more than exists, should fail
 	largeRemoveAmount := cosmosMath.NewUint(200)
-	err = keeper.RemoveUnmetDemand(ctx, topicId, largeRemoveAmount)
+	err = keeper.RemoveTopicUnmetDemand(ctx, topicId, largeRemoveAmount)
 	s.Require().Error(err, "Should error when removing more demand than exists")
 	s.Require().IsType(types.ErrIntegerUnderflowUnmetDemand, err, "Error should be of type ErrIntegerUnderflowUnmetDemand")
 }

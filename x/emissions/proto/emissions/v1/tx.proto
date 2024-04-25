@@ -37,20 +37,11 @@ service Msg {
 
   rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
 
-  rpc RequestInference(MsgRequestInference) returns (MsgRequestInferenceResponse);
+  rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
 
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
 
   rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
-
-  rpc AddToTopicCreationWhitelist(MsgAddToTopicCreationWhitelist) returns (MsgAddToTopicCreationWhitelistResponse);
-
-  rpc RemoveFromTopicCreationWhitelist(MsgRemoveFromTopicCreationWhitelist)
-      returns (MsgRemoveFromTopicCreationWhitelistResponse);
-
-  rpc AddToReputerWhitelist(MsgAddToReputerWhitelist) returns (MsgAddToReputerWhitelistResponse);
-
-  rpc RemoveFromReputerWhitelist(MsgRemoveFromReputerWhitelist) returns (MsgRemoveFromReputerWhitelistResponse);
 }
 
 /// PARAMS
@@ -64,94 +55,80 @@ service Msg {
 message OptionalParams {
   repeated string version = 1;
   repeated int64 reward_cadence = 2;
-  repeated string min_topic_unmet_demand = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated string min_topic_weight = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 max_topics_per_block = 4;
-  repeated string min_request_unmet_demand = 5 [
+  repeated string max_missing_inference_percent = 5
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string required_minimum_stake = 6 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string max_missing_inference_percent = 6
+  repeated int64 remove_stake_delay_window = 7;
+  repeated int64 min_epoch_length = 8;
+  repeated int64 max_inference_request_validity = 9;
+  repeated string sharpness = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string required_minimum_stake = 7 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-  repeated int64 remove_stake_delay_window = 8;
-  repeated int64 min_epoch_length = 9;
-  repeated int64 max_inference_request_validity = 10;
-  repeated int64 max_request_cadence = 11;
-  repeated string sharpness = 12
+  repeated string beta_entropy = 11
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string beta_entropy = 13
+  repeated string learning_rate = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string learning_rate = 14
+  repeated string max_gradient_threshold = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string max_gradient_threshold = 15
+  repeated string min_stake_fraction = 14
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string min_stake_fraction = 16
+  repeated uint64 max_workers_per_topic_request = 15;
+  repeated uint64 max_reputers_per_topic_request = 16;
+  repeated string epsilon = 17
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_workers_per_topic_request = 17;
-  repeated uint64 max_reputers_per_topic_request = 18;
-  repeated string epsilon = 19
+  repeated string p_inference_synthesis = 18
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_inference_synthesis = 20
+  repeated string p_reward_spread = 19
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_spread = 21
+  repeated string alpha_regret = 20
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string alpha_regret = 22
+  repeated uint64 max_unfulfilled_worker_requests = 21;
+  repeated uint64 max_unfulfilled_reputer_requests = 22;
+  repeated string topic_reward_stake_importance = 23
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_unfulfilled_worker_requests = 23;
-  repeated uint64 max_unfulfilled_reputer_requests = 24;
-  repeated uint64 number_expected_inference_sybils = 25;
-  repeated uint64 sybil_tax_exponent = 26;
-  repeated string topic_reward_stake_importance = 27
+  repeated string topic_reward_fee_revenue_importance = 24
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_fee_revenue_importance = 28
+  repeated string topic_reward_alpha = 25
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_alpha = 29
+  repeated string task_reward_alpha = 26
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string task_reward_alpha = 30
+  repeated string validators_vs_allora_percent_reward = 27
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 31
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_samples_to_scale_scores = 32;
-  repeated uint64 max_top_workers_to_reward = 33;
-  repeated uint64 max_top_reputers_to_reward = 34;
-  repeated string create_topic_fee = 35 [
+  repeated uint64 max_samples_to_scale_scores = 28;
+  repeated uint64 max_top_workers_to_reward = 29;
+  repeated uint64 max_top_reputers_to_reward = 30;
+  repeated string create_topic_fee = 31 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string sigmoid_a = 36
+  repeated string sigmoid_a = 32
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 37
+  repeated string sigmoid_b = 33
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 gradient_descent_max_iters = 38;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 39;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 40;
-  repeated uint64 topic_page_limit = 41;
-  repeated uint64 max_topic_pages = 42;
-  repeated uint64 request_page_limit = 43;
-  repeated uint64 max_request_pages = 44;
-  repeated string registration_fee = 45 [
+  repeated uint64 gradient_descent_max_iters = 34;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 35;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 36;
+  repeated uint64 topic_page_limit = 37;
+  repeated uint64 max_topic_pages = 38;
+  repeated uint64 request_page_limit = 39;
+  repeated uint64 max_request_pages = 40;
+  repeated string registration_fee = 41 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 max_requests_per_topic = 46;
-  repeated uint64 default_limit = 47;
-  repeated uint64 max_limit = 48;
+  repeated uint64 default_limit = 42;
+  repeated uint64 max_limit = 43;
 }
 
 message MsgUpdateParams {
@@ -329,35 +306,21 @@ message MsgConfirmDelegateRemoveStake {
 
 message MsgConfirmRemoveDelegateStakeResponse {}
 
-message MsgRequestInference {
+// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+message MsgFundTopic {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
-  InferenceRequestInbound request = 2;
-}
-
-message InferenceRequestInbound {
-  uint64 nonce = 1;
   uint64 topic_id = 2;
-  int64 cadence = 3;  // blocks between inferences, zero means oneshot inference
-  string max_price_per_inference = 4 [
+  string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // the maximum price per inference that alice is willing to pay
-  string bid_amount = 5 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];  // how many funds to send from alice with this Inference Request
-  int64 block_valid_until = 6;
-  bytes extra_data = 7;
+  ];                     // how many funds to send from alice with this Inference Request
+  bytes extra_data = 4;  // maybe later consumers get to "vote" on the argument passed to workers
 }
 
-message MsgRequestInferenceResponse {
-  string request_id = 1;
-}
+message MsgFundTopicResponse {}
 
 ///  Whitelist
 
@@ -378,39 +341,3 @@ message MsgRemoveFromWhitelistAdmin {
 }
 
 message MsgRemoveFromWhitelistAdminResponse {}
-
-message MsgAddToTopicCreationWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgAddToTopicCreationWhitelistResponse {}
-
-message MsgRemoveFromTopicCreationWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgRemoveFromTopicCreationWhitelistResponse {}
-
-message MsgAddToReputerWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgAddToReputerWhitelistResponse {}
-
-message MsgRemoveFromReputerWhitelist {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  string address = 2;
-}
-
-message MsgRemoveFromReputerWhitelistResponse {}

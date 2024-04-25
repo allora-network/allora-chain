@@ -353,5 +353,5 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, types.ErrInferenceRequestBidAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
+	s.Require().ErrorIs(err, types.ErrFundAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
 }

@@ -41,7 +41,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	pagination := &types.SimpleCursorPaginationRequest{
 		Limit: 100,
 	}
-	activeTopics, _, err := s.emissionsKeeper.GetActiveTopics(s.ctx, pagination)
+	activeTopics, _, err := s.emissionsKeeper.GetIdsOfActiveTopics(s.ctx, pagination)
 	require.NoError(err, "CreateTopic fails on first creation")
 	found := false
 	for _, topicId := range activeTopics {

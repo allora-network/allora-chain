@@ -4,14 +4,21 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	chainParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
+	//
+	/// Here, flush inactivation keyset
+	//
+
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 
@@ -26,7 +33,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 	}
 
 	// Get Distribution of Rewards per Topic
-	weights, sumWeight, err := GetActiveTopicWeights(ctx, k, activeTopics)
+	weights, sumWeight, sumRevenue, numRewardReeadyTopics, err := GetRewardReadyTopicWeights(ctx, k, block)
 	if err != nil {
 		return errors.Wrapf(err, "weights error")
 	}
@@ -34,10 +41,42 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		fmt.Println("No weights, no rewards!")
 		return nil
 	}
-	topicRewards := make([]alloraMath.Dec, len(activeTopics))
-	for i := range weights {
-		topicWeight := weights[i]
-		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumWeight)
+
+	// Send collected inference request fees to the Ecosystem module account
+	// They will be paid out to reputers, workers, and cosmos validators
+	// according to the formulas in the beginblock of the mint module
+	err = k.BankKeeper().SendCoinsFromModuleToModule(
+		ctx,
+		types.AlloraRequestsAccountName,
+		mintTypes.EcosystemModuleName,
+		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.BigInt().Int64()))))
+	if err != nil {
+		fmt.Println("Error sending coins from module to module: ", err)
+		return err
+	}
+
+	// minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "failed to get min topic weight")
+	// }
+
+	topicRewards := make(map[TopicId]alloraMath.Dec, numRewardReeadyTopics)
+	for topicId, weight := range weights {
+		// Consider sorting by weight desc and skimming the top here per SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
+		// If we do that though, we should be sure to return the revenue to those topics that didn't make the cut
+
+		// //
+		// /// TODO add to inactivation keyset (pop before EmitRewards called, or at onset of it)
+		// //
+		// inactivated, err := InactivateTopicIfWeightBelowMin(ctx, k, minTopicWeight, topicId, weight)
+		// if err != nil {
+		// 	return errors.Wrapf(err, "failed to decrement topic unmet demand and inactivate")
+		// }
+		// if inactivated {
+		// 	continue
+		// }
+
+		topicRewardFraction, err := GetTopicRewardFraction(weight, sumWeight)
 		if err != nil {
 			return errors.Wrapf(err, "reward fraction error")
 		}
@@ -45,7 +84,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		if err != nil {
 			return errors.Wrapf(err, "reward error")
 		}
-		topicRewards[i] = topicReward
+		topicRewards[topicId] = topicReward
 	}
 
 	moduleParams, err := k.GetParams(ctx)
@@ -53,18 +92,22 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		return errors.Wrapf(err, "failed to get module params")
 	}
 	// for every topic
-	for i := 0; i < len(activeTopics); i++ {
-		topic := activeTopics[i]
-		topicRewards := topicRewards[i] // E_{t,i}
+	for topicId, topicReward := range topicRewards {
+		// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
+		err = k.AddChurnReadyTopic(ctx, topicId)
+		if err != nil {
+			fmt.Println("Error setting churn ready topic: ", err)
+			return err
+		}
 
 		// Get topic reward nonce/block height
+		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
-		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topic.Id)
 		if err != nil || topicRewardNonce == 0 {
 			continue
 		}
 
-		taskReputerReward, taskInferenceReward, taskForecastingReward, err := GenerateTasksRewards(ctx, k, topic.Id, topicRewards, topicRewardNonce, moduleParams)
+		taskReputerReward, taskInferenceReward, taskForecastingReward, err := GenerateTasksRewards(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
 			return errors.Wrapf(err, "failed to generate task rewards")
 		}
@@ -75,7 +118,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		reputerRewards, err := GetReputerRewards(
 			ctx,
 			k,
-			topic.Id,
+			topicId,
 			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskReputerReward,
@@ -89,7 +132,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		inferenceRewards, err := GetWorkersRewardsInferenceTask(
 			ctx,
 			k,
-			topic.Id,
+			topicId,
 			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskInferenceReward,
@@ -103,7 +146,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		forecastRewards, err := GetWorkersRewardsForecastTask(
 			ctx,
 			k,
-			topic.Id,
+			topicId,
 			topicRewardNonce,
 			moduleParams.PRewardSpread,
 			taskForecastingReward,
@@ -120,13 +163,11 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, activeTopics []*types.Topic) 
 		}
 
 		// Delete topic reward nonce
-		err = k.DeleteTopicRewardNonce(ctx, topic.Id)
+		err = k.DeleteTopicRewardNonce(ctx, topicId)
 		if err != nil {
 			return errors.Wrapf(err, "failed to delete topic reward nonce")
 		}
 	}
-
-	SetPreviousTopicWeights(ctx, k, activeTopics, weights)
 	return nil
 }
 

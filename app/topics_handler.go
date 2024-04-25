@@ -21,6 +21,8 @@ type TopicsHandler struct {
 	mintKeeper      mintkeeper.Keeper
 }
 
+type TopicId = uint64
+
 func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkeeper.Keeper) *TopicsHandler {
 	return &TopicsHandler{
 		emissionsKeeper: emissionsKeeper,
@@ -68,24 +70,39 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
-		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
+
+		maxNumberTopics, err := th.emissionsKeeper.GetParamsMaxTopicsPerBlock(ctx)
 		if err != nil {
-			fmt.Println("Error getting active topics and met demand: ", err)
+			fmt.Println("Error getting max number of topics per block: ", err)
 			return nil, err
 		}
 
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for _, topic := range churnReadyTopics.Topics {
+		for i := uint64(0); i < maxNumberTopics; i++ {
+			// Pop churn ready topic
+			churnReadyTopicId, err := th.emissionsKeeper.PopChurnReadyTopic(ctx)
+			if err != nil {
+				fmt.Println("Error popping churn ready topic: ", err)
+				continue
+			}
+
 			// Parallelize the inference and loss cadence checks
 			wg.Add(1)
-			go func(topic *emissionstypes.Topic) {
+			go func(topicId TopicId) {
 				defer wg.Done()
+
+				topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
+				if err != nil {
+					fmt.Println("Error getting topic: ", err)
+					return
+				}
 
 				// Check if the inference and loss cadence is met, then run inf and loss generation
 				if currentBlockHeight == topic.EpochLastEnded+topic.EpochLength ||
 					currentBlockHeight-topic.EpochLastEnded > 2*topic.EpochLength {
+
 					// WORKER
 					fmt.Printf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 						topic.Id, topic.Metadata, topic.DefaultArg)
@@ -146,7 +163,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				} else {
 					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}
-			}(topic)
+			}(churnReadyTopicId)
 		}
 		wg.Wait()
 		// Return the transactions as they came
