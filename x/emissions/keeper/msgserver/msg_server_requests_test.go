@@ -7,10 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestRequestInferenceSimple() {
+func (s *KeeperTestSuite) TestFundTopicSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
+	// put some stake in the topic
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
@@ -22,8 +25,6 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 		Amount:    cosmosMath.NewInt(initialStake),
 		ExtraData: []byte("Test"),
 	}
-	//feeRevBefore, err := s.emissionsKeeper.GetTopicFeeRevenue(s.ctx, r.TopicId)
-	//s.Require().NoError(err)
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err, "GetParams should not return an error")
 	topicWeightBefore, feeRevBefore, err := s.emissionsKeeper.GetCurrentTopicWeight(
@@ -41,9 +42,9 @@ func (s *KeeperTestSuite) TestRequestInferenceSimple() {
 	s.Require().NotNil(response, "Response should not be nil")
 
 	// Check if the topic is activated
-	_, err = s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
 	s.Require().NoError(err)
-	//s.Require().Equal(true, res, "TopicId is not activated")
+	s.Require().Equal(true, res, "TopicId is not activated")
 	// check that the topic fee revenue has been updated
 	topicWeightAfter, feeRevAfter, err := s.emissionsKeeper.GetCurrentTopicWeight(
 		s.ctx,
