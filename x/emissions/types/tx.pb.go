@@ -42,52 +42,47 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type OptionalParams struct {
 	Version                         []string                                          `protobuf:"bytes,1,rep,name=version,proto3" json:"version,omitempty"`
 	RewardCadence                   []int64                                           `protobuf:"varint,2,rep,packed,name=reward_cadence,json=rewardCadence,proto3" json:"reward_cadence,omitempty"`
-	MinTopicUnmetDemand             []cosmossdk_io_math.Uint                          `protobuf:"bytes,3,rep,name=min_topic_unmet_demand,json=minTopicUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_topic_unmet_demand"`
+	MinTopicWeight                  []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,rep,name=min_topic_weight,json=minTopicWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_topic_weight"`
 	MaxTopicsPerBlock               []uint64                                          `protobuf:"varint,4,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
-	MinRequestUnmetDemand           []cosmossdk_io_math.Uint                          `protobuf:"bytes,5,rep,name=min_request_unmet_demand,json=minRequestUnmetDemand,proto3,customtype=cosmossdk.io/math.Uint" json:"min_request_unmet_demand"`
-	MaxMissingInferencePercent      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,6,rep,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_missing_inference_percent"`
-	RequiredMinimumStake            []cosmossdk_io_math.Uint                          `protobuf:"bytes,7,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Uint" json:"required_minimum_stake"`
-	RemoveStakeDelayWindow          []int64                                           `protobuf:"varint,8,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
-	MinEpochLength                  []int64                                           `protobuf:"varint,9,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
-	MaxInferenceRequestValidity     []int64                                           `protobuf:"varint,10,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`
-	MaxRequestCadence               []int64                                           `protobuf:"varint,11,rep,packed,name=max_request_cadence,json=maxRequestCadence,proto3" json:"max_request_cadence,omitempty"`
-	Sharpness                       []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,rep,name=sharpness,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sharpness"`
-	BetaEntropy                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,rep,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
-	LearningRate                    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,14,rep,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
-	MaxGradientThreshold            []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,15,rep,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
-	MinStakeFraction                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,rep,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
-	MaxWorkersPerTopicRequest       []uint64                                          `protobuf:"varint,17,rep,packed,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`
-	MaxReputersPerTopicRequest      []uint64                                          `protobuf:"varint,18,rep,packed,name=max_reputers_per_topic_request,json=maxReputersPerTopicRequest,proto3" json:"max_reputers_per_topic_request,omitempty"`
-	Epsilon                         []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,rep,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
-	PInferenceSynthesis             []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,20,rep,name=p_inference_synthesis,json=pInferenceSynthesis,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_inference_synthesis"`
-	PRewardSpread                   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,21,rep,name=p_reward_spread,json=pRewardSpread,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_spread"`
-	AlphaRegret                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,22,rep,name=alpha_regret,json=alphaRegret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"alpha_regret"`
-	MaxUnfulfilledWorkerRequests    []uint64                                          `protobuf:"varint,23,rep,packed,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
-	MaxUnfulfilledReputerRequests   []uint64                                          `protobuf:"varint,24,rep,packed,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
-	NumberExpectedInferenceSybils   []uint64                                          `protobuf:"varint,25,rep,packed,name=number_expected_inference_sybils,json=numberExpectedInferenceSybils,proto3" json:"number_expected_inference_sybils,omitempty"`
-	SybilTaxExponent                []uint64                                          `protobuf:"varint,26,rep,packed,name=sybil_tax_exponent,json=sybilTaxExponent,proto3" json:"sybil_tax_exponent,omitempty"`
-	TopicRewardStakeImportance      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,27,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
-	TopicRewardFeeRevenueImportance []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,28,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_fee_revenue_importance"`
-	TopicRewardAlpha                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,29,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_alpha"`
-	TaskRewardAlpha                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,30,rep,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
-	ValidatorsVsAlloraPercentReward []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,31,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"validators_vs_allora_percent_reward"`
-	MaxSamplesToScaleScores         []uint64                                          `protobuf:"varint,32,rep,packed,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
-	MaxTopWorkersToReward           []uint64                                          `protobuf:"varint,33,rep,packed,name=max_top_workers_to_reward,json=maxTopWorkersToReward,proto3" json:"max_top_workers_to_reward,omitempty"`
-	MaxTopReputersToReward          []uint64                                          `protobuf:"varint,34,rep,packed,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`
-	CreateTopicFee                  []cosmossdk_io_math.Int                           `protobuf:"bytes,35,rep,name=create_topic_fee,json=createTopicFee,proto3,customtype=cosmossdk.io/math.Int" json:"create_topic_fee"`
-	SigmoidA                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,36,rep,name=sigmoid_a,json=sigmoidA,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_a"`
-	SigmoidB                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,37,rep,name=sigmoid_b,json=sigmoidB,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_b"`
-	GradientDescentMaxIters         []uint64                                          `protobuf:"varint,38,rep,packed,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"`
-	MaxRetriesToFulfilNoncesWorker  []int64                                           `protobuf:"varint,39,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`
-	MaxRetriesToFulfilNoncesReputer []int64                                           `protobuf:"varint,40,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"`
-	TopicPageLimit                  []uint64                                          `protobuf:"varint,41,rep,packed,name=topic_page_limit,json=topicPageLimit,proto3" json:"topic_page_limit,omitempty"`
-	MaxTopicPages                   []uint64                                          `protobuf:"varint,42,rep,packed,name=max_topic_pages,json=maxTopicPages,proto3" json:"max_topic_pages,omitempty"`
-	RequestPageLimit                []uint64                                          `protobuf:"varint,43,rep,packed,name=request_page_limit,json=requestPageLimit,proto3" json:"request_page_limit,omitempty"`
-	MaxRequestPages                 []uint64                                          `protobuf:"varint,44,rep,packed,name=max_request_pages,json=maxRequestPages,proto3" json:"max_request_pages,omitempty"`
-	RegistrationFee                 []cosmossdk_io_math.Int                           `protobuf:"bytes,45,rep,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
-	MaxRequestsPerTopic             []uint64                                          `protobuf:"varint,46,rep,packed,name=max_requests_per_topic,json=maxRequestsPerTopic,proto3" json:"max_requests_per_topic,omitempty"`
-	DefaultLimit                    []uint64                                          `protobuf:"varint,47,rep,packed,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`
-	MaxLimit                        []uint64                                          `protobuf:"varint,48,rep,packed,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`
+	MaxMissingInferencePercent      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_missing_inference_percent"`
+	RequiredMinimumStake            []cosmossdk_io_math.Uint                          `protobuf:"bytes,6,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Uint" json:"required_minimum_stake"`
+	RemoveStakeDelayWindow          []int64                                           `protobuf:"varint,7,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
+	MinEpochLength                  []int64                                           `protobuf:"varint,8,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
+	MaxInferenceRequestValidity     []int64                                           `protobuf:"varint,9,rep,packed,name=max_inference_request_validity,json=maxInferenceRequestValidity,proto3" json:"max_inference_request_validity,omitempty"`
+	Sharpness                       []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,rep,name=sharpness,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sharpness"`
+	BetaEntropy                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,rep,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
+	LearningRate                    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,rep,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
+	MaxGradientThreshold            []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,rep,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
+	MinStakeFraction                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,14,rep,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
+	MaxWorkersPerTopicRequest       []uint64                                          `protobuf:"varint,15,rep,packed,name=max_workers_per_topic_request,json=maxWorkersPerTopicRequest,proto3" json:"max_workers_per_topic_request,omitempty"`
+	MaxReputersPerTopicRequest      []uint64                                          `protobuf:"varint,16,rep,packed,name=max_reputers_per_topic_request,json=maxReputersPerTopicRequest,proto3" json:"max_reputers_per_topic_request,omitempty"`
+	Epsilon                         []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,17,rep,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
+	PInferenceSynthesis             []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,18,rep,name=p_inference_synthesis,json=pInferenceSynthesis,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_inference_synthesis"`
+	PRewardSpread                   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,rep,name=p_reward_spread,json=pRewardSpread,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_spread"`
+	AlphaRegret                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,20,rep,name=alpha_regret,json=alphaRegret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"alpha_regret"`
+	MaxUnfulfilledWorkerRequests    []uint64                                          `protobuf:"varint,21,rep,packed,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
+	MaxUnfulfilledReputerRequests   []uint64                                          `protobuf:"varint,22,rep,packed,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
+	TopicRewardStakeImportance      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,23,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
+	TopicRewardFeeRevenueImportance []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,24,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_fee_revenue_importance"`
+	TopicRewardAlpha                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,25,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_alpha"`
+	TaskRewardAlpha                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,26,rep,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
+	ValidatorsVsAlloraPercentReward []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,27,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"validators_vs_allora_percent_reward"`
+	MaxSamplesToScaleScores         []uint64                                          `protobuf:"varint,28,rep,packed,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
+	MaxTopWorkersToReward           []uint64                                          `protobuf:"varint,29,rep,packed,name=max_top_workers_to_reward,json=maxTopWorkersToReward,proto3" json:"max_top_workers_to_reward,omitempty"`
+	MaxTopReputersToReward          []uint64                                          `protobuf:"varint,30,rep,packed,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`
+	CreateTopicFee                  []cosmossdk_io_math.Int                           `protobuf:"bytes,31,rep,name=create_topic_fee,json=createTopicFee,proto3,customtype=cosmossdk.io/math.Int" json:"create_topic_fee"`
+	SigmoidA                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,32,rep,name=sigmoid_a,json=sigmoidA,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_a"`
+	SigmoidB                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,33,rep,name=sigmoid_b,json=sigmoidB,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_b"`
+	GradientDescentMaxIters         []uint64                                          `protobuf:"varint,34,rep,packed,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"`
+	MaxRetriesToFulfilNoncesWorker  []int64                                           `protobuf:"varint,35,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`
+	MaxRetriesToFulfilNoncesReputer []int64                                           `protobuf:"varint,36,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"`
+	TopicPageLimit                  []uint64                                          `protobuf:"varint,37,rep,packed,name=topic_page_limit,json=topicPageLimit,proto3" json:"topic_page_limit,omitempty"`
+	MaxTopicPages                   []uint64                                          `protobuf:"varint,38,rep,packed,name=max_topic_pages,json=maxTopicPages,proto3" json:"max_topic_pages,omitempty"`
+	RequestPageLimit                []uint64                                          `protobuf:"varint,39,rep,packed,name=request_page_limit,json=requestPageLimit,proto3" json:"request_page_limit,omitempty"`
+	MaxRequestPages                 []uint64                                          `protobuf:"varint,40,rep,packed,name=max_request_pages,json=maxRequestPages,proto3" json:"max_request_pages,omitempty"`
+	RegistrationFee                 []cosmossdk_io_math.Int                           `protobuf:"bytes,41,rep,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
+	DefaultLimit                    []uint64                                          `protobuf:"varint,42,rep,packed,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`
+	MaxLimit                        []uint64                                          `protobuf:"varint,43,rep,packed,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`
 }
 
 func (m *OptionalParams) Reset()         { *m = OptionalParams{} }
@@ -165,13 +160,6 @@ func (m *OptionalParams) GetMaxInferenceRequestValidity() []int64 {
 	return nil
 }
 
-func (m *OptionalParams) GetMaxRequestCadence() []int64 {
-	if m != nil {
-		return m.MaxRequestCadence
-	}
-	return nil
-}
-
 func (m *OptionalParams) GetMaxWorkersPerTopicRequest() []uint64 {
 	if m != nil {
 		return m.MaxWorkersPerTopicRequest
@@ -196,20 +184,6 @@ func (m *OptionalParams) GetMaxUnfulfilledWorkerRequests() []uint64 {
 func (m *OptionalParams) GetMaxUnfulfilledReputerRequests() []uint64 {
 	if m != nil {
 		return m.MaxUnfulfilledReputerRequests
-	}
-	return nil
-}
-
-func (m *OptionalParams) GetNumberExpectedInferenceSybils() []uint64 {
-	if m != nil {
-		return m.NumberExpectedInferenceSybils
-	}
-	return nil
-}
-
-func (m *OptionalParams) GetSybilTaxExponent() []uint64 {
-	if m != nil {
-		return m.SybilTaxExponent
 	}
 	return nil
 }
@@ -280,13 +254,6 @@ func (m *OptionalParams) GetRequestPageLimit() []uint64 {
 func (m *OptionalParams) GetMaxRequestPages() []uint64 {
 	if m != nil {
 		return m.MaxRequestPages
-	}
-	return nil
-}
-
-func (m *OptionalParams) GetMaxRequestsPerTopic() []uint64 {
-	if m != nil {
-		return m.MaxRequestsPerTopic
 	}
 	return nil
 }
@@ -1571,23 +1538,26 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgConfirmRemoveDelegateStakeResponse proto.InternalMessageInfo
 
-type MsgRequestInference struct {
-	Sender  string                   `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Request *InferenceRequestInbound `protobuf:"bytes,2,opt,name=request,proto3" json:"request,omitempty"`
+// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+type MsgFundTopic struct {
+	Sender    string                `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	TopicId   uint64                `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Amount    cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Int" json:"amount"`
+	ExtraData []byte                `protobuf:"bytes,4,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
 }
 
-func (m *MsgRequestInference) Reset()         { *m = MsgRequestInference{} }
-func (m *MsgRequestInference) String() string { return proto.CompactTextString(m) }
-func (*MsgRequestInference) ProtoMessage()    {}
-func (*MsgRequestInference) Descriptor() ([]byte, []int) {
+func (m *MsgFundTopic) Reset()         { *m = MsgFundTopic{} }
+func (m *MsgFundTopic) String() string { return proto.CompactTextString(m) }
+func (*MsgFundTopic) ProtoMessage()    {}
+func (*MsgFundTopic) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8293ea1b0f4b608c, []int{25}
 }
-func (m *MsgRequestInference) XXX_Unmarshal(b []byte) error {
+func (m *MsgFundTopic) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRequestInference) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgFundTopic) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRequestInference.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgFundTopic.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1597,126 +1567,54 @@ func (m *MsgRequestInference) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *MsgRequestInference) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRequestInference.Merge(m, src)
+func (m *MsgFundTopic) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgFundTopic.Merge(m, src)
 }
-func (m *MsgRequestInference) XXX_Size() int {
+func (m *MsgFundTopic) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRequestInference) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRequestInference.DiscardUnknown(m)
+func (m *MsgFundTopic) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgFundTopic.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRequestInference proto.InternalMessageInfo
+var xxx_messageInfo_MsgFundTopic proto.InternalMessageInfo
 
-func (m *MsgRequestInference) GetSender() string {
+func (m *MsgFundTopic) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
 	return ""
 }
 
-func (m *MsgRequestInference) GetRequest() *InferenceRequestInbound {
-	if m != nil {
-		return m.Request
-	}
-	return nil
-}
-
-type InferenceRequestInbound struct {
-	Nonce                uint64                 `protobuf:"varint,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	TopicId              uint64                 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Cadence              int64                  `protobuf:"varint,3,opt,name=cadence,proto3" json:"cadence,omitempty"`
-	MaxPricePerInference cosmossdk_io_math.Uint `protobuf:"bytes,4,opt,name=max_price_per_inference,json=maxPricePerInference,proto3,customtype=cosmossdk.io/math.Uint" json:"max_price_per_inference"`
-	BidAmount            cosmossdk_io_math.Uint `protobuf:"bytes,5,opt,name=bid_amount,json=bidAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"bid_amount"`
-	BlockValidUntil      int64                  `protobuf:"varint,6,opt,name=block_valid_until,json=blockValidUntil,proto3" json:"block_valid_until,omitempty"`
-	ExtraData            []byte                 `protobuf:"bytes,7,opt,name=extra_data,json=extraData,proto3" json:"extra_data,omitempty"`
-}
-
-func (m *InferenceRequestInbound) Reset()         { *m = InferenceRequestInbound{} }
-func (m *InferenceRequestInbound) String() string { return proto.CompactTextString(m) }
-func (*InferenceRequestInbound) ProtoMessage()    {}
-func (*InferenceRequestInbound) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{26}
-}
-func (m *InferenceRequestInbound) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *InferenceRequestInbound) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_InferenceRequestInbound.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *InferenceRequestInbound) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_InferenceRequestInbound.Merge(m, src)
-}
-func (m *InferenceRequestInbound) XXX_Size() int {
-	return m.Size()
-}
-func (m *InferenceRequestInbound) XXX_DiscardUnknown() {
-	xxx_messageInfo_InferenceRequestInbound.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_InferenceRequestInbound proto.InternalMessageInfo
-
-func (m *InferenceRequestInbound) GetNonce() uint64 {
-	if m != nil {
-		return m.Nonce
-	}
-	return 0
-}
-
-func (m *InferenceRequestInbound) GetTopicId() uint64 {
+func (m *MsgFundTopic) GetTopicId() uint64 {
 	if m != nil {
 		return m.TopicId
 	}
 	return 0
 }
 
-func (m *InferenceRequestInbound) GetCadence() int64 {
-	if m != nil {
-		return m.Cadence
-	}
-	return 0
-}
-
-func (m *InferenceRequestInbound) GetBlockValidUntil() int64 {
-	if m != nil {
-		return m.BlockValidUntil
-	}
-	return 0
-}
-
-func (m *InferenceRequestInbound) GetExtraData() []byte {
+func (m *MsgFundTopic) GetExtraData() []byte {
 	if m != nil {
 		return m.ExtraData
 	}
 	return nil
 }
 
-type MsgRequestInferenceResponse struct {
-	RequestId string `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+type MsgFundTopicResponse struct {
 }
 
-func (m *MsgRequestInferenceResponse) Reset()         { *m = MsgRequestInferenceResponse{} }
-func (m *MsgRequestInferenceResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgRequestInferenceResponse) ProtoMessage()    {}
-func (*MsgRequestInferenceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{27}
+func (m *MsgFundTopicResponse) Reset()         { *m = MsgFundTopicResponse{} }
+func (m *MsgFundTopicResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgFundTopicResponse) ProtoMessage()    {}
+func (*MsgFundTopicResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8293ea1b0f4b608c, []int{26}
 }
-func (m *MsgRequestInferenceResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgFundTopicResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgRequestInferenceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgFundTopicResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgRequestInferenceResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgFundTopicResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1726,24 +1624,17 @@ func (m *MsgRequestInferenceResponse) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *MsgRequestInferenceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRequestInferenceResponse.Merge(m, src)
+func (m *MsgFundTopicResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgFundTopicResponse.Merge(m, src)
 }
-func (m *MsgRequestInferenceResponse) XXX_Size() int {
+func (m *MsgFundTopicResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgRequestInferenceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRequestInferenceResponse.DiscardUnknown(m)
+func (m *MsgFundTopicResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgFundTopicResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgRequestInferenceResponse proto.InternalMessageInfo
-
-func (m *MsgRequestInferenceResponse) GetRequestId() string {
-	if m != nil {
-		return m.RequestId
-	}
-	return ""
-}
+var xxx_messageInfo_MsgFundTopicResponse proto.InternalMessageInfo
 
 type MsgAddToWhitelistAdmin struct {
 	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
@@ -1754,7 +1645,7 @@ func (m *MsgAddToWhitelistAdmin) Reset()         { *m = MsgAddToWhitelistAdmin{}
 func (m *MsgAddToWhitelistAdmin) String() string { return proto.CompactTextString(m) }
 func (*MsgAddToWhitelistAdmin) ProtoMessage()    {}
 func (*MsgAddToWhitelistAdmin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{28}
+	return fileDescriptor_8293ea1b0f4b608c, []int{27}
 }
 func (m *MsgAddToWhitelistAdmin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1804,7 +1695,7 @@ func (m *MsgAddToWhitelistAdminResponse) Reset()         { *m = MsgAddToWhitelis
 func (m *MsgAddToWhitelistAdminResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgAddToWhitelistAdminResponse) ProtoMessage()    {}
 func (*MsgAddToWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{29}
+	return fileDescriptor_8293ea1b0f4b608c, []int{28}
 }
 func (m *MsgAddToWhitelistAdminResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1842,7 +1733,7 @@ func (m *MsgRemoveFromWhitelistAdmin) Reset()         { *m = MsgRemoveFromWhitel
 func (m *MsgRemoveFromWhitelistAdmin) String() string { return proto.CompactTextString(m) }
 func (*MsgRemoveFromWhitelistAdmin) ProtoMessage()    {}
 func (*MsgRemoveFromWhitelistAdmin) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{30}
+	return fileDescriptor_8293ea1b0f4b608c, []int{29}
 }
 func (m *MsgRemoveFromWhitelistAdmin) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1892,7 +1783,7 @@ func (m *MsgRemoveFromWhitelistAdminResponse) Reset()         { *m = MsgRemoveFr
 func (m *MsgRemoveFromWhitelistAdminResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgRemoveFromWhitelistAdminResponse) ProtoMessage()    {}
 func (*MsgRemoveFromWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{31}
+	return fileDescriptor_8293ea1b0f4b608c, []int{30}
 }
 func (m *MsgRemoveFromWhitelistAdminResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1921,364 +1812,6 @@ func (m *MsgRemoveFromWhitelistAdminResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgRemoveFromWhitelistAdminResponse proto.InternalMessageInfo
 
-type MsgAddToTopicCreationWhitelist struct {
-	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-}
-
-func (m *MsgAddToTopicCreationWhitelist) Reset()         { *m = MsgAddToTopicCreationWhitelist{} }
-func (m *MsgAddToTopicCreationWhitelist) String() string { return proto.CompactTextString(m) }
-func (*MsgAddToTopicCreationWhitelist) ProtoMessage()    {}
-func (*MsgAddToTopicCreationWhitelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{32}
-}
-func (m *MsgAddToTopicCreationWhitelist) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddToTopicCreationWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddToTopicCreationWhitelist.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddToTopicCreationWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddToTopicCreationWhitelist.Merge(m, src)
-}
-func (m *MsgAddToTopicCreationWhitelist) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddToTopicCreationWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddToTopicCreationWhitelist.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddToTopicCreationWhitelist proto.InternalMessageInfo
-
-func (m *MsgAddToTopicCreationWhitelist) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgAddToTopicCreationWhitelist) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-type MsgAddToTopicCreationWhitelistResponse struct {
-}
-
-func (m *MsgAddToTopicCreationWhitelistResponse) Reset() {
-	*m = MsgAddToTopicCreationWhitelistResponse{}
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgAddToTopicCreationWhitelistResponse) ProtoMessage()    {}
-func (*MsgAddToTopicCreationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{33}
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddToTopicCreationWhitelistResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddToTopicCreationWhitelistResponse.Merge(m, src)
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddToTopicCreationWhitelistResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddToTopicCreationWhitelistResponse proto.InternalMessageInfo
-
-type MsgRemoveFromTopicCreationWhitelist struct {
-	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) Reset()         { *m = MsgRemoveFromTopicCreationWhitelist{} }
-func (m *MsgRemoveFromTopicCreationWhitelist) String() string { return proto.CompactTextString(m) }
-func (*MsgRemoveFromTopicCreationWhitelist) ProtoMessage()    {}
-func (*MsgRemoveFromTopicCreationWhitelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{34}
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRemoveFromTopicCreationWhitelist.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRemoveFromTopicCreationWhitelist.Merge(m, src)
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRemoveFromTopicCreationWhitelist.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRemoveFromTopicCreationWhitelist proto.InternalMessageInfo
-
-func (m *MsgRemoveFromTopicCreationWhitelist) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-type MsgRemoveFromTopicCreationWhitelistResponse struct {
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) Reset() {
-	*m = MsgRemoveFromTopicCreationWhitelistResponse{}
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) String() string {
-	return proto.CompactTextString(m)
-}
-func (*MsgRemoveFromTopicCreationWhitelistResponse) ProtoMessage() {}
-func (*MsgRemoveFromTopicCreationWhitelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{35}
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRemoveFromTopicCreationWhitelistResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRemoveFromTopicCreationWhitelistResponse.Merge(m, src)
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRemoveFromTopicCreationWhitelistResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRemoveFromTopicCreationWhitelistResponse proto.InternalMessageInfo
-
-type MsgAddToReputerWhitelist struct {
-	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-}
-
-func (m *MsgAddToReputerWhitelist) Reset()         { *m = MsgAddToReputerWhitelist{} }
-func (m *MsgAddToReputerWhitelist) String() string { return proto.CompactTextString(m) }
-func (*MsgAddToReputerWhitelist) ProtoMessage()    {}
-func (*MsgAddToReputerWhitelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{36}
-}
-func (m *MsgAddToReputerWhitelist) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddToReputerWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddToReputerWhitelist.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddToReputerWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddToReputerWhitelist.Merge(m, src)
-}
-func (m *MsgAddToReputerWhitelist) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddToReputerWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddToReputerWhitelist.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddToReputerWhitelist proto.InternalMessageInfo
-
-func (m *MsgAddToReputerWhitelist) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgAddToReputerWhitelist) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-type MsgAddToReputerWhitelistResponse struct {
-}
-
-func (m *MsgAddToReputerWhitelistResponse) Reset()         { *m = MsgAddToReputerWhitelistResponse{} }
-func (m *MsgAddToReputerWhitelistResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgAddToReputerWhitelistResponse) ProtoMessage()    {}
-func (*MsgAddToReputerWhitelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{37}
-}
-func (m *MsgAddToReputerWhitelistResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddToReputerWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddToReputerWhitelistResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddToReputerWhitelistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddToReputerWhitelistResponse.Merge(m, src)
-}
-func (m *MsgAddToReputerWhitelistResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddToReputerWhitelistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddToReputerWhitelistResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddToReputerWhitelistResponse proto.InternalMessageInfo
-
-type MsgRemoveFromReputerWhitelist struct {
-	Sender  string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
-}
-
-func (m *MsgRemoveFromReputerWhitelist) Reset()         { *m = MsgRemoveFromReputerWhitelist{} }
-func (m *MsgRemoveFromReputerWhitelist) String() string { return proto.CompactTextString(m) }
-func (*MsgRemoveFromReputerWhitelist) ProtoMessage()    {}
-func (*MsgRemoveFromReputerWhitelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{38}
-}
-func (m *MsgRemoveFromReputerWhitelist) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRemoveFromReputerWhitelist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRemoveFromReputerWhitelist.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRemoveFromReputerWhitelist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRemoveFromReputerWhitelist.Merge(m, src)
-}
-func (m *MsgRemoveFromReputerWhitelist) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRemoveFromReputerWhitelist) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRemoveFromReputerWhitelist.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRemoveFromReputerWhitelist proto.InternalMessageInfo
-
-func (m *MsgRemoveFromReputerWhitelist) GetSender() string {
-	if m != nil {
-		return m.Sender
-	}
-	return ""
-}
-
-func (m *MsgRemoveFromReputerWhitelist) GetAddress() string {
-	if m != nil {
-		return m.Address
-	}
-	return ""
-}
-
-type MsgRemoveFromReputerWhitelistResponse struct {
-}
-
-func (m *MsgRemoveFromReputerWhitelistResponse) Reset()         { *m = MsgRemoveFromReputerWhitelistResponse{} }
-func (m *MsgRemoveFromReputerWhitelistResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgRemoveFromReputerWhitelistResponse) ProtoMessage()    {}
-func (*MsgRemoveFromReputerWhitelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8293ea1b0f4b608c, []int{39}
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgRemoveFromReputerWhitelistResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgRemoveFromReputerWhitelistResponse.Merge(m, src)
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgRemoveFromReputerWhitelistResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgRemoveFromReputerWhitelistResponse proto.InternalMessageInfo
-
 func init() {
 	proto.RegisterType((*OptionalParams)(nil), "emissions.v1.OptionalParams")
 	proto.RegisterType((*MsgUpdateParams)(nil), "emissions.v1.MsgUpdateParams")
@@ -2305,207 +1838,175 @@ func init() {
 	proto.RegisterType((*MsgStartRemoveDelegateStakeResponse)(nil), "emissions.v1.MsgStartRemoveDelegateStakeResponse")
 	proto.RegisterType((*MsgConfirmDelegateRemoveStake)(nil), "emissions.v1.MsgConfirmDelegateRemoveStake")
 	proto.RegisterType((*MsgConfirmRemoveDelegateStakeResponse)(nil), "emissions.v1.MsgConfirmRemoveDelegateStakeResponse")
-	proto.RegisterType((*MsgRequestInference)(nil), "emissions.v1.MsgRequestInference")
-	proto.RegisterType((*InferenceRequestInbound)(nil), "emissions.v1.InferenceRequestInbound")
-	proto.RegisterType((*MsgRequestInferenceResponse)(nil), "emissions.v1.MsgRequestInferenceResponse")
+	proto.RegisterType((*MsgFundTopic)(nil), "emissions.v1.MsgFundTopic")
+	proto.RegisterType((*MsgFundTopicResponse)(nil), "emissions.v1.MsgFundTopicResponse")
 	proto.RegisterType((*MsgAddToWhitelistAdmin)(nil), "emissions.v1.MsgAddToWhitelistAdmin")
 	proto.RegisterType((*MsgAddToWhitelistAdminResponse)(nil), "emissions.v1.MsgAddToWhitelistAdminResponse")
 	proto.RegisterType((*MsgRemoveFromWhitelistAdmin)(nil), "emissions.v1.MsgRemoveFromWhitelistAdmin")
 	proto.RegisterType((*MsgRemoveFromWhitelistAdminResponse)(nil), "emissions.v1.MsgRemoveFromWhitelistAdminResponse")
-	proto.RegisterType((*MsgAddToTopicCreationWhitelist)(nil), "emissions.v1.MsgAddToTopicCreationWhitelist")
-	proto.RegisterType((*MsgAddToTopicCreationWhitelistResponse)(nil), "emissions.v1.MsgAddToTopicCreationWhitelistResponse")
-	proto.RegisterType((*MsgRemoveFromTopicCreationWhitelist)(nil), "emissions.v1.MsgRemoveFromTopicCreationWhitelist")
-	proto.RegisterType((*MsgRemoveFromTopicCreationWhitelistResponse)(nil), "emissions.v1.MsgRemoveFromTopicCreationWhitelistResponse")
-	proto.RegisterType((*MsgAddToReputerWhitelist)(nil), "emissions.v1.MsgAddToReputerWhitelist")
-	proto.RegisterType((*MsgAddToReputerWhitelistResponse)(nil), "emissions.v1.MsgAddToReputerWhitelistResponse")
-	proto.RegisterType((*MsgRemoveFromReputerWhitelist)(nil), "emissions.v1.MsgRemoveFromReputerWhitelist")
-	proto.RegisterType((*MsgRemoveFromReputerWhitelistResponse)(nil), "emissions.v1.MsgRemoveFromReputerWhitelistResponse")
 }
 
 func init() { proto.RegisterFile("emissions/v1/tx.proto", fileDescriptor_8293ea1b0f4b608c) }
 
 var fileDescriptor_8293ea1b0f4b608c = []byte{
-	// 2876 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x5a, 0x39, 0x70, 0x1c, 0xc7,
-	0xb9, 0xe6, 0x12, 0xe7, 0xfe, 0xb8, 0x1b, 0x07, 0x1b, 0x4b, 0x02, 0x58, 0x82, 0x17, 0x48, 0x8a,
-	0x80, 0x48, 0xaa, 0xde, 0x93, 0xf4, 0x54, 0xf5, 0x1e, 0xc0, 0x43, 0x0f, 0x16, 0x21, 0x43, 0x03,
-	0x40, 0xb4, 0x69, 0x95, 0x47, 0xbd, 0x3b, 0x8d, 0xd9, 0x29, 0xcc, 0xe5, 0xee, 0x5e, 0x60, 0x61,
-	0x57, 0xb9, 0x6c, 0x57, 0x39, 0x71, 0xa4, 0xcc, 0xe5, 0xd0, 0x99, 0x43, 0x05, 0x0e, 0x9c, 0x3b,
-	0xb0, 0x42, 0xd9, 0x89, 0x5d, 0x0e, 0x54, 0x2e, 0x29, 0x50, 0xe4, 0xd4, 0xb1, 0xab, 0x8f, 0x99,
-	0x9d, 0xd9, 0x8b, 0x10, 0x96, 0xaa, 0x72, 0xc2, 0x62, 0x77, 0xff, 0xfd, 0xfd, 0x67, 0xff, 0xfd,
-	0xf5, 0x2c, 0x60, 0x9e, 0x06, 0x1e, 0xe7, 0x5e, 0x14, 0xf2, 0x8d, 0xe3, 0xfb, 0x1b, 0xa2, 0xb1,
-	0x1e, 0xb3, 0x48, 0x44, 0x68, 0x3c, 0x9d, 0x5e, 0x3f, 0xbe, 0x5f, 0xba, 0x54, 0x8d, 0x78, 0x10,
-	0xf1, 0x8d, 0x80, 0xbb, 0x52, 0x2a, 0xe0, 0xae, 0x16, 0x2b, 0xcd, 0xb9, 0x91, 0x1b, 0xa9, 0xff,
-	0x6e, 0xc8, 0xff, 0x99, 0xd9, 0x19, 0x12, 0x78, 0x61, 0xb4, 0xa1, 0xfe, 0x35, 0x53, 0x38, 0xaf,
-	0xe6, 0x34, 0xa6, 0xdc, 0xac, 0x2c, 0x6a, 0x6c, 0x5b, 0xa3, 0xe8, 0x81, 0x5e, 0x5a, 0xfd, 0xd7,
-	0x15, 0x98, 0xfc, 0x6e, 0x2c, 0xbc, 0x28, 0x24, 0xfe, 0x2e, 0x61, 0x24, 0xe0, 0x08, 0xc3, 0xc8,
-	0x31, 0x65, 0x12, 0x08, 0x17, 0xca, 0x03, 0x6b, 0x45, 0x2b, 0x19, 0xa2, 0x1b, 0x30, 0xc9, 0xe8,
-	0x09, 0x61, 0x8e, 0x5d, 0x25, 0x0e, 0x0d, 0xab, 0x14, 0x5f, 0x2c, 0x0f, 0xac, 0x0d, 0x58, 0x13,
-	0x7a, 0xf6, 0x91, 0x9e, 0x44, 0x2e, 0x2c, 0x04, 0x5e, 0x68, 0x8b, 0x28, 0xf6, 0xaa, 0x76, 0x3d,
-	0x0c, 0xa8, 0xb0, 0x1d, 0x1a, 0x90, 0xd0, 0xc1, 0x03, 0x12, 0x6f, 0xeb, 0xc1, 0x67, 0x5f, 0xac,
-	0x5c, 0xf8, 0xfb, 0x17, 0x2b, 0x0b, 0xda, 0x12, 0xee, 0x1c, 0xad, 0x7b, 0xd1, 0x46, 0x40, 0x44,
-	0x6d, 0xfd, 0xc0, 0x0b, 0xc5, 0x5f, 0x7e, 0x7f, 0x6f, 0xcc, 0xd8, 0x28, 0x87, 0xbf, 0xfb, 0xfa,
-	0xd3, 0x3b, 0x05, 0x6b, 0x36, 0xf0, 0xc2, 0x7d, 0x09, 0x78, 0x20, 0xf1, 0x1e, 0x2b, 0x38, 0xb4,
-	0x01, 0x73, 0x01, 0x69, 0x68, 0x45, 0xdc, 0x8e, 0x29, 0xb3, 0x2b, 0x7e, 0x54, 0x3d, 0xc2, 0x83,
-	0xe5, 0x81, 0xb5, 0x41, 0x6b, 0x26, 0x20, 0x0d, 0xb5, 0x85, 0xef, 0x52, 0xb6, 0x25, 0x17, 0xd0,
-	0x11, 0x60, 0x69, 0x19, 0xa3, 0x3f, 0xaa, 0x53, 0x2e, 0xf2, 0xb6, 0x0d, 0x9d, 0xdb, 0xb6, 0xf9,
-	0xc0, 0x0b, 0x2d, 0x0d, 0x99, 0xb5, 0xee, 0xc7, 0xb0, 0x24, 0xad, 0x53, 0x49, 0x09, 0x5d, 0xdb,
-	0x0b, 0x0f, 0x29, 0x93, 0xf1, 0x91, 0x86, 0x56, 0x69, 0x28, 0xf0, 0xb0, 0xd2, 0xf8, 0xdf, 0x46,
-	0xe3, 0x86, 0xeb, 0x89, 0x5a, 0xbd, 0xb2, 0x5e, 0x8d, 0x82, 0x0d, 0xe2, 0xfb, 0x11, 0x23, 0xf7,
-	0x42, 0x2a, 0x4e, 0x22, 0x76, 0x94, 0x0c, 0xab, 0x35, 0xe2, 0x85, 0xda, 0x96, 0xc7, 0xb4, 0x6a,
-	0x95, 0x02, 0xd2, 0xd8, 0xd1, 0xe0, 0xdb, 0x09, 0xf6, 0xae, 0x86, 0x46, 0x35, 0x58, 0x90, 0x4e,
-	0x7a, 0x8c, 0x3a, 0x76, 0xe0, 0x85, 0x5e, 0x50, 0x0f, 0x6c, 0x2e, 0xc8, 0x11, 0xc5, 0x23, 0xe7,
-	0x76, 0x73, 0x2e, 0x41, 0xdc, 0xd1, 0x80, 0x7b, 0x12, 0x0f, 0xbd, 0x05, 0x8b, 0x8c, 0x06, 0xd1,
-	0x31, 0xd5, 0xf8, 0xb6, 0x43, 0x7d, 0x72, 0x6a, 0x9f, 0x78, 0xa1, 0x13, 0x9d, 0xe0, 0x51, 0x55,
-	0x1e, 0x0b, 0x5a, 0x40, 0xc9, 0x3f, 0x96, 0xcb, 0xcf, 0xd5, 0x2a, 0x5a, 0x83, 0x69, 0x99, 0x0d,
-	0x1a, 0x47, 0xd5, 0x9a, 0xed, 0xd3, 0xd0, 0x15, 0x35, 0x5c, 0x54, 0x3b, 0x26, 0x03, 0x2f, 0x7c,
-	0x22, 0xa7, 0x9f, 0xa9, 0x59, 0xf4, 0x08, 0x96, 0x65, 0x28, 0x9b, 0x21, 0x4c, 0x32, 0x78, 0x4c,
-	0x7c, 0xcf, 0xf1, 0xc4, 0x29, 0x06, 0xb5, 0xef, 0x72, 0x40, 0x1a, 0x69, 0x2c, 0x4c, 0x4a, 0x3e,
-	0x34, 0x22, 0x68, 0x1d, 0x66, 0x25, 0x48, 0xb2, 0x35, 0x29, 0xe1, 0x31, 0xb5, 0x53, 0x16, 0x8b,
-	0xd9, 0x90, 0x94, 0xf1, 0x01, 0x14, 0x79, 0x8d, 0xb0, 0x38, 0xa4, 0x9c, 0xe3, 0xf1, 0xfe, 0x72,
-	0xd5, 0x44, 0x42, 0x2f, 0x60, 0xbc, 0x42, 0x05, 0xb1, 0x69, 0x28, 0x58, 0x14, 0x9f, 0xe2, 0x89,
-	0xfe, 0x90, 0xc7, 0x24, 0xd8, 0x13, 0x8d, 0x85, 0x3e, 0x82, 0x09, 0x9f, 0x12, 0x16, 0xca, 0x7a,
-	0x63, 0x44, 0x50, 0x3c, 0xd9, 0x1f, 0xf8, 0x78, 0x82, 0x66, 0x11, 0x41, 0x51, 0x00, 0x0b, 0x32,
-	0x80, 0x2e, 0x23, 0x8e, 0x47, 0x43, 0x61, 0x8b, 0x1a, 0xa3, 0xbc, 0x16, 0xf9, 0x0e, 0x9e, 0xea,
-	0x4f, 0x8d, 0x3c, 0xc5, 0xef, 0x1a, 0xd4, 0xfd, 0x04, 0x14, 0x51, 0x40, 0xb2, 0x3c, 0x74, 0x59,
-	0x1d, 0x32, 0x52, 0x95, 0x5d, 0x0a, 0x4f, 0xf7, 0xa7, 0x4a, 0x56, 0x9c, 0x2a, 0xc4, 0xa7, 0x06,
-	0x10, 0xfd, 0x9f, 0x3e, 0xa6, 0x72, 0x0f, 0x65, 0xba, 0x8b, 0xe8, 0xce, 0x65, 0x0a, 0x05, 0xcf,
-	0xa8, 0x6e, 0xb2, 0x18, 0x90, 0xc6, 0x73, 0x2d, 0xb3, 0x4b, 0x99, 0xea, 0x2b, 0xa6, 0x5e, 0xd0,
-	0x96, 0xae, 0x4e, 0x46, 0xe3, 0xba, 0xe8, 0x0c, 0x81, 0x14, 0x44, 0x49, 0xd5, 0x98, 0x16, 0x6a,
-	0xc5, 0xf8, 0x00, 0x46, 0x68, 0xcc, 0x3d, 0x3f, 0x0a, 0xf1, 0x6c, 0x7f, 0x1e, 0x26, 0x38, 0xe8,
-	0x08, 0xe6, 0xe3, 0xcc, 0x91, 0xe1, 0xa7, 0xa1, 0xa8, 0x51, 0xee, 0x71, 0x3c, 0xd7, 0x9f, 0x82,
-	0xd9, 0x38, 0x3d, 0x62, 0x7b, 0x09, 0x26, 0xb2, 0x61, 0x2a, 0xb6, 0xcd, 0xe5, 0xc0, 0x63, 0x46,
-	0x89, 0x83, 0xe7, 0xfb, 0x53, 0x33, 0x11, 0x5b, 0x0a, 0x6e, 0x4f, 0xa1, 0xc9, 0x63, 0x43, 0xfc,
-	0xb8, 0x46, 0x6c, 0x46, 0x5d, 0x46, 0x05, 0x5e, 0xe8, 0xf3, 0xd8, 0x28, 0x30, 0x4b, 0x61, 0xa1,
-	0x27, 0xb0, 0x22, 0x13, 0x58, 0x0f, 0x0f, 0xeb, 0xfe, 0xa1, 0xe7, 0xfb, 0xd4, 0x31, 0xe5, 0x90,
-	0x24, 0x90, 0xe3, 0x4b, 0x2a, 0x83, 0x57, 0x02, 0xd2, 0x38, 0x68, 0x4a, 0xe9, 0x7a, 0x30, 0x29,
-	0xe4, 0xe8, 0x5d, 0x28, 0xb7, 0xc2, 0x98, 0x9a, 0x68, 0xe2, 0x60, 0x85, 0xb3, 0x94, 0xc7, 0x31,
-	0x45, 0x91, 0x05, 0x0a, 0xeb, 0x41, 0x85, 0x32, 0x9b, 0x36, 0x62, 0x5a, 0x15, 0xd4, 0xc9, 0xe5,
-	0xb1, 0xe2, 0xf9, 0x1c, 0x2f, 0x6a, 0x20, 0x2d, 0xf7, 0xc4, 0x88, 0x65, 0x12, 0x23, 0x85, 0xd0,
-	0x6b, 0x80, 0x94, 0xb8, 0x2d, 0x48, 0x43, 0x62, 0x45, 0xa1, 0xbc, 0x77, 0x4a, 0x6a, 0xeb, 0xb4,
-	0x5a, 0xd9, 0x27, 0x8d, 0x27, 0x66, 0x5e, 0x5e, 0x58, 0x49, 0xd9, 0xea, 0x3c, 0xaa, 0x93, 0xe7,
-	0x05, 0x71, 0xc4, 0x04, 0x91, 0xad, 0xf2, 0x72, 0x9f, 0x17, 0x96, 0xd0, 0x15, 0xaf, 0xb2, 0x2a,
-	0xb1, 0xb7, 0x53, 0x68, 0xf4, 0xcb, 0x02, 0x5c, 0xcb, 0x29, 0x3f, 0xa4, 0xb2, 0xcb, 0x1f, 0xd3,
-	0xb0, 0x9e, 0x33, 0xe1, 0x4a, 0x7f, 0x26, 0xac, 0x64, 0x4c, 0x78, 0x4a, 0xa9, 0xa5, 0x15, 0x64,
-	0xec, 0xa0, 0x80, 0x72, 0x66, 0xa8, 0x32, 0xc1, 0x4b, 0x7d, 0x36, 0x9d, 0x8c, 0xd6, 0x4d, 0x09,
-	0x88, 0xaa, 0x30, 0x23, 0x08, 0x3f, 0xca, 0x6b, 0x59, 0xee, 0x4f, 0xcb, 0x94, 0x44, 0xcc, 0x2a,
-	0x91, 0x31, 0x55, 0x17, 0x24, 0x11, 0x11, 0xe3, 0xf6, 0x31, 0xb7, 0xf5, 0xc6, 0x84, 0x80, 0x18,
-	0xed, 0x78, 0xa5, 0xcf, 0x98, 0x36, 0x75, 0x7c, 0xc8, 0x37, 0x95, 0x88, 0xa1, 0x21, 0xda, 0x18,
-	0xf4, 0x0e, 0xc8, 0x7b, 0xd9, 0xe6, 0x24, 0x88, 0x7d, 0xca, 0x6d, 0x11, 0xd9, 0xbc, 0x4a, 0x7c,
-	0x6a, 0xf3, 0x6a, 0xc4, 0x28, 0xc7, 0x65, 0x55, 0x8e, 0x97, 0x02, 0xd2, 0xd8, 0xd3, 0x12, 0xfb,
-	0xd1, 0x9e, 0x5c, 0xdf, 0x53, 0xcb, 0xe8, 0x4d, 0x58, 0x34, 0x24, 0x2f, 0xed, 0xd1, 0x22, 0x4a,
-	0x4c, 0xbf, 0xaa, 0xf6, 0xce, 0x6b, 0xa6, 0x67, 0xda, 0xf3, 0x7e, 0x64, 0xf4, 0xbe, 0x0d, 0xa5,
-	0x64, 0x67, 0xda, 0x9b, 0x9b, 0x5b, 0x57, 0xd5, 0xd6, 0x05, 0xbd, 0x35, 0x69, 0xcb, 0xe9, 0xde,
-	0x17, 0x30, 0x5d, 0x65, 0x94, 0x08, 0x6a, 0x3a, 0xf9, 0x21, 0xa5, 0xf8, 0x9a, 0x8a, 0xd3, 0xeb,
-	0x26, 0x4e, 0xf3, 0xed, 0xd4, 0x69, 0x5b, 0x31, 0x27, 0x30, 0xcc, 0x69, 0x3b, 0x21, 0x4e, 0x93,
-	0x1a, 0x49, 0xf5, 0xfb, 0xa7, 0x94, 0xa2, 0x7d, 0x28, 0x72, 0xcf, 0x0d, 0x22, 0xcf, 0xb1, 0x09,
-	0xbe, 0xde, 0x5f, 0xf0, 0x47, 0x0d, 0xd2, 0x66, 0x16, 0xb5, 0x82, 0x6f, 0xbc, 0x1a, 0xd4, 0x2d,
-	0xf4, 0x3f, 0x50, 0x4a, 0xef, 0x7b, 0x87, 0x72, 0x55, 0x36, 0x8a, 0x8a, 0xc9, 0x68, 0xe1, 0x9b,
-	0x3a, 0x75, 0x89, 0xc4, 0x63, 0x2d, 0xb0, 0x43, 0x1a, 0xdb, 0x72, 0x19, 0xbd, 0x07, 0xd7, 0xf4,
-	0xc5, 0x28, 0x98, 0xa7, 0x13, 0xaf, 0x5b, 0x9e, 0x1d, 0x46, 0x61, 0x95, 0x72, 0x93, 0x4f, 0x7c,
-	0x4b, 0x31, 0xb0, 0x65, 0x75, 0x3b, 0x2a, 0xc9, 0xfd, 0xe8, 0xa9, 0x92, 0x7b, 0x5f, 0x89, 0xe9,
-	0xb4, 0xa2, 0x1d, 0xb8, 0xde, 0x13, 0xcc, 0xa4, 0x18, 0xaf, 0x29, 0xb4, 0x95, 0x6e, 0x68, 0x26,
-	0xd3, 0x92, 0x7c, 0xea, 0xcc, 0xc6, 0xc4, 0xa5, 0xb6, 0xef, 0x05, 0x9e, 0xc0, 0xb7, 0x95, 0x3b,
-	0x93, 0x6a, 0x7e, 0x97, 0xb8, 0xf4, 0x99, 0x9c, 0x45, 0x37, 0x61, 0x2a, 0x7d, 0x65, 0x28, 0x69,
-	0x8e, 0xef, 0x28, 0xc1, 0x89, 0xe4, 0x81, 0x21, 0x65, 0x55, 0xb3, 0x4d, 0xb8, 0x65, 0x06, 0xf3,
-	0xae, 0x6e, 0xb6, 0x66, 0xa5, 0x89, 0x7a, 0x07, 0x66, 0xb2, 0x6c, 0x54, 0xe3, 0xbe, 0xa6, 0x84,
-	0xa7, 0x9a, 0x5c, 0x54, 0x23, 0xff, 0x00, 0xa6, 0x19, 0x75, 0x3d, 0x2e, 0x18, 0x91, 0x94, 0x45,
-	0x15, 0xe3, 0xbd, 0x73, 0x16, 0xe3, 0x54, 0x16, 0x49, 0x56, 0xe3, 0x43, 0xcd, 0xea, 0x92, 0x1b,
-	0xaa, 0xc9, 0x5e, 0xf0, 0xba, 0xb2, 0x66, 0xb6, 0x69, 0x4d, 0xca, 0x5a, 0xd0, 0x35, 0x98, 0x70,
-	0xe8, 0x21, 0xa9, 0xfb, 0xc2, 0xb8, 0xb9, 0xa1, 0x64, 0xc7, 0xcd, 0xa4, 0x76, 0xf1, 0x32, 0x14,
-	0x25, 0xb2, 0x16, 0x78, 0x5d, 0x09, 0x8c, 0x06, 0xa4, 0xa1, 0x16, 0x57, 0x7d, 0x98, 0xda, 0xe1,
-	0xee, 0x41, 0xec, 0x10, 0x41, 0xcd, 0xc3, 0x73, 0x01, 0x86, 0x39, 0x0d, 0x1d, 0xca, 0x70, 0xa1,
-	0x5c, 0x58, 0x2b, 0x5a, 0x66, 0x84, 0xde, 0x80, 0xe1, 0x58, 0x49, 0xe0, 0x8b, 0xe5, 0xc2, 0xda,
-	0xd8, 0x83, 0x2b, 0xeb, 0xd9, 0x97, 0xf3, 0x7a, 0xfe, 0xf9, 0x6a, 0x19, 0xd9, 0xb7, 0xc7, 0x7e,
-	0xf1, 0xf5, 0xa7, 0x77, 0x0c, 0xc4, 0xea, 0x22, 0x5c, 0x6a, 0xd1, 0x66, 0x51, 0x1e, 0x47, 0x21,
-	0xa7, 0xab, 0x7f, 0x1e, 0x86, 0x99, 0x1d, 0xee, 0x3e, 0x52, 0x67, 0xf4, 0x7d, 0x7a, 0xa2, 0x1d,
-	0xc4, 0x30, 0xa2, 0x4e, 0x6d, 0x94, 0x18, 0x93, 0x0c, 0x51, 0x09, 0x46, 0x03, 0x2a, 0x88, 0x43,
-	0x04, 0x51, 0xf6, 0x14, 0xad, 0x74, 0x8c, 0x96, 0x00, 0xfc, 0x88, 0x73, 0xdb, 0x8f, 0x5c, 0xaf,
-	0x8a, 0x07, 0xd4, 0x6a, 0x51, 0xce, 0x3c, 0x93, 0x13, 0x68, 0x05, 0xc6, 0xd4, 0x72, 0x40, 0x45,
-	0x2d, 0x72, 0xf0, 0xa0, 0x5a, 0x57, 0x3b, 0x76, 0xd4, 0x0c, 0xba, 0x05, 0x53, 0xcd, 0x8b, 0x5e,
-	0x83, 0x0c, 0x29, 0xa1, 0xc9, 0x74, 0x5a, 0x23, 0xdd, 0x86, 0xe9, 0xa6, 0xa0, 0x81, 0x1b, 0x56,
-	0x92, 0x4d, 0x00, 0x83, 0x79, 0x15, 0xc6, 0x73, 0x2f, 0xac, 0x91, 0x72, 0x61, 0x6d, 0xc0, 0x1a,
-	0xa3, 0x99, 0xe7, 0xd5, 0x1a, 0x4c, 0xbb, 0x2c, 0xaa, 0x87, 0x8e, 0x2d, 0x58, 0x5d, 0xd4, 0x6c,
-	0x9f, 0xb8, 0x78, 0x54, 0x89, 0x4d, 0xea, 0xf9, 0x7d, 0x39, 0xfd, 0x8c, 0xb8, 0xd2, 0x83, 0x24,
-	0xef, 0x84, 0xb9, 0xb8, 0xa8, 0x3d, 0x30, 0x53, 0x9b, 0xcc, 0x45, 0x73, 0x30, 0x14, 0x87, 0x11,
-	0x0b, 0x30, 0x94, 0x0b, 0x6b, 0x83, 0x96, 0x1e, 0xb4, 0x91, 0xb7, 0x31, 0xb9, 0xef, 0x15, 0x91,
-	0xb7, 0x8f, 0x61, 0x2a, 0x36, 0xd7, 0x68, 0xd2, 0x02, 0xc6, 0xfb, 0x83, 0x9f, 0x34, 0x78, 0x49,
-	0xab, 0x70, 0x60, 0x26, 0xd1, 0x90, 0x06, 0x17, 0x4f, 0xf4, 0xa7, 0x63, 0xda, 0x20, 0xa6, 0x8c,
-	0x0d, 0x55, 0x20, 0x99, 0xb3, 0x0f, 0x23, 0x46, 0xab, 0x84, 0x0b, 0x3c, 0xd9, 0x9f, 0x92, 0x24,
-	0x30, 0x4f, 0x0d, 0x1e, 0xfa, 0x1e, 0x8c, 0x1d, 0xda, 0x22, 0xf2, 0x29, 0x53, 0x64, 0x6a, 0xaa,
-	0x3f, 0x78, 0x38, 0xdc, 0x4f, 0xa0, 0xde, 0x1e, 0x97, 0xa7, 0x2d, 0x39, 0x23, 0xab, 0xff, 0x05,
-	0x8b, 0x6d, 0x47, 0x2a, 0x39, 0x70, 0x68, 0x11, 0x46, 0x75, 0x2f, 0xf5, 0x1c, 0x75, 0xb6, 0x06,
-	0xad, 0x11, 0x35, 0xde, 0x76, 0x56, 0x7f, 0x75, 0x11, 0x2e, 0xef, 0x70, 0x77, 0x3b, 0xe4, 0x94,
-	0x89, 0xad, 0xba, 0x7f, 0x64, 0x52, 0xb0, 0x4b, 0x4e, 0xfd, 0x88, 0x38, 0x5d, 0x3b, 0xc4, 0x01,
-	0xcc, 0xb7, 0x30, 0x6d, 0x7d, 0x2b, 0x98, 0x86, 0x71, 0x35, 0xdf, 0x30, 0xf2, 0x74, 0x5b, 0x5d,
-	0x0b, 0xd6, 0x2c, 0x6b, 0x9f, 0xcc, 0x59, 0x3a, 0x90, 0xb3, 0x14, 0xed, 0x37, 0x35, 0x1e, 0x13,
-	0xbf, 0x4e, 0xed, 0x4a, 0x3d, 0x74, 0x7c, 0xca, 0xd5, 0xb7, 0xa7, 0xb1, 0x07, 0xe5, 0x8e, 0x1a,
-	0x3f, 0x94, 0x92, 0x5b, 0x4a, 0x30, 0x55, 0x98, 0x99, 0x6b, 0xe9, 0x59, 0x37, 0xe0, 0x5a, 0x8f,
-	0x58, 0xa4, 0xfd, 0xeb, 0xaf, 0x05, 0x28, 0xe5, 0xe4, 0xf4, 0x7d, 0xf9, 0xb2, 0x90, 0xdd, 0x86,
-	0xa1, 0x6c, 0x88, 0x66, 0xf3, 0x06, 0xeb, 0xa0, 0x68, 0x89, 0x5e, 0x61, 0x78, 0x1f, 0x66, 0xcd,
-	0x4b, 0x49, 0xf6, 0xbf, 0x96, 0x20, 0x2c, 0xe7, 0x31, 0xb5, 0x5d, 0x8f, 0x89, 0x20, 0x26, 0x04,
-	0x33, 0x27, 0x2d, 0x33, 0x2d, 0x01, 0xb8, 0x0e, 0xab, 0xdd, 0x1d, 0x4b, 0xfd, 0xff, 0x53, 0x01,
-	0xc6, 0x76, 0xb8, 0x6b, 0xa9, 0x6b, 0x8d, 0xb2, 0xae, 0x0e, 0x2f, 0xc3, 0x98, 0xef, 0x55, 0xec,
-	0xf8, 0x41, 0x6c, 0x1f, 0xd1, 0x53, 0xd3, 0xba, 0x8b, 0xbe, 0x57, 0xd9, 0x7d, 0x10, 0xbf, 0x47,
-	0x4f, 0xe5, 0x95, 0x16, 0xd4, 0x7d, 0xe1, 0xd9, 0xc4, 0x71, 0x18, 0xe5, 0xdc, 0xb4, 0xef, 0x71,
-	0x35, 0xb9, 0xa9, 0xe7, 0x72, 0xa1, 0x18, 0xcc, 0x87, 0x62, 0x0e, 0x86, 0xa2, 0x93, 0x90, 0x32,
-	0xd3, 0xb1, 0xf5, 0x40, 0xde, 0x08, 0x5e, 0x93, 0x9b, 0xc8, 0x16, 0x3d, 0x6a, 0x15, 0xbd, 0x84,
-	0x85, 0xe4, 0xfd, 0xdd, 0x86, 0xd9, 0x8c, 0x23, 0xe9, 0x79, 0xc1, 0x30, 0xc2, 0xeb, 0xd5, 0xaa,
-	0x34, 0xa9, 0xa0, 0xf6, 0x27, 0x43, 0xb9, 0x12, 0x50, 0xce, 0x89, 0x4b, 0x8d, 0x3b, 0xc9, 0x70,
-	0xf5, 0x18, 0xe6, 0x15, 0x54, 0x10, 0x1d, 0x53, 0x2b, 0x73, 0xe1, 0x77, 0x8d, 0x4e, 0xd6, 0xb1,
-	0x8b, 0x79, 0xc7, 0xf2, 0x2e, 0x0c, 0xf4, 0x74, 0x61, 0x0f, 0x96, 0x3a, 0xea, 0xed, 0xcb, 0x99,
-	0xdf, 0xe8, 0x0c, 0x6f, 0x3a, 0xfa, 0xd5, 0x78, 0x1e, 0x1f, 0xbe, 0x03, 0xc3, 0x24, 0x88, 0xea,
-	0xa1, 0xd0, 0x59, 0x3d, 0xd7, 0xf7, 0x4f, 0x83, 0x90, 0x77, 0x78, 0x5e, 0xe5, 0x2c, 0x31, 0x2d,
-	0x2d, 0xca, 0xdf, 0x16, 0xd4, 0xfc, 0x9e, 0x20, 0x4c, 0x58, 0xcd, 0xaf, 0x9f, 0xff, 0x51, 0xa6,
-	0x2f, 0xa9, 0x5e, 0xdb, 0x6a, 0x62, 0xea, 0xc2, 0x73, 0x55, 0x42, 0x8f, 0xa2, 0xf0, 0xd0, 0x63,
-	0x41, 0x7f, 0x3e, 0xe4, 0xf5, 0xae, 0xa8, 0x1a, 0x69, 0x07, 0x4e, 0x35, 0xff, 0xa1, 0x00, 0xd3,
-	0x3b, 0xdc, 0x7d, 0x4c, 0x7d, 0xea, 0x12, 0x71, 0xfe, 0xc8, 0x61, 0x18, 0xc9, 0x56, 0x6d, 0xd1,
-	0x4a, 0x86, 0x99, 0x98, 0x0e, 0xbe, 0xda, 0x98, 0x96, 0x00, 0xb7, 0x5a, 0x9e, 0xba, 0xf5, 0xc7,
-	0x42, 0x6b, 0xc0, 0xcf, 0xe6, 0x61, 0xc6, 0x8d, 0x8b, 0x79, 0x37, 0x7a, 0x34, 0xe6, 0x6f, 0xcd,
-	0x43, 0x7d, 0x2b, 0x75, 0x73, 0x22, 0x75, 0xf6, 0x34, 0x9b, 0xe4, 0x44, 0xa4, 0xcf, 0x93, 0xd0,
-	0x35, 0x9f, 0x79, 0x0b, 0x6f, 0xc1, 0x8d, 0xd6, 0xfa, 0xea, 0x6c, 0xe3, 0x4f, 0x4c, 0xbf, 0x55,
-	0x37, 0x7e, 0x93, 0x88, 0x75, 0xb3, 0xec, 0x7f, 0xa5, 0x7a, 0xfd, 0x3d, 0x57, 0xdf, 0x99, 0x37,
-	0xf2, 0xf7, 0x5b, 0xeb, 0x0f, 0x0f, 0xdb, 0x61, 0x45, 0x72, 0x67, 0x2b, 0xd9, 0x95, 0xb7, 0xf2,
-	0x9f, 0x17, 0xe1, 0x52, 0x97, 0x1d, 0xf2, 0x2a, 0xd1, 0x77, 0xb3, 0xa6, 0x47, 0x1d, 0xae, 0xe1,
-	0xf6, 0xc8, 0x24, 0x3f, 0x67, 0x0c, 0x28, 0xde, 0x9e, 0x0c, 0x91, 0x07, 0x97, 0xe4, 0x1b, 0x2c,
-	0x66, 0x9e, 0xfe, 0xe1, 0x29, 0xc3, 0x60, 0xcf, 0x5f, 0x18, 0x73, 0x01, 0x69, 0xec, 0x4a, 0xc4,
-	0x5d, 0xca, 0x9a, 0x71, 0xfb, 0x00, 0xa0, 0xe2, 0x39, 0xb6, 0x29, 0xbb, 0xa1, 0x73, 0xa3, 0x17,
-	0x2b, 0x9e, 0xb3, 0xa9, 0x40, 0xe4, 0x23, 0x59, 0xfd, 0xa2, 0xa7, 0x7f, 0xe7, 0xb1, 0xeb, 0xa1,
-	0xf0, 0x7c, 0x75, 0x89, 0x0e, 0x58, 0x53, 0x6a, 0x41, 0xfd, 0xb8, 0x73, 0x20, 0xa7, 0xe5, 0x35,
-	0x45, 0x1b, 0x82, 0x11, 0xc5, 0x44, 0xd4, 0x2b, 0x67, 0xdc, 0x2a, 0xaa, 0x19, 0x49, 0x30, 0x56,
-	0xdf, 0x51, 0x87, 0xaf, 0x35, 0xd9, 0xe9, 0xbd, 0xb4, 0x04, 0x90, 0x30, 0x47, 0x43, 0x4b, 0x8b,
-	0x56, 0xd1, 0xcc, 0x6c, 0x3b, 0xab, 0xcf, 0x61, 0x41, 0xb7, 0xf9, 0xfd, 0xe8, 0x79, 0xcd, 0x13,
-	0xd4, 0xf7, 0xb8, 0xd8, 0x74, 0x02, 0x2f, 0xec, 0x75, 0x6a, 0x13, 0x22, 0x61, 0x4e, 0xad, 0x19,
-	0xe6, 0xcb, 0xa0, 0x0c, 0xcb, 0x9d, 0x81, 0xd3, 0x2a, 0xfd, 0xc8, 0x18, 0x2e, 0xeb, 0xf8, 0x29,
-	0x8b, 0x82, 0x57, 0xab, 0x5f, 0x1f, 0xe7, 0x6e, 0xe8, 0xa9, 0x11, 0x76, 0xd3, 0x4c, 0x45, 0xe6,
-	0x15, 0xb5, 0xf7, 0xa2, 0x30, 0x15, 0xef, 0xd7, 0x8e, 0x35, 0xb8, 0xd9, 0x5b, 0x41, 0x6a, 0x8a,
-	0xd3, 0x62, 0xf1, 0xb7, 0x63, 0xcf, 0x3d, 0xb8, 0x7b, 0x06, 0x2d, 0xa9, 0x51, 0xdf, 0x57, 0x7d,
-	0x5f, 0x99, 0x6f, 0x78, 0xd1, 0x2b, 0xb3, 0x64, 0x15, 0xca, 0xdd, 0xa0, 0x53, 0xf5, 0x3f, 0xcc,
-	0xd0, 0x2e, 0x69, 0xed, 0xab, 0xb6, 0x41, 0xb7, 0xd4, 0xee, 0xf8, 0x89, 0x21, 0x0f, 0x7e, 0x3d,
-	0x0d, 0x03, 0x3b, 0xdc, 0x45, 0xfb, 0x30, 0x9e, 0xfb, 0xb4, 0xb3, 0x94, 0x6f, 0x95, 0x2d, 0xdf,
-	0x62, 0x4a, 0x37, 0x7a, 0x2e, 0xa7, 0x87, 0xb4, 0x2e, 0x5b, 0x66, 0xe7, 0x67, 0xce, 0x5a, 0x1b,
-	0x42, 0x17, 0xc9, 0xd2, 0xeb, 0x67, 0x95, 0x4c, 0xd5, 0xbe, 0x80, 0xc9, 0x96, 0xaf, 0x43, 0x2b,
-	0x6d, 0x18, 0x79, 0x81, 0xd2, 0xad, 0x97, 0x08, 0xa4, 0xd8, 0xff, 0x0f, 0xa3, 0xe9, 0xcb, 0x65,
-	0xb1, 0x6d, 0x53, 0xb2, 0x54, 0xba, 0xda, 0x75, 0x29, 0x45, 0x3a, 0x04, 0xd4, 0x81, 0xef, 0x5f,
-	0xeb, 0xb0, 0xb1, 0x55, 0xa8, 0x74, 0xf7, 0x0c, 0x42, 0xa9, 0x9e, 0x06, 0xe0, 0xae, 0xef, 0xf3,
-	0xdb, 0x3d, 0x62, 0x9b, 0x17, 0x2d, 0xdd, 0x3f, 0xb3, 0x68, 0x36, 0x56, 0xe9, 0x1b, 0xa0, 0x3d,
-	0x56, 0xc9, 0x52, 0x87, 0x58, 0xb5, 0xd2, 0x73, 0xf4, 0x31, 0x4c, 0xb7, 0x51, 0xf3, 0xf6, 0x6d,
-	0xad, 0x22, 0xa5, 0xdb, 0x2f, 0x15, 0xc9, 0x66, 0xa3, 0x03, 0x75, 0x6e, 0xcf, 0x46, 0xbb, 0x50,
-	0x87, 0x6c, 0x74, 0xe7, 0xca, 0xe8, 0x39, 0x4c, 0xe4, 0x59, 0xe4, 0x72, 0xdb, 0xee, 0xdc, 0x7a,
-	0xe9, 0x66, 0xef, 0xf5, 0x6c, 0x9a, 0xbb, 0x32, 0xd5, 0x9e, 0x71, 0xc8, 0xab, 0xbb, 0x7f, 0x66,
-	0xd1, 0x54, 0xf3, 0x4f, 0xa1, 0xd4, 0x9d, 0xbc, 0xa1, 0xae, 0xd1, 0xe9, 0x40, 0x32, 0x4b, 0x0f,
-	0x7b, 0x87, 0xb2, 0xb3, 0xfe, 0x8f, 0x61, 0xba, 0x8d, 0x13, 0x76, 0x3a, 0x7f, 0x79, 0x91, 0x0e,
-	0xc5, 0xd1, 0x95, 0x6c, 0x78, 0x30, 0xdb, 0x89, 0x4a, 0x5c, 0xef, 0x54, 0xb8, 0xad, 0x52, 0xa5,
-	0xd7, 0xce, 0x22, 0x95, 0x4d, 0x63, 0x57, 0xea, 0x70, 0xbb, 0xcb, 0xb1, 0x6f, 0x17, 0xed, 0x90,
-	0xc6, 0x97, 0x51, 0x06, 0xf4, 0xf3, 0x02, 0x5c, 0xee, 0x45, 0x18, 0xba, 0xf8, 0xd1, 0x59, 0xba,
-	0xf4, 0xc6, 0x37, 0x91, 0x4e, 0x6d, 0xf8, 0xa4, 0x00, 0xe5, 0x97, 0x32, 0x85, 0x5e, 0xbe, 0x75,
-	0xb1, 0xe6, 0xad, 0x6f, 0xbc, 0x25, 0x35, 0x29, 0x82, 0xf9, 0xce, 0x34, 0xe1, 0x66, 0x67, 0x0f,
-	0x5b, 0xe5, 0x4a, 0xeb, 0x67, 0x93, 0xcb, 0x1e, 0xa7, 0x1e, 0xc4, 0xe0, 0x6e, 0x0f, 0x4f, 0xda,
-	0x54, 0x3f, 0xfc, 0x06, 0xc2, 0x89, 0xfe, 0xd2, 0xd0, 0xcf, 0x24, 0xab, 0xdf, 0xb2, 0x3e, 0xfb,
-	0x72, 0xb9, 0xf0, 0xf9, 0x97, 0xcb, 0x85, 0x7f, 0x7c, 0xb9, 0x5c, 0xf8, 0xe4, 0xab, 0xe5, 0x0b,
-	0x9f, 0x7f, 0xb5, 0x7c, 0xe1, 0x6f, 0x5f, 0x2d, 0x5f, 0x78, 0xf1, 0xe6, 0x19, 0xbf, 0x3b, 0x37,
-	0x36, 0x9a, 0x7f, 0xe0, 0xa8, 0xfe, 0xba, 0xb1, 0x32, 0xac, 0xfe, 0x86, 0xf1, 0xe1, 0xbf, 0x03,
-	0x00, 0x00, 0xff, 0xff, 0x16, 0xf9, 0x69, 0x30, 0x61, 0x29, 0x00, 0x00,
+	// 2501 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x5a, 0xcd, 0x73, 0x1c, 0x47,
+	0xd9, 0xf7, 0x5a, 0xb2, 0xa4, 0x7d, 0x56, 0x9f, 0xad, 0x0f, 0xb7, 0xc6, 0xd1, 0x4a, 0x96, 0xed,
+	0x58, 0x76, 0x12, 0x29, 0x76, 0xde, 0x7a, 0x09, 0x81, 0x03, 0x92, 0x1d, 0x25, 0x22, 0xde, 0x20,
+	0x46, 0x72, 0x44, 0x99, 0x54, 0x4d, 0x5a, 0x3b, 0xbd, 0xb3, 0x53, 0x9a, 0x2f, 0xba, 0x7b, 0xa5,
+	0x55, 0x0e, 0x14, 0x45, 0x15, 0x17, 0x4e, 0x5c, 0x39, 0x72, 0x82, 0x63, 0x0e, 0x54, 0xc1, 0x9d,
+	0x03, 0x39, 0x06, 0x2e, 0x50, 0x1c, 0x52, 0x54, 0x72, 0xc8, 0xff, 0xc0, 0x89, 0xea, 0x8f, 0x99,
+	0x9d, 0xd9, 0x0f, 0x59, 0x78, 0x4d, 0x15, 0x17, 0x97, 0xbb, 0xfb, 0xd7, 0xbf, 0xe7, 0xb3, 0x9f,
+	0xe7, 0x99, 0x2d, 0xc1, 0x22, 0x0d, 0x7d, 0xce, 0xfd, 0x38, 0xe2, 0x5b, 0xa7, 0x0f, 0xb6, 0x44,
+	0x7b, 0x33, 0x61, 0xb1, 0x88, 0xd1, 0x64, 0xb6, 0xbd, 0x79, 0xfa, 0xc0, 0xba, 0x5e, 0x8f, 0x79,
+	0x18, 0xf3, 0xad, 0x90, 0x7b, 0x12, 0x15, 0x72, 0x4f, 0xc3, 0xac, 0x05, 0x2f, 0xf6, 0x62, 0xf5,
+	0xdf, 0x2d, 0xf9, 0x3f, 0xb3, 0x3b, 0x47, 0x42, 0x3f, 0x8a, 0xb7, 0xd4, 0xbf, 0x66, 0x0b, 0x17,
+	0xc5, 0x9c, 0x27, 0x94, 0x9b, 0x93, 0x65, 0xcd, 0xed, 0x68, 0x16, 0xbd, 0xd0, 0x47, 0xeb, 0xbf,
+	0xb5, 0x60, 0xfa, 0x07, 0x89, 0xf0, 0xe3, 0x88, 0x04, 0xfb, 0x84, 0x91, 0x90, 0x23, 0x0c, 0xe3,
+	0xa7, 0x94, 0x49, 0x22, 0x5c, 0x5a, 0x1b, 0xd9, 0x28, 0xdb, 0xe9, 0x12, 0xdd, 0x81, 0x69, 0x46,
+	0xcf, 0x08, 0x73, 0x9d, 0x3a, 0x71, 0x69, 0x54, 0xa7, 0xf8, 0xea, 0xda, 0xc8, 0xc6, 0x88, 0x3d,
+	0xa5, 0x77, 0x1f, 0xe9, 0x4d, 0x44, 0x60, 0x36, 0xf4, 0x23, 0x47, 0xc4, 0x89, 0x5f, 0x77, 0xce,
+	0xa8, 0xef, 0x35, 0x05, 0x1e, 0x91, 0x4c, 0x3b, 0xdf, 0xfa, 0xfc, 0xcb, 0xd5, 0x2b, 0xff, 0xf8,
+	0x72, 0x75, 0xcb, 0xf3, 0x45, 0xb3, 0x75, 0xbc, 0x59, 0x8f, 0xc3, 0x2d, 0x12, 0x04, 0x31, 0x23,
+	0x6f, 0x44, 0x54, 0x9c, 0xc5, 0xec, 0x24, 0x5d, 0xd6, 0x9b, 0xc4, 0x8f, 0xb6, 0x42, 0x22, 0x9a,
+	0x9b, 0x8f, 0x69, 0xdd, 0x9e, 0x0e, 0xfd, 0xe8, 0x50, 0xf2, 0x1d, 0x29, 0x3a, 0xb4, 0x05, 0x0b,
+	0x21, 0x69, 0x6b, 0x11, 0xdc, 0x49, 0x28, 0x73, 0x8e, 0x83, 0xb8, 0x7e, 0x82, 0x47, 0xd7, 0x46,
+	0x36, 0x46, 0xed, 0xb9, 0x90, 0xb4, 0x15, 0x9a, 0xef, 0x53, 0xb6, 0x23, 0x0f, 0xd0, 0xa7, 0xb0,
+	0x22, 0x2f, 0x28, 0x0f, 0x45, 0x9e, 0xe3, 0x47, 0x0d, 0xca, 0xa4, 0xb2, 0xf2, 0x6e, 0x9d, 0x46,
+	0x02, 0x5f, 0x1b, 0x4e, 0x41, 0x2b, 0x24, 0xed, 0x9a, 0x26, 0xdf, 0x4b, 0xb9, 0xf7, 0x35, 0x35,
+	0x6a, 0xc2, 0x12, 0xa3, 0x3f, 0x69, 0xf9, 0x8c, 0xba, 0x4e, 0xe8, 0x47, 0x7e, 0xd8, 0x0a, 0x1d,
+	0x2e, 0xc8, 0x09, 0xc5, 0x63, 0x4a, 0xe8, 0x43, 0x23, 0x74, 0x49, 0x47, 0x86, 0xbb, 0x27, 0x9b,
+	0x7e, 0xac, 0xa9, 0x9f, 0xfa, 0x91, 0xf8, 0xeb, 0xef, 0xdf, 0xa8, 0x98, 0x98, 0xc9, 0xe5, 0xef,
+	0xbe, 0xf9, 0xec, 0x7e, 0xc9, 0x5e, 0x48, 0x19, 0x6b, 0x9a, 0xf0, 0x40, 0xf2, 0xa1, 0x6f, 0xc3,
+	0x32, 0xa3, 0x61, 0x7c, 0x4a, 0x35, 0xbf, 0xe3, 0xd2, 0x80, 0x9c, 0x3b, 0x67, 0x7e, 0xe4, 0xc6,
+	0x67, 0x78, 0x5c, 0xc5, 0x6a, 0x49, 0x03, 0x14, 0xfe, 0xb1, 0x3c, 0x3e, 0x52, 0xa7, 0x68, 0x43,
+	0x07, 0x8d, 0x26, 0x71, 0xbd, 0xe9, 0x04, 0x34, 0xf2, 0x44, 0x13, 0x4f, 0xa8, 0x1b, 0xd2, 0xf7,
+	0xef, 0xca, 0xed, 0x27, 0x6a, 0x17, 0x3d, 0x82, 0xaa, 0x74, 0x65, 0xc7, 0x85, 0x52, 0x15, 0xca,
+	0x85, 0x73, 0x4a, 0x02, 0xdf, 0xf5, 0xc5, 0x39, 0x2e, 0xab, 0x7b, 0x37, 0x42, 0xd2, 0xce, 0x7c,
+	0x61, 0x6b, 0xcc, 0x47, 0x06, 0x82, 0x9e, 0x42, 0x99, 0x37, 0x09, 0x4b, 0x22, 0xca, 0x39, 0x86,
+	0xe1, 0x7c, 0xdf, 0x61, 0x42, 0xcf, 0x60, 0xf2, 0x98, 0x0a, 0xe2, 0xd0, 0x48, 0xb0, 0x38, 0x39,
+	0xc7, 0x95, 0xe1, 0x98, 0x2b, 0x92, 0xec, 0x5d, 0xcd, 0x85, 0x3e, 0x86, 0xa9, 0x80, 0x12, 0x16,
+	0xc9, 0xfc, 0x61, 0x44, 0x50, 0x3c, 0x39, 0x1c, 0xf9, 0x64, 0xca, 0x66, 0x13, 0x41, 0x51, 0x08,
+	0x4b, 0xd2, 0xab, 0x1e, 0x23, 0xae, 0x4f, 0x23, 0xe1, 0x88, 0x26, 0xa3, 0xbc, 0x19, 0x07, 0x2e,
+	0x9e, 0x1a, 0x4e, 0x8c, 0x7c, 0x28, 0xef, 0x19, 0xd6, 0xc3, 0x94, 0x14, 0x51, 0x40, 0x32, 0xdc,
+	0x3a, 0x4d, 0x1a, 0x8c, 0xd4, 0x65, 0x09, 0xc0, 0xd3, 0xc3, 0x89, 0x92, 0x19, 0xa4, 0x12, 0x6b,
+	0xd7, 0x10, 0xa2, 0xef, 0xe9, 0x67, 0x27, 0xef, 0x50, 0xa6, 0x1f, 0xaa, 0x2e, 0x0b, 0x26, 0x67,
+	0xf0, 0x8c, 0x7a, 0xb0, 0xcb, 0x21, 0x69, 0x1f, 0x69, 0xcc, 0x3e, 0x65, 0xea, 0xe9, 0x9a, 0x84,
+	0x41, 0x3b, 0x3a, 0xdb, 0x18, 0x4d, 0x5a, 0xa2, 0x3f, 0xc5, 0xac, 0xa2, 0x90, 0x0f, 0xd0, 0x36,
+	0xa0, 0x6e, 0x8e, 0x1f, 0xc2, 0x38, 0x4d, 0xb8, 0x1f, 0xc4, 0x11, 0x9e, 0x1b, 0xce, 0xc2, 0x94,
+	0x07, 0x9d, 0xc0, 0x62, 0x92, 0x7b, 0x02, 0xfc, 0x3c, 0x12, 0x4d, 0xca, 0x7d, 0x8e, 0xd1, 0x70,
+	0x02, 0xe6, 0x93, 0xec, 0xc9, 0x1c, 0xa4, 0x9c, 0xc8, 0x81, 0x99, 0xc4, 0x31, 0x95, 0x97, 0x27,
+	0x8c, 0x12, 0x17, 0xcf, 0x0f, 0x27, 0x66, 0x2a, 0xb1, 0x15, 0xdd, 0x81, 0x62, 0x93, 0xcf, 0x86,
+	0x04, 0x49, 0x93, 0x38, 0x8c, 0x7a, 0x8c, 0x0a, 0xbc, 0x30, 0xe4, 0xb3, 0x51, 0x64, 0xb6, 0xe2,
+	0x42, 0xef, 0xc2, 0xaa, 0x0c, 0x60, 0x2b, 0x6a, 0xb4, 0x82, 0x86, 0x1f, 0x04, 0xd4, 0x35, 0xe9,
+	0x90, 0x06, 0x90, 0xe3, 0x45, 0x15, 0xc1, 0x57, 0x42, 0xd2, 0x7e, 0xda, 0x41, 0xe9, 0x7c, 0x30,
+	0x21, 0xe4, 0xe8, 0x3d, 0x58, 0xeb, 0xa6, 0x31, 0x39, 0xd1, 0xe1, 0x59, 0x52, 0x3c, 0x2b, 0x45,
+	0x1e, 0x93, 0x14, 0x19, 0xd1, 0xa7, 0xb0, 0x92, 0xe6, 0x8f, 0x76, 0xa8, 0x7a, 0x02, 0x7e, 0x98,
+	0xc4, 0x4c, 0x10, 0xd9, 0xd3, 0xae, 0x0f, 0xd9, 0x09, 0x84, 0x4e, 0x3d, 0xe5, 0x5e, 0xc9, 0xbd,
+	0x97, 0x51, 0xa3, 0x5f, 0x94, 0xe0, 0x56, 0x41, 0x78, 0x83, 0xca, 0xf2, 0x79, 0x4a, 0xa3, 0x56,
+	0x41, 0x05, 0x3c, 0x9c, 0x0a, 0xab, 0x39, 0x15, 0x76, 0x29, 0xb5, 0xb5, 0x80, 0x9c, 0x1e, 0x14,
+	0x50, 0x41, 0x0d, 0x15, 0x2f, 0xbc, 0x3c, 0xe4, 0xeb, 0xcf, 0x49, 0xdd, 0x96, 0x84, 0xa8, 0x0e,
+	0x73, 0x82, 0xf0, 0x93, 0xa2, 0x14, 0x6b, 0x38, 0x29, 0x33, 0x92, 0x31, 0x2f, 0x44, 0xfa, 0x54,
+	0x75, 0x1e, 0x22, 0x62, 0xc6, 0x9d, 0x53, 0xee, 0xe8, 0x8b, 0x69, 0x67, 0x37, 0xd2, 0xf1, 0x8d,
+	0x21, 0x7d, 0xda, 0x91, 0xf1, 0x11, 0xdf, 0x56, 0x10, 0xd3, 0xdf, 0xb5, 0x32, 0xe8, 0xbb, 0x20,
+	0x1b, 0x9e, 0xc3, 0x49, 0x98, 0x04, 0x94, 0x3b, 0x22, 0x76, 0x78, 0x9d, 0x04, 0xd4, 0xe1, 0xf5,
+	0x98, 0x51, 0x8e, 0x5f, 0x51, 0xb9, 0x79, 0x3d, 0x24, 0xed, 0x03, 0x8d, 0x38, 0x8c, 0x0f, 0xe4,
+	0xf9, 0x81, 0x3a, 0x46, 0x6f, 0xc3, 0xb2, 0x19, 0x68, 0xb2, 0x62, 0x29, 0xe2, 0x54, 0xf5, 0x15,
+	0x75, 0x77, 0x51, 0x4f, 0x35, 0xa6, 0x4e, 0x1e, 0xc6, 0x46, 0xee, 0x3b, 0x60, 0xa5, 0x37, 0xb3,
+	0x22, 0xd9, 0xb9, 0x5a, 0x55, 0x57, 0x97, 0xf4, 0xd5, 0xb4, 0x3e, 0x66, 0x77, 0x9f, 0xc1, 0x6c,
+	0x9d, 0x51, 0x22, 0xa8, 0x29, 0xa9, 0x0d, 0x4a, 0xf1, 0xaa, 0xf2, 0xd3, 0x9b, 0xc6, 0x4f, 0x8b,
+	0xbd, 0x33, 0xc9, 0x9e, 0x1a, 0x49, 0xc0, 0x8c, 0x24, 0x7b, 0xe9, 0x44, 0x32, 0xad, 0x99, 0x54,
+	0xe1, 0xdd, 0xa5, 0x14, 0x1d, 0x42, 0x99, 0xfb, 0x5e, 0x18, 0xfb, 0xae, 0x43, 0xf0, 0xda, 0x70,
+	0xce, 0x9f, 0x30, 0x4c, 0xdb, 0x79, 0xd6, 0x63, 0x7c, 0xf3, 0xe5, 0xb0, 0xee, 0xa0, 0xef, 0x80,
+	0x95, 0x35, 0x5e, 0x97, 0x72, 0x95, 0x36, 0x6a, 0xc6, 0x91, 0xde, 0xc2, 0xeb, 0x3a, 0x74, 0x29,
+	0xe2, 0xb1, 0x06, 0xd4, 0x48, 0x7b, 0x4f, 0x1e, 0xa3, 0x0f, 0xe0, 0x96, 0xee, 0x50, 0x82, 0xf9,
+	0x3a, 0xf0, 0xba, 0xf6, 0x38, 0x51, 0x1c, 0xd5, 0x29, 0x37, 0xf1, 0xc4, 0xb7, 0xd4, 0x50, 0x54,
+	0x55, 0x6d, 0x4a, 0x21, 0x0f, 0xe3, 0x5d, 0x85, 0xfb, 0x50, 0xc1, 0x74, 0x58, 0x51, 0x0d, 0x6e,
+	0x5f, 0x48, 0x66, 0x42, 0x8c, 0x6f, 0x2b, 0xb6, 0xd5, 0x41, 0x6c, 0x26, 0xd2, 0x72, 0xaa, 0xd3,
+	0x91, 0x4d, 0x88, 0x47, 0x9d, 0xc0, 0x0f, 0x7d, 0x81, 0xef, 0x28, 0x73, 0xa6, 0xd5, 0xfe, 0x3e,
+	0xf1, 0xe8, 0x13, 0xb9, 0x8b, 0x5e, 0x85, 0x99, 0x6c, 0xa2, 0x56, 0x68, 0x8e, 0x5f, 0x55, 0xc0,
+	0xa9, 0x74, 0x98, 0x96, 0x58, 0x8e, 0x5e, 0x07, 0x94, 0xce, 0x7b, 0x39, 0xce, 0xbb, 0x0a, 0x3a,
+	0x6b, 0x4e, 0x3a, 0xac, 0xf7, 0x61, 0x4e, 0x9b, 0xd3, 0xb9, 0xc1, 0xf1, 0x86, 0x02, 0xcf, 0x28,
+	0xdd, 0x33, 0x3c, 0x47, 0x3f, 0x86, 0x59, 0x46, 0x3d, 0x9f, 0x0b, 0x46, 0xe4, 0xec, 0xa0, 0x92,
+	0xf1, 0xde, 0x0b, 0x26, 0xe3, 0x4c, 0x9e, 0x49, 0x66, 0xe3, 0x2d, 0x98, 0x72, 0x69, 0x83, 0xb4,
+	0x02, 0x61, 0x34, 0xbe, 0xaf, 0x94, 0x98, 0x34, 0x9b, 0x5a, 0xdb, 0x1b, 0x50, 0x96, 0xda, 0x6a,
+	0xc0, 0x6b, 0x0a, 0x30, 0x11, 0x92, 0xb6, 0x3a, 0x5c, 0x0f, 0x60, 0xa6, 0xc6, 0xbd, 0xa7, 0x89,
+	0x4b, 0x04, 0x35, 0x5f, 0x4a, 0x4b, 0x30, 0xc6, 0x69, 0xe4, 0x52, 0x86, 0x4b, 0x6b, 0xa5, 0x8d,
+	0xb2, 0x6d, 0x56, 0xe8, 0xff, 0x60, 0x2c, 0x51, 0x08, 0x7c, 0x75, 0xad, 0xb4, 0x51, 0x79, 0xf8,
+	0xca, 0x66, 0xfe, 0x53, 0x6f, 0xb3, 0xf8, 0xbd, 0x65, 0x1b, 0xec, 0x3b, 0x95, 0x9f, 0x7f, 0xf3,
+	0xd9, 0x7d, 0x43, 0xb1, 0xbe, 0x0c, 0xd7, 0xbb, 0xa4, 0xd9, 0x94, 0x27, 0x71, 0xc4, 0xe9, 0xfa,
+	0x5f, 0xc6, 0x60, 0xae, 0xc6, 0xbd, 0x47, 0xea, 0xb9, 0x7d, 0x48, 0xcf, 0x54, 0x70, 0xe4, 0x57,
+	0x9b, 0x7a, 0x80, 0x71, 0xaa, 0x4c, 0xba, 0x44, 0x16, 0x4c, 0x84, 0x54, 0x10, 0x97, 0x08, 0xa2,
+	0xf4, 0x29, 0xdb, 0xd9, 0x1a, 0xad, 0x00, 0x04, 0x31, 0xe7, 0x4e, 0x10, 0x7b, 0x7e, 0x1d, 0x8f,
+	0xa8, 0xd3, 0xb2, 0xdc, 0x79, 0x22, 0x37, 0xd0, 0x2a, 0x54, 0xd4, 0x71, 0x48, 0x45, 0x33, 0x76,
+	0xf1, 0xa8, 0x3a, 0x57, 0x37, 0x6a, 0x6a, 0x07, 0xdd, 0x85, 0x99, 0xce, 0x10, 0xa4, 0x49, 0xae,
+	0x29, 0xd0, 0x74, 0xb6, 0xad, 0x99, 0xee, 0xc1, 0x6c, 0x07, 0x68, 0xe8, 0xc6, 0x14, 0xb2, 0x43,
+	0x60, 0x38, 0x6f, 0xc2, 0x64, 0xe1, 0x2b, 0x64, 0x7c, 0xad, 0xb4, 0x31, 0x62, 0x57, 0x68, 0xee,
+	0x13, 0x64, 0x03, 0x66, 0x3d, 0x16, 0xb7, 0x22, 0xd7, 0x11, 0xac, 0x25, 0x9a, 0x4e, 0x40, 0x3c,
+	0x3c, 0xa1, 0x60, 0xd3, 0x7a, 0xff, 0x50, 0x6e, 0x3f, 0x21, 0x9e, 0xb4, 0x20, 0x8d, 0x3b, 0x61,
+	0x1e, 0x2e, 0x6b, 0x0b, 0xcc, 0xd6, 0x36, 0xf3, 0xd0, 0x02, 0x5c, 0x4b, 0xa2, 0x98, 0x85, 0x18,
+	0xd6, 0x4a, 0x1b, 0xa3, 0xb6, 0x5e, 0xf4, 0x0c, 0x44, 0x15, 0x79, 0xef, 0x25, 0x0d, 0x44, 0x9f,
+	0xc0, 0x4c, 0x62, 0x3a, 0x62, 0xfa, 0x9a, 0x27, 0x87, 0xa3, 0x9f, 0x36, 0x7c, 0xe9, 0xab, 0x77,
+	0x61, 0x2e, 0x95, 0x90, 0x39, 0x17, 0x4f, 0x0d, 0x27, 0x63, 0xd6, 0x30, 0x66, 0xe3, 0x29, 0x3a,
+	0x86, 0x74, 0xcf, 0x69, 0xc4, 0x8c, 0xd6, 0x09, 0x17, 0x78, 0x7a, 0x38, 0x21, 0xa9, 0x63, 0x76,
+	0x0d, 0x1f, 0xfa, 0x11, 0x54, 0x1a, 0x8e, 0x88, 0x03, 0xca, 0xd4, 0x5c, 0x34, 0x33, 0x1c, 0x3d,
+	0x34, 0x0e, 0x53, 0xaa, 0x77, 0x26, 0xe5, 0x6b, 0x4b, 0xdf, 0xc8, 0xfa, 0xff, 0xc3, 0x72, 0xcf,
+	0x93, 0x4a, 0x1f, 0x1c, 0x5a, 0x86, 0x09, 0x5d, 0x16, 0x7d, 0x57, 0xbd, 0xad, 0x51, 0x7b, 0x5c,
+	0xad, 0xf7, 0xdc, 0xf5, 0x5f, 0x5e, 0x85, 0x1b, 0x35, 0xee, 0xed, 0x45, 0x9c, 0x32, 0xb1, 0xd3,
+	0x0a, 0x4e, 0x4c, 0x08, 0xf6, 0xc9, 0x79, 0x10, 0x13, 0x77, 0x60, 0x85, 0x78, 0x0a, 0x8b, 0x5d,
+	0xd3, 0xab, 0x2e, 0xf0, 0xa6, 0x60, 0xdc, 0x2c, 0x16, 0x8c, 0xe2, 0x08, 0xab, 0x2a, 0xbc, 0x3d,
+	0xcf, 0x7a, 0x37, 0x0b, 0x9a, 0x8e, 0x14, 0x34, 0x45, 0x87, 0x1d, 0x89, 0xa7, 0x24, 0x68, 0x51,
+	0xe7, 0xb8, 0x15, 0xb9, 0x01, 0xe5, 0xea, 0x27, 0x93, 0xca, 0xc3, 0xb5, 0xbe, 0x12, 0x3f, 0x92,
+	0xc8, 0x1d, 0x05, 0xcc, 0x04, 0xe6, 0xf6, 0xba, 0x6a, 0xd6, 0x1d, 0xb8, 0x75, 0x81, 0x2f, 0xb2,
+	0xfa, 0xf5, 0xb7, 0x12, 0x58, 0x05, 0x9c, 0x6e, 0x7d, 0xcf, 0x73, 0xd9, 0x3d, 0xb8, 0x96, 0x77,
+	0xd1, 0x7c, 0x51, 0x61, 0xed, 0x14, 0x8d, 0xb8, 0xc8, 0x0d, 0x1f, 0xc2, 0xbc, 0xf9, 0xfa, 0x90,
+	0xf5, 0xaf, 0xcb, 0x09, 0xd5, 0x22, 0xa7, 0xd6, 0xeb, 0x31, 0x11, 0xc4, 0xb8, 0x60, 0xee, 0xac,
+	0x6b, 0xa7, 0xcb, 0x01, 0xb7, 0x61, 0x7d, 0xb0, 0x61, 0x99, 0xfd, 0x7f, 0x2e, 0x41, 0xa5, 0xc6,
+	0x3d, 0x5b, 0x75, 0x28, 0xca, 0x06, 0x1a, 0x5c, 0x85, 0x4a, 0xe0, 0x1f, 0x3b, 0xc9, 0xc3, 0xc4,
+	0x39, 0xa1, 0xe7, 0xa6, 0x74, 0x97, 0x03, 0xff, 0x78, 0xff, 0x61, 0xf2, 0x01, 0x3d, 0x97, 0x2d,
+	0x2d, 0x6c, 0x05, 0xc2, 0x77, 0x88, 0xeb, 0x32, 0xca, 0xb9, 0x29, 0xdf, 0x93, 0x6a, 0x73, 0x5b,
+	0xef, 0x15, 0x5c, 0x31, 0x5a, 0x74, 0xc5, 0x02, 0x5c, 0x8b, 0xcf, 0x22, 0xca, 0x4c, 0xc5, 0xd6,
+	0x0b, 0xd9, 0x11, 0xfc, 0xce, 0x98, 0x21, 0x4b, 0xf4, 0x84, 0x5d, 0xf6, 0xd3, 0x81, 0xa2, 0x68,
+	0xef, 0x1e, 0xcc, 0xe7, 0x0c, 0xc9, 0xde, 0x0b, 0x86, 0x71, 0xde, 0xaa, 0xd7, 0xa5, 0x4a, 0x25,
+	0x75, 0x3f, 0x5d, 0xca, 0x93, 0x90, 0x72, 0x4e, 0x3c, 0x6a, 0xcc, 0x49, 0x97, 0xeb, 0xa7, 0xb0,
+	0xa8, 0xa8, 0xc2, 0xf8, 0x94, 0xda, 0xb9, 0xde, 0x3d, 0xd0, 0x3b, 0x79, 0xc3, 0xae, 0x16, 0x0d,
+	0x2b, 0x9a, 0x30, 0x72, 0xa1, 0x09, 0x07, 0xb0, 0xd2, 0x57, 0xee, 0x50, 0xc6, 0xfc, 0x5a, 0x47,
+	0x78, 0xdb, 0xd5, 0x1f, 0x80, 0x2f, 0x62, 0xc3, 0xf7, 0x61, 0x8c, 0x84, 0x71, 0x2b, 0x12, 0x3a,
+	0xaa, 0x2f, 0xf4, 0x1b, 0xa1, 0x61, 0x28, 0x1a, 0xbc, 0xa8, 0x62, 0x96, 0xaa, 0x96, 0x25, 0xe5,
+	0x6f, 0x4a, 0x6a, 0xff, 0x40, 0x10, 0x26, 0xec, 0xce, 0x2f, 0x84, 0xff, 0x53, 0xaa, 0xaf, 0xa8,
+	0x5a, 0xdb, 0xad, 0x62, 0x66, 0xc2, 0x91, 0x4a, 0xa1, 0x47, 0x71, 0xd4, 0xf0, 0x59, 0x38, 0x9c,
+	0x0d, 0x45, 0xb9, 0xab, 0x2a, 0x47, 0x7a, 0x89, 0x33, 0xc9, 0x7f, 0x2c, 0xc1, 0x6c, 0x8d, 0x7b,
+	0x8f, 0x69, 0x40, 0x3d, 0x22, 0x5e, 0xdc, 0x73, 0x18, 0xc6, 0xf3, 0x59, 0x5b, 0xb6, 0xd3, 0x65,
+	0xce, 0xa7, 0xa3, 0x2f, 0xd7, 0xa7, 0x16, 0xe0, 0x6e, 0xcd, 0x33, 0xb3, 0xfe, 0x54, 0xea, 0x76,
+	0xf8, 0xe5, 0x2c, 0xcc, 0x99, 0x71, 0xb5, 0x68, 0xc6, 0x05, 0x85, 0xf9, 0xbf, 0x66, 0xa1, 0xee,
+	0x4a, 0x83, 0x8c, 0xc8, 0x8c, 0x3d, 0xcf, 0x07, 0x39, 0x85, 0x0c, 0xf9, 0x12, 0x06, 0xc6, 0xb3,
+	0xa8, 0xe1, 0x5d, 0xb8, 0xd3, 0x9d, 0x5f, 0xfd, 0x75, 0xfc, 0x43, 0x09, 0x26, 0x6b, 0xdc, 0xdb,
+	0x95, 0x03, 0xae, 0x1a, 0xfa, 0x5f, 0x40, 0xa7, 0xf7, 0xbb, 0x5e, 0xe7, 0x7f, 0xfe, 0x6d, 0x65,
+	0xee, 0xcb, 0x32, 0x4b, 0xdb, 0x82, 0x11, 0xd5, 0x49, 0x55, 0xd4, 0x26, 0xed, 0xb2, 0xda, 0x91,
+	0x0d, 0xb2, 0x68, 0xe2, 0x12, 0x2c, 0xe4, 0x15, 0xcf, 0xbd, 0xd9, 0x25, 0x5d, 0x8d, 0x0e, 0xe3,
+	0xa3, 0xa6, 0x2f, 0x68, 0xe0, 0x73, 0xb1, 0xed, 0x86, 0x7e, 0x74, 0x51, 0x72, 0xa5, 0xfd, 0xce,
+	0x24, 0x97, 0x59, 0x16, 0x05, 0xae, 0x41, 0xb5, 0x3f, 0x71, 0x26, 0xfa, 0x63, 0x95, 0xdc, 0xda,
+	0xdd, 0xbb, 0x2c, 0x0e, 0x5f, 0xae, 0x7c, 0x9d, 0x75, 0x83, 0xd8, 0x53, 0x25, 0x1e, 0xfe, 0xab,
+	0x02, 0x23, 0x35, 0xee, 0xa1, 0x43, 0x98, 0x2c, 0x7c, 0x59, 0xae, 0x14, 0x27, 0x91, 0xae, 0x4f,
+	0x41, 0xeb, 0xce, 0x85, 0xc7, 0x59, 0xef, 0x6a, 0xc1, 0xf5, 0x41, 0x53, 0xd6, 0x46, 0x0f, 0xc3,
+	0x00, 0xa4, 0xf5, 0xe6, 0x65, 0x91, 0x99, 0xd8, 0x67, 0x30, 0xdd, 0xf5, 0x71, 0xba, 0xda, 0xc3,
+	0x51, 0x04, 0x58, 0x77, 0x9f, 0x03, 0xc8, 0xb8, 0xdf, 0x87, 0x89, 0x6c, 0x70, 0x5a, 0xee, 0xb9,
+	0x94, 0x1e, 0x59, 0x37, 0x07, 0x1e, 0x65, 0x4c, 0x0d, 0x40, 0x7d, 0xc6, 0x8d, 0x5b, 0x7d, 0x2e,
+	0x76, 0x83, 0xac, 0xd7, 0x2e, 0x01, 0xca, 0xe4, 0xb4, 0x01, 0x0f, 0xfc, 0x3c, 0xb8, 0x77, 0x81,
+	0x6f, 0x8b, 0x50, 0xeb, 0xc1, 0xa5, 0xa1, 0x79, 0x5f, 0x65, 0x23, 0x48, 0xaf, 0xaf, 0xd2, 0xa3,
+	0x3e, 0xbe, 0xea, 0x9e, 0x0e, 0xd0, 0x27, 0x30, 0xdb, 0x33, 0x19, 0xf4, 0x5e, 0xeb, 0x86, 0x58,
+	0xf7, 0x9e, 0x0b, 0xc9, 0x47, 0xa3, 0x4f, 0xe7, 0xee, 0x8d, 0x46, 0x2f, 0xa8, 0x4f, 0x34, 0x06,
+	0xb7, 0x6a, 0x74, 0x04, 0x53, 0xc5, 0x26, 0x56, 0xed, 0xb9, 0x5d, 0x38, 0xb7, 0x5e, 0xbd, 0xf8,
+	0x3c, 0x1f, 0xe6, 0x81, 0x8d, 0xf2, 0x42, 0x3f, 0x14, 0xc5, 0x3d, 0xb8, 0x34, 0x34, 0x93, 0xfc,
+	0x53, 0xb0, 0x06, 0xf7, 0x0e, 0x34, 0xd0, 0x3b, 0x7d, 0x7a, 0x9c, 0xf5, 0xd6, 0xc5, 0xae, 0xec,
+	0x2f, 0xff, 0x03, 0x28, 0x77, 0x3a, 0x92, 0xd5, 0xc3, 0x90, 0x9d, 0x59, 0xeb, 0x83, 0xcf, 0x32,
+	0x32, 0x1f, 0xe6, 0xfb, 0x75, 0x83, 0xdb, 0xfd, 0x72, 0xb4, 0x1b, 0x65, 0xbd, 0x7e, 0x19, 0x54,
+	0x3e, 0x62, 0x03, 0xab, 0xff, 0xbd, 0x01, 0x2f, 0xbc, 0x17, 0xda, 0x27, 0x62, 0xcf, 0xab, 0xfa,
+	0xd6, 0xb5, 0x9f, 0xc9, 0x46, 0xba, 0x63, 0x7f, 0xfe, 0x55, 0xb5, 0xf4, 0xc5, 0x57, 0xd5, 0xd2,
+	0x3f, 0xbf, 0xaa, 0x96, 0x7e, 0xf5, 0x75, 0xf5, 0xca, 0x17, 0x5f, 0x57, 0xaf, 0xfc, 0xfd, 0xeb,
+	0xea, 0x95, 0x67, 0x6f, 0x5f, 0xf2, 0x97, 0x8d, 0xf6, 0x56, 0xe7, 0x6f, 0x3e, 0xd4, 0x1f, 0x7c,
+	0x1c, 0x8f, 0xa9, 0x3f, 0xeb, 0x78, 0xeb, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xf3, 0x0a, 0xb6,
+	0xf9, 0x74, 0x22, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -2532,13 +2033,9 @@ type MsgClient interface {
 	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
 	StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error)
 	ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error)
-	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
+	FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
-	AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error)
-	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
-	AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error)
-	RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error)
 }
 
 type msgClient struct {
@@ -2657,9 +2154,9 @@ func (c *msgClient) ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfi
 	return out, nil
 }
 
-func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error) {
-	out := new(MsgRequestInferenceResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/RequestInference", in, out, opts...)
+func (c *msgClient) FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error) {
+	out := new(MsgFundTopicResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/FundTopic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2684,42 +2181,6 @@ func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveF
 	return out, nil
 }
 
-func (c *msgClient) AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error) {
-	out := new(MsgAddToTopicCreationWhitelistResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/AddToTopicCreationWhitelist", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
-	out := new(MsgRemoveFromTopicCreationWhitelistResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error) {
-	out := new(MsgAddToReputerWhitelistResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/AddToReputerWhitelist", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error) {
-	out := new(MsgRemoveFromReputerWhitelistResponse)
-	err := c.cc.Invoke(ctx, "/emissions.v1.Msg/RemoveFromReputerWhitelist", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
@@ -2734,13 +2195,9 @@ type MsgServer interface {
 	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
 	StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error)
 	ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error)
-	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
+	FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
-	AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error)
-	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
-	AddToReputerWhitelist(context.Context, *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error)
-	RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -2783,26 +2240,14 @@ func (*UnimplementedMsgServer) StartRemoveDelegateStake(ctx context.Context, req
 func (*UnimplementedMsgServer) ConfirmRemoveDelegateStake(ctx context.Context, req *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveDelegateStake not implemented")
 }
-func (*UnimplementedMsgServer) RequestInference(ctx context.Context, req *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
+func (*UnimplementedMsgServer) FundTopic(ctx context.Context, req *MsgFundTopic) (*MsgFundTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FundTopic not implemented")
 }
 func (*UnimplementedMsgServer) AddToWhitelistAdmin(ctx context.Context, req *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToWhitelistAdmin not implemented")
 }
 func (*UnimplementedMsgServer) RemoveFromWhitelistAdmin(ctx context.Context, req *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWhitelistAdmin not implemented")
-}
-func (*UnimplementedMsgServer) AddToTopicCreationWhitelist(ctx context.Context, req *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToTopicCreationWhitelist not implemented")
-}
-func (*UnimplementedMsgServer) RemoveFromTopicCreationWhitelist(ctx context.Context, req *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicCreationWhitelist not implemented")
-}
-func (*UnimplementedMsgServer) AddToReputerWhitelist(ctx context.Context, req *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToReputerWhitelist not implemented")
-}
-func (*UnimplementedMsgServer) RemoveFromReputerWhitelist(ctx context.Context, req *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromReputerWhitelist not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -3025,20 +2470,20 @@ func _Msg_ConfirmRemoveDelegateStake_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRequestInference)
+func _Msg_FundTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgFundTopic)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RequestInference(ctx, in)
+		return srv.(MsgServer).FundTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/emissions.v1.Msg/RequestInference",
+		FullMethod: "/emissions.v1.Msg/FundTopic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RequestInference(ctx, req.(*MsgRequestInference))
+		return srv.(MsgServer).FundTopic(ctx, req.(*MsgFundTopic))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3075,78 +2520,6 @@ func _Msg_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, req.(*MsgRemoveFromWhitelistAdmin))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_AddToTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToTopicCreationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/emissions.v1.Msg/AddToTopicCreationWhitelist",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, req.(*MsgAddToTopicCreationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RemoveFromTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromTopicCreationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, req.(*MsgRemoveFromTopicCreationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_AddToReputerWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToReputerWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddToReputerWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/emissions.v1.Msg/AddToReputerWhitelist",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToReputerWhitelist(ctx, req.(*MsgAddToReputerWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RemoveFromReputerWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromReputerWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromReputerWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/emissions.v1.Msg/RemoveFromReputerWhitelist",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromReputerWhitelist(ctx, req.(*MsgRemoveFromReputerWhitelist))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3204,8 +2577,8 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_ConfirmRemoveDelegateStake_Handler,
 		},
 		{
-			MethodName: "RequestInference",
-			Handler:    _Msg_RequestInference_Handler,
+			MethodName: "FundTopic",
+			Handler:    _Msg_FundTopic_Handler,
 		},
 		{
 			MethodName: "AddToWhitelistAdmin",
@@ -3214,22 +2587,6 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromWhitelistAdmin",
 			Handler:    _Msg_RemoveFromWhitelistAdmin_Handler,
-		},
-		{
-			MethodName: "AddToTopicCreationWhitelist",
-			Handler:    _Msg_AddToTopicCreationWhitelist_Handler,
-		},
-		{
-			MethodName: "RemoveFromTopicCreationWhitelist",
-			Handler:    _Msg_RemoveFromTopicCreationWhitelist_Handler,
-		},
-		{
-			MethodName: "AddToReputerWhitelist",
-			Handler:    _Msg_AddToReputerWhitelist_Handler,
-		},
-		{
-			MethodName: "RemoveFromReputerWhitelist",
-			Handler:    _Msg_RemoveFromReputerWhitelist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -3272,9 +2629,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA2[:j1])
 		i = encodeVarintTx(dAtA, i, uint64(j1))
 		i--
-		dAtA[i] = 0x3
+		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0x82
+		dAtA[i] = 0xda
 	}
 	if len(m.DefaultLimit) > 0 {
 		dAtA4 := make([]byte, len(m.DefaultLimit)*10)
@@ -3294,27 +2651,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xfa
-	}
-	if len(m.MaxRequestsPerTopic) > 0 {
-		dAtA6 := make([]byte, len(m.MaxRequestsPerTopic)*10)
-		var j5 int
-		for _, num := range m.MaxRequestsPerTopic {
-			for num >= 1<<7 {
-				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j5++
-			}
-			dAtA6[j5] = uint8(num)
-			j5++
-		}
-		i -= j5
-		copy(dAtA[i:], dAtA6[:j5])
-		i = encodeVarintTx(dAtA, i, uint64(j5))
-		i--
-		dAtA[i] = 0x2
-		i--
-		dAtA[i] = 0xf2
+		dAtA[i] = 0xd2
 	}
 	if len(m.RegistrationFee) > 0 {
 		for iNdEx := len(m.RegistrationFee) - 1; iNdEx >= 0; iNdEx-- {
@@ -3329,13 +2666,33 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x2
 			i--
-			dAtA[i] = 0xea
+			dAtA[i] = 0xca
 		}
 	}
 	if len(m.MaxRequestPages) > 0 {
-		dAtA8 := make([]byte, len(m.MaxRequestPages)*10)
-		var j7 int
+		dAtA6 := make([]byte, len(m.MaxRequestPages)*10)
+		var j5 int
 		for _, num := range m.MaxRequestPages {
+			for num >= 1<<7 {
+				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j5++
+			}
+			dAtA6[j5] = uint8(num)
+			j5++
+		}
+		i -= j5
+		copy(dAtA[i:], dAtA6[:j5])
+		i = encodeVarintTx(dAtA, i, uint64(j5))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0xc2
+	}
+	if len(m.RequestPageLimit) > 0 {
+		dAtA8 := make([]byte, len(m.RequestPageLimit)*10)
+		var j7 int
+		for _, num := range m.RequestPageLimit {
 			for num >= 1<<7 {
 				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3350,12 +2707,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xe2
+		dAtA[i] = 0xba
 	}
-	if len(m.RequestPageLimit) > 0 {
-		dAtA10 := make([]byte, len(m.RequestPageLimit)*10)
+	if len(m.MaxTopicPages) > 0 {
+		dAtA10 := make([]byte, len(m.MaxTopicPages)*10)
 		var j9 int
-		for _, num := range m.RequestPageLimit {
+		for _, num := range m.MaxTopicPages {
 			for num >= 1<<7 {
 				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3370,12 +2727,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xda
+		dAtA[i] = 0xb2
 	}
-	if len(m.MaxTopicPages) > 0 {
-		dAtA12 := make([]byte, len(m.MaxTopicPages)*10)
+	if len(m.TopicPageLimit) > 0 {
+		dAtA12 := make([]byte, len(m.TopicPageLimit)*10)
 		var j11 int
-		for _, num := range m.MaxTopicPages {
+		for _, num := range m.TopicPageLimit {
 			for num >= 1<<7 {
 				dAtA12[j11] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3390,12 +2747,13 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xaa
 	}
-	if len(m.TopicPageLimit) > 0 {
-		dAtA14 := make([]byte, len(m.TopicPageLimit)*10)
+	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
+		dAtA14 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
 		var j13 int
-		for _, num := range m.TopicPageLimit {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
+			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA14[j13] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3410,12 +2768,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xca
+		dAtA[i] = 0xa2
 	}
-	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
-		dAtA16 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
+	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
+		dAtA16 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
 		var j15 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
 			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
@@ -3431,13 +2789,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xc2
+		dAtA[i] = 0x9a
 	}
-	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
-		dAtA18 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
+	if len(m.GradientDescentMaxIters) > 0 {
+		dAtA18 := make([]byte, len(m.GradientDescentMaxIters)*10)
 		var j17 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
-			num := uint64(num1)
+		for _, num := range m.GradientDescentMaxIters {
 			for num >= 1<<7 {
 				dAtA18[j17] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3452,27 +2809,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xba
-	}
-	if len(m.GradientDescentMaxIters) > 0 {
-		dAtA20 := make([]byte, len(m.GradientDescentMaxIters)*10)
-		var j19 int
-		for _, num := range m.GradientDescentMaxIters {
-			for num >= 1<<7 {
-				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j19++
-			}
-			dAtA20[j19] = uint8(num)
-			j19++
-		}
-		i -= j19
-		copy(dAtA[i:], dAtA20[:j19])
-		i = encodeVarintTx(dAtA, i, uint64(j19))
-		i--
-		dAtA[i] = 0x2
-		i--
-		dAtA[i] = 0xb2
+		dAtA[i] = 0x92
 	}
 	if len(m.SigmoidB) > 0 {
 		for iNdEx := len(m.SigmoidB) - 1; iNdEx >= 0; iNdEx-- {
@@ -3487,7 +2824,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x2
 			i--
-			dAtA[i] = 0xaa
+			dAtA[i] = 0x8a
 		}
 	}
 	if len(m.SigmoidA) > 0 {
@@ -3503,7 +2840,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x2
 			i--
-			dAtA[i] = 0xa2
+			dAtA[i] = 0x82
 		}
 	}
 	if len(m.CreateTopicFee) > 0 {
@@ -3517,15 +2854,35 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x2
+			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0x9a
+			dAtA[i] = 0xfa
 		}
 	}
 	if len(m.MaxTopReputersToReward) > 0 {
-		dAtA22 := make([]byte, len(m.MaxTopReputersToReward)*10)
-		var j21 int
+		dAtA20 := make([]byte, len(m.MaxTopReputersToReward)*10)
+		var j19 int
 		for _, num := range m.MaxTopReputersToReward {
+			for num >= 1<<7 {
+				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j19++
+			}
+			dAtA20[j19] = uint8(num)
+			j19++
+		}
+		i -= j19
+		copy(dAtA[i:], dAtA20[:j19])
+		i = encodeVarintTx(dAtA, i, uint64(j19))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xf2
+	}
+	if len(m.MaxTopWorkersToReward) > 0 {
+		dAtA22 := make([]byte, len(m.MaxTopWorkersToReward)*10)
+		var j21 int
+		for _, num := range m.MaxTopWorkersToReward {
 			for num >= 1<<7 {
 				dAtA22[j21] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3538,14 +2895,14 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA22[:j21])
 		i = encodeVarintTx(dAtA, i, uint64(j21))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x92
+		dAtA[i] = 0xea
 	}
-	if len(m.MaxTopWorkersToReward) > 0 {
-		dAtA24 := make([]byte, len(m.MaxTopWorkersToReward)*10)
+	if len(m.MaxSamplesToScaleScores) > 0 {
+		dAtA24 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
 		var j23 int
-		for _, num := range m.MaxTopWorkersToReward {
+		for _, num := range m.MaxSamplesToScaleScores {
 			for num >= 1<<7 {
 				dAtA24[j23] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3558,29 +2915,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA24[:j23])
 		i = encodeVarintTx(dAtA, i, uint64(j23))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x8a
-	}
-	if len(m.MaxSamplesToScaleScores) > 0 {
-		dAtA26 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
-		var j25 int
-		for _, num := range m.MaxSamplesToScaleScores {
-			for num >= 1<<7 {
-				dAtA26[j25] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j25++
-			}
-			dAtA26[j25] = uint8(num)
-			j25++
-		}
-		i -= j25
-		copy(dAtA[i:], dAtA26[:j25])
-		i = encodeVarintTx(dAtA, i, uint64(j25))
-		i--
-		dAtA[i] = 0x2
-		i--
-		dAtA[i] = 0x82
+		dAtA[i] = 0xe2
 	}
 	if len(m.ValidatorsVsAlloraPercentReward) > 0 {
 		for iNdEx := len(m.ValidatorsVsAlloraPercentReward) - 1; iNdEx >= 0; iNdEx-- {
@@ -3595,7 +2932,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xfa
+			dAtA[i] = 0xda
 		}
 	}
 	if len(m.TaskRewardAlpha) > 0 {
@@ -3611,7 +2948,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xf2
+			dAtA[i] = 0xd2
 		}
 	}
 	if len(m.TopicRewardAlpha) > 0 {
@@ -3627,7 +2964,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xea
+			dAtA[i] = 0xca
 		}
 	}
 	if len(m.TopicRewardFeeRevenueImportance) > 0 {
@@ -3643,7 +2980,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xe2
+			dAtA[i] = 0xc2
 		}
 	}
 	if len(m.TopicRewardStakeImportance) > 0 {
@@ -3659,13 +2996,33 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xda
+			dAtA[i] = 0xba
 		}
 	}
-	if len(m.SybilTaxExponent) > 0 {
-		dAtA28 := make([]byte, len(m.SybilTaxExponent)*10)
+	if len(m.MaxUnfulfilledReputerRequests) > 0 {
+		dAtA26 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
+		var j25 int
+		for _, num := range m.MaxUnfulfilledReputerRequests {
+			for num >= 1<<7 {
+				dAtA26[j25] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j25++
+			}
+			dAtA26[j25] = uint8(num)
+			j25++
+		}
+		i -= j25
+		copy(dAtA[i:], dAtA26[:j25])
+		i = encodeVarintTx(dAtA, i, uint64(j25))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb2
+	}
+	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
+		dAtA28 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
 		var j27 int
-		for _, num := range m.SybilTaxExponent {
+		for _, num := range m.MaxUnfulfilledWorkerRequests {
 			for num >= 1<<7 {
 				dAtA28[j27] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3680,67 +3037,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xd2
-	}
-	if len(m.NumberExpectedInferenceSybils) > 0 {
-		dAtA30 := make([]byte, len(m.NumberExpectedInferenceSybils)*10)
-		var j29 int
-		for _, num := range m.NumberExpectedInferenceSybils {
-			for num >= 1<<7 {
-				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j29++
-			}
-			dAtA30[j29] = uint8(num)
-			j29++
-		}
-		i -= j29
-		copy(dAtA[i:], dAtA30[:j29])
-		i = encodeVarintTx(dAtA, i, uint64(j29))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xca
-	}
-	if len(m.MaxUnfulfilledReputerRequests) > 0 {
-		dAtA32 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
-		var j31 int
-		for _, num := range m.MaxUnfulfilledReputerRequests {
-			for num >= 1<<7 {
-				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j31++
-			}
-			dAtA32[j31] = uint8(num)
-			j31++
-		}
-		i -= j31
-		copy(dAtA[i:], dAtA32[:j31])
-		i = encodeVarintTx(dAtA, i, uint64(j31))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xc2
-	}
-	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
-		dAtA34 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
-		var j33 int
-		for _, num := range m.MaxUnfulfilledWorkerRequests {
-			for num >= 1<<7 {
-				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j33++
-			}
-			dAtA34[j33] = uint8(num)
-			j33++
-		}
-		i -= j33
-		copy(dAtA[i:], dAtA34[:j33])
-		i = encodeVarintTx(dAtA, i, uint64(j33))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xba
+		dAtA[i] = 0xaa
 	}
 	if len(m.AlphaRegret) > 0 {
 		for iNdEx := len(m.AlphaRegret) - 1; iNdEx >= 0; iNdEx-- {
@@ -3755,7 +3052,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xb2
+			dAtA[i] = 0xa2
 		}
 	}
 	if len(m.PRewardSpread) > 0 {
@@ -3771,7 +3068,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xaa
+			dAtA[i] = 0x9a
 		}
 	}
 	if len(m.PInferenceSynthesis) > 0 {
@@ -3787,7 +3084,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xa2
+			dAtA[i] = 0x92
 		}
 	}
 	if len(m.Epsilon) > 0 {
@@ -3803,48 +3100,46 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0x9a
+			dAtA[i] = 0x8a
 		}
 	}
 	if len(m.MaxReputersPerTopicRequest) > 0 {
-		dAtA36 := make([]byte, len(m.MaxReputersPerTopicRequest)*10)
-		var j35 int
+		dAtA30 := make([]byte, len(m.MaxReputersPerTopicRequest)*10)
+		var j29 int
 		for _, num := range m.MaxReputersPerTopicRequest {
 			for num >= 1<<7 {
-				dAtA36[j35] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j35++
+				j29++
 			}
-			dAtA36[j35] = uint8(num)
-			j35++
+			dAtA30[j29] = uint8(num)
+			j29++
 		}
-		i -= j35
-		copy(dAtA[i:], dAtA36[:j35])
-		i = encodeVarintTx(dAtA, i, uint64(j35))
+		i -= j29
+		copy(dAtA[i:], dAtA30[:j29])
+		i = encodeVarintTx(dAtA, i, uint64(j29))
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x92
+		dAtA[i] = 0x82
 	}
 	if len(m.MaxWorkersPerTopicRequest) > 0 {
-		dAtA38 := make([]byte, len(m.MaxWorkersPerTopicRequest)*10)
-		var j37 int
+		dAtA32 := make([]byte, len(m.MaxWorkersPerTopicRequest)*10)
+		var j31 int
 		for _, num := range m.MaxWorkersPerTopicRequest {
 			for num >= 1<<7 {
-				dAtA38[j37] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j37++
+				j31++
 			}
-			dAtA38[j37] = uint8(num)
-			j37++
+			dAtA32[j31] = uint8(num)
+			j31++
 		}
-		i -= j37
-		copy(dAtA[i:], dAtA38[:j37])
-		i = encodeVarintTx(dAtA, i, uint64(j37))
+		i -= j31
+		copy(dAtA[i:], dAtA32[:j31])
+		i = encodeVarintTx(dAtA, i, uint64(j31))
 		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x8a
+		dAtA[i] = 0x7a
 	}
 	if len(m.MinStakeFraction) > 0 {
 		for iNdEx := len(m.MinStakeFraction) - 1; iNdEx >= 0; iNdEx-- {
@@ -3857,9 +3152,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x82
+			dAtA[i] = 0x72
 		}
 	}
 	if len(m.MaxGradientThreshold) > 0 {
@@ -3873,7 +3166,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x7a
+			dAtA[i] = 0x6a
 		}
 	}
 	if len(m.LearningRate) > 0 {
@@ -3887,7 +3180,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x72
+			dAtA[i] = 0x62
 		}
 	}
 	if len(m.BetaEntropy) > 0 {
@@ -3901,7 +3194,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x6a
+			dAtA[i] = 0x5a
 		}
 	}
 	if len(m.Sharpness) > 0 {
@@ -3915,84 +3208,65 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x62
+			dAtA[i] = 0x52
 		}
-	}
-	if len(m.MaxRequestCadence) > 0 {
-		dAtA40 := make([]byte, len(m.MaxRequestCadence)*10)
-		var j39 int
-		for _, num1 := range m.MaxRequestCadence {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA40[j39] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j39++
-			}
-			dAtA40[j39] = uint8(num)
-			j39++
-		}
-		i -= j39
-		copy(dAtA[i:], dAtA40[:j39])
-		i = encodeVarintTx(dAtA, i, uint64(j39))
-		i--
-		dAtA[i] = 0x5a
 	}
 	if len(m.MaxInferenceRequestValidity) > 0 {
-		dAtA42 := make([]byte, len(m.MaxInferenceRequestValidity)*10)
-		var j41 int
+		dAtA34 := make([]byte, len(m.MaxInferenceRequestValidity)*10)
+		var j33 int
 		for _, num1 := range m.MaxInferenceRequestValidity {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA42[j41] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j41++
+				j33++
 			}
-			dAtA42[j41] = uint8(num)
-			j41++
+			dAtA34[j33] = uint8(num)
+			j33++
 		}
-		i -= j41
-		copy(dAtA[i:], dAtA42[:j41])
-		i = encodeVarintTx(dAtA, i, uint64(j41))
-		i--
-		dAtA[i] = 0x52
-	}
-	if len(m.MinEpochLength) > 0 {
-		dAtA44 := make([]byte, len(m.MinEpochLength)*10)
-		var j43 int
-		for _, num1 := range m.MinEpochLength {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA44[j43] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j43++
-			}
-			dAtA44[j43] = uint8(num)
-			j43++
-		}
-		i -= j43
-		copy(dAtA[i:], dAtA44[:j43])
-		i = encodeVarintTx(dAtA, i, uint64(j43))
+		i -= j33
+		copy(dAtA[i:], dAtA34[:j33])
+		i = encodeVarintTx(dAtA, i, uint64(j33))
 		i--
 		dAtA[i] = 0x4a
 	}
+	if len(m.MinEpochLength) > 0 {
+		dAtA36 := make([]byte, len(m.MinEpochLength)*10)
+		var j35 int
+		for _, num1 := range m.MinEpochLength {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA36[j35] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j35++
+			}
+			dAtA36[j35] = uint8(num)
+			j35++
+		}
+		i -= j35
+		copy(dAtA[i:], dAtA36[:j35])
+		i = encodeVarintTx(dAtA, i, uint64(j35))
+		i--
+		dAtA[i] = 0x42
+	}
 	if len(m.RemoveStakeDelayWindow) > 0 {
-		dAtA46 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
-		var j45 int
+		dAtA38 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
+		var j37 int
 		for _, num1 := range m.RemoveStakeDelayWindow {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA46[j45] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA38[j37] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j45++
+				j37++
 			}
-			dAtA46[j45] = uint8(num)
-			j45++
+			dAtA38[j37] = uint8(num)
+			j37++
 		}
-		i -= j45
-		copy(dAtA[i:], dAtA46[:j45])
-		i = encodeVarintTx(dAtA, i, uint64(j45))
+		i -= j37
+		copy(dAtA[i:], dAtA38[:j37])
+		i = encodeVarintTx(dAtA, i, uint64(j37))
 		i--
-		dAtA[i] = 0x42
+		dAtA[i] = 0x3a
 	}
 	if len(m.RequiredMinimumStake) > 0 {
 		for iNdEx := len(m.RequiredMinimumStake) - 1; iNdEx >= 0; iNdEx-- {
@@ -4005,7 +3279,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x3a
+			dAtA[i] = 0x32
 		}
 	}
 	if len(m.MaxMissingInferencePercent) > 0 {
@@ -4019,47 +3293,33 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if len(m.MinRequestUnmetDemand) > 0 {
-		for iNdEx := len(m.MinRequestUnmetDemand) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.MinRequestUnmetDemand[iNdEx].Size()
-				i -= size
-				if _, err := m.MinRequestUnmetDemand[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
 			dAtA[i] = 0x2a
 		}
 	}
 	if len(m.MaxTopicsPerBlock) > 0 {
-		dAtA48 := make([]byte, len(m.MaxTopicsPerBlock)*10)
-		var j47 int
+		dAtA40 := make([]byte, len(m.MaxTopicsPerBlock)*10)
+		var j39 int
 		for _, num := range m.MaxTopicsPerBlock {
 			for num >= 1<<7 {
-				dAtA48[j47] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA40[j39] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j47++
+				j39++
 			}
-			dAtA48[j47] = uint8(num)
-			j47++
+			dAtA40[j39] = uint8(num)
+			j39++
 		}
-		i -= j47
-		copy(dAtA[i:], dAtA48[:j47])
-		i = encodeVarintTx(dAtA, i, uint64(j47))
+		i -= j39
+		copy(dAtA[i:], dAtA40[:j39])
+		i = encodeVarintTx(dAtA, i, uint64(j39))
 		i--
 		dAtA[i] = 0x22
 	}
-	if len(m.MinTopicUnmetDemand) > 0 {
-		for iNdEx := len(m.MinTopicUnmetDemand) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.MinTopicWeight) > 0 {
+		for iNdEx := len(m.MinTopicWeight) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size := m.MinTopicUnmetDemand[iNdEx].Size()
+				size := m.MinTopicWeight[iNdEx].Size()
 				i -= size
-				if _, err := m.MinTopicUnmetDemand[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+				if _, err := m.MinTopicWeight[iNdEx].MarshalTo(dAtA[i:]); err != nil {
 					return 0, err
 				}
 				i = encodeVarintTx(dAtA, i, uint64(size))
@@ -4069,21 +3329,21 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.RewardCadence) > 0 {
-		dAtA50 := make([]byte, len(m.RewardCadence)*10)
-		var j49 int
+		dAtA42 := make([]byte, len(m.RewardCadence)*10)
+		var j41 int
 		for _, num1 := range m.RewardCadence {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA50[j49] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA42[j41] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j49++
+				j41++
 			}
-			dAtA50[j49] = uint8(num)
-			j49++
+			dAtA42[j41] = uint8(num)
+			j41++
 		}
-		i -= j49
-		copy(dAtA[i:], dAtA50[:j49])
-		i = encodeVarintTx(dAtA, i, uint64(j49))
+		i -= j41
+		copy(dAtA[i:], dAtA42[:j41])
+		i = encodeVarintTx(dAtA, i, uint64(j41))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -5097,7 +4357,7 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) MarshalToSizedBuffer(dAtA []byte
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgRequestInference) Marshal() (dAtA []byte, err error) {
+func (m *MsgFundTopic) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -5107,27 +4367,37 @@ func (m *MsgRequestInference) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgRequestInference) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgFundTopic) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgRequestInference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgFundTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Request != nil {
-		{
-			size, err := m.Request.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
+	if len(m.ExtraData) > 0 {
+		i -= len(m.ExtraData)
+		copy(dAtA[i:], m.ExtraData)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ExtraData)))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x22
+	}
+	{
+		size := m.Amount.Size()
+		i -= size
+		if _, err := m.Amount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if m.TopicId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
 	}
 	if len(m.Sender) > 0 {
 		i -= len(m.Sender)
@@ -5139,7 +4409,7 @@ func (m *MsgRequestInference) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *InferenceRequestInbound) Marshal() (dAtA []byte, err error) {
+func (m *MsgFundTopicResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -5149,93 +4419,16 @@ func (m *InferenceRequestInbound) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *InferenceRequestInbound) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgFundTopicResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *InferenceRequestInbound) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgFundTopicResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.ExtraData) > 0 {
-		i -= len(m.ExtraData)
-		copy(dAtA[i:], m.ExtraData)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ExtraData)))
-		i--
-		dAtA[i] = 0x3a
-	}
-	if m.BlockValidUntil != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.BlockValidUntil))
-		i--
-		dAtA[i] = 0x30
-	}
-	{
-		size := m.BidAmount.Size()
-		i -= size
-		if _, err := m.BidAmount.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x2a
-	{
-		size := m.MaxPricePerInference.Size()
-		i -= size
-		if _, err := m.MaxPricePerInference.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x22
-	if m.Cadence != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.Cadence))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.TopicId != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.TopicId))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Nonce != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.Nonce))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRequestInferenceResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRequestInferenceResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRequestInferenceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.RequestId) > 0 {
-		i -= len(m.RequestId)
-		copy(dAtA[i:], m.RequestId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.RequestId)))
-		i--
-		dAtA[i] = 0xa
-	}
 	return len(dAtA) - i, nil
 }
 
@@ -5359,246 +4552,6 @@ func (m *MsgRemoveFromWhitelistAdminResponse) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgAddToTopicCreationWhitelist) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddToTopicCreationWhitelist) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddToTopicCreationWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgAddToTopicCreationWhitelistResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddToTopicCreationWhitelistResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddToTopicCreationWhitelistResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgAddToReputerWhitelist) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddToReputerWhitelist) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddToReputerWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgAddToReputerWhitelistResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddToReputerWhitelistResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddToReputerWhitelistResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRemoveFromReputerWhitelist) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRemoveFromReputerWhitelist) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRemoveFromReputerWhitelist) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Sender) > 0 {
-		i -= len(m.Sender)
-		copy(dAtA[i:], m.Sender)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgRemoveFromReputerWhitelistResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgRemoveFromReputerWhitelistResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgRemoveFromReputerWhitelistResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -5629,8 +4582,8 @@ func (m *OptionalParams) Size() (n int) {
 		}
 		n += 1 + sovTx(uint64(l)) + l
 	}
-	if len(m.MinTopicUnmetDemand) > 0 {
-		for _, e := range m.MinTopicUnmetDemand {
+	if len(m.MinTopicWeight) > 0 {
+		for _, e := range m.MinTopicWeight {
 			l = e.Size()
 			n += 1 + l + sovTx(uint64(l))
 		}
@@ -5641,12 +4594,6 @@ func (m *OptionalParams) Size() (n int) {
 			l += sovTx(uint64(e))
 		}
 		n += 1 + sovTx(uint64(l)) + l
-	}
-	if len(m.MinRequestUnmetDemand) > 0 {
-		for _, e := range m.MinRequestUnmetDemand {
-			l = e.Size()
-			n += 1 + l + sovTx(uint64(l))
-		}
 	}
 	if len(m.MaxMissingInferencePercent) > 0 {
 		for _, e := range m.MaxMissingInferencePercent {
@@ -5681,13 +4628,6 @@ func (m *OptionalParams) Size() (n int) {
 		}
 		n += 1 + sovTx(uint64(l)) + l
 	}
-	if len(m.MaxRequestCadence) > 0 {
-		l = 0
-		for _, e := range m.MaxRequestCadence {
-			l += sovTx(uint64(e))
-		}
-		n += 1 + sovTx(uint64(l)) + l
-	}
 	if len(m.Sharpness) > 0 {
 		for _, e := range m.Sharpness {
 			l = e.Size()
@@ -5715,7 +4655,7 @@ func (m *OptionalParams) Size() (n int) {
 	if len(m.MinStakeFraction) > 0 {
 		for _, e := range m.MinStakeFraction {
 			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
+			n += 1 + l + sovTx(uint64(l))
 		}
 	}
 	if len(m.MaxWorkersPerTopicRequest) > 0 {
@@ -5723,7 +4663,7 @@ func (m *OptionalParams) Size() (n int) {
 		for _, e := range m.MaxWorkersPerTopicRequest {
 			l += sovTx(uint64(e))
 		}
-		n += 2 + sovTx(uint64(l)) + l
+		n += 1 + sovTx(uint64(l)) + l
 	}
 	if len(m.MaxReputersPerTopicRequest) > 0 {
 		l = 0
@@ -5766,20 +4706,6 @@ func (m *OptionalParams) Size() (n int) {
 	if len(m.MaxUnfulfilledReputerRequests) > 0 {
 		l = 0
 		for _, e := range m.MaxUnfulfilledReputerRequests {
-			l += sovTx(uint64(e))
-		}
-		n += 2 + sovTx(uint64(l)) + l
-	}
-	if len(m.NumberExpectedInferenceSybils) > 0 {
-		l = 0
-		for _, e := range m.NumberExpectedInferenceSybils {
-			l += sovTx(uint64(e))
-		}
-		n += 2 + sovTx(uint64(l)) + l
-	}
-	if len(m.SybilTaxExponent) > 0 {
-		l = 0
-		for _, e := range m.SybilTaxExponent {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
@@ -5907,13 +4833,6 @@ func (m *OptionalParams) Size() (n int) {
 			l = e.Size()
 			n += 2 + l + sovTx(uint64(l))
 		}
-	}
-	if len(m.MaxRequestsPerTopic) > 0 {
-		l = 0
-		for _, e := range m.MaxRequestsPerTopic {
-			l += sovTx(uint64(e))
-		}
-		n += 2 + sovTx(uint64(l)) + l
 	}
 	if len(m.DefaultLimit) > 0 {
 		l = 0
@@ -6348,7 +5267,7 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgRequestInference) Size() (n int) {
+func (m *MsgFundTopic) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -6358,35 +5277,11 @@ func (m *MsgRequestInference) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.Request != nil {
-		l = m.Request.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *InferenceRequestInbound) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Nonce != 0 {
-		n += 1 + sovTx(uint64(m.Nonce))
-	}
 	if m.TopicId != 0 {
 		n += 1 + sovTx(uint64(m.TopicId))
 	}
-	if m.Cadence != 0 {
-		n += 1 + sovTx(uint64(m.Cadence))
-	}
-	l = m.MaxPricePerInference.Size()
+	l = m.Amount.Size()
 	n += 1 + l + sovTx(uint64(l))
-	l = m.BidAmount.Size()
-	n += 1 + l + sovTx(uint64(l))
-	if m.BlockValidUntil != 0 {
-		n += 1 + sovTx(uint64(m.BlockValidUntil))
-	}
 	l = len(m.ExtraData)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
@@ -6394,16 +5289,12 @@ func (m *InferenceRequestInbound) Size() (n int) {
 	return n
 }
 
-func (m *MsgRequestInferenceResponse) Size() (n int) {
+func (m *MsgFundTopicResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.RequestId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
 	return n
 }
 
@@ -6451,110 +5342,6 @@ func (m *MsgRemoveFromWhitelistAdmin) Size() (n int) {
 }
 
 func (m *MsgRemoveFromWhitelistAdminResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgAddToTopicCreationWhitelist) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgAddToTopicCreationWhitelistResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelist) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgAddToReputerWhitelist) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgAddToReputerWhitelistResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgRemoveFromReputerWhitelist) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Sender)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgRemoveFromReputerWhitelistResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -6708,7 +5495,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			}
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MinTopicUnmetDemand", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MinTopicWeight", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -6736,9 +5523,9 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v cosmossdk_io_math.Uint
-			m.MinTopicUnmetDemand = append(m.MinTopicUnmetDemand, v)
-			if err := m.MinTopicUnmetDemand[len(m.MinTopicUnmetDemand)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.MinTopicWeight = append(m.MinTopicWeight, v)
+			if err := m.MinTopicWeight[len(m.MinTopicWeight)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -6820,42 +5607,6 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			}
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MinRequestUnmetDemand", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v cosmossdk_io_math.Uint
-			m.MinRequestUnmetDemand = append(m.MinRequestUnmetDemand, v)
-			if err := m.MinRequestUnmetDemand[len(m.MinRequestUnmetDemand)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxMissingInferencePercent", wireType)
 			}
 			var stringLen uint64
@@ -6890,7 +5641,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 7:
+		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RequiredMinimumStake", wireType)
 			}
@@ -6926,7 +5677,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 8:
+		case 7:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7002,7 +5753,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field RemoveStakeDelayWindow", wireType)
 			}
-		case 9:
+		case 8:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7078,7 +5829,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinEpochLength", wireType)
 			}
-		case 10:
+		case 9:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7154,83 +5905,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxInferenceRequestValidity", wireType)
 			}
-		case 11:
-			if wireType == 0 {
-				var v int64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= int64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.MaxRequestCadence = append(m.MaxRequestCadence, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.MaxRequestCadence) == 0 {
-					m.MaxRequestCadence = make([]int64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v int64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= int64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.MaxRequestCadence = append(m.MaxRequestCadence, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxRequestCadence", wireType)
-			}
-		case 12:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Sharpness", wireType)
 			}
@@ -7266,7 +5941,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 13:
+		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BetaEntropy", wireType)
 			}
@@ -7302,7 +5977,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 14:
+		case 12:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LearningRate", wireType)
 			}
@@ -7338,7 +6013,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 15:
+		case 13:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxGradientThreshold", wireType)
 			}
@@ -7374,7 +6049,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 16:
+		case 14:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinStakeFraction", wireType)
 			}
@@ -7410,7 +6085,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 17:
+		case 15:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7486,7 +6161,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxWorkersPerTopicRequest", wireType)
 			}
-		case 18:
+		case 16:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7562,7 +6237,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxReputersPerTopicRequest", wireType)
 			}
-		case 19:
+		case 17:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Epsilon", wireType)
 			}
@@ -7598,7 +6273,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 20:
+		case 18:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PInferenceSynthesis", wireType)
 			}
@@ -7634,7 +6309,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 21:
+		case 19:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PRewardSpread", wireType)
 			}
@@ -7670,7 +6345,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 22:
+		case 20:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AlphaRegret", wireType)
 			}
@@ -7706,7 +6381,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 23:
+		case 21:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7782,7 +6457,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledWorkerRequests", wireType)
 			}
-		case 24:
+		case 22:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7858,159 +6533,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledReputerRequests", wireType)
 			}
-		case 25:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.NumberExpectedInferenceSybils = append(m.NumberExpectedInferenceSybils, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.NumberExpectedInferenceSybils) == 0 {
-					m.NumberExpectedInferenceSybils = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.NumberExpectedInferenceSybils = append(m.NumberExpectedInferenceSybils, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field NumberExpectedInferenceSybils", wireType)
-			}
-		case 26:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.SybilTaxExponent = append(m.SybilTaxExponent, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.SybilTaxExponent) == 0 {
-					m.SybilTaxExponent = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.SybilTaxExponent = append(m.SybilTaxExponent, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field SybilTaxExponent", wireType)
-			}
-		case 27:
+		case 23:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardStakeImportance", wireType)
 			}
@@ -8046,7 +6569,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 28:
+		case 24:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardFeeRevenueImportance", wireType)
 			}
@@ -8082,7 +6605,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 29:
+		case 25:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardAlpha", wireType)
 			}
@@ -8118,7 +6641,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 30:
+		case 26:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TaskRewardAlpha", wireType)
 			}
@@ -8154,7 +6677,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 31:
+		case 27:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorsVsAlloraPercentReward", wireType)
 			}
@@ -8190,7 +6713,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 32:
+		case 28:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8266,7 +6789,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxSamplesToScaleScores", wireType)
 			}
-		case 33:
+		case 29:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8342,7 +6865,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopWorkersToReward", wireType)
 			}
-		case 34:
+		case 30:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8418,7 +6941,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopReputersToReward", wireType)
 			}
-		case 35:
+		case 31:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CreateTopicFee", wireType)
 			}
@@ -8454,7 +6977,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 36:
+		case 32:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SigmoidA", wireType)
 			}
@@ -8490,7 +7013,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 37:
+		case 33:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SigmoidB", wireType)
 			}
@@ -8526,7 +7049,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 38:
+		case 34:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8602,7 +7125,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field GradientDescentMaxIters", wireType)
 			}
-		case 39:
+		case 35:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -8678,7 +7201,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxRetriesToFulfilNoncesWorker", wireType)
 			}
-		case 40:
+		case 36:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -8754,7 +7277,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxRetriesToFulfilNoncesReputer", wireType)
 			}
-		case 41:
+		case 37:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8830,7 +7353,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicPageLimit", wireType)
 			}
-		case 42:
+		case 38:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8906,7 +7429,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopicPages", wireType)
 			}
-		case 43:
+		case 39:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8982,7 +7505,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field RequestPageLimit", wireType)
 			}
-		case 44:
+		case 40:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -9058,7 +7581,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxRequestPages", wireType)
 			}
-		case 45:
+		case 41:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RegistrationFee", wireType)
 			}
@@ -9094,83 +7617,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 46:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.MaxRequestsPerTopic = append(m.MaxRequestsPerTopic, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.MaxRequestsPerTopic) == 0 {
-					m.MaxRequestsPerTopic = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.MaxRequestsPerTopic = append(m.MaxRequestsPerTopic, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxRequestsPerTopic", wireType)
-			}
-		case 47:
+		case 42:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -9246,7 +7693,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field DefaultLimit", wireType)
 			}
-		case 48:
+		case 43:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -12203,7 +10650,7 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgRequestInference) Unmarshal(dAtA []byte) error {
+func (m *MsgFundTopic) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -12226,10 +10673,10 @@ func (m *MsgRequestInference) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRequestInference: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgFundTopic: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRequestInference: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgFundTopic: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -12265,111 +10712,6 @@ func (m *MsgRequestInference) Unmarshal(dAtA []byte) error {
 			m.Sender = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Request", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Request == nil {
-				m.Request = &InferenceRequestInbound{}
-			}
-			if err := m.Request.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *InferenceRequestInbound) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: InferenceRequestInbound: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: InferenceRequestInbound: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
-			}
-			m.Nonce = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Nonce |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
 			}
@@ -12389,10 +10731,10 @@ func (m *InferenceRequestInbound) Unmarshal(dAtA []byte) error {
 				}
 			}
 		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Cadence", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
-			m.Cadence = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -12402,99 +10744,27 @@ func (m *InferenceRequestInbound) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Cadence |= int64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxPricePerInference", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.MaxPricePerInference.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BidAmount", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.BidAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockValidUntil", wireType)
-			}
-			m.BlockValidUntil = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockValidUntil |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ExtraData", wireType)
 			}
@@ -12549,7 +10819,7 @@ func (m *InferenceRequestInbound) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgRequestInferenceResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgFundTopicResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -12572,44 +10842,12 @@ func (m *MsgRequestInferenceResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRequestInferenceResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgFundTopicResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRequestInferenceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgFundTopicResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RequestId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RequestId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -12936,662 +11174,6 @@ func (m *MsgRemoveFromWhitelistAdminResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgRemoveFromWhitelistAdminResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddToTopicCreationWhitelist) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddToTopicCreationWhitelist: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddToTopicCreationWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddToTopicCreationWhitelistResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddToTopicCreationWhitelistResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddToTopicCreationWhitelistResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgRemoveFromTopicCreationWhitelist) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRemoveFromTopicCreationWhitelist: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRemoveFromTopicCreationWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgRemoveFromTopicCreationWhitelistResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRemoveFromTopicCreationWhitelistResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRemoveFromTopicCreationWhitelistResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddToReputerWhitelist) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddToReputerWhitelist: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddToReputerWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddToReputerWhitelistResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddToReputerWhitelistResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddToReputerWhitelistResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgRemoveFromReputerWhitelist) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRemoveFromReputerWhitelist: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRemoveFromReputerWhitelist: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Sender = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgRemoveFromReputerWhitelistResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgRemoveFromReputerWhitelistResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgRemoveFromReputerWhitelistResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

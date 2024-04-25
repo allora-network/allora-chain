@@ -134,8 +134,6 @@ func (s *RewardsTestSuite) SetupTest() {
 	// Add all tests addresses in whitelists
 	for _, addr := range s.addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 
@@ -185,22 +183,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Get Topic Id
 	topicId := res.TopicId
-
-	// Add demand for the topic
-	r := types.MsgRequestInference{
-		Sender: reputerAddrs[0].String(),
-		Request: &types.InferenceRequestInbound{
-			Nonce:                0,
-			TopicId:              topicId,
-			Cadence:              1,
-			MaxPricePerInference: cosmosMath.NewUint(100),
-			BidAmount:            cosmosMath.NewUint(100),
-			BlockValidUntil:      block + 10,
-			ExtraData:            []byte("Test"),
-		},
-	}
-	_, err = s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().NoError(err)
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
@@ -418,7 +400,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, topicTotalRewards, block, params)
+	firstTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	block += 1
@@ -533,7 +515,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, topicTotalRewards, block, params)
+	secondTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	// Check if the reward share increased

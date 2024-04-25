@@ -270,7 +270,7 @@ func GetRewardForInferenceTaskInTopic(
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	totalReward alloraMath.Dec, // E_i
+	totalReward *alloraMath.Dec, // E_i
 	a alloraMath.Dec, // global param used for chi χ
 	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
@@ -297,7 +297,7 @@ func GetRewardForInferenceTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := oneMinusChiGammaEntropyInference.Mul(totalReward)
+	numerator, err := oneMinusChiGammaEntropyInference.Mul(*totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -324,7 +324,7 @@ func GetRewardForForecastingTaskInTopic(
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	totalReward alloraMath.Dec, // E_i
+	totalReward *alloraMath.Dec, // E_i
 	sigmoidA alloraMath.Dec, // a used for sigmoid
 	sigmoidB alloraMath.Dec, // b used for sigmoid
 ) (alloraMath.Dec, error) {
@@ -347,7 +347,7 @@ func GetRewardForForecastingTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := chiGammaEntropyForecasting.Mul(totalReward)
+	numerator, err := chiGammaEntropyForecasting.Mul(*totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}

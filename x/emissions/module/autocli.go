@@ -150,11 +150,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLastRewardsUpdate",
-					Use:       "last-rewards-update",
-					Short:     "Get timestamp of the last rewards update",
-				},
-				{
 					RpcMethod: "IsWorkerRegisteredInTopicId",
 					Use:       "is-worker-registered [topic_id] [address]",
 					Short:     "True if worker is registered in the topic",

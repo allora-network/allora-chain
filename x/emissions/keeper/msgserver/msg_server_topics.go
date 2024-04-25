@@ -12,18 +12,10 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
-
 	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
-	}
-	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
-	if err != nil {
-		return nil, err
-	}
-	if !isTopicCreator {
-		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
 	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
