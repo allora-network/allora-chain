@@ -31,7 +31,6 @@ var (
 	ErrFundAmountTooLow                         = errors.Register(ModuleName, 26, "topic fund amount too low")
 	ErrIntegerUnderflowUnmetDemand              = errors.Register(ModuleName, 27, "integer underflow for unmet demand")
 	ErrNotWhitelistAdmin                        = errors.Register(ModuleName, 28, "not whitelist admin")
-	ErrNotInTopicCreationWhitelist              = errors.Register(ModuleName, 29, "not in topic creation whitelist")
 	ErrNotInReputerWhitelist                    = errors.Register(ModuleName, 30, "not in reputer whitelist")
 	ErrTopicNotEnoughDemand                     = errors.Register(ModuleName, 31, "topic not enough demand")
 	ErrIntegerUnderflowStakeFromDelegator       = errors.Register(ModuleName, 32, "integer underflow for stake from delegator")

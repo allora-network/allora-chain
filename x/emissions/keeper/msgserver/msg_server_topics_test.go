@@ -53,30 +53,6 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	require.True(found, "Added topic not found in active topics")
 }
 
-func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          nonAdminAccounts[0].String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
-	}
-
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
-}
-
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	ctx := s.ctx
 	require := s.Require()

@@ -38,6 +38,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 		reputerAddr,
 		mintAmount,
 	)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 }
