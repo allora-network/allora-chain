@@ -57,11 +57,6 @@ func InactivateTopicsAndUpdateSums(
 			continue
 		}
 
-		//
-		/// TODO Sort remaining active topics by weight desc and skimm the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-		/// If we do that though, we should be sure to return the revenue to those topics that didn't make the cut
-		//
-
 		weightsOfActiveTopics[topicId] = weight
 	}
 
@@ -129,9 +124,25 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		return errors.Wrapf(err, "failed to inactivate topics and update sums")
 	}
 
-	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfActiveTopics, sumWeight, totalRewardDec)
+	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
+	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
 	if err != nil {
-		return errors.Wrapf(err, "failed to calculate topic rewards")
+		return errors.Wrapf(err, "failed to get max topics per block")
+	}
+	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, block)
+
+	// Return the revenue to those topics that didn't make the cut
+	// Loop though weightsOfActiveTopics and if the topic is not in weightsOfTopActiveTopics, add to running revenue sum
+	sumRevenueOfBottomTopics := cosmosMath.ZeroInt()
+	for topicId := range weightsOfActiveTopics {
+		// If the topic is not in the top active topics, add its revenue to the running sum
+		if _, ok := weightsOfTopActiveTopics[topicId]; !ok {
+			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+			if err != nil {
+				return errors.Wrapf(err, "failed to get topic fee revenue")
+			}
+			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
+		}
 	}
 
 	// Send remaining collected inference request fees to the Ecosystem module account
@@ -141,10 +152,15 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		ctx,
 		types.AlloraRequestsAccountName,
 		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.BigInt().Int64()))))
+		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
 		return err
+	}
+
+	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfTopActiveTopics, sumWeight, totalRewardDec)
+	if err != nil {
+		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
 
 	moduleParams, err := k.GetParams(ctx)
