@@ -539,3 +539,162 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Check if the reward share increased
 	s.Require().True(secondTaskReputerReward.Gt(firstTaskReputerReward))
 }
+
+func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
+	block := int64(600)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Reputer Addresses
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Worker Addresses
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[5],
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+		s.addrs[9],
+	}
+
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Add demand for the topic
+	r := types.MsgRequestInference{
+		Sender: reputerAddrs[0].String(),
+		Request: &types.InferenceRequestInbound{
+			Nonce:                0,
+			TopicId:              topicId,
+			Cadence:              1,
+			MaxPricePerInference: cosmosMath.NewUint(100),
+			BidAmount:            cosmosMath.NewUint(100),
+			BlockValidUntil:      block + 10,
+			ExtraData:            []byte("Test"),
+		},
+	}
+	_, err = s.msgServer.RequestInference(s.ctx, &r)
+	s.Require().NoError(err)
+
+	// Register 5 workers
+	for _, addr := range workerAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Register 5 reputers
+	for _, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    true,
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
+
+	// Add Stake for reputers
+	var stakes = []cosmosMath.Uint{
+		cosmosMath.NewUint(1176644).Mul(cosmosOneE18),
+		cosmosMath.NewUint(384623).Mul(cosmosOneE18),
+		cosmosMath.NewUint(394676).Mul(cosmosOneE18),
+		cosmosMath.NewUint(207999).Mul(cosmosOneE18),
+		cosmosMath.NewUint(368582).Mul(cosmosOneE18),
+	}
+	for i, addr := range reputerAddrs {
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId,
+		})
+		s.Require().NoError(err)
+	}
+
+	// Insert unfullfiled nonces
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	block += 1
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Trigger end block - rewards distribution
+	err = s.appModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
+	// Check if the stake increased
+	for i, reputerAddress := range reputerAddrs {
+		stakeAmount, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddress)
+		s.Require().NoError(err)
+		s.Require().True(stakeAmount.GTE(stakes[i]))
+	}
+}
