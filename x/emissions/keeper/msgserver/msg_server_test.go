@@ -139,8 +139,6 @@ func (s *KeeperTestSuite) SetupTest() {
 	// Add all tests addresses in whitelists
 	for _, addr := range addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 

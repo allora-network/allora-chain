@@ -134,8 +134,6 @@ func (s *RewardsTestSuite) SetupTest() {
 	// Add all tests addresses in whitelists
 	for _, addr := range s.addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 
@@ -185,22 +183,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Get Topic Id
 	topicId := res.TopicId
-
-	// Add demand for the topic
-	r := types.MsgRequestInference{
-		Sender: reputerAddrs[0].String(),
-		Request: &types.InferenceRequestInbound{
-			Nonce:                0,
-			TopicId:              topicId,
-			Cadence:              1,
-			MaxPricePerInference: cosmosMath.NewUint(100),
-			BidAmount:            cosmosMath.NewUint(100),
-			BlockValidUntil:      block + 10,
-			ExtraData:            []byte("Test"),
-		},
-	}
-	_, err = s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().NoError(err)
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {

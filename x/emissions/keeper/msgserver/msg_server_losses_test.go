@@ -22,9 +22,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
-	s.emissionsKeeper.AddToReputerWhitelist(ctx, reputerAddr)
-
 	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
 	require.NoError(err)
 
