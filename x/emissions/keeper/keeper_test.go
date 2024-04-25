@@ -756,27 +756,6 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestGetParamsStakeAndFeeRevenueImportance() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedStakeImportance := alloraMath.NewDecFromInt64(2) // Example value
-	expectedFeeImportance := alloraMath.NewDecFromInt64(3)   // Example value
-
-	// Set the parameter
-	params := types.Params{
-		TopicRewardStakeImportance:      expectedStakeImportance,
-		TopicRewardFeeRevenueImportance: expectedFeeImportance,
-	}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualStakeImportance, actualFeeImportance, err := keeper.GetParamsStakeAndFeeRevenueImportance(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedStakeImportance, actualStakeImportance)
-	s.Require().Equal(expectedFeeImportance, actualFeeImportance)
-}
-
 func (s *KeeperTestSuite) TestGetParamsTopicRewardAlpha() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

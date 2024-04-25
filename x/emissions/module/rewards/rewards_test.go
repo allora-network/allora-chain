@@ -400,7 +400,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, topicTotalRewards, block, params)
+	firstTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	block += 1
@@ -515,7 +515,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, topicTotalRewards, block, params)
+	secondTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	// Check if the reward share increased
