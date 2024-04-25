@@ -695,6 +695,6 @@ func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
 	for i, reputerAddress := range reputerAddrs {
 		stakeAmount, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddress)
 		s.Require().NoError(err)
-		s.Require().True(stakeAmount.GTE(stakes[i]))
+		s.Require().True(stakeAmount.GT(stakes[i]))
 	}
 }
