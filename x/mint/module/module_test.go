@@ -1,6 +1,7 @@
 package mint_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -40,16 +41,18 @@ const (
 type MintModuleTestSuite struct {
 	suite.Suite
 
-	ctx           sdk.Context
-	accountKeeper types.AccountKeeper
-	stakingKeeper types.StakingKeeper
-	bankKeeper    types.BankKeeper
-	appModule     mint.AppModule
-	mintKeeper    keeper.Keeper
+	ctx             sdk.Context
+	accountKeeper   types.AccountKeeper
+	stakingKeeper   types.StakingKeeper
+	bankKeeper      types.BankKeeper
+	appModule       mint.AppModule
+	emissionsKeeper emissionskeeper.Keeper
+	mintKeeper      keeper.Keeper
 }
 
 // SetupTest setups a new test, to be run before each test case
 func (s *MintModuleTestSuite) SetupTest() {
+	sdk.DefaultBondDenom = params.DefaultBondDenom
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
@@ -119,6 +122,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
 	s.stakingKeeper = stakingKeeper
+	s.emissionsKeeper = emissionsKeeper
 	s.mintKeeper = mintKeeper
 
 	appModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
@@ -133,4 +137,24 @@ func TestMintModuleTestSuite(t *testing.T) {
 
 func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
 	//todo add a test here
+}
+
+func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
+	params, err := s.mintKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	s.Require().NoError(err)
+
+	totalStake, err := s.emissionsKeeper.GetTotalStake(s.ctx)
+	s.Require().NoError(err)
+	fmt.Println("total stake ", totalStake)
+
+	_, emissionPerUnitStakedToken, err := mint.GetEmissionPerTimestep(
+		s.ctx,
+		s.mintKeeper,
+		params,
+		ecosystemMintSupplyRemaining,
+	)
+	s.Require().NoError(err)
+	fmt.Println("e_i ", emissionPerUnitStakedToken)
 }
