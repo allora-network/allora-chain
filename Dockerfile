@@ -9,7 +9,7 @@ RUN make install
 
 #==============================================================
 
-FROM debian:bookworm-slim as execution
+FROM debian:12.5-slim as execution
 
 ENV DEBIAN_FRONTEND=noninteractive \
     USERNAME=appuser \
