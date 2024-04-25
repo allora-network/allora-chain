@@ -20,9 +20,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight)
-	// the following code does NOT halt the chain in case of an error in rewards payments
-	// if an error occurs and rewards payments are not made, globally they will still accumulate
-	// and we can retroactively pay them out
 	if err != nil {
 		fmt.Println("Error calculating global emission per topic: ", err)
 		panic(err)
