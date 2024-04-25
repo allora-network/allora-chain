@@ -14,11 +14,86 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
-	//
-	/// Here, flush inactivation keyset
-	//
+func InactivateTopicsAndUpdateSums(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	weights map[uint64]*alloraMath.Dec,
+	sumWeight alloraMath.Dec,
+	sumRevenue cosmosMath.Int,
+	totalReward alloraMath.Dec,
+) (
+	map[uint64]*alloraMath.Dec,
+	alloraMath.Dec,
+	cosmosMath.Int,
+	error,
+) {
 
+	minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
+	if err != nil {
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get min topic weight")
+	}
+
+	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
+	for topicId, weight := range weights {
+		// In activate and skip the topic if its weight is below the globally-set minimum
+		if weight.IsZero() || weight.Lt(minTopicWeight) {
+			err = k.InactivateTopic(ctx, topicId)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+			}
+
+			// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
+			// i.e. we'll neither emit their worker/reputer requests or calculate rewards for its participants this epoch
+			sumWeight, err = sumWeight.Sub(*weight)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to subtract weight from sum")
+			}
+			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
+			}
+			sumRevenue = sumRevenue.Sub(topicFeeRevenue.Revenue)
+
+			continue
+		}
+
+		//
+		/// TODO Sort remaining active topics by weight desc and skimm the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
+		/// If we do that though, we should be sure to return the revenue to those topics that didn't make the cut
+		//
+
+		weightsOfActiveTopics[topicId] = weight
+	}
+
+	return weightsOfActiveTopics, sumWeight, sumRevenue, nil
+}
+
+func CalcTopicRewards(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	weights map[uint64]*alloraMath.Dec,
+	sumWeight alloraMath.Dec,
+	totalReward alloraMath.Dec,
+) (
+	map[uint64]*alloraMath.Dec,
+	error,
+) {
+	topicRewards := make(map[TopicId]*alloraMath.Dec)
+	for topicId, weight := range weights {
+		topicRewardFraction, err := GetTopicRewardFraction(weight, sumWeight)
+		if err != nil {
+			return nil, errors.Wrapf(err, "topic reward fraction error")
+		}
+		topicReward, err := GetTopicReward(topicRewardFraction, totalReward)
+		if err != nil {
+			return nil, errors.Wrapf(err, "topic reward error")
+		}
+		topicRewards[topicId] = &topicReward
+	}
+	return topicRewards, nil
+}
+
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 
@@ -33,7 +108,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	}
 
 	// Get Distribution of Rewards per Topic
-	weights, sumWeight, sumRevenue, numRewardReeadyTopics, err := GetRewardReadyTopicWeights(ctx, k, block)
+	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, block)
 	if err != nil {
 		return errors.Wrapf(err, "weights error")
 	}
@@ -42,7 +117,24 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		return nil
 	}
 
-	// Send collected inference request fees to the Ecosystem module account
+	weightsOfActiveTopics, sumWeight, sumRevenue, err := InactivateTopicsAndUpdateSums(
+		ctx,
+		k,
+		weights,
+		sumWeight,
+		sumRevenue,
+		totalRewardDec,
+	)
+	if err != nil {
+		return errors.Wrapf(err, "failed to inactivate topics and update sums")
+	}
+
+	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfActiveTopics, sumWeight, totalRewardDec)
+	if err != nil {
+		return errors.Wrapf(err, "failed to calculate topic rewards")
+	}
+
+	// Send remaining collected inference request fees to the Ecosystem module account
 	// They will be paid out to reputers, workers, and cosmos validators
 	// according to the formulas in the beginblock of the mint module
 	err = k.BankKeeper().SendCoinsFromModuleToModule(
@@ -53,38 +145,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	if err != nil {
 		fmt.Println("Error sending coins from module to module: ", err)
 		return err
-	}
-
-	// minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to get min topic weight")
-	// }
-
-	topicRewards := make(map[TopicId]alloraMath.Dec, numRewardReeadyTopics)
-	for topicId, weight := range weights {
-		// Consider sorting by weight desc and skimming the top here per SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-		// If we do that though, we should be sure to return the revenue to those topics that didn't make the cut
-
-		// //
-		// /// TODO add to inactivation keyset (pop before EmitRewards called, or at onset of it)
-		// //
-		// inactivated, err := InactivateTopicIfWeightBelowMin(ctx, k, minTopicWeight, topicId, weight)
-		// if err != nil {
-		// 	return errors.Wrapf(err, "failed to decrement topic unmet demand and inactivate")
-		// }
-		// if inactivated {
-		// 	continue
-		// }
-
-		topicRewardFraction, err := GetTopicRewardFraction(weight, sumWeight)
-		if err != nil {
-			return errors.Wrapf(err, "reward fraction error")
-		}
-		topicReward, err := GetTopicReward(topicRewardFraction, totalRewardDec)
-		if err != nil {
-			return errors.Wrapf(err, "reward error")
-		}
-		topicRewards[topicId] = topicReward
 	}
 
 	moduleParams, err := k.GetParams(ctx)
@@ -175,7 +235,7 @@ func GenerateTasksRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
-	topicRewards alloraMath.Dec,
+	topicReward *alloraMath.Dec,
 	block int64,
 	moduleParams types.Params,
 ) (
@@ -240,7 +300,7 @@ func GenerateTasksRewards(
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
-		topicRewards,
+		topicReward,
 	)
 	if err != nil {
 		return alloraMath.Dec{},
@@ -254,7 +314,7 @@ func GenerateTasksRewards(
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
-		topicRewards,
+		topicReward,
 		moduleParams.SigmoidA,
 		moduleParams.SigmoidB,
 	)
@@ -270,7 +330,7 @@ func GenerateTasksRewards(
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
-		topicRewards,
+		topicReward,
 		moduleParams.SigmoidA,
 		moduleParams.SigmoidB,
 	)

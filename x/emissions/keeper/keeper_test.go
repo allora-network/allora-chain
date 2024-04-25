@@ -2143,7 +2143,7 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().Equal(uint64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
-	initialRevenue := cosmosMath.NewUint(100)
+	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
 	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
 
@@ -2159,7 +2159,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	topicId := uint64(1)
 
 	// Add initial revenue in the first epoch
-	initialAmount := cosmosMath.NewUint(100)
+	initialAmount := cosmosMath.NewInt(100)
 	err := keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
@@ -2172,7 +2172,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	//s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
 
 	// Add more revenue in the new epoch
-	additionalAmount := cosmosMath.NewUint(200)
+	additionalAmount := cosmosMath.NewInt(200)
 	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
 

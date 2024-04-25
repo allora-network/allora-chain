@@ -44,35 +44,6 @@ func GetTopicRewardFraction(
 	return (*topicWeight).Quo(totalWeight)
 }
 
-// Return the target weight of a topic
-// ^w_{t,i} = S^{μ}_{t,i} * (P/C)^{ν}_{t,i}
-// where S_{t,i} is the stake of of topic t in the last reward epoch i
-// and (P/C)_{t,i} is the fee revenue collected for performing inference per topic epoch
-// requests for topic t in the last reward epoch i
-// μ, ν are global constants with fiduciary values of 0.5 and 0.5
-func GetTargetWeight(
-	topicStake alloraMath.Dec,
-	topicEpochLength int64,
-	topicFeeRevenue alloraMath.Dec,
-	stakeImportance alloraMath.Dec,
-	feeImportance alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	s, err := alloraMath.Pow(topicStake, stakeImportance)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	c := alloraMath.NewDecFromInt64(topicEpochLength)
-	feePerEpoch, err := topicFeeRevenue.Quo(c)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	p, err := alloraMath.Pow(feePerEpoch, feeImportance)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return s.Mul(p)
-}
-
 // "Reward-ready topic" is active, has an epoch that ended, has a reputer nonce in need of reward
 // "Safe" because bounded by max number of pages and apply running, online operations
 func SafeApplyFuncOnAllRewardReadyTopics(
@@ -135,6 +106,7 @@ func SafeApplyFuncOnAllRewardReadyTopics(
 
 // Iterates through every reward-ready topic, computes its target weight, then exponential moving average to get weight.
 // Returns the total sum of weight, topic revenue, map of all of the weights by topic.
+// Note that the outputted weights are not normalized => not dependent on pan-topic data.
 func GetRewardReadyTopicWeights(
 	ctx context.Context,
 	k keeper.Keeper,
@@ -142,66 +114,37 @@ func GetRewardReadyTopicWeights(
 ) (
 	weights map[TopicId]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
-	totalRevenue cosmosMath.Uint,
-	numRewardReadyTopics uint32, err error,
+	totalRevenue cosmosMath.Int,
+	err error,
 ) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Uint{}, uint32(0), errors.Wrapf(err, "failed to get alpha")
-	}
-	stakeImportance, feeImportance, err := k.GetParamsStakeAndFeeRevenueImportance(ctx)
-	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Uint{}, uint32(0), errors.Wrapf(err, "failed to get stake and fee revenue importance")
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
 
-	totalRevenue = cosmosMath.ZeroUint()
+	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
-	numRewardReadyTopics = uint32(0)
 	// for i, topic := range activeTopics {
 	fn := func(ctx context.Context, topic *types.Topic) error {
-		topicStake, err := k.GetTopicStake(ctx, topic.Id)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get topic stake")
-		}
-		topicStakeDec, err := alloraMath.NewDecFromSdkUint(topicStake)
-		if err != nil {
-			return errors.Wrapf(err, "failed to convert topic stake to dec")
-		}
-
-		// Get and total topic fee revenue
-		topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topic.Id)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get topic fee revenue")
-		}
-		topicFeeRevenueUint := cosmosMath.Uint(topicFeeRevenue.Revenue)
-		totalRevenue = totalRevenue.Add(topicFeeRevenueUint)
-
-		// Calc target weight using fees, epoch length, stake, and params
-		feeRevenue, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
-		if err != nil {
-			return errors.Wrapf(err, "failed to convert topic fee revenue to dec")
-		}
-		targetWeight, err := GetTargetWeight(
-			topicStakeDec,
+		// Calc weight and related data per topic
+		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
+			ctx,
+			topic.Id,
 			topic.EpochLength,
-			feeRevenue,
-			stakeImportance,
-			feeImportance,
+			params.TopicRewardAlpha,
+			params.TopicRewardStakeImportance,
+			params.TopicRewardFeeRevenueImportance,
+			cosmosMath.ZeroInt(),
 		)
 		if err != nil {
-			return errors.Wrapf(err, "failed to get target weight")
+			return errors.Wrapf(err, "failed to get current topic weight")
 		}
 
-		// Take EMA of target weight with previous weight
-		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topic.Id)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get previous topic weight")
-		}
-		weight, err := alloraMath.CalcEma(params.TopicRewardAlpha, targetWeight, previousTopicWeight, noPrior)
-		if err != nil {
-			return errors.Wrapf(err, "failed to calculate EMA")
-		}
+		// Update revenue data
+		totalRevenue = totalRevenue.Add(topicFeeRevenue)
+
+		// Update weight data
 		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
 		if err != nil {
 			return errors.Wrapf(err, "failed to set previous topic weight")
@@ -211,14 +154,13 @@ func GetRewardReadyTopicWeights(
 		if err != nil {
 			return errors.Wrapf(err, "failed to add weight to sum")
 		}
-		numRewardReadyTopics++
 		return nil
 	}
 
 	err = SafeApplyFuncOnAllRewardReadyTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Uint{}, uint32(0), errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
 	}
 
-	return weights, sumWeight, totalRevenue, numRewardReadyTopics, nil
+	return weights, sumWeight, totalRevenue, nil
 }

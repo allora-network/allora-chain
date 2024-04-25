@@ -312,8 +312,8 @@ message MsgFundTopic {
   string sender = 1;
   uint64 topic_id = 2;
   string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                     // how many funds to send from alice with this Inference Request

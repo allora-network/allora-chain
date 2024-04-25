@@ -597,14 +597,6 @@ func (k *Keeper) GetParamsGradientDescentMaxIters(ctx context.Context) (uint64, 
 	return params.GradientDescentMaxIters, nil
 }
 
-func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
-	}
-	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
-}
-
 func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -1599,7 +1591,7 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types
 }
 
 // Add to the fee revenue collected by a topic for this reward epoch
-func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Uint) error {
+func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Int) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err

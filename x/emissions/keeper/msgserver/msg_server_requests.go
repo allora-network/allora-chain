@@ -3,8 +3,10 @@ package msgserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
+	appParams "github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -24,8 +26,8 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	if err != nil {
 		return nil, err
 	}
-	cosmosMathEpsilon := cosmosMath.NewUintFromString(epsilon.String())
-	if msg.Amount.LT(cosmosMathEpsilon) {
+	amountDec := alloraMath.NewDecFromInt64(msg.Amount.Int64())
+	if amountDec.Lte(epsilon) {
 		return nil, types.ErrFundAmountTooLow
 	}
 	// Check sender has funds to pay for the inference request
@@ -36,7 +38,7 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 		return nil, err
 	}
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(appParams.DefaultBondDenom, amountInt))
 	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraRequestsAccountName, coins)
 	if err != nil {
 		return nil, err
@@ -48,23 +50,40 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 		return nil, err
 	}
 
-	// // Activate topic if it exhibits minimum unmet demand
-	// isActivated, err := ms.k.IsTopicActive(ctx, msg.TopicId)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if !isActivated {
-	// 	minTopicUnmentDemand, err := ms.k.GetParamsMinTopicWeight(ctx)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	minTopicUnmetDemandUint := cosmosMath.NewUintFromString(minTopicUnmentDemand.String())
-	// 	if newTopicUnmetDemand.GTE(minTopicUnmetDemandUint) {
-	// 		err = ms.k.ActivateTopic(ctx, msg.TopicId)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 	}
-	// }
+	// Activate topic if it exhibits minimum weight
+	isActivated, err := ms.k.IsTopicActive(ctx, msg.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting topic activation status")
+	}
+	if !isActivated {
+		params, err := ms.k.GetParams(ctx)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error getting params")
+		}
+		topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error getting topic")
+		}
+
+		newTopicWeight, _, err := ms.k.GetCurrentTopicWeight(
+			ctx,
+			msg.TopicId,
+			topic.EpochLength,
+			params.TopicRewardAlpha,
+			params.TopicRewardStakeImportance,
+			params.TopicRewardFeeRevenueImportance,
+			msg.Amount,
+		)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error getting current topic weight")
+		}
+
+		if newTopicWeight.Gte(params.MinTopicWeight) {
+			err = ms.k.ActivateTopic(ctx, msg.TopicId)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	return &types.MsgFundTopicResponse{}, nil
 }
