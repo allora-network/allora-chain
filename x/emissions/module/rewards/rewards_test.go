@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	stdlog "log"
 	"testing"
 	"time"
 
@@ -522,7 +523,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.Require().True(secondTaskReputerReward.Gt(firstTaskReputerReward))
 }
 
-func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
+func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -564,22 +565,6 @@ func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
 
 	// Get Topic Id
 	topicId := res.TopicId
-
-	// Add demand for the topic
-	r := types.MsgRequestInference{
-		Sender: reputerAddrs[0].String(),
-		Request: &types.InferenceRequestInbound{
-			Nonce:                0,
-			TopicId:              topicId,
-			Cadence:              1,
-			MaxPricePerInference: cosmosMath.NewUint(100),
-			BidAmount:            cosmosMath.NewUint(100),
-			BlockValidUntil:      block + 10,
-			ExtraData:            []byte("Test"),
-		},
-	}
-	_, err = s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().NoError(err)
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
@@ -639,6 +624,18 @@ func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
 	})
 	s.Require().NoError(err)
 
+	reputerBalances := make([]sdk.Coin, 5)
+	for i, addr := range reputerAddrs {
+		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
+		stdlog.Printf("Reputer %s balance: %s", addr.String(), reputerBalances[i].String())
+	}
+
+	workerBalances := make([]sdk.Coin, 5)
+	for i, addr := range workerAddrs {
+		workerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
+		stdlog.Printf("Worker %s balance: %s", addr.String(), workerBalances[i].String())
+	}
+
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
@@ -673,10 +670,13 @@ func (s *RewardsTestSuite) TestRewardsIncreaseStake() {
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
-	// Check if the stake increased
-	for i, reputerAddress := range reputerAddrs {
-		stakeAmount, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, reputerAddress)
-		s.Require().NoError(err)
-		s.Require().True(stakeAmount.GT(stakes[i]))
+	for _, addr := range reputerAddrs {
+		stdlog.Printf("Reputer %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
+		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(reputerBalances[i].Amount))
+	}
+
+	for _, addr := range workerAddrs {
+		stdlog.Printf("Worker %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
+		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
 }
