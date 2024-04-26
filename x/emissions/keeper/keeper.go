@@ -61,7 +61,7 @@ type Keeper struct {
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// map of (topic) -> nonce/block height
-	topicRewardNonce collections.Map[TopicId, int64]
+	topicRewardNonce collections.Map[TopicId, BlockHeight]
 
 	/// SCORES
 
@@ -2053,4 +2053,113 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 	}
 
 	return limit, cursor, nil
+}
+
+/// STATE MANAGEMENT
+
+// Iterate through topic state and prune records that are no longer needed
+func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
+	// Delete records until the blockHeight
+	blockRange := collections.
+		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		EndInclusive(blockHeight)
+
+	err := k.pruneInferences(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneForecasts(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneLossBundles(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneNetworkLosses(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allInferences.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		if err := k.allInferences.Remove(ctx, key.Key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allForecasts.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		if err := k.allForecasts.Remove(ctx, key.Key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		if err := k.allLossBundles.Remove(ctx, key.Key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		if err := k.networkLossBundles.Remove(ctx, key.Key); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

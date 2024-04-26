@@ -162,7 +162,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	}
 
 	// Send remaining collected inference request fees to the Ecosystem module account
-	// They will be paid out to reputers, workers, and cosmos validators
+	// They will be paid out to reputers, workers, and validators
 	// according to the formulas in the beginblock of the mint module
 	err = k.BankKeeper().SendCoinsFromModuleToModule(
 		ctx,
@@ -259,7 +259,42 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to delete topic reward nonce")
 		}
+
+		// Get oldest unfulfilled nonce - delete everything behind it
+		unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+		if err != nil {
+			return err
+		}
+
+		// Assume the oldest nonce is the topic reward nonce
+		oldestNonce := topicRewardNonce
+		// If there are unfulfilled nonces, find the oldest one
+		if len(unfulfilledNonces.Nonces) >= 0 {
+			oldestNonce = unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight
+			for _, nonce := range unfulfilledNonces.Nonces {
+				if nonce.ReputerNonce.BlockHeight < oldestNonce {
+					oldestNonce = nonce.ReputerNonce.BlockHeight
+				}
+			}
+		} 
+
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return errors.Wrapf(err, "failed to get topic")
+		}
+
+		// Prune records x EpochsLengths behind the oldest nonce
+		// This is to leave the necessary data for the remaining 
+		// unfulfilled nonces to be fulfilled
+		oldestNonce -= moduleParams.MinEpochLengthRecordLimit * topic.EpochLength
+
+		// Prune old records after rewards have been paid out
+		err = k.PruneRecordsAfterRewards(ctx, topicId, oldestNonce)
+		if err != nil {
+			return errors.Wrapf(err, "failed to prune records after rewards")
+		}
 	}
+
 	return nil
 }
 
