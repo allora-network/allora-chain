@@ -2140,10 +2140,13 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
+	block := int64(100)
 
 	newTopic := types.Topic{Id: topicId}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
+	err = keeper.ResetTopicFeeRevenue(ctx, topicId, block)
+	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue in the first epoch
 	initialAmount := cosmosMath.NewInt(100)
@@ -2153,20 +2156,18 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(initialAmount.BigInt(), feeRev.Revenue.BigInt(), "Initial revenue should be correctly recorded")
-
-	// Increment fee revenue epoch
-	//err = keeper.IncrementFeeRevenueEpoch(ctx)
-	//s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
+	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
 
 	// Add more revenue in the new epoch
 	additionalAmount := cosmosMath.NewInt(200)
 	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
+	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
 
 	// Verify updated revenue in the new epoch
 	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().NotEqual(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should be updated")
-	s.Require().Equal(additionalAmount.BigInt(), updatedFeeRev.Revenue.BigInt(), "Revenue in new epoch should match the additional amount")
+	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
+	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
 }
 
 /// SCORES
