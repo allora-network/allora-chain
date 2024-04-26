@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	stdlog "log"
 	"testing"
 	"time"
 
@@ -641,13 +640,11 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	reputerBalances := make([]sdk.Coin, 5)
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
-		stdlog.Printf("Reputer %s balance: %s", addr.String(), reputerBalances[i].String())
 	}
 
 	workerBalances := make([]sdk.Coin, 5)
 	for i, addr := range workerAddrs {
 		workerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
-		stdlog.Printf("Worker %s balance: %s", addr.String(), workerBalances[i].String())
 	}
 
 	// Insert inference from workers
@@ -680,19 +677,15 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	stdlog.Printf("topicId %d", topicId)
-
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
-		stdlog.Printf("Reputer %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(reputerBalances[i].Amount))
 	}
 
 	for i, addr := range workerAddrs {
-		stdlog.Printf("Worker %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
 }
