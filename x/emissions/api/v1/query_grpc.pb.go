@@ -20,13 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Query_Params_FullMethodName                                = "/emissions.v1.Query/Params"
-	Query_GetLastRewardsUpdate_FullMethodName                  = "/emissions.v1.Query/GetLastRewardsUpdate"
 	Query_GetNextTopicId_FullMethodName                        = "/emissions.v1.Query/GetNextTopicId"
 	Query_GetTopic_FullMethodName                              = "/emissions.v1.Query/GetTopic"
 	Query_GetActiveTopics_FullMethodName                       = "/emissions.v1.Query/GetActiveTopics"
-	Query_GetMempoolInferenceRequest_FullMethodName            = "/emissions.v1.Query/GetMempoolInferenceRequest"
-	Query_GetMempoolInferenceRequestsByTopic_FullMethodName    = "/emissions.v1.Query/GetMempoolInferenceRequestsByTopic"
-	Query_GetTopicUnmetDemand_FullMethodName                   = "/emissions.v1.Query/GetTopicUnmetDemand"
 	Query_GetWorkerLatestInferenceByTopicId_FullMethodName     = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
 	Query_GetInferencesAtBlock_FullMethodName                  = "/emissions.v1.Query/GetInferencesAtBlock"
 	Query_GetForecastsAtBlock_FullMethodName                   = "/emissions.v1.Query/GetForecastsAtBlock"
@@ -52,13 +48,9 @@ const (
 type QueryClient interface {
 	// Params returns the module parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	GetLastRewardsUpdate(ctx context.Context, in *QueryLastRewardsUpdateRequest, opts ...grpc.CallOption) (*QueryLastRewardsUpdateResponse, error)
 	GetNextTopicId(ctx context.Context, in *QueryNextTopicIdRequest, opts ...grpc.CallOption) (*QueryNextTopicIdResponse, error)
 	GetTopic(ctx context.Context, in *QueryTopicRequest, opts ...grpc.CallOption) (*QueryTopicResponse, error)
 	GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error)
-	GetMempoolInferenceRequest(ctx context.Context, in *QueryMempoolInferenceRequest, opts ...grpc.CallOption) (*QueryExistingInferenceResponse, error)
-	GetMempoolInferenceRequestsByTopic(ctx context.Context, in *QueryMempoolInferenceRequestsByTopic, opts ...grpc.CallOption) (*QueryMempoolInferenceRequestsByTopicResponse, error)
-	GetTopicUnmetDemand(ctx context.Context, in *QueryTopicUnmetDemandRequest, opts ...grpc.CallOption) (*QueryTopicUnmetDemandResponse, error)
 	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error)
 	GetForecastsAtBlock(ctx context.Context, in *QueryForecastsAtBlockRequest, opts ...grpc.CallOption) (*QueryForecastsAtBlockResponse, error)
@@ -95,15 +87,6 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) GetLastRewardsUpdate(ctx context.Context, in *QueryLastRewardsUpdateRequest, opts ...grpc.CallOption) (*QueryLastRewardsUpdateResponse, error) {
-	out := new(QueryLastRewardsUpdateResponse)
-	err := c.cc.Invoke(ctx, Query_GetLastRewardsUpdate_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) GetNextTopicId(ctx context.Context, in *QueryNextTopicIdRequest, opts ...grpc.CallOption) (*QueryNextTopicIdResponse, error) {
 	out := new(QueryNextTopicIdResponse)
 	err := c.cc.Invoke(ctx, Query_GetNextTopicId_FullMethodName, in, out, opts...)
@@ -125,33 +108,6 @@ func (c *queryClient) GetTopic(ctx context.Context, in *QueryTopicRequest, opts 
 func (c *queryClient) GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error) {
 	out := new(QueryActiveTopicsResponse)
 	err := c.cc.Invoke(ctx, Query_GetActiveTopics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetMempoolInferenceRequest(ctx context.Context, in *QueryMempoolInferenceRequest, opts ...grpc.CallOption) (*QueryExistingInferenceResponse, error) {
-	out := new(QueryExistingInferenceResponse)
-	err := c.cc.Invoke(ctx, Query_GetMempoolInferenceRequest_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetMempoolInferenceRequestsByTopic(ctx context.Context, in *QueryMempoolInferenceRequestsByTopic, opts ...grpc.CallOption) (*QueryMempoolInferenceRequestsByTopicResponse, error) {
-	out := new(QueryMempoolInferenceRequestsByTopicResponse)
-	err := c.cc.Invoke(ctx, Query_GetMempoolInferenceRequestsByTopic_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetTopicUnmetDemand(ctx context.Context, in *QueryTopicUnmetDemandRequest, opts ...grpc.CallOption) (*QueryTopicUnmetDemandResponse, error) {
-	out := new(QueryTopicUnmetDemandResponse)
-	err := c.cc.Invoke(ctx, Query_GetTopicUnmetDemand_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -317,13 +273,9 @@ func (c *queryClient) GetNetworkInferencesAtBlock(ctx context.Context, in *Query
 type QueryServer interface {
 	// Params returns the module parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	GetLastRewardsUpdate(context.Context, *QueryLastRewardsUpdateRequest) (*QueryLastRewardsUpdateResponse, error)
 	GetNextTopicId(context.Context, *QueryNextTopicIdRequest) (*QueryNextTopicIdResponse, error)
 	GetTopic(context.Context, *QueryTopicRequest) (*QueryTopicResponse, error)
 	GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error)
-	GetMempoolInferenceRequest(context.Context, *QueryMempoolInferenceRequest) (*QueryExistingInferenceResponse, error)
-	GetMempoolInferenceRequestsByTopic(context.Context, *QueryMempoolInferenceRequestsByTopic) (*QueryMempoolInferenceRequestsByTopicResponse, error)
-	GetTopicUnmetDemand(context.Context, *QueryTopicUnmetDemandRequest) (*QueryTopicUnmetDemandResponse, error)
 	GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error)
 	GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error)
@@ -351,9 +303,6 @@ type UnimplementedQueryServer struct {
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (UnimplementedQueryServer) GetLastRewardsUpdate(context.Context, *QueryLastRewardsUpdateRequest) (*QueryLastRewardsUpdateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLastRewardsUpdate not implemented")
-}
 func (UnimplementedQueryServer) GetNextTopicId(context.Context, *QueryNextTopicIdRequest) (*QueryNextTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNextTopicId not implemented")
 }
@@ -362,15 +311,6 @@ func (UnimplementedQueryServer) GetTopic(context.Context, *QueryTopicRequest) (*
 }
 func (UnimplementedQueryServer) GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTopics not implemented")
-}
-func (UnimplementedQueryServer) GetMempoolInferenceRequest(context.Context, *QueryMempoolInferenceRequest) (*QueryExistingInferenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMempoolInferenceRequest not implemented")
-}
-func (UnimplementedQueryServer) GetMempoolInferenceRequestsByTopic(context.Context, *QueryMempoolInferenceRequestsByTopic) (*QueryMempoolInferenceRequestsByTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMempoolInferenceRequestsByTopic not implemented")
-}
-func (UnimplementedQueryServer) GetTopicUnmetDemand(context.Context, *QueryTopicUnmetDemandRequest) (*QueryTopicUnmetDemandResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopicUnmetDemand not implemented")
 }
 func (UnimplementedQueryServer) GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerLatestInferenceByTopicId not implemented")
@@ -454,24 +394,6 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLastRewardsUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLastRewardsUpdateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetLastRewardsUpdate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetLastRewardsUpdate_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLastRewardsUpdate(ctx, req.(*QueryLastRewardsUpdateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_GetNextTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryNextTopicIdRequest)
 	if err := dec(in); err != nil {
@@ -522,60 +444,6 @@ func _Query_GetActiveTopics_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetActiveTopics(ctx, req.(*QueryActiveTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetMempoolInferenceRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryMempoolInferenceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetMempoolInferenceRequest(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetMempoolInferenceRequest_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetMempoolInferenceRequest(ctx, req.(*QueryMempoolInferenceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetMempoolInferenceRequestsByTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryMempoolInferenceRequestsByTopic)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetMempoolInferenceRequestsByTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetMempoolInferenceRequestsByTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetMempoolInferenceRequestsByTopic(ctx, req.(*QueryMempoolInferenceRequestsByTopic))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetTopicUnmetDemand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicUnmetDemandRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetTopicUnmetDemand(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetTopicUnmetDemand_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicUnmetDemand(ctx, req.(*QueryTopicUnmetDemandRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -898,10 +766,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "GetLastRewardsUpdate",
-			Handler:    _Query_GetLastRewardsUpdate_Handler,
-		},
-		{
 			MethodName: "GetNextTopicId",
 			Handler:    _Query_GetNextTopicId_Handler,
 		},
@@ -912,18 +776,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActiveTopics",
 			Handler:    _Query_GetActiveTopics_Handler,
-		},
-		{
-			MethodName: "GetMempoolInferenceRequest",
-			Handler:    _Query_GetMempoolInferenceRequest_Handler,
-		},
-		{
-			MethodName: "GetMempoolInferenceRequestsByTopic",
-			Handler:    _Query_GetMempoolInferenceRequestsByTopic_Handler,
-		},
-		{
-			MethodName: "GetTopicUnmetDemand",
-			Handler:    _Query_GetTopicUnmetDemand_Handler,
 		},
 		{
 			MethodName: "GetWorkerLatestInferenceByTopicId",

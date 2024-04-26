@@ -31,14 +31,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.RewardCadence) == 1 {
 		existingParams.RewardCadence = newParams.RewardCadence[0]
 	}
-	if len(newParams.MinTopicUnmetDemand) == 1 {
-		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
+	if len(newParams.MinTopicWeight) == 1 {
+		existingParams.MinTopicWeight = newParams.MinTopicWeight[0]
 	}
 	if len(newParams.MaxTopicsPerBlock) == 1 {
 		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
-	}
-	if len(newParams.MinRequestUnmetDemand) == 1 {
-		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
 	if len(newParams.MaxMissingInferencePercent) == 1 {
 		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
@@ -54,9 +51,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MaxInferenceRequestValidity) == 1 {
 		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
-	}
-	if len(newParams.MaxRequestCadence) == 1 {
-		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	if len(newParams.Sharpness) == 1 {
 		existingParams.Sharpness = newParams.Sharpness[0]
@@ -153,9 +147,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]
-	}
-	if len(newParams.MaxRequestsPerTopic) == 1 {
-		existingParams.MaxRequestsPerTopic = newParams.MaxRequestsPerTopic[0]
 	}
 	if len(newParams.DefaultLimit) == 1 {
 		existingParams.DefaultLimit = newParams.DefaultLimit[0]

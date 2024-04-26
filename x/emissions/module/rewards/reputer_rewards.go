@@ -120,9 +120,9 @@ func GetRewardForReputerTaskInTopic(
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	topicReward alloraMath.Dec, // E_{t,i}
+	topicReward *alloraMath.Dec, // E_{t,i}
 ) (alloraMath.Dec, error) {
-	numerator, err := entropyReputer.Mul(topicReward)
+	numerator, err := entropyReputer.Mul(*topicReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
