@@ -526,6 +526,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
+	epochLength := int64(10800)
 
 	// Reputer Addresses
 	reputerAddrs := []sdk.AccAddress{
@@ -550,7 +551,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
-		EpochLength:      10800,
+		EpochLength:      epochLength,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
@@ -612,6 +613,19 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:    reputerAddrs[0].String(),
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
 	// Insert unfullfiled nonces
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
@@ -663,19 +677,21 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	})
 	s.Require().NoError(err)
 
-	block += 1
+	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
+
+	stdlog.Printf("topicId %d", topicId)
 
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
-	for _, addr := range reputerAddrs {
+	for i, addr := range reputerAddrs {
 		stdlog.Printf("Reputer %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(reputerBalances[i].Amount))
 	}
 
-	for _, addr := range workerAddrs {
+	for i, addr := range workerAddrs {
 		stdlog.Printf("Worker %s balance: %s", addr.String(), s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
