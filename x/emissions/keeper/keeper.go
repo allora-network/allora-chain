@@ -1185,7 +1185,7 @@ func (k *Keeper) RemoveDelegateStake(
 
 	// Calculate pending reward and send to delegator
 	pendingReward := stakePlacement.Amount.Mul(share).Sub(stakePlacement.RewardDebt)
-	if !pendingReward.IsZero() {
+	if pendingReward.GT(cosmosMath.NewUint(0)) {
 		err = k.BankKeeper().SendCoinsFromModuleToAccount(
 			ctx,
 			types.AlloraPendingRewardForDelegatorAccountName,
