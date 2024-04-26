@@ -103,6 +103,109 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
+func (s *KeeperTestSuite) TestMsgRegisterWorker() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	workerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	// Reputer register
+	registerMsg := &types.MsgRegister{
+		Sender:       workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    false,
+		Owner:        "Worker",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		workerAddr,
+		mintAmount,
+	)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr)
+	require.NoError(err)
+	require.False(isWorkerRegistered, "Worker should not be registered in topic")
+
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, workerAddr)
+	require.NoError(err)
+	require.False(isReputerRegistered, "Reputer should not be registered in topic")
+
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering worker should not return an error")
+
+	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr)
+	require.NoError(err)
+	require.True(isWorkerRegistered, "Worker should be registered in topic")
+}
+
+func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	workerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	// Reputer register
+	registerMsg := &types.MsgRegister{
+		Sender:       workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    false,
+		Owner:        "Worker",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		workerAddr,
+		mintAmount,
+	)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering worker should not return an error")
+
+	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr)
+	require.NoError(err)
+	require.True(isWorkerRegistered, "Worker should be registered in topic")
+
+	unregisterMsg := &types.MsgRemoveRegistration{
+		Sender:    workerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+	}
+
+	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
+	require.NoError(err, "Unregistering worker should not return an error")
+
+	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr)
+	require.NoError(err)
+	require.False(isWorkerRegistered, "Worker should be registered in topic")
+}
+
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
