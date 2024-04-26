@@ -269,7 +269,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		// Assume the oldest nonce is the topic reward nonce
 		oldestNonce := topicRewardNonce
 		// If there are unfulfilled nonces, find the oldest one
-		if len(unfulfilledNonces.Nonces) >= 0 {
+		if len(unfulfilledNonces.Nonces) > 0 {
 			oldestNonce = unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight
 			for _, nonce := range unfulfilledNonces.Nonces {
 				if nonce.ReputerNonce.BlockHeight < oldestNonce {
