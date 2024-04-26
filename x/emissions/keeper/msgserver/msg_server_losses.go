@@ -31,19 +31,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
 	/// All filters should be done in order of increasing computational complexity
 
-	// Check if the sender is in the reputer whitelist
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isLossSetter, err := ms.k.IsInReputerWhitelist(ctx, sender)
-	if err != nil {
-		return nil, err
-	}
-	if !isLossSetter {
-		return nil, types.ErrNotInReputerWhitelist
-	}
-
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
 	if err != nil {
@@ -100,21 +87,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
 		if err != nil {
-			return nil, err
+			requiredMinimumStake = types.DefaultParamsRequiredMinimumStake()
 		}
 
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
-			// Check if the reputer is in the reputer whitelist
-			isWhitelisted, err := ms.k.IsInReputerWhitelist(ctx, reputer)
-			if err != nil {
-				return nil, err
-			}
-			// We'll keep what we can get from the payload, but we'll ignore the rest
-			if !isWhitelisted {
-				continue
-			}
-
 			// Check that the reputer is registered in the topic
 			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
@@ -173,7 +150,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxReputersPerTopicRequest, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Uint)
