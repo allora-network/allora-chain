@@ -1302,7 +1302,7 @@ func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.DelegatorInfo{}, nil
+			return types.DelegatorInfo{Amount: cosmosMath.NewUint(0), RewardDebt: cosmosMath.NewUint(0)}, nil
 		}
 		return types.DelegatorInfo{}, err
 	}
@@ -1323,6 +1323,9 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 	key := collections.Join(topicId, reputer)
 	share, err := k.delegateRewardPerShare.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.NewUint(0), nil
+		}
 		return cosmosMath.Uint{}, err
 	}
 	return share, nil
