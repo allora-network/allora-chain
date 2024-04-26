@@ -55,7 +55,12 @@ func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, bl
 
 	// Extract the top N values
 	weightsOfTopN := make(map[TopicId]*alloraMath.Dec, N)
-	for i := uint64(0); i < N; i++ {
+	numberToAdd := N
+	if (uint64)(len(sortedTopicIds)) < N {
+		numberToAdd = (uint64)(len(sortedTopicIds))
+	}
+
+	for i := uint64(0); i < numberToAdd; i++ {
 		weightsOfTopN[sortedTopicIds[i]] = weights[sortedTopicIds[i]]
 	}
 
