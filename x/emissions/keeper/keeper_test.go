@@ -724,22 +724,6 @@ func (s *KeeperTestSuite) TestGetParamsRequiredMinimumStake() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestGetParamsMaxInferenceRequestValidity() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := types.BlockHeight(1000)
-
-	// Set the parameter
-	params := types.Params{MaxInferenceRequestValidity: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxInferenceRequestValidity(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
 func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -752,22 +736,6 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 
 	// Get the parameter
 	actualValue, err := keeper.GetParamsMinEpochLength(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
-func (s *KeeperTestSuite) TestGetParamsTopicRewardAlpha() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := alloraMath.NewDecFromInt64(1) // Assuming it's a value like 0.1 formatted correctly for your system
-
-	// Set the parameter
-	params := types.Params{TopicRewardAlpha: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsTopicRewardAlpha(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
@@ -1682,14 +1650,11 @@ func (s *KeeperTestSuite) TestSetParams() {
 		RequiredMinimumStake:            cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
-		MaxInferenceRequestValidity:     60 * 60 * 24 * 7 * 24,
 		Sharpness:                       alloraMath.NewDecFromInt64(0),
 		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
 		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
-		MaxWorkersPerTopicRequest:       10,
-		MaxReputersPerTopicRequest:      10,
 		Epsilon:                         alloraMath.NewDecFromInt64(0),
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(0),
 		PRewardSpread:                   alloraMath.NewDecFromInt64(0),
@@ -1702,8 +1667,8 @@ func (s *KeeperTestSuite) TestSetParams() {
 		TaskRewardAlpha:                 alloraMath.NewDecFromInt64(0),
 		ValidatorsVsAlloraPercentReward: alloraMath.NewDecFromInt64(0),
 		MaxSamplesToScaleScores:         0,
-		MaxTopWorkersToReward:           0,
-		MaxTopReputersToReward:          0,
+		MaxTopWorkersToReward:           10,
+		MaxTopReputersToReward:          10,
 		CreateTopicFee:                  cosmosMath.ZeroInt(),
 		SigmoidA:                        alloraMath.NewDecFromInt64(0),
 		SigmoidB:                        alloraMath.NewDecFromInt64(0),
@@ -1712,8 +1677,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MaxRetriesToFulfilNoncesReputer: 0,
 		TopicPageLimit:                  0,
 		MaxTopicPages:                   0,
-		RequestPageLimit:                0,
-		MaxRequestPages:                 0,
 		RegistrationFee:                 cosmosMath.ZeroInt(),
 		DefaultLimit:                    0,
 		MaxLimit:                        0,
@@ -1734,9 +1697,8 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
-	s.Require().Equal(params.MaxInferenceRequestValidity, paramsFromKeeper.MaxInferenceRequestValidity, "Params should be equal to the set params: MaxInferenceRequestValidity")
-	s.Require().Equal(params.MaxWorkersPerTopicRequest, paramsFromKeeper.MaxWorkersPerTopicRequest, "Params should be equal to the set params: MaxWorkersPerTopicRequest")
-	s.Require().Equal(params.MaxReputersPerTopicRequest, paramsFromKeeper.MaxReputersPerTopicRequest, "Params should be equal to the set params: MaxReputersPerTopicRequest")
+	s.Require().Equal(params.MaxTopWorkersToReward, paramsFromKeeper.MaxTopWorkersToReward, "Params should be equal to the set params: MaxTopWorkersToReward")
+	s.Require().Equal(params.MaxTopReputersToReward, paramsFromKeeper.MaxTopReputersToReward, "Params should be equal to the set params: MaxTopReputersToReward")
 }
 
 // / REPUTERS AND WORKER

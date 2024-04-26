@@ -49,9 +49,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinEpochLength) == 1 {
 		existingParams.MinEpochLength = newParams.MinEpochLength[0]
 	}
-	if len(newParams.MaxInferenceRequestValidity) == 1 {
-		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
-	}
 	if len(newParams.Sharpness) == 1 {
 		existingParams.Sharpness = newParams.Sharpness[0]
 	}
@@ -69,12 +66,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MinStakeFraction) == 1 {
 		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
-	}
-	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
-		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
-	}
-	if len(newParams.MaxReputersPerTopicRequest) == 1 {
-		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
@@ -138,12 +129,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MaxTopicPages) == 1 {
 		existingParams.MaxTopicPages = newParams.MaxTopicPages[0]
-	}
-	if len(newParams.RequestPageLimit) == 1 {
-		existingParams.RequestPageLimit = newParams.RequestPageLimit[0]
-	}
-	if len(newParams.MaxRequestPages) == 1 {
-		existingParams.MaxRequestPages = newParams.MaxRequestPages[0]
 	}
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]

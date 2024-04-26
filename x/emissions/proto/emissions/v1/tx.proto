@@ -33,6 +33,8 @@ service Msg {
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
+  rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);
+
   rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
 
   rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
@@ -68,67 +70,62 @@ message OptionalParams {
   ];
   repeated int64 remove_stake_delay_window = 7;
   repeated int64 min_epoch_length = 8;
-  repeated int64 max_inference_request_validity = 9;
-  repeated string sharpness = 10
+  repeated string sharpness = 9
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string beta_entropy = 11
+  repeated string beta_entropy = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string learning_rate = 12
+  repeated string learning_rate = 11
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string max_gradient_threshold = 13
+  repeated string max_gradient_threshold = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string min_stake_fraction = 14
+  repeated string min_stake_fraction = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_workers_per_topic_request = 15;
-  repeated uint64 max_reputers_per_topic_request = 16;
-  repeated string epsilon = 17
+  repeated string epsilon = 14
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_inference_synthesis = 18
+  repeated string p_inference_synthesis = 15
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_spread = 19
+  repeated string p_reward_spread = 16
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string alpha_regret = 20
+  repeated string alpha_regret = 17
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_unfulfilled_worker_requests = 21;
-  repeated uint64 max_unfulfilled_reputer_requests = 22;
-  repeated string topic_reward_stake_importance = 23
+  repeated uint64 max_unfulfilled_worker_requests = 18;
+  repeated uint64 max_unfulfilled_reputer_requests = 19;
+  repeated string topic_reward_stake_importance = 20
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_fee_revenue_importance = 24
+  repeated string topic_reward_fee_revenue_importance = 21
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_alpha = 25
+  repeated string topic_reward_alpha = 22
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string task_reward_alpha = 26
+  repeated string task_reward_alpha = 23
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 27
+  repeated string validators_vs_allora_percent_reward = 24
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_samples_to_scale_scores = 28;
-  repeated uint64 max_top_workers_to_reward = 29;
-  repeated uint64 max_top_reputers_to_reward = 30;
-  repeated string create_topic_fee = 31 [
+  repeated uint64 max_samples_to_scale_scores = 25;
+  repeated uint64 max_top_workers_to_reward = 26;
+  repeated uint64 max_top_reputers_to_reward = 27;
+  repeated string create_topic_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string sigmoid_a = 32
+  repeated string sigmoid_a = 29
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 33
+  repeated string sigmoid_b = 30
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 gradient_descent_max_iters = 34;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 35;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 36;
-  repeated uint64 topic_page_limit = 37;
-  repeated uint64 max_topic_pages = 38;
-  repeated uint64 request_page_limit = 39;
-  repeated uint64 max_request_pages = 40;
-  repeated string registration_fee = 41 [
+  repeated uint64 gradient_descent_max_iters = 31;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 32;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 33;
+  repeated uint64 topic_page_limit = 34;
+  repeated uint64 max_topic_pages = 35;
+  repeated string registration_fee = 36 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 default_limit = 42;
-  repeated uint64 max_limit = 43;
+  repeated uint64 default_limit = 37;
+  repeated uint64 max_limit = 38;
 }
 
 message MsgUpdateParams {
@@ -341,3 +338,18 @@ message MsgRemoveFromWhitelistAdmin {
 }
 
 message MsgRemoveFromWhitelistAdminResponse {}
+
+message MsgRewardDelegateStakeResponse {}
+
+message MsgRewardDelegateStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

@@ -3,11 +3,12 @@ package types
 import "cosmossdk.io/collections"
 
 const (
-	ModuleName                = "emissions"
-	StoreKey                  = "emissions"
-	AlloraStakingAccountName  = "allorastaking"
-	AlloraRequestsAccountName = "allorarequests"
-	AlloraRewardsAccountName  = "allorarewards"
+	ModuleName                                 = "emissions"
+	StoreKey                                   = "emissions"
+	AlloraStakingAccountName                   = "allorastaking"
+	AlloraRequestsAccountName                  = "allorarequests"
+	AlloraRewardsAccountName                   = "allorarewards"
+	AlloraPendingRewardForDelegatorAccountName = "allorapendingrewards"
 )
 
 const (
@@ -64,4 +65,5 @@ var (
 	LatestForecasterScoresByWorkerKey  = collections.NewPrefix(45)
 	LatestReputerScoresByReputerKey    = collections.NewPrefix(46)
 	TopicRewardNonceKey                = collections.NewPrefix(47)
+	DelegateRewardPerShare             = collections.NewPrefix(48)
 )

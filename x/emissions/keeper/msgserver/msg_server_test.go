@@ -78,16 +78,17 @@ func (s *KeeperTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                 {"minter"},
-		"mint":                          {"minter"},
-		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		mintTypes.EcosystemModuleName:   {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName:  {"minter"},
-		"bonded_tokens_pool":            {"burner", "staking"},
-		"not_bonded_tokens_pool":        {"burner", "staking"},
-		multiPerm:                       {"burner", "minter", "staking"},
-		randomPerm:                      {"random"},
+		"fee_collector":                                  {"minter"},
+		"mint":                                           {"minter"},
+		types.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
+		mintTypes.EcosystemModuleName:                    {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:                   {"minter"},
+		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
+		"bonded_tokens_pool":                             {"burner", "staking"},
+		"not_bonded_tokens_pool":                         {"burner", "staking"},
+		multiPerm:                                        {"burner", "minter", "staking"},
+		randomPerm:                                       {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(

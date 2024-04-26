@@ -1,38 +1,31 @@
 package rewards_test
 
 import (
-	// "time"
-
 	cosmosMath "cosmossdk.io/math"
-	// "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 
-	// "github.com/allora-network/allora-chain/x/emissions/module"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 )
 
 func (s *RewardsTestSuite) UtilSetParams() {
 	s.emissionsKeeper.SetParams(s.ctx, types.Params{
-		Version:                     "0.0.3",
-		RewardCadence:               int64(5),
-		MinTopicWeight:              alloraMath.NewDecFromInt64(100),
-		MaxTopicsPerBlock:           uint64(1000),
-		MaxMissingInferencePercent:  alloraMath.MustNewDecFromString("0.1"),
-		RequiredMinimumStake:        cosmosMath.NewUint(1),
-		RemoveStakeDelayWindow:      int64(172800),
-		MinEpochLength:              int64(60),
-		MaxInferenceRequestValidity: int64(60 * 60 * 24 * 7 * 24),
-		MaxWorkersPerTopicRequest:   uint64(10),
-		MaxReputersPerTopicRequest:  uint64(10),
-		Sharpness:                   alloraMath.MustNewDecFromString("0.0"),
-		BetaEntropy:                 alloraMath.MustNewDecFromString("0.0"),
-		LearningRate:                alloraMath.MustNewDecFromString("0.0"),
-		MaxGradientThreshold:        alloraMath.MustNewDecFromString("0.0"),
-		MinStakeFraction:            alloraMath.MustNewDecFromString("0.0"),
-		Epsilon:                     alloraMath.MustNewDecFromString("0.1"),
-		PInferenceSynthesis:         alloraMath.MustNewDecFromString("0.1"),
+		Version:                    "0.0.3",
+		RewardCadence:              int64(5),
+		MinTopicWeight:             alloraMath.NewDecFromInt64(100),
+		MaxTopicsPerBlock:          uint64(1000),
+		MaxMissingInferencePercent: alloraMath.MustNewDecFromString("0.1"),
+		RequiredMinimumStake:       cosmosMath.NewUint(1),
+		RemoveStakeDelayWindow:     int64(172800),
+		MinEpochLength:             int64(60),
+		MaxTopReputersToReward:     uint64(10),
+		Sharpness:                  alloraMath.MustNewDecFromString("0.0"),
+		BetaEntropy:                alloraMath.MustNewDecFromString("0.0"),
+		LearningRate:               alloraMath.MustNewDecFromString("0.0"),
+		MaxGradientThreshold:       alloraMath.MustNewDecFromString("0.0"),
+		MinStakeFraction:           alloraMath.MustNewDecFromString("0.0"),
+		Epsilon:                    alloraMath.MustNewDecFromString("0.1"),
+		PInferenceSynthesis:        alloraMath.MustNewDecFromString("0.1"),
 	})
 }
 
