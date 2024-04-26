@@ -15,17 +15,18 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 	creatorAddress := sdk.AccAddress(PKS[1].Address())
-	topic1 := types.Topic{Id: 1, Creator: creatorAddress.String()}
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
 
 	// Topic register
-	s.emissionsKeeper.SetTopic(ctx, 1, topic1)
-	s.emissionsKeeper.ActivateTopic(ctx, 1)
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
 		Sender:       reputerAddr.String(),
 		LibP2PKey:    "test",
 		MultiAddress: "test",
-		TopicId:      1,
+		TopicId:      topicId,
 		IsReputer:    true,
 		Owner:        "Reputer",
 	}
@@ -39,9 +40,69 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 		mintAmount,
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.False(isReputerRegistered, "Reputer should not be registered in topic")
+
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
+
+	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
+
+func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	// Reputer register
+	registerMsg := &types.MsgRegister{
+		Sender:       reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    true,
+		Owner:        "Reputer",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		reputerAddr,
+		mintAmount,
+	)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.True(isReputerRegistered, "Reputer should be registered in topic")
+
+	unregisterMsg := &types.MsgRemoveRegistration{
+		Sender:    reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+	}
+
+	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+
+	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.False(isReputerRegistered, "Reputer should be registered in topic")
+}
+
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()

@@ -91,11 +91,6 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 
 	// Proceed based on whether requester is removing their reputer or worker registration
 	if msg.IsReputer {
-		// Remove the reputer registration from the topic
-		err = ms.k.RemoveReputer(ctx, msg.TopicId, address)
-		if err != nil {
-			return nil, err
-		}
 
 		isRegisteredInTopic, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, address)
 		if err != nil {
@@ -105,6 +100,13 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 		if !isRegisteredInTopic {
 			return nil, types.ErrAddressIsNotRegisteredInThisTopic
 		}
+
+		// Remove the reputer registration from the topic
+		err = ms.k.RemoveReputer(ctx, msg.TopicId, address)
+		if err != nil {
+			return nil, err
+		}
+
 	} else {
 		// Remove the worker registration from the topic
 		err = ms.k.RemoveWorker(ctx, msg.TopicId, address)
