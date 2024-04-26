@@ -28,3 +28,5 @@ integration/testnet
 
 # coverage
 coverage
+coverage_raw.lcov
+coverage.lcov

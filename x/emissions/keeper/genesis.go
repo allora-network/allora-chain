@@ -18,18 +18,13 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
-	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
-		return err
-	}
+	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
+	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
 	if err := k.SetTotalStake(ctx, cosmosMath.NewUint(0)); err != nil {
 		return err
 	}
 	// reserve topic ID 0 for future use
 	if _, err := k.IncrementTopicId(ctx); err != nil {
-		return err
-	}
-	// reserve fee epoch 0 for errors
-	if err := k.IncrementFeeRevenueEpoch(ctx); err != nil {
 		return err
 	}
 
@@ -60,9 +55,6 @@ func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses 
 			return err
 		}
 		k.AddWhitelistAdmin(ctx, accAddress)
-		k.AddToTopicCreationWhitelist(ctx, accAddress)
-		k.AddToReputerWhitelist(ctx, accAddress)
 	}
-
 	return nil
 }

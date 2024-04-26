@@ -19,25 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName                     = "/emissions.v1.Msg/UpdateParams"
-	Msg_InsertBulkWorkerPayload_FullMethodName          = "/emissions.v1.Msg/InsertBulkWorkerPayload"
-	Msg_CreateNewTopic_FullMethodName                   = "/emissions.v1.Msg/CreateNewTopic"
-	Msg_Register_FullMethodName                         = "/emissions.v1.Msg/Register"
-	Msg_RemoveRegistration_FullMethodName               = "/emissions.v1.Msg/RemoveRegistration"
-	Msg_InsertBulkReputerPayload_FullMethodName         = "/emissions.v1.Msg/InsertBulkReputerPayload"
-	Msg_AddStake_FullMethodName                         = "/emissions.v1.Msg/AddStake"
-	Msg_StartRemoveStake_FullMethodName                 = "/emissions.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName               = "/emissions.v1.Msg/ConfirmRemoveStake"
-	Msg_DelegateStake_FullMethodName                    = "/emissions.v1.Msg/DelegateStake"
-	Msg_StartRemoveDelegateStake_FullMethodName         = "/emissions.v1.Msg/StartRemoveDelegateStake"
-	Msg_ConfirmRemoveDelegateStake_FullMethodName       = "/emissions.v1.Msg/ConfirmRemoveDelegateStake"
-	Msg_RequestInference_FullMethodName                 = "/emissions.v1.Msg/RequestInference"
-	Msg_AddToWhitelistAdmin_FullMethodName              = "/emissions.v1.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName         = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
-	Msg_AddToTopicCreationWhitelist_FullMethodName      = "/emissions.v1.Msg/AddToTopicCreationWhitelist"
-	Msg_RemoveFromTopicCreationWhitelist_FullMethodName = "/emissions.v1.Msg/RemoveFromTopicCreationWhitelist"
-	Msg_AddToReputerWhitelist_FullMethodName            = "/emissions.v1.Msg/AddToReputerWhitelist"
-	Msg_RemoveFromReputerWhitelist_FullMethodName       = "/emissions.v1.Msg/RemoveFromReputerWhitelist"
+	Msg_UpdateParams_FullMethodName               = "/emissions.v1.Msg/UpdateParams"
+	Msg_InsertBulkWorkerPayload_FullMethodName    = "/emissions.v1.Msg/InsertBulkWorkerPayload"
+	Msg_CreateNewTopic_FullMethodName             = "/emissions.v1.Msg/CreateNewTopic"
+	Msg_Register_FullMethodName                   = "/emissions.v1.Msg/Register"
+	Msg_RemoveRegistration_FullMethodName         = "/emissions.v1.Msg/RemoveRegistration"
+	Msg_InsertBulkReputerPayload_FullMethodName   = "/emissions.v1.Msg/InsertBulkReputerPayload"
+	Msg_AddStake_FullMethodName                   = "/emissions.v1.Msg/AddStake"
+	Msg_StartRemoveStake_FullMethodName           = "/emissions.v1.Msg/StartRemoveStake"
+	Msg_ConfirmRemoveStake_FullMethodName         = "/emissions.v1.Msg/ConfirmRemoveStake"
+	Msg_DelegateStake_FullMethodName              = "/emissions.v1.Msg/DelegateStake"
+	Msg_RewardDelegateStake_FullMethodName        = "/emissions.v1.Msg/RewardDelegateStake"
+	Msg_StartRemoveDelegateStake_FullMethodName   = "/emissions.v1.Msg/StartRemoveDelegateStake"
+	Msg_ConfirmRemoveDelegateStake_FullMethodName = "/emissions.v1.Msg/ConfirmRemoveDelegateStake"
+	Msg_FundTopic_FullMethodName                  = "/emissions.v1.Msg/FundTopic"
+	Msg_AddToWhitelistAdmin_FullMethodName        = "/emissions.v1.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName   = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
 )
 
 // MsgClient is the client API for Msg service.
@@ -54,15 +51,12 @@ type MsgClient interface {
 	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
 	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
+	RewardDelegateStake(ctx context.Context, in *MsgRewardDelegateStake, opts ...grpc.CallOption) (*MsgRewardDelegateStakeResponse, error)
 	StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error)
 	ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error)
-	RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error)
+	FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
-	AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error)
-	RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
-	AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error)
-	RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error)
 }
 
 type msgClient struct {
@@ -163,6 +157,15 @@ func (c *msgClient) DelegateStake(ctx context.Context, in *MsgDelegateStake, opt
 	return out, nil
 }
 
+func (c *msgClient) RewardDelegateStake(ctx context.Context, in *MsgRewardDelegateStake, opts ...grpc.CallOption) (*MsgRewardDelegateStakeResponse, error) {
+	out := new(MsgRewardDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_RewardDelegateStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error) {
 	out := new(MsgStartRemoveDelegateStakeResponse)
 	err := c.cc.Invoke(ctx, Msg_StartRemoveDelegateStake_FullMethodName, in, out, opts...)
@@ -181,9 +184,9 @@ func (c *msgClient) ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfi
 	return out, nil
 }
 
-func (c *msgClient) RequestInference(ctx context.Context, in *MsgRequestInference, opts ...grpc.CallOption) (*MsgRequestInferenceResponse, error) {
-	out := new(MsgRequestInferenceResponse)
-	err := c.cc.Invoke(ctx, Msg_RequestInference_FullMethodName, in, out, opts...)
+func (c *msgClient) FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error) {
+	out := new(MsgFundTopicResponse)
+	err := c.cc.Invoke(ctx, Msg_FundTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,42 +211,6 @@ func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveF
 	return out, nil
 }
 
-func (c *msgClient) AddToTopicCreationWhitelist(ctx context.Context, in *MsgAddToTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgAddToTopicCreationWhitelistResponse, error) {
-	out := new(MsgAddToTopicCreationWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_AddToTopicCreationWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RemoveFromTopicCreationWhitelist(ctx context.Context, in *MsgRemoveFromTopicCreationWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
-	out := new(MsgRemoveFromTopicCreationWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveFromTopicCreationWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) AddToReputerWhitelist(ctx context.Context, in *MsgAddToReputerWhitelist, opts ...grpc.CallOption) (*MsgAddToReputerWhitelistResponse, error) {
-	out := new(MsgAddToReputerWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_AddToReputerWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) RemoveFromReputerWhitelist(ctx context.Context, in *MsgRemoveFromReputerWhitelist, opts ...grpc.CallOption) (*MsgRemoveFromReputerWhitelistResponse, error) {
-	out := new(MsgRemoveFromReputerWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveFromReputerWhitelist_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -258,15 +225,12 @@ type MsgServer interface {
 	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
 	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
 	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
+	RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error)
 	StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error)
 	ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error)
-	RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error)
+	FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
-	AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error)
-	RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error)
-	AddToReputerWhitelist(context.Context, *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error)
-	RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -304,32 +268,23 @@ func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRem
 func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegateStake not implemented")
 }
+func (UnimplementedMsgServer) RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RewardDelegateStake not implemented")
+}
 func (UnimplementedMsgServer) StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveDelegateStake not implemented")
 }
 func (UnimplementedMsgServer) ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveDelegateStake not implemented")
 }
-func (UnimplementedMsgServer) RequestInference(context.Context, *MsgRequestInference) (*MsgRequestInferenceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RequestInference not implemented")
+func (UnimplementedMsgServer) FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FundTopic not implemented")
 }
 func (UnimplementedMsgServer) AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToWhitelistAdmin not implemented")
 }
 func (UnimplementedMsgServer) RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWhitelistAdmin not implemented")
-}
-func (UnimplementedMsgServer) AddToTopicCreationWhitelist(context.Context, *MsgAddToTopicCreationWhitelist) (*MsgAddToTopicCreationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToTopicCreationWhitelist not implemented")
-}
-func (UnimplementedMsgServer) RemoveFromTopicCreationWhitelist(context.Context, *MsgRemoveFromTopicCreationWhitelist) (*MsgRemoveFromTopicCreationWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromTopicCreationWhitelist not implemented")
-}
-func (UnimplementedMsgServer) AddToReputerWhitelist(context.Context, *MsgAddToReputerWhitelist) (*MsgAddToReputerWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddToReputerWhitelist not implemented")
-}
-func (UnimplementedMsgServer) RemoveFromReputerWhitelist(context.Context, *MsgRemoveFromReputerWhitelist) (*MsgRemoveFromReputerWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromReputerWhitelist not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -524,6 +479,24 @@ func _Msg_DelegateStake_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_RewardDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRewardDelegateStake)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RewardDelegateStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_RewardDelegateStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RewardDelegateStake(ctx, req.(*MsgRewardDelegateStake))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_StartRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgStartRemoveDelegateStake)
 	if err := dec(in); err != nil {
@@ -560,20 +533,20 @@ func _Msg_ConfirmRemoveDelegateStake_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RequestInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRequestInference)
+func _Msg_FundTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgFundTopic)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RequestInference(ctx, in)
+		return srv.(MsgServer).FundTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RequestInference_FullMethodName,
+		FullMethod: Msg_FundTopic_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RequestInference(ctx, req.(*MsgRequestInference))
+		return srv.(MsgServer).FundTopic(ctx, req.(*MsgFundTopic))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -610,78 +583,6 @@ func _Msg_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, req.(*MsgRemoveFromWhitelistAdmin))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_AddToTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToTopicCreationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_AddToTopicCreationWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToTopicCreationWhitelist(ctx, req.(*MsgAddToTopicCreationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RemoveFromTopicCreationWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromTopicCreationWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_RemoveFromTopicCreationWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromTopicCreationWhitelist(ctx, req.(*MsgRemoveFromTopicCreationWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_AddToReputerWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToReputerWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddToReputerWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_AddToReputerWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToReputerWhitelist(ctx, req.(*MsgAddToReputerWhitelist))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_RemoveFromReputerWhitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromReputerWhitelist)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromReputerWhitelist(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_RemoveFromReputerWhitelist_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromReputerWhitelist(ctx, req.(*MsgRemoveFromReputerWhitelist))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -734,6 +635,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_DelegateStake_Handler,
 		},
 		{
+			MethodName: "RewardDelegateStake",
+			Handler:    _Msg_RewardDelegateStake_Handler,
+		},
+		{
 			MethodName: "StartRemoveDelegateStake",
 			Handler:    _Msg_StartRemoveDelegateStake_Handler,
 		},
@@ -742,8 +647,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_ConfirmRemoveDelegateStake_Handler,
 		},
 		{
-			MethodName: "RequestInference",
-			Handler:    _Msg_RequestInference_Handler,
+			MethodName: "FundTopic",
+			Handler:    _Msg_FundTopic_Handler,
 		},
 		{
 			MethodName: "AddToWhitelistAdmin",
@@ -752,22 +657,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromWhitelistAdmin",
 			Handler:    _Msg_RemoveFromWhitelistAdmin_Handler,
-		},
-		{
-			MethodName: "AddToTopicCreationWhitelist",
-			Handler:    _Msg_AddToTopicCreationWhitelist_Handler,
-		},
-		{
-			MethodName: "RemoveFromTopicCreationWhitelist",
-			Handler:    _Msg_RemoveFromTopicCreationWhitelist_Handler,
-		},
-		{
-			MethodName: "AddToReputerWhitelist",
-			Handler:    _Msg_AddToReputerWhitelist_Handler,
-		},
-		{
-			MethodName: "RemoveFromReputerWhitelist",
-			Handler:    _Msg_RemoveFromReputerWhitelist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

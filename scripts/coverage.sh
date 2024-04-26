@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0
 
+## First install the following tools:
+# go install github.com/jandelgado/gcov2lcov@latest 
+# brew install lcov
+
+
 # if any command fails then immediately exit
 set -o errexit
 

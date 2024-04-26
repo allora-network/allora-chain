@@ -332,7 +332,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), amount0)
+	require.Equal(cosmosMath.ZeroUint(), amount0.Amount)
 
 	// Perform the stake delegation
 	response, err := s.msgServer.DelegateStake(ctx, msg)
@@ -345,7 +345,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1)
+	require.Equal(stakeAmount, amount1.Amount)
 }
 
 func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
@@ -527,7 +527,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 	// Check that the stake was actually removed
 	delegateStakePlaced, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.True(delegateStakePlaced.IsZero(), "Delegate stake should be zero after successful removal")
+	require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
 }
 
 /*
