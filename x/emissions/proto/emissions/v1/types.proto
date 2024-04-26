@@ -126,10 +126,10 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                          // registration fee for workers and reputers
-  uint64 default_limit = 37;  // default limit for pagination
-  uint64 max_limit = 38;      // max limit for pagination
-  int64 min_epoch_length_record_limit = 39; // min epoch length to keep records
+  ];                                         // registration fee for workers and reputers
+  uint64 default_limit = 37;                 // default limit for pagination
+  uint64 max_limit = 38;                     // max limit for pagination
+  int64 min_epoch_length_record_limit = 39;  // min epoch length to keep records
 }
 
 /// TOPICS
