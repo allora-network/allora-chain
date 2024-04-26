@@ -1025,14 +1025,12 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 		}
 		pendingReward := delegateStakePlacement.Amount.Mul(share).Sub(delegateStakePlacement.RewardDebt)
 		if pendingReward.GT(cosmosMath.NewUint(0)) {
-			if pendingReward.GT(cosmosMath.NewUint(0)) {
-				err = k.BankKeeper().SendCoinsFromModuleToAccount(
-					ctx,
-					types.AlloraPendingRewardForDelegatorAccountName,
-					delegator,
-					sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromUint64(pendingReward.Uint64()))),
-				)
-			}
+			err = k.BankKeeper().SendCoinsFromModuleToAccount(
+				ctx,
+				types.AlloraPendingRewardForDelegatorAccountName,
+				delegator,
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromUint64(pendingReward.Uint64()))),
+			)
 		}
 	}
 
