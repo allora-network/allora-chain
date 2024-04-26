@@ -441,7 +441,8 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 			if err != nil {
 				return err
 			}
-			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(scaledReward.SdkLegacyDec()))
+
+			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(scaledReward.Abs().SdkIntTrim()))
 
 		} else {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
