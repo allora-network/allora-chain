@@ -438,13 +438,13 @@ message PreviousTopicWeight {
 }
 
 message DelegatorInfo {
-  string amount = 1  [
+  string amount = 1 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  string reward_debt = 2  [
+  string reward_debt = 2 [
     (cosmos_proto.scalar) = "cosmos.Uint",
     (gogoproto.customtype) = "cosmossdk.io/math.Uint",
     (gogoproto.nullable) = false,
