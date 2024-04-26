@@ -48,7 +48,7 @@ func DefaultParams() Params {
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
-		MinEpochLengthRecordLimit:       uint64(3),                               // minimum number of epochs to keep records for a topic
+		MinEpochLengthRecordLimit:       int64(3),                               // minimum number of epochs to keep records for a topic
 	}
 }
 
@@ -200,7 +200,7 @@ func DefaultParamsMaxLimit() uint64 {
 	return DefaultParams().MaxLimit
 }
 
-func DefaultParamsMinEpochLengthRecordLimit() uint64 {
+func DefaultParamsMinEpochLengthRecordLimit() int64 {
 	return DefaultParams().MinEpochLengthRecordLimit
 }
 
