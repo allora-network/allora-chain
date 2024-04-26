@@ -347,6 +347,14 @@ func (x Dec) Int64() (int64, error) {
 	return x.dec.Int64()
 }
 
+// Int64 converts x to an int64 or returns an error if x cannot
+// fit precisely into an int64.
+func (x Dec) UInt64() (uint64, error) {
+	val, err := x.dec.Int64()
+	res := uint64(val)
+	return res, err
+}
+
 // BigInt converts x to a *big.Int or returns an error if x cannot
 // fit precisely into an *big.Int.
 func (x Dec) BigInt() (*big.Int, error) {

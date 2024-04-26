@@ -2,8 +2,11 @@ package rewards
 
 import (
 	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -117,9 +120,9 @@ func GetRewardForReputerTaskInTopic(
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	topicReward alloraMath.Dec, // E_{t,i}
+	topicReward *alloraMath.Dec, // E_{t,i}
 ) (alloraMath.Dec, error) {
-	numerator, err := entropyReputer.Mul(topicReward)
+	numerator, err := entropyReputer.Mul(*topicReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -136,6 +139,78 @@ func GetRewardForReputerTaskInTopic(
 		return alloraMath.Dec{}, err
 	}
 	return ret, nil
+}
+
+// Send total reward for delegator to PENDING_ACCOUNT
+// and return remain reward for reputer
+func GetRewardForReputerFromTotalReward(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	topicId uint64,
+	reputerDelegatorRewards []TaskRewards,
+) ([]TaskRewards, error) {
+
+	var reputerRewards []TaskRewards
+	for _, reputerReward := range reputerDelegatorRewards {
+		reputer := reputerReward.Address
+		reward := reputerReward.Reward
+		totalStakeAmount, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get reputer stake")
+		}
+		// update reward share
+		// new_share = current_share + (reward / total_stake)
+		totalStakeAmountUint, err := alloraMath.NewDecFromSdkUint(totalStakeAmount)
+		if err != nil {
+			return nil, err
+		}
+		addShare, err := reward.Quo(totalStakeAmountUint)
+		if err != nil {
+			return nil, err
+		}
+		currentShare, err := keeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
+		if err != nil {
+			return nil, err
+		}
+		val, err := addShare.UInt64()
+		newShare := currentShare.Add(math.NewUint(val))
+		err = keeper.SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
+		if err != nil {
+			return nil, err
+		}
+
+		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccountName
+		totalDelegatorStakeAmount, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
+		}
+		fraction := totalDelegatorStakeAmount.Quo(totalStakeAmount).Mul(math.NewUint(100))
+		fractionUint, err := alloraMath.NewDecFromSdkUint(fraction)
+		if err != nil {
+			return nil, err
+		}
+		delegatorReward, err := reward.Mul(fractionUint)
+		if err != nil {
+			return nil, err
+		}
+		err = keeper.BankKeeper().SendCoinsFromModuleToModule(
+			ctx,
+			types.AlloraRewardsAccountName,
+			types.AlloraPendingRewardForDelegatorAccountName,
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, delegatorReward.SdkIntTrim())),
+		)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to send coins to allora pend reward account")
+		}
+		// Send remain rewards to reputer
+		reputerRw, err := reward.Sub(delegatorReward)
+		reputerRewards = append(reputerRewards, TaskRewards{
+			Address: reputerReward.Address,
+			Reward:  reputerRw,
+		})
+	}
+
+	return reputerRewards, nil
 }
 
 // The reputer rewards are calculated based on the reputer stake and the reputer score.
@@ -197,17 +272,23 @@ func GetReputerRewards(
 	}
 
 	// Calculate reputer rewards
-	var reputerRewards []TaskRewards
+	var reputerDelegatorTotalRewards []TaskRewards
 	for i, reputerFraction := range reputersFractions {
 		reward, err := reputerFraction.Mul(totalReputerRewards)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to calculate reputer rewards")
 		}
-		reputerRewards = append(reputerRewards, TaskRewards{
+		reputerDelegatorTotalRewards = append(reputerDelegatorTotalRewards, TaskRewards{
 			Address: reputerAddresses[i],
 			Reward:  reward,
 		})
 	}
 
-	return reputerRewards, nil
+	reputerRewards, err := GetRewardForReputerFromTotalReward(
+		ctx,
+		keeper,
+		topicId,
+		reputerDelegatorTotalRewards,
+	)
+	return reputerRewards, err
 }

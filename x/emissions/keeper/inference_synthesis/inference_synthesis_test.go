@@ -64,10 +64,11 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
 		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
 		types.AlloraRewardsAccountName:  {"minter"},
-		"bonded_tokens_pool":            {"burner", "staking"},
-		"not_bonded_tokens_pool":        {"burner", "staking"},
-		multiPerm:                       {"burner", "minter", "staking"},
-		randomPerm:                      {"random"},
+		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
+		"bonded_tokens_pool":                             {"burner", "staking"},
+		"not_bonded_tokens_pool":                         {"burner", "staking"},
+		multiPerm:                                        {"burner", "minter", "staking"},
+		randomPerm:                                       {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -120,8 +121,6 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	// Add all tests addresses in whitelists
 	for _, addr := range addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 

@@ -45,7 +45,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
@@ -135,7 +134,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
@@ -219,7 +217,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)

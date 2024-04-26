@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -29,7 +28,6 @@ import (
 )
 
 var (
-	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	// TODO: Change PKS to accounts here and in all the tests (like the above line)
 	PKS     = simtestutil.CreateTestPubKeys(4)
 	Addr    = sdk.AccAddress(PKS[0].Address())
@@ -69,8 +67,6 @@ func (s *KeeperTestSuite) SetupTest() {
 	// Add all tests addresses in whitelists
 	for _, addr := range PKS {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.Address()))
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, sdk.AccAddress(addr.Address()))
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, sdk.AccAddress(addr.Address()))
 	}
 }
 
@@ -664,22 +660,6 @@ func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestSetGetMinRequestUnmetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := cosmosMath.NewUint(1000)
-
-	// Set the parameter
-	params := types.Params{MinRequestUnmetDemand: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMinRequestUnmetDemand(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
 func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -715,15 +695,15 @@ func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
 func (s *KeeperTestSuite) TestGetParamsMinTopicUnmetDemand() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	expectedValue := cosmosMath.NewUintFromString("300")
+	expectedValue := alloraMath.NewDecFromInt64(300)
 
 	// Set the parameter
-	params := types.Params{MinTopicUnmetDemand: expectedValue}
+	params := types.Params{MinTopicWeight: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMinTopicUnmetDemand(ctx)
+	actualValue, err := keeper.GetParamsMinTopicWeight(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
@@ -744,22 +724,6 @@ func (s *KeeperTestSuite) TestGetParamsRequiredMinimumStake() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestGetParamsMaxInferenceRequestValidity() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := types.BlockHeight(1000)
-
-	// Set the parameter
-	params := types.Params{MaxInferenceRequestValidity: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxInferenceRequestValidity(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
 func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -772,59 +736,6 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 
 	// Get the parameter
 	actualValue, err := keeper.GetParamsMinEpochLength(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
-func (s *KeeperTestSuite) TestGetParamsMaxRequestCadence() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := types.BlockHeight(360)
-
-	// Set the parameter
-	params := types.Params{MaxRequestCadence: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxRequestCadence(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedValue, actualValue)
-}
-
-func (s *KeeperTestSuite) TestGetParamsStakeAndFeeRevenueImportance() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedStakeImportance := alloraMath.NewDecFromInt64(2) // Example value
-	expectedFeeImportance := alloraMath.NewDecFromInt64(3)   // Example value
-
-	// Set the parameter
-	params := types.Params{
-		TopicRewardStakeImportance:      expectedStakeImportance,
-		TopicRewardFeeRevenueImportance: expectedFeeImportance,
-	}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualStakeImportance, actualFeeImportance, err := keeper.GetParamsStakeAndFeeRevenueImportance(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedStakeImportance, actualStakeImportance)
-	s.Require().Equal(expectedFeeImportance, actualFeeImportance)
-}
-
-func (s *KeeperTestSuite) TestGetParamsTopicRewardAlpha() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := alloraMath.NewDecFromInt64(1) // Assuming it's a value like 0.1 formatted correctly for your system
-
-	// Set the parameter
-	params := types.Params{TopicRewardAlpha: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	actualValue, err := keeper.GetParamsTopicRewardAlpha(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue)
 }
@@ -891,22 +802,6 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsRewardCadence() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedCadence := int64(86400) // Assume a daily cadence (in seconds if applicable)
-
-	// Set the parameter first to ensure there is something to retrieve
-	params := types.Params{RewardCadence: expectedCadence}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err, "Setting parameters should not fail")
-
-	// Now test getting the reward cadence
-	actualCadence, err := keeper.GetParamsRewardCadence(ctx)
-	s.Require().NoError(err, "Getting reward cadence should not fail")
-	s.Require().Equal(expectedCadence, actualCadence, "The retrieved reward cadence should match the expected value")
 }
 
 //////////////////////////////////////////////////////////////
@@ -1742,122 +1637,49 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing delegate stake removal information")
 }
 
-func (s *KeeperTestSuite) TestRewardsUpdate() {
-	noInitLastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
-	s.NoError(err, "error getting un-initialized")
-	s.Require().Equal(int64(0), noInitLastRewardsUpdate, "Last rewards update should be zero")
-
-	err = s.emissionsKeeper.SetLastRewardsUpdate(s.ctx, 100)
-	s.NoError(err, "error setting")
-
-	lastRewardsUpdate, err := s.emissionsKeeper.GetLastRewardsUpdate(s.ctx)
-	s.NoError(err, "error getting")
-	s.Require().Equal(int64(100), lastRewardsUpdate, "Last rewards update should be 100")
-}
-
-func (s *KeeperTestSuite) TestSetRequestDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	amount := cosmosMath.NewUint(1000)
-	requestId := "0xa948904f2f0f479b8f8197694b30184b0d2ed1c1cd2a1ec0fb85d299a192a447"
-
-	// Set demand
-	err := keeper.SetRequestDemand(ctx, requestId, amount)
-	s.Require().NoError(err)
-
-	// Check demand
-	demand, err := keeper.GetRequestDemand(ctx, requestId)
-	s.Require().NoError(err)
-	s.Require().Equal(amount, demand, "Demand should be equal to the set amount")
-}
-
-func (s *KeeperTestSuite) TestAddToMempool() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	inferenceRequest := types.InferenceRequest{
-		Sender:               sdk.AccAddress(PKS[0].Address()).String(),
-		Nonce:                1,
-		TopicId:              1,
-		Cadence:              60 * 60 * 24,
-		MaxPricePerInference: cosmosMath.NewUint(1000),
-		BidAmount:            cosmosMath.NewUint(1446),
-		BlockValidUntil:      0x14,
-		BlockLastChecked:     0,
-		ExtraData:            []byte("extra data"),
-	}
-	requestId, err := inferenceRequest.GetRequestId()
-	inferenceRequest.Id = requestId
-	s.Require().NoError(err, "error getting request id")
-
-	// Add to mempool
-	_, err = keeper.AddToMempool(ctx, inferenceRequest)
-	s.Require().NoError(err, "Error adding to mempool")
-
-	// Check mempool
-	mempool, err := keeper.GetMempoolInferenceRequestById(ctx, requestId)
-	s.Require().NoError(err)
-	s.Require().Equal(inferenceRequest, mempool, "Mempool should contain the added inference request")
-}
-
-func (s *KeeperTestSuite) TestGetMempoolInferenceRequestsForTopicSimple() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	var i uint64
-	var inferenceRequestMap = make(map[string]types.InferenceRequest)
-	for i = 0; i < 10; i++ {
-		inferenceRequest := types.InferenceRequest{
-			Id:                   fmt.Sprint(i),
-			Sender:               sdk.AccAddress(PKS[0].Address()).String(),
-			Nonce:                i,
-			TopicId:              1,
-			Cadence:              60 * 60 * 24,
-			MaxPricePerInference: cosmosMath.NewUint(1000 * i),
-			BidAmount:            cosmosMath.NewUint(1446 * i),
-			BlockValidUntil:      0x14,
-			BlockLastChecked:     0x0,
-			ExtraData:            []byte(fmt.Sprintf("%d extra data", i)),
-		}
-		requestId, err := inferenceRequest.GetRequestId()
-		s.Require().NoError(err, "error getting request id")
-		inferenceRequest.Id = requestId
-		// Add to mempool
-		_, err = keeper.AddToMempool(ctx, inferenceRequest)
-		s.Require().NoError(err, "Error adding to mempool")
-		inferenceRequestMap[requestId] = inferenceRequest
-	}
-
-	pagination := &types.SimpleCursorPaginationRequest{
-		Key:   nil,
-		Limit: 10,
-	}
-	requestsForTopic, _, err := keeper.GetMempoolInferenceRequestsForTopic(ctx, 1, pagination)
-	s.Require().NoError(err, "error getting requests for topic")
-	for _, request := range requestsForTopic {
-		requestId, err := request.GetRequestId()
-		s.Require().NoError(err, "error getting request id 2")
-		s.Require().Contains(inferenceRequestMap, requestId, "Mempool should contain the added inference request id")
-		expected := inferenceRequestMap[requestId]
-		s.Require().Equal(expected, request, "Mempool should contain the added inference request")
-	}
-}
-
 func (s *KeeperTestSuite) TestSetParams() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
+
 	params := types.Params{
-		Version:                     "v1.0.0",
-		RewardCadence:               60 * 60 * 24 * 7 * 24,
-		MinTopicUnmetDemand:         cosmosMath.NewUint(100),
-		MaxTopicsPerBlock:           1000,
-		MinRequestUnmetDemand:       cosmosMath.NewUint(1),
-		MaxMissingInferencePercent:  alloraMath.NewDecFromInt64(10),
-		RequiredMinimumStake:        cosmosMath.NewUint(1),
-		RemoveStakeDelayWindow:      172800,
-		MinEpochLength:              60,
-		MaxInferenceRequestValidity: 60 * 60 * 24 * 7 * 24,
-		MaxRequestCadence:           60 * 60 * 24 * 7 * 24,
-		MaxWorkersPerTopicRequest:   10,
-		MaxReputersPerTopicRequest:  10,
+		Version:                         "v1.0.0",
+		RewardCadence:                   60 * 60 * 24 * 7 * 24,
+		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
+		MaxTopicsPerBlock:               1000,
+		MaxMissingInferencePercent:      alloraMath.NewDecFromInt64(10),
+		RequiredMinimumStake:            cosmosMath.NewUint(1),
+		RemoveStakeDelayWindow:          172800,
+		MinEpochLength:                  60,
+		Sharpness:                       alloraMath.NewDecFromInt64(0),
+		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
+		LearningRate:                    alloraMath.NewDecFromInt64(0),
+		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),
+		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
+		Epsilon:                         alloraMath.NewDecFromInt64(0),
+		PInferenceSynthesis:             alloraMath.NewDecFromInt64(0),
+		PRewardSpread:                   alloraMath.NewDecFromInt64(0),
+		AlphaRegret:                     alloraMath.NewDecFromInt64(0),
+		MaxUnfulfilledWorkerRequests:    0,
+		MaxUnfulfilledReputerRequests:   0,
+		TopicRewardStakeImportance:      alloraMath.NewDecFromInt64(0),
+		TopicRewardFeeRevenueImportance: alloraMath.NewDecFromInt64(0),
+		TopicRewardAlpha:                alloraMath.NewDecFromInt64(0),
+		TaskRewardAlpha:                 alloraMath.NewDecFromInt64(0),
+		ValidatorsVsAlloraPercentReward: alloraMath.NewDecFromInt64(0),
+		MaxSamplesToScaleScores:         0,
+		MaxTopWorkersToReward:           10,
+		MaxTopReputersToReward:          10,
+		CreateTopicFee:                  cosmosMath.ZeroInt(),
+		SigmoidA:                        alloraMath.NewDecFromInt64(0),
+		SigmoidB:                        alloraMath.NewDecFromInt64(0),
+		GradientDescentMaxIters:         0,
+		MaxRetriesToFulfilNoncesWorker:  0,
+		MaxRetriesToFulfilNoncesReputer: 0,
+		TopicPageLimit:                  0,
+		MaxTopicPages:                   0,
+		RegistrationFee:                 cosmosMath.ZeroInt(),
+		DefaultLimit:                    0,
+		MaxLimit:                        0,
 	}
 
 	// Set params
@@ -1869,17 +1691,14 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
 	s.Require().Equal(params.RewardCadence, paramsFromKeeper.RewardCadence, "Params should be equal to the set params: EpochLength")
-	s.Require().True(params.MinTopicUnmetDemand.Equal(paramsFromKeeper.MinTopicUnmetDemand), "Params should be equal to the set params: MinTopicUnmetDemand")
+	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
-	s.Require().True(params.MinRequestUnmetDemand.Equal(paramsFromKeeper.MinRequestUnmetDemand), "Params should be equal to the set params: MinRequestUnmetDemand")
 	s.Require().Equal(params.MaxMissingInferencePercent, paramsFromKeeper.MaxMissingInferencePercent, "Params should be equal to the set params: MaxMissingInferencePercent")
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
-	s.Require().Equal(params.MaxInferenceRequestValidity, paramsFromKeeper.MaxInferenceRequestValidity, "Params should be equal to the set params: MaxInferenceRequestValidity")
-	s.Require().Equal(params.MaxRequestCadence, paramsFromKeeper.MaxRequestCadence, "Params should be equal to the set params: MaxRequestCadence")
-	s.Require().Equal(params.MaxWorkersPerTopicRequest, paramsFromKeeper.MaxWorkersPerTopicRequest, "Params should be equal to the set params: MaxWorkersPerTopicRequest")
-	s.Require().Equal(params.MaxReputersPerTopicRequest, paramsFromKeeper.MaxReputersPerTopicRequest, "Params should be equal to the set params: MaxReputersPerTopicRequest")
+	s.Require().Equal(params.MaxTopWorkersToReward, paramsFromKeeper.MaxTopWorkersToReward, "Params should be equal to the set params: MaxTopWorkersToReward")
+	s.Require().Equal(params.MaxTopReputersToReward, paramsFromKeeper.MaxTopReputersToReward, "Params should be equal to the set params: MaxTopReputersToReward")
 }
 
 // / REPUTERS AND WORKER
@@ -2059,7 +1878,7 @@ func (s *KeeperTestSuite) TestSetAndGetPreviousTopicWeight() {
 	topicId := uint64(1)
 
 	// Set previous topic weight
-	weightToSet := types.PreviousTopicWeight{Weight: alloraMath.NewDecFromInt64(10), Epoch: 5}
+	weightToSet := alloraMath.NewDecFromInt64(10)
 	err := keeper.SetPreviousTopicWeight(ctx, topicId, weightToSet)
 	s.Require().NoError(err, "Setting previous topic weight should not fail")
 
@@ -2078,7 +1897,7 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeightNotFound() {
 	// Attempt to get a weight for a topic that has no set weight
 	retrievedWeight, noPrior, err := keeper.GetPreviousTopicWeight(ctx, topicId)
 	s.Require().NoError(err, "Getting weight for an unset topic should not error but return zero value")
-	s.Require().Equal(types.PreviousTopicWeight{Weight: alloraMath.ZeroDec(), Epoch: 0}, retrievedWeight, "Weight for an unset topic should be zero")
+	s.Require().True(alloraMath.ZeroDec().Equal(retrievedWeight), "Weight for an unset topic should be zero")
 	s.Require().True(noPrior, "Should indicate no prior weight for an unset topic")
 }
 
@@ -2144,7 +1963,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 		Key:   nil,
 		Limit: 10,
 	}
-	activeTopics, _, err := keeper.GetActiveTopics(ctx, pagination)
+	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
@@ -2258,258 +2077,59 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 
+	newTopic := types.Topic{Id: topicId}
+	err := keeper.SetTopic(ctx, topicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
 	// Test getting revenue for a topic with no existing revenue
 	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when revenue does not exist")
 	s.Require().Equal(cosmosMath.ZeroInt(), feeRev.Revenue, "Revenue should be zero for non-existing entries")
-	s.Require().Equal(uint64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
+	s.Require().Equal(int64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
-	initialRevenue := cosmosMath.NewUint(100)
+	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
 	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
 
 	// Test getting revenue for a topic with existing revenue
 	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
-	s.Require().True(feeRev.Revenue.Equal(initialRevenueInt), "Revenue should match the initial setup")
+	s.Require().Equal(feeRev.Revenue.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
 func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
+	block := int64(100)
+
+	newTopic := types.Topic{Id: topicId}
+	err := keeper.SetTopic(ctx, topicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+	err = keeper.ResetTopicFeeRevenue(ctx, topicId, block)
+	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue in the first epoch
-	initialAmount := cosmosMath.NewUint(100)
-	err := keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
+	initialAmount := cosmosMath.NewInt(100)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(initialAmount.BigInt(), feeRev.Revenue.BigInt(), "Initial revenue should be correctly recorded")
-
-	// Increment fee revenue epoch
-	err = keeper.IncrementFeeRevenueEpoch(ctx)
-	s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
+	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
 
 	// Add more revenue in the new epoch
-	additionalAmount := cosmosMath.NewUint(200)
+	additionalAmount := cosmosMath.NewInt(200)
 	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
 	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
+	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
 
 	// Verify updated revenue in the new epoch
 	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().NotEqual(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should be updated")
-	s.Require().Equal(additionalAmount.BigInt(), updatedFeeRev.Revenue.BigInt(), "Revenue in new epoch should match the additional amount")
-}
-
-func (s *KeeperTestSuite) TestGetFeeRevenueEpoch() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Check initial epoch
-	initialEpoch, err := keeper.GetFeeRevenueEpoch(ctx)
-	s.Require().NoError(err, "Fetching initial fee revenue epoch should not fail")
-
-	// Increment the epoch
-	err = keeper.IncrementFeeRevenueEpoch(ctx)
-	s.Require().NoError(err, "Incrementing fee revenue epoch should not fail")
-
-	// Check updated epoch
-	updatedEpoch, err := keeper.GetFeeRevenueEpoch(ctx)
-	s.Require().NoError(err, "Fetching updated fee revenue epoch should not fail")
-	s.Require().Equal(initialEpoch+1, updatedEpoch, "Updated epoch should be incremented by one")
-}
-
-/// MEMPOOL & INFERENCE REQUESTS
-
-func (s *KeeperTestSuite) TestAddUnmetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	addAmount := cosmosMath.NewUint(50)
-
-	// Initial add should set demand since it starts at zero
-	_, err := keeper.AddUnmetDemand(ctx, topicId, addAmount)
-	s.Require().NoError(err, "Adding unmet demand should not fail")
-
-	// Verify the addition
-	demand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching unmet demand should not fail after addition")
-	s.Require().Equal(addAmount, demand, "Unmet demand should match the added amount")
-
-	// Add more to the existing demand
-	additionalAmount := cosmosMath.NewUint(30)
-	_, err = keeper.AddUnmetDemand(ctx, topicId, additionalAmount)
-	s.Require().NoError(err, "Adding more unmet demand should not fail")
-
-	// Verify new demand
-	newDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching new unmet demand should not fail")
-	expectedDemand := addAmount.Add(additionalAmount)
-	s.Require().Equal(expectedDemand, newDemand, "Unmet demand should be correctly accumulated")
-}
-
-func (s *KeeperTestSuite) TestRemoveUnmetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(2)
-	initialDemand := cosmosMath.NewUint(100)
-	removeAmount := cosmosMath.NewUint(50)
-
-	// Set initial unmet demand
-	_ = keeper.SetTopicUnmetDemand(ctx, topicId, initialDemand)
-
-	// Remove some demand
-	err := keeper.RemoveUnmetDemand(ctx, topicId, removeAmount)
-	s.Require().NoError(err, "Removing unmet demand should not fail")
-
-	// Verify removal
-	remainingDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching remaining unmet demand should not fail")
-	s.Require().Equal(initialDemand.Sub(removeAmount), remainingDemand, "Unmet demand should be correctly subtracted")
-
-	// Attempt to remove more than exists, should fail
-	largeRemoveAmount := cosmosMath.NewUint(200)
-	err = keeper.RemoveUnmetDemand(ctx, topicId, largeRemoveAmount)
-	s.Require().Error(err, "Should error when removing more demand than exists")
-	s.Require().IsType(types.ErrIntegerUnderflowUnmetDemand, err, "Error should be of type ErrIntegerUnderflowUnmetDemand")
-}
-
-func (s *KeeperTestSuite) TestSetTopicUnmetDemand() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(3)
-	setAmount := cosmosMath.NewUint(120)
-
-	// Set specific unmet demand
-	err := keeper.SetTopicUnmetDemand(ctx, topicId, setAmount)
-	s.Require().NoError(err, "Setting unmet demand should not fail")
-
-	// Verify set demand
-	demand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching set unmet demand should not fail")
-	s.Require().Equal(setAmount, demand, "Unmet demand should exactly match the set amount")
-
-	// Set to zero to test removal
-	err = keeper.SetTopicUnmetDemand(ctx, topicId, cosmosMath.NewUint(0))
-	s.Require().NoError(err, "Setting unmet demand to zero should not fail")
-
-	// Verify removal
-	zeroDemand, err := keeper.GetTopicUnmetDemand(ctx, topicId)
-	s.Require().NoError(err, "Fetching unmet demand after setting to zero should not fail")
-	s.Require().Equal(cosmosMath.ZeroUint(), zeroDemand, "Unmet demand should be zero after being set to zero")
-}
-
-func (s *KeeperTestSuite) TestAddToMempool2() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-
-	request := types.InferenceRequest{
-		Sender:    "allo1zf8q4lzfnavru3etczeamd3esu3yalzj2puq5p",
-		Nonce:     123,
-		TopicId:   topicId,
-		BidAmount: cosmosMath.NewUint(100),
-	}
-	requestId, err := request.GetRequestId()
-	s.Require().NoError(err, "Getting request ID should not fail")
-	request.Id = requestId
-
-	// Add request to the mempool
-	_, err = keeper.AddToMempool(ctx, request)
-	s.Require().NoError(err, "Adding to mempool should not fail")
-
-	// Check if the request is now in the mempool
-	exists, err := keeper.IsRequestInMempool(ctx, requestId)
-	s.Require().NoError(err, "Checking if request is in mempool should not fail")
-	s.Require().True(exists, "Request should exist in the mempool after being added")
-}
-
-func (s *KeeperTestSuite) TestRemoveFromMempool() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-
-	request := types.InferenceRequest{
-		Sender:    "allo1zf8q4lzfnavru3etczeamd3esu3yalzj2puq5p",
-		Nonce:     123,
-		TopicId:   topicId,
-		BidAmount: cosmosMath.NewUint(100),
-	}
-
-	requestId, err := request.GetRequestId()
-	s.Require().NoError(err, "Getting request ID should not fail")
-	request.Id = requestId
-
-	// Assume the request is already in the mempool
-	_, _ = keeper.AddToMempool(ctx, request)
-
-	// Remove the request from the mempool
-	err = keeper.RemoveFromMempool(ctx, requestId)
-	s.Require().NoError(err, "Removing from mempool should not fail")
-
-	// Check if the request is still in the mempool
-	exists, err := keeper.IsRequestInMempool(ctx, requestId)
-	s.Require().NoError(err, "Checking if request is in mempool should not fail after removal")
-	s.Require().False(exists, "Request should not exist in the mempool after being removed")
-}
-
-func (s *KeeperTestSuite) TestSetChurnReadyTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Define a list of topics to set as churn ready
-	topicList := types.TopicList{
-		Topics: []*types.Topic{
-			{Id: 1, Creator: "Creator1"},
-			{Id: 2, Creator: "Creator2"},
-		},
-	}
-
-	// Set churn ready topics
-	err := keeper.SetChurnReadyTopics(ctx, topicList)
-	s.Require().NoError(err, "Setting churn ready topics should not fail")
-
-	// Retrieve and verify the set topics
-	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
-	s.Require().NoError(err, "Fetching churn ready topics should not fail")
-	s.Require().Equal(len(topicList.Topics), len(retrievedList.Topics), "The number of topics in the list should match")
-	s.Require().Equal(topicList.Topics[0].Id, retrievedList.Topics[0].Id, "The IDs of the churn ready topics should match")
-}
-
-func (s *KeeperTestSuite) TestGetChurnReadyTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Attempt to fetch churn ready topics when none are set
-	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
-	s.Require().NoError(err, "Fetching churn ready topics should not fail even if none are set")
-	s.Require().Empty(retrievedList.Topics, "No topics should be returned when none are set")
-}
-
-func (s *KeeperTestSuite) TestResetChurnReadyTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	// Set some churn ready topics first
-	topicList := types.TopicList{
-		Topics: []*types.Topic{
-			{Id: 1, Creator: "Creator1"},
-			{Id: 2, Creator: "Creator2"},
-		},
-	}
-	_ = keeper.SetChurnReadyTopics(ctx, topicList)
-
-	// Now reset the churn ready topics
-	err := keeper.ResetChurnReadyTopics(ctx)
-	s.Require().NoError(err, "Resetting churn ready topics should not fail")
-
-	// Verify the reset by fetching the topics
-	retrievedList, err := keeper.GetChurnReadyTopics(ctx)
-	s.Require().NoError(err, "Fetching churn ready topics after reset should not fail")
-	s.Require().Empty(retrievedList.Topics, "Churn ready topics should be empty after reset")
+	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
+	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
 }
 
 /// SCORES
@@ -3003,54 +2623,6 @@ func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
 	isAdmin, err = keeper.IsWhitelistAdmin(ctx, adminAddress)
 	s.Require().NoError(err, "Checking admin status after removal should not fail")
 	s.Require().False(isAdmin, "Address should not be an admin after being removed")
-}
-
-func (s *KeeperTestSuite) TestTopicCreationWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	address := sdk.AccAddress("creatorAddressExample")
-
-	// Test Adding to whitelist
-	err := keeper.AddToTopicCreationWhitelist(ctx, address)
-	s.Require().NoError(err, "Adding to topic creation whitelist should not fail")
-
-	// Test Checking whitelist
-	isInWhitelist, err := keeper.IsInTopicCreationWhitelist(ctx, address)
-	s.Require().NoError(err, "Checking if address is in topic creation whitelist should not fail")
-	s.Require().True(isInWhitelist, "Address should be in the topic creation whitelist after being added")
-
-	// Test Removing from whitelist
-	err = keeper.RemoveFromTopicCreationWhitelist(ctx, address)
-	s.Require().NoError(err, "Removing from topic creation whitelist should not fail")
-
-	// Verify removal
-	isInWhitelist, err = keeper.IsInTopicCreationWhitelist(ctx, address)
-	s.Require().NoError(err, "Checking topic creation whitelist status after removal should not fail")
-	s.Require().False(isInWhitelist, "Address should not be in the topic creation whitelist after being removed")
-}
-
-func (s *KeeperTestSuite) TestReputerWhitelistOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	reputerAddress := sdk.AccAddress("reputerAddressExample")
-
-	// Test Adding to whitelist
-	err := keeper.AddToReputerWhitelist(ctx, reputerAddress)
-	s.Require().NoError(err, "Adding to reputer whitelist should not fail")
-
-	// Test Checking whitelist
-	isInWhitelist, err := keeper.IsInReputerWhitelist(ctx, reputerAddress)
-	s.Require().NoError(err, "Checking if address is in reputer whitelist should not fail")
-	s.Require().True(isInWhitelist, "Address should be in the reputer whitelist after being added")
-
-	// Test Removing from whitelist
-	err = keeper.RemoveFromReputerWhitelist(ctx, reputerAddress)
-	s.Require().NoError(err, "Removing from reputer whitelist should not fail")
-
-	// Verify removal
-	isInWhitelist, err = keeper.IsInReputerWhitelist(ctx, reputerAddress)
-	s.Require().NoError(err, "Checking reputer whitelist status after removal should not fail")
-	s.Require().False(isInWhitelist, "Address should not be in the reputer whitelist after being removed")
 }
 
 /// TOPIC REWARD NONCE

@@ -7,43 +7,24 @@ import (
 )
 
 func CreateInferenceRequestOnTopic1(m TestMetadata) {
-	currBlock, err := m.n.Client.LatestBlockHeight(m.ctx)
-	require.NoError(m.t, err)
 	txResp, err := m.n.Client.BroadcastTx(
 		m.ctx,
 		m.n.BobAcc,
-		&emissionstypes.MsgRequestInference{
-			Sender: m.n.BobAddr,
-			Request: &emissionstypes.InferenceRequestInbound{
-				Nonce:                1,
-				TopicId:              1,
-				Cadence:              10800,
-				MaxPricePerInference: cosmosMath.NewUint(10000),
-				BidAmount:            cosmosMath.NewUint(10000),
-				BlockValidUntil:      currBlock + 10805,
-			},
+		&emissionstypes.MsgFundTopic{
+			Sender:  m.n.BobAddr,
+			TopicId: 1,
+			Amount:  cosmosMath.NewInt(10000),
 		},
 	)
 	require.NoError(m.t, err)
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
-	resp := &emissionstypes.MsgRequestInferenceResponse{}
+	resp := &emissionstypes.MsgFundTopicResponse{}
 	err = txResp.Decode(resp)
-	require.NoError(m.t, err)
-
-	// todo make msgRequestInferenceResponse return the id of the resultant request
-	// and then query for it that way, esp given wanting to delete that endpoint
-
-	// query for the request
-	_, err = m.n.QueryEmissions.GetMempoolInferenceRequest(
-		m.ctx,
-		&emissionstypes.QueryMempoolInferenceRequest{RequestId: resp.RequestId},
-	)
 	require.NoError(m.t, err)
 }
 
 func CheckTopic1Activated(m TestMetadata) {
-
 	// Fetch only active topics
 	pagi := &emissionstypes.QueryActiveTopicsRequest{
 		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
