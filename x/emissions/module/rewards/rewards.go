@@ -276,7 +276,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 					oldestNonce = nonce.ReputerNonce.BlockHeight
 				}
 			}
-		} 
+		}
 
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
@@ -284,7 +284,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		}
 
 		// Prune records x EpochsLengths behind the oldest nonce
-		// This is to leave the necessary data for the remaining 
+		// This is to leave the necessary data for the remaining
 		// unfulfilled nonces to be fulfilled
 		oldestNonce -= moduleParams.MinEpochLengthRecordLimit * topic.EpochLength
 

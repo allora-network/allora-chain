@@ -2692,7 +2692,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		},
 	}
 	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce, expectedForecasts)
-	
+
 	reputerLossBundles := types.ReputerValueBundles{}
 	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerLossBundles)
 	s.Require().NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
