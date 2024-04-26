@@ -324,6 +324,17 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "RewardDelegateStake",
+					Use:       "reward-delegate-stake [sender] [topic_id] [reputer] [amount]",
+					Short:     "Get Reward for Delegate stake [amount] to a reputer for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+						{ProtoField: "amount"},
+					},
+				},
+				{
 					RpcMethod: "RequestInference",
 					Use:       "request-inference [sender] [request]",
 					Short:     "Request an inference ",

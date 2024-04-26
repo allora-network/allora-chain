@@ -152,7 +152,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	if err != nil {
 		return nil, err
 	}
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, sdk.AccAddress(targetAddr))
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +214,7 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	if delegateStakePlaced.LT(msg.Amount) {
+	if delegateStakePlaced.Amount.LT(msg.Amount) {
 		return nil, types.ErrInsufficientDelegateStakeToRemove
 	}
 
@@ -280,4 +280,39 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	}
 
 	return &types.MsgConfirmRemoveDelegateStakeResponse{}, nil
+}
+
+func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	// Check the target reputer exists and is registered
+	reputer, err := sdk.AccAddressFromBech32(msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, reputer)
+	if err != nil {
+		return nil, err
+	}
+	if !isRegistered {
+		return nil, types.ErrAddressIsNotRegisteredInThisTopic
+	}
+
+	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer)
+	if err != nil {
+		return nil, err
+	}
+	share, err := ms.k.GetDelegateRewardPerShare(ctx, msg.TopicId, reputer)
+	if err != nil {
+		return nil, err
+	}
+	pendingReward := delegateInfo.Amount.Mul(share).Sub(delegateInfo.RewardDebt)
+	if pendingReward.GT(cosmosMath.NewUint(0)) {
+		amountInt := cosmosMath.NewIntFromBigInt(pendingReward.BigInt())
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccoutName, senderAddr, coins)
+	}
+	return &types.MsgRewardDelegateStakeResponse{}, nil
 }

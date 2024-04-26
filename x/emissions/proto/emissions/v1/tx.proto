@@ -414,3 +414,12 @@ message MsgRemoveFromReputerWhitelist {
 }
 
 message MsgRemoveFromReputerWhitelistResponse {}
+
+message MsgRewardDelegateStakeResponse {}
+
+message MsgRewardDelegateStake {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+}

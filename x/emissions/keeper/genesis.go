@@ -18,6 +18,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
+	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccoutName)
+	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
 	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
 		return err
 	}

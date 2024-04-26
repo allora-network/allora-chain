@@ -436,3 +436,18 @@ message PreviousTopicWeight {
   string weight = 2
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
+
+message DelegatorInfo {
+  string amount = 1  [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string reward_debt = 2  [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

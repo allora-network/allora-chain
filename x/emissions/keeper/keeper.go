@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/allora-network/allora-chain/app/params"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -99,9 +100,11 @@ type Keeper struct {
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, Delegator], Uint]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
-	delegateStakePlacement collections.Map[collections.Triple[TopicId, Reputer, Delegator], Uint]
+	delegateStakePlacement collections.Map[collections.Triple[TopicId, Reputer, Delegator], types.DelegatorInfo]
 	// map of (target) -> amount of stake that has been placed on that target
 	stakeUponReputer collections.Map[collections.Pair[TopicId, Reputer], Uint]
+	// map of (topidId, reputer) -> share of delegate reward
+	delegateRewardPerShare collections.Map[collections.Pair[TopicId, Reputer], Uint]
 
 	/// INFERENCE REQUEST MEMPOOL
 
@@ -211,8 +214,9 @@ func NewKeeper(
 		stakeRemoval:                        collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
 		delegateStakeRemoval:                collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
 		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
+		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegatorInfo](cdc)),
 		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		delegateRewardPerShare:              collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		requests:                            collections.NewMap(sb, types.RequestsKey, "requests", collections.StringKey, codec.CollValue[types.InferenceRequest](cdc)),
 		topicRequests:                       collections.NewMap(sb, types.TopicRequestsKey, "topic_requests", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), collections.StringValue),
 		numRequestsPerTopic:                 collections.NewMap(sb, types.NumRequestsPerTopicKey, "num_requests_per_topic", collections.Uint64Key, collections.Uint64Value),
@@ -1108,7 +1112,15 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	if err != nil {
 		return err
 	}
-	stakePlacementNew := delegateStakePlacement.Add(stake)
+	newAmount := delegateStakePlacement.Amount.Add(stake)
+	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	stakePlacementNew := types.DelegatorInfo{
+		Amount:     newAmount,
+		RewardDebt: newAmount.Mul(share),
+	}
 
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
@@ -1237,8 +1249,8 @@ func (k *Keeper) RemoveDelegateStake(
 	topicId TopicId,
 	delegator sdk.AccAddress,
 	reputer sdk.AccAddress,
-	stake Uint) error {
-	if stake.IsZero() {
+	unStake Uint) error {
+	if unStake.IsZero() {
 		return nil
 	}
 
@@ -1247,30 +1259,52 @@ func (k *Keeper) RemoveDelegateStake(
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakeFromDelegator) {
+	if unStake.GT(stakeFromDelegator) {
 		return types.ErrIntegerUnderflowStakeFromDelegator
 	}
-	stakeFromDelegatorNew := stakeFromDelegator.Sub(stake)
+	stakeFromDelegatorNew := stakeFromDelegator.Sub(unStake)
+
+	// Get share for this topicId and reputer
+	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
 
 	// Check stakePlacement >= stake
 	stakePlacement, err := k.GetDelegateStakePlacement(ctx, topicId, delegator, reputer)
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakePlacement) {
+	if unStake.GT(stakePlacement.Amount) {
 		return types.ErrIntegerUnderflowDelegateStakePlacement
 	}
-	stakePlacementNew := stakePlacement.Sub(stake)
+
+	// Calculate pending reward and send to delegator
+	pendingReward := stakePlacement.Amount.Mul(share).Sub(stakePlacement.RewardDebt)
+	if !pendingReward.IsZero() {
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(
+			ctx,
+			types.AlloraPendingRewardForDelegatorAccoutName,
+			delegator,
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromUint64(pendingReward.Uint64()))),
+		)
+	}
+
+	newAmount := stakePlacement.Amount.Sub(unStake)
+	stakePlacementNew := types.DelegatorInfo{
+		Amount:     newAmount,
+		RewardDebt: newAmount.Mul(share),
+	}
 
 	// Check stakeUponReputer >= stake
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakeUponReputer) {
+	if unStake.GT(stakeUponReputer) {
 		return types.ErrIntegerUnderflowDelegateStakeUponReputer
 	}
-	stakeUponReputerNew := stakeUponReputer.Sub(stake)
+	stakeUponReputerNew := stakeUponReputer.Sub(unStake)
 
 	// Set new stake from delegator
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
@@ -1359,25 +1393,41 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 }
 
 // Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (Uint, error) {
+func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
+			return types.DelegatorInfo{}, nil
 		}
-		return cosmosMath.Uint{}, err
+		return types.DelegatorInfo{}, err
 	}
 	return stake, nil
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake Uint) error {
+func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake types.DelegatorInfo) error {
 	key := collections.Join3(topicId, delegator, target)
-	if stake.IsZero() {
+	if stake.Amount.IsZero() {
 		return k.delegateStakePlacement.Remove(ctx, key)
 	}
 	return k.delegateStakePlacement.Set(ctx, key, stake)
+}
+
+// Returns the share of reward by a specific topic and reputer
+func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer) (Uint, error) {
+	key := collections.Join(topicId, reputer)
+	share, err := k.delegateRewardPerShare.Get(ctx, key)
+	if err != nil {
+		return cosmosMath.Uint{}, err
+	}
+	return share, nil
+}
+
+// Set the share on specific reputer and topicId
+func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer, share Uint) error {
+	key := collections.Join(topicId, reputer)
+	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
 // Returns the amount of stake placed on a specific target.

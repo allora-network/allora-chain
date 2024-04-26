@@ -2,8 +2,11 @@ package rewards
 
 import (
 	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -209,5 +212,60 @@ func GetReputerRewards(
 		})
 	}
 
+	// Calculate delegator rewards from reputer
+	for i, reputerReward := range reputerRewards {
+		reputer := reputerReward.Address
+		reward := reputerReward.Reward
+		totalStakeAmount, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get reputer stake")
+		}
+		// update reward share
+		// new_share = current_share + (reward / total_stake)
+		totalStakeAmountUint, err := alloraMath.NewDecFromSdkUint(totalStakeAmount)
+		if err != nil {
+			return nil, err
+		}
+		addShare, err := reward.Quo(totalStakeAmountUint)
+		if err != nil {
+			return nil, err
+		}
+		currentShare, err := keeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
+		if err != nil {
+			return nil, err
+		}
+		val, err := addShare.UInt64()
+		newShare := currentShare.Add(math.NewUint(val))
+		err = keeper.SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
+		if err != nil {
+			return nil, err
+		}
+
+		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccoutName
+		totalDelegatorStakeAmount, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
+		}
+		fraction := totalDelegatorStakeAmount.Quo(totalStakeAmount).Mul(math.NewUint(100))
+		fractionUint, err := alloraMath.NewDecFromSdkUint(fraction)
+		if err != nil {
+			return nil, err
+		}
+		delegatorReward, err := reward.Mul(fractionUint)
+		if err != nil {
+			return nil, err
+		}
+		err = keeper.BankKeeper().SendCoinsFromModuleToModule(
+			ctx,
+			types.AlloraRewardsAccountName,
+			types.AlloraPendingRewardForDelegatorAccoutName,
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, delegatorReward.SdkIntTrim())),
+		)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to send coins to allora pend reward account")
+		}
+		// Send remain rewards to reputer
+		reputerRewards[i].Reward, err = reward.Sub(delegatorReward)
+	}
 	return reputerRewards, nil
 }
