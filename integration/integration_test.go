@@ -49,4 +49,6 @@ func TestExternalTestSuite(t *testing.T) {
 	DistributionChecks(m)
 	t.Log(">>> Test Actor Registration <<<")
 	RegistrationChecks(m)
+	t.Log(">>> Test Inference Request <<<")
+	InferenceRequestsChecks(m)
 }

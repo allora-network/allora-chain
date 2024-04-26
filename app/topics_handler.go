@@ -88,6 +88,11 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				continue
 			}
 
+			// if churnReadyTopicId is 0, then no more churn ready topics
+			if churnReadyTopicId == 0 {
+				break
+			}
+
 			// Parallelize the inference and loss cadence checks
 			wg.Add(1)
 			go func(topicId TopicId) {

@@ -60,8 +60,6 @@ type Keeper struct {
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// map of (topic) -> nonce/block height
 	topicRewardNonce collections.Map[TopicId, int64]
-	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
-	topicUnmetDemand collections.Map[TopicId, Uint]
 
 	/// SCORES
 
@@ -121,9 +119,6 @@ type Keeper struct {
 
 	// fee revenue collected by a topic over the course of the last reward cadence
 	topicFeeRevenue collections.Map[TopicId, types.TopicFeeRevenue]
-
-	// feeRevenueEpoch marks the current epoch for fee revenue
-	feeRevenueEpoch collections.Sequence
 
 	// store previous weights for exponential moving average in rewards calc
 	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
@@ -195,7 +190,6 @@ func NewKeeper(
 		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
-		feeRevenueEpoch:                     collections.NewSequence(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch"),
 		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                          collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                           collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
@@ -1619,27 +1613,30 @@ func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error 
 	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
+// returns a single churn ready topic for processing.
+// if there are no churn ready topics, returns the reserved topic id 0,
+// which cannot be used as a topic id - callers are responsible for checking
+// that the returned topic id is not 0.
 func (k *Keeper) PopChurnReadyTopic(ctx context.Context) (TopicId, error) {
 	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
 	if err != nil {
 		return uint64(0), err
 	}
 
-	var poppedTopic TopicId
-	for ; iter.Valid(); iter.Next() {
-		poppedTopic, err = iter.Key()
+	if iter.Valid() {
+		poppedTopic, err := iter.Key()
 		if err != nil {
 			return uint64(0), err
 		}
-		break
+		if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
+			return uint64(0), err
+		}
+		return poppedTopic, nil
 	}
 	iter.Close()
 
-	if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
-		return uint64(0), err
-	}
-
-	return poppedTopic, nil
+	// if no topics exist to be churned, return the reserved topic id 0
+	return uint64(0), nil
 }
 
 /// SCORES
