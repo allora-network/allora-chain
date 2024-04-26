@@ -1590,26 +1590,24 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types
 	return feeRev, nil
 }
 
-// Add to the fee revenue collected by a topic for this reward epoch
+// Add to the fee revenue collected by a topic incurred at a block
 func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Int) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return err
+	newTopicFeeRevenue := types.TopicFeeRevenue{
+		Epoch:   topicFeeRevenue.Epoch,
+		Revenue: topicFeeRevenue.Revenue.Add(amount),
 	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{}
-	if topicFeeRevenue.Epoch < topic.EpochLastEnded {
-		// Reset the revenue if it is being incremented in the topic's new epoch
-		newTopicFeeRevenue.Epoch = topic.EpochLastEnded
-		newTopicFeeRevenue.Revenue = cosmosMath.NewIntFromBigInt(amount.BigInt())
-	} else {
-		// Add to existing revenue if it is being incremented within the topic's current epoch
-		newTopicFeeRevenue.Epoch = topicFeeRevenue.Epoch
-		amountInt := cosmosMath.NewIntFromBigInt(amount.BigInt())
-		newTopicFeeRevenue.Revenue = topicFeeRevenue.Revenue.Add(amountInt)
+	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+}
+
+// Reset the fee revenue collected by a topic incurred at a block
+func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	newTopicFeeRevenue := types.TopicFeeRevenue{
+		Epoch:   block,
+		Revenue: cosmosMath.ZeroInt(),
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }

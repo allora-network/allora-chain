@@ -21,6 +21,7 @@ func InactivateTopicsAndUpdateSums(
 	sumWeight alloraMath.Dec,
 	sumRevenue cosmosMath.Int,
 	totalReward alloraMath.Dec,
+	block BlockHeight,
 ) (
 	map[uint64]*alloraMath.Dec,
 	alloraMath.Dec,
@@ -36,10 +37,17 @@ func InactivateTopicsAndUpdateSums(
 	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
 	for topicId, weight := range weights {
 		// In activate and skip the topic if its weight is below the globally-set minimum
-		if weight.IsZero() || weight.Lt(minTopicWeight) {
+		if weight.Lt(minTopicWeight) {
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+			}
+
+			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
+			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+			err = k.ResetTopicFeeRevenue(ctx, topicId, block)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
 
 			// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
@@ -119,6 +127,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		sumWeight,
 		sumRevenue,
 		totalRewardDec,
+		block,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "failed to inactivate topics and update sums")
@@ -142,6 +151,13 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 				return errors.Wrapf(err, "failed to get topic fee revenue")
 			}
 			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
+		}
+
+		// This way we won't double count from this earlier epoch revenue the next epoch
+		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+		err = k.ResetTopicFeeRevenue(ctx, topicId, block)
+		if err != nil {
+			return errors.Wrapf(err, "failed to reset topic fee revenue")
 		}
 	}
 
