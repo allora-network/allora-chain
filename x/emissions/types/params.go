@@ -18,15 +18,12 @@ func DefaultParams() Params {
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
 		MinEpochLength:                  1,                                         // 1 block
-		MaxInferenceRequestValidity:     int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-		MaxWorkersPerTopicRequest:       uint64(20),                                // maximum number of workers that can be assigned to a single inference request
-		MaxReputersPerTopicRequest:      uint64(20),                                // maximum number of reputers that can be assigned to a single loss request
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
@@ -39,8 +36,8 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopWorkersToReward:           uint64(10),                                // max this many top workers by score are rewarded for a topic
-		MaxTopReputersToReward:          uint64(10),                                // max this many top reputers by score are rewarded for a topic
+		MaxTopWorkersToReward:           uint64(20),                                // max this many top workers by score are rewarded for a topic
+		MaxTopReputersToReward:          uint64(20),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
@@ -48,8 +45,6 @@ func DefaultParams() Params {
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
 		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
-		RequestPageLimit:                uint64(100),                               // how many requests to return per page during churn of requests
-		MaxRequestPages:                 uint64(100),                               // max number of requests to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
@@ -88,10 +83,6 @@ func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
 }
 
-func DefaultParamsMaxInferenceRequestValidity() BlockHeight {
-	return DefaultParams().MaxInferenceRequestValidity
-}
-
 func DefaultParamsSharpness() alloraMath.Dec {
 	return DefaultParams().Sharpness
 }
@@ -114,14 +105,6 @@ func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
 
 func DefaultParamsMinStakeFraction() alloraMath.Dec {
 	return DefaultParams().MinStakeFraction
-}
-
-func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
-	return DefaultParams().MaxWorkersPerTopicRequest
-}
-
-func DefaultParamsMaxReputersPerTopicRequest() uint64 {
-	return DefaultParams().MaxReputersPerTopicRequest
 }
 
 func DefaultParamsEpsilon() alloraMath.Dec {
@@ -202,14 +185,6 @@ func DefaultParamsTopicPageLimit() uint64 {
 
 func DefaultParamsMaxTopicPages() uint64 {
 	return DefaultParams().MaxTopicPages
-}
-
-func DefaultParamsRequestPageLimit() uint64 {
-	return DefaultParams().RequestPageLimit
-}
-
-func DefaultParamsMaxRequestPages() uint64 {
-	return DefaultParams().MaxRequestPages
 }
 
 func DefaultParamsRegistrationFee() cosmosMath.Int {

@@ -548,14 +548,6 @@ func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (BlockHeig
 	return params.RemoveStakeDelayWindow, nil
 }
 
-func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (BlockHeight, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxInferenceRequestValidity, nil
-}
-
 func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BlockHeight, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -572,30 +564,6 @@ func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	return params.Epsilon, nil
 }
 
-func (k *Keeper) GetParamsSharpness(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.Sharpness, nil
-}
-
-func (k *Keeper) GetParamsLearningRate(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.LearningRate, nil
-}
-
-func (k *Keeper) GetParamsGradientDescentMaxIters(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.GradientDescentMaxIters, nil
-}
-
 func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -610,14 +578,6 @@ func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (ui
 		return 0, err
 	}
 	return params.MaxUnfulfilledReputerRequests, nil
-}
-
-func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.TopicRewardAlpha, nil
 }
 
 func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
