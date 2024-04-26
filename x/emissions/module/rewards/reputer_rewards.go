@@ -241,7 +241,7 @@ func GetReputerRewards(
 			return nil, err
 		}
 
-		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccoutName
+		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccountName
 		totalDelegatorStakeAmount, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
@@ -258,7 +258,7 @@ func GetReputerRewards(
 		err = keeper.BankKeeper().SendCoinsFromModuleToModule(
 			ctx,
 			types.AlloraRewardsAccountName,
-			types.AlloraPendingRewardForDelegatorAccoutName,
+			types.AlloraPendingRewardForDelegatorAccountName,
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, delegatorReward.SdkIntTrim())),
 		)
 		if err != nil {

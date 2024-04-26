@@ -312,7 +312,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	if pendingReward.GT(cosmosMath.NewUint(0)) {
 		amountInt := cosmosMath.NewIntFromBigInt(pendingReward.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccoutName, senderAddr, coins)
+		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil
 }

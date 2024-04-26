@@ -316,17 +316,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "RequestInference",
-					Use:       "request-inference [sender] [request]",
-					Short:     "Request an inference ",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "topic_id"},
-						{ProtoField: "amount"},
-						{ProtoField: "extra_data"},
-					},
-				},
-				{
 					RpcMethod: "AddToWhitelistAdmin",
 					Use:       "add-to-whitelist-admin [sender] [address]",
 					Short:     "add an admin address to the whitelist used for admin functions on-chain",

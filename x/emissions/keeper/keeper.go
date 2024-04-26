@@ -1188,7 +1188,7 @@ func (k *Keeper) RemoveDelegateStake(
 	if !pendingReward.IsZero() {
 		err = k.BankKeeper().SendCoinsFromModuleToAccount(
 			ctx,
-			types.AlloraPendingRewardForDelegatorAccoutName,
+			types.AlloraPendingRewardForDelegatorAccountName,
 			delegator,
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewIntFromUint64(pendingReward.Uint64()))),
 		)
