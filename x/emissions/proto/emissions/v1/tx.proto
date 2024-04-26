@@ -344,7 +344,6 @@ message MsgRemoveFromWhitelistAdmin {
 
 message MsgRemoveFromWhitelistAdminResponse {}
 
-
 message MsgRewardDelegateStakeResponse {}
 
 message MsgRewardDelegateStake {

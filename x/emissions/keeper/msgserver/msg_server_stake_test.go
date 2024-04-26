@@ -527,7 +527,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 	// Check that the stake was actually removed
 	delegateStakePlaced, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.True(delegateStakePlaced.IsZero(), "Delegate stake should be zero after successful removal")
+	require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
 }
 
 /*
