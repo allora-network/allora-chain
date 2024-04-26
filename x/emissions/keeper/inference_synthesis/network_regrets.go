@@ -20,7 +20,7 @@ type networkLossesByWorker struct {
 }
 
 // Convert a ValueBundle to a networkLossesByWorker
-func ConvertValueBundleToNetworkLossesByWorker(
+func convertValueBundleToNetworkLossesByWorker(
 	valueBundle emissions.ValueBundle,
 ) networkLossesByWorker {
 	infererLosses := make(map[Worker]Loss)
@@ -59,7 +59,7 @@ func ConvertValueBundleToNetworkLossesByWorker(
 	}
 }
 
-func ComputeAndBuildEMRegret(
+func computeAndBuildEMRegret(
 	lossA Loss,
 	lossB Loss,
 	previousRegret Regret,
@@ -93,7 +93,7 @@ func GetCalcSetNetworkRegrets(
 	alpha alloraMath.Dec,
 ) error {
 	// Convert the network losses to a networkLossesByWorker
-	networkLossesByWorker := ConvertValueBundleToNetworkLossesByWorker(networkLosses)
+	networkLossesByWorker := convertValueBundleToNetworkLossesByWorker(networkLosses)
 	blockHeight := nonce.BlockHeight
 
 	// Get old regret R_{i-1,j} and Calculate then Set the new regrets R_ij for inferers
@@ -103,7 +103,7 @@ func GetCalcSetNetworkRegrets(
 			fmt.Println("Error getting inferer regret: ", err)
 			return err
 		}
-		newInfererRegret, err := ComputeAndBuildEMRegret(
+		newInfererRegret, err := computeAndBuildEMRegret(
 			networkLosses.CombinedValue,
 			networkLossesByWorker.InfererLosses[infererLoss.Worker],
 			lastRegret.Value,
@@ -125,8 +125,7 @@ func GetCalcSetNetworkRegrets(
 			fmt.Println("Error getting forecaster regret: ", err)
 			return err
 		}
-
-		newForecasterRegret, err := ComputeAndBuildEMRegret(
+		newForecasterRegret, err := computeAndBuildEMRegret(
 			networkLosses.CombinedValue,
 			networkLossesByWorker.ForecasterLosses[forecasterLoss.Worker],
 			lastRegret.Value,
@@ -145,15 +144,12 @@ func GetCalcSetNetworkRegrets(
 	for _, oneInForecasterLoss := range networkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range networkLosses.InfererValues {
-			if infererLoss.Worker == oneInForecasterLoss.Worker {
-				continue
-			}
 			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(oneInForecasterLoss.Worker), sdk.AccAddress(infererLoss.Worker))
 			if err != nil {
 				fmt.Println("Error getting one-in forecaster regret: ", err)
 				return err
 			}
-			newOneInForecasterRegret, err := ComputeAndBuildEMRegret(
+			newOneInForecasterRegret, err := computeAndBuildEMRegret(
 				networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker],
 				networkLossesByWorker.InfererLosses[infererLoss.Worker],
 				lastRegret.Value,
@@ -173,7 +169,7 @@ func GetCalcSetNetworkRegrets(
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return err
 		}
-		oneInForecasterSelfRegret, err := ComputeAndBuildEMRegret(
+		oneInForecasterSelfRegret, err := computeAndBuildEMRegret(
 			networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker],
 			networkLossesByWorker.ForecasterLosses[oneInForecasterLoss.Worker],
 			lastRegret.Value,
