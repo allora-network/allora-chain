@@ -395,7 +395,7 @@ func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	}
 
 	_, err = s.msgServer.StartRemoveStake(ctx, removeMsg)
-	require.NoError(err)
+	require.Error(err)
 }
 
 func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
