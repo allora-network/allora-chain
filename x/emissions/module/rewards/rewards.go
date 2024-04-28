@@ -9,7 +9,6 @@ import (
 	chainParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -432,25 +431,16 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 			continue
 		}
 
-		oneE18, err := inference_synthesis.AlloraOneE18()
-		if err != nil {
-			return err
-		}
-		scaledReward, err := reward.Reward.Mul(oneE18)
-		if err != nil {
-			return err
-		}
-
-		scaledRewardInt := scaledReward.Abs().SdkIntTrim()
+		rewardInt := reward.Reward.Abs().SdkIntTrim()
 
 		if reward.Type == ReputerRewardType {
-			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(scaledRewardInt))
+			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
 		} else {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
 				address,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, scaledRewardInt)),
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt)),
 			)
 			if err != nil {
 				return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
