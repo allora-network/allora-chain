@@ -1240,7 +1240,9 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (Uint, erro
 	return ret, nil
 }
 
-func (k *Keeper) GetStakeOnTopicFromReputer(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (Uint, error) {
+// Returns the amount of stake placed by a specific reputer on a specific topic.
+// Includes the stake placed by delegators on the reputer in that topic.
+func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (Uint, error) {
 	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeByReputerAndTopicId.Get(ctx, key)
 	if err != nil {
