@@ -334,7 +334,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), amount0.Amount)
+	require.Equal(alloraMath.NewDecFromInt64(0), amount0.Amount)
 
 	// Perform the stake delegation
 	response, err := s.msgServer.DelegateStake(ctx, msg)
@@ -347,7 +347,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount)
+	require.Equal(stakeAmount, amount1.Amount.SdkUintTrim())
 }
 
 func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
@@ -387,7 +387,7 @@ func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount)
+	require.Equal(stakeAmount, amount1.Amount.SdkUintTrim())
 
 	// Attempt to withdraw the delegated stake
 	removeMsg := &types.MsgStartRemoveStake{
