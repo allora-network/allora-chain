@@ -41,9 +41,9 @@ func GenerateReputerScores(
 		reputerAddresses = append(reputerAddresses, reputerAddr)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnTopicFromReputer")
+			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}
 		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
 		if err != nil {
