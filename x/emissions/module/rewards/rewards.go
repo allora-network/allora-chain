@@ -432,24 +432,25 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 			continue
 		}
 
+		oneE18, err := inference_synthesis.AlloraOneE18()
+		if err != nil {
+			return err
+		}
+		scaledReward, err := reward.Reward.Mul(oneE18)
+		if err != nil {
+			return err
+		}
+
+		scaledRewardInt := scaledReward.Abs().SdkIntTrim()
+
 		if reward.Type == ReputerRewardType {
-			oneE18, err := inference_synthesis.AlloraOneE18()
-			if err != nil {
-				return err
-			}
-			scaledReward, err := reward.Reward.Mul(oneE18)
-			if err != nil {
-				return err
-			}
-
-			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(scaledReward.Abs().SdkIntTrim()))
-
+			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(scaledRewardInt))
 		} else {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
 				address,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reward.Reward.SdkIntTrim())),
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, scaledRewardInt)),
 			)
 			if err != nil {
 				return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
