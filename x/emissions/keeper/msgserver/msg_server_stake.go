@@ -2,10 +2,9 @@ package msgserver
 
 import (
 	"context"
-	"errors"
-
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
+	"errors"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -308,12 +307,12 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	if err != nil {
 		return nil, err
 	}
-	pendingReward := delegateInfo.Amount.Mul(share).Sub(delegateInfo.RewardDebt)
+	pendingReward := delegateInfo.Amount.Mul(share).Quo(ms.k.GetAlloraExponent()).Sub(delegateInfo.RewardDebt)
 	if pendingReward.GT(cosmosMath.NewUint(0)) {
 		amountInt := cosmosMath.NewIntFromBigInt(pendingReward.BigInt())
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
 		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
-		delegateInfo.RewardDebt = delegateInfo.Amount.Mul(share)
+		delegateInfo.RewardDebt = delegateInfo.Amount.Mul(share).Quo(ms.k.GetAlloraExponent())
 		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer, delegateInfo)
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil

@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-
 	"github.com/allora-network/allora-chain/app/params"
 
 	cosmosMath "cosmossdk.io/math"
@@ -652,6 +651,14 @@ func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
 	return params.MaxLimit, nil
 }
 
+func (k *Keeper) GetAlloraExponent() Uint {
+	val := cosmosMath.RelativePow(
+		cosmosMath.NewUint(10),
+		cosmosMath.NewUint(params.AlloraExponent),
+		cosmosMath.NewUint(1))
+	return val
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -983,7 +990,9 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 		if err != nil {
 			return err
 		}
-		pendingReward := delegateStakePlacement.Amount.Mul(share).Sub(delegateStakePlacement.RewardDebt)
+
+		pendingReward := delegateStakePlacement.Amount.Mul(share).Quo(k.GetAlloraExponent()).
+			Sub(delegateStakePlacement.RewardDebt)
 		if pendingReward.GT(cosmosMath.NewUint(0)) {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
@@ -1001,7 +1010,7 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	}
 	stakePlacementNew := types.DelegatorInfo{
 		Amount:     newAmount,
-		RewardDebt: newAmount.Mul(share),
+		RewardDebt: newAmount.Mul(share).Quo(k.GetAlloraExponent()),
 	}
 
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
@@ -1162,7 +1171,8 @@ func (k *Keeper) RemoveDelegateStake(
 	}
 
 	// Calculate pending reward and send to delegator
-	pendingReward := stakePlacement.Amount.Mul(share).Sub(stakePlacement.RewardDebt)
+	pendingReward := stakePlacement.Amount.Mul(share).Quo(k.GetAlloraExponent()).
+		Sub(stakePlacement.RewardDebt)
 	if pendingReward.GT(cosmosMath.NewUint(0)) {
 		err = k.BankKeeper().SendCoinsFromModuleToAccount(
 			ctx,
@@ -1175,7 +1185,7 @@ func (k *Keeper) RemoveDelegateStake(
 	newAmount := stakePlacement.Amount.Sub(unStake)
 	stakePlacementNew := types.DelegatorInfo{
 		Amount:     newAmount,
-		RewardDebt: newAmount.Mul(share),
+		RewardDebt: newAmount.Mul(share).Quo(k.GetAlloraExponent()),
 	}
 
 	// Check stakeUponReputer >= stake
