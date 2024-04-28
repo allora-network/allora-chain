@@ -100,7 +100,7 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	return k.EcosystemTokensMinted.Set(ctx, new)
 }
 
-/// STAKIND KEEPER RELATED FUNCTIONS
+/// STAKING KEEPER RELATED FUNCTIONS
 
 // StakingTokenSupply implements an alias call to the underlying staking keeper's
 // StakingTokenSupply to be used in BeginBlocker.
