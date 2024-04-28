@@ -6,6 +6,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"errors"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -219,7 +220,11 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	if delegateStakePlaced.Amount.LT(msg.Amount) {
+	amountDec, err := alloraMath.NewDecFromSdkUint(msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+	if delegateStakePlaced.Amount.Lt(amountDec) {
 		return nil, types.ErrInsufficientDelegateStakeToRemove
 	}
 
@@ -313,12 +318,18 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	if err != nil {
 		return nil, err
 	}
-	pendingReward := delegateInfo.Amount.Mul(share).Quo(ms.k.GetAlloraExponent()).Sub(delegateInfo.RewardDebt)
-	if pendingReward.GT(cosmosMath.NewUint(0)) {
-		amountInt := cosmosMath.NewIntFromBigInt(pendingReward.BigInt())
-		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	pendingReward, err := delegateInfo.Amount.Mul(share)
+	pendingReward, err = pendingReward.Sub(delegateInfo.RewardDebt)
+	if err != nil {
+		return nil, err
+	}
+	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
 		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
-		delegateInfo.RewardDebt = delegateInfo.Amount.Mul(share).Quo(ms.k.GetAlloraExponent())
+		delegateInfo.RewardDebt, err = delegateInfo.Amount.Mul(share)
+		if err != nil {
+			return nil, err
+		}
 		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer, delegateInfo)
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil

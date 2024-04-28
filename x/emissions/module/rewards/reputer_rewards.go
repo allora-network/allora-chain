@@ -2,7 +2,6 @@ package rewards
 
 import (
 	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -185,11 +184,7 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
-			addShare, err := delegatorReward.Mul(e18)
-			if err != nil {
-				return nil, err
-			}
-			addShare, err = addShare.Quo(totalDelegatorStakeAmountDec)
+			addShare, err := delegatorReward.Quo(totalDelegatorStakeAmountDec)
 			if err != nil {
 				return nil, err
 			}
@@ -197,12 +192,11 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
-			newShare := currentShare.Add(math.NewUint(addShare.SdkIntTrim().Uint64()))
+			newShare, err := currentShare.Add(addShare)
 			err = keeper.SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
 			if err != nil {
 				return nil, err
 			}
-
 			err = keeper.BankKeeper().SendCoinsFromModuleToModule(
 				ctx,
 				types.AlloraRewardsAccountName,

@@ -632,7 +632,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 
 	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), amount0.Amount)
+	require.Equal(alloraMath.NewDecFromInt64(0), amount0.Amount)
 
 	// Perform the stake delegation
 	responseDelegator, err := s.msgServer.DelegateStake(ctx, msg)
@@ -725,6 +725,17 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	s.Require().NoError(err)
 	s.Require().Greater(afterBalance.Amount.Uint64(), beforeBalance.Amount.Uint64(), "Balance must be increased")
+
+	beforeBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
+	rewardMsg2 := &types.MsgRewardDelegateStake{
+		Sender:  delegator2Addr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+	}
+	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg2)
+	afterBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
+	s.Require().NoError(err)
+	s.Require().Greater(afterBalance2.Amount.Uint64(), beforeBalance2.Amount.Uint64(), "Balance must be increased")
 }
 
 /*
