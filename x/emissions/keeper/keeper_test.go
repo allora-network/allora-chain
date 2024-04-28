@@ -1273,7 +1273,7 @@ func (s *KeeperTestSuite) TestAddStake() {
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	delegatorStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, delegatorStake, "Delegator stake should be equal to stake amount after addition")
 
@@ -1348,7 +1348,7 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
-	delegatorStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	delegatorStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
 
