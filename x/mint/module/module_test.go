@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
+	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
 
@@ -20,6 +21,8 @@ import (
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -29,6 +32,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -40,16 +44,20 @@ const (
 type MintModuleTestSuite struct {
 	suite.Suite
 
-	ctx           sdk.Context
-	accountKeeper types.AccountKeeper
-	stakingKeeper types.StakingKeeper
-	bankKeeper    types.BankKeeper
-	appModule     mint.AppModule
-	mintKeeper    keeper.Keeper
+	ctx             sdk.Context
+	accountKeeper   types.AccountKeeper
+	stakingKeeper   types.StakingKeeper
+	bankKeeper      types.BankKeeper
+	appModule       mint.AppModule
+	emissionsKeeper emissionskeeper.Keeper
+	mintKeeper      keeper.Keeper
+	PKS             []cryptotypes.PubKey
 }
 
 // SetupTest setups a new test, to be run before each test case
 func (s *MintModuleTestSuite) SetupTest() {
+	sdk.DefaultBondDenom = params.DefaultBondDenom
+	s.PKS = simtestutil.CreateTestPubKeys(4)
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
@@ -95,6 +103,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
+	stakingKeeper.SetParams(ctx, stakingtypes.Params{
+		UnbondingTime:     60,
+		MaxValidators:     100,
+		MaxEntries:        7,
+		HistoricalEntries: 1000,
+		BondDenom:         sdk.DefaultBondDenom,
+		MinCommissionRate: cosmosMath.LegacyNewDecWithPrec(1, 2),
+	})
 	emissionsKeeper := emissionskeeper.NewKeeper(
 		encCfg.Codec,
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixAccAddr),
@@ -119,6 +135,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
 	s.stakingKeeper = stakingKeeper
+	s.emissionsKeeper = emissionsKeeper
 	s.mintKeeper = mintKeeper
 
 	appModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
@@ -133,4 +150,67 @@ func TestMintModuleTestSuite(t *testing.T) {
 
 func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
 	//todo add a test here
+}
+
+func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
+	params, err := s.mintKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	s.Require().NoError(err)
+	// stake enough tokens so that the networkStaked is non zero
+	err = s.emissionsKeeper.AddStake(
+		s.ctx,
+		0,
+		sdk.AccAddress(s.PKS[0].Address()),
+		cosmosMath.NewUintFromString("40000000000000000000"),
+	)
+	s.Require().NoError(err)
+
+	// mint enough tokens so that the circulating supply is non zero
+	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	s.Require().True(ok)
+	err = s.bankKeeper.MintCoins(
+		s.ctx,
+		emissions.AlloraRequestsAccountName,
+		sdk.NewCoins(
+			sdk.NewCoin(
+				params.MintDenom,
+				spareCoins,
+			),
+		),
+	)
+	s.Require().NoError(err)
+
+	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerTimestep(
+		s.ctx,
+		s.mintKeeper,
+		params,
+		ecosystemMintSupplyRemaining,
+	)
+	s.Require().NoError(err)
+
+	// ok now add some stake
+	err = s.emissionsKeeper.AddStake(
+		s.ctx,
+		0,
+		sdk.AccAddress(s.PKS[0].Address()),
+		cosmosMath.NewUintFromString("50000000000000000000"),
+	)
+	s.Require().NoError(err)
+
+	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerTimestep(
+		s.ctx,
+		s.mintKeeper,
+		params,
+		ecosystemMintSupplyRemaining,
+	)
+	s.Require().NoError(err)
+
+	s.Require().True(
+		emissionPerUnitStakedTokenBefore.GT(emissionPerUnitStakedTokenAfter),
+		"Emission per unit staked token should go down when total stake goes up all else equal: %s > %s",
+		emissionPerUnitStakedTokenBefore.String(),
+		emissionPerUnitStakedTokenAfter.String(),
+	)
+
 }
