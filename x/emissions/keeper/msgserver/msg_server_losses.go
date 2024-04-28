@@ -103,7 +103,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputer)
+			stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +167,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAccAddress)
+		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAccAddress)
 		if err != nil {
 			return nil, err
 		}
