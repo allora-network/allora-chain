@@ -346,10 +346,4 @@ message MsgRewardDelegateStake {
   string sender = 1;
   uint64 topic_id = 2;
   string reputer = 3;
-  string amount = 4 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 }

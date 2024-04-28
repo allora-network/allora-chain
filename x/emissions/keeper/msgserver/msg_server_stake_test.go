@@ -626,7 +626,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 		Amount:  delegator2StakeAmount,
 	}
 
-	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	reputerStake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 	require.NoError(err)
 	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
 
@@ -720,7 +720,6 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
 		Reputer: reputerAddr.String(),
-		Amount:  stakeAmount,
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
