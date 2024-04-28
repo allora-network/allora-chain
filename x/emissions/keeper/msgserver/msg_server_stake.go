@@ -80,6 +80,15 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		return nil, types.ErrInsufficientStakeToRemove
 	}
 
+	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, sender)
+	if err != nil {
+		return nil, err
+	}
+	reputerStakeInTopicWithoutDelegateStake := stakePlaced.Sub(delegateStakeUponReputerInTopic)
+	if msg.Amount.GT(reputerStakeInTopicWithoutDelegateStake) {
+		return nil, types.ErrIntegerUnderflowTopicReputerStake
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	stakeToRemove := types.StakeRemoval{
 		BlockRemovalStarted: sdkCtx.BlockHeight(),

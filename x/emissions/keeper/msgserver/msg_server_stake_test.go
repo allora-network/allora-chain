@@ -348,6 +348,56 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 	require.Equal(stakeAmount, amount1.Amount)
 }
 
+func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewUint(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+
+	delegateStakeMsg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	response, err := s.msgServer.DelegateStake(ctx, delegateStakeMsg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
+
+	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, amount1.Amount)
+
+	// Attempt to withdraw the delegated stake
+	removeMsg := &types.MsgStartRemoveStake{
+		Sender:  reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	_, err = s.msgServer.StartRemoveStake(ctx, removeMsg)
+	require.Error(err)
+}
+
 func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
 	ctx := s.ctx
 	require := s.Require()
