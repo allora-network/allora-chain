@@ -462,14 +462,24 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 			return errors.Wrapf(err, "failed to decode payout address")
 		}
 
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(
-			ctx,
-			types.AlloraRewardsAccountName,
-			address,
-			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reward.Reward.SdkIntTrim())),
-		)
-		if err != nil {
-			return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
+		if reward.Reward.IsZero() {
+			continue
+		}
+
+		rewardInt := reward.Reward.Abs().SdkIntTrim()
+
+		if reward.Type == ReputerRewardType {
+			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
+		} else {
+			err = k.BankKeeper().SendCoinsFromModuleToAccount(
+				ctx,
+				types.AlloraRewardsAccountName,
+				address,
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt)),
+			)
+			if err != nil {
+				return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
+			}
 		}
 	}
 
