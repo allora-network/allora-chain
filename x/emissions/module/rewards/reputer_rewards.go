@@ -46,7 +46,7 @@ func GetReputerTaskEntropy(
 				errors.Wrapf(err, "failed to convert reputer address %s", addrStr)
 		}
 		reputers[i] = reputerAddr
-		stake, err := k.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+		stake, err := k.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 		if err != nil {
 			return alloraMath.Dec{},
 				nil,
@@ -154,7 +154,7 @@ func GetRewardForReputerFromTotalReward(
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
 		reward := reputerReward.Reward
-		totalStakeAmount, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputer)
+		totalStakeAmount, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer stake")
 		}
@@ -249,7 +249,7 @@ func GetReputerRewards(
 		reputerAddresses = append(reputerAddresses, reputerAddr)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}

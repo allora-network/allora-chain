@@ -591,7 +591,7 @@ func GetNetworkInferencesAtBlock(
 	// Map list of stakesOnTopic to map of stakesByReputer
 	stakesByReputer := make(map[string]cosmosMath.Uint)
 	for _, bundle := range reputerReportedLosses.ReputerValueBundles {
-		stakeAmount, err := k.GetStakeOnTopicFromReputer(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+		stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
 		if err != nil {
 			return nil, 0, err
 		}
