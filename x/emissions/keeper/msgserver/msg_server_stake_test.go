@@ -2,6 +2,7 @@ package msgserver_test
 
 import (
 	"errors"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -61,6 +62,7 @@ func (s *KeeperTestSuite) commonStakingSetup(
 	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000)))
 
 	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins)
+	s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, workerAddr, workerInitialBalanceCoins)
 
 	// Register Worker
@@ -528,6 +530,152 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 	delegateStakePlaced, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
 	require.NoError(err)
 	require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
+}
+
+func (s *KeeperTestSuite) TestRewardDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	block := int64(1003)
+	newBlock := int64(1004)
+	score := alloraMath.MustNewDecFromString("17.53436")
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	workerAddr := sdk.AccAddress(PKS[2].Address()) // target
+	delegator2Addr := sdk.AccAddress(PKS[3].Address())
+	stakeAmount := cosmosMath.NewUint(500000)
+	registrationInitialBalance := cosmosMath.NewUint(1000)
+	delegatorStakeAmount := cosmosMath.NewUint(500)
+	delegatorStakeAmount2 := cosmosMath.NewUint(500)
+	delegator2StakeAmount := cosmosMath.NewUint(5000)
+
+	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialBalance)
+
+	addStakeMsg := &types.MsgAddStake{
+		Sender:  reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+	require.NotNil(response)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  delegatorStakeAmount,
+	}
+
+	msg2 := &types.MsgDelegateStake{
+		Sender:  delegator2Addr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  delegator2StakeAmount,
+	}
+
+	reputerStake, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(ctx, topicId, reputerAddr)
+	require.NoError(err)
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
+
+	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr, reputerAddr)
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroUint(), amount0.Amount)
+
+	// Perform the stake delegation
+	responseDelegator, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(responseDelegator, "Response should not be nil after successful delegation")
+
+	responseDelegator2, err := s.msgServer.DelegateStake(ctx, msg2)
+	require.NoError(err)
+	require.NotNil(responseDelegator2, "Response should not be nil after successful delegation")
+
+	var reputerValueBundles types.ReputerValueBundles
+	scoreToAdd := types.Score{
+		TopicId:     topicId,
+		BlockNumber: block,
+		Address:     reputerAddr.String(),
+		Score:       score,
+	}
+	err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
+
+	reputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			Reputer:       reputerAddr.String(),
+			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
+			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
+		},
+	}
+	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
+	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+
+	reputerRewards, err := rewards.GetReputerRewards(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		alloraMath.OneDec(),
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(1, len(reputerRewards))
+
+	msg3 := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  delegatorStakeAmount2,
+	}
+
+	responseDelegator3, err := s.msgServer.DelegateStake(ctx, msg3)
+	require.NoError(err)
+	require.NotNil(responseDelegator3, "Response should not be nil after successful delegation")
+
+	var newReputerValueBundles types.ReputerValueBundles
+	newScoreToAdd := types.Score{
+		TopicId:     topicId,
+		BlockNumber: newBlock,
+		Address:     reputerAddr.String(),
+		Score:       score,
+	}
+	err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, newBlock, newScoreToAdd)
+
+	newReputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			Reputer:       reputerAddr.String(),
+			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
+			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
+		},
+	}
+	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
+	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
+	newReputerRewards, err := rewards.GetReputerRewards(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		newBlock,
+		alloraMath.OneDec(),
+		alloraMath.MustNewDecFromString("1020.5559072418691"),
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(1, len(newReputerRewards))
+
+	beforeBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	rewardMsg := &types.MsgRewardDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
+	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	s.Require().NoError(err)
+	s.Require().Greater(afterBalance.Amount.Uint64(), beforeBalance.Amount.Uint64(), "Balance must be increased")
 }
 
 /*

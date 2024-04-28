@@ -983,14 +983,12 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	if err != nil {
 		return err
 	}
-
+	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
 	if delegateStakePlacement.Amount.GT(cosmosMath.NewUint(0)) {
 		// Calculate pending reward and send to delegator
-		share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
-		if err != nil {
-			return err
-		}
-
 		pendingReward := delegateStakePlacement.Amount.Mul(share).Quo(k.GetAlloraExponent()).
 			Sub(delegateStakePlacement.RewardDebt)
 		if pendingReward.GT(cosmosMath.NewUint(0)) {
@@ -1004,10 +1002,6 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	}
 
 	newAmount := delegateStakePlacement.Amount.Add(stake)
-	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
-	if err != nil {
-		return err
-	}
 	stakePlacementNew := types.DelegatorInfo{
 		Amount:     newAmount,
 		RewardDebt: newAmount.Mul(share).Quo(k.GetAlloraExponent()),
