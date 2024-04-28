@@ -28,7 +28,7 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 		return nil, err
 	}
 
-	stake, err := qs.k.GetStakeOnTopicFromReputer(ctx, req.TopicId, address)
+	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
