@@ -642,7 +642,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	reputerStake := make([]cosmosMath.Uint, 5)
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
-		reputerStake[i], err = s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, addr)
+		reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr)
 		s.Require().NoError(err)
 	}
 
@@ -686,7 +686,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
-		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnTopicFromReputer(s.ctx, topicId, addr)
+		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr)
 		s.Require().NoError(err)
 		s.Require().True(reputerStakeCurrent.GT(reputerStake[i]))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.Equal(reputerBalances[i].Amount))
