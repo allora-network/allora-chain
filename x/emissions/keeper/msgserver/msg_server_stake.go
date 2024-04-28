@@ -76,9 +76,6 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 	if err != nil {
 		return nil, err
 	}
-	if stakePlaced.LT(msg.Amount) {
-		return nil, types.ErrInsufficientStakeToRemove
-	}
 
 	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, sender)
 	if err != nil {
@@ -86,7 +83,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 	}
 	reputerStakeInTopicWithoutDelegateStake := stakePlaced.Sub(delegateStakeUponReputerInTopic)
 	if msg.Amount.GT(reputerStakeInTopicWithoutDelegateStake) {
-		return nil, types.ErrIntegerUnderflowTopicReputerStake
+		return nil, types.ErrInsufficientStakeToRemove
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
