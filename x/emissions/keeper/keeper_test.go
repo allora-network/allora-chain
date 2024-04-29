@@ -2144,6 +2144,26 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
 
+func (s *KeeperTestSuite) TestGetTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	metadata := "metadata"
+	_, err := keeper.GetTopic(ctx, topicId)
+	s.Require().Error(err, "Retrieving a non-existent topic should result in an error")
+
+	newTopic := types.Topic{Id: topicId, Metadata: metadata}
+
+	err = keeper.SetTopic(ctx, topicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
+	retrievedTopic, err := keeper.GetTopic(ctx, topicId)
+	s.Require().NoError(err, "Retrieving an existent topic should not fail")
+	s.Require().Equal(newTopic, retrievedTopic, "Retrieved topic should match the set topic")
+	s.Require().Equal(newTopic.Metadata, retrievedTopic.Metadata, "Retrieved topic should match the set topic")
+}
+
 /// FEE REVENUE
 
 func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
