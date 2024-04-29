@@ -367,9 +367,7 @@ func (x Dec) BigInt() (*big.Int, error) {
 	return z, nil
 }
 
-// SdkIntTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Int`.
-// Panics if x is bigger the SDK Int max value
-func (x Dec) SdkIntTrim() sdkmath.Int {
+func (x Dec) Coeff() big.Int {
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
 	if y.dec.Exponent != 0 {
@@ -385,7 +383,21 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 	if x.dec.Negative {
 		r.Neg(&r)
 	}
+	return r
+}
+
+// SdkIntTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Int`.
+// Panics if x is bigger the SDK Int max value
+func (x Dec) SdkIntTrim() sdkmath.Int {
+	var r = x.Coeff()
 	return sdkmath.NewIntFromBigInt(&r)
+}
+
+// SdkUintTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Uint`.
+// Panics if x is bigger the SDK Uint max value
+func (x Dec) SdkUintTrim() sdkmath.Uint {
+	var r = x.Coeff()
+	return sdkmath.NewUintFromBigInt(&r)
 }
 
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
