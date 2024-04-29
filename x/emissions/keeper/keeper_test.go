@@ -885,6 +885,55 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
 
+func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	workerAccStr := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
+	workerAcc, _ := sdk.AccAddressFromBech32(workerAccStr)
+
+	_, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
+
+	blockHeight1 := int64(12345)
+	newInference1 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight1,
+		Inferer:     workerAccStr,
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data"),
+		Proof:       "proof123",
+	}
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{&newInference1},
+	}
+	nonce := types.Nonce{BlockHeight: blockHeight1}
+	err = keeper.InsertInferences(ctx, topicId, nonce, inferences1)
+	s.Require().NoError(err, "Inserting inferences should not fail")
+
+	blockHeight2 := int64(12346)
+	newInference2 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight2,
+		Inferer:     workerAccStr,
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data"),
+		Proof:       "proof123",
+	}
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{&newInference2},
+	}
+	nonce2 := types.Nonce{BlockHeight: blockHeight2}
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err, "Inserting inferences should not fail")
+
+	// Test successful retrieval of the inserted inference
+	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	s.Require().NoError(err, "Retrieving an existing inference should not fail")
+	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
+}
+
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
