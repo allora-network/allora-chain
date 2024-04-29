@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"encoding/binary"
 	"errors"
 	"strconv"
 	"testing"
@@ -2816,6 +2817,60 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
+}
+
+/// UTILS
+
+func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
+	ctx := s.ctx                // Use the context from the test suite
+	keeper := s.emissionsKeeper // Use the keeper from the test suite
+
+	// Setup mock parameters
+	defaultLimit := uint64(20)
+	maxLimit := uint64(50)
+
+	// Simulate parameter setting for default and max limits
+	params := types.Params{
+		DefaultLimit: defaultLimit,
+		MaxLimit:     maxLimit,
+	}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting default and max limit parameters should not fail")
+
+	maxLimitActual, err := keeper.GetParamsMaxLimit(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(maxLimit, maxLimitActual, "Max limit should be set correctly")
+
+	defaultLimitActual, err := keeper.GetParamsDefaultLimit(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(defaultLimit, defaultLimitActual, "Default limit should be set correctly")
+
+	// Test 1: Pagination request is nil
+	limit, cursor, err := keeper.CalcAppropriatePaginationForUint64Cursor(ctx, nil)
+	s.Require().NoError(err, "Should handle nil pagination request without error")
+	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
+	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key nil")
+
+	// Test 2: Pagination Key is empty and Limit is zero
+	pagination := &types.SimpleCursorPaginationRequest{Key: []byte{}, Limit: 0}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Should handle empty key and zero limit without error")
+	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
+	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key is empty")
+
+	// Test 3: Valid key and non-zero limit within bounds
+	validKey := binary.BigEndian.AppendUint64(nil, uint64(12345)) // Convert 12345 to big-endian byte slice
+	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 30}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Handling valid key and valid limit should not fail")
+	s.Require().Equal(uint64(30), limit, "Limit should be as specified")
+	s.Require().Equal(uint64(12345), cursor, "Cursor should decode correctly from key")
+
+	// Test 4: Limit exceeds maximum limit
+	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 60}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
+	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
 }
 
 // STATE MANAGEMENT
