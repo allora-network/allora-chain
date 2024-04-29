@@ -121,6 +121,8 @@ func GetWorkerPortionOfRewards(
 	preward alloraMath.Dec,
 	totalRewards alloraMath.Dec,
 	workerAddresses []sdk.AccAddress,
+	taskRewardType TaskRewardType,
+	topicId uint64,
 ) ([]TaskRewards, error) {
 	lastScores := make([][]alloraMath.Dec, len(scores))
 	for i, workerScores := range scores {
@@ -167,6 +169,8 @@ func GetWorkerPortionOfRewards(
 		rewardPortions = append(rewardPortions, TaskRewards{
 			Address: workerAddresses[i],
 			Reward:  rewardPortion,
+			TopicId: topicId,
+			Type:    taskRewardType,
 		})
 	}
 

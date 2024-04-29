@@ -8,9 +8,19 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type TaskRewardType int
+
+const (
+	ReputerRewardType TaskRewardType = iota // iota resets to 0 for the first constant in the block.
+	WorkerInferenceRewardType
+	WorkerForecastRewardType
+)
+
 type TaskRewards struct {
 	Address sdk.AccAddress
 	Reward  alloraMath.Dec
+	TopicId TopicId
+	Type    TaskRewardType
 }
 
 var TASK_FORECAST = true
@@ -406,7 +416,14 @@ func GetWorkersRewardsInferenceTask(
 	}
 
 	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalInferenceRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(
+		scoresDec,
+		preward,
+		totalInferenceRewards,
+		workerAddresses,
+		WorkerInferenceRewardType,
+		topicId,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
 	}
@@ -455,7 +472,14 @@ func GetWorkersRewardsForecastTask(
 	}
 
 	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalForecastRewards, workerAddresses)
+	rewards, err := GetWorkerPortionOfRewards(
+		scoresDec,
+		preward,
+		totalForecastRewards,
+		workerAddresses,
+		WorkerForecastRewardType,
+		topicId,
+	)
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
