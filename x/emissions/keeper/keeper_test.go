@@ -74,9 +74,7 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
-//////////////////////////////////////////////////////////////
-//                 WORKER NONCE TESTS                       //
-//////////////////////////////////////////////////////////////
+/// WORKER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	ctx := s.ctx
@@ -244,9 +242,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	}
 }
 
-//////////////////////////////////////////////////////////////
-//                 REPUTER NONCE TESTS                      //
-//////////////////////////////////////////////////////////////
+/// REPUTER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddReputerNonce() {
 	ctx := s.ctx
@@ -398,9 +394,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	}
 }
 
-//////////////////////////////////////////////////////////////
-//                     REGRET TESTS                         //
-//////////////////////////////////////////////////////////////
+/// REGRET TESTS
 
 func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	ctx := s.ctx
@@ -640,9 +634,7 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
 
-//////////////////////////////////////////////////////////////
-//                     PARAMS TESTS                         //
-//////////////////////////////////////////////////////////////
+/// PARAMS TESTS
 
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	ctx := s.ctx
@@ -852,9 +844,7 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
 }
 
-//////////////////////////////////////////////////////////////
-//                 INFERENCES, FORECASTS                    //
-//////////////////////////////////////////////////////////////
+/// INFERENCES, FORECASTS
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	ctx := s.ctx
