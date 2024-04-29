@@ -168,6 +168,7 @@ type Params struct {
 	RegistrationFee                 cosmossdk_io_math.Int                           `protobuf:"bytes,36,opt,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
 	DefaultLimit                    uint64                                          `protobuf:"varint,37,opt,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`
 	MaxLimit                        uint64                                          `protobuf:"varint,38,opt,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`
+	MinEpochLengthRecordLimit       int64                                           `protobuf:"varint,39,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -318,6 +319,13 @@ func (m *Params) GetDefaultLimit() uint64 {
 func (m *Params) GetMaxLimit() uint64 {
 	if m != nil {
 		return m.MaxLimit
+	}
+	return 0
+}
+
+func (m *Params) GetMinEpochLengthRecordLimit() int64 {
+	if m != nil {
+		return m.MinEpochLengthRecordLimit
 	}
 	return 0
 }
@@ -2726,6 +2734,13 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.MinEpochLengthRecordLimit != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.MinEpochLengthRecordLimit))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0xb8
+	}
 	if m.MaxLimit != 0 {
 		i = encodeVarintTypes(dAtA, i, uint64(m.MaxLimit))
 		i--
@@ -4712,6 +4727,9 @@ func (m *Params) Size() (n int) {
 	if m.MaxLimit != 0 {
 		n += 2 + sovTypes(uint64(m.MaxLimit))
 	}
+	if m.MinEpochLengthRecordLimit != 0 {
+		n += 2 + sovTypes(uint64(m.MinEpochLengthRecordLimit))
+	}
 	return n
 }
 
@@ -6592,6 +6610,25 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.MaxLimit |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 39:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinEpochLengthRecordLimit", wireType)
+			}
+			m.MinEpochLengthRecordLimit = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinEpochLengthRecordLimit |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

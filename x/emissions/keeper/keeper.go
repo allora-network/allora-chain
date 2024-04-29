@@ -60,7 +60,7 @@ type Keeper struct {
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// map of (topic) -> nonce/block height
-	topicRewardNonce collections.Map[TopicId, int64]
+	topicRewardNonce collections.Map[TopicId, BlockHeight]
 
 	/// SCORES
 
@@ -900,7 +900,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that the stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return nil
 	}
@@ -941,26 +941,11 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 	// Set new sum topic stake for all topics
 	if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
 		fmt.Println("Setting topic stake failed -- rolling back reputer stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
 		fmt.Println("Setting total stake failed -- rolling back reputer and topic stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
-		// Rollback topic stake
-		err2 = k.topicStake.Set(ctx, topicId, topicStake)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
@@ -968,7 +953,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 }
 
 func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that delegate stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return errors.New("stake must be greater than zero")
 	}
@@ -1033,24 +1018,10 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 
 	// Set new sum topic stake for all topics
 	if err := k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
-		fmt.Println("Setting topic stake failed -- rolling back stake from delegator")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
-		fmt.Println("Setting total stake failed -- rolling back stake from delegator and delegate stake placement")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
-		err2 = k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, delegateStakePlacement)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
@@ -2078,4 +2049,141 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 	}
 
 	return limit, cursor, nil
+}
+
+/// STATE MANAGEMENT
+
+// Iterate through topic state and prune records that are no longer needed
+func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
+	// Delete records until the blockHeight
+	blockRange := collections.
+		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		EndInclusive(blockHeight)
+
+	err := k.pruneInferences(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneForecasts(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneLossBundles(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneNetworkLosses(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allInferences.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allInferences.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allForecasts.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allForecasts.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allLossBundles.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

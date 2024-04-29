@@ -78,6 +78,7 @@ type OptionalParams struct {
 	RegistrationFee                 []cosmossdk_io_math.Int                           `protobuf:"bytes,36,rep,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
 	DefaultLimit                    []uint64                                          `protobuf:"varint,37,rep,packed,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`
 	MaxLimit                        []uint64                                          `protobuf:"varint,38,rep,packed,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`
+	MinEpochLengthRecordLimit       []int64                                           `protobuf:"varint,39,rep,packed,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
 }
 
 func (m *OptionalParams) Reset()         { *m = OptionalParams{} }
@@ -228,6 +229,13 @@ func (m *OptionalParams) GetDefaultLimit() []uint64 {
 func (m *OptionalParams) GetMaxLimit() []uint64 {
 	if m != nil {
 		return m.MaxLimit
+	}
+	return nil
+}
+
+func (m *OptionalParams) GetMinEpochLengthRecordLimit() []int64 {
+	if m != nil {
+		return m.MinEpochLengthRecordLimit
 	}
 	return nil
 }
@@ -2702,10 +2710,11 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.MaxLimit) > 0 {
-		dAtA2 := make([]byte, len(m.MaxLimit)*10)
+	if len(m.MinEpochLengthRecordLimit) > 0 {
+		dAtA2 := make([]byte, len(m.MinEpochLengthRecordLimit)*10)
 		var j1 int
-		for _, num := range m.MaxLimit {
+		for _, num1 := range m.MinEpochLengthRecordLimit {
+			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2720,12 +2729,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xb2
+		dAtA[i] = 0xba
 	}
-	if len(m.DefaultLimit) > 0 {
-		dAtA4 := make([]byte, len(m.DefaultLimit)*10)
+	if len(m.MaxLimit) > 0 {
+		dAtA4 := make([]byte, len(m.MaxLimit)*10)
 		var j3 int
-		for _, num := range m.DefaultLimit {
+		for _, num := range m.MaxLimit {
 			for num >= 1<<7 {
 				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2737,6 +2746,26 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= j3
 		copy(dAtA[i:], dAtA4[:j3])
 		i = encodeVarintTx(dAtA, i, uint64(j3))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0xb2
+	}
+	if len(m.DefaultLimit) > 0 {
+		dAtA6 := make([]byte, len(m.DefaultLimit)*10)
+		var j5 int
+		for _, num := range m.DefaultLimit {
+			for num >= 1<<7 {
+				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j5++
+			}
+			dAtA6[j5] = uint8(num)
+			j5++
+		}
+		i -= j5
+		copy(dAtA[i:], dAtA6[:j5])
+		i = encodeVarintTx(dAtA, i, uint64(j5))
 		i--
 		dAtA[i] = 0x2
 		i--
@@ -2759,29 +2788,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MaxTopicPages) > 0 {
-		dAtA6 := make([]byte, len(m.MaxTopicPages)*10)
-		var j5 int
-		for _, num := range m.MaxTopicPages {
-			for num >= 1<<7 {
-				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j5++
-			}
-			dAtA6[j5] = uint8(num)
-			j5++
-		}
-		i -= j5
-		copy(dAtA[i:], dAtA6[:j5])
-		i = encodeVarintTx(dAtA, i, uint64(j5))
-		i--
-		dAtA[i] = 0x2
-		i--
-		dAtA[i] = 0x9a
-	}
-	if len(m.TopicPageLimit) > 0 {
-		dAtA8 := make([]byte, len(m.TopicPageLimit)*10)
+		dAtA8 := make([]byte, len(m.MaxTopicPages)*10)
 		var j7 int
-		for _, num := range m.TopicPageLimit {
+		for _, num := range m.MaxTopicPages {
 			for num >= 1<<7 {
 				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2796,13 +2805,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0x92
+		dAtA[i] = 0x9a
 	}
-	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
-		dAtA10 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
+	if len(m.TopicPageLimit) > 0 {
+		dAtA10 := make([]byte, len(m.TopicPageLimit)*10)
 		var j9 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
-			num := uint64(num1)
+		for _, num := range m.TopicPageLimit {
 			for num >= 1<<7 {
 				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2817,12 +2825,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0x8a
+		dAtA[i] = 0x92
 	}
-	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
-		dAtA12 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
+	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
+		dAtA12 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
 		var j11 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
 			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA12[j11] = uint8(uint64(num)&0x7f | 0x80)
@@ -2838,12 +2846,13 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0x82
+		dAtA[i] = 0x8a
 	}
-	if len(m.GradientDescentMaxIters) > 0 {
-		dAtA14 := make([]byte, len(m.GradientDescentMaxIters)*10)
+	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
+		dAtA14 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
 		var j13 int
-		for _, num := range m.GradientDescentMaxIters {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
+			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA14[j13] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2855,6 +2864,26 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= j13
 		copy(dAtA[i:], dAtA14[:j13])
 		i = encodeVarintTx(dAtA, i, uint64(j13))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x82
+	}
+	if len(m.GradientDescentMaxIters) > 0 {
+		dAtA16 := make([]byte, len(m.GradientDescentMaxIters)*10)
+		var j15 int
+		for _, num := range m.GradientDescentMaxIters {
+			for num >= 1<<7 {
+				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j15++
+			}
+			dAtA16[j15] = uint8(num)
+			j15++
+		}
+		i -= j15
+		copy(dAtA[i:], dAtA16[:j15])
+		i = encodeVarintTx(dAtA, i, uint64(j15))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -2909,29 +2938,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MaxTopReputersToReward) > 0 {
-		dAtA16 := make([]byte, len(m.MaxTopReputersToReward)*10)
-		var j15 int
-		for _, num := range m.MaxTopReputersToReward {
-			for num >= 1<<7 {
-				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j15++
-			}
-			dAtA16[j15] = uint8(num)
-			j15++
-		}
-		i -= j15
-		copy(dAtA[i:], dAtA16[:j15])
-		i = encodeVarintTx(dAtA, i, uint64(j15))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xda
-	}
-	if len(m.MaxTopWorkersToReward) > 0 {
-		dAtA18 := make([]byte, len(m.MaxTopWorkersToReward)*10)
+		dAtA18 := make([]byte, len(m.MaxTopReputersToReward)*10)
 		var j17 int
-		for _, num := range m.MaxTopWorkersToReward {
+		for _, num := range m.MaxTopReputersToReward {
 			for num >= 1<<7 {
 				dAtA18[j17] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2946,12 +2955,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xda
 	}
-	if len(m.MaxSamplesToScaleScores) > 0 {
-		dAtA20 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
+	if len(m.MaxTopWorkersToReward) > 0 {
+		dAtA20 := make([]byte, len(m.MaxTopWorkersToReward)*10)
 		var j19 int
-		for _, num := range m.MaxSamplesToScaleScores {
+		for _, num := range m.MaxTopWorkersToReward {
 			for num >= 1<<7 {
 				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2963,6 +2972,26 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= j19
 		copy(dAtA[i:], dAtA20[:j19])
 		i = encodeVarintTx(dAtA, i, uint64(j19))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd2
+	}
+	if len(m.MaxSamplesToScaleScores) > 0 {
+		dAtA22 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
+		var j21 int
+		for _, num := range m.MaxSamplesToScaleScores {
+			for num >= 1<<7 {
+				dAtA22[j21] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j21++
+			}
+			dAtA22[j21] = uint8(num)
+			j21++
+		}
+		i -= j21
+		copy(dAtA[i:], dAtA22[:j21])
+		i = encodeVarintTx(dAtA, i, uint64(j21))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -3049,29 +3078,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MaxUnfulfilledReputerRequests) > 0 {
-		dAtA22 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
-		var j21 int
-		for _, num := range m.MaxUnfulfilledReputerRequests {
-			for num >= 1<<7 {
-				dAtA22[j21] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j21++
-			}
-			dAtA22[j21] = uint8(num)
-			j21++
-		}
-		i -= j21
-		copy(dAtA[i:], dAtA22[:j21])
-		i = encodeVarintTx(dAtA, i, uint64(j21))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x9a
-	}
-	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
-		dAtA24 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
+		dAtA24 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
 		var j23 int
-		for _, num := range m.MaxUnfulfilledWorkerRequests {
+		for _, num := range m.MaxUnfulfilledReputerRequests {
 			for num >= 1<<7 {
 				dAtA24[j23] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3083,6 +3092,26 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= j23
 		copy(dAtA[i:], dAtA24[:j23])
 		i = encodeVarintTx(dAtA, i, uint64(j23))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x9a
+	}
+	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
+		dAtA26 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
+		var j25 int
+		for _, num := range m.MaxUnfulfilledWorkerRequests {
+			for num >= 1<<7 {
+				dAtA26[j25] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j25++
+			}
+			dAtA26[j25] = uint8(num)
+			j25++
+		}
+		i -= j25
+		copy(dAtA[i:], dAtA26[:j25])
+		i = encodeVarintTx(dAtA, i, uint64(j25))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -3219,28 +3248,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MinEpochLength) > 0 {
-		dAtA26 := make([]byte, len(m.MinEpochLength)*10)
-		var j25 int
-		for _, num1 := range m.MinEpochLength {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA26[j25] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j25++
-			}
-			dAtA26[j25] = uint8(num)
-			j25++
-		}
-		i -= j25
-		copy(dAtA[i:], dAtA26[:j25])
-		i = encodeVarintTx(dAtA, i, uint64(j25))
-		i--
-		dAtA[i] = 0x42
-	}
-	if len(m.RemoveStakeDelayWindow) > 0 {
-		dAtA28 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
+		dAtA28 := make([]byte, len(m.MinEpochLength)*10)
 		var j27 int
-		for _, num1 := range m.RemoveStakeDelayWindow {
+		for _, num1 := range m.MinEpochLength {
 			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA28[j27] = uint8(uint64(num)&0x7f | 0x80)
@@ -3253,6 +3263,25 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= j27
 		copy(dAtA[i:], dAtA28[:j27])
 		i = encodeVarintTx(dAtA, i, uint64(j27))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.RemoveStakeDelayWindow) > 0 {
+		dAtA30 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
+		var j29 int
+		for _, num1 := range m.RemoveStakeDelayWindow {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j29++
+			}
+			dAtA30[j29] = uint8(num)
+			j29++
+		}
+		i -= j29
+		copy(dAtA[i:], dAtA30[:j29])
+		i = encodeVarintTx(dAtA, i, uint64(j29))
 		i--
 		dAtA[i] = 0x3a
 	}
@@ -3285,20 +3314,20 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MaxTopicsPerBlock) > 0 {
-		dAtA30 := make([]byte, len(m.MaxTopicsPerBlock)*10)
-		var j29 int
+		dAtA32 := make([]byte, len(m.MaxTopicsPerBlock)*10)
+		var j31 int
 		for _, num := range m.MaxTopicsPerBlock {
 			for num >= 1<<7 {
-				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j29++
+				j31++
 			}
-			dAtA30[j29] = uint8(num)
-			j29++
+			dAtA32[j31] = uint8(num)
+			j31++
 		}
-		i -= j29
-		copy(dAtA[i:], dAtA30[:j29])
-		i = encodeVarintTx(dAtA, i, uint64(j29))
+		i -= j31
+		copy(dAtA[i:], dAtA32[:j31])
+		i = encodeVarintTx(dAtA, i, uint64(j31))
 		i--
 		dAtA[i] = 0x22
 	}
@@ -3317,21 +3346,21 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.RewardCadence) > 0 {
-		dAtA32 := make([]byte, len(m.RewardCadence)*10)
-		var j31 int
+		dAtA34 := make([]byte, len(m.RewardCadence)*10)
+		var j33 int
 		for _, num1 := range m.RewardCadence {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j31++
+				j33++
 			}
-			dAtA32[j31] = uint8(num)
-			j31++
+			dAtA34[j33] = uint8(num)
+			j33++
 		}
-		i -= j31
-		copy(dAtA[i:], dAtA32[:j31])
-		i = encodeVarintTx(dAtA, i, uint64(j31))
+		i -= j33
+		copy(dAtA[i:], dAtA34[:j33])
+		i = encodeVarintTx(dAtA, i, uint64(j33))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -4862,6 +4891,13 @@ func (m *OptionalParams) Size() (n int) {
 	if len(m.MaxLimit) > 0 {
 		l = 0
 		for _, e := range m.MaxLimit {
+			l += sovTx(uint64(e))
+		}
+		n += 2 + sovTx(uint64(l)) + l
+	}
+	if len(m.MinEpochLengthRecordLimit) > 0 {
+		l = 0
+		for _, e := range m.MinEpochLengthRecordLimit {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
@@ -7435,6 +7471,82 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				}
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxLimit", wireType)
+			}
+		case 39:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.MinEpochLengthRecordLimit = append(m.MinEpochLengthRecordLimit, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.MinEpochLengthRecordLimit) == 0 {
+					m.MinEpochLengthRecordLimit = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.MinEpochLengthRecordLimit = append(m.MinEpochLengthRecordLimit, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinEpochLengthRecordLimit", wireType)
 			}
 		default:
 			iNdEx = preIndex

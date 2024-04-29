@@ -2656,3 +2656,72 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
 }
+
+// STATE MANAGEMENT
+
+func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
+	// Set infereces, forecasts, and reputations for a topic
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	expectedInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				Value:   alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+			{
+				Value:   alloraMath.NewDecFromInt64(2),
+				Inferer: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
+	err := s.emissionsKeeper.InsertInferences(s.ctx, topicId, nonce, expectedInferences)
+	s.Require().NoError(err, "Inserting inferences should not fail")
+
+	expectedForecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:    topicId,
+				Forecaster: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+			{
+				TopicId:    topicId,
+				Forecaster: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+		},
+	}
+	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce, expectedForecasts)
+
+	reputerLossBundles := types.ReputerValueBundles{}
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerLossBundles)
+	s.Require().NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+
+	networkLosses := types.ValueBundle{}
+	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
+
+	// Check if the records are set
+	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting inferences should not fail")
+	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting forecasts should not fail")
+	_, err = s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
+	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting network loss bundle should not fail")
+
+	// Prune records in the subsequent block
+	err = s.emissionsKeeper.PruneRecordsAfterRewards(s.ctx, topicId, block+1)
+	s.Require().NoError(err, "Pruning records after rewards should not fail")
+
+	// Check if the records are pruned
+	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	s.Require().Error(err, "Should return error for non-existent data")
+	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	s.Require().Error(err, "Should return error for non-existent data")
+	_, err = s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	s.Require().Error(err, "Should return error for non-existent data")
+	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	s.Require().Error(err, "Should return error for non-existent data")
+}
