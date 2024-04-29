@@ -1866,6 +1866,32 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	s.Require().True(isRegistered, "Reputer should be registered in each topic")
 }
 
+func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
+	ctx := s.ctx // Use the context from the test suite
+	reputer := sdk.AccAddress("sampleReputerAddress")
+	topicId := uint64(501)
+	keeper := s.emissionsKeeper
+	reputerKey := "someLibP2PKey123"
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    reputerKey,
+		MultiAddress: "/ip4/127.0.0.1/tcp/4001",
+		Owner:        "cosmos1...",
+		NodeAddress:  "cosmosNodeAddress",
+		NodeId:       "nodeId123",
+	}
+
+	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
+	s.Require().NoError(err)
+
+	actualReputer, err := keeper.GetReputerByLibp2pKey(ctx, reputerKey)
+	s.Require().NoError(err)
+	s.Require().Equal(reputerInfo, actualReputer)
+
+	nonExistentKey := "nonExistentKey123"
+	_, err = keeper.GetReputerByLibp2pKey(ctx, nonExistentKey)
+	s.Require().Error(err)
+}
+
 func (s *KeeperTestSuite) TestRemoveReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2179,6 +2205,8 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
 	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
 }
+
+/// TOPIC CHURN
 
 func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
 	ctx := s.ctx
