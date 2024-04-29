@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+
 	"github.com/allora-network/allora-chain/app/params"
 
 	cosmosMath "cosmossdk.io/math"
@@ -1645,7 +1646,7 @@ func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error 
 	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
-// returns a single churn ready topic for processing.
+// returns a single churn ready topic for processing. Order out is not guaranteed.
 // if there are no churn ready topics, returns the reserved topic id 0,
 // which cannot be used as a topic id - callers are responsible for checking
 // that the returned topic id is not 0.
