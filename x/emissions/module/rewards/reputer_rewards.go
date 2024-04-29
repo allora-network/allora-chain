@@ -212,6 +212,8 @@ func GetRewardForReputerFromTotalReward(
 		reputerRewards = append(reputerRewards, TaskRewards{
 			Address: reputerReward.Address,
 			Reward:  reputerRw,
+			TopicId: reputerReward.TopicId,
+			Type:    ReputerRewardType,
 		})
 	}
 
@@ -286,6 +288,8 @@ func GetReputerRewards(
 		reputerDelegatorTotalRewards = append(reputerDelegatorTotalRewards, TaskRewards{
 			Address: reputerAddresses[i],
 			Reward:  reward,
+			TopicId: topicId,
+			Type:    ReputerRewardType,
 		})
 	}
 
