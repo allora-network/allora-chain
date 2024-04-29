@@ -5,6 +5,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -163,7 +164,7 @@ func GetRewardForReputerFromTotalReward(
 			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
 		}
 
-		fraction := totalDelegatorStakeAmount.Mul(keeper.GetAlloraExponent()).Quo(totalStakeAmount)
+		fraction := totalDelegatorStakeAmount.Mul(synth.CosmosUintOneE18()).Quo(totalStakeAmount)
 		fractionUint, err := alloraMath.NewDecFromSdkUint(fraction)
 		if err != nil {
 			return nil, err
@@ -172,7 +173,7 @@ func GetRewardForReputerFromTotalReward(
 		if err != nil {
 			return nil, err
 		}
-		e18, err := alloraMath.NewDecFromSdkUint(keeper.GetAlloraExponent())
+		e18, err := alloraMath.NewDecFromSdkUint(synth.CosmosUintOneE18())
 		if err != nil {
 			return nil, err
 		}

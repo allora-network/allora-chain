@@ -651,14 +651,6 @@ func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
 	return params.MaxLimit, nil
 }
 
-func (k *Keeper) GetAlloraExponent() Uint {
-	val := cosmosMath.RelativePow(
-		cosmosMath.NewUint(10),
-		cosmosMath.NewUint(params.AlloraExponent),
-		cosmosMath.NewUint(1))
-	return val
-}
-
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
@@ -993,7 +985,13 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	}
 
 	stakeDec, err := alloraMath.NewDecFromSdkUint(stake)
+	if err != nil {
+		return err
+	}
 	newAmount, err := delegateStakePlacement.Amount.Add(stakeDec)
+	if err != nil {
+		return err
+	}
 	newDebt, err := newAmount.Mul(share)
 	if err != nil {
 		return err
@@ -1149,6 +1147,9 @@ func (k *Keeper) RemoveDelegateStake(
 
 	// Calculate pending reward and send to delegator
 	pendingReward, err := stakePlacement.Amount.Mul(share)
+	if err != nil {
+		return err
+	}
 	pendingReward, err = pendingReward.Sub(stakePlacement.RewardDebt)
 	if err != nil {
 		return err
@@ -1163,6 +1164,9 @@ func (k *Keeper) RemoveDelegateStake(
 	}
 
 	newAmount, err := stakePlacement.Amount.Sub(unStakeDec)
+	if err != nil {
+		return err
+	}
 	newRewardDebt, err := newAmount.Mul(share)
 	if err != nil {
 		return err

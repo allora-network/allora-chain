@@ -319,6 +319,9 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		return nil, err
 	}
 	pendingReward, err := delegateInfo.Amount.Mul(share)
+	if err != nil {
+		return nil, err
+	}
 	pendingReward, err = pendingReward.Sub(delegateInfo.RewardDebt)
 	if err != nil {
 		return nil, err
