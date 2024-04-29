@@ -2180,6 +2180,24 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
 }
 
+func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(456)
+
+	err := keeper.AddChurnReadyTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	poppedId, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, poppedId)
+
+	// Ensure no topics remain
+	remainingId, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), remainingId)
+}
+
 /// SCORES
 
 func (s *KeeperTestSuite) TestGetLatestScores() {
