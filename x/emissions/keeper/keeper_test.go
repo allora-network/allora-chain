@@ -741,7 +741,7 @@ func (s *KeeperTestSuite) TestGetParamsEpsilon() {
 	// Set the parameter
 	params := types.Params{Epsilon: expectedValue}
 	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err) // Ensure no error occurred when setting params
+	s.Require().NoError(err)
 
 	// Get the parameter
 	actualValue, err := keeper.GetParamsEpsilon(ctx)
@@ -919,7 +919,6 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
-	// Test successful retrieval of the inserted inference
 	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
 	s.Require().NoError(err, "Retrieving an existing inference should not fail")
 	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
@@ -1907,7 +1906,7 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 }
 
 func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
-	ctx := s.ctx // Use the context from the test suite
+	ctx := s.ctx
 	reputer := sdk.AccAddress("sampleReputerAddress")
 	topicId := uint64(501)
 	keeper := s.emissionsKeeper
@@ -2822,14 +2821,12 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 /// UTILS
 
 func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
-	ctx := s.ctx                // Use the context from the test suite
-	keeper := s.emissionsKeeper // Use the keeper from the test suite
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
 
-	// Setup mock parameters
 	defaultLimit := uint64(20)
 	maxLimit := uint64(50)
 
-	// Simulate parameter setting for default and max limits
 	params := types.Params{
 		DefaultLimit: defaultLimit,
 		MaxLimit:     maxLimit,
