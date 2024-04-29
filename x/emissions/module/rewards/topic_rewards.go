@@ -74,13 +74,19 @@ func SafeApplyFuncOnAllRewardReadyTopics(
 
 			// Check the cadence of inferences
 			if block == topic.EpochLastEnded+topic.EpochLength || block-topic.EpochLastEnded >= 2*topic.EpochLength {
-				// Check topic has an unfulfilled reward nonce
+				// Check topic has an unfulfilled reward nonce or no unfulfilled reputer nonces at all
+				// If no unfulfilled reputer nonces, then there was never a request made for this topic (cold start edge case)
+				unfulfilledReputerNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+				if err != nil {
+					fmt.Println("Error getting reputer nonces: ", err)
+					continue
+				}
 				rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 				if err != nil {
 					fmt.Println("Error getting reputer request nonces: ", err)
 					continue
 				}
-				if rewardNonce == 0 {
+				if rewardNonce == 0 && len(unfulfilledReputerNonces.Nonces) > 0 {
 					fmt.Println("Reputer request nonces is nil")
 					continue
 				}
