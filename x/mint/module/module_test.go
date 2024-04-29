@@ -214,3 +214,40 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 
 }
+
+func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmissionPerUnitStakeTokenGoDown() {
+	var fEmission cosmosMath.LegacyDec = types.DefaultParams().FEmission
+	networkStaked, ok := cosmosMath.NewIntFromString("1000000000000000000000") // 1000e18
+	s.Require().True(ok)
+	circulatingSupply, ok := cosmosMath.NewIntFromString("10000000000000000000000") // 10000e18
+	s.Require().True(ok)
+	maxSupply, ok := cosmosMath.NewIntFromString("1000000000000000000000000000") // 1e27
+	s.Require().True(ok)
+	ecosystemMintableRemainingBefore, ok := cosmosMath.NewIntFromString("367500000000000000000000000") // 1e27 * 0.3675
+	s.Require().True(ok)
+
+	e_iBefore, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
+		fEmission,
+		ecosystemMintableRemainingBefore,
+		networkStaked,
+		circulatingSupply,
+		maxSupply,
+	)
+	s.Require().NoError(err)
+
+	ecosystemMintableRemainingAfter, ok := cosmosMath.NewIntFromString("300000000000000000000000000") // 1e27 * 0.3
+	s.Require().True(ok)
+	e_iAfter, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
+		fEmission,
+		ecosystemMintableRemainingAfter,
+		networkStaked,
+		circulatingSupply,
+		maxSupply,
+	)
+	s.Require().NoError(err)
+
+	s.Require().True(
+		e_iBefore.GT(e_iAfter),
+		"Target emission per unit staked token should go down when ecosystem mintable remaining goes down all else equal: %s > %s",
+	)
+}
