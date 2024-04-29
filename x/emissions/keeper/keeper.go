@@ -2064,12 +2064,19 @@ func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.Pa
 	}
 	defer iter.Close()
 
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
 	for ; iter.Valid(); iter.Next() {
 		key, err := iter.KeyValue()
 		if err != nil {
 			return err
 		}
-		if err := k.allInferences.Remove(ctx, key.Key); err != nil {
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allInferences.Remove(ctx, key); err != nil {
 			return err
 		}
 	}
@@ -2084,12 +2091,19 @@ func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.Pai
 	}
 	defer iter.Close()
 
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
 	for ; iter.Valid(); iter.Next() {
 		key, err := iter.KeyValue()
 		if err != nil {
 			return err
 		}
-		if err := k.allForecasts.Remove(ctx, key.Key); err != nil {
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allForecasts.Remove(ctx, key); err != nil {
 			return err
 		}
 	}
@@ -2104,12 +2118,19 @@ func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.P
 	}
 	defer iter.Close()
 
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
 	for ; iter.Valid(); iter.Next() {
 		key, err := iter.KeyValue()
 		if err != nil {
 			return err
 		}
-		if err := k.allLossBundles.Remove(ctx, key.Key); err != nil {
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allLossBundles.Remove(ctx, key); err != nil {
 			return err
 		}
 	}
@@ -2124,12 +2145,19 @@ func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections
 	}
 	defer iter.Close()
 
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
 	for ; iter.Valid(); iter.Next() {
 		key, err := iter.KeyValue()
 		if err != nil {
 			return err
 		}
-		if err := k.networkLossBundles.Remove(ctx, key.Key); err != nil {
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
 			return err
 		}
 	}

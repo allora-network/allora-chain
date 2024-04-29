@@ -21123,7 +21123,7 @@ type Params struct {
 	RegistrationFee                 string `protobuf:"bytes,36,opt,name=registration_fee,json=registrationFee,proto3" json:"registration_fee,omitempty"`                                      // registration fee for workers and reputers
 	DefaultLimit                    uint64 `protobuf:"varint,37,opt,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`                                              // default limit for pagination
 	MaxLimit                        uint64 `protobuf:"varint,38,opt,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`                                                          // max limit for pagination
-	MinEpochLengthRecordLimit       int64  `protobuf:"varint,39,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"` // min epoch length to keep records
+	MinEpochLengthRecordLimit       int64  `protobuf:"varint,39,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"` // min number of epochs to keep network losses, reputer losses, inferences, forecasts
 }
 
 func (x *Params) Reset() {
