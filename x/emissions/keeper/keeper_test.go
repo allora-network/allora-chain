@@ -2183,14 +2183,22 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := uint64(456)
+	topicId := uint64(123)
+	topicId2 := uint64(456)
 
 	err := keeper.AddChurnReadyTopic(ctx, topicId)
 	s.Require().NoError(err)
 
+	err = keeper.AddChurnReadyTopic(ctx, topicId2)
+	s.Require().NoError(err)
+
+	poppedId2, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, poppedId2)
+
 	poppedId, err := keeper.PopChurnReadyTopic(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(topicId, poppedId)
+	s.Require().Equal(topicId2, poppedId)
 
 	// Ensure no topics remain
 	remainingId, err := keeper.PopChurnReadyTopic(ctx)
