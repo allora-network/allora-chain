@@ -740,6 +740,54 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
+func (s *KeeperTestSuite) TestGetParamsEpsilon() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := alloraMath.MustNewDecFromString("0.1")
+
+	// Set the parameter
+	params := types.Params{Epsilon: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err) // Ensure no error occurred when setting params
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsEpsilon(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
+func (s *KeeperTestSuite) TestGetParamsTopicCreationFee() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewInt(1000)
+
+	// Set the parameter
+	params := types.Params{CreateTopicFee: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsTopicCreationFee(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
+func (s *KeeperTestSuite) TestGetParamsRegistrationFee() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewInt(500)
+
+	// Set the parameter
+	params := types.Params{RegistrationFee: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsRegistrationFee(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
 func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
