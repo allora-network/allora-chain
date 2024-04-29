@@ -893,7 +893,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that the stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return nil
 	}
@@ -934,26 +934,11 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 	// Set new sum topic stake for all topics
 	if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
 		fmt.Println("Setting topic stake failed -- rolling back reputer stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
 		fmt.Println("Setting total stake failed -- rolling back reputer and topic stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
-		// Rollback topic stake
-		err2 = k.topicStake.Set(ctx, topicId, topicStake)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
@@ -961,7 +946,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 }
 
 func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that delegate stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return errors.New("stake must be greater than zero")
 	}
@@ -1019,24 +1004,10 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 
 	// Set new sum topic stake for all topics
 	if err := k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
-		fmt.Println("Setting topic stake failed -- rolling back stake from delegator")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
-		fmt.Println("Setting total stake failed -- rolling back stake from delegator and delegate stake placement")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
-		err2 = k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, delegateStakePlacement)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
