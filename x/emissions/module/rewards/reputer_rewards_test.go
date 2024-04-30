@@ -216,33 +216,3 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 
 	return reputerValueBundles, nil
 }
-
-// func (s *RewardsTestSuite) TestGetReputersRewardsFromTotalRewards() {
-// 	topidId := uint64(1)
-// 	block := int64(1003)
-
-// 	reputerAddrs := []sdk.AccAddress{
-// 		s.addrs[0],
-// 		s.addrs[1],
-// 		s.addrs[2],
-// 		s.addrs[3],
-// 		s.addrs[4],
-// 	}
-
-// 	var delegatorStake = cosmosMath.NewUint(5000)
-// 	// Generate reputers data for tests
-// 	_, err := mockReputersData(s, topidId, block, reputerAddrs)
-// 	_ = s.emissionsKeeper.SetDelegateStakeUponReputer(s.ctx, topidId, s.addrs[0], delegatorStake)
-// 	s.Require().NoError(err)
-
-// 	newReputerRewards, err := rewards.GetReputerRewards(
-// 		s.ctx,
-// 		s.emissionsKeeper,
-// 		topidId,
-// 		block,
-// 		alloraMath.OneDec(),
-// 		alloraMath.MustNewDecFromString("1017.5559072418691"),
-// 	)
-// 	s.Require().NoError(err)
-// 	s.Require().Equal(5, len(newReputerRewards))
-// }
