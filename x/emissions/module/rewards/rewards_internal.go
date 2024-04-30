@@ -99,7 +99,7 @@ func GetMappingFunctionValues(
 ) ([]alloraMath.Dec, error) {
 	stdDev := alloraMath.OneDec()
 	if len(latestTimeStepsScores) <= 1 {
-		var err error	
+		var err error
 		stdDev, err = StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
