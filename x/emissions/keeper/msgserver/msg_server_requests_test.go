@@ -60,6 +60,76 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 	s.Require().True(topicWeightAfter.Gt(topicWeightBefore), "Topic weight should be greater after funding the topic")
 }
 
+func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	topicId := s.CreateOneTopic()
+	topicId2 := s.CreateOneTopic()
+	// put some stake in the topic
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
+	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
+	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
+	var initialStake int64 = 1000
+	var initialStake2 int64 = 10000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	r := types.MsgFundTopic{
+		Sender:    sender,
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	r2 := types.MsgFundTopic{
+		Sender:    sender,
+		TopicId:   topicId2,
+		Amount:    cosmosMath.NewInt(initialStake2),
+		ExtraData: []byte("Test"),
+	}
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err, "GetParams should not return an error")
+
+	response, err := s.msgServer.FundTopic(s.ctx, &r)
+	s.Require().NoError(err, "RequestInference should not return an error")
+	s.Require().NotNil(response, "Response should not be nil")
+
+	response2, err := s.msgServer.FundTopic(s.ctx, &r2)
+	s.Require().NoError(err, "RequestInference should not return an error")
+	s.Require().NotNil(response2, "Response should not be nil")
+
+	// Check if the topic is activated
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(true, res, "TopicId is not activated")
+	// check that the topic fee revenue has been updated
+	topicWeight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r.Amount,
+	)
+	s.Require().NoError(err)
+
+	topic2Weight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r2.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r2.Amount,
+	)
+	s.Require().NoError(err)
+
+	s.Require().Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
+}
+
 /*
 
 // test more than one inference in the message
