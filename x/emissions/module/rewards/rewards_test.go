@@ -296,10 +296,12 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.addrs[9],
 	}
 
+	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
+
 	stakes := []cosmosMath.Uint{
-		cosmosMath.NewUint(1000000000000000000),
-		cosmosMath.NewUint(1000000000000000000),
-		cosmosMath.NewUint(1000000000000000000),
+		cosmosMath.NewUint(1000000000000000000).Mul(cosmosOneE18),
+		cosmosMath.NewUint(1000000000000000000).Mul(cosmosOneE18),
+		cosmosMath.NewUint(1000000000000000000).Mul(cosmosOneE18),
 	}
 
 	// Create topic
@@ -359,6 +361,19 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:    reputerAddrs[0].String(),
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
 	})
@@ -401,8 +416,16 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionForTopic(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
+
+	firstTotalReputerReward := alloraMath.ZeroDec()
+	for _, reward := range firstRewardsDistribution {
+		if reward.Type == rewards.ReputerRewardType {
+			firstTotalReputerReward, err = firstTotalReputerReward.Add(reward.Reward)
+			s.Require().NoError(err)
+		}
+	}
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -416,8 +439,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Add Stake for new reputers
 	newStakes := []cosmosMath.Uint{
-		cosmosMath.NewUint(1000000000000000000),
-		cosmosMath.NewUint(1000000000000000000),
+		cosmosMath.NewUint(1000000000000000000).Mul(cosmosOneE18),
+		cosmosMath.NewUint(1000000000000000000).Mul(cosmosOneE18),
 	}
 	stakes = append(stakes, newStakes...)
 
@@ -478,6 +501,17 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	fundTopicMessage = types.MsgFundTopic{
+		Sender:    reputerAddrs[0].String(),
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
 	})
@@ -516,11 +550,19 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondTaskReputerReward, _, _, err := rewards.GenerateTasksRewards(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, err := rewards.GenerateRewardsDistributionForTopic(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
+	secondTotalReputerReward := alloraMath.ZeroDec()
+	for _, reward := range secondRewardsDistribution {
+		if reward.Type == rewards.ReputerRewardType {
+			secondTotalReputerReward, err = secondTotalReputerReward.Add(reward.Reward)
+			s.Require().NoError(err)
+		}
+	}
+
 	// Check if the reward share increased
-	s.Require().True(secondTaskReputerReward.Gt(firstTaskReputerReward))
+	s.Require().True(secondTotalReputerReward.Gt(firstTotalReputerReward))
 }
 
 func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
