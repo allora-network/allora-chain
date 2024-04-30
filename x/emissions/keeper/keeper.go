@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+
 	"github.com/allora-network/allora-chain/app/params"
 
 	cosmosMath "cosmossdk.io/math"
