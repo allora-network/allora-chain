@@ -53,4 +53,5 @@ var (
 	ErrInsufficientDelegateStakeToRemove        = errors.Register(ModuleName, 49, "insufficient delegate stake to remove")
 	ErrTopicMempoolAtCapacity                   = errors.Register(ModuleName, 50, "topic mempool at capacity")
 	ErrReceivedZeroAmount                       = errors.Register(ModuleName, 51, "received zero amount")
+	ErrInvalidValue                             = errors.Register(ModuleName, 52, "invalid value")
 )

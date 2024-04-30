@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"fmt"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -397,6 +398,7 @@ func TestGetScoreFractions(t *testing.T) {
 				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			fmt.Println("got >>>>>> ", got)
 
 			for i := range tt.want {
 				if !(alloraMath.InDelta(tt.want[i], got[i], alloraMath.MustNewDecFromString("0.00001"))) {
@@ -412,7 +414,7 @@ func TestGetScoreFractions(t *testing.T) {
 	}
 }
 
-func TestGetReputerRewardFractions(t *testing.T) {
+func TestCalculateReputerRewardFractions(t *testing.T) {
 	tests := []struct {
 		name    string
 		stakes  []alloraMath.Dec
@@ -433,7 +435,7 @@ func TestGetReputerRewardFractions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetReputerRewardFractions(tt.stakes, tt.scores, tt.preward)
+			got, err := rewards.CalculateReputerRewardFractions(tt.stakes, tt.scores, tt.preward)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetReputerRewardFractions() error = %v, wantErr %v", err, tt.wantErr)
 				return

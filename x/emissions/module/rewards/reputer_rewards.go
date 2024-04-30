@@ -43,7 +43,7 @@ func GetReputersRewardFractions(
 		}
 	}
 
-	rewardFractions, err := GetReputerRewardFractions(stakes, scores, pRewardSpread)
+	rewardFractions, err := CalculateReputerRewardFractions(stakes, scores, pRewardSpread)
 	if err != nil {
 		return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward fractions")
 	}
