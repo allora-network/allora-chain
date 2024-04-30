@@ -17,6 +17,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -60,6 +61,7 @@ type KeeperTestSuite struct {
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
 	msgServer       types.MsgServer
+	queryServer     types.QueryServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -135,6 +137,8 @@ func (s *KeeperTestSuite) SetupTest() {
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
+	s.queryServer = queryserver.NewQueryServerImpl(s.emissionsKeeper)
+
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
