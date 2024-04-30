@@ -111,7 +111,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) erro
 	}
 
 	// Get Distribution of Rewards per Topic
-
 	weights, sumWeight, sumRevenue, err := GetTopicWeights(ctx, k, blockHeight, true, true)
 	if err != nil {
 		return errors.Wrapf(err, "weights error")
