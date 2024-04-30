@@ -1646,7 +1646,7 @@ func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error 
 	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
-// returns a single churn ready topic for processing.
+// returns a single churn ready topic for processing. Order out is not guaranteed.
 // if there are no churn ready topics, returns the reserved topic id 0,
 // which cannot be used as a topic id - callers are responsible for checking
 // that the returned topic id is not 0.
@@ -2029,27 +2029,26 @@ func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sd
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
-	cursor := uint64(0)
 	defaultLimit, err := k.GetParamsDefaultLimit(ctx)
-	limit := pagination.Limit
 	if err != nil {
 		return uint64(0), uint64(0), err
 	}
+	limit := defaultLimit
+	cursor := uint64(0)
+
 	if pagination != nil {
 		if len(pagination.Key) > 0 {
 			cursor = binary.BigEndian.Uint64(pagination.Key)
 		}
-		if limit == 0 {
-			return defaultLimit, cursor, nil
-		} else {
-			maxLimit, err := k.GetParamsMaxLimit(ctx)
-			if err != nil {
-				return uint64(0), uint64(0), err
-			}
-			if limit > maxLimit {
-				limit = maxLimit
-			}
-			return limit, cursor, nil
+		if pagination.Limit > 0 {
+			limit = pagination.Limit
+		}
+		maxLimit, err := k.GetParamsMaxLimit(ctx)
+		if err != nil {
+			return uint64(0), uint64(0), err
+		}
+		if limit > maxLimit {
+			limit = maxLimit
 		}
 	}
 
