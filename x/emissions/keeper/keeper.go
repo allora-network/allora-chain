@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	errorsmod "cosmossdk.io/errors"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -948,7 +949,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
 	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return errorsmod.Wrapf(types.ErrInvalidValue, "stake must be greater than zero")
 	}
 
 	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
@@ -1750,6 +1751,10 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+	if score.Score.IsZero() {
+		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
+	}
+
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1817,6 +1822,10 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+	if score.Score.IsZero() {
+		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
+	}
+
 	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1884,6 +1893,10 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+	if score.Score.IsZero() {
+		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
+	}
+
 	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err

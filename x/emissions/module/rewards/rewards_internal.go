@@ -97,9 +97,13 @@ func GetMappingFunctionValues(
 	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
 ) ([]alloraMath.Dec, error) {
-	stdDev, err := StdDev(latestTimeStepsScores)
-	if err != nil {
-		return nil, errors.Wrapf(err, "err getting stdDev")
+	stdDev := alloraMath.OneDec()
+	if len(latestTimeStepsScores) <= 1 {
+		var err error	
+		stdDev, err = StdDev(latestTimeStepsScores)
+		if err != nil {
+			return nil, errors.Wrapf(err, "err getting stdDev")
+		}
 	}
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
@@ -115,9 +119,9 @@ func GetMappingFunctionValues(
 	return ret, nil
 }
 
-// GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
+// CalculateReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
 // W_im
-func GetReputerRewardFractions(
+func CalculateReputerRewardFractions(
 	stakes []alloraMath.Dec,
 	scores []alloraMath.Dec,
 	preward alloraMath.Dec,
