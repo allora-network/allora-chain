@@ -1771,10 +1771,10 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
+func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(blockNumber).
+		EndInclusive(blockHeight).
 		Descending()
 
 	scores := make([]*types.Score, 0)
@@ -1783,17 +1783,21 @@ func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId
 		return nil, err
 	}
 
+	// Get max number of time steps that should be retrieved
+	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	count := 0
-	for ; iter.Valid() && count < 10; iter.Next() {
+	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
 			return nil, err
 		}
 		for _, score := range existingScores.Value.Scores {
-			if score.Address == worker.String() {
-				scores = append(scores, score)
-				count++
-			}
+			scores = append(scores, score)
+			count++
 		}
 	}
 
@@ -1834,10 +1838,10 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
+func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(blockNumber).
+		EndInclusive(blockHeight).
 		Descending()
 
 	scores := make([]*types.Score, 0)
@@ -1846,17 +1850,21 @@ func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId 
 		return nil, err
 	}
 
+	// Get max number of time steps that should be retrieved
+	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	count := 0
-	for ; iter.Valid() && count < 10; iter.Next() {
+	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
 			return nil, err
 		}
 		for _, score := range existingScores.Value.Scores {
-			if score.Address == worker.String() {
-				scores = append(scores, score)
-				count++
-			}
+			scores = append(scores, score)
+			count++
 		}
 	}
 
