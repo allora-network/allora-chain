@@ -7,7 +7,6 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // StdDev calculates the standard deviation of a slice of `alloraMath.Dec`
@@ -67,10 +66,11 @@ func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 // u_ij = M(Tij) / ∑_j M(T_ij)
 // v_ik = M(Tik) / ∑_k M(T_ik)
 func GetScoreFractions(
-	scores []alloraMath.Dec,
+	latestWorkerScores []alloraMath.Dec,
+	latestTimeStepsScores []alloraMath.Dec,
 	pReward alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	mappedValues, err := GetMappingFunctionValues(scores, pReward)
+	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
@@ -93,15 +93,16 @@ func GetScoreFractions(
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
-	scores []alloraMath.Dec, // list of T
+	latestWorkerScores []alloraMath.Dec, // T - latest scores from workers
+	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
 ) ([]alloraMath.Dec, error) {
-	stdDev, err := StdDev(scores)
+	stdDev, err := StdDev(latestTimeStepsScores)
 	if err != nil {
 		return nil, errors.Wrapf(err, "err getting stdDev")
 	}
-	ret := make([]alloraMath.Dec, len(scores))
-	for i, score := range scores {
+	ret := make([]alloraMath.Dec, len(latestWorkerScores))
+	for i, score := range latestWorkerScores {
 		frac, err := score.Quo(stdDev)
 		if err != nil {
 			return nil, err
@@ -112,69 +113,6 @@ func GetMappingFunctionValues(
 		}
 	}
 	return ret, nil
-}
-
-// GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
-// U_ij / V_ik * totalRewards
-func GetWorkerPortionOfRewards(
-	scores [][]alloraMath.Dec,
-	preward alloraMath.Dec,
-	totalRewards alloraMath.Dec,
-	workerAddresses []sdk.AccAddress,
-	taskRewardType TaskRewardType,
-	topicId uint64,
-) ([]TaskRewards, error) {
-	lastScores := make([][]alloraMath.Dec, len(scores))
-	for i, workerScores := range scores {
-		end := len(workerScores)
-		start := end - 10
-		if start < 0 {
-			start = 0
-		}
-		lastScores[i] = workerScores[start:end]
-	}
-
-	stdDev, err := StdDev(flatten(lastScores))
-	if err != nil {
-		return nil, errors.Wrapf(err, "error getting StdDev")
-	}
-	smoothedScores := make([]alloraMath.Dec, len(lastScores))
-	total := alloraMath.ZeroDec()
-	for i, score := range lastScores {
-		normalizedScore, err := score[len(score)-1].Quo(stdDev)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err normalizing score")
-		}
-		res, err := Phi(preward, normalizedScore)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err calculating phi")
-		}
-		smoothedScores[i] = res
-		total, err = total.Add(res)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err adding to total")
-		}
-	}
-
-	var rewardPortions []TaskRewards
-	for i, score := range smoothedScores {
-		rewardFraction, err := score.Quo(total)
-		if err != nil {
-			return nil, err
-		}
-		rewardPortion, err := rewardFraction.Mul(totalRewards)
-		if err != nil {
-			return nil, err
-		}
-		rewardPortions = append(rewardPortions, TaskRewards{
-			Address: workerAddresses[i],
-			Reward:  rewardPortion,
-			TopicId: topicId,
-			Type:    taskRewardType,
-		})
-	}
-
-	return rewardPortions, nil
 }
 
 // GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
