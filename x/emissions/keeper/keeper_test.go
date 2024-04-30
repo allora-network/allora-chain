@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"encoding/binary"
 	"errors"
 	"strconv"
 	"testing"
@@ -74,9 +75,7 @@ func TestKeeperTestSuite(t *testing.T) {
 	suite.Run(t, new(KeeperTestSuite))
 }
 
-//////////////////////////////////////////////////////////////
-//                 WORKER NONCE TESTS                       //
-//////////////////////////////////////////////////////////////
+/// WORKER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	ctx := s.ctx
@@ -244,9 +243,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	}
 }
 
-//////////////////////////////////////////////////////////////
-//                 REPUTER NONCE TESTS                      //
-//////////////////////////////////////////////////////////////
+/// REPUTER NONCE TESTS
 
 func (s *KeeperTestSuite) TestAddReputerNonce() {
 	ctx := s.ctx
@@ -398,9 +395,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	}
 }
 
-//////////////////////////////////////////////////////////////
-//                     REGRET TESTS                         //
-//////////////////////////////////////////////////////////////
+/// REGRET TESTS
 
 func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	ctx := s.ctx
@@ -640,9 +635,7 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
 
-//////////////////////////////////////////////////////////////
-//                     PARAMS TESTS                         //
-//////////////////////////////////////////////////////////////
+/// PARAMS TESTS
 
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	ctx := s.ctx
@@ -740,6 +733,54 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
+func (s *KeeperTestSuite) TestGetParamsEpsilon() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := alloraMath.MustNewDecFromString("0.1")
+
+	// Set the parameter
+	params := types.Params{Epsilon: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsEpsilon(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
+func (s *KeeperTestSuite) TestGetParamsTopicCreationFee() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewInt(1000)
+
+	// Set the parameter
+	params := types.Params{CreateTopicFee: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsTopicCreationFee(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
+func (s *KeeperTestSuite) TestGetParamsRegistrationFee() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := cosmosMath.NewInt(500)
+
+	// Set the parameter
+	params := types.Params{RegistrationFee: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetParamsRegistrationFee(ctx)
+	s.Require().NoError(err)
+	s.Require().True(expectedValue.Equal(actualValue))
+}
+
 func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -804,9 +845,7 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
 }
 
-//////////////////////////////////////////////////////////////
-//                 INFERENCES, FORECASTS                    //
-//////////////////////////////////////////////////////////////
+/// INFERENCES, FORECASTS
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	ctx := s.ctx
@@ -835,6 +874,54 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
+}
+
+func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	workerAccStr := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
+	workerAcc, _ := sdk.AccAddressFromBech32(workerAccStr)
+
+	_, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
+
+	blockHeight1 := int64(12345)
+	newInference1 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight1,
+		Inferer:     workerAccStr,
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data"),
+		Proof:       "proof123",
+	}
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{&newInference1},
+	}
+	nonce := types.Nonce{BlockHeight: blockHeight1}
+	err = keeper.InsertInferences(ctx, topicId, nonce, inferences1)
+	s.Require().NoError(err, "Inserting inferences should not fail")
+
+	blockHeight2 := int64(12346)
+	newInference2 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight2,
+		Inferer:     workerAccStr,
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data"),
+		Proof:       "proof123",
+	}
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{&newInference2},
+	}
+	nonce2 := types.Nonce{BlockHeight: blockHeight2}
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err, "Inserting inferences should not fail")
+
+	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	s.Require().NoError(err, "Retrieving an existing inference should not fail")
+	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
 }
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
@@ -1818,6 +1905,32 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	s.Require().True(isRegistered, "Reputer should be registered in each topic")
 }
 
+func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
+	ctx := s.ctx
+	reputer := sdk.AccAddress("sampleReputerAddress")
+	topicId := uint64(501)
+	keeper := s.emissionsKeeper
+	reputerKey := "someLibP2PKey123"
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    reputerKey,
+		MultiAddress: "/ip4/127.0.0.1/tcp/4001",
+		Owner:        "cosmos1...",
+		NodeAddress:  "cosmosNodeAddress",
+		NodeId:       "nodeId123",
+	}
+
+	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
+	s.Require().NoError(err)
+
+	actualReputer, err := keeper.GetReputerByLibp2pKey(ctx, reputerKey)
+	s.Require().NoError(err)
+	s.Require().Equal(reputerInfo, actualReputer)
+
+	nonExistentKey := "nonExistentKey123"
+	_, err = keeper.GetReputerByLibp2pKey(ctx, nonExistentKey)
+	s.Require().Error(err)
+}
+
 func (s *KeeperTestSuite) TestRemoveReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2070,6 +2183,26 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
 
+func (s *KeeperTestSuite) TestGetTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	metadata := "metadata"
+	_, err := keeper.GetTopic(ctx, topicId)
+	s.Require().Error(err, "Retrieving a non-existent topic should result in an error")
+
+	newTopic := types.Topic{Id: topicId, Metadata: metadata}
+
+	err = keeper.SetTopic(ctx, topicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
+	retrievedTopic, err := keeper.GetTopic(ctx, topicId)
+	s.Require().NoError(err, "Retrieving an existent topic should not fail")
+	s.Require().Equal(newTopic, retrievedTopic, "Retrieved topic should match the set topic")
+	s.Require().Equal(newTopic.Metadata, retrievedTopic.Metadata, "Retrieved topic should match the set topic")
+}
+
 /// FEE REVENUE
 
 func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
@@ -2130,6 +2263,34 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
 	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
+}
+
+/// TOPIC CHURN
+
+func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(123)
+	topicId2 := uint64(456)
+
+	err := keeper.AddChurnReadyTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	err = keeper.AddChurnReadyTopic(ctx, topicId2)
+	s.Require().NoError(err)
+
+	poppedId2, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId, poppedId2)
+
+	poppedId, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(topicId2, poppedId)
+
+	// Ensure no topics remain
+	remainingId, err := keeper.PopChurnReadyTopic(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(0), remainingId)
 }
 
 /// SCORES
@@ -2655,6 +2816,58 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	nonce, err = keeper.GetTopicRewardNonce(ctx, topicId)
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
+}
+
+/// UTILS
+
+func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	defaultLimit := uint64(20)
+	maxLimit := uint64(50)
+
+	params := types.Params{
+		DefaultLimit: defaultLimit,
+		MaxLimit:     maxLimit,
+	}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting default and max limit parameters should not fail")
+
+	maxLimitActual, err := keeper.GetParamsMaxLimit(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(maxLimit, maxLimitActual, "Max limit should be set correctly")
+
+	defaultLimitActual, err := keeper.GetParamsDefaultLimit(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(defaultLimit, defaultLimitActual, "Default limit should be set correctly")
+
+	// Test 1: Pagination request is nil
+	limit, cursor, err := keeper.CalcAppropriatePaginationForUint64Cursor(ctx, nil)
+	s.Require().NoError(err, "Should handle nil pagination request without error")
+	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
+	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key nil")
+
+	// Test 2: Pagination Key is empty and Limit is zero
+	pagination := &types.SimpleCursorPaginationRequest{Key: []byte{}, Limit: 0}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Should handle empty key and zero limit without error")
+	s.Require().Equal(defaultLimit, limit, "Limit should default to the default limit")
+	s.Require().Equal(uint64(0), cursor, "Cursor should be 0 when key is empty")
+
+	// Test 3: Valid key and non-zero limit within bounds
+	validKey := binary.BigEndian.AppendUint64(nil, uint64(12345)) // Convert 12345 to big-endian byte slice
+	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 30}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Handling valid key and valid limit should not fail")
+	s.Require().Equal(uint64(30), limit, "Limit should be as specified")
+	s.Require().Equal(uint64(12345), cursor, "Cursor should decode correctly from key")
+
+	// Test 4: Limit exceeds maximum limit
+	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 60}
+	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
+	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
 }
 
 // STATE MANAGEMENT
