@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"fmt"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -397,6 +398,7 @@ func TestGetScoreFractions(t *testing.T) {
 				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+			fmt.Println("got >>>>>> ", got)
 
 			for i := range tt.want {
 				if !(alloraMath.InDelta(tt.want[i], got[i], alloraMath.MustNewDecFromString("0.00001"))) {
