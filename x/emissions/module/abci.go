@@ -33,10 +33,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		wg.Add(1)
 		go func(topic types.Topic) {
 			defer wg.Done()
-			// Check the cadence of inferences
+			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
+			// to avoid potential situations where the block is missed
 			if blockHeight == topic.EpochLastEnded+topic.EpochLength ||
-				blockHeight-topic.EpochLastEnded >= 2*topic.EpochLength {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+				(topic.EpochLastEnded-blockHeight)%topic.EpochLength == 0 {
+				fmt.Printf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
@@ -66,11 +67,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					fmt.Println("Not adding reputer nonce, too early in topic history", blockHeight, topic.EpochLength)
 				}
 
+				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
+				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
+				if err != nil {
+					fmt.Println("Error setting churn ready topic: ", err)
+					return
+				}
 			}
 		}(*topic)
 		return nil
 	}
-	err = rewards.SafeApplyFuncOnAllRewardReadyTopics(
+	err = rewards.ApplyFuncOnAllChurnReadyTopics(
 		sdkCtx,
 		am.keeper,
 		blockHeight,

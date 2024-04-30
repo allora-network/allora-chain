@@ -111,7 +111,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	}
 
 	// Get Distribution of Rewards per Topic
-	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, block)
+	weights, sumWeight, sumRevenue, err := GetTopicWeights(ctx, k, block, true, true)
 	if err != nil {
 		return errors.Wrapf(err, "weights error")
 	}
@@ -185,12 +185,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	}
 	// for every topic
 	for topicId, topicReward := range topicRewards {
-		// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-		err = k.AddChurnReadyTopic(ctx, topicId)
-		if err != nil {
-			fmt.Println("Error setting churn ready topic: ", err)
-			return err
-		}
 
 		// Get topic reward nonce/block height
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
