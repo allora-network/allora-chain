@@ -107,6 +107,9 @@ func GetMappingFunctionValues(
 	}
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
+		if stdDev.IsZero() {
+			return nil, errors.Wrapf(types.ErrInvalidValue, "std dev cannot be zero")
+		}
 		frac, err := score.Quo(stdDev)
 		if err != nil {
 			return nil, err

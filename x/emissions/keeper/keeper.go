@@ -1751,10 +1751,6 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	if score.Score.IsZero() {
-		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
-	}
-
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1822,10 +1818,6 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	if score.Score.IsZero() {
-		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
-	}
-
 	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1893,10 +1885,6 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	if score.Score.IsZero() {
-		return errorsmod.Wrapf(types.ErrInvalidValue, "score must be different than zero")
-	}
-
 	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
