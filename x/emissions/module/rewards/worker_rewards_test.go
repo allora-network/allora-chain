@@ -9,47 +9,67 @@ import (
 )
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+
 	// Generate old scores
-	err := mockWorkerLastScores(s, 1)
+	err := mockWorkerLastScores(s, topicId)
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	_, err = mockNetworkLosses(s, 1, 1003)
+	networkLosses, err := mockNetworkLosses(s, topicId, blockHeight)
 	s.Require().NoError(err)
 
 	// Get worker rewards
-	workerRewards, err := rewards.GetWorkersRewardsInferenceTask(
+	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
-		1,
-		1003,
+		topicId,
+		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		&networkLosses,
+	)
+	inferenceRewards, err := rewards.GetRewardPerWorker(
+		topicId,
+		rewards.WorkerInferenceRewardType,
 		alloraMath.NewDecFromInt64(100),
+		inferers,
+		inferersRewardFractions,
 	)
 	s.Require().NoError(err)
-	s.Require().Equal(5, len(workerRewards))
+	s.Require().Equal(5, len(inferenceRewards))
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+
 	// Generate old scores
-	err := mockWorkerLastScores(s, 1)
+	err := mockWorkerLastScores(s, topicId)
 	s.Require().NoError(err)
 
 	// Generate last network loss
-	_, err = mockNetworkLosses(s, 1, 1003)
+	networkLosses, err := mockNetworkLosses(s, topicId, blockHeight)
 	s.Require().NoError(err)
 
 	// Get worker rewards
-	workerRewards, err := rewards.GetWorkersRewardsForecastTask(
+	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
-		1,
-		1003,
+		topicId,
+		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		&networkLosses,
+	)
+	forecastRewards, err := rewards.GetRewardPerWorker(
+		topicId,
+		rewards.WorkerForecastRewardType,
 		alloraMath.NewDecFromInt64(100),
+		forecasters,
+		forecastersRewardFractions,
 	)
 	s.Require().NoError(err)
-	s.Require().Equal(5, len(workerRewards))
+	s.Require().Equal(5, len(forecastRewards))
 }
 
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
