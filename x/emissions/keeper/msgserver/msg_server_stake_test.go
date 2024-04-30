@@ -2,11 +2,11 @@ package msgserver_test
 
 import (
 	"errors"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -663,13 +663,22 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
 
-	reputerRewards, err := rewards.GetReputerRewards(
+	// Generate rewards
+	reputers, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		block,
 		alloraMath.OneDec(),
+	)
+	s.Require().NoError(err)
+	reputerRewards, err := rewards.GetRewardPerReputer(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
+		reputers,
+		reputersRewardFractions,
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(reputerRewards))
@@ -704,13 +713,23 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
-	newReputerRewards, err := rewards.GetReputerRewards(
+
+	// Generate new rewards
+	reputers, reputersRewardFractions, err = rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		newBlock,
 		alloraMath.OneDec(),
+	)
+	s.Require().NoError(err)
+	newReputerRewards, err := rewards.GetRewardPerReputer(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
 		alloraMath.MustNewDecFromString("1020.5559072418691"),
+		reputers,
+		reputersRewardFractions,
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(newReputerRewards))

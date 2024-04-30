@@ -96,7 +96,7 @@ func CalcTopicRewards(
 	return topicRewards, nil
 }
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) error {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 
@@ -111,7 +111,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	}
 
 	// Get Distribution of Rewards per Topic
-	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, block)
+	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, blockHeight)
 	if err != nil {
 		return errors.Wrapf(err, "weights error")
 	}
@@ -127,7 +127,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 		sumWeight,
 		sumRevenue,
 		totalRewardDec,
-		block,
+		blockHeight,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "failed to inactivate topics and update sums")
@@ -138,7 +138,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, block)
+	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
 
 	// Return the revenue to those topics that didn't make the cut
 	// Loop though weightsOfActiveTopics and if the topic is not in weightsOfTopActiveTopics, add to running revenue sum
@@ -155,7 +155,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 
 		// This way we won't double count from this earlier epoch revenue the next epoch
 		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-		err = k.ResetTopicFeeRevenue(ctx, topicId, block)
+		err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 		if err != nil {
 			return errors.Wrapf(err, "failed to reset topic fee revenue")
 		}
@@ -199,54 +199,11 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 			continue
 		}
 
-		taskReputerReward, taskInferenceReward, taskForecastingReward, err := GenerateTasksRewards(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
+		// Generate rewards distribution for topic participants
+		totalRewardsDistribution, err := GenerateRewardsDistributionForTopic(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
-			return errors.Wrapf(err, "failed to generate task rewards")
+			return errors.Wrapf(err, "failed to generate rewards")
 		}
-
-		totalRewardsDistribution := make([]TaskRewards, 0)
-
-		// Get Distribution of Rewards per Reputer
-		reputerRewards, err := GetReputerRewards(
-			ctx,
-			k,
-			topicId,
-			topicRewardNonce,
-			moduleParams.PRewardSpread,
-			taskReputerReward,
-		)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get reputer rewards")
-		}
-		totalRewardsDistribution = append(totalRewardsDistribution, reputerRewards...)
-
-		// Get Distribution of Rewards per Worker - Inference Task
-		inferenceRewards, err := GetWorkersRewardsInferenceTask(
-			ctx,
-			k,
-			topicId,
-			topicRewardNonce,
-			moduleParams.PRewardSpread,
-			taskInferenceReward,
-		)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get inference rewards")
-		}
-		totalRewardsDistribution = append(totalRewardsDistribution, inferenceRewards...)
-
-		// Get Distribution of Rewards per Worker - Forecast Task
-		forecastRewards, err := GetWorkersRewardsForecastTask(
-			ctx,
-			k,
-			topicId,
-			topicRewardNonce,
-			moduleParams.PRewardSpread,
-			taskForecastingReward,
-		)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get forecast rewards")
-		}
-		totalRewardsDistribution = append(totalRewardsDistribution, forecastRewards...)
 
 		// Pay out rewards
 		err = payoutRewards(ctx, k, totalRewardsDistribution)
@@ -298,68 +255,93 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, block BlockHeight) error {
 	return nil
 }
 
-func GenerateTasksRewards(
+func GenerateRewardsDistributionForTopic(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
 	topicReward *alloraMath.Dec,
-	block int64,
+	blockHeight int64,
 	moduleParams types.Params,
 ) (
-	alloraMath.Dec,
-	alloraMath.Dec,
-	alloraMath.Dec,
-	error,
+	[]TaskRewards, error,
 ) {
-	lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, block)
+	lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get network loss bundle at block %d", block)
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
 	}
 
-	reputerEntropy, reputerFractions, reputers, err := GetReputerTaskEntropy(
-		ctx,
-		k,
-		topicId,
-		moduleParams.TaskRewardAlpha,
-		moduleParams.PRewardSpread,
-		moduleParams.BetaEntropy,
-		block,
-	)
+	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
+	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, blockHeight, moduleParams.PRewardSpread)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get reputer task entropy")
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
-	inferenceEntropy, inferenceFractions, workersInference, err := GetInferenceTaskEntropy(
+
+	// Get reputer task entropy
+	reputerEntropy, err := GetReputerTaskEntropy(
 		ctx,
 		k,
 		topicId,
 		moduleParams.TaskRewardAlpha,
-		moduleParams.PRewardSpread,
 		moduleParams.BetaEntropy,
-		block,
+		reputers,
+		reputersRewardFractions,
 	)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get inference task entropy")
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer task entropy")
 	}
-	forecastingEntropy, forecastFractions, workersForecast, err := GetForecastingTaskEntropy(
+
+	// Get inferer reward fractions
+	inferers, inferersRewardFractions, err := GetInferenceTaskRewardFractions(
+		ctx,
+		k,
+		topicId,
+		blockHeight,
+		moduleParams.PRewardSpread,
+		lossBundles,
+	)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get inferer reward fractions")
+	}
+
+	// Get inference entropy
+	inferenceEntropy, err := GetInferenceTaskEntropy(
 		ctx,
 		k,
 		topicId,
 		moduleParams.TaskRewardAlpha,
-		moduleParams.PRewardSpread,
 		moduleParams.BetaEntropy,
-		block,
+		inferers,
+		inferersRewardFractions,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, err
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get inference task entropy")
+	}
+
+	// Get forecaster reward fractions
+	forecasters, forecastersRewardFractions, err := GetForecastingTaskRewardFractions(
+		ctx,
+		k,
+		topicId,
+		blockHeight,
+		moduleParams.PRewardSpread,
+		lossBundles,
+	)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecaster reward fractions")
+	}
+
+	// Get forecasting entropy
+	forecastingEntropy, err := GetForecastingTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		moduleParams.TaskRewardAlpha,
+		moduleParams.BetaEntropy,
+		forecasters,
+		forecastersRewardFractions,
+	)
+	if err != nil {
+		return []TaskRewards{}, err
 	}
 
 	// Get Total Rewards for Reputation task
@@ -370,11 +352,10 @@ func GenerateTasksRewards(
 		topicReward,
 	)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get reward for reputer task in topic")
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
 	}
+
+	// Get Total Rewards for Inference task
 	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
@@ -386,11 +367,10 @@ func GenerateTasksRewards(
 		moduleParams.SigmoidB,
 	)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get reward for inference task in topic")
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
 	}
+
+	// Get Total Rewards for Forecasting task
 	taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
@@ -402,57 +382,52 @@ func GenerateTasksRewards(
 		moduleParams.SigmoidB,
 	)
 	if err != nil {
-		return alloraMath.Dec{},
-			alloraMath.Dec{},
-			alloraMath.Dec{},
-			errors.Wrapf(err, "failed to get reward for forecasting task in topic")
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")
 	}
 
-	SetPreviousRewardFractions(
+	totalRewardsDistribution := make([]TaskRewards, 0)
+
+	// Get Distribution of Rewards per Reputer
+	reputerRewards, err := GetRewardPerReputer(
 		ctx,
 		k,
 		topicId,
+		taskReputerReward,
 		reputers,
-		reputerFractions,
-		workersInference,
-		inferenceFractions,
-		workersForecast,
-		forecastFractions,
+		reputersRewardFractions,
 	)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer rewards")
+	}
+	totalRewardsDistribution = append(totalRewardsDistribution, reputerRewards...)
 
-	return taskReputerReward, taskInferenceReward, taskForecastingReward, nil
-}
+	// Get Distribution of Rewards per Worker - Inference Task
+	inferenceRewards, err := GetRewardPerWorker(
+		topicId,
+		WorkerInferenceRewardType,
+		taskInferenceReward,
+		inferers,
+		inferersRewardFractions,
+	)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get inference rewards")
+	}
+	totalRewardsDistribution = append(totalRewardsDistribution, inferenceRewards...)
 
-func SetPreviousRewardFractions(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId uint64,
-	reputers []sdk.AccAddress,
-	reputerRewardFractions []alloraMath.Dec,
-	workersInference []sdk.AccAddress,
-	inferenceRewardFractions []alloraMath.Dec,
-	workersForecast []sdk.AccAddress,
-	forecastRewardFractions []alloraMath.Dec,
-) error {
-	for i, reputer := range reputers {
-		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, reputerRewardFractions[i])
-		if err != nil {
-			return errors.Wrapf(err, "failed to set previous reputer reward fraction")
-		}
+	// Get Distribution of Rewards per Worker - Forecast Task
+	forecastRewards, err := GetRewardPerWorker(
+		topicId,
+		WorkerForecastRewardType,
+		taskForecastingReward,
+		forecasters,
+		forecastersRewardFractions,
+	)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecast rewards")
 	}
-	for i, worker := range workersInference {
-		err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, inferenceRewardFractions[i])
-		if err != nil {
-			return errors.Wrapf(err, "failed to set previous inference reward fraction")
-		}
-	}
-	for i, worker := range workersForecast {
-		err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, forecastRewardFractions[i])
-		if err != nil {
-			return errors.Wrapf(err, "failed to set previous forecast reward fraction")
-		}
-	}
-	return nil
+	totalRewardsDistribution = append(totalRewardsDistribution, forecastRewards...)
+
+	return totalRewardsDistribution, nil
 }
 
 func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) error {

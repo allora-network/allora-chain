@@ -2412,12 +2412,11 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetWorkerInferenceScoresUntilBlock() {
+func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	workerAddress := sdk.AccAddress("allo16jmt7f7r4e6j9k4ds7jgac2t4k4cz0wthv4u88")
-	otherWorkerAddress := sdk.AccAddress("allo1k2u0wy9436pz5spxww22vr95lrfr4hhuznamva")
 	blockNumber := int64(105)
 
 	// Insert scores for different workers and blocks
@@ -2430,19 +2429,10 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresUntilBlock() {
 			Score:       alloraMath.NewDecFromInt64(blockNumber),
 		}
 		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, scoreForWorker)
-
-		// Scores for another worker to test filtering
-		scoreForOtherWorker := types.Score{
-			TopicId:     topicId,
-			BlockNumber: blockNumber,
-			Address:     otherWorkerAddress.String(),
-			Score:       alloraMath.NewDecFromInt64(blockNumber),
-		}
-		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockNumber, scoreForOtherWorker)
 	}
 
 	// Get scores for the worker up to block 105
-	scores, err := keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, blockNumber, workerAddress)
+	scores, err := keeper.GetInferenceScoresUntilBlock(ctx, topicId, blockNumber)
 	s.Require().NoError(err, "Fetching worker inference scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 
@@ -2486,11 +2476,10 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
 }
 
-func (s *KeeperTestSuite) TestGetWorkerForecastScoresUntilBlock() {
+func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	workerAddress := sdk.AccAddress("allo16jmt7f7r4e6j9k4ds7jgac2t4k4cz0wthv4u88")
 	blockNumber := int64(105)
 
 	// Insert scores for the worker at various blocks
@@ -2498,14 +2487,13 @@ func (s *KeeperTestSuite) TestGetWorkerForecastScoresUntilBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockNumber: i,
-			Address:     workerAddress.String(),
 			Score:       alloraMath.NewDecFromInt64(i),
 		}
 		_ = keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
 	}
 
 	// Get forecast scores for the worker up to block 105
-	scores, err := keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, blockNumber, workerAddress)
+	scores, err := keeper.GetForecastScoresUntilBlock(ctx, topicId, blockNumber)
 	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 }
