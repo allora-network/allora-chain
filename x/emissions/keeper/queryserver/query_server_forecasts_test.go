@@ -1,6 +1,8 @@
 package queryserver_test
 
-import "github.com/allora-network/allora-chain/x/emissions/types"
+import (
+	"github.com/allora-network/allora-chain/x/emissions/types"
+)
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	ctx := s.ctx
