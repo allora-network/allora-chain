@@ -738,3 +738,245 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
 }
+
+func (s *RewardsTestSuite) TestRewardsGoUpForTopicWithGreaterProportionOfStake() {
+	block := int64(600)
+	s.ctx = s.ctx.WithBlockHeight(block)
+	epochLength := int64(10800)
+
+	// Reputer Addresses
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Worker Addresses
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[5],
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+		s.addrs[9],
+	}
+
+	// Create first topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		EpochLength:      epochLength,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id for first topic
+	topicId1 := res.TopicId
+	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId2 := res.TopicId
+
+	// Register 5 workers, first 3 for topic 1 and last 2 for topic 2
+	for i, addr := range workerAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId1,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		if i > 2 {
+			workerRegMsg.TopicId = topicId2
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+
+	}
+
+	// Register 5 reputers, first 3 for topic 1 and last 2 for topic 2
+	for i, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId1,
+			IsReputer:    true,
+		}
+		if i > 2 {
+			reputerRegMsg.TopicId = topicId2
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
+
+	// Add Stake for reputers
+	var stakes = []cosmosMath.Uint{
+		cosmosMath.NewUint(1176644).Mul(cosmosOneE18),
+		cosmosMath.NewUint(384623).Mul(cosmosOneE18),
+		cosmosMath.NewUint(394676).Mul(cosmosOneE18),
+		cosmosMath.NewUint(207999).Mul(cosmosOneE18),
+		cosmosMath.NewUint(368582).Mul(cosmosOneE18),
+	}
+	for i, addr := range reputerAddrs {
+		addStakeMsg := &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId1,
+		}
+		if i > 2 {
+			addStakeMsg.TopicId = topicId2
+		}
+		_, err := s.msgServer.AddStake(s.ctx, addStakeMsg)
+		s.Require().NoError(err)
+	}
+
+	// fund topic 1
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:    reputerAddrs[0].String(),
+		TopicId:   topicId1,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	// fund topic 2
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	fundTopicMessage.TopicId = topicId2
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	// Insert unfullfiled nonces
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId1, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId2, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	reputerBalances := make([]sdk.Coin, 5)
+	reputerStake := make([]cosmosMath.Uint, 5)
+	for i, addr := range reputerAddrs {
+		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
+		if i > 2 {
+			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId2, addr)
+			s.Require().NoError(err)
+		} else {
+			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, addr)
+			s.Require().NoError(err)
+		}
+	}
+
+	workerBalances := make([]sdk.Coin, 5)
+	for i, addr := range workerAddrs {
+		workerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
+	}
+
+	// Insert inference from workers
+	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId1)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId1,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+	inferenceBundles2 := GenerateWorkerDataBundles(s, block, topicId2)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId2,
+		WorkerDataBundles: inferenceBundles2,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId1,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId2,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles2.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	block += epochLength * 3
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Trigger end block - rewards distribution
+	err = s.appModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
+	for i, addr := range reputerAddrs {
+		if i > 2 {
+			reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId2, addr)
+			s.Require().NoError(err)
+			s.Require().True(reputerStakeCurrent.GT(reputerStake[i]))
+			s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.Equal(reputerBalances[i].Amount))
+		} else {
+
+			reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, addr)
+			s.Require().NoError(err)
+			s.Require().True(reputerStakeCurrent.GT(reputerStake[i]))
+			s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.Equal(reputerBalances[i].Amount))
+		}
+	}
+
+	for i, addr := range workerAddrs {
+		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
+	}
+}
