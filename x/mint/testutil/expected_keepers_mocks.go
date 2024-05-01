@@ -64,7 +64,7 @@ func (m *MockStakingKeeper) TotalBondedTokens(ctx context.Context) (math.Int, er
 // TotalBondedTokens indicates an expected call of StakingTokenSupply.
 func (mr *MockStakingKeeperMockRecorder) TotalBondedTokens(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TotalBondedTokens", reflect.TypeOf((*MockStakingKeeper)(nil).StakingTokenSupply), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TotalBondedTokens", reflect.TypeOf((*MockStakingKeeper)(nil).TotalBondedTokens), ctx)
 }
 
 // MockAccountKeeper is a mock of AccountKeeper interface.
