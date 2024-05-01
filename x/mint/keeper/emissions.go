@@ -51,7 +51,7 @@ func GetLockedTokenSupply(
 // includes both tokens staked by cosmos validators (cosmos staking)
 // and tokens staked by reputers (allora staking)
 func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
-	cosmosValidatorsStaked, err := k.StakingTokenSupply(ctx)
+	cosmosValidatorsStaked, err := k.CosmosValidatorStakedSupply(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
