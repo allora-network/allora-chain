@@ -3,7 +3,7 @@ set -exu
 
 NETWORK="${NETWORK:-testnet}"
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
-PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
+SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
 BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.${NETWORK}.allora.network}"               #! Replace with your blockless API URL
 
 APP_HOME="${APP_HOME:-/data}"
@@ -43,7 +43,7 @@ if [ ! -f $INIT_FLAG ]; then
 fi
 echo "Node is initialized"
 
-PEERS=$(curl -s ${PEERS_URL})
+SEEDS=$(curl -s ${SEEDS_URL})
 
 echo "Starting validator node"
 allorad \
@@ -52,4 +52,5 @@ allorad \
     --moniker=${MONIKER} \
     --minimum-gas-prices=0${DENOM} \
     --rpc.laddr=tcp://0.0.0.0:26657 \
-    --p2p.persistent_peers=${PEERS}
+    --p2p.seeds=$SEEDS
+
