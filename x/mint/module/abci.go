@@ -33,6 +33,10 @@ func GetEmissionPerTimestep(
 	if circulatingSupply.IsNegative() {
 		circulatingSupply = math.ZeroInt()
 	}
+	// T_{total,i} = ecosystemMintableRemaining
+	// N_{staked,i} = networkStaked
+	// N_{circ,i} = circulatingSupply
+	// N_{total,i} = totalSupply
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
