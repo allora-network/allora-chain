@@ -10,7 +10,7 @@ import (
 
 /*
  These functions will be used immediately after the network loss for the relevant time step has been generated.
- Using the network loss and the sets of losses reported by each repeater, the scores are calculated. In the case
+ Using the network loss and the sets of losses reported by each reputer, the scores are calculated. In the case
  of workers (who perform the forecast task and network task), the last 10 previous scores will also be taken into
  consideration to generate the score at the most recent time step.
 */
