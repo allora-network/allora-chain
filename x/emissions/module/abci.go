@@ -35,8 +35,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
-			if blockHeight == topic.EpochLastEnded+topic.EpochLength ||
-				(topic.EpochLastEnded-blockHeight)%topic.EpochLength == 0 {
+			if (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 {
 				fmt.Printf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
