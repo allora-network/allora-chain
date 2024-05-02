@@ -214,6 +214,9 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
 
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Uint{
 		cosmosMath.NewUint(1176644).Mul(cosmosOneE18),
@@ -269,6 +272,32 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
 	s.Require().NoError(err)
+
+	scoresAtBlock, err := s.emissionsKeeper.GetReputersScoresAtBlock(s.ctx, topicId, block)
+	s.Require().Equal(len(scoresAtBlock.Scores), int(params.GetMaxTopReputersToReward()), "Only few Top reputers can get reward")
+
+	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err)
+
+	inferers, _, err := rewards.GetInferenceTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		params.PRewardSpread,
+		networkLossBundles,
+	)
+
+	forecasts, _, err := rewards.GetForecastingTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		params.PRewardSpread,
+		networkLossBundles,
+	)
+	s.Require().Equal(len(inferers), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
+	s.Require().Equal(len(forecasts), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -737,4 +766,9 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	for i, addr := range workerAddrs {
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
+}
+
+func (s *RewardsTestSuite) TestOnlyTopFewNReputersGetReward() {
+	s.TestStandardRewardEmission()
+
 }
