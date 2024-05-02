@@ -1165,7 +1165,9 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	lossBundle := types.ValueBundle{}
+	lossBundle := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("123"),
+	}
 
 	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
 	require.NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
