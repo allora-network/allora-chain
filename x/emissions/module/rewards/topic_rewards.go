@@ -127,7 +127,7 @@ func ApplyFuncOnAllChurnReadyTopics(
 	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
 
 	for topicId, weight := range weightsOfTopActiveTopics {
-		if weight.Equal(alloraMath.MustNewDecFromString("0")) {
+		if weight.Equal(alloraMath.ZeroDec()) {
 			fmt.Println("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue
 		}
