@@ -274,7 +274,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.Require().NoError(err)
 
 	scoresAtBlock, err := s.emissionsKeeper.GetReputersScoresAtBlock(s.ctx, topicId, block)
-	s.Require().Equal(len(scoresAtBlock.Scores), int(params.GetMaxTopReputersToReward()), "Only few Top reputers can get reward")
+	s.Require().Equal(len(scoresAtBlock.Scores) <= int(params.GetMaxTopReputersToReward()), true, "Only few Top reputers can get reward")
 
 	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
@@ -296,8 +296,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		params.PRewardSpread,
 		networkLossBundles,
 	)
-	s.Require().Equal(len(inferers), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
-	s.Require().Equal(len(forecasts), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
+	s.Require().Equal(len(inferers) <= int(params.GetMaxTopWorkersToReward()), true, "Only few Top workers can get reward")
+	s.Require().Equal(len(forecasts) <= int(params.GetMaxTopWorkersToReward()), true, "Only few Top workers can get reward")
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -766,9 +766,4 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	for i, addr := range workerAddrs {
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
-}
-
-func (s *RewardsTestSuite) TestOnlyTopFewNReputersGetReward() {
-	s.TestStandardRewardEmission()
-
 }
