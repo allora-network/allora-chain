@@ -29,6 +29,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 		alloraMath.MustNewDecFromString("1.5"),
 		&networkLosses,
 	)
+	s.Require().NoError(err)
 	inferenceRewards, err := rewards.GetRewardPerWorker(
 		topicId,
 		rewards.WorkerInferenceRewardType,
@@ -61,6 +62,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 		alloraMath.MustNewDecFromString("1.5"),
 		&networkLosses,
 	)
+	s.Require().NoError(err)
 	forecastRewards, err := rewards.GetRewardPerWorker(
 		topicId,
 		rewards.WorkerForecastRewardType,

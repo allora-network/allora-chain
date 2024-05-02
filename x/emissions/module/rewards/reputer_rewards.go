@@ -173,6 +173,9 @@ func GetRewardForReputerFromTotalReward(
 			return nil, err
 		}
 		delegatorReward, err = delegatorReward.Quo(e18)
+		if err != nil {
+			return nil, err
+		}
 		if delegatorReward.Gt(alloraMath.NewDecFromInt64(0)) {
 			// update reward share
 			// new_share = current_share + (reward / total_stake)
@@ -189,6 +192,9 @@ func GetRewardForReputerFromTotalReward(
 				return nil, err
 			}
 			newShare, err := currentShare.Add(addShare)
+			if err != nil {
+				return nil, err
+			}
 			err = keeper.SetDelegateRewardPerShare(ctx, topicId, reputer, newShare)
 			if err != nil {
 				return nil, err
@@ -205,6 +211,9 @@ func GetRewardForReputerFromTotalReward(
 		}
 		// Send remain rewards to reputer
 		reputerRw, err := reward.Sub(delegatorReward)
+		if err != nil {
+			return nil, err
+		}
 		reputerRewards = append(reputerRewards, TaskRewards{
 			Address: reputerReward.Address,
 			Reward:  reputerRw,

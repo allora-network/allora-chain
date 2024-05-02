@@ -42,12 +42,14 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
 	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should not be registered in topic")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
 	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
 
@@ -88,6 +90,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	require.NoError(err, "Registering reputer should not return an error")
 
 	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 
 	unregisterMsg := &types.MsgRemoveRegistration{
@@ -100,6 +103,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	require.NoError(err, "Registering reputer should not return an error")
 
 	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr)
+	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
