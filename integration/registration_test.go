@@ -54,7 +54,7 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 		Owner:        m.n.BobAddr,
 		LibP2PKey:    "workerkey",
 		MultiAddress: "workermultiaddress",
-		TopicId:      uint64(1),
+		TopicId:      1,
 		IsReputer:    false,
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, registerBobRequest)
@@ -78,14 +78,14 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	require.True(m.t, bobRegistered.IsRegistered)
 
 	// Check Bob not registered as reputer
-	aliceNotRegisteredAsWorker, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
+	bobNotRegisteredAsWorker, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
 			Address: m.n.BobAddr,
 		},
 	)
 	require.NoError(m.t, err)
-	require.False(m.t, aliceNotRegisteredAsWorker.IsRegistered)
+	require.False(m.t, bobNotRegisteredAsWorker.IsRegistered)
 }
 
 // Register two actors and check their registrations went through

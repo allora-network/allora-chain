@@ -35,6 +35,4 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 func StakingChecks(m TestMetadata) {
 	m.t.Log("--- Staking Alice as Reputer ---")
 	StakeAliceAsReputerTopic1(m)
-	// m.t.Log("--- Registering Bob as Worker ---")
-	// RegisterBobAsWorkerTopic1(m)
 }
