@@ -1,7 +1,9 @@
 package queryserver_test
 
 import (
+	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -158,4 +160,116 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	}
 	_, err = queryServer.GetReputerAddressByP2PKey(ctx, invalidReq)
 	s.Require().Error(err, "Expected an error for a nonexistent LibP2PKey")
+}
+
+func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+
+	notRegisteredWorkerAddr := "allo1wuas449fqmam8juxu935ptekhuul9hpjt8ceal"
+
+	// Test: Worker is not registered under the topic
+	notRegisteredRequest := &types.QueryIsWorkerRegisteredInTopicIdRequest{
+		TopicId: uint64(1),
+		Address: notRegisteredWorkerAddr,
+	}
+	invalidResponse, err := queryServer.IsWorkerRegisteredInTopicId(ctx, notRegisteredRequest)
+	s.Require().NoError(err, "IsWorkerRegisteredInTopicId should handle non-registered addresses without error")
+	s.Require().NotNil(invalidResponse, "The response for non-registered worker should not be nil")
+	s.Require().False(invalidResponse.IsRegistered, "The worker should not be registered for the topic")
+}
+
+func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	workerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	// Worker register
+	registerMsg := &types.MsgRegister{
+		Sender:       workerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    false,
+		Owner:        "Worker",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	require.NoError(err, "MintCoins should not return an error")
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		workerAddr,
+		mintAmount,
+	)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	queryReq := &types.QueryIsWorkerRegisteredInTopicIdRequest{
+		Address: workerAddr.String(),
+		TopicId: topicId,
+	}
+	queryResp, err := s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)
+	require.NoError(err, "QueryIsWorkerRegisteredInTopicId should not return an error")
+	require.False(queryResp.IsRegistered, "Query response should confirm worker is registered")
+
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering worker should not return an error")
+
+	queryResp, err = s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)
+	require.NoError(err, "QueryIsWorkerRegisteredInTopicId should not return an error")
+	require.True(queryResp.IsRegistered, "Query response should confirm worker is registered")
+}
+
+func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	// Mock setup for addresses
+	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(1)
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+
+	// Topic register
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	// Register reputer
+	registerMsg := &types.MsgRegister{
+		Sender:       reputerAddr.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    true,
+		Owner:        "Reputer",
+	}
+
+	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	require.NoError(err, "MintCoins should not return an error")
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
+	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
+
+	queryReq := &types.QueryIsReputerRegisteredInTopicIdRequest{
+		Address: reputerAddr.String(),
+		TopicId: topicId,
+	}
+	queryResp, err := s.queryServer.IsReputerRegisteredInTopicId(ctx, queryReq)
+	require.NoError(err, "QueryIsReputerRegisteredInTopicId should not return an error")
+	require.False(queryResp.IsRegistered, "Query response should confirm reputer is registered")
+
+	_, err = msgServer.Register(ctx, registerMsg)
+	require.NoError(err, "Registering reputer should not return an error")
+
+	queryResp, err = s.queryServer.IsReputerRegisteredInTopicId(ctx, queryReq)
+	require.NoError(err, "QueryIsReputerRegisteredInTopicId should not return an error")
+	require.True(queryResp.IsRegistered, "Query response should confirm reputer is registered")
 }
