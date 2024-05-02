@@ -118,6 +118,96 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
+func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
+	// Setup
+	allWorkers := map[string]struct{}{
+		"worker1": {},
+		"worker2": {},
+		"worker3": {},
+		"worker4": {},
+	}
+
+	values := []*types.WorkerAttributedValue{
+		{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
+	}
+
+	expectedValues := map[string]string{
+		"worker1": "100",
+		"worker2": "NaN",
+		"worker3": "300",
+		"worker4": "NaN",
+	}
+
+	// Act
+	updatedValues := rewards.EnsureAllWorkersPresent(values, allWorkers)
+
+	// Assert
+	if len(updatedValues) != len(allWorkers) {
+		s.Fail("Incorrect number of workers returned")
+	}
+
+	for _, val := range updatedValues {
+		expectedVal, ok := expectedValues[val.Worker]
+		if !ok {
+			s.Fail("Unexpected worker found:", val.Worker)
+			continue
+		}
+		if expectedVal == "NaN" {
+			if !val.Value.IsNaN() {
+				s.Failf("expected NaN but did not get it for worker %s", val.Worker)
+			}
+		} else if val.Value.String() != expectedVal {
+			s.Failf("Value mismatch for worker %s: got %s, want %s", val.Worker, val.Value.String(), expectedVal)
+		}
+	}
+}
+
+func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
+	// Setup
+	allWorkers := map[string]struct{}{
+		"worker1": {},
+		"worker2": {},
+		"worker3": {},
+		"worker4": {},
+	}
+
+	values := []*types.WithheldWorkerAttributedValue{
+		{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
+	}
+
+	expectedValues := map[string]string{
+		"worker1": "100",
+		"worker2": "NaN",
+		"worker3": "300",
+		"worker4": "NaN",
+	}
+
+	// Act
+	updatedValues := rewards.EnsureAllWorkersPresentWithheld(values, allWorkers)
+
+	// Assert
+	if len(updatedValues) != len(allWorkers) {
+		s.Fail("Incorrect number of workers returned")
+	}
+
+	for _, val := range updatedValues {
+		expectedVal, ok := expectedValues[val.Worker]
+		if !ok {
+			s.Fail("Unexpected worker found:", val.Worker)
+			continue
+		}
+		if expectedVal == "NaN" {
+			if !val.Value.IsNaN() {
+				s.Failf("expected NaN but did not get it for worker %s", val.Worker)
+			}
+		} else if val.Value.String() != expectedVal {
+			s.Failf("Value mismatch for worker %s: got %s, want %s", val.Worker, val.Value.String(), expectedVal)
+		}
+	}
+}
+
 // mockReputersData generates reputer stakes and losses
 func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
 	reputers := []sdk.AccAddress{
