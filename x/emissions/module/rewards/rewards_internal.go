@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"fmt"
 	"sort"
 
 	"cosmossdk.io/errors"
@@ -70,6 +71,10 @@ func GetScoreFractions(
 	latestTimeStepsScores []alloraMath.Dec,
 	pReward alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
+	fmt.Println(">>>>>> GetScoreFractions")
+	fmt.Println(">>>>>> latestWorkerScores", latestWorkerScores)
+	fmt.Println(">>>>>> latestTimeStepsScores", latestTimeStepsScores)
+	fmt.Println(">>>>>> pReward", pReward)
 	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")

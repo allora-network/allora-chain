@@ -82,7 +82,7 @@ func GetWorkersRewardFractions(
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get inference scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -110,7 +110,7 @@ func GetWorkersRewardFractions(
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
