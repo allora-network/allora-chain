@@ -28,7 +28,7 @@ func (s *IntegrationTestSuite) TestTotalEmissionPerTimestepSimple() {
 // we will test that in integration, for now just test the value is non
 // negative aka zero when you don't have stakers
 func (s *IntegrationTestSuite) TestGetNumStakedTokensNonNegative() {
-	s.stakingKeeper.EXPECT().StakingTokenSupply(s.ctx).Return(math.NewInt(0), nil)
+	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(math.NewInt(0), nil)
 	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(math.NewUint(0), nil)
 	nst, err := keeper.GetNumStakedTokens(s.ctx, s.mintKeeper)
 	s.NoError(err)

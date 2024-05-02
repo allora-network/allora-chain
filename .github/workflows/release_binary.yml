@@ -12,7 +12,7 @@
 #
 # The workflow will not run if there is no tag pushed with a "v" prefix and no change pushed to your
 # default branch.
-name: build binaries, release github
+name: build binaries
 on: push
 
 jobs:

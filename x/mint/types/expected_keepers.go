@@ -2,6 +2,7 @@ package types // noalias
 
 import (
 	context "context"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/core/address"
@@ -12,7 +13,7 @@ import (
 
 // StakingKeeper defines the expected staking keeper
 type StakingKeeper interface {
-	StakingTokenSupply(ctx context.Context) (math.Int, error)
+	TotalBondedTokens(ctx context.Context) (math.Int, error)
 }
 
 // AccountKeeper defines the contract required for account APIs.
