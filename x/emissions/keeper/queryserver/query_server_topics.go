@@ -2,9 +2,7 @@ package queryserver
 
 import (
 	"context"
-	"errors"
 
-	"cosmossdk.io/collections"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -23,15 +21,8 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTo
 // Topics defines the handler for the Query/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &types.QueryTopicResponse{Topic: &topic}, nil
-		}
 
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryTopicResponse{Topic: &topic}, nil
+	return &types.QueryTopicResponse{Topic: &topic}, err
 }
 
 // Retrieves a list of active topics. Paginated.
