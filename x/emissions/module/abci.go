@@ -23,9 +23,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	// Within each loop, execute the inference and weight cadence checks
 	fn := func(ctx context.Context, topic *types.Topic) error {
-		// Parallelize the inference and weight cadence checks
+		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
 		go func(topic types.Topic) {
 			defer wg.Done()
@@ -73,7 +72,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		}(*topic)
 		return nil
 	}
-	err = rewards.ApplyFuncOnAllChurnReadyTopics(
+	err = rewards.IdentifyChurnableAmongActiveTopicsAndApplyFn(
 		sdkCtx,
 		am.keeper,
 		blockHeight,
