@@ -298,7 +298,7 @@ func CalcOneOutInferences(
 	pInferenceSynthesis alloraMath.Dec,
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
-	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for worker := range inferenceByWorker {
 		// Remove the inference of the worker from the inferences
 		inferencesWithoutWorker := make(map[Worker]*emissions.Inference)
@@ -340,14 +340,14 @@ func CalcOneOutInferences(
 			return nil, nil, err
 		}
 
-		oneOutInferences = append(oneOutInferences, &emissions.WithheldWorkerAttributedValue{
+		oneOutInfererValues = append(oneOutInfererValues, &emissions.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  oneOutNetworkInferenceWithoutInferer,
 		})
 	}
 
 	// Loop over forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
-	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	oneOutForecasterValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for worker := range forecastImpliedInferenceByWorker {
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
@@ -374,13 +374,13 @@ func CalcOneOutInferences(
 			fmt.Println("Error calculating one-out inference for forecaster: ", err)
 			return nil, nil, err
 		}
-		oneOutImpliedInferences = append(oneOutImpliedInferences, &emissions.WithheldWorkerAttributedValue{
+		oneOutForecasterValues = append(oneOutForecasterValues, &emissions.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  oneOutInference,
 		})
 	}
 
-	return oneOutInferences, oneOutImpliedInferences, nil
+	return oneOutInfererValues, oneOutForecasterValues, nil
 }
 
 // Returns all one-in inferences that are possible given the provided input
@@ -612,7 +612,16 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
-	networkInferences, err := CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+	networkInferences, err := CalcNetworkInferences(
+		ctx,
+		k,
+		topicId,
+		inferences,
+		forecasts,
+		networkCombinedLoss,
+		params.Epsilon,
+		params.PInferenceSynthesis,
+	)
 	if err != nil {
 		fmt.Println("Error calculating network inferences: ", err)
 	}

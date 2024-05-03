@@ -1,8 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
