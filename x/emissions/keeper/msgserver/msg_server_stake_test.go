@@ -464,7 +464,7 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
 		Amount:  stakeAmount,
 	}
 
-	removalInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
+	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
 	require.Error(err)
 
 	// Perform the stake removal initiation
@@ -473,7 +473,7 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
 	require.NotNil(response2, "Response should not be nil after successful stake removal initiation")
 
 	// Verification: Check if the removal has been queued
-	removalInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
+	removalInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr, delegatorAddr)
 	require.NoError(err)
 	require.NotNil(removalInfo, "Stake removal should be recorded in the state")
 }
@@ -651,6 +651,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 		Score:       score,
 	}
 	err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
+	s.Require().NoError(err)
 
 	reputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
@@ -702,6 +703,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 		Score:       score,
 	}
 	err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, newBlock, newScoreToAdd)
+	s.Require().NoError(err)
 
 	newReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{

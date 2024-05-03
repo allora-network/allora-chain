@@ -690,14 +690,13 @@ func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicI
 	defer iter.Close() // Ensure that resources are released
 
 	// Iterate through entries in descending order and collect all inferences after the specified block
-	for ; iter.Valid(); iter.Next() {
+	if iter.Valid() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
 		currentBlockHeight = kv.Key.K2() // Current entry's block height
 		inferencesToReturn.Inferences = kv.Value.Inferences
-		break
 	}
 
 	// Return the collected inferences and the lowest block height at which they were found
@@ -718,14 +717,13 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 	}
 	defer iter.Close() // Ensure that resources are released
 
-	for ; iter.Valid(); iter.Next() {
+	if iter.Valid() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
 		currentBlockHeight = kv.Key.K2() // Current entry's block height
 		forecastsToReturn.Forecasts = kv.Value.Forecasts
-		break
 	}
 
 	return &forecastsToReturn, currentBlockHeight, nil
@@ -984,6 +982,9 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 				delegator,
 				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1144,6 +1145,9 @@ func (k *Keeper) RemoveDelegateStake(
 		return err
 	}
 	unStakeDec, err := alloraMath.NewDecFromSdkUint(unStake)
+	if err != nil {
+		return err
+	}
 	if stakePlacement.Amount.Lt(unStakeDec) {
 		return types.ErrIntegerUnderflowDelegateStakePlacement
 	}
@@ -1164,6 +1168,9 @@ func (k *Keeper) RemoveDelegateStake(
 			delegator,
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 		)
+		if err != nil {
+			return err
+		}
 	}
 
 	newAmount, err := stakePlacement.Amount.Sub(unStakeDec)
