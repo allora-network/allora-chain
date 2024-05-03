@@ -3,9 +3,9 @@ package gmp
 import (
 	"encoding/json"
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
@@ -96,7 +96,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
-	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot unmarshal ICS-20 transfer packet data"))
 	}
 
@@ -145,7 +145,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		// we throw out the rest of the msg.Payload fields here, for better or worse
 		data.Memo = string(msg.Payload)
 		var dataBytes []byte
-		if dataBytes, err = types.ModuleCdc.MarshalJSON(&data); err != nil {
+		if dataBytes, err = transfertypes.ModuleCdc.MarshalJSON(&data); err != nil {
 			return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot marshal ICS-20 post-processed transfer packet data"))
 		}
 		packet.Data = dataBytes

@@ -269,6 +269,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
+	require.NoError(err)
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
 }
