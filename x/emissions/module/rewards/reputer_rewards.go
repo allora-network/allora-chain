@@ -96,14 +96,22 @@ func GetReputerTaskEntropy(
 			return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous reputer reward fraction")
 		}
 	}
-	entropy, err = Entropy(
-		modifiedRewardFractions,
-		reputerNumberRatio,
-		alloraMath.NewDecFromInt64(int64(numReputers)),
-		betaEntropy,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy")
+
+	if numReputers > 1 {
+		entropy, err = Entropy(
+			modifiedRewardFractions,
+			reputerNumberRatio,
+			alloraMath.NewDecFromInt64(int64(numReputers)),
+			betaEntropy,
+		)
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy")
+		}
+	} else {
+		entropy, err = EntropyForSingleParticipant()
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy for single participant")
+		}
 	}
 
 	return entropy, nil

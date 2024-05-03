@@ -416,7 +416,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionForTopic(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	firstTotalReputerReward := alloraMath.ZeroDec()
@@ -550,7 +550,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondRewardsDistribution, err := rewards.GenerateRewardsDistributionForTopic(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
 	secondTotalReputerReward := alloraMath.ZeroDec()
@@ -737,4 +737,167 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	for i, addr := range workerAddrs {
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
+}
+
+func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer() {
+	blockHeight := int64(600)
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+	epochLength := int64(10800)
+
+	// Reputer Addresses
+	reputer := s.addrs[0]
+	// Worker Addresses
+	worker := s.addrs[5]
+
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputer.String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		EpochLength:      epochLength,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Register 1 worker
+	workerRegMsg := &types.MsgRegister{
+		Sender:       worker.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    false,
+		Owner:        worker.String(),
+	}
+	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
+	s.Require().NoError(err)
+
+	// Register 1 reputer
+	reputerRegMsg := &types.MsgRegister{
+		Sender:       reputer.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    true,
+	}
+	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
+	s.Require().NoError(err)
+
+	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
+
+	// Add Stake for reputer
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		Sender:  reputer.String(),
+		Amount:  cosmosMath.NewUint(1176644).Mul(cosmosOneE18),
+		TopicId: topicId,
+	})
+	s.Require().NoError(err)
+
+	var initialStake int64 = 1000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:    reputer.String(),
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	// Insert unfullfiled nonces
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: blockHeight,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: blockHeight,
+	}, &types.Nonce{
+		BlockHeight: blockHeight,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from worker
+	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01127"),
+		},
+	}
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, worker)
+	s.Require().NoError(err)
+	worker1Bundle := &types.WorkerDataBundle{
+		InferenceForecastsBundle:           worker1InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker1Sig,
+		Pubkey:                             GetAccPubKey(s, worker),
+	}
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            worker.String(),
+		Nonce:             &types.Nonce{BlockHeight: blockHeight},
+		TopicId:           topicId,
+		WorkerDataBundles: []*types.WorkerDataBundle{worker1Bundle},
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputer
+	valueBundle := &types.ValueBundle{
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: blockHeight,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: blockHeight,
+			},
+		},
+		Reputer:                reputer.String(),
+		CombinedValue:          alloraMath.MustNewDecFromString("0.01127"),
+		NaiveValue:             alloraMath.MustNewDecFromString("0.0116"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{},
+	}
+	sig, err := GenerateReputerSignature(s, valueBundle, reputer)
+	s.Require().NoError(err)
+	reputerBundle := &types.ReputerValueBundle{
+		Pubkey:      GetAccPubKey(s, reputer),
+		Signature:   sig,
+		ValueBundle: valueBundle,
+	}
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputer.String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: blockHeight,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: blockHeight,
+			},
+		},
+		ReputerValueBundles: []*types.ReputerValueBundle{reputerBundle},
+	})
+	s.Require().NoError(err)
+
+	blockHeight += epochLength * 3
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+
+	// Trigger end block - rewards distribution
+	err = s.appModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 }

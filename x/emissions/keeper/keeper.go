@@ -2041,6 +2041,22 @@ func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sd
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }
 
+// GetTotalRewardToDistribute
+func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
+	// Get Allora Rewards Account
+	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
+	// Get Total Allocation
+	totalReward := k.BankKeeper().GetBalance(
+		ctx,
+		alloraRewardsAccountAddr,
+		params.DefaultBondDenom).Amount
+	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return totalRewardDec, nil
+}
+
 /// UTILS
 
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
