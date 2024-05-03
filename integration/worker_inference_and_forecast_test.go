@@ -16,6 +16,7 @@ import (
 
 const defaultEpochLength = 10
 const approximateEpochLengthSeconds = 5
+const minWaitingNumberofEpochs = 3
 
 func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
 	sleepingTime := defaultEpochLength
@@ -25,17 +26,14 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 		topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
-			fmt.Println("Stored Topic: ", storedTopic)
 			if storedTopic.EpochLastEnded != 0 &&
-				storedTopic.EpochLastEnded-(storedTopic.EpochLength*2) > 0 {
+				storedTopic.EpochLastEnded-(storedTopic.EpochLength*minWaitingNumberofEpochs) > 0 {
 				return topicResponse.Topic, nil
 			}
 			sleepingTime = int(storedTopic.EpochLength)
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTime)
-		// print current time
-		fmt.Println(time.Now())
 		time.Sleep(time.Duration(sleepingTime*approximateEpochLengthSeconds) * time.Second)
 	}
 
@@ -234,7 +232,7 @@ func WorkerInferenceAndForecastChecks(m TestMetadata) {
 		m.t.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
 	}
-	m.t.Log("--- Insert WOrker Bulk ---")
+	m.t.Log("--- Insert Worker Bulk ---")
 	InsertWorkerBulkBob(m, topic)
 	m.t.Log("--- Insert Reputer Bulk ---")
 	InsertReputerBulkAlice(m, topic)

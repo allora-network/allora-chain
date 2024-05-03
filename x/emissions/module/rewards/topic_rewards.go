@@ -65,15 +65,13 @@ func SafeApplyFuncOnAllRewardReadyTopics(
 		}
 
 		for _, topicId := range topicsActive {
-			// Get the topic
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
 				fmt.Println("Error getting topic: ", err)
 				continue
 			}
 
-			// Check the cadence of inferences
-			if block == topic.EpochLastEnded+topic.EpochLength || block-topic.EpochLastEnded >= 2*topic.EpochLength {
+			if keeper.CheckCadence(block, topic) {
 				if filterRewardNonces {
 					// Check topic has an unfulfilled reward nonce
 					rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
@@ -112,8 +110,6 @@ func ApplyFuncOnAllChurnReadyTopics(
 	k keeper.Keeper,
 	block BlockHeight,
 	fn func(ctx context.Context, topic *types.Topic) error,
-	topicPageLimit uint64,
-	maxTopicPages uint64,
 ) error {
 	weights, _, _, err := GetTopicWeights(ctx, k, block, false, false)
 	if err != nil {
