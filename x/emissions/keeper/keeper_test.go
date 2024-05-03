@@ -2855,7 +2855,7 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 
 	// Test 4: Limit exceeds maximum limit
 	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 60}
-	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, _, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
 	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
 }
