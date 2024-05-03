@@ -1213,17 +1213,45 @@ func (s *KeeperTestSuite) TestGetReputerReportedLossesAtOrBeforeBlock() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := uint64(1)
-	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
-
+	blockHeight := types.BlockHeight(100)
+	reputerLossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				ValueBundle: &types.ValueBundle{
+					TopicId: topicId,
+					ReputerRequestNonce: &types.ReputerRequestNonce{
+						ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
+					},
+					Reputer:       "reputer1",
+					ExtraData:     []byte("extra data for testing"),
+					CombinedValue: alloraMath.NewDecFromInt64(int64(12345)),
+					InfererValues: []*types.WorkerAttributedValue{
+						{
+							Worker: "worker1",
+							Value:  alloraMath.NewDecFromInt64(int64(12345)),
+						},
+					},
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{
+							Worker: "worker2",
+							Value:  alloraMath.NewDecFromInt64(int64(12345)),
+						},
+					},
+					NaiveValue: alloraMath.NewDecFromInt64(int64(12345)),
+				},
+				Signature: []byte("signature1"),
+				Pubkey:    "pubkey1",
+			},
+		},
+	}
 	// Insert data at a specific block
-	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
+	s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, blockHeight, reputerLossBundles)
 
 	// Get the losses at or before the specific block
-	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, block)
+	result, blockResult, err := s.emissionsKeeper.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
 	require.NotNil(result)
-	require.Equal(block, blockResult, "Block returned should match the requested block")
+	require.Equal(blockHeight, blockResult, "Block returned should match the requested block")
 	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }
 
@@ -2057,16 +2085,10 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
-	// Clear existing topics (if possible)
-	// This step is hypothetical and depends on your system's capabilities
-	// _ = keeper.ClearAllTopics(ctx)
-
-	// Create sample topics with mixed active states
 	topic1 := types.Topic{Id: 1}
 	topic2 := types.Topic{Id: 2}
 	topic3 := types.Topic{Id: 3}
 
-	// Set topics in the system
 	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
 	_ = keeper.ActivateTopic(ctx, topic1.Id)
 	_ = keeper.SetTopic(ctx, topic2.Id, topic2) // Inactive topic
@@ -2081,11 +2103,8 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
-	// Verify the correct number of active topics is retrieved
-	// s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
 	s.Require().Equal(len(activeTopics), 2, "Should retrieve exactly two active topics")
 
-	// Verify the correctness of the data retrieved, specifically checking active status
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
 		s.Require().NoError(err, "Checking topic activity should not fail")
