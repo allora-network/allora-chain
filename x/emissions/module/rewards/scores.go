@@ -10,7 +10,7 @@ import (
 
 /*
  These functions will be used immediately after the network loss for the relevant time step has been generated.
- Using the network loss and the sets of losses reported by each repeater, the scores are calculated. In the case
+ Using the network loss and the sets of losses reported by each reputer, the scores are calculated. In the case
  of workers (who perform the forecast task and network task), the last 10 previous scores will also be taken into
  consideration to generate the score at the most recent time step.
 */
@@ -236,7 +236,7 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 	for _, bundle := range reportedLosses.ReputerValueBundles {
 		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
 		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
-		bundle.ValueBundle.OneInForecasterValues = ensureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
+		bundle.ValueBundle.OneInForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
 	}
 
 	return reportedLosses
@@ -244,7 +244,7 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 
 // ensureAllWorkersPresent checks and adds missing
 // workers with NaN values for a given slice of WorkerAttributedValue
-func ensureAllWorkersPresent(
+func EnsureAllWorkersPresent(
 	values []*types.WorkerAttributedValue,
 	allWorkers map[string]struct{},
 ) []*types.WorkerAttributedValue {

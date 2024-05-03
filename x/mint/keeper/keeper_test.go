@@ -79,8 +79,8 @@ func (s *IntegrationTestSuite) SetupTest() {
 
 func (s *IntegrationTestSuite) TestAliasFunctions() {
 	stakingTokenSupply := math.NewIntFromUint64(100000000000)
-	s.stakingKeeper.EXPECT().StakingTokenSupply(s.ctx).Return(stakingTokenSupply, nil)
-	tokenSupply, err := s.mintKeeper.StakingTokenSupply(s.ctx)
+	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(stakingTokenSupply, nil)
+	tokenSupply, err := s.mintKeeper.CosmosValidatorStakedSupply(s.ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(tokenSupply, stakingTokenSupply)
 

@@ -29,7 +29,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, address)
+	hasEnoughBal, fee, _ := ms.CheckBalanceForRegistration(ctx, address)
 	if !hasEnoughBal {
 		return nil, types.ErrTopicRegistrantNotEnoughDenom
 	}

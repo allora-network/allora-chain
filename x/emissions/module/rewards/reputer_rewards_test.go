@@ -163,6 +163,95 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 }
 
+func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionOfRewardsForHigherStake() {
+	topicId := uint64(1)
+	block := int64(1003)
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Generate reputers data for tests
+	_, err := mockReputersData(s, topicId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Get reputer rewards
+	_, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		alloraMath.OneDec(),
+	)
+	s.Require().NoError(err)
+
+	// Increase stake for the first reputer
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1000000))
+	s.Require().NoError(err)
+
+	// Get new reputer rewards
+	_, newReputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		alloraMath.OneDec(),
+	)
+	s.Require().NoError(err)
+
+	// Check that the first reputer has a higher fraction of the rewards
+	s.Require().True(
+		newReputersRewardFractions[0].Gt(reputersRewardFractions[0]),
+	)
+}
+
+func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForReputerWithZeroStake() {
+	topicId := uint64(1)
+	block := int64(1003)
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Generate reputers data for tests
+	_, err := mockReputersData(s, topicId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Remove stake for the first reputer
+	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1176644))
+	s.Require().NoError(err)
+
+	// Check if stake is zero
+	stake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, reputerAddrs[0])
+	s.Require().NoError(err)
+	s.Require().True(
+		stake.IsZero(),
+	)
+
+	// Get reputer rewards
+	_, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		alloraMath.OneDec(),
+	)
+	s.Require().NoError(err)
+
+	// Check that the first reputer has zero rewards
+	s.Require().True(
+		reputersRewardFractions[0].IsZero(),
+	)
+}
+
 // mockReputersData generates reputer scores, stakes and losses
 func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerAddrs []sdk.AccAddress) (types.ReputerValueBundles, error) {
 	var scores = []alloraMath.Dec{
