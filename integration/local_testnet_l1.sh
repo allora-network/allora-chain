@@ -10,12 +10,10 @@ VALIDATOR_PREFIX=validator
 NETWORK_PREFIX="172.20.0"
 VALIDATORS_IP_START=10
 HEADS_IP_START=20
-CHAIN_ID="testnet"
+CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="./$CHAIN_ID"
 
 ACCOUNTS_TOKENS=1000000
-
-
 
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE="compose_l1.yaml"
@@ -27,20 +25,17 @@ echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.10:26657" >> ${ENV_L1}  # Take validator0
 
 echo "Build the docker image"
-pushd ..
-docker build --pull -t $DOCKER_IMAGE -f ./Dockerfile.development .
-popd
+docker build -t $DOCKER_IMAGE -f ../Dockerfile.development ..
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
-curl -so- https://raw.githubusercontent.com/allora-network/networks/main/testnet/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
+curl -so- https://raw.githubusercontent.com/allora-network/networks/main/${CHAIN_ID}/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
 chmod a+x ${LOCALNET_DATADIR}/generate_genesis.sh
 
 echo "Set permissions on data folder"
 docker run \
     -u 0:0 \
     -v ${LOCALNET_DATADIR}:/data \
-    -e COMMON_HOME_DIR=/data \
     --entrypoint=chown \
     $DOCKER_IMAGE -R $(id -u):$(id -g) /data
 

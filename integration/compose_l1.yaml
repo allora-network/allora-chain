@@ -5,7 +5,7 @@ services:
     environment:
       - HOME=/data/validator0
     volumes:
-      - ./testnet:/data
+      - ./${CHAIN_ID}:/data
     user: "$UID_GID"
     command:
       - --home=/data/validator0
@@ -26,7 +26,7 @@ services:
     environment:
       - HOME=/data/validator1
     volumes:
-      - ./testnet:/data
+      - ./${CHAIN_ID}:/data
     user: "$UID_GID"
     command:
       - --home=/data/validator1
@@ -47,7 +47,7 @@ services:
     environment:
       - HOME=/data/validator2
     volumes:
-      - ./testnet:/data
+      - ./${CHAIN_ID}:/data
     user: "$UID_GID"
     command:
       - --home=/data/validator2
