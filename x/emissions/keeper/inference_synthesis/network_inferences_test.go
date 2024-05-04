@@ -1,6 +1,7 @@
 package inference_synthesis_test
 
 import (
+	"log"
 	"reflect"
 	"testing"
 
@@ -1039,7 +1040,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			topicId,
 			blockHeight,
 		)
-
 	require.NoError(err)
 
 	s.inEpsilon5(valueBundle.CombinedValue, "-0.08578420625884590")
@@ -1056,5 +1056,20 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		require.True(found, "Inference not found")
 	}
 
-	require.Equal(blockHeight, returnedBlockHeight)
+	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
+		switch string(oneOutInfererValue.Worker) {
+		case reputer0:
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.09154683788664610")
+		case reputer1:
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08794790996372430")
+		case reputer2:
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.07594021292207610")
+		case reputer3:
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.0792252490898395")
+		case reputer4:
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.0993013271015888")
+		default:
+			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
+		}
+	}
 }
