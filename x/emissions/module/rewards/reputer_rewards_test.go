@@ -77,7 +77,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topicId, block, reputerAddrs)
+	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Calculate and Set the reputer scores
+	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -85,8 +89,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 	reputerRewards, err := rewards.GetRewardPerReputer(
@@ -129,7 +133,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	// Generate reputers same loss data for less reputers
-	_, err = mockReputersData(s, topicId, block, reputerAddrs)
+	reputerValueBundles, err = mockReputersData(s, topicId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Calculate and Set the reputer scores
+	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -137,8 +145,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 	newReputerRewards, err := rewards.GetRewardPerReputer(
@@ -176,7 +184,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	}
 
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topicId, block, reputerAddrs)
+	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Calculate and Set the reputer scores
+	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -184,8 +196,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 
@@ -198,8 +210,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 
@@ -222,7 +234,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	}
 
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topicId, block, reputerAddrs)
+	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Remove stake for the first reputer
@@ -236,13 +248,17 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 		stake.IsZero(),
 	)
 
+	// Calculate and Set the reputer scores
+	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
+
 	// Get reputer rewards
 	_, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 
