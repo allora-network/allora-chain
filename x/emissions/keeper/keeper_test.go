@@ -1165,7 +1165,9 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	lossBundle := types.ValueBundle{}
+	lossBundle := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("123"),
+	}
 
 	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(ctx, topicId, block, lossBundle)
 	require.NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
@@ -2853,7 +2855,7 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 
 	// Test 4: Limit exceeds maximum limit
 	pagination = &types.SimpleCursorPaginationRequest{Key: validKey, Limit: 60}
-	limit, cursor, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	limit, _, err = keeper.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	s.Require().NoError(err, "Handling limit exceeding maximum should not fail")
 	s.Require().Equal(maxLimit, limit, "Limit should be capped at the maximum limit")
 }
@@ -2893,6 +2895,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		},
 	}
 	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce, expectedForecasts)
+	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{}
 	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerLossBundles)

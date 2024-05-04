@@ -3,7 +3,6 @@ package rewards_test
 import (
 	"encoding/hex"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -206,41 +205,6 @@ func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
 			s.Failf("Value mismatch for worker %s: got %s, want %s", val.Worker, val.Value.String(), expectedVal)
 		}
 	}
-}
-
-// mockReputersData generates reputer stakes and losses
-func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
-	reputers := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
-	}
-
-	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644),
-		cosmosMath.NewUint(384623),
-		cosmosMath.NewUint(394676),
-		cosmosMath.NewUint(207999),
-		cosmosMath.NewUint(368582),
-	}
-
-	// Add stakes
-	for i, reputer := range reputers {
-		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputer, stakes[i])
-		if err != nil {
-			return types.ReputerValueBundles{}, err
-		}
-	}
-
-	reputerValueBundles := GenerateLossBundles(s, block, topicId, reputers)
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
-	if err != nil {
-		return types.ReputerValueBundles{}, err
-	}
-
-	return reputerValueBundles, nil
 }
 
 func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress, blockHeight int64, topicId uint64) error {

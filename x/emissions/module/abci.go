@@ -7,7 +7,6 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -47,7 +46,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					fmt.Println("Error updating last inference ran: ", err)
 				}
 				// Add Worker Nonces
-				nextNonce := emissionstypes.Nonce{BlockHeight: blockHeight + topic.EpochLength}
+				nextNonce := types.Nonce{BlockHeight: blockHeight + topic.EpochLength}
 				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
 				if err != nil {
 					fmt.Println("Error adding worker nonce: ", err)
@@ -55,8 +54,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				// Add Reputer Nonces
 				if blockHeight-topic.EpochLength > 0 {
-					ReputerReputerNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-					ReputerWorkerNonce := emissionstypes.Nonce{BlockHeight: blockHeight - topic.EpochLength}
+					ReputerReputerNonce := types.Nonce{BlockHeight: blockHeight}
+					ReputerWorkerNonce := types.Nonce{BlockHeight: blockHeight - topic.EpochLength}
 					err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &ReputerReputerNonce, &ReputerWorkerNonce)
 					if err != nil {
 						fmt.Println("Error adding reputer nonce: ", err)

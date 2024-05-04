@@ -855,6 +855,20 @@ func Entropy(
 	return ret, nil
 }
 
+// If there's only one worker, entropy should be the default number of 0.17328679513998632
+// ln(2)/4
+func EntropyForSingleParticipant() (alloraMath.Dec, error) {
+	numerator, err := alloraMath.Ln(alloraMath.NewDecFromInt64(2))
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	entropy, err := numerator.Quo(alloraMath.NewDecFromInt64(4))
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return entropy, nil
+}
+
 // The number ratio term captures the number of participants in the network
 // to prevent sybil attacks in the rewards distribution
 // This function captures

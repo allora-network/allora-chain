@@ -36,6 +36,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	}
 
 	_, err = msgServer.AddStake(ctx, addStakeMsg)
+	s.Require().NoError(err)
 
 	reputerNonce := &types.Nonce{
 		BlockHeight: 2,

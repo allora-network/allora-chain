@@ -82,7 +82,7 @@ func GetWorkersRewardFractions(
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get inference scores from the latest time steps")
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -110,7 +110,7 @@ func GetWorkersRewardFractions(
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker scores from the latest time steps")
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker forecast scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -222,15 +222,23 @@ func getInferenceOrForecastTaskEntropy(
 		}
 	}
 
-	entropy, err = Entropy(
-		modifiedRewardFractions,
-		numberRatio,
-		alloraMath.NewDecFromInt64(int64(numWorkers)),
-		betaEntropy,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy")
+	if numWorkers > 1 {
+		entropy, err = Entropy(
+			modifiedRewardFractions,
+			numberRatio,
+			alloraMath.NewDecFromInt64(int64(numWorkers)),
+			betaEntropy,
+		)
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy")
+		}
+	} else {
+		entropy, err = EntropyForSingleParticipant()
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy for single participant")
+		}
 	}
+
 	return entropy, nil
 }
 
@@ -361,7 +369,7 @@ func getChiAndGamma(
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func GetRewardForInferenceTaskInTopic(
-	niaveNetworkInferenceLoss alloraMath.Dec,
+	naiveNetworkInferenceLoss alloraMath.Dec,
 	networkInferenceLoss alloraMath.Dec,
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
@@ -371,7 +379,7 @@ func GetRewardForInferenceTaskInTopic(
 	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
-		niaveNetworkInferenceLoss,
+		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,

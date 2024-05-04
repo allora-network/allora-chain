@@ -6,13 +6,144 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	chainParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) error {
+	totalReward, err := k.GetTotalRewardToDistribute(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get total reward to distribute")
+	}
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get module params")
+	}
+
+	// Distribute rewards between topics
+	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward)
+	if err != nil {
+		return errors.Wrapf(err, "failed to generate total reward by topic")
+		// Will return nil if there are no topics to reward
+	} else if topicRewards == nil {
+		return nil
+	}
+
+	// for every topic
+	for topicId, topicReward := range topicRewards {
+		// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
+		err = k.AddChurnReadyTopic(ctx, topicId)
+		if err != nil {
+			fmt.Println("Error setting churn ready topic: ", err)
+			return err
+		}
+
+		// Get topic reward nonce/block height
+		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
+		// If the topic has no reward nonce, skip it
+		if err != nil || topicRewardNonce == 0 {
+			continue
+		}
+
+		// Distribute rewards between topic participants
+		totalRewardsDistribution, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
+		if err != nil {
+			return errors.Wrapf(err, "failed to generate rewards")
+		}
+
+		// Pay out rewards to topic participants
+		err = payoutRewards(ctx, k, totalRewardsDistribution)
+		if err != nil {
+			return errors.Wrapf(err, "failed to pay out rewards")
+		}
+
+		// Prune records after rewards have been paid out
+		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
+		if err != nil {
+			return errors.Wrapf(err, "failed to prune records after rewards")
+		}
+	}
+
+	return nil
+}
+
+func GenerateRewardsDistributionByTopic(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	maxTopicsPerBlock uint64,
+	blockHeight BlockHeight,
+	totalReward alloraMath.Dec,
+) (map[uint64]*alloraMath.Dec, error) {
+	// Get Distribution of Rewards per Topic
+	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, blockHeight)
+	if err != nil {
+		return nil, errors.Wrapf(err, "weights error")
+	}
+	if sumWeight.IsZero() {
+		fmt.Println("No weights, no rewards!")
+		return nil, nil
+	}
+
+	weightsOfActiveTopics, sumWeight, sumRevenue, err := InactivateTopicsAndUpdateSums(
+		ctx,
+		k,
+		weights,
+		sumWeight,
+		sumRevenue,
+		totalReward,
+		blockHeight,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to inactivate topics and update sums")
+	}
+
+	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
+	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
+
+	// Return the revenue to those topics that didn't make the cut
+	// Loop though weightsOfActiveTopics and if the topic is not in weightsOfTopActiveTopics, add to running revenue sum
+	sumRevenueOfBottomTopics := cosmosMath.ZeroInt()
+	for topicId := range weightsOfActiveTopics {
+		// If the topic is not in the top active topics, add its revenue to the running sum
+		if _, ok := weightsOfTopActiveTopics[topicId]; !ok {
+			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to get topic fee revenue")
+			}
+			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
+		}
+
+		// This way we won't double count from this earlier epoch revenue the next epoch
+		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+		err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+		}
+	}
+
+	// Send remaining collected inference request fees to the Ecosystem module account
+	// They will be paid out to reputers, workers, and validators
+	// according to the formulas in the beginblock of the mint module
+	err = k.BankKeeper().SendCoinsFromModuleToModule(
+		ctx,
+		types.AlloraRequestsAccountName,
+		mintTypes.EcosystemModuleName,
+		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
+	if err != nil {
+		fmt.Println("Error sending coins from module to module: ", err)
+		return nil, err
+	}
+
+	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfTopActiveTopics, sumWeight, totalReward)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to calculate topic rewards")
+	}
+
+	return topicRewards, nil
+}
 
 func InactivateTopicsAndUpdateSums(
 	ctx sdk.Context,
@@ -21,7 +152,7 @@ func InactivateTopicsAndUpdateSums(
 	sumWeight alloraMath.Dec,
 	sumRevenue cosmosMath.Int,
 	totalReward alloraMath.Dec,
-	block BlockHeight,
+	blockHeight BlockHeight,
 ) (
 	map[uint64]*alloraMath.Dec,
 	alloraMath.Dec,
@@ -45,7 +176,7 @@ func InactivateTopicsAndUpdateSums(
 
 			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
 			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-			err = k.ResetTopicFeeRevenue(ctx, topicId, block)
+			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
@@ -96,166 +227,7 @@ func CalcTopicRewards(
 	return topicRewards, nil
 }
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) error {
-	// Get Allora Rewards Account
-	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
-
-	// Get Total Allocation
-	totalReward := k.BankKeeper().GetBalance(
-		ctx,
-		alloraRewardsAccountAddr,
-		params.DefaultBondDenom).Amount
-	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
-	if err != nil {
-		return errors.Wrapf(err, "failed to convert total reward to decimal")
-	}
-
-	// Get Distribution of Rewards per Topic
-	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, blockHeight)
-	if err != nil {
-		return errors.Wrapf(err, "weights error")
-	}
-	if sumWeight.IsZero() {
-		fmt.Println("No weights, no rewards!")
-		return nil
-	}
-
-	weightsOfActiveTopics, sumWeight, sumRevenue, err := InactivateTopicsAndUpdateSums(
-		ctx,
-		k,
-		weights,
-		sumWeight,
-		sumRevenue,
-		totalRewardDec,
-		blockHeight,
-	)
-	if err != nil {
-		return errors.Wrapf(err, "failed to inactivate topics and update sums")
-	}
-
-	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get max topics per block")
-	}
-	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
-
-	// Return the revenue to those topics that didn't make the cut
-	// Loop though weightsOfActiveTopics and if the topic is not in weightsOfTopActiveTopics, add to running revenue sum
-	sumRevenueOfBottomTopics := cosmosMath.ZeroInt()
-	for topicId := range weightsOfActiveTopics {
-		// If the topic is not in the top active topics, add its revenue to the running sum
-		if _, ok := weightsOfTopActiveTopics[topicId]; !ok {
-			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-			if err != nil {
-				return errors.Wrapf(err, "failed to get topic fee revenue")
-			}
-			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
-		}
-
-		// This way we won't double count from this earlier epoch revenue the next epoch
-		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-		err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-		if err != nil {
-			return errors.Wrapf(err, "failed to reset topic fee revenue")
-		}
-	}
-
-	// Send remaining collected inference request fees to the Ecosystem module account
-	// They will be paid out to reputers, workers, and validators
-	// according to the formulas in the beginblock of the mint module
-	err = k.BankKeeper().SendCoinsFromModuleToModule(
-		ctx,
-		types.AlloraRequestsAccountName,
-		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
-	if err != nil {
-		fmt.Println("Error sending coins from module to module: ", err)
-		return err
-	}
-
-	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfTopActiveTopics, sumWeight, totalRewardDec)
-	if err != nil {
-		return errors.Wrapf(err, "failed to calculate topic rewards")
-	}
-
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get module params")
-	}
-	// for every topic
-	for topicId, topicReward := range topicRewards {
-		// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-		err = k.AddChurnReadyTopic(ctx, topicId)
-		if err != nil {
-			fmt.Println("Error setting churn ready topic: ", err)
-			return err
-		}
-
-		// Get topic reward nonce/block height
-		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
-		// If the topic has no reward nonce, skip it
-		if err != nil || topicRewardNonce == 0 {
-			continue
-		}
-
-		// Generate rewards distribution for topic participants
-		totalRewardsDistribution, err := GenerateRewardsDistributionForTopic(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
-		if err != nil {
-			return errors.Wrapf(err, "failed to generate rewards")
-		}
-
-		// Pay out rewards
-		err = payoutRewards(ctx, k, totalRewardsDistribution)
-		if err != nil {
-			return errors.Wrapf(err, "failed to pay out rewards")
-		}
-
-		// Delete topic reward nonce
-		err = k.DeleteTopicRewardNonce(ctx, topicId)
-		if err != nil {
-			return errors.Wrapf(err, "failed to delete topic reward nonce")
-		}
-
-		// Get oldest unfulfilled nonce - delete everything behind it
-		unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
-		if err != nil {
-			return err
-		}
-
-		// Assume the oldest nonce is the topic reward nonce
-		oldestNonce := topicRewardNonce
-		// If there are unfulfilled nonces, find the oldest one
-		if len(unfulfilledNonces.Nonces) > 0 {
-			oldestNonce = unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight
-			for _, nonce := range unfulfilledNonces.Nonces {
-				if nonce.ReputerNonce.BlockHeight < oldestNonce {
-					oldestNonce = nonce.ReputerNonce.BlockHeight
-				}
-			}
-		}
-
-		topic, err := k.GetTopic(ctx, topicId)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get topic")
-		}
-
-		// Prune records x EpochsLengths behind the oldest nonce
-		// This is to leave the necessary data for the remaining
-		// unfulfilled nonces to be fulfilled
-		oldestNonce -= moduleParams.MinEpochLengthRecordLimit * topic.EpochLength
-
-		// Prune old records after rewards have been paid out
-		err = k.PruneRecordsAfterRewards(ctx, topicId, oldestNonce)
-		if err != nil {
-			return errors.Wrapf(err, "failed to prune records after rewards")
-		}
-	}
-
-	return nil
-}
-
-func GenerateRewardsDistributionForTopic(
+func GenerateRewardsDistributionByTopicParticipant(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
@@ -330,18 +302,24 @@ func GenerateRewardsDistributionForTopic(
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecaster reward fractions")
 	}
 
-	// Get forecasting entropy
-	forecastingEntropy, err := GetForecastingTaskEntropy(
-		ctx,
-		k,
-		topicId,
-		moduleParams.TaskRewardAlpha,
-		moduleParams.BetaEntropy,
-		forecasters,
-		forecastersRewardFractions,
-	)
-	if err != nil {
-		return []TaskRewards{}, err
+	var forecastingEntropy alloraMath.Dec
+	if len(forecasters) > 0 && len(inferers) > 1 {
+		// Get forecasting entropy
+		forecastingEntropy, err = GetForecastingTaskEntropy(
+			ctx,
+			k,
+			topicId,
+			moduleParams.TaskRewardAlpha,
+			moduleParams.BetaEntropy,
+			forecasters,
+			forecastersRewardFractions,
+		)
+		if err != nil {
+			return []TaskRewards{}, err
+		}
+	} else {
+		// If there are no forecasters, set forecasting entropy to zero
+		forecastingEntropy = alloraMath.ZeroDec()
 	}
 
 	// Get Total Rewards for Reputation task
@@ -430,7 +408,11 @@ func GenerateRewardsDistributionForTopic(
 	return totalRewardsDistribution, nil
 }
 
-func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) error {
+func payoutRewards(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	rewards []TaskRewards,
+) error {
 	for _, reward := range rewards {
 		address, err := sdk.AccAddressFromBech32(reward.Address.String())
 		if err != nil {
@@ -458,6 +440,56 @@ func payoutRewards(ctx sdk.Context, k keeper.Keeper, rewards []TaskRewards) erro
 				return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
 			}
 		}
+	}
+
+	return nil
+}
+
+func pruneRecordsAfterRewards(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	minEpochLengthRecordLimit int64,
+	topicId uint64,
+	topicRewardNonce int64,
+) error {
+	// Delete topic reward nonce
+	err := k.DeleteTopicRewardNonce(ctx, topicId)
+	if err != nil {
+		return errors.Wrapf(err, "failed to delete topic reward nonce")
+	}
+
+	// Get oldest unfulfilled nonce - delete everything behind it
+	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Assume the oldest nonce is the topic reward nonce
+	oldestNonce := topicRewardNonce
+	// If there are unfulfilled nonces, find the oldest one
+	if len(unfulfilledNonces.Nonces) > 0 {
+		oldestNonce = unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight
+		for _, nonce := range unfulfilledNonces.Nonces {
+			if nonce.ReputerNonce.BlockHeight < oldestNonce {
+				oldestNonce = nonce.ReputerNonce.BlockHeight
+			}
+		}
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get topic")
+	}
+
+	// Prune records x EpochsLengths behind the oldest nonce
+	// This is to leave the necessary data for the remaining
+	// unfulfilled nonces to be fulfilled
+	oldestNonce -= minEpochLengthRecordLimit * topic.EpochLength
+
+	// Prune old records after rewards have been paid out
+	err = k.PruneRecordsAfterRewards(ctx, topicId, oldestNonce)
+	if err != nil {
+		return errors.Wrapf(err, "failed to prune records after rewards")
 	}
 
 	return nil
