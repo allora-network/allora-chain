@@ -664,13 +664,17 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
 
+	// Calculate and Set the reputer scores
+	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
+
 	// Generate rewards
 	reputers, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		block,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 	reputerRewards, err := rewards.GetRewardPerReputer(
@@ -716,13 +720,17 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
 
+	// Calculate and Set the reputer scores
+	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
+
 	// Generate new rewards
 	reputers, reputersRewardFractions, err = rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
-		newBlock,
 		alloraMath.OneDec(),
+		scores,
 	)
 	s.Require().NoError(err)
 	newReputerRewards, err := rewards.GetRewardPerReputer(
