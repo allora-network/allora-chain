@@ -14,18 +14,15 @@ func GetReputersRewardFractions(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
-	blockHeight int64,
 	pRewardSpread alloraMath.Dec,
+	scoresAtBlock []types.Score,
 ) ([]sdk.AccAddress, []alloraMath.Dec, error) {
-	scoresAtBlock, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputers scores at block %d", blockHeight)
-	}
-	numReputers := len(scoresAtBlock.Scores)
+
+	numReputers := len(scoresAtBlock)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
 	reputers := make([]sdk.AccAddress, numReputers)
-	for i, scorePtr := range scoresAtBlock.Scores {
+	for i, scorePtr := range scoresAtBlock {
 		scores[i] = scorePtr.Score
 		addrStr := scorePtr.Address
 		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)

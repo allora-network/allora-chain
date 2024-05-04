@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -194,24 +193,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	err = synth.GetCalcSetNetworkRegrets(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the reputer scores
-	_, err = rewards.GenerateReputerScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the worker scores for their inference work
-	_, err = rewards.GenerateInferenceScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the worker scores for their forecast work
-	_, err = rewards.GenerateForecastScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}

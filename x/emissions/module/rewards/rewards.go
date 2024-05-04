@@ -260,13 +260,36 @@ func GenerateRewardsDistributionByTopicParticipant(
 ) (
 	[]TaskRewards, error,
 ) {
+	bundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, blockHeight)
+	if err != nil {
+		return []TaskRewards{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
+	}
+
 	lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
 	}
 
+	// Calculate and Set the reputer scores
+	scores, err := GenerateReputerScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *bundles)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their inference work
+	_, err = GenerateInferenceScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *lossBundles)
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate and Set the worker scores for their forecast work
+	_, err = GenerateForecastScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *lossBundles)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
-	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, blockHeight, moduleParams.PRewardSpread)
+	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, scores)
 	if err != nil {
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
