@@ -7,11 +7,12 @@ cd "$(dirname "$0")"
 DOCKER_IMAGE=allorad
 VALIDATOR_NUMBER=3
 VALIDATOR_PREFIX=validator
-NETWORK_PREFIX="172.20.0"
-VALIDATORS_IP_START=10
+NETWORK_PREFIX="192.168.99"
+VALIDATORS_IP_START=100
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
-LOCALNET_DATADIR="./$CHAIN_ID"
+LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
+# LOCALNET_DATADIR="./$CHAIN_ID"
 
 ACCOUNTS_TOKENS=1000000
 
@@ -22,10 +23,10 @@ mkdir -p $LOCALNET_DATADIR
 echo "UID_GID=$(id -u):$(id -g)" > ${ENV_L1}
 echo "NETWORK_PREFIX=$NETWORK_PREFIX" >> ${ENV_L1}
 echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
-echo "ALLORA_RPC=http://${NETWORK_PREFIX}.10:26657" >> ${ENV_L1}  # Take validator0
+echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV_L1}  # Take validator0
 
 echo "Build the docker image"
-docker build -t $DOCKER_IMAGE -f ../Dockerfile.development ..
+# docker build -t $DOCKER_IMAGE -f ../Dockerfile.development ..
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}

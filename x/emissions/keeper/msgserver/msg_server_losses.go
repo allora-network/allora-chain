@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	l "log"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -26,6 +27,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
+
+	l.Println("Topic exists: ", msg.TopicId)
 
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
 	/// All filters should be done in order of increasing computational complexity
@@ -59,12 +62,16 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	l.Println("Got params. Num reputers: ", len(msg.ReputerValueBundles))
+
 	/// Do checks on each reputer in the payload
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
 	latestReputerScores := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
+		l.Println("Reputer", bundle.ValueBundle.Reputer)
+
 		reputer, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
 		if err != nil {
 			return nil, err
@@ -84,13 +91,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
-		if err != nil {
-			requiredMinimumStake = types.DefaultParamsRequiredMinimumStake()
-		}
+		l.Println("Reputer ", bundle.ValueBundle.Reputer, "got here! pt1")
 
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
+			l.Println("Reputer ", bundle.ValueBundle.Reputer, "not seen yet!")
+
 			// Check that the reputer is registered in the topic
 			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
@@ -106,7 +112,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			if err != nil {
 				return nil, err
 			}
-			if stake.LT(requiredMinimumStake) {
+			if stake.LT(params.RequiredMinimumStake) {
 				continue
 			}
 
@@ -151,6 +157,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
 	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
+	l.Println("Top reputers: ", len(topReputers))
+
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Uint)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
@@ -174,6 +182,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
 
+	l.Println("Top reputers with losses: ", len(lossBundlesFromTopReputers))
+
 	bundles := types.ReputerValueBundles{
 		ReputerValueBundles: lossBundlesFromTopReputers,
 	}
@@ -182,26 +192,36 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	l.Println("Loss bundle inserted at block!")
+
 	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)
 	if err != nil {
 		return nil, err
 	}
+
+	l.Println("Network loss bundle calculated!")
 
 	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}
 
+	l.Println("Network loss bundle inserted!")
+
 	err = synth.GetCalcSetNetworkRegrets(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
 	if err != nil {
 		return nil, err
 	}
+
+	l.Println("GetCalcSet network regrests done!")
 
 	// Update the unfulfilled nonces
 	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
+
+	l.Println("Reputer noncen fulfilled!")
 
 	// Update topic reward nonce
 	err = ms.k.SetTopicRewardNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)

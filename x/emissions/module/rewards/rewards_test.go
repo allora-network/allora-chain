@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	l "log"
 	"testing"
 	"time"
 
@@ -865,6 +866,7 @@ func (s *RewardsTestSuite) TestRewardsSkipsTopicsWithErrorsInCalculation() {
 	}
 
 	// Insert inference from workers
+	l.Println("Inserting worker data bundles")
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId1)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
 		Sender:            workerAddrs[0].String(),
@@ -875,14 +877,17 @@ func (s *RewardsTestSuite) TestRewardsSkipsTopicsWithErrorsInCalculation() {
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
+	l.Println("Inserting reputer data bundles")
 	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
 
 	// put in some garbage data here
+	l.Println("Setting garbage data")
 	lossBundles.ReputerValueBundles[0].ValueBundle.CombinedValue = alloraMath.NewDecFinite(1, 999999) //max apd.dec exponent is 100000
 	sig, err := GenerateReputerSignature(s, lossBundles.ReputerValueBundles[0].ValueBundle, reputerAddrs[0])
 	s.Require().NoError(err)
 	lossBundles.ReputerValueBundles[0].Signature = sig
 
+	l.Println("Inserting garbage data")
 	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId1,
@@ -897,6 +902,8 @@ func (s *RewardsTestSuite) TestRewardsSkipsTopicsWithErrorsInCalculation() {
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
 	s.Require().NoError(err)
+
+	l.Println("DONE inserting garbage data")
 
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)

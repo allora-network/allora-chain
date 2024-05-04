@@ -2,7 +2,9 @@ package msgserver
 
 import (
 	"context"
+	"log"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -50,7 +52,14 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.MinEpochLength = newParams.MinEpochLength[0]
 	}
 	if len(newParams.Sharpness) == 1 {
-		existingParams.Sharpness = newParams.Sharpness[0]
+		log.Println("New sharpness: ", newParams.Sharpness[0])
+		b, err := alloraMath.Log10(newParams.Sharpness[0])
+		if err != nil {
+			log.Println("Error in UpdateParams: ", err)
+			return nil, err
+		}
+		existingParams.Sharpness = b
+		// existingParams.Sharpness = newParams.Sharpness[0]
 	}
 	if len(newParams.BetaEntropy) == 1 {
 		existingParams.BetaEntropy = newParams.BetaEntropy[0]
