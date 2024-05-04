@@ -77,20 +77,29 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	// Generate reputers data for tests
-	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
+	_, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := s.emissionsKeeper.GetReputersScoresAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
 
+	var reward_score []types.Score
+	for _, score := range scores.Scores {
+		reward_score = append(reward_score, types.Score{
+			TopicId:     score.TopicId,
+			BlockNumber: score.BlockNumber,
+			Address:     score.Address,
+			Score:       score.Score,
+		})
+	}
 	// Get reputer rewards
 	reputers, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		alloraMath.OneDec(),
-		scores,
+		reward_score,
 	)
 	s.Require().NoError(err)
 	reputerRewards, err := rewards.GetRewardPerReputer(
@@ -133,12 +142,22 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	// Generate reputers same loss data for less reputers
-	reputerValueBundles, err = mockReputersData(s, topicId, block, reputerAddrs)
+	_, err = mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err = s.emissionsKeeper.GetReputersScoresAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
+
+	reward_score = make([]types.Score, 0)
+	for _, score := range scores.Scores {
+		reward_score = append(reward_score, types.Score{
+			TopicId:     score.TopicId,
+			BlockNumber: score.BlockNumber,
+			Address:     score.Address,
+			Score:       score.Score,
+		})
+	}
 
 	// Get reputer rewards
 	reputers, reputersRewardFractions, err = rewards.GetReputersRewardFractions(
@@ -146,7 +165,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 		s.emissionsKeeper,
 		topicId,
 		alloraMath.OneDec(),
-		scores,
+		reward_score,
 	)
 	s.Require().NoError(err)
 	newReputerRewards, err := rewards.GetRewardPerReputer(
