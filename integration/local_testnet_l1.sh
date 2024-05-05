@@ -133,6 +133,9 @@ if [ ${#heights[@]} -eq $VALIDATOR_NUMBER ]; then
     done
 fi
 
+# Configure client.toml
+allorad --home $LOCALNET_DATADIR/genesis config set client keyring-backend test
+
 if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
     echo
@@ -142,6 +145,8 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] down' -- To stop all the validators"
     echo "  - http://localhost:2665[7-9] -- Validators RPC address, port = 26657 + VALIDATOR_NUMBER"
     echo "  -   - 'curl http://localhost:26658/status|jq .' -- To get validator1 (26657+1=26658) RPC address"
+    echo "To use allorad commands, you can specify \'$LOCALNET_DATADIR/genesis\' as --home, eg.:"
+    echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
     echo "Chain is not producing blocks"
     echo "If run localy you can check the logs with: docker logs allorad_validator_0"
