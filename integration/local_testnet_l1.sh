@@ -9,6 +9,7 @@ VALIDATOR_NUMBER=3
 VALIDATOR_PREFIX=validator
 NETWORK_PREFIX="192.168.250"
 VALIDATORS_IP_START=10
+VALIDATORS_RPC_PORT_START=26657
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
@@ -81,6 +82,8 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     addr="${addr%%[[:cntrl:]]}"
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
+
+    echo "VALIDATOR${i}_PORTS=$((VALIDATORS_RPC_PORT_START+i)):26657" >> ${ENV_L1}
 done
 
 echo "PEERS=$PEERS" >> ${ENV_L1}
@@ -93,13 +96,13 @@ curl -o /dev/null --connect-timeout 5 \
     --retry 10 \
     --retry-delay 10 \
     --retry-all-errors \
-    http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657/status
+    http://localhost:$VALIDATORS_RPC_PORT_START/status
 
 echo "Checking the network is up and running"
 heights=()
 validators=()
 for ((v=0; v<$VALIDATOR_NUMBER; v++)); do
-    height=$(curl -s http://${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v)):26657/status|jq -r .result.sync_info.latest_block_height)
+    height=$(curl -s http://localhost:$((VALIDATORS_RPC_PORT_START+v))/status|jq -r .result.sync_info.latest_block_height)
     heights+=($height)
     echo "Got height: ${heights[$v]} from validator: ${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))"
     validators+=("${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))")
