@@ -13,14 +13,25 @@ VALIDATORS_RPC_PORT_START=26657
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
-# LOCALNET_DATADIR="./$CHAIN_ID"
 
 ACCOUNTS_TOKENS=1000000
 
 ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE="compose_l1.yaml"
 
+if [ -d "$LOCALNET_DATADIR" ]; then
+    # Stop if containers are already up
+    docker compose --env-file ${ENV_L1} -f $L1_COMPOSE down
+
+    echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
+    read -p "Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        rm -rf $LOCALNET_DATADIR
+    fi
+fi
 mkdir -p $LOCALNET_DATADIR
+
 echo "UID_GID=$(id -u):$(id -g)" > ${ENV_L1}
 echo "NETWORK_PREFIX=$NETWORK_PREFIX" >> ${ENV_L1}
 echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
@@ -104,7 +115,7 @@ validators=()
 for ((v=0; v<$VALIDATOR_NUMBER; v++)); do
     height=$(curl -s http://localhost:$((VALIDATORS_RPC_PORT_START+v))/status|jq -r .result.sync_info.latest_block_height)
     heights+=($height)
-    echo "Got height: ${heights[$v]} from validator: ${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))"
+    echo "Got height: ${heights[$v]} from validator: http://localhost:$((VALIDATORS_RPC_PORT_START+v))"
     validators+=("${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))")
     sleep 5
 done
@@ -122,6 +133,13 @@ fi
 
 if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
+    echo
+    echo "Some usefull commands:"
+    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f -- To see logs of the containers"
+    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] -- To see logs of the specified validator"
+    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] down -- To stop all the validators"
+    echo "  - http://localhost:2665[7-9] -- Validators RPC address, port = 26657 + $validator_number"
+    echo "  -   - curl http://localhost:26658/status|jq . -- To get validator1 (26657+1=26658) RPC address"
 else
     echo "Chain is not producing blocks"
     echo "If run localy you can check the logs with: docker logs allorad_validator_0"
