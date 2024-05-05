@@ -806,6 +806,10 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
 	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
 
+	forecaster0Acc := sdk.AccAddress(forecaster0)
+	forecaster1Acc := sdk.AccAddress(forecaster1)
+	forecaster2Acc := sdk.AccAddress(forecaster2)
+
 	// Set Loss bundles
 
 	reputerLossBundles := types.ReputerValueBundles{
@@ -999,6 +1003,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce, forecasts)
 
+	// Set inferer network regrets
+
 	infererNetworkRegrets := map[string]inference_synthesis.Regret{
 		reputer0: alloraMath.MustNewDecFromString("0.29240710390153500"),
 		reputer1: alloraMath.MustNewDecFromString("0.4182220944854450"),
@@ -1016,6 +1022,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	}
 
+	// set forecaster network regrets
+
 	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
 		forecaster0: alloraMath.MustNewDecFromString("0.816066375505268"),
 		forecaster1: alloraMath.MustNewDecFromString("0.8234558901838660"),
@@ -1030,6 +1038,45 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			emissions.TimestampedValue{BlockHeight: blockHeight, Value: regret},
 		)
 	}
+
+	// Set one in forecaster network regrets
+
+	setOneInForecasterNetworkRegret := func(forecasterAcc sdk.AccAddress, infererAcc sdk.AccAddress, value string) {
+		keeper.SetOneInForecasterNetworkRegret(
+			s.ctx,
+			topicId,
+			forecasterAcc,
+			infererAcc,
+			emissions.TimestampedValue{
+				BlockHeight: blockHeight,
+				Value:       alloraMath.MustNewDecFromString(value),
+			},
+		)
+	}
+
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "0.2908686083275610")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer1Acc, "0.41668359891147100")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer2Acc, "0.1750965216173760")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer3Acc, "0.4946361393170890")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer4Acc, "0.27842211442291100")
+
+	setOneInForecasterNetworkRegret(forecaster0Acc, forecaster0Acc, "0.8145278799312940")
+
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer0Acc, "0.27805335477337800")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer1Acc, "0.40386834535728700")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer2Acc, "0.1622812680631930")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer3Acc, "0.4818208857629060")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer4Acc, "0.2656068608687280")
+
+	setOneInForecasterNetworkRegret(forecaster1Acc, forecaster1Acc, "0.8091021410557080")
+
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer0Acc, "0.2769256582158990")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer1Acc, "0.40274064879980900")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer2Acc, "0.16115357150571500")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer3Acc, "0.4806931892054280")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer4Acc, "0.2644791643112500")
+
+	setOneInForecasterNetworkRegret(forecaster2Acc, forecaster2Acc, "0.804185909355192")
 
 	// Calculate
 
@@ -1072,4 +1119,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
 	}
+
+	// TODO add more checks
 }
