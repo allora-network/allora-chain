@@ -20,13 +20,12 @@ ENV_L1="${LOCALNET_DATADIR}/.env"
 L1_COMPOSE="compose_l1.yaml"
 
 if [ -d "$LOCALNET_DATADIR" ]; then
-    # Stop if containers are already up
-    docker compose --env-file ${ENV_L1} -f $L1_COMPOSE down
-
     echo "Folder $LOCALNET_DATADIR already exist, need to delete it before running the script."
-    read -p "Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
+    read -p "Stop validators and Delete $LOCALNET_DATADIR folder??[y/N] " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Stop if containers are already up
+        docker compose --env-file ${ENV_L1} -f $L1_COMPOSE down
         rm -rf $LOCALNET_DATADIR
     fi
 fi
@@ -38,7 +37,9 @@ echo "CHAIN_ID=$CHAIN_ID" >> ${ENV_L1}
 echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV_L1}  # Take validator0
 
 echo "Build the docker image"
-# docker build -t $DOCKER_IMAGE -f ../Dockerfile.development ..
+pushd ..
+docker build -t $DOCKER_IMAGE -f ./Dockerfile.development .
+popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
@@ -59,7 +60,7 @@ docker run \
     -e COMMON_HOME_DIR=/data \
     -e HOME=/data \
     --entrypoint=/data/generate_genesis.sh \
-    $DOCKER_IMAGE
+    $DOCKER_IMAGE > /dev/null 2>&1
 
 echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \
@@ -116,9 +117,10 @@ for ((v=0; v<$VALIDATOR_NUMBER; v++)); do
     height=$(curl -s http://localhost:$((VALIDATORS_RPC_PORT_START+v))/status|jq -r .result.sync_info.latest_block_height)
     heights+=($height)
     echo "Got height: ${heights[$v]} from validator: http://localhost:$((VALIDATORS_RPC_PORT_START+v))"
-    validators+=("${NETWORK_PREFIX}.$((VALIDATORS_IP_START+v))")
+    validators+=("localhost:$((VALIDATORS_RPC_PORT_START+v))")
     sleep 5
 done
+
 echo "Populate validators.json with validators addresses"
 jq --compact-output --null-input '$ARGS.positional' --args -- "${validators[@]}" > ${LOCALNET_DATADIR}/validators.json
 
@@ -135,11 +137,11 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
     echo
     echo "Some usefull commands:"
-    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f -- To see logs of the containers"
-    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] -- To see logs of the specified validator"
-    echo "  - docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] down -- To stop all the validators"
-    echo "  - http://localhost:2665[7-9] -- Validators RPC address, port = 26657 + $validator_number"
-    echo "  -   - curl http://localhost:26658/status|jq . -- To get validator1 (26657+1=26658) RPC address"
+    echo "  - 'docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f' -- To see logs of the containers"
+    echo "  - 'docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2]' -- To see logs of the specified validator"
+    echo "  - 'docker compose --env-file ${ENV_L1} -f $L1_COMPOSE logs -f validator[0-2] down' -- To stop all the validators"
+    echo "  - http://localhost:2665[7-9] -- Validators RPC address, port = 26657 + VALIDATOR_NUMBER"
+    echo "  -   - 'curl http://localhost:26658/status|jq .' -- To get validator1 (26657+1=26658) RPC address"
 else
     echo "Chain is not producing blocks"
     echo "If run localy you can check the logs with: docker logs allorad_validator_0"
