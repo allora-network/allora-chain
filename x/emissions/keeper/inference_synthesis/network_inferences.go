@@ -298,7 +298,7 @@ func CalcOneOutInferences(
 	pInferenceSynthesis alloraMath.Dec,
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
-	oneOutInfererValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for worker := range inferenceByWorker {
 		// Remove the inference of the worker from the inferences
 		inferencesWithoutWorker := make(map[Worker]*emissions.Inference)
@@ -340,14 +340,14 @@ func CalcOneOutInferences(
 			return nil, nil, err
 		}
 
-		oneOutInfererValues = append(oneOutInfererValues, &emissions.WithheldWorkerAttributedValue{
+		oneOutInferences = append(oneOutInferences, &emissions.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  oneOutNetworkInferenceWithoutInferer,
 		})
 	}
 
 	// Loop over forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
-	oneOutForecasterValues := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
 	for worker := range forecastImpliedInferenceByWorker {
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
@@ -374,13 +374,13 @@ func CalcOneOutInferences(
 			fmt.Println("Error calculating one-out inference for forecaster: ", err)
 			return nil, nil, err
 		}
-		oneOutForecasterValues = append(oneOutForecasterValues, &emissions.WithheldWorkerAttributedValue{
+		oneOutImpliedInferences = append(oneOutImpliedInferences, &emissions.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  oneOutInference,
 		})
 	}
 
-	return oneOutInfererValues, oneOutForecasterValues, nil
+	return oneOutInferences, oneOutImpliedInferences, nil
 }
 
 // Returns all one-in inferences that are possible given the provided input
