@@ -13,7 +13,7 @@ func DefaultParams() Params {
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
 		RewardCadence:                   int64(1),                                  // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
-		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
+		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds

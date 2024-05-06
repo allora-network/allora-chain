@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -13,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight math.Dec, totalRevenue cosmosMath.Int) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
@@ -24,7 +25,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) erro
 	}
 
 	// Distribute rewards between topics
-	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward)
+	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward, weights, sumWeight, totalRevenue)
 	if err != nil {
 		return errors.Wrapf(err, "failed to generate total reward by topic")
 		// Will return nil if there are no topics to reward
@@ -34,13 +35,6 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight) erro
 
 	// for every topic
 	for topicId, topicReward := range topicRewards {
-		// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-		err = k.AddChurnReadyTopic(ctx, topicId)
-		if err != nil {
-			fmt.Println("Error setting churn ready topic: ", err)
-			return err
-		}
-
 		// Get topic reward nonce/block height
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
@@ -76,28 +70,30 @@ func GenerateRewardsDistributionByTopic(
 	maxTopicsPerBlock uint64,
 	blockHeight BlockHeight,
 	totalReward alloraMath.Dec,
+	weights map[uint64]*math.Dec,
+	sumWeight math.Dec,
+	totalRevenue cosmosMath.Int,
 ) (map[uint64]*alloraMath.Dec, error) {
-	// Get Distribution of Rewards per Topic
-	weights, sumWeight, sumRevenue, err := GetRewardReadyTopicWeights(ctx, k, blockHeight)
-	if err != nil {
-		return nil, errors.Wrapf(err, "weights error")
-	}
 	if sumWeight.IsZero() {
 		fmt.Println("No weights, no rewards!")
 		return nil, nil
 	}
-
-	weightsOfActiveTopics, sumWeight, sumRevenue, err := InactivateTopicsAndUpdateSums(
+	// Filter out topics that are not reward-ready, inactivate if needed
+	weightsOfActiveTopics, sumWeight, sumRevenue, err := FilterAndInactivateTopicsUpdatingSums(
 		ctx,
 		k,
 		weights,
 		sumWeight,
-		sumRevenue,
+		totalRevenue,
 		totalReward,
 		blockHeight,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to inactivate topics and update sums")
+	}
+	if sumWeight.IsZero() {
+		fmt.Println("No filtered weights, no rewards!")
+		return nil, nil
 	}
 
 	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
@@ -145,7 +141,24 @@ func GenerateRewardsDistributionByTopic(
 	return topicRewards, nil
 }
 
-func InactivateTopicsAndUpdateSums(
+func removeFromSumWeightAndRevenue(ctx sdk.Context, k keeper.Keeper, sumWeight alloraMath.Dec, sumRevenue cosmosMath.Int,
+	weight *alloraMath.Dec, topicId uint64) (alloraMath.Dec, cosmosMath.Int, error) {
+	// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
+	// i.e. we'll neither emit their worker/reputer requests or calculate rewards for its participants this epoch
+	sumWeight, err := sumWeight.Sub(*weight)
+	if err != nil {
+		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to subtract weight from sum")
+	}
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
+	}
+	sumRevenue = sumRevenue.Sub(topicFeeRevenue.Revenue)
+
+	return sumWeight, sumRevenue, nil
+}
+
+func FilterAndInactivateTopicsUpdatingSums(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	weights map[uint64]*alloraMath.Dec,
@@ -167,7 +180,23 @@ func InactivateTopicsAndUpdateSums(
 
 	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
 	for topicId, weight := range weights {
-		// In activate and skip the topic if its weight is below the globally-set minimum
+		// Filter out if not reward-ready
+		// Check topic has an unfulfilled reward nonce
+		rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
+		filterOutTopic := false
+		filterOutErrorMessage := ""
+		if err != nil {
+			fmt.Println("Error getting reputer request nonces: ", err)
+			filterOutTopic = true
+			filterOutErrorMessage = "failed to remove from sum weight and revenue"
+		}
+		if rewardNonce == 0 {
+			fmt.Println("Reputer request nonces is nil")
+			filterOutTopic = true
+			filterOutErrorMessage = "failed to remove nil-reputer-nonce topic from sum weight and revenue"
+		}
+
+		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
@@ -183,22 +212,17 @@ func InactivateTopicsAndUpdateSums(
 
 			// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
 			// i.e. we'll neither emit their worker/reputer requests or calculate rewards for its participants this epoch
-			sumWeight, err = sumWeight.Sub(*weight)
-			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to subtract weight from sum")
-			}
-			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
-			}
-			sumRevenue = sumRevenue.Sub(topicFeeRevenue.Revenue)
-
-			continue
+			filterOutTopic = true
+			filterOutErrorMessage = "failed to remove inactivated from sum weight and revenue"
 		}
-
+		if filterOutTopic {
+			sumWeight, sumRevenue, err = removeFromSumWeightAndRevenue(ctx, k, sumWeight, sumRevenue, weight, topicId)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, filterOutErrorMessage)
+			}
+		}
 		weightsOfActiveTopics[topicId] = weight
 	}
-
 	return weightsOfActiveTopics, sumWeight, sumRevenue, nil
 }
 

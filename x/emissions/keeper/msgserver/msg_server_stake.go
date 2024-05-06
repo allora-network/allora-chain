@@ -2,9 +2,10 @@ package msgserver
 
 import (
 	"context"
+	"errors"
+
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
-	"errors"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -53,7 +54,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	return &types.MsgAddStakeResponse{}, nil
+	err = ms.ActivateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId, cosmosMath.Int(msg.Amount))
+	return &types.MsgAddStakeResponse{}, err
 }
 
 // StartRemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
