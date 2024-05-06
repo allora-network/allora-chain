@@ -10,7 +10,9 @@ COPY go.sum .
 RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache go mod download
 
-RUN --mount=type=cache,target=/gocache make install
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    make install
 
 #==============================================================
 
