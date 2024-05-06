@@ -1119,6 +1119,158 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
 	}
-
 	// TODO add more checks
+}
+
+func TestFilterNoncesWithinEpochLength(t *testing.T) {
+	tests := []struct {
+		name          string
+		nonces        emissions.Nonces
+		blockHeight   int64
+		epochLength   int64
+		expectedNonce emissions.Nonces
+	}{
+		{
+			name: "Nonces within epoch length",
+			nonces: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 10},
+					{BlockHeight: 15},
+				},
+			},
+			blockHeight: 20,
+			epochLength: 10,
+			expectedNonce: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 10},
+					{BlockHeight: 15},
+				},
+			},
+		},
+		{
+			name: "Nonces outside epoch length",
+			nonces: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 5},
+					{BlockHeight: 15},
+				},
+			},
+			blockHeight: 20,
+			epochLength: 10,
+			expectedNonce: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 15},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := inference_synthesis.FilterNoncesWithinEpochLength(tc.nonces, tc.blockHeight, tc.epochLength)
+			if !reflect.DeepEqual(actual, tc.expectedNonce) {
+				t.Errorf("Expected %v, but got %v", tc.expectedNonce, actual)
+			}
+		})
+	}
+}
+
+func TestSelectTopNReputerNonces(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name                     string
+		reputerRequestNonces     *emissions.ReputerRequestNonces
+		N                        int
+		expectedTopNReputerNonce []*emissions.ReputerRequestNonce
+	}{
+		{
+			name: "N greater than length of nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				},
+			},
+			N: 5,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+			},
+		},
+		{
+			name: "N less than length of nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 6}},
+				},
+			},
+			N: 2,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+			},
+		},
+	}
+
+	// Run test cases
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N)
+			if !reflect.DeepEqual(actual, tc.expectedTopNReputerNonce) {
+				t.Errorf("Expected %v, but got %v", tc.expectedTopNReputerNonce, actual)
+			}
+		})
+	}
+}
+
+func TestSelectTopNWorkerNonces(t *testing.T) {
+	// Define test cases
+	tests := []struct {
+		name               string
+		workerNonces       emissions.Nonces
+		N                  int
+		expectedTopNNonces []*emissions.Nonce
+	}{
+		{
+			name: "N greater than length of nonces",
+			workerNonces: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 1},
+					{BlockHeight: 2},
+				},
+			},
+			N: 5,
+			expectedTopNNonces: []*emissions.Nonce{
+				{BlockHeight: 1},
+				{BlockHeight: 2},
+			},
+		},
+		{
+			name: "N less than length of nonces",
+			workerNonces: emissions.Nonces{
+				Nonces: []*emissions.Nonce{
+					{BlockHeight: 1},
+					{BlockHeight: 2},
+					{BlockHeight: 3},
+				},
+			},
+			N: 2,
+			expectedTopNNonces: []*emissions.Nonce{
+				{BlockHeight: 1},
+				{BlockHeight: 2},
+			},
+		},
+	}
+
+	// Run test cases
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := inference_synthesis.SelectTopNWorkerNonces(tc.workerNonces, tc.N)
+			if !reflect.DeepEqual(actual, tc.expectedTopNNonces) {
+				t.Errorf("Expected %v, but got %v", tc.expectedTopNNonces, actual)
+			}
+		})
+	}
 }

@@ -44,9 +44,9 @@ func GetTopicRewardFraction(
 	return (*topicWeight).Quo(totalWeight)
 }
 
-// "Reward-ready topic" is active, has an epoch that ended, has a reputer nonce in need of reward
+// Active topics have more than a globally-set minimum weight, a function of revenue and stake
 // "Safe" because bounded by max number of pages and apply running, online operations
-func SafeApplyFuncOnAllRewardReadyTopics(
+func SafeApplyFuncOnAllActiveTopics(
 	ctx context.Context,
 	k keeper.Keeper,
 	block BlockHeight,
@@ -65,26 +65,13 @@ func SafeApplyFuncOnAllRewardReadyTopics(
 		}
 
 		for _, topicId := range topicsActive {
-			// Get the topic
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
 				fmt.Println("Error getting topic: ", err)
 				continue
 			}
 
-			// Check the cadence of inferences
-			if block == topic.EpochLastEnded+topic.EpochLength || block-topic.EpochLastEnded >= 2*topic.EpochLength {
-				// Check topic has an unfulfilled reward nonce
-				rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
-				if err != nil {
-					fmt.Println("Error getting reputer request nonces: ", err)
-					continue
-				}
-				if rewardNonce == 0 {
-					fmt.Println("Reputer request nonces is nil")
-					continue
-				}
-
+			if keeper.CheckCadence(block, topic) {
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
@@ -104,13 +91,52 @@ func SafeApplyFuncOnAllRewardReadyTopics(
 	return nil
 }
 
-// Iterates through every reward-ready topic, computes its target weight, then exponential moving average to get weight.
-// Returns the total sum of weight, topic revenue, map of all of the weights by topic.
-// Note that the outputted weights are not normalized => not dependent on pan-topic data.
-func GetRewardReadyTopicWeights(
+// "Churn-ready topic" is active, has an epoch that ended, and is in top N by weights, has non-zero weight.
+// We iterate through active topics, fetch their weight, skim the top N by weight (these are the churnable topics)
+// then finally apply a function on each of these churnable topics.
+func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	ctx context.Context,
 	k keeper.Keeper,
 	block BlockHeight,
+	fn func(ctx context.Context, topic *types.Topic) error,
+	weights map[TopicId]*alloraMath.Dec,
+) error {
+	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get max topics per block")
+	}
+	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
+
+	for topicId, weight := range weightsOfTopActiveTopics {
+		if weight.Equal(alloraMath.ZeroDec()) {
+			fmt.Println("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			continue
+		}
+		// Get the topic
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			fmt.Println("Error getting topic: ", err)
+			continue
+		}
+		// Execute the function
+		err = fn(ctx, &topic)
+		if err != nil {
+			fmt.Println("Error applying function on topic: ", err)
+			continue
+		}
+	}
+	return nil
+}
+
+// Iterates through every active topic, computes its target weight, then exponential moving average to get weight.
+// Returns the total sum of weight, topic revenue, map of all of the weights by topic.
+// Note that the outputted weights are not normalized => not dependent on pan-topic data.
+// updatePrevious is a flag to perform update of previous weight of the topic
+func GetAndOptionallyUpdateActiveTopicWeights(
+	ctx context.Context,
+	k keeper.Keeper,
+	block BlockHeight,
+	updatePreviousWeights bool,
 ) (
 	weights map[TopicId]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
@@ -141,13 +167,13 @@ func GetRewardReadyTopicWeights(
 			return errors.Wrapf(err, "failed to get current topic weight")
 		}
 
-		// Update revenue data
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 
-		// Update weight data
-		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
-		if err != nil {
-			return errors.Wrapf(err, "failed to set previous topic weight")
+		if updatePreviousWeights {
+			err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
+			if err != nil {
+				return errors.Wrapf(err, "failed to set previous topic weight")
+			}
 		}
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)
@@ -157,7 +183,7 @@ func GetRewardReadyTopicWeights(
 		return nil
 	}
 
-	err = SafeApplyFuncOnAllRewardReadyTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
+	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
 	}
