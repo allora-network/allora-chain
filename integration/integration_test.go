@@ -51,4 +51,8 @@ func TestExternalTestSuite(t *testing.T) {
 	RegistrationChecks(m)
 	t.Log(">>> Test Inference Request <<<")
 	InferenceRequestsChecks(m)
+	t.Log(">>> Test Reputer Staking <<<")
+	StakingChecks(m)
+	t.Log(">>> Test Making Inference <<<")
+	WorkerInferenceAndForecastChecks(m)
 }
