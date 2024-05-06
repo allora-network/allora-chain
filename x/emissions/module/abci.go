@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -15,12 +16,20 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
-	err := rewards.EmitRewards(sdkCtx, am.keeper, blockHeight)
+	// Get active weights
+	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
-		fmt.Println("Error calculating global emission per topic: ", err)
-		panic(err)
+		return errors.Wrapf(err, "Weights error")
 	}
 
+	// REWARDS (will internally filter any non-RewardReady topics)
+	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
+	if err != nil {
+		fmt.Println("Error calculating global emission per topic: ", err)
+		return errors.Wrapf(err, "Rewards error")
+	}
+
+	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
 	fn := func(ctx context.Context, topic *types.Topic) error {
@@ -77,6 +86,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		am.keeper,
 		blockHeight,
 		fn,
+		weights,
 	)
 	if err != nil {
 		fmt.Println("Error applying function on all reward ready topics: ", err)

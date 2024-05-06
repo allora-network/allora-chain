@@ -53,7 +53,6 @@ func SafeApplyFuncOnAllActiveTopics(
 	fn func(ctx context.Context, topic *types.Topic) error,
 	topicPageLimit uint64,
 	maxTopicPages uint64,
-	filterRewardNonces bool, // Ignore topics that do not have a reward nonce
 ) error {
 	topicPageKey := make([]byte, 0)
 	i := uint64(0)
@@ -73,19 +72,6 @@ func SafeApplyFuncOnAllActiveTopics(
 			}
 
 			if keeper.CheckCadence(block, topic) {
-				if filterRewardNonces {
-					// Check topic has an unfulfilled reward nonce
-					rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
-					if err != nil {
-						fmt.Println("Error getting reputer request nonces: ", err)
-						continue
-					}
-					if rewardNonce == 0 {
-						fmt.Println("Reputer request nonces is nil")
-						continue
-					}
-				}
-
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
@@ -113,12 +99,8 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	k keeper.Keeper,
 	block BlockHeight,
 	fn func(ctx context.Context, topic *types.Topic) error,
+	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	weights, _, _, err := GetAndOptionallyUpdateActiveTopicWeights(ctx, k, block, false, false)
-	if err != nil {
-		return errors.Wrapf(err, "weights error")
-	}
-	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
 	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
@@ -155,7 +137,6 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	k keeper.Keeper,
 	block BlockHeight,
 	updatePreviousWeights bool,
-	filterRewardNonces bool,
 ) (
 	weights map[TopicId]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
@@ -202,7 +183,7 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 		return nil
 	}
 
-	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages, filterRewardNonces)
+	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
 	}
