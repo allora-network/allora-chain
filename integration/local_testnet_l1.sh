@@ -152,9 +152,9 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo
     echo "Some usefull commands:"
     echo "  - 'docker compose -f $L1_COMPOSE logs -f' -- To see logs of the containers"
-    echo "  - 'docker compose -f $L1_COMPOSE logs -f validator[0-2]' -- To see logs of the specified validator"
-    echo "  - 'docker compose -f $L1_COMPOSE logs -f validator[0-2] down' -- To stop all the validators"
-    echo "  - http://localhost:2665[7-9] -- Validators RPC address, port = 26657 + VALIDATOR_NUMBER"
+    echo "  - 'docker compose -f $L1_COMPOSE logs -f validator[0-...]' -- To see logs of the specified validator"
+    echo "  - 'docker compose -f $L1_COMPOSE down' -- To stop all the validators"
+    echo "  - http://localhost:2665[7-...] -- Validators RPC address, port = 26657 + VALIDATOR_NUMBER"
     echo "  -   - 'curl http://localhost:26658/status|jq .' -- To get validator1 (26657+1=26658) RPC address"
     echo "To use allorad commands, you can specify \'$LOCALNET_DATADIR/genesis\' as --home, eg.:"
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
