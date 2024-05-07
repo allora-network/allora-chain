@@ -46,9 +46,8 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
 
-		// Check that the inference exist, is for the correct topic, and is for the correct nonce
-		if inference == nil ||
-			inference.TopicId != topicId ||
+		// Check if the topic and nonce are correct
+		if  inference.TopicId != topicId ||
 			inference.BlockHeight != nonce.BlockHeight {
 			continue
 		}
