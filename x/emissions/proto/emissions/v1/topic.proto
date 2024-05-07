@@ -1,0 +1,49 @@
+syntax = "proto3";
+package emissions.v1;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+message Topic {
+  uint64 id = 1;
+  string creator = 2;
+  string metadata = 3;
+  string loss_logic = 4;
+  string loss_method = 5;
+  string inference_logic = 6;
+  string inference_method = 7;
+  int64 epoch_last_ended = 8;
+  int64 epoch_length = 9;
+  int64 ground_truth_lag = 10;
+  string default_arg = 11;
+  uint64 pnorm = 12;
+  string alpha_regret = 13
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_reputer = 14
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_inference = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string preward_forecast = 16
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string f_tolerance = 17
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message TopicList {
+  repeated Topic topics = 1;
+}
+
+// stores the amount of fees collected by a topic in the last reward epoch
+message TopicFeeRevenue {
+  int64 epoch = 1;  // block height of last topic cadence in which rewards were calculated
+  string revenue = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+

@@ -18,7 +18,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	ctx context.Context,
 	msg *types.MsgInsertBulkReputerPayload,
 ) (*types.MsgInsertBulkReputerPayloadResponse, error) {
-	// Check if the topic exists
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
+
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -69,8 +72,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 		if err != nil {
 			return nil, err
 		}
-
-		// TODO: need to check if parameters are not nil to avoid panic
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
