@@ -52,4 +52,8 @@ func TestExternalTestSuite(t *testing.T) {
 	InferenceRequestsChecks(m)
 	t.Log(">>> Test Update Params <<<")
 	UpdateParamsChecks(m)
+	t.Log(">>> Test Reputer Staking <<<")
+	StakingChecks(m)
+	t.Log(">>> Test Making Inference <<<")
+	WorkerInferenceAndForecastChecks(m)
 }

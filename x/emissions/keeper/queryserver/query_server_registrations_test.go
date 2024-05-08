@@ -199,7 +199,7 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    false,
-		Owner:        "Worker",
+		Owner:        workerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -249,7 +249,7 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    true,
-		Owner:        "Reputer",
+		Owner:        reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))

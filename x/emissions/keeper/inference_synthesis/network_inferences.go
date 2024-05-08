@@ -619,3 +619,36 @@ func GetNetworkInferencesAtBlock(
 	// Even in case of error (partially filled data), the ValueBundle is returned
 	return networkInferences, blockHeight, err
 }
+
+// Filter nonces that are within the epoch length of the current block height
+func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength int64) emissions.Nonces {
+	var filtered emissions.Nonces
+	for _, nonce := range n.Nonces {
+		if blockHeight-nonce.BlockHeight <= epochLength {
+			filtered.Nonces = append(filtered.Nonces, nonce)
+		}
+	}
+	return filtered
+}
+
+// Select the top N latest reputer nonces
+func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int) []*emissions.ReputerRequestNonce {
+	var topN []*emissions.ReputerRequestNonce
+	if len(reputerRequestNonces.Nonces) <= N {
+		topN = reputerRequestNonces.Nonces
+	} else {
+		topN = reputerRequestNonces.Nonces[:N]
+	}
+	return topN
+}
+
+// Select the top N latest worker nonces
+func SelectTopNWorkerNonces(workerNonces emissions.Nonces, N int) []*emissions.Nonce {
+	var topN []*emissions.Nonce
+	if len(workerNonces.Nonces) <= N {
+		topN = workerNonces.Nonces
+	} else {
+		topN = workerNonces.Nonces[:N]
+	}
+	return topN
+}

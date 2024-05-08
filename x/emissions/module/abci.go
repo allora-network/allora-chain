@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 
+	"cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,29 +15,33 @@ import (
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	params, err := am.keeper.GetParams(ctx)
+
+	// Get active weights
+	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Weights error")
 	}
 
-	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight)
+	// REWARDS (will internally filter any non-RewardReady topics)
+	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
 	if err != nil {
 		fmt.Println("Error calculating global emission per topic: ", err)
-		panic(err)
+		return errors.Wrapf(err, "Rewards error")
 	}
 
+	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	// Within each loop, execute the inference and weight cadence checks
 	fn := func(ctx context.Context, topic *types.Topic) error {
-		// Parallelize the inference and weight cadence checks
+		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
 		go func(topic types.Topic) {
 			defer wg.Done()
-			// Check the cadence of inferences
-			if blockHeight == topic.EpochLastEnded+topic.EpochLength ||
-				blockHeight-topic.EpochLastEnded >= 2*topic.EpochLength {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
+			// to avoid potential situations where the block is missed
+			// if (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 {
+			if keeper.CheckCadence(blockHeight, topic) {
+				fmt.Printf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
@@ -65,17 +71,22 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					fmt.Println("Not adding reputer nonce, too early in topic history", blockHeight, topic.EpochLength)
 				}
 
+				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
+				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
+				if err != nil {
+					fmt.Println("Error setting churn ready topic: ", err)
+					return
+				}
 			}
 		}(*topic)
 		return nil
 	}
-	err = rewards.SafeApplyFuncOnAllRewardReadyTopics(
+	err = rewards.IdentifyChurnableAmongActiveTopicsAndApplyFn(
 		sdkCtx,
 		am.keeper,
 		blockHeight,
 		fn,
-		params.TopicPageLimit,
-		params.MaxTopicPages,
+		weights,
 	)
 	if err != nil {
 		fmt.Println("Error applying function on all reward ready topics: ", err)
