@@ -4,6 +4,8 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
+ALLORAD_BIN=$(which allorad)
+
 DOCKER_IMAGE=allorad
 VALIDATOR_NUMBER="${VALIDATOR_NUMBER:-3}"
 VALIDATOR_PREFIX=validator
@@ -145,7 +147,7 @@ if [ ${#heights[@]} -eq $VALIDATOR_NUMBER ]; then
 fi
 
 # Configure client.toml
-allorad --home $LOCALNET_DATADIR/genesis config set client keyring-backend test
+$ALLORAD_BIN --home $LOCALNET_DATADIR/genesis config set client keyring-backend test
 
 if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
