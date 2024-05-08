@@ -8,6 +8,9 @@ import "gogoproto/gogo.proto";
 import "amino/amino.proto";
 import "emissions/v1/types.proto";
 import "cosmos_proto/cosmos.proto";
+import "emissions/v1/nonce.proto";
+import "emissions/v1/reputer.proto";
+import "emissions/v1/worker.proto";
 
 // Msg defines the module Msg service.
 service Msg {

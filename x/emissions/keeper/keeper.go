@@ -2224,3 +2224,9 @@ func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections
 
 	return nil
 }
+
+// Return true if the topic has met its cadence or is the first run
+func CheckCadence(blockHeight int64, topic types.Topic) bool {
+	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
+		topic.EpochLastEnded == 0
+}

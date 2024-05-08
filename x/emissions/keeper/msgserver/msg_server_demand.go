@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 
-	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -51,39 +50,6 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	}
 
 	// Activate topic if it exhibits minimum weight
-	isActivated, err := ms.k.IsTopicActive(ctx, msg.TopicId)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error getting topic activation status")
-	}
-	if !isActivated {
-		params, err := ms.k.GetParams(ctx)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error getting params")
-		}
-		topic, err := ms.k.GetTopic(ctx, msg.TopicId)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error getting topic")
-		}
-
-		newTopicWeight, _, err := ms.k.GetCurrentTopicWeight(
-			ctx,
-			msg.TopicId,
-			topic.EpochLength,
-			params.TopicRewardAlpha,
-			params.TopicRewardStakeImportance,
-			params.TopicRewardFeeRevenueImportance,
-			msg.Amount,
-		)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error getting current topic weight")
-		}
-
-		if newTopicWeight.Gte(params.MinTopicWeight) {
-			err = ms.k.ActivateTopic(ctx, msg.TopicId)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-	return &types.MsgFundTopicResponse{}, nil
+	err = ms.ActivateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId, msg.Amount)
+	return &types.MsgFundTopicResponse{}, err
 }

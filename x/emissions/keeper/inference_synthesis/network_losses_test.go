@@ -29,7 +29,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 		},
 		{
 			name:                "simple example",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0"), SumWeight: alloraMath.MustNewDecFromString("0")},
+			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.1"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
@@ -38,7 +38,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 		},
 		{
 			name:                "simple example2",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0"), SumWeight: alloraMath.MustNewDecFromString("0")},
+			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.2"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
@@ -47,7 +47,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 		},
 		{
 			name:                "division by zero error",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("1.01"), SumWeight: alloraMath.MustNewDecFromString("0")},
+			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("1.01"), SumWeight: alloraMath.ZeroDec()},
 			weight:              alloraMath.MustNewDecFromString("2.0"),
 			nextValue:           alloraMath.MustNewDecFromString("1.0"),
 			epsilon:             alloraMath.MustNewDecFromString("3.0"),

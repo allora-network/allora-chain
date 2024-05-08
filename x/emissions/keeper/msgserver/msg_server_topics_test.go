@@ -20,6 +20,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		Creator:          sender,
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
