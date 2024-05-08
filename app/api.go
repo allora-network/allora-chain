@@ -144,22 +144,31 @@ func generateInferencesRequest(
 
 func makeApiCall(payload string) {
 	fmt.Println("Making Api Call, Payload: ", payload)
-	url := os.Getenv("BLOCKLESS_API_URL")
+	urls := readHeadUrls("BLOCKLESS_API_URL")
 	method := "POST"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, strings.NewReader(payload))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	req.Header.Add("Accept", "application/json, text/plain, */*")
-	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
+	for _, url := range urls {
+		client := &http.Client{}
+		req, err := http.NewRequest(method, url, strings.NewReader(payload))
+		if err != nil {
+			fmt.Println("Error sending request to head", err)
+			continue
+		}
+		req.Header.Add("Accept", "application/json, text/plain, */*")
+		req.Header.Add("Content-Type", "application/json;charset=UTF-8")
 
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Println("Error sending request to head", err)
+			continue
+		}
+		defer res.Body.Close()
 		return
 	}
-	defer res.Body.Close()
+}
+
+func readHeadUrls(key string) []string {
+	urls := os.Getenv(key)
+	result := strings.Split(urls, ",")
+	return result
 }
