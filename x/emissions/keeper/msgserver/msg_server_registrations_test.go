@@ -28,7 +28,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    true,
-		Owner:        "Reputer",
+		Owner:        reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    true,
-		Owner:        "Reputer",
+		Owner:        reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -127,7 +127,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorker() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    false,
-		Owner:        "Worker",
+		Owner:        workerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -176,7 +176,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    false,
-		Owner:        "Worker",
+		Owner:        workerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -273,6 +273,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    true,
+		Owner:        reputerAddr.String(),
 	}
 
 	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr, registrationInitialStake.QuoUint64(2))

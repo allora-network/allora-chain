@@ -12,15 +12,15 @@ import (
 
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
-	if msg.GetLibP2PKey() == "" {
-		return nil, types.ErrLibP2PKeyRequired
+	if err := msg.Validate(); err != nil {
+		return nil, err
 	}
+
 	address, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -44,22 +44,16 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		NodeAddress:  msg.Sender,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
+		Owner:        msg.Owner,
+		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
 	}
-	nodeInfo.Owner = msg.Owner
-	nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
+
 	if msg.IsReputer {
-		// add node to topicReputers
-		// add node to reputers
 		err = ms.k.InsertReputer(ctx, msg.TopicId, address, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		if msg.Owner == "" {
-			return nil, types.ErrOwnerCannotBeEmpty
-		}
-		// add node to topicWorkers
-		// add node to workers
 		err = ms.k.InsertWorker(ctx, msg.TopicId, address, nodeInfo)
 		if err != nil {
 			return nil, err
