@@ -318,7 +318,6 @@ message MsgFundTopic {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                     // how many funds to send from alice with this Inference Request
-  bytes extra_data = 4;  // maybe later consumers get to "vote" on the argument passed to workers
 }
 
 message MsgFundTopicResponse {}
