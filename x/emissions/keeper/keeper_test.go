@@ -2929,3 +2929,66 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().Error(err, "Should return error for non-existent data")
 }
+
+func (s *KeeperTestSuite) TestGetTargetWeight() {
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+    if err != nil {
+        s.T().Fatalf("Failed to get parameters: %v", err)
+    }
+
+	dec, err := alloraMath.NewDecFromString("22.36067977499789696409173668731276")
+
+    testCases := []struct {
+        name           string
+        topicStake     alloraMath.Dec
+        topicEpochLength int64
+        topicFeeRevenue alloraMath.Dec
+        stakeImportance alloraMath.Dec
+        feeImportance  alloraMath.Dec
+        want           alloraMath.Dec
+        expectError    bool
+    }{
+        {
+            name: "Basic valid inputs",
+            topicStake: alloraMath.NewDecFromInt64(100),
+            topicEpochLength: 10,
+            topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+            stakeImportance: params.TopicRewardStakeImportance,
+            feeImportance: params.TopicRewardFeeRevenueImportance,
+            want: dec,
+            expectError: false,
+        },
+        {
+            name: "Zero epoch length",
+            topicStake: alloraMath.NewDecFromInt64(100),
+            topicEpochLength: 0,
+            topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+            stakeImportance: params.TopicRewardStakeImportance,
+            feeImportance: params.TopicRewardFeeRevenueImportance,
+            want: alloraMath.Dec{},
+            expectError: true,
+        },
+        {
+            name: "Negative stake",
+            topicStake: alloraMath.NewDecFromInt64(-100),
+            topicEpochLength: 10,
+            topicFeeRevenue: alloraMath.NewDecFromInt64(50),
+            stakeImportance: params.TopicRewardStakeImportance,
+            feeImportance: params.TopicRewardFeeRevenueImportance,
+            want: alloraMath.Dec{},
+            expectError: true,
+        },
+    }
+
+    for _, tc := range testCases {
+        s.Run(tc.name, func() {
+            got, err := s.emissionsKeeper.GetTargetWeight(tc.topicStake, tc.topicEpochLength, tc.topicFeeRevenue, tc.stakeImportance, tc.feeImportance)
+            if tc.expectError {
+                s.Require().Error(err, "Expected an error for case: %s", tc.name)
+            } else {
+                s.Require().NoError(err, "Did not expect an error for case: %s", tc.name)
+                s.Require().True(tc.want.Equal(got), "Expected %s, got %s for case %s", tc.want.String(), got.String(), tc.name)
+            }
+        })
+    }
+}
