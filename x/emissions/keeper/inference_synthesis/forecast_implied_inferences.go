@@ -51,7 +51,7 @@ func Gradient(p alloraMath.Dec, x Regret) (Weight, error) {
 //
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
-func CalcForcastImpliedInferences(
+func CalcForecastImpliedInferences(
 	inferenceByWorker map[Worker]*emissions.Inference,
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,

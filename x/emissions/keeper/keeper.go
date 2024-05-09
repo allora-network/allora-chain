@@ -378,6 +378,12 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	if err != nil {
 		return err
 	}
+	if nonce == nil {
+		return errors.New("nil reputer's nonce provided")
+	}
+	if associatedWorkerNonce == nil {
+		return errors.New("nil reputer's worker nonce provided")
+	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
 	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
@@ -431,6 +437,14 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 		return types.ReputerRequestNonces{}, err
 	}
 	return nonces, nil
+}
+
+func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
+	return k.unfulfilledWorkerNonces.Set(ctx, topicId, types.Nonces{})
+}
+
+func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
+	return k.unfulfilledReputerNonces.Set(ctx, topicId, types.ReputerRequestNonces{})
 }
 
 /// REGRETS
@@ -2218,6 +2232,74 @@ func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections
 	// Remove data at all keys
 	for _, key := range keysToDelete {
 		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Filter Nonces based on block_height
+	filteredNonces := make([]*types.Nonce, 0)
+	for _, nonce := range nonces.Nonces {
+		if nonce.BlockHeight >= blockHeightThreshold {
+			filteredNonces = append(filteredNonces, nonce)
+		} else {
+			fmt.Println("Deleting old nonce: ", nonce)
+		}
+	}
+
+	// Update nonces in the map
+	nonces.Nonces = filteredNonces
+
+	// If all Nonces were removed, delete the entry from the map
+	if len(filteredNonces) == 0 {
+		if err := k.unfulfilledWorkerNonces.Remove(ctx, topicId); err != nil {
+			return err
+		}
+	} else {
+		// Update Nonces in the map
+		if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Filter Nonces based on block_height
+	filteredNonces := make([]*types.ReputerRequestNonce, 0)
+	for _, nonce := range nonces.Nonces {
+		if nonce.ReputerNonce.BlockHeight >= blockHeightThreshold {
+			filteredNonces = append(filteredNonces, nonce)
+		} else {
+			fmt.Println("Deleting old nonce: ", nonce)
+		}
+	}
+
+	// Update nonces in the map
+	nonces.Nonces = filteredNonces
+
+	// If all Nonces were removed, delete the entry from the map
+	if len(filteredNonces) == 0 {
+		if err := k.unfulfilledReputerNonces.Remove(ctx, topicId); err != nil {
+			return err
+		}
+	} else {
+		// Update Nonces in the map
+		if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
 			return err
 		}
 	}

@@ -28,8 +28,8 @@ func DefaultParams() Params {
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests from the chain
-		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(5),                                 // maximum number of outstanding nonces for worker requests per topic from the chain
+		MaxUnfulfilledReputerRequests:   uint64(5),                                 // maximum number of outstanding nonces for reputer requests per topic from the chain
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
