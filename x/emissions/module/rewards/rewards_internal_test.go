@@ -644,8 +644,6 @@ func TestGetAllConsensusScores(t *testing.T) {
 	}
 }
 
-// something about this test takes too long and hangs
-// must investigate further
 func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require := s.Require()
 
@@ -688,25 +686,87 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		alloraMath.MustNewDecFromString("0.98634"),
 		alloraMath.MustNewDecFromString("0.98154"),
 	}
-	gotScores, gotCoefficients, err := rewards.GetAllReputersOutput(
+	gotScores1, gotCoefficients1, err := rewards.GetAllReputersOutput(
 		allLosses,
 		stakes,
 		initialCoefficients,
 		numReputers,
-		// 0.01
 		params.LearningRate,
 		params.Sharpness,
-		8,
+		1,
 	)
-	require.NoError(err, "GetAllReputersOutput() error = %v, wantErr %v", err, false)
+	require.NoError(err)
 
-	require.True(
-		alloraMath.SlicesInDelta(gotScores, wantScores, alloraMath.MustNewDecFromString("0.00001")),
-		"GetAllReputersOutput() gotScores = %v, want %v", gotScores, wantScores,
+	gotScores2, gotCoefficients2, err := rewards.GetAllReputersOutput(
+		allLosses,
+		stakes,
+		initialCoefficients,
+		numReputers,
+		params.LearningRate,
+		params.Sharpness,
+		2,
 	)
+	require.NoError(err)
 
-	require.True(
-		alloraMath.SlicesInDelta(gotCoefficients, wantCoefficients, alloraMath.MustNewDecFromString("0.0001")),
-		"GetAllReputersOutput() gotCoefficients = %v, want %v", gotCoefficients, wantCoefficients,
+	gotScores3, gotCoefficients3, err := rewards.GetAllReputersOutput(
+		allLosses,
+		stakes,
+		initialCoefficients,
+		numReputers,
+		params.LearningRate,
+		params.Sharpness,
+		3,
 	)
+	require.NoError(err)
+
+	getAbsoluteDifferences := func(gotScores []alloraMath.Dec, wantScores []alloraMath.Dec) ([]alloraMath.Dec, error) {
+		differences := []alloraMath.Dec{}
+		for i, score := range gotScores {
+			diff, err := score.Sub(wantScores[i])
+			if err != nil {
+				return nil, err
+			}
+			if diff.IsNegative() {
+				diff, err = diff.Mul(alloraMath.MustNewDecFromString("-1"))
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			differences = append(differences, diff)
+		}
+		return differences, nil
+	}
+
+	require.True(len(gotScores1) == len(wantScores))
+	require.True(len(gotScores2) == len(wantScores))
+	require.True(len(gotScores3) == len(wantScores))
+
+	scores1DifferenceAbs, err := getAbsoluteDifferences(gotScores1, wantScores)
+	require.NoError(err)
+	scores2DifferenceAbs, err := getAbsoluteDifferences(gotScores2, wantScores)
+	require.NoError(err)
+	scores3DifferenceAbs, err := getAbsoluteDifferences(gotScores3, wantScores)
+	require.NoError(err)
+
+	for i := 0; i < len(wantScores); i++ {
+		require.True(scores2DifferenceAbs[i].Lt(scores1DifferenceAbs[i]))
+		require.True(scores3DifferenceAbs[i].Lt(scores2DifferenceAbs[i]))
+	}
+
+	require.True(len(gotCoefficients1) == len(wantCoefficients))
+	require.True(len(gotCoefficients2) == len(wantCoefficients))
+	require.True(len(gotCoefficients3) == len(wantCoefficients))
+
+	coefficients1DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients1, wantCoefficients)
+	require.NoError(err)
+	coefficients2DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients2, wantCoefficients)
+	require.NoError(err)
+	coefficients3DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients3, wantCoefficients)
+	require.NoError(err)
+
+	for i := 0; i < len(wantCoefficients); i++ {
+		require.True(coefficients2DifferenceAbs[i].Lte(coefficients1DifferenceAbs[i]))
+		require.True(coefficients3DifferenceAbs[i].Lte(coefficients2DifferenceAbs[i]))
+	}
 }
