@@ -675,27 +675,28 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	}
 	var numReputers int64 = 5
 	wantScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("17.536755245164326"),
-		alloraMath.MustNewDecFromString("20.302662649273707"),
-		alloraMath.MustNewDecFromString("24.278413872561256"),
-		alloraMath.MustNewDecFromString("11.365030585937692"),
-		alloraMath.MustNewDecFromString("15.211816727558011"),
+		alloraMath.MustNewDecFromString("17.46894"),
+		alloraMath.MustNewDecFromString("20.19617"),
+		alloraMath.MustNewDecFromString("24.15073"),
+		alloraMath.MustNewDecFromString("11.39661"),
+		alloraMath.MustNewDecFromString("15.29052"),
 	}
 	wantCoefficients := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.99942"),
+		alloraMath.MustNewDecFromString("0.99987"),
 		alloraMath.OneDec(),
 		alloraMath.OneDec(),
-		alloraMath.MustNewDecFromString("0.96574"),
-		alloraMath.MustNewDecFromString("0.95346"),
+		alloraMath.MustNewDecFromString("0.98634"),
+		alloraMath.MustNewDecFromString("0.98154"),
 	}
 	gotScores, gotCoefficients, err := rewards.GetAllReputersOutput(
 		allLosses,
 		stakes,
 		initialCoefficients,
 		numReputers,
+		// 0.01
 		params.LearningRate,
 		params.Sharpness,
-		params.GradientDescentMaxIters,
+		8,
 	)
 	require.NoError(err, "GetAllReputersOutput() error = %v, wantErr %v", err, false)
 
