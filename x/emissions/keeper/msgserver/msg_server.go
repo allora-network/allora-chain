@@ -15,3 +15,17 @@ var _ types.MsgServer = msgServer{}
 func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServer {
 	return &msgServer{k: keeper}
 }
+
+func (ms msgServer) CheckInputLength(ctx context.Context, inputLength int) error {
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Check the length of the serialized message
+	if int64(inputLength) > params.MaxSerializedMsgLength {
+		return types.ErrQueryTooLarge
+	}
+
+	return nil
+}
