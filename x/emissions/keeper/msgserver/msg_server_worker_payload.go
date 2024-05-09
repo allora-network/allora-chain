@@ -7,6 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/gogo/protobuf/proto"
 )
 
 // Output a new set of inferences where only 1 inference per registerd inferer is kept,
@@ -22,6 +23,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
+
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
 	for _, workerDataBundle := range workerDataBundles {
@@ -221,6 +223,16 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 // A tx function that accepts a list of forecasts and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
+	serializedMsg, err := proto.Marshal(msg)
+	if err != nil {
+		return nil, types.ErrFailedToSerializePayload
+	}
+
+	err = ms.CheckInputLength(ctx, len(serializedMsg))
+	if err != nil {
+		return nil, err
+	}
+
 	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
