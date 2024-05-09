@@ -122,6 +122,5 @@ message Params {
   uint64 max_limit = 38;      // max limit for pagination
   int64 min_epoch_length_record_limit =
       39;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
-  int64 max_serialized_msg_length =
-      40;  // max length of input data for msg and query server calls
+  int64 max_serialized_msg_length = 40;  // max length of input data for msg and query server calls
 }
