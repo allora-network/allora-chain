@@ -31,8 +31,26 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 	require.True(m.t, aliceStaked.Amount.Equal(cosmosMath.NewUint(1000000)))
 }
 
+func CheckTopic1Activated(m TestMetadata) {
+	// Fetch only active topics
+	pagi := &emissionstypes.QueryActiveTopicsRequest{
+		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
+			Limit: 10,
+		},
+	}
+	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
+		m.ctx,
+		pagi)
+	require.NoError(m.t, err, "Fetching active topics should not produce an error")
+
+	// Verify the correct number of active topics is retrieved
+	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topic")
+}
+
 // Register two actors and check their registrations went through
 func StakingChecks(m TestMetadata) {
 	m.t.Log("--- Staking Alice as Reputer ---")
 	StakeAliceAsReputerTopic1(m)
+	m.t.Log("--- Check reactivating Topic 1 ---")
+	CheckTopic1Activated(m)
 }
