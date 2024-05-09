@@ -4,8 +4,6 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
-ALLORAD_BIN=$(which allorad)
-
 DOCKER_IMAGE=allorad
 VALIDATOR_NUMBER="${VALIDATOR_NUMBER:-3}"
 VALIDATOR_PREFIX=validator
@@ -146,8 +144,12 @@ if [ ${#heights[@]} -eq $VALIDATOR_NUMBER ]; then
     done
 fi
 
-# Configure client.toml
-$ALLORAD_BIN --home $LOCALNET_DATADIR/genesis config set client keyring-backend test
+docker run -t \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=dasel \
+    $DOCKER_IMAGE \
+    --home /data/genesis config set client keyring-backend test
 
 if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
