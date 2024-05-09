@@ -131,6 +131,10 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}/{block_height}";
   }
+
+  rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
+    option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -361,4 +365,12 @@ message QueryIsReputerRegisteredInTopicIdRequest {
 
 message QueryIsReputerRegisteredInTopicIdResponse {
   bool is_registered = 1;
+}
+
+message QueryIsWhitelistAdminRequest {
+  string address = 1;
+}
+
+message QueryIsWhitelistAdminResponse {
+  bool is_admin = 1;
 }
