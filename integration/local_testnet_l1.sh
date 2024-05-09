@@ -147,7 +147,7 @@ fi
 docker run -t \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
-    --entrypoint=dasel \
+    -e HOME=/data/${valName} \
     $DOCKER_IMAGE \
     --home /data/genesis config set client keyring-backend test
 
