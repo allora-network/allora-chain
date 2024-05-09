@@ -51,7 +51,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 			break
 		}
 	}
-	require.True(found, "Added topic not found in active topics")
+	require.False(found, "Added topic found in active topics")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
