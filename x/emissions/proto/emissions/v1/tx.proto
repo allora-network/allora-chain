@@ -317,7 +317,7 @@ message MsgFundTopic {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                     // how many funds to send from alice with this Inference Request
+  ];  // how many funds to send from alice with this Inference Request
 }
 
 message MsgFundTopicResponse {}
