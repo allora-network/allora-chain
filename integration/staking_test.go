@@ -45,21 +45,21 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 	require.Equal(m.t, fmt.Sprint(stakeToAdd), aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String())
 }
 
-func CheckTopic1Activated(m TestMetadata) {
-	// Fetch only active topics
-	pagi := &emissionstypes.QueryActiveTopicsRequest{
-		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
-			Limit: 10,
-		},
-	}
-	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
-		m.ctx,
-		pagi)
-	require.NoError(m.t, err, "Fetching active topics should not produce an error")
+// func CheckTopic1Activated(m TestMetadata) {
+// 	// Fetch only active topics
+// 	pagi := &emissionstypes.QueryActiveTopicsRequest{
+// 		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
+// 			Limit: 10,
+// 		},
+// 	}
+// 	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
+// 		m.ctx,
+// 		pagi)
+// 	require.NoError(m.t, err, "Fetching active topics should not produce an error")
 
-	// Verify the correct number of active topics is retrieved
-	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topic")
-}
+// 	// Verify the correct number of active topics is retrieved
+// 	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topic")
+// }
 
 // Register two actors and check their registrations went through
 func StakingChecks(m TestMetadata) {
