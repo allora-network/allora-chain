@@ -699,11 +699,13 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	)
 	require.NoError(err, "GetAllReputersOutput() error = %v, wantErr %v", err, false)
 
-	if !alloraMath.SlicesInDelta(gotScores, wantScores, alloraMath.MustNewDecFromString("0.00001")) {
-		require.True(false, "GetAllReputersOutput() gotScores = %v, want %v", gotScores, wantScores)
-	}
+	require.True(
+		alloraMath.SlicesInDelta(gotScores, wantScores, alloraMath.MustNewDecFromString("0.00001")),
+		"GetAllReputersOutput() gotScores = %v, want %v", gotScores, wantScores,
+	)
 
-	if !alloraMath.SlicesInDelta(gotCoefficients, wantCoefficients, alloraMath.MustNewDecFromString("0.0001")) {
-		require.True(false, "GetAllReputersOutput() gotCoefficients = %v, want %v", gotCoefficients, wantCoefficients)
-	}
+	require.True(
+		alloraMath.SlicesInDelta(gotCoefficients, wantCoefficients, alloraMath.MustNewDecFromString("0.0001")),
+		"GetAllReputersOutput() gotCoefficients = %v, want %v", gotCoefficients, wantCoefficients,
+	)
 }
