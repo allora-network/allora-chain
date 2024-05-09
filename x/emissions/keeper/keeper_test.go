@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"fmt"
 
 	// "cosmossdk.io/collections"
 	"cosmossdk.io/collections"
@@ -41,6 +42,7 @@ type KeeperTestSuite struct {
 	ctx             sdk.Context
 	bankKeeper      *emissionstestutil.MockBankKeeper
 	authKeeper      *emissionstestutil.MockAccountKeeper
+	topicKeeper     *emissionstestutil.MockTopicKeeper
 	emissionsKeeper keeper.Keeper
 	msgServer       types.MsgServer
 	mockCtrl        *gomock.Controller
@@ -2991,4 +2993,46 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
             }
         })
     }
+}
+
+func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
+
+	ctrl := gomock.NewController(s.T())
+	s.topicKeeper = emissionstestutil.NewMockTopicKeeper(ctrl)
+
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+    if err != nil {
+        s.T().Fatalf("Failed to get parameters: %v", err)
+    }
+	
+	if s.topicKeeper == nil {
+        s.T().Fatal("MockTopicKeeper is nil")
+    }
+
+
+	targetweight, err := alloraMath.NewDecFromString("1.0")
+	previousTopicWeight, err := alloraMath.NewDecFromString("0.8")
+	emaWeight, err := alloraMath.NewDecFromString("0.9")
+
+	topicId := uint64(1)
+	topicEpochLength := int64(10)
+	topicRewardAlpha := params.TopicRewardAlpha
+	stakeImportance  := params.TopicRewardStakeImportance
+	feeImportance    := params.TopicRewardFeeRevenueImportance
+	additionalRevenue := cosmosMath.NewInt(100)
+
+	s.topicKeeper.EXPECT().GetTopicStake(s.ctx, topicId).Return(cosmosMath.NewUint(1000), nil).AnyTimes()
+	s.topicKeeper.EXPECT().NewDecFromSdkUint(cosmosMath.NewUint(1000)).Return(alloraMath.NewDecFromInt64(1000), nil).AnyTimes()
+	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(types.TopicFeeRevenue{Revenue: cosmosMath.NewInt(500)}, nil).AnyTimes()
+	newFeeRevenue := cosmosMath.NewIntFromBigInt(additionalRevenue.BigInt()).Add(cosmosMath.NewInt(500))
+	s.topicKeeper.EXPECT().NewDecFromSdkInt(newFeeRevenue).Return(alloraMath.NewDecFromInt64(600), nil).AnyTimes()
+	s.topicKeeper.EXPECT().GetTargetWeight(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(targetweight, nil).AnyTimes()
+	s.topicKeeper.EXPECT().GetPreviousTopicWeight(s.ctx, topicId).Return(previousTopicWeight, false, nil).AnyTimes()
+	s.topicKeeper.EXPECT().CalcEma(topicRewardAlpha, targetweight, previousTopicWeight, false).Return(emaWeight, nil).AnyTimes()
+
+	weight, revenue, err := s.emissionsKeeper.GetCurrentTopicWeight(s.ctx, topicId, topicEpochLength, topicRewardAlpha, stakeImportance, feeImportance, additionalRevenue)
+
+	fmt.Println("weight ", weight, emaWeight)
+	fmt.Println("revenue ", cosmosMath.NewInt(500), revenue)
+	s.Require().NoError(err)
 }

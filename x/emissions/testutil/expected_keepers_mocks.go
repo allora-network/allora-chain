@@ -7,6 +7,9 @@ import (
 	types "github.com/cosmos/cosmos-sdk/x/auth/types"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	keeperTypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type MockBankKeeper struct {
@@ -439,4 +442,129 @@ func (m *MockAccountKeeper) ValidatePermissions(macc types0.ModuleAccountI) erro
 func (mr *MockAccountKeeperMockRecorder) ValidatePermissions(macc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatePermissions", reflect.TypeOf((*MockAccountKeeper)(nil).ValidatePermissions), macc)
+}
+
+type MockTopicKeeper struct {
+	ctrl     *gomock.Controller
+	recorder *MockTopicKeeperMockRecorder
+}
+
+type MockTopicKeeperMockRecorder struct {
+	mock *MockTopicKeeper
+}
+
+func NewMockTopicKeeper(ctrl *gomock.Controller) *MockTopicKeeper {
+	mock := &MockTopicKeeper{ctrl: ctrl}
+	mock.recorder = &MockTopicKeeperMockRecorder{mock}
+	return mock
+}
+
+func (m *MockTopicKeeper) EXPECT() *MockTopicKeeperMockRecorder {
+	return m.recorder
+}
+
+// GetTopicStake mocks base method
+func (m *MockTopicKeeper) GetTopicStake(ctx context.Context, topicId uint64) (cosmosMath.Uint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTopicStake", ctx, topicId)
+	ret0, _ := ret[0].(cosmosMath.Uint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTopicStake indicates an expected call of GetTopicStake
+func (mr *MockTopicKeeperMockRecorder) GetTopicStake(ctx, topicId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTopicStake", reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicStake), ctx, topicId)
+}
+
+// GetTopicFeeRevenue mocks base method
+func (m *MockTopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId uint64) (keeperTypes.TopicFeeRevenue, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTopicFeeRevenue", ctx, topicId)
+	ret0, _ := ret[0].(keeperTypes.TopicFeeRevenue)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTopicFeeRevenue indicates an expected call of GetTopicFeeRevenue
+func (mr *MockTopicKeeperMockRecorder) GetTopicFeeRevenue(ctx, topicId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTopicFeeRevenue", reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicFeeRevenue), ctx, topicId)
+}
+
+// NewDecFromSdkUint mocks base method
+func (m *MockTopicKeeper) NewDecFromSdkUint(u cosmosMath.Uint) (alloraMath.Dec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewDecFromSdkUint", u)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewDecFromSdkUint indicates an expected call of NewDecFromSdkUint
+func (mr *MockTopicKeeperMockRecorder) NewDecFromSdkUint(u interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewDecFromSdkUint", reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkUint), u)
+}
+
+// NewDecFromSdkInt mocks base method
+func (m *MockTopicKeeper) NewDecFromSdkInt(i cosmosMath.Int) (alloraMath.Dec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NewDecFromSdkInt", i)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewDecFromSdkInt indicates an expected call of NewDecFromSdkInt
+func (mr *MockTopicKeeperMockRecorder) NewDecFromSdkInt(i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewDecFromSdkInt", reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkInt), i)
+}
+
+// GetTargetWeight mocks base method
+func (m *MockTopicKeeper) GetTargetWeight(stakeDec alloraMath.Dec, epochLength keeperTypes.BlockHeight, feeRevenue alloraMath.Dec, stakeImportance alloraMath.Dec, feeImportance alloraMath.Dec) (alloraMath.Dec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTargetWeight", stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTargetWeight indicates an expected call of GetTargetWeight
+func (mr *MockTopicKeeperMockRecorder) GetTargetWeight(stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTargetWeight", reflect.TypeOf((*MockTopicKeeper)(nil).GetTargetWeight), stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance)
+}
+
+// GetPreviousTopicWeight mocks base method
+func (m *MockTopicKeeper) GetPreviousTopicWeight(ctx context.Context, topicId uint64) (alloraMath.Dec, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPreviousTopicWeight", ctx, topicId)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPreviousTopicWeight indicates an expected call of GetPreviousTopicWeight
+func (mr *MockTopicKeeperMockRecorder) GetPreviousTopicWeight(ctx, topicId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPreviousTopicWeight", reflect.TypeOf((*MockTopicKeeper)(nil).GetPreviousTopicWeight), ctx, topicId)
+}
+
+// CalcEma mocks base method
+func (m *MockTopicKeeper) CalcEma(alpha, current, previous alloraMath.Dec, noPrior bool) (alloraMath.Dec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CalcEma", alpha, current, previous, noPrior)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CalcEma indicates an expected call of CalcEma
+func (mr *MockTopicKeeperMockRecorder) CalcEma(alpha, current, previous, noPrior interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalcEma", reflect.TypeOf((*MockTopicKeeper)(nil).CalcEma), alpha, current, previous, noPrior)
 }
