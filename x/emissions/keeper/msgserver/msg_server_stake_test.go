@@ -25,6 +25,7 @@ func (s *KeeperTestSuite) commonStakingSetup(
 		Creator:          reputerAddr.String(),
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",

@@ -171,6 +171,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -209,6 +210,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 			MultiAddress: "test",
 			TopicId:      topicId,
 			IsReputer:    true,
+			Owner:        addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -311,6 +313,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -349,6 +352,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			MultiAddress: "test",
 			TopicId:      topicId,
 			IsReputer:    true,
+			Owner:        addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -449,6 +453,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -487,6 +492,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			MultiAddress: "test",
 			TopicId:      topicId,
 			IsReputer:    true,
+			Owner:        addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -593,6 +599,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      epochLength,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -631,6 +638,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 			MultiAddress: "test",
 			TopicId:      topicId,
 			IsReputer:    true,
+			Owner:        addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -753,6 +761,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		Creator:          reputer.String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      epochLength,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -788,6 +797,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    true,
+		Owner:        reputer.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
 	s.Require().NoError(err)

@@ -18,7 +18,7 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
 		Creator:          m.n.AliceAddr,
 		Metadata:         "ETH 24h Prediction",
-		LossLogic:        "bafybeicjnyotyargv6vkeptewshygch52v3sp6ruc3x6a37ddrclroqaxq",
+		LossLogic:        "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
 		LossMethod:       "loss-calculation-eth.wasm",
 		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod:  "allora-inference-function.wasm",

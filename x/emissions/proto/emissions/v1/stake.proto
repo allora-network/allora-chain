@@ -1,0 +1,48 @@
+syntax = "proto3";
+package emissions.v1;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+message StakePlacement {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemoval {
+  int64 block_removal_started = 1;
+  StakePlacement placement = 2;
+}
+
+message DelegateStakePlacement {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string delegator = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message DelegateStakeRemoval {
+  int64 block_removal_started = 1;
+  DelegateStakePlacement placement = 2;
+}
+
+message DelegatorInfo {
+  string amount = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string reward_debt = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
