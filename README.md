@@ -191,6 +191,6 @@ To run integration tests, execute the following commands:
 ```bash
 make install
 make init
-bash integration/postinit.sh
+bash integration/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./integration -v
 ```

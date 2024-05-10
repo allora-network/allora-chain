@@ -108,15 +108,20 @@ func GetMappingFunctionValues(
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
 		if stdDev.IsZero() {
-			return nil, errors.Wrapf(types.ErrInvalidValue, "std dev cannot be zero")
-		}
-		frac, err := score.Quo(stdDev)
-		if err != nil {
-			return nil, err
-		}
-		ret[i], err = Phi(pReward, frac)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err calculating phi")
+			// if standard deviation is zero
+			// then all scores are the same and losses are the same
+			// therefore everyone should be paid the same, so we
+			// return the plain value 1 for everybody
+			ret[i] = alloraMath.OneDec()
+		} else {
+			frac, err := score.Quo(stdDev)
+			if err != nil {
+				return nil, err
+			}
+			ret[i], err = Phi(pReward, frac)
+			if err != nil {
+				return nil, errors.Wrapf(err, "err calculating phi")
+			}
 		}
 	}
 	return ret, nil

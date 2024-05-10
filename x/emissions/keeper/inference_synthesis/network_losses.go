@@ -245,6 +245,7 @@ func CalcNetworkLosses(
 	if err != nil {
 		return emissions.ValueBundle{}, err
 	}
+
 	output := emissions.ValueBundle{
 		CombinedValue:          expRunningWeightedCombinedLoss,
 		InfererValues:          expInfererLosses,

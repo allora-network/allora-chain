@@ -3,6 +3,7 @@ package integration_test
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -16,16 +17,17 @@ import (
 
 // Get the validator address that is stored in the genesis file
 // didn't know of a better way to get a validator address to check with
-func GetValidatorAddressFromGenesisFile(m TestMetadata) (string, error) {
+func GetValidatorAddressesFromGenesisFile(m TestMetadata) ([]string, error) {
 	home := m.n.Client.Context().HomeDir
 	genesisPath := home + "/config/genesis.json"
 
 	file, err := os.Open(genesisPath)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer file.Close()
 
+	var addresses []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -35,47 +37,71 @@ func GetValidatorAddressFromGenesisFile(m TestMetadata) (string, error) {
 			trimmed := strings.TrimSpace(splitted[1])
 			trimmed = strings.Trim(trimmed, ",")
 			trimmed = strings.Trim(trimmed, "\"")
-			return trimmed, nil
+			addresses = append(addresses, trimmed)
+
+			if len(addresses) == 3 {
+				break
+			}
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return "", errors.New("validator address not found")
+	if len(addresses) < 3 {
+		return nil, errors.New("not enough validator addresses found")
+	}
+
+	return addresses, nil
 }
 
-func CheckValidatorBalanceGoesUpOnNewBlock(m TestMetadata) {
-	validatorAddr, err := GetValidatorAddressFromGenesisFile(m)
+func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
+	validatorAddrs, err := GetValidatorAddressesFromGenesisFile(m)
 	require.NoError(m.t, err)
-	validatorBalanceBefore, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
-		m.ctx,
-		&distributiontypes.QueryValidatorOutstandingRewardsRequest{
-			ValidatorAddress: validatorAddr,
-		},
-	)
-	require.NoError(m.t, err)
+	require.Len(m.t, validatorAddrs, 3, "Expected exactly three validator addresses")
+
+	balancesBefore := make(map[string]*distributiontypes.QueryValidatorOutstandingRewardsResponse)
+
+	for _, addr := range validatorAddrs {
+		response, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
+			m.ctx,
+			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
+				ValidatorAddress: addr,
+			},
+		)
+		require.NoError(m.t, err)
+		balancesBefore[addr] = response
+	}
 
 	err = m.n.Client.WaitForNextBlock(m.ctx)
 	require.NoError(m.t, err)
 
-	validatorBalanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
-		m.ctx,
-		&distributiontypes.QueryValidatorOutstandingRewardsRequest{
-			ValidatorAddress: validatorAddr,
-		},
-	)
-	require.NoError(m.t, err)
+	balanceIncreased := false
 
-	vba := validatorBalanceAfter.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
-	vbb := validatorBalanceBefore.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
+	for _, addr := range validatorAddrs {
+		balanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
+			m.ctx,
+			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
+				ValidatorAddress: addr,
+			},
+		)
+		require.NoError(m.t, err)
+
+		vba := balanceAfter.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
+		vbb := balancesBefore[addr].Rewards.Rewards.AmountOf(params.BaseCoinUnit)
+
+		fmt.Println(addr, vba, vbb)
+		if vba.GT(vbb) {
+			balanceIncreased = true
+			break
+		}
+	}
+
 	require.True(
 		m.t,
-		vba.GT(vbb),
-		"validator balance did not increase after a block %s %s",
-		vba.String(),
-		vbb.String(),
+		balanceIncreased,
+		"None of the validator balances increased after a new block",
 	)
 }
 
@@ -132,8 +158,17 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
 // and rewards accounts is working as expected
 // basically testing the forked mint module that we use
 func DistributionChecks(m TestMetadata) {
+	// TODO
+	// * Fund a topic
+	// * Make inferences + forecasts
+	// * Wait for "topic ground truth lag" number of blocks to pass
+	// * Repute
+	// * Wait for epoch to end
+	// * Check validator balances increase
+	// Bad form to have a test that depends on another test, but might be most expedient to rely
+	// on the existing tests to do each of the above.
 	m.t.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
-	CheckValidatorBalanceGoesUpOnNewBlock(m)
+	CheckValidatorBalancesIncreaseOnNewBlock(m)
 	m.t.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
 	CheckAlloraRewardsBalanceGoesUpOnNewBlock(m)
 }

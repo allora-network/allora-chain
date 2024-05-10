@@ -77,16 +77,20 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 
-				// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
-				am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, blockHeight)
-
-				maxRetriesToFulfilNoncesReputer, err := am.keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+				MaxUnfulfilledReputerRequests, err := am.keeper.GetParamsMaxUnfulfilledReputerRequests(ctx)
 				if err != nil {
-					maxRetriesToFulfilNoncesReputer = types.DefaultParams().MaxRetriesToFulfilNoncesWorker
+					MaxUnfulfilledReputerRequests = types.DefaultParams().MaxUnfulfilledReputerRequests
 					fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
 				}
-				reputerPruningBlock := blockHeight - maxRetriesToFulfilNoncesReputer*topic.EpochLength
+				reputerPruningBlock := blockHeight - int64(MaxUnfulfilledReputerRequests)*topic.EpochLength
+				fmt.Println("Pruning reputer nonces before block: ", reputerPruningBlock, " for topic: ", topic.Id, " on block: ", blockHeight)
 				am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
+
+				workerPruningBlock := reputerPruningBlock - topic.EpochLength
+				fmt.Println("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
+				// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
+				// Reputer nonces need worker nonces to be fulfilled one epoch before the reputer nonces
+				am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
 			}
 		}(*topic)
 		return nil

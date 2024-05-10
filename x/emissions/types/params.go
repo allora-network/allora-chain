@@ -42,7 +42,7 @@ func DefaultParams() Params {
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
+		MaxRetriesToFulfilNoncesReputer: int64(5),                                  // max throttle of simultaneous unfulfilled reputer requests
 		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
 		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic

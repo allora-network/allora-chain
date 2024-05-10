@@ -2250,24 +2250,13 @@ func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHei
 	for _, nonce := range nonces.Nonces {
 		if nonce.BlockHeight >= blockHeightThreshold {
 			filteredNonces = append(filteredNonces, nonce)
-		} else {
-			fmt.Println("Deleting old nonce: ", nonce)
 		}
 	}
 
 	// Update nonces in the map
 	nonces.Nonces = filteredNonces
-
-	// If all Nonces were removed, delete the entry from the map
-	if len(filteredNonces) == 0 {
-		if err := k.unfulfilledWorkerNonces.Remove(ctx, topicId); err != nil {
-			return err
-		}
-	} else {
-		// Update Nonces in the map
-		if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
-			return err
-		}
+	if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
+		return err
 	}
 
 	return nil
@@ -2284,24 +2273,13 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 	for _, nonce := range nonces.Nonces {
 		if nonce.ReputerNonce.BlockHeight >= blockHeightThreshold {
 			filteredNonces = append(filteredNonces, nonce)
-		} else {
-			fmt.Println("Deleting old nonce: ", nonce)
 		}
 	}
 
 	// Update nonces in the map
 	nonces.Nonces = filteredNonces
-
-	// If all Nonces were removed, delete the entry from the map
-	if len(filteredNonces) == 0 {
-		if err := k.unfulfilledReputerNonces.Remove(ctx, topicId); err != nil {
-			return err
-		}
-	} else {
-		// Update Nonces in the map
-		if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
-			return err
-		}
+	if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
+		return err
 	}
 
 	return nil
