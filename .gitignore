@@ -25,6 +25,7 @@ data/
 # Account info
 *.account_info
 integration/testnet
+integration/devnet
 
 # coverage
 coverage

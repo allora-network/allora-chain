@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	l "log"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -18,7 +19,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	ctx context.Context,
 	msg *types.MsgInsertBulkReputerPayload,
 ) (*types.MsgInsertBulkReputerPayloadResponse, error) {
-	// Check if the topic exists
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
+
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -70,8 +74,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		// TODO: need to check if parameters are not nil to avoid panic
-
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
 			continue
@@ -84,13 +86,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
-		if err != nil {
-			requiredMinimumStake = types.DefaultParamsRequiredMinimumStake()
-		}
-
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
+			l.Println("Reputer ", bundle.ValueBundle.Reputer, "not seen yet!")
+
 			// Check that the reputer is registered in the topic
 			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
@@ -106,7 +105,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			if err != nil {
 				return nil, err
 			}
-			if stake.LT(requiredMinimumStake) {
+			if stake.LT(params.RequiredMinimumStake) {
 				continue
 			}
 

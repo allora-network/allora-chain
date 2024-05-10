@@ -20,6 +20,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		Creator:          sender,
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -50,7 +51,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 			break
 		}
 	}
-	require.True(found, "Added topic not found in active topics")
+	require.False(found, "Added topic found in active topics")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {

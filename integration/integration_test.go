@@ -3,7 +3,6 @@ package integration_test
 import (
 	"context"
 	"os"
-	"path/filepath"
 	"testing"
 
 	chain_test "github.com/allora-network/allora-chain/integration/chain"
@@ -21,13 +20,13 @@ func Setup(t *testing.T) TestMetadata {
 	ret.t = t
 	var err error
 	ret.ctx = context.Background()
-	userHomeDir, _ := os.UserHomeDir()
-	home := filepath.Join(userHomeDir, ".allorad")
+	// userHomeDir, _ := os.UserHomeDir()
+	// home := filepath.Join(userHomeDir, ".allorad")
 	node, err := chain_test.NewNode(
 		t,
 		chain_test.NodeConfig{
 			NodeRPCAddress: "http://localhost:26657",
-			AlloraHomeDir:  home,
+			AlloraHomeDir:  "./devnet/genesis",
 		},
 	)
 	require.NoError(t, err)
@@ -45,14 +44,17 @@ func TestExternalTestSuite(t *testing.T) {
 	GetParams(m)
 	t.Log(">>> Test Topic Creation <<<")
 	CreateTopic(m)
-	t.Log(">>> Test Distribution Checks <<<")
-	DistributionChecks(m)
+	// TODO Uncomment as we stand up devnet
+	// t.Log(">>> Test Distribution Checks <<<")
+	// DistributionChecks(m)
 	t.Log(">>> Test Actor Registration <<<")
 	RegistrationChecks(m)
-	t.Log(">>> Test Inference Request <<<")
-	InferenceRequestsChecks(m)
+	t.Log(">>> Test Update Params <<<")
+	UpdateParamsChecks(m)
 	t.Log(">>> Test Reputer Staking <<<")
 	StakingChecks(m)
+	t.Log(">>> Test Topic Funding and Activation <<<")
+	TopicFundingChecks(m)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(m)
 }

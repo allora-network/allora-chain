@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateInferenceRequestOnTopic1(m TestMetadata) {
+func FundTopic1(m TestMetadata) {
 	txResp, err := m.n.Client.BroadcastTx(
 		m.ctx,
 		m.n.BobAcc,
@@ -37,13 +37,13 @@ func CheckTopic1Activated(m TestMetadata) {
 	require.NoError(m.t, err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
-	// s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
 	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topics")
 }
 
-func InferenceRequestsChecks(m TestMetadata) {
-	m.t.Log("--- Check creating an Inference Request on Topic 1 ---")
-	CreateInferenceRequestOnTopic1(m)
+// Must come after a reputer is registered and staked in topic 1
+func TopicFundingChecks(m TestMetadata) {
+	m.t.Log("--- Check funding Topic 1 ---")
+	FundTopic1(m)
 	m.t.Log("--- Check reactivating Topic 1 ---")
 	CheckTopic1Activated(m)
 }

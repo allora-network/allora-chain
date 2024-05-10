@@ -45,19 +45,37 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
-			return errors.Wrapf(err, "failed to generate rewards")
+			fmt.Printf(
+				"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+				topicId,
+				topicReward.String(),
+				err,
+			)
+			continue
 		}
 
 		// Pay out rewards to topic participants
 		err = payoutRewards(ctx, k, totalRewardsDistribution)
 		if err != nil {
-			return errors.Wrapf(err, "failed to pay out rewards")
+			fmt.Printf(
+				"Failed to pay out rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+				topicId,
+				topicReward.String(),
+				err,
+			)
+			continue
 		}
 
 		// Prune records after rewards have been paid out
 		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
 		if err != nil {
-			return errors.Wrapf(err, "failed to prune records after rewards")
+			fmt.Printf(
+				"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+				topicId,
+				topicReward.String(),
+				err,
+			)
+			continue
 		}
 	}
 
