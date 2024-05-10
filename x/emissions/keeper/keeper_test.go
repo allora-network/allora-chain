@@ -191,6 +191,10 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
+	// Retrieve and verify the nonces
+	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
+	s.Require().Len(retrievedNonces.Nonces, len(nonceValues), "Should match the number of unfulfilled nonces")
 
 	// Fulfill some nonces: 43 and 45
 	fulfillNonces := []int64{43, 45}
@@ -201,7 +205,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	}
 
 	// Retrieve and verify the nonces
-	retrievedNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
+	retrievedNonces, err = keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after fulfilling some")
 	s.Require().Len(retrievedNonces.Nonces, len(nonceValues)-len(fulfillNonces), "Should match the number of unfulfilled nonces")
 
@@ -2932,6 +2936,156 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().Error(err, "Should return error for non-existent data")
 }
 
+func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
+	tests := []struct {
+		name                 string
+		blockHeightThreshold int64
+		nonces               []*types.Nonce
+		expectedNonces       []*types.Nonce
+	}{
+		{
+			name:                 "No nonces",
+			blockHeightThreshold: 10,
+			nonces:               []*types.Nonce{},
+			expectedNonces:       []*types.Nonce{},
+		},
+		{
+			name:                 "All nonces pruned",
+			blockHeightThreshold: 10,
+			nonces:               []*types.Nonce{{BlockHeight: 5}, {BlockHeight: 7}},
+			expectedNonces:       []*types.Nonce{},
+		},
+		{
+			name:                 "Some nonces pruned",
+			blockHeightThreshold: 10,
+			nonces:               []*types.Nonce{{BlockHeight: 5}, {BlockHeight: 15}},
+			expectedNonces:       []*types.Nonce{{BlockHeight: 15}},
+		},
+		{
+			name:                 "Some nonces pruned on the edge",
+			blockHeightThreshold: 10,
+			nonces:               []*types.Nonce{{BlockHeight: 5}, {BlockHeight: 10}, {BlockHeight: 15}},
+			expectedNonces:       []*types.Nonce{{BlockHeight: 10}, {BlockHeight: 15}},
+		},
+		{
+			name:                 "No nonces pruned",
+			blockHeightThreshold: 10,
+			nonces:               []*types.Nonce{{BlockHeight: 15}, {BlockHeight: 20}},
+			expectedNonces:       []*types.Nonce{{BlockHeight: 15}, {BlockHeight: 20}},
+		},
+	}
+	keeper := s.emissionsKeeper
+	topicId1 := uint64(1)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			keeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId1)
+			// Set multiple worker nonces
+			for _, val := range tt.nonces {
+				err := keeper.AddWorkerNonce(s.ctx, topicId1, val)
+				s.Require().NoError(err, "Failed to add worker nonce, topicId1")
+			}
+
+			// Call pruneWorkerNonces
+			err := s.emissionsKeeper.PruneWorkerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			s.Require().NoError(err)
+
+			// Check remaining nonces
+			nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId1)
+			s.Require().NoError(err)
+			// for loop nonces
+			for _, nonce := range nonces.Nonces {
+				s.Require().Contains(tt.expectedNonces, nonce)
+			}
+			for _, nonce := range tt.expectedNonces {
+				s.Require().Contains(nonces.Nonces, nonce)
+			}
+
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
+	tests := []struct {
+		name                 string
+		blockHeightThreshold int64
+		nonces               []*types.ReputerRequestNonce
+		expectedNonces       []*types.ReputerRequestNonce
+	}{
+		{
+			name:                 "No nonces",
+			blockHeightThreshold: 10,
+			nonces:               []*types.ReputerRequestNonce{},
+			expectedNonces:       []*types.ReputerRequestNonce{},
+		},
+		{
+			name:                 "All nonces pruned",
+			blockHeightThreshold: 10,
+			nonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 7}, WorkerNonce: &types.Nonce{BlockHeight: 5}}},
+			expectedNonces: []*types.ReputerRequestNonce{},
+		},
+		{
+			name:                 "Some nonces pruned",
+			blockHeightThreshold: 10,
+			nonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}},
+			},
+			expectedNonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+		},
+		{
+			name:                 "Nonces pruned on the edge",
+			blockHeightThreshold: 10,
+			nonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 10}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+			expectedNonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 10}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+		},
+		{
+			name:                 "No nonces pruned",
+			blockHeightThreshold: 10,
+			nonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 20}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+			expectedNonces: []*types.ReputerRequestNonce{
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 20}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+		},
+	}
+	keeper := s.emissionsKeeper
+	topicId1 := uint64(1)
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			keeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId1)
+			// Set multiple reputer nonces
+			for _, val := range tt.nonces {
+				err := keeper.AddReputerNonce(s.ctx, topicId1, val.ReputerNonce, val.WorkerNonce)
+				s.Require().NoError(err, "Failed to add reputer nonce, topicId1")
+			}
+
+			// Call PruneReputerNonces
+			err := s.emissionsKeeper.PruneReputerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			s.Require().NoError(err)
+
+			// Check remaining nonces
+			nonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.ctx, topicId1)
+			s.Require().NoError(err)
+			// for loop nonces
+			for _, nonce := range nonces.Nonces {
+				s.Require().Contains(tt.expectedNonces, nonce)
+			}
+			for _, nonce := range tt.expectedNonces {
+				s.Require().Contains(nonces.Nonces, nonce)
+			}
+		})
+	}
+}
+
 func (s *KeeperTestSuite) TestGetTargetWeight() {
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	if err != nil {
@@ -2993,6 +3147,44 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 			}
 		})
 	}
+}
+
+func (s *KeeperTestSuite) TestDeleteUnfulfilledWorkerNonces() {
+	topicId := uint64(1)
+	keeper := s.emissionsKeeper
+	// Setup initial nonces
+	err := keeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 10})
+	s.Require().NoError(err)
+	err = keeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 20})
+	s.Require().NoError(err)
+
+	// Call DeleteUnfulfilledWorkerNonces
+	err = s.emissionsKeeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Check that the nonces were removed
+	nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Nil(nonces.Nonces)
+}
+
+func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
+	topicId := uint64(1)
+	keeper := s.emissionsKeeper
+	// Setup initial nonces
+	err := keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 50}, &types.Nonce{BlockHeight: 40})
+	s.Require().NoError(err)
+	err = keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 60}, &types.Nonce{BlockHeight: 50})
+	s.Require().NoError(err)
+
+	// Call DeleteUnfulfilledWorkerNonces
+	err = s.emissionsKeeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Check that the nonces were removed
+	nonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Nil(nonces.Nonces)
 }
 
 func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
