@@ -1,6 +1,7 @@
 package inference_synthesis_test
 
 import (
+	"log"
 	"reflect"
 	"testing"
 
@@ -1053,29 +1054,59 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	}
 
-	setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "0.2908686083275610")
-	setOneInForecasterNetworkRegret(forecaster0Acc, reputer1Acc, "0.41668359891147100")
-	setOneInForecasterNetworkRegret(forecaster0Acc, reputer2Acc, "0.1750965216173760")
-	setOneInForecasterNetworkRegret(forecaster0Acc, reputer3Acc, "0.4946361393170890")
-	setOneInForecasterNetworkRegret(forecaster0Acc, reputer4Acc, "0.27842211442291100")
+	/*
+		/// Epoch 2 values
 
-	setOneInForecasterNetworkRegret(forecaster0Acc, forecaster0Acc, "0.8145278799312940")
+		setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "0.2908686083275610")
+		setOneInForecasterNetworkRegret(forecaster0Acc, reputer1Acc, "0.41668359891147100")
+		setOneInForecasterNetworkRegret(forecaster0Acc, reputer2Acc, "0.1750965216173760")
+		setOneInForecasterNetworkRegret(forecaster0Acc, reputer3Acc, "0.4946361393170890")
+		setOneInForecasterNetworkRegret(forecaster0Acc, reputer4Acc, "0.27842211442291100")
 
-	setOneInForecasterNetworkRegret(forecaster1Acc, reputer0Acc, "0.27805335477337800")
-	setOneInForecasterNetworkRegret(forecaster1Acc, reputer1Acc, "0.40386834535728700")
-	setOneInForecasterNetworkRegret(forecaster1Acc, reputer2Acc, "0.1622812680631930")
-	setOneInForecasterNetworkRegret(forecaster1Acc, reputer3Acc, "0.4818208857629060")
-	setOneInForecasterNetworkRegret(forecaster1Acc, reputer4Acc, "0.2656068608687280")
+		// setOneInForecasterNetworkRegret(forecaster0Acc, forecaster0Acc, "0.8145278799312940")
 
-	setOneInForecasterNetworkRegret(forecaster1Acc, forecaster1Acc, "0.8091021410557080")
+		setOneInForecasterNetworkRegret(forecaster1Acc, reputer0Acc, "0.27805335477337800")
+		setOneInForecasterNetworkRegret(forecaster1Acc, reputer1Acc, "0.40386834535728700")
+		setOneInForecasterNetworkRegret(forecaster1Acc, reputer2Acc, "0.1622812680631930")
+		setOneInForecasterNetworkRegret(forecaster1Acc, reputer3Acc, "0.4818208857629060")
+		setOneInForecasterNetworkRegret(forecaster1Acc, reputer4Acc, "0.2656068608687280")
 
-	setOneInForecasterNetworkRegret(forecaster2Acc, reputer0Acc, "0.2769256582158990")
-	setOneInForecasterNetworkRegret(forecaster2Acc, reputer1Acc, "0.40274064879980900")
-	setOneInForecasterNetworkRegret(forecaster2Acc, reputer2Acc, "0.16115357150571500")
-	setOneInForecasterNetworkRegret(forecaster2Acc, reputer3Acc, "0.4806931892054280")
-	setOneInForecasterNetworkRegret(forecaster2Acc, reputer4Acc, "0.2644791643112500")
+		// setOneInForecasterNetworkRegret(forecaster1Acc, forecaster1Acc, "0.8091021410557080")
 
-	setOneInForecasterNetworkRegret(forecaster2Acc, forecaster2Acc, "0.804185909355192")
+		setOneInForecasterNetworkRegret(forecaster2Acc, reputer0Acc, "0.2769256582158990")
+		setOneInForecasterNetworkRegret(forecaster2Acc, reputer1Acc, "0.40274064879980900")
+		setOneInForecasterNetworkRegret(forecaster2Acc, reputer2Acc, "0.16115357150571500")
+		setOneInForecasterNetworkRegret(forecaster2Acc, reputer3Acc, "0.4806931892054280")
+		setOneInForecasterNetworkRegret(forecaster2Acc, reputer4Acc, "0.2644791643112500")
+
+		// setOneInForecasterNetworkRegret(forecaster2Acc, forecaster2Acc, "0.804185909355192")
+	*/
+
+	/// Epoch 3 values
+
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "-0.005488956369080480")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer1Acc, "0.17091263821766800")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer2Acc, "-0.15988639638192800")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer3Acc, "0.28690775330189800")
+	setOneInForecasterNetworkRegret(forecaster0Acc, reputer4Acc, "-0.019476319822263300")
+
+	setOneInForecasterNetworkRegret(forecaster0Acc, forecaster0Acc, "0.7370268872154170")
+
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer0Acc, "-0.023601485104528100")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer1Acc, "0.1528001094822210")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer2Acc, "-0.1779989251173760")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer3Acc, "0.2687952245664510")
+	setOneInForecasterNetworkRegret(forecaster1Acc, reputer4Acc, "-0.03758884855771100")
+
+	setOneInForecasterNetworkRegret(forecaster1Acc, forecaster1Acc, "0.7307121775422120")
+
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer0Acc, "-0.025084585281804600")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer1Acc, "0.15131700930494400")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer2Acc, "-0.17948202529465200")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer3Acc, "0.26731212438917400")
+	setOneInForecasterNetworkRegret(forecaster2Acc, reputer4Acc, "-0.03907194873498750")
+
+	setOneInForecasterNetworkRegret(forecaster2Acc, forecaster2Acc, "0.722844746771044")
 
 	// Calculate
 
@@ -1088,6 +1119,18 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 	require.Equal(blockHeight, returnedBlockHeight)
+
+	log.Printf("======================= RESULTS ==========================")
+	log.Printf("topicId: %v", valueBundle.TopicId)
+	log.Printf("ReputerRequestNonce: %v", valueBundle.ReputerRequestNonce)
+	log.Printf("ExtraData: %v", valueBundle.ExtraData)
+	log.Printf("CombinedValue: %v", valueBundle.CombinedValue)
+	log.Printf("InfererValues: %v", valueBundle.InfererValues)
+	log.Printf("ForecasterValues: %v", valueBundle.ForecasterValues)
+	log.Printf("NaiveValue: %v", valueBundle.NaiveValue)
+	log.Printf("OneOutInfererValues: %v", valueBundle.OneOutInfererValues)
+	log.Printf("OneOutForecasterValues: %v", valueBundle.OneOutForecasterValues)
+	log.Printf("OneInForecasterValues: %v", valueBundle.OneInForecasterValues)
 
 	s.inEpsilon5(valueBundle.CombinedValue, "-0.08578420625884590")
 	s.inEpsilon3(valueBundle.NaiveValue, "-0.09179326141859620")

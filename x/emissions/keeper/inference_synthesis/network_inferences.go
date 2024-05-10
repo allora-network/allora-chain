@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"log"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -105,6 +106,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 	for forecaster := range forecastImpliedInferenceByWorker {
 		for inferer := range inferenceByWorker {
 			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
+			log.Printf("oneInForecasterRegret: %v", oneInForecasterRegret)
 			if err != nil {
 				fmt.Println("Error getting forecaster regret: ", err)
 				return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -115,6 +117,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 		}
 
 		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
+		log.Printf("oneInForecasterSelfRegret: %v", oneInForecasterSelfRegret)
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -446,6 +449,7 @@ func CalcNetworkInferences(
 		fmt.Println("Error checking if all workers are new: ", err)
 		return nil, err
 	}
+	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
 
 	// Calculate forecast-implied inferences I_ik
 	forecastImpliedInferenceByWorker, err := CalcForcastImpliedInferences(
@@ -456,9 +460,19 @@ func CalcNetworkInferences(
 		epsilon,
 		pInferenceSynthesis,
 	)
+
+	log.Printf("inferenceByWorker: %v", inferenceByWorker)
+	log.Printf("forecasts: %v", forecasts)
+	log.Printf("networkCombinedLoss: %v", networkCombinedLoss)
+	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
+	log.Printf("epsilon: %v", epsilon)
+	log.Printf("pInferenceSynthesis: %v", pInferenceSynthesis)
+
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
+
+	log.Printf("forecastImpliedInferenceByWorker: %v", forecastImpliedInferenceByWorker)
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
 	currentMaxRegrets, err := FindMaxRegretAmongWorkersWithLosses(
@@ -588,6 +602,8 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
+	log.Printf("reputerReportedLosses: %v", len(reputerReportedLosses.ReputerValueBundles))
+
 	// Map list of stakesOnTopic to map of stakesByReputer
 	stakesByReputer := make(map[string]cosmosMath.Uint)
 	for _, bundle := range reputerReportedLosses.ReputerValueBundles {
@@ -598,19 +614,28 @@ func GetNetworkInferencesAtBlock(
 		stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 	}
 
+	log.Printf("stakesByReputer: %v", stakesByReputer)
+
 	networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	log.Printf("networkCombinedLoss: %v", networkCombinedLoss)
+
 	inferences, blockHeight, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	log.Printf("inferences: %v", inferences)
+
 	forecasts, _, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	log.Printf("forecasts: %v", forecasts)
 
 	networkInferences, err := CalcNetworkInferences(
 		ctx,
