@@ -15,12 +15,11 @@ import (
 )
 
 const defaultEpochLength = 10
-const approximateEpochLengthSeconds = 5
+const approximateBlockLengthSeconds = 5
 const minWaitingNumberofEpochs = 3
 
 func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
-	sleepingTime := defaultEpochLength
-
+	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
 		topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
@@ -30,11 +29,11 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 				storedTopic.EpochLastEnded-(storedTopic.EpochLength*minWaitingNumberofEpochs) > 0 {
 				return topicResponse.Topic, nil
 			}
-			sleepingTime = int(storedTopic.EpochLength)
+			sleepingTimeBlocks = int(storedTopic.EpochLength)
 		}
 		// Sleep for a while before retrying
-		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTime)
-		time.Sleep(time.Duration(sleepingTime*approximateEpochLengthSeconds) * time.Second)
+		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
+		time.Sleep(time.Duration(sleepingTimeBlocks*approximateBlockLengthSeconds) * time.Second)
 	}
 
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
@@ -102,7 +101,6 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 		},
 	)
 	require.NoError(m.t, err)
-	fmt.Println("Latest Inference: ", latestInference.LatestInference)
 	require.Equal(m.t, latestInference.LatestInference.Value, alloraMath.MustNewDecFromString("100"))
 	require.Equal(m.t, latestInference.LatestInference.BlockHeight, blockHeight)
 	require.Equal(m.t, latestInference.LatestInference.TopicId, topicId)
@@ -111,24 +109,20 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 }
 
 // Worker Bob inserts bulk inference and forecast
-func InsertWorkerBulkBob(m TestMetadata, topic *types.Topic) {
+func InsertWorkerBulkBob(m TestMetadata, topic *types.Topic) (int64, int64) {
 	// Insert and fulfill nonces for the last two epochs
 	blockHeightEval := topic.EpochLastEnded - topic.EpochLength
-	fmt.Println("Inserting Worker Bulk Eval: ", blockHeightEval)
 	InsertSingleWorkerBulk(m, topic, blockHeightEval)
 
 	blockHeightCurrent := topic.EpochLastEnded
-	fmt.Println("Inserting Worker Bulk Current: ", blockHeightCurrent)
 	InsertSingleWorkerBulk(m, topic, blockHeightCurrent)
+	return blockHeightCurrent, blockHeightEval
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic) {
+func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
-	BlockHeightCurrent := topic.EpochLastEnded
-	BlockHeightEval := topic.EpochLastEnded - topic.EpochLength
-	fmt.Println("Inserting Reputer Bulk, Current: ", BlockHeightCurrent, " Eval: ", BlockHeightEval)
 	// Define inferer address as Bob's address, reputer as Alice's
 	workerAddr := m.n.BobAddr
 	reputerAddr := m.n.AliceAddr
@@ -233,7 +227,7 @@ func WorkerInferenceAndForecastChecks(m TestMetadata) {
 		require.NoError(m.t, err)
 	}
 	m.t.Log("--- Insert Worker Bulk ---")
-	InsertWorkerBulkBob(m, topic)
+	blockHeightCurrent, blockHeightEval := InsertWorkerBulkBob(m, topic)
 	m.t.Log("--- Insert Reputer Bulk ---")
-	InsertReputerBulkAlice(m, topic)
+	InsertReputerBulkAlice(m, topic, blockHeightCurrent, blockHeightEval)
 }

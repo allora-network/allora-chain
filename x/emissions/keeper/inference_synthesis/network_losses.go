@@ -116,7 +116,7 @@ func CalcNetworkLosses(
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
-				fmt.Println("Error updating running weighted average for combined loss: ", err)
+				fmt.Println("Error updating running weighted average for next combined loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss

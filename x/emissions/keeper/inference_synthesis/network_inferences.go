@@ -310,7 +310,7 @@ func CalcOneOutInferences(
 		}
 
 		// Recalculate the forecast-implied inferences without the worker's inference
-		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForcastImpliedInferences(
+		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
 			inferencesWithoutWorker,
 			forecasts,
 			networkCombinedLoss,
@@ -448,7 +448,7 @@ func CalcNetworkInferences(
 	}
 
 	// Calculate forecast-implied inferences I_ik
-	forecastImpliedInferenceByWorker, err := CalcForcastImpliedInferences(
+	forecastImpliedInferenceByWorker, err := CalcForecastImpliedInferences(
 		inferenceByWorker,
 		forecasts,
 		networkCombinedLoss,
