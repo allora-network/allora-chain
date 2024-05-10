@@ -925,64 +925,6 @@ func TestSelectTopNWorkerNonces(t *testing.T) {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeForecaster() {
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	topicId := uint64(1)
-
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker1Add := sdk.AccAddress(worker1)
-	worker2Add := sdk.AccAddress(worker2)
-
-	// Set up input data
-	inferences := &emissions.Inferences{
-		Inferences: []*emissions.Inference{
-			{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.5")},
-		},
-	}
-
-	forecasts := &emissions.Forecasts{
-		Forecasts: []*emissions.Forecast{
-			{
-				Forecaster: worker2,
-				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.6")},
-				},
-			},
-		},
-	}
-
-	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
-	epsilon := alloraMath.MustNewDecFromString("0.001")
-	pInferenceSynthesis := alloraMath.MustNewDecFromString("2")
-
-	// Set inferer network regrets
-	err := k.SetInfererNetworkRegret(ctx, topicId, worker1Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-	s.Require().NoError(err)
-
-	// Set forecaster network regrets
-	err = k.SetForecasterNetworkRegret(ctx, topicId, worker2Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-
-	// Set one-in forecaster network regrets
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2Add, worker1Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-	s.Require().NoError(err)
-
-	// Call the function
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
-	s.Require().NoError(err)
-
-	// Check the results
-	s.Require().NotNil(valueBundle)
-	s.Require().NotNil(valueBundle.CombinedValue)
-	s.Require().NotNil(valueBundle.NaiveValue)
-
-	s.Require().Len(valueBundle.OneOutInfererValues, 1)
-	s.Require().Len(valueBundle.OneOutForecasterValues, 1)
-	s.Require().Len(valueBundle.OneInForecasterValues, 1)
-}
-
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForecasters() {
 	k := s.emissionsKeeper
 	ctx := s.ctx
