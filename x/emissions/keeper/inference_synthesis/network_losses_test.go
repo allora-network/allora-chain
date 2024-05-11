@@ -129,6 +129,53 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 			expectedLoss: alloraMath.MustNewDecFromString("0.1587401051968199"), // exp(0.1) ≈ 1.258925
 			expectedErr:  nil,
 		},
+		{ // EPOCH 3
+			name: "Epoch 3",
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
+				"reputer0": cosmosMath.NewUintFromString("210935888148105000000000"),
+				"reputer1": cosmosMath.NewUintFromString("217043118020878000000000"),
+				"reputer2": cosmosMath.NewUintFromString("162033293627176000000000"),
+				"reputer3": cosmosMath.NewUintFromString("395517779633374000000000"),
+				"reputer4": cosmosMath.NewUintFromString("206619852485799000000000"),
+			},
+			reportedLosses: &emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer0",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000122971348383675"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer1",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000101776865013273"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer2",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000318342673789797"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer3",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000146628664594261"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer4",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000129033371858907"),
+						},
+					},
+				},
+			},
+			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
+			expectedLoss: alloraMath.MustNewDecFromString(".0000144532959522353"),
+			expectedErr:  nil,
+		},
 	}
 
 	for _, tc := range tests {

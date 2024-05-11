@@ -16,7 +16,7 @@ type WorkerRunningWeightedLoss struct {
 // Update the running weighted loss for the worker
 // Source: "Weighted mean" section of: https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
 // nextValue format - raw value
-// weigth format - logged value
+// weight format - logged value
 func RunningWeightedAvgUpdate(
 	runningWeightedAvg *WorkerRunningWeightedLoss,
 	weight Weight,
