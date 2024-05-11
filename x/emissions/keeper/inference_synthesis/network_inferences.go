@@ -612,7 +612,16 @@ func GetNetworkInferencesAtBlock(
 		return nil, 0, err
 	}
 
-	networkInferences, err := CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+	networkInferences, err := CalcNetworkInferences(
+		ctx,
+		k,
+		topicId,
+		inferences,
+		forecasts,
+		networkCombinedLoss,
+		params.Epsilon,
+		params.PInferenceSynthesis,
+	)
 	if err != nil {
 		fmt.Println("Error calculating network inferences: ", err)
 	}

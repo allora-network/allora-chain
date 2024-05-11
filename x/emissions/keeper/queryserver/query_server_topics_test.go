@@ -1,8 +1,6 @@
 package queryserver_test
 
 import (
-	"log"
-
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -40,7 +38,6 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	keeper := s.emissionsKeeper
 
 	topicId, err := keeper.GetNextTopicId(ctx)
-	log.Printf("topicId: %v", topicId)
 	metadata := "metadata"
 
 	// Test retrieving a non-existent topic
