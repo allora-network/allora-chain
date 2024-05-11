@@ -14,7 +14,7 @@ func CalcEma(
 	firstTime bool,
 ) (Dec, error) {
 	// If first iteration, then return just the new value
-	if firstTime {
+	if firstTime || current.Equal(previous) {
 		return current, nil
 	}
 	alphaCurrent, err := alpha.Mul(current)

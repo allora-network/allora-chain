@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	l "log"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -85,13 +86,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
-		if err != nil {
-			requiredMinimumStake = types.DefaultParamsRequiredMinimumStake()
-		}
-
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
+			l.Println("Reputer ", bundle.ValueBundle.Reputer, "not seen yet!")
+
 			// Check that the reputer is registered in the topic
 			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
@@ -107,7 +105,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			if err != nil {
 				return nil, err
 			}
-			if stake.LT(requiredMinimumStake) {
+			if stake.LT(params.RequiredMinimumStake) {
 				continue
 			}
 

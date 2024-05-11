@@ -146,7 +146,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					th.requestTopicWorkers(ctx, topic)
 					th.requestTopicReputers(ctx, topic)
 				} else {
-					fmt.Println("Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
+					fmt.Println("TopicsHandler: Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
 				}
 			}(churnReadyTopicId)
 		}

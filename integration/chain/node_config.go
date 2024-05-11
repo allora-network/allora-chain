@@ -61,9 +61,9 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 	require.NoError(t, err)
 
 	//// restore from mneumonic
-	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("alice")
+	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
-	node.BobAcc, err = node.Client.AccountRegistry.GetByName("bob")
+	node.BobAcc, err = node.Client.AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
 	node.AliceAddr, err = node.AliceAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
