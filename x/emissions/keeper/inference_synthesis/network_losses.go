@@ -16,7 +16,7 @@ type WorkerRunningWeightedLoss struct {
 // Update the running weighted loss for the worker
 // Source: "Weighted mean" section of: https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
 // nextValue format - raw value
-// weigth format - logged value
+// weight format - logged value
 func RunningWeightedAvgUpdate(
 	runningWeightedAvg *WorkerRunningWeightedLoss,
 	weight Weight,
@@ -116,7 +116,7 @@ func CalcNetworkLosses(
 			// Update combined loss with reputer reported loss and stake
 			nextCombinedLoss, err := RunningWeightedAvgUpdate(&runningWeightedCombinedLoss, stakeAmount, report.ValueBundle.CombinedValue, epsilon)
 			if err != nil {
-				fmt.Println("Error updating running weighted average for combined loss: ", err)
+				fmt.Println("Error updating running weighted average for next combined loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
@@ -245,6 +245,7 @@ func CalcNetworkLosses(
 	if err != nil {
 		return emissions.ValueBundle{}, err
 	}
+
 	output := emissions.ValueBundle{
 		CombinedValue:          expRunningWeightedCombinedLoss,
 		InfererValues:          expInfererLosses,

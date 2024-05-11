@@ -39,7 +39,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
-			// if (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 {
 			if keeper.CheckCadence(blockHeight, topic) {
 				fmt.Printf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
@@ -77,6 +76,21 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					fmt.Println("Error setting churn ready topic: ", err)
 					return
 				}
+
+				MaxUnfulfilledReputerRequests, err := am.keeper.GetParamsMaxUnfulfilledReputerRequests(ctx)
+				if err != nil {
+					MaxUnfulfilledReputerRequests = types.DefaultParams().MaxUnfulfilledReputerRequests
+					fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+				}
+				reputerPruningBlock := blockHeight - int64(MaxUnfulfilledReputerRequests)*topic.EpochLength
+				fmt.Println("Pruning reputer nonces before block: ", reputerPruningBlock, " for topic: ", topic.Id, " on block: ", blockHeight)
+				am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
+
+				workerPruningBlock := reputerPruningBlock - topic.EpochLength
+				fmt.Println("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
+				// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
+				// Reputer nonces need worker nonces to be fulfilled one epoch before the reputer nonces
+				am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
 			}
 		}(*topic)
 		return nil
