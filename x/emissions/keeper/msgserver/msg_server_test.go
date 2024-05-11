@@ -78,16 +78,17 @@ func (s *KeeperTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                 {"minter"},
-		"mint":                          {"minter"},
-		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		mintTypes.EcosystemModuleName:   {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName:  {"minter"},
-		"bonded_tokens_pool":            {"burner", "staking"},
-		"not_bonded_tokens_pool":        {"burner", "staking"},
-		multiPerm:                       {"burner", "minter", "staking"},
-		randomPerm:                      {"random"},
+		"fee_collector":                                  {"minter"},
+		"mint":                                           {"minter"},
+		types.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
+		types.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
+		mintTypes.EcosystemModuleName:                    {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName:                   {"minter"},
+		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
+		"bonded_tokens_pool":                             {"burner", "staking"},
+		"not_bonded_tokens_pool":                         {"burner", "staking"},
+		multiPerm:                                        {"burner", "minter", "staking"},
+		randomPerm:                                       {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -134,13 +135,12 @@ func (s *KeeperTestSuite) SetupTest() {
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
+
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
 	for _, addr := range addrs {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-		s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, addr)
-		s.emissionsKeeper.AddToReputerWhitelist(ctx, addr)
 	}
 }
 
@@ -178,6 +178,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -197,17 +198,6 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	return result.TopicId
 }
 
-/*
-func (s *KeeperTestSuite) PrepareForCreateTopic(sender string) {
-	var initialStake = types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(2))
-	initialStakeCoins := sdk.NewCoin(params.DefaultBondDenom, initialStake)
-	feeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, types.DefaultParamsCreateTopicFee()))
-	senderAddr, _ := sdk.AccAddressFromBech32(sender)
-	s.bankKeeper.EXPECT().GetBalance(gomock.Any(), senderAddr, params.DefaultBondDenom).Return(initialStakeCoins)
-	s.bankKeeper.EXPECT().SendCoinsFromAccountToModule(s.ctx, senderAddr, types.AlloraStakingAccountName, feeCoins)
-}
-*/
-
 func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -221,6 +211,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		Creator:          creator.String(),
 		Metadata:         metadata,
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",

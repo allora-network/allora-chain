@@ -12,18 +12,13 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 
-	// Check if the sender is in the topic creation whitelist
 	creator, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
-	}
-	isTopicCreator, err := ms.k.IsInTopicCreationWhitelist(ctx, creator)
-	if err != nil {
-		return nil, err
-	}
-	if !isTopicCreator {
-		return nil, types.ErrNotInTopicCreationWhitelist
 	}
 
 	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
@@ -74,9 +69,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
-		return nil, err
-	}
-	if err = ms.k.ActivateTopic(ctx, id); err != nil {
 		return nil, err
 	}
 	// Rather than set latest weight-adjustment timestamp of a topic to 0

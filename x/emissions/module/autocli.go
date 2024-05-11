@@ -125,36 +125,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetMempoolInferenceRequest",
-					Use:       "inference-request [request_id]",
-					Short:     "Get a specific Inference Request and demand left in the mempool by request id",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "request_id"},
-					},
-				},
-				{
-					RpcMethod: "GetMempoolInferenceRequestsByTopic",
-					Use:       "inference-requests-per-topic [topic_id] [pagination]",
-					Short:     "Get Inference Requests by topic and unmet demand left for each request in mempool",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-						{ProtoField: "pagination"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicUnmetDemand",
-					Use:       "topic-unmet-demand [topic_id]",
-					Short:     "Get Topic Unmet Demand",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetLastRewardsUpdate",
-					Use:       "last-rewards-update",
-					Short:     "Get timestamp of the last rewards update",
-				},
-				{
 					RpcMethod: "IsWorkerRegisteredInTopicId",
 					Use:       "is-worker-registered [topic_id] [address]",
 					Short:     "True if worker is registered in the topic",
@@ -189,7 +159,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetNetworkInferencesAtBlock",
 					Use:       "get-network-inferences-at-block [topic_id] [block]",
-					Short:     "Get the Network Inferences for a topic at block height ",
+					Short:     "Get the Network Inferences for a topic at given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
@@ -198,10 +168,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetNetworkLossBundleAtBlock",
 					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
-					Short:     "Get the network loss bundle for a topic at block height ",
+					Short:     "Get the network loss bundle for a topic at given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "IsWhitelistAdmin",
+					Use:       "is-whitelist-admin [address]",
+					Short:     "Check if an address is a whitelist admin. True if so, else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
 					},
 				},
 			},
@@ -324,12 +302,24 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "RequestInference",
-					Use:       "request-inference [sender] [request]",
-					Short:     "Request an inference ",
+					RpcMethod: "RewardDelegateStake",
+					Use:       "reward-delegate-stake [sender] [topic_id] [reputer]",
+					Short:     "Get Reward for Delegator [sender] for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "request"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "FundTopic",
+					Use:       "fund-topic [sender] [topic_id] [amount] [extra_data]",
+					Short:     "send funds to a topic to pay for inferences",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "amount"},
+						{ProtoField: "extra_data"},
 					},
 				},
 				{
@@ -345,42 +335,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "RemoveFromWhitelistAdmin",
 					Use:       "remove-from-whitelist-admin [sender] [address]",
 					Short:     "remove a admin address from the whitelist used for admin functions on-chain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "AddToTopicCreationWhitelist",
-					Use:       "add-to-topic-creation-whitelist [sender] [address]",
-					Short:     "add an address to the whitelist used for creating topics on-chain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "RemoveFromTopicCreationWhitelist",
-					Use:       "remove-from-topic-creation-whitelist [sender] [address]",
-					Short:     "remove an address from the whitelist used for creating topics on-chain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "AddToReputerWhitelist",
-					Use:       "add-to-weight-setting-whitelist [sender] [address]",
-					Short:     "add an address to the whitelist used for setting weights on-chain",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "RemoveFromReputerWhitelist",
-					Use:       "remove-from-weight-setting-whitelist [sender] [address]",
-					Short:     "remove an address from the whitelist used for setting weights on-chain",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "address"},

@@ -45,7 +45,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
@@ -53,7 +52,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
 		Sender:  workerAddr.String(),
 		Nonce:   &nonce,
@@ -96,7 +95,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require.NoError(err, "Sign should not return an error")
 	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
-
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 }
@@ -135,7 +133,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
@@ -143,7 +140,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
 		Sender:  workerAddr.String(),
 		Nonce:   &nonce,
@@ -219,7 +216,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
-	keeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
@@ -227,7 +223,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
 		Sender:  workerAddr.String(),
 		Nonce:   &nonce,
@@ -272,6 +268,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
+	require.NoError(err)
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
 }

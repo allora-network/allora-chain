@@ -3,7 +3,6 @@ package rewards_test
 import (
 	"encoding/hex"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -118,39 +117,94 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
-// mockReputersData generates reputer stakes and losses
-func mockReputersScoresTestData(s *RewardsTestSuite, topicId uint64, block int64) (types.ReputerValueBundles, error) {
-	reputers := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
+	// Setup
+	allWorkers := map[string]struct{}{
+		"worker1": {},
+		"worker2": {},
+		"worker3": {},
+		"worker4": {},
 	}
 
-	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644),
-		cosmosMath.NewUint(384623),
-		cosmosMath.NewUint(394676),
-		cosmosMath.NewUint(207999),
-		cosmosMath.NewUint(368582),
+	values := []*types.WorkerAttributedValue{
+		{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
 	}
 
-	// Add stakes
-	for i, reputer := range reputers {
-		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputer, stakes[i])
-		if err != nil {
-			return types.ReputerValueBundles{}, err
+	expectedValues := map[string]string{
+		"worker1": "100",
+		"worker2": "NaN",
+		"worker3": "300",
+		"worker4": "NaN",
+	}
+
+	// Act
+	updatedValues := rewards.EnsureAllWorkersPresent(values, allWorkers)
+
+	// Assert
+	if len(updatedValues) != len(allWorkers) {
+		s.Fail("Incorrect number of workers returned")
+	}
+
+	for _, val := range updatedValues {
+		expectedVal, ok := expectedValues[val.Worker]
+		if !ok {
+			s.Fail("Unexpected worker found:", val.Worker)
+			continue
+		}
+		if expectedVal == "NaN" {
+			if !val.Value.IsNaN() {
+				s.Failf("expected NaN but did not get it for worker %s", val.Worker)
+			}
+		} else if val.Value.String() != expectedVal {
+			s.Failf("Value mismatch for worker %s: got %s, want %s", val.Worker, val.Value.String(), expectedVal)
 		}
 	}
+}
 
-	reputerValueBundles := GenerateLossBundles(s, block, topicId, reputers)
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
-	if err != nil {
-		return types.ReputerValueBundles{}, err
+func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
+	// Setup
+	allWorkers := map[string]struct{}{
+		"worker1": {},
+		"worker2": {},
+		"worker3": {},
+		"worker4": {},
 	}
 
-	return reputerValueBundles, nil
+	values := []*types.WithheldWorkerAttributedValue{
+		{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+		{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
+	}
+
+	expectedValues := map[string]string{
+		"worker1": "100",
+		"worker2": "NaN",
+		"worker3": "300",
+		"worker4": "NaN",
+	}
+
+	// Act
+	updatedValues := rewards.EnsureAllWorkersPresentWithheld(values, allWorkers)
+
+	// Assert
+	if len(updatedValues) != len(allWorkers) {
+		s.Fail("Incorrect number of workers returned")
+	}
+
+	for _, val := range updatedValues {
+		expectedVal, ok := expectedValues[val.Worker]
+		if !ok {
+			s.Fail("Unexpected worker found:", val.Worker)
+			continue
+		}
+		if expectedVal == "NaN" {
+			if !val.Value.IsNaN() {
+				s.Failf("expected NaN but did not get it for worker %s", val.Worker)
+			}
+		} else if val.Value.String() != expectedVal {
+			s.Failf("Value mismatch for worker %s: got %s, want %s", val.Worker, val.Value.String(), expectedVal)
+		}
+	}
 }
 
 func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress, blockHeight int64, topicId uint64) error {

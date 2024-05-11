@@ -46,7 +46,7 @@ type LossesPayload struct {
 	Inferences []emissionstypes.ValueBundle `json:"inferences"`
 }
 
-func generateLosses(
+func generateLossesRequest(
 	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
@@ -102,7 +102,7 @@ func generateLosses(
 	makeApiCall(payloadStr)
 }
 
-func generateInferences(
+func generateInferencesRequest(
 	functionId string,
 	functionMethod string,
 	param string,

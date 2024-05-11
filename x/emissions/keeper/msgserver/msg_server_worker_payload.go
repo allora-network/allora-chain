@@ -46,13 +46,9 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
 
-		// Check that the inference is for the correct topic
-		if inference.TopicId != topicId {
-			continue
-		}
-
-		// Check that the inference is for the correct nonce
-		if inference.BlockHeight != nonce.BlockHeight {
+		// Check if the topic and nonce are correct
+		if inference.TopicId != topicId ||
+			inference.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
@@ -147,13 +143,10 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		/// If we do PoX-like anti-sybil procedure, would go here
 
 		forecast := workerDataBundle.InferenceForecastsBundle.Forecast
-		// Check that the forecast is for the correct topic
-		if forecast.TopicId != topicId {
-			continue
-		}
-
-		// Check that the forecast is for the correct nonce
-		if forecast.BlockHeight != nonce.BlockHeight {
+		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
+		if forecast == nil ||
+			forecast.TopicId != topicId ||
+			forecast.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 

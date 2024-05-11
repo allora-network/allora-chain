@@ -12,50 +12,43 @@ func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
 		RewardCadence:                   int64(1),                                  // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
-		MinTopicUnmetDemand:             cosmosMath.NewUint(100),                   // total unmet demand for a topic < this => don't run inference solicatation or loss update
-		MaxTopicsPerBlock:               uint64(2048),                              // max number of topics to run cadence for per block
-		MinRequestUnmetDemand:           cosmosMath.NewUint(1),                     // delete requests if they have below this demand remaining
+		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
+		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
 		MinEpochLength:                  1,                                         // 1 block
-		MaxInferenceRequestValidity:     int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
-		MaxRequestCadence:               int64(6 * 60 * 24 * 7 * 52),               // approximately 1 year in number of blocks
 		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-		MaxWorkersPerTopicRequest:       uint64(20),                                // maximum number of workers that can be assigned to a single inference request
-		MaxReputersPerTopicRequest:      uint64(20),                                // maximum number of reputers that can be assigned to a single loss request
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests from the chain
-		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(5),                                 // maximum number of outstanding nonces for worker requests per topic from the chain
+		MaxUnfulfilledReputerRequests:   uint64(5),                                 // maximum number of outstanding nonces for reputer requests per topic from the chain
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopWorkersToReward:           uint64(10),                                // max this many top workers by score are rewarded for a topic
-		MaxTopReputersToReward:          uint64(10),                                // max this many top reputers by score are rewarded for a topic
+		MaxTopWorkersToReward:           uint64(20),                                // max this many top workers by score are rewarded for a topic
+		MaxTopReputersToReward:          uint64(20),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
+		MaxRetriesToFulfilNoncesReputer: int64(5),                                  // max throttle of simultaneous unfulfilled reputer requests
 		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
 		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
-		RequestPageLimit:                uint64(100),                               // how many requests to return per page during churn of requests
-		MaxRequestPages:                 uint64(100),                               // max number of requests to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
-		MaxRequestsPerTopic:             uint64(100),                               // max number of requests per topic
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
+		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 	}
 }
 
@@ -67,16 +60,12 @@ func DefaultParamsEpochLength() BlockHeight {
 	return DefaultParams().RewardCadence
 }
 
-func DefaultParamsMinTopicUnmetDemand() cosmosMath.Uint {
-	return DefaultParams().MinTopicUnmetDemand
+func DefaultParamsMinTopicUnmetDemand() alloraMath.Dec {
+	return DefaultParams().MinTopicWeight
 }
 
 func DefaultParamsMaxTopicsPerBlock() uint64 {
 	return DefaultParams().MaxTopicsPerBlock
-}
-
-func DefaultParamsMinRequestUnmetDemand() cosmosMath.Uint {
-	return DefaultParams().MinRequestUnmetDemand
 }
 
 func DefaultParamsMaxMissingInferencePercent() alloraMath.Dec {
@@ -93,14 +82,6 @@ func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
 
 func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
-}
-
-func DefaultParamsMaxInferenceRequestValidity() BlockHeight {
-	return DefaultParams().MaxInferenceRequestValidity
-}
-
-func DefaultParamsMaxRequestCadence() BlockHeight {
-	return DefaultParams().MaxRequestCadence
 }
 
 func DefaultParamsSharpness() alloraMath.Dec {
@@ -125,14 +106,6 @@ func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
 
 func DefaultParamsMinStakeFraction() alloraMath.Dec {
 	return DefaultParams().MinStakeFraction
-}
-
-func DefaultParamsMaxWorkersPerTopicRequest() uint64 {
-	return DefaultParams().MaxWorkersPerTopicRequest
-}
-
-func DefaultParamsMaxReputersPerTopicRequest() uint64 {
-	return DefaultParams().MaxReputersPerTopicRequest
 }
 
 func DefaultParamsEpsilon() alloraMath.Dec {
@@ -215,20 +188,8 @@ func DefaultParamsMaxTopicPages() uint64 {
 	return DefaultParams().MaxTopicPages
 }
 
-func DefaultParamsRequestPageLimit() uint64 {
-	return DefaultParams().RequestPageLimit
-}
-
-func DefaultParamsMaxRequestPages() uint64 {
-	return DefaultParams().MaxRequestPages
-}
-
 func DefaultParamsRegistrationFee() cosmosMath.Int {
 	return DefaultParams().RegistrationFee
-}
-
-func DefaultParamsMaxRequestsPerTopic() uint64 {
-	return DefaultParams().MaxRequestsPerTopic
 }
 
 func DefaultParamsDefaultLimit() uint64 {
@@ -237,6 +198,10 @@ func DefaultParamsDefaultLimit() uint64 {
 
 func DefaultParamsMaxLimit() uint64 {
 	return DefaultParams().MaxLimit
+}
+
+func DefaultParamsMinEpochLengthRecordLimit() int64 {
+	return DefaultParams().MinEpochLengthRecordLimit
 }
 
 // Validate does the sanity check on the params.

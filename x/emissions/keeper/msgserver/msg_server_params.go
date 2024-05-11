@@ -31,14 +31,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.RewardCadence) == 1 {
 		existingParams.RewardCadence = newParams.RewardCadence[0]
 	}
-	if len(newParams.MinTopicUnmetDemand) == 1 {
-		existingParams.MinTopicUnmetDemand = newParams.MinTopicUnmetDemand[0]
+	if len(newParams.MinTopicWeight) == 1 {
+		existingParams.MinTopicWeight = newParams.MinTopicWeight[0]
 	}
 	if len(newParams.MaxTopicsPerBlock) == 1 {
 		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
-	}
-	if len(newParams.MinRequestUnmetDemand) == 1 {
-		existingParams.MinRequestUnmetDemand = newParams.MinRequestUnmetDemand[0]
 	}
 	if len(newParams.MaxMissingInferencePercent) == 1 {
 		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
@@ -51,12 +48,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MinEpochLength) == 1 {
 		existingParams.MinEpochLength = newParams.MinEpochLength[0]
-	}
-	if len(newParams.MaxInferenceRequestValidity) == 1 {
-		existingParams.MaxInferenceRequestValidity = newParams.MaxInferenceRequestValidity[0]
-	}
-	if len(newParams.MaxRequestCadence) == 1 {
-		existingParams.MaxRequestCadence = newParams.MaxRequestCadence[0]
 	}
 	if len(newParams.Sharpness) == 1 {
 		existingParams.Sharpness = newParams.Sharpness[0]
@@ -75,12 +66,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MinStakeFraction) == 1 {
 		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
-	}
-	if len(newParams.MaxWorkersPerTopicRequest) == 1 {
-		existingParams.MaxWorkersPerTopicRequest = newParams.MaxWorkersPerTopicRequest[0]
-	}
-	if len(newParams.MaxReputersPerTopicRequest) == 1 {
-		existingParams.MaxReputersPerTopicRequest = newParams.MaxReputersPerTopicRequest[0]
 	}
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
@@ -145,23 +130,17 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxTopicPages) == 1 {
 		existingParams.MaxTopicPages = newParams.MaxTopicPages[0]
 	}
-	if len(newParams.RequestPageLimit) == 1 {
-		existingParams.RequestPageLimit = newParams.RequestPageLimit[0]
-	}
-	if len(newParams.MaxRequestPages) == 1 {
-		existingParams.MaxRequestPages = newParams.MaxRequestPages[0]
-	}
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]
-	}
-	if len(newParams.MaxRequestsPerTopic) == 1 {
-		existingParams.MaxRequestsPerTopic = newParams.MaxRequestsPerTopic[0]
 	}
 	if len(newParams.DefaultLimit) == 1 {
 		existingParams.DefaultLimit = newParams.DefaultLimit[0]
 	}
 	if len(newParams.MaxLimit) == 1 {
 		existingParams.MaxLimit = newParams.MaxLimit[0]
+	}
+	if len(newParams.MinEpochLengthRecordLimit) == 1 {
+		existingParams.MinEpochLengthRecordLimit = newParams.MinEpochLengthRecordLimit[0]
 	}
 
 	err = ms.k.SetParams(ctx, existingParams)

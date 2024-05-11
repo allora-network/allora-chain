@@ -22,9 +22,6 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	s.emissionsKeeper.AddToTopicCreationWhitelist(ctx, reputerAddr)
-	s.emissionsKeeper.AddToReputerWhitelist(ctx, reputerAddr)
-
 	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
 	require.NoError(err)
 
@@ -39,6 +36,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	}
 
 	_, err = msgServer.AddStake(ctx, addStakeMsg)
+	s.Require().NoError(err)
 
 	reputerNonce := &types.Nonce{
 		BlockHeight: 2,
@@ -146,71 +144,4 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 
 	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
 	require.NoError(err, "InsertBulkReputerPayload should not return an error")
-}
-
-func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalidUnauthorized() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Mock setup for addresses
-	reputerAddr := nonAdminAccounts[0].String()
-	workerAddr := sdk.AccAddress(PKS[1].Address()).String()
-	s.emissionsKeeper.SetTopic(ctx, 1, types.Topic{Id: 1})
-
-	// Create a MsgInsertBulkReputerPayload message
-	lossesMsg := &types.MsgInsertBulkReputerPayload{
-		Sender: reputerAddr,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: 10,
-			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: 11,
-			},
-		},
-		TopicId: 1,
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &types.ValueBundle{
-					TopicId:       1,
-					CombinedValue: alloraMath.NewDecFromInt64(100),
-					InfererValues: []*types.WorkerAttributedValue{
-						{
-							Worker: workerAddr,
-							Value:  alloraMath.NewDecFromInt64(100),
-						},
-					},
-					ForecasterValues: []*types.WorkerAttributedValue{
-						{
-							Worker: workerAddr,
-							Value:  alloraMath.NewDecFromInt64(100),
-						},
-					},
-					NaiveValue: alloraMath.NewDecFromInt64(100),
-					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-						{
-							Worker: workerAddr,
-							Value:  alloraMath.NewDecFromInt64(100),
-						},
-					},
-					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-						{
-							Worker: workerAddr,
-							Value:  alloraMath.NewDecFromInt64(100),
-						},
-					},
-					OneInForecasterValues: []*types.WorkerAttributedValue{
-						{
-							Worker: workerAddr,
-							Value:  alloraMath.NewDecFromInt64(100),
-						},
-					},
-				},
-				Signature: []byte("Nonce + ReputerValueBundles Signature"),
-			},
-		},
-	}
-
-	_, err := msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
-	require.ErrorIs(err, types.ErrNotInReputerWhitelist, "InsertBulkReputerPayload should return an error")
 }

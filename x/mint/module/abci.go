@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func UpdateEmissionRate(
+func GetEmissionPerTimestep(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	params types.Params,
@@ -33,6 +33,10 @@ func UpdateEmissionRate(
 	if circulatingSupply.IsNegative() {
 		circulatingSupply = math.ZeroInt()
 	}
+	// T_{total,i} = ecosystemMintableRemaining
+	// N_{staked,i} = networkStaked
+	// N_{circ,i} = circulatingSupply
+	// N_{total,i} = totalSupply
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
@@ -112,7 +116,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	var e_i math.LegacyDec
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
 	if uint64(blockHeight)%emissionRateUpdateCadence == 1 { // easier to test when genesis starts at 1
-		emissionPerTimestep, emissionPerUnitStakedToken, err := UpdateEmissionRate(
+		emissionPerTimestep, emissionPerUnitStakedToken, err := GetEmissionPerTimestep(
 			sdkCtx,
 			k,
 			params,

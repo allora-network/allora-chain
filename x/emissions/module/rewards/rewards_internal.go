@@ -7,7 +7,6 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // StdDev calculates the standard deviation of a slice of `alloraMath.Dec`
@@ -67,10 +66,11 @@ func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 // u_ij = M(Tij) / ∑_j M(T_ij)
 // v_ik = M(Tik) / ∑_k M(T_ik)
 func GetScoreFractions(
-	scores []alloraMath.Dec,
+	latestWorkerScores []alloraMath.Dec,
+	latestTimeStepsScores []alloraMath.Dec,
 	pReward alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	mappedValues, err := GetMappingFunctionValues(scores, pReward)
+	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
@@ -93,89 +93,43 @@ func GetScoreFractions(
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
-	scores []alloraMath.Dec, // list of T
+	latestWorkerScores []alloraMath.Dec, // T - latest scores from workers
+	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
 ) ([]alloraMath.Dec, error) {
-	stdDev, err := StdDev(scores)
-	if err != nil {
-		return nil, errors.Wrapf(err, "err getting stdDev")
-	}
-	ret := make([]alloraMath.Dec, len(scores))
-	for i, score := range scores {
-		frac, err := score.Quo(stdDev)
+	stdDev := alloraMath.OneDec()
+	if len(latestTimeStepsScores) > 1 {
+		var err error
+		stdDev, err = StdDev(latestTimeStepsScores)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "err getting stdDev")
 		}
-		ret[i], err = Phi(pReward, frac)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err calculating phi")
+	}
+	ret := make([]alloraMath.Dec, len(latestWorkerScores))
+	for i, score := range latestWorkerScores {
+		if stdDev.IsZero() {
+			// if standard deviation is zero
+			// then all scores are the same and losses are the same
+			// therefore everyone should be paid the same, so we
+			// return the plain value 1 for everybody
+			ret[i] = alloraMath.OneDec()
+		} else {
+			frac, err := score.Quo(stdDev)
+			if err != nil {
+				return nil, err
+			}
+			ret[i], err = Phi(pReward, frac)
+			if err != nil {
+				return nil, errors.Wrapf(err, "err calculating phi")
+			}
 		}
 	}
 	return ret, nil
 }
 
-// GetWorkerPortionOfRewards calculates the reward portion for workers for forecast and inference tasks
-// U_ij / V_ik * totalRewards
-func GetWorkerPortionOfRewards(
-	scores [][]alloraMath.Dec,
-	preward alloraMath.Dec,
-	totalRewards alloraMath.Dec,
-	workerAddresses []sdk.AccAddress,
-) ([]TaskRewards, error) {
-	lastScores := make([][]alloraMath.Dec, len(scores))
-	for i, workerScores := range scores {
-		end := len(workerScores)
-		start := end - 10
-		if start < 0 {
-			start = 0
-		}
-		lastScores[i] = workerScores[start:end]
-	}
-
-	stdDev, err := StdDev(flatten(lastScores))
-	if err != nil {
-		return nil, errors.Wrapf(err, "error getting StdDev")
-	}
-	smoothedScores := make([]alloraMath.Dec, len(lastScores))
-	total := alloraMath.ZeroDec()
-	for i, score := range lastScores {
-		normalizedScore, err := score[len(score)-1].Quo(stdDev)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err normalizing score")
-		}
-		res, err := Phi(preward, normalizedScore)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err calculating phi")
-		}
-		smoothedScores[i] = res
-		total, err = total.Add(res)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err adding to total")
-		}
-	}
-
-	var rewardPortions []TaskRewards
-	for i, score := range smoothedScores {
-		rewardFraction, err := score.Quo(total)
-		if err != nil {
-			return nil, err
-		}
-		rewardPortion, err := rewardFraction.Mul(totalRewards)
-		if err != nil {
-			return nil, err
-		}
-		rewardPortions = append(rewardPortions, TaskRewards{
-			Address: workerAddresses[i],
-			Reward:  rewardPortion,
-		})
-	}
-
-	return rewardPortions, nil
-}
-
-// GetReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
+// CalculateReputerRewardFractions calculates the reward fractions for each reputer based on their stakes, scores, and preward parameter.
 // W_im
-func GetReputerRewardFractions(
+func CalculateReputerRewardFractions(
 	stakes []alloraMath.Dec,
 	scores []alloraMath.Dec,
 	preward alloraMath.Dec,
@@ -899,6 +853,20 @@ func Entropy(
 		return alloraMath.Dec{}, err
 	}
 	return ret, nil
+}
+
+// If there's only one worker, entropy should be the default number of 0.17328679513998632
+// ln(2)/4
+func EntropyForSingleParticipant() (alloraMath.Dec, error) {
+	numerator, err := alloraMath.Ln(alloraMath.NewDecFromInt64(2))
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	entropy, err := numerator.Quo(alloraMath.NewDecFromInt64(4))
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return entropy, nil
 }
 
 // The number ratio term captures the number of participants in the network

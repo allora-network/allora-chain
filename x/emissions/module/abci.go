@@ -5,119 +5,106 @@ import (
 	"fmt"
 	"sync"
 
-	cosmosMath "cosmossdk.io/math"
-	chainParams "github.com/allora-network/allora-chain/app/params"
+	"cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// Ensure that enough blocks have passed to hit an epoch.
-	// If not, skip rewards calculation
-	blockNumber := sdkCtx.BlockHeight()
-	lastRewardsUpdate, err := am.keeper.GetLastRewardsUpdate(sdkCtx)
+	blockHeight := sdkCtx.BlockHeight()
+
+	// Get active weights
+	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Weights error")
 	}
 
-	params, err := am.keeper.GetParams(ctx)
+	// REWARDS (will internally filter any non-RewardReady topics)
+	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
 	if err != nil {
-		return err
+		fmt.Println("Error calculating global emission per topic: ", err)
+		return errors.Wrapf(err, "Rewards error")
 	}
 
-	topTopicsActiveWithDemand, metDemand, err := ChurnRequestsGetActiveTopicsAndDemand(
-		sdkCtx,
-		am.keeper,
-		blockNumber,
-		params.TopicPageLimit,
-		params.MaxTopicPages,
-		params.RequestPageLimit,
-		params.MaxRequestPages,
-	)
-	if err != nil {
-		fmt.Println("Error getting active topics and met demand: ", err)
-		return err
-	}
-	// send collected inference request fees to the Ecosystem module account
-	// they will be paid out to reputers, workers, and cosmos validators
-	// according to the formulas in the beginblock of the mint module
-	err = am.keeper.BankKeeper().SendCoinsFromModuleToModule(
-		ctx,
-		types.AlloraRequestsAccountName,
-		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(metDemand.BigInt().Int64()))))
-	if err != nil {
-		fmt.Println("Error sending coins from module to module: ", err)
-		return err
-	}
-
-	blocksSinceLastUpdate := blockNumber - lastRewardsUpdate
-	if blocksSinceLastUpdate < 0 {
-		panic("Block number is less than last rewards update block number")
-	}
-	if blocksSinceLastUpdate >= params.RewardCadence {
-		err = rewards.EmitRewards(sdkCtx, am.keeper, topTopicsActiveWithDemand)
-		// the following code does NOT halt the chain in case of an error in rewards payments
-		// if an error occurs and rewards payments are not made, globally they will still accumulate
-		// and we can retroactively pay them out
-		if err != nil {
-			fmt.Println("Error calculating global emission per topic: ", err)
-			panic(err)
-		}
-		err := am.keeper.IncrementFeeRevenueEpoch(sdkCtx)
-		if err != nil {
-			fmt.Println("Error incrementing fee revenue epoch: ", err)
-			return err
-		}
-	}
-
+	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	// Within each loop, execute the inference and weight cadence checks
-	for _, topic := range topTopicsActiveWithDemand {
-		// Parallelize the inference and weight cadence checks
+	fn := func(ctx context.Context, topic *types.Topic) error {
+		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
 		go func(topic types.Topic) {
 			defer wg.Done()
-			// Check the cadence of inferences
-			if blockNumber == topic.EpochLastEnded+topic.EpochLength ||
-				blockNumber-topic.EpochLastEnded >= 2*topic.EpochLength {
-				fmt.Printf("Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
+			// to avoid potential situations where the block is missed
+			if keeper.CheckCadence(blockHeight, topic) {
+				fmt.Printf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
 					topic.DefaultArg)
 
 				// Update the last inference ran
-				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockNumber)
+				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockHeight)
 				if err != nil {
 					fmt.Println("Error updating last inference ran: ", err)
 				}
 				// Add Worker Nonces
-				nextNonce := emissionstypes.Nonce{BlockHeight: blockNumber + topic.EpochLength}
+				nextNonce := types.Nonce{BlockHeight: blockHeight + topic.EpochLength}
 				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
 				if err != nil {
 					fmt.Println("Error adding worker nonce: ", err)
 					return
 				}
 				// Add Reputer Nonces
-				if blockNumber-topic.EpochLength > 0 {
-					ReputerReputerNonce := emissionstypes.Nonce{BlockHeight: blockNumber}
-					ReputerWorkerNonce := emissionstypes.Nonce{BlockHeight: blockNumber - topic.EpochLength}
+				if blockHeight-topic.EpochLength > 0 {
+					ReputerReputerNonce := types.Nonce{BlockHeight: blockHeight}
+					ReputerWorkerNonce := types.Nonce{BlockHeight: blockHeight - topic.EpochLength}
 					err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &ReputerReputerNonce, &ReputerWorkerNonce)
 					if err != nil {
 						fmt.Println("Error adding reputer nonce: ", err)
 						return
 					}
 				} else {
-					fmt.Println("Not adding reputer nonce, too early in topic history", blockNumber, topic.EpochLength)
+					fmt.Println("Not adding reputer nonce, too early in topic history", blockHeight, topic.EpochLength)
 				}
 
+				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
+				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
+				if err != nil {
+					fmt.Println("Error setting churn ready topic: ", err)
+					return
+				}
+
+				MaxUnfulfilledReputerRequests, err := am.keeper.GetParamsMaxUnfulfilledReputerRequests(ctx)
+				if err != nil {
+					MaxUnfulfilledReputerRequests = types.DefaultParams().MaxUnfulfilledReputerRequests
+					fmt.Println("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+				}
+				reputerPruningBlock := blockHeight - int64(MaxUnfulfilledReputerRequests)*topic.EpochLength
+				fmt.Println("Pruning reputer nonces before block: ", reputerPruningBlock, " for topic: ", topic.Id, " on block: ", blockHeight)
+				am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
+
+				workerPruningBlock := reputerPruningBlock - topic.EpochLength
+				fmt.Println("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
+				// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
+				// Reputer nonces need worker nonces to be fulfilled one epoch before the reputer nonces
+				am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
 			}
 		}(*topic)
+		return nil
+	}
+	err = rewards.IdentifyChurnableAmongActiveTopicsAndApplyFn(
+		sdkCtx,
+		am.keeper,
+		blockHeight,
+		fn,
+		weights,
+	)
+	if err != nil {
+		fmt.Println("Error applying function on all reward ready topics: ", err)
+		return err
 	}
 	wg.Wait()
 

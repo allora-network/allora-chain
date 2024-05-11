@@ -1,61 +1,136 @@
 package msgserver_test
 
 import (
-	"math"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestRequestInferenceSimple() {
+func (s *KeeperTestSuite) TestFundTopicSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
+	// put some stake in the topic
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
-	r := types.MsgRequestInference{
-		Sender: sender,
-		Request: &types.InferenceRequestInbound{
-			Nonce:                0,
-			TopicId:              topicId,
-			Cadence:              0,
-			MaxPricePerInference: cosmosMath.NewUint(uint64(initialStake)),
-			BidAmount:            cosmosMath.NewUint(uint64(initialStake)),
-			BlockValidUntil:      0x16,
-			ExtraData:            []byte("Test"),
-		},
+	r := types.MsgFundTopic{
+		Sender:    sender,
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
 	}
-	blockHeightBefore := s.ctx.BlockHeight()
-	response, err := s.msgServer.RequestInference(s.ctx, &r)
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err, "GetParams should not return an error")
+	topicWeightBefore, feeRevBefore, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r.Amount,
+	)
+	s.Require().NoError(err)
+	response, err := s.msgServer.FundTopic(s.ctx, &r)
 	s.Require().NoError(err, "RequestInference should not return an error")
-	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
+	s.Require().NotNil(response, "Response should not be nil")
 
 	// Check if the topic is activated
-	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.Request.TopicId)
-	s.Require().Equal(res, true, "TopicId is not activated")
-	// Check updated stake for delegator
-	r0 := types.CreateNewInferenceRequestFromListItem(r.Sender, r.Request)
-	requestId, err := r0.GetRequestId()
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
 	s.Require().NoError(err)
-	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, requestId)
+	s.Require().Equal(true, res, "TopicId is not activated")
+	// check that the topic fee revenue has been updated
+	topicWeightAfter, feeRevAfter, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r.Amount,
+	)
 	s.Require().NoError(err)
-	// the last checked time is not set in the request, so we can't compare it
-	// we can compare the rest of the fields
-	s.Require().Equal(r0.Sender, storedRequest.Sender, "Stored request sender should match the request")
-	s.Require().Equal(r0.Nonce, storedRequest.Nonce, "Stored request nonce should match the request")
-	s.Require().Equal(r0.TopicId, storedRequest.TopicId, "Stored request topic id should match the request")
-	s.Require().Equal(r0.Cadence, storedRequest.Cadence, "Stored request cadence should match the request")
-	s.Require().Equal(r0.MaxPricePerInference, storedRequest.MaxPricePerInference, "Stored request max price per inference should match the request")
-	s.Require().Equal(r0.BidAmount, storedRequest.BidAmount, "Stored request bid amount should match the request")
-	s.Require().GreaterOrEqual(storedRequest.BlockLastChecked, blockHeightBefore, "LastChecked should be greater than timeNow")
-	s.Require().Equal(r0.BlockValidUntil, storedRequest.BlockValidUntil, "Stored request block valid until should match the request")
-	s.Require().Equal(r0.ExtraData, storedRequest.ExtraData, "Stored request extra data should match the request")
+	s.Require().True(feeRevAfter.GT(feeRevBefore), "Topic fee revenue should be greater after funding the topic")
+	s.Require().True(topicWeightAfter.Gt(topicWeightBefore), "Topic weight should be greater after funding the topic")
 }
+
+func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+	topicId := s.CreateOneTopic()
+	topicId2 := s.CreateOneTopic()
+	// put some stake in the topic
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
+	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	s.Require().NoError(err)
+	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
+	var initialStake int64 = 1000
+	var initialStake2 int64 = 10000
+	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	r := types.MsgFundTopic{
+		Sender:    sender,
+		TopicId:   topicId,
+		Amount:    cosmosMath.NewInt(initialStake),
+		ExtraData: []byte("Test"),
+	}
+	r2 := types.MsgFundTopic{
+		Sender:    sender,
+		TopicId:   topicId2,
+		Amount:    cosmosMath.NewInt(initialStake2),
+		ExtraData: []byte("Test"),
+	}
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err, "GetParams should not return an error")
+
+	response, err := s.msgServer.FundTopic(s.ctx, &r)
+	s.Require().NoError(err, "RequestInference should not return an error")
+	s.Require().NotNil(response, "Response should not be nil")
+
+	response2, err := s.msgServer.FundTopic(s.ctx, &r2)
+	s.Require().NoError(err, "RequestInference should not return an error")
+	s.Require().NotNil(response2, "Response should not be nil")
+
+	// Check if the topic is activated
+	res, err := s.emissionsKeeper.IsTopicActive(s.ctx, r.TopicId)
+	s.Require().NoError(err)
+	s.Require().Equal(true, res, "TopicId is not activated")
+	// check that the topic fee revenue has been updated
+	topicWeight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r.Amount,
+	)
+	s.Require().NoError(err)
+
+	topic2Weight, _, err := s.emissionsKeeper.GetCurrentTopicWeight(
+		s.ctx,
+		r2.TopicId,
+		10800,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		r2.Amount,
+	)
+	s.Require().NoError(err)
+
+	s.Require().Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
+}
+
+/*
 
 // test more than one inference in the message
 func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
@@ -305,6 +380,7 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooFast() {
 	s.Require().ErrorIs(err, types.ErrInferenceRequestCadenceTooFast, "RequestInference should return an error when the request cadence is too fast")
 }
 */
+/*
 
 func (s *KeeperTestSuite) TestRequestInferenceInvalidRequestCadenceTooSlow() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
@@ -353,5 +429,6 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 		},
 	}
 	_, err := s.msgServer.RequestInference(s.ctx, &r)
-	s.Require().ErrorIs(err, types.ErrInferenceRequestBidAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
+	s.Require().ErrorIs(err, types.ErrFundAmountTooLow, "RequestInference should return an error when the bid amount is below global minimum threshold")
 }
+*/

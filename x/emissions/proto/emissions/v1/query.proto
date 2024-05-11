@@ -10,17 +10,17 @@ import "cosmos/query/v1/query.proto";
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
+import "emissions/v1/params.proto";
+import "emissions/v1/node.proto";
+import "emissions/v1/worker.proto";
+import "emissions/v1/reputer.proto";
+import "emissions/v1/topic.proto";
 
 // Msg defines the module Msg service.
 service Query {
   // Params returns the module parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/emissions/v1/params";
-  }
-
-  rpc GetLastRewardsUpdate(QueryLastRewardsUpdateRequest) returns (QueryLastRewardsUpdateResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/last_rewards_update";
   }
 
   rpc GetNextTopicId(QueryNextTopicIdRequest) returns (QueryNextTopicIdResponse) {
@@ -36,22 +36,6 @@ service Query {
   rpc GetActiveTopics(QueryActiveTopicsRequest) returns (QueryActiveTopicsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/active_topics";
-  }
-
-  rpc GetMempoolInferenceRequest(QueryMempoolInferenceRequest) returns (QueryExistingInferenceResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/inferences/requests/{request_id}";
-  }
-
-  rpc GetMempoolInferenceRequestsByTopic(QueryMempoolInferenceRequestsByTopic)
-      returns (QueryMempoolInferenceRequestsByTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/inferences/all_requests";
-  }
-
-  rpc GetTopicUnmetDemand(QueryTopicUnmetDemandRequest) returns (QueryTopicUnmetDemandResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/unmet_demand/{topic_id}";
   }
 
   rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest)
@@ -147,6 +131,10 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}/{block_height}";
   }
+
+  rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
+    option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -156,15 +144,6 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
-}
-
-// returns the last time the rewards inflation calculation ran
-message QueryLastRewardsUpdateRequest {}
-
-// returns the last time the rewards inflation calculation ran
-// last_rewards_update is an int64 because it is a block number
-message QueryLastRewardsUpdateResponse {
-  int64 last_rewards_update = 1;
 }
 
 // Total Stake returns the total amount of stake in the system
@@ -360,53 +339,6 @@ message QueryReputerAddressByP2PKeyResponse {
   string address = 1;
 }
 
-message QueryMempoolInferenceRequest {
-  string request_id = 1;
-}
-
-message QueryExistingInferenceResponse {
-  InferenceRequest inference_request = 1;
-  string demand_left = 2 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
-message QueryMempoolInferenceRequestsByTopic {
-  uint64 topic_id = 1;
-  SimpleCursorPaginationRequest pagination = 2;
-}
-
-message InferenceRequestAndDemandLeft {
-  InferenceRequest inference_request = 1;
-  string demand_left = 2 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
-message QueryMempoolInferenceRequestsByTopicResponse {
-  repeated InferenceRequestAndDemandLeft inference_requests = 1;
-  SimpleCursorPaginationResponse pagination = 2;
-}
-
-message QueryTopicUnmetDemandRequest {
-  uint64 topic_id = 1;
-}
-
-message QueryTopicUnmetDemandResponse {
-  string demand_left = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
 message QueryNetworkInferencesAtBlockRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -433,4 +365,12 @@ message QueryIsReputerRegisteredInTopicIdRequest {
 
 message QueryIsReputerRegisteredInTopicIdResponse {
   bool is_registered = 1;
+}
+
+message QueryIsWhitelistAdminRequest {
+  string address = 1;
+}
+
+message QueryIsWhitelistAdminResponse {
+  bool is_admin = 1;
 }

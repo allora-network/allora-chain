@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -53,7 +54,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	return &types.MsgAddStakeResponse{}, nil
+	err = ms.ActivateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId, cosmosMath.Int(msg.Amount))
+	return &types.MsgAddStakeResponse{}, err
 }
 
 // StartRemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
@@ -72,11 +74,17 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, sender)
+	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, sender)
 	if err != nil {
 		return nil, err
 	}
-	if stakePlaced.LT(msg.Amount) {
+
+	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, sender)
+	if err != nil {
+		return nil, err
+	}
+	reputerStakeInTopicWithoutDelegateStake := stakePlaced.Sub(delegateStakeUponReputerInTopic)
+	if msg.Amount.GT(reputerStakeInTopicWithoutDelegateStake) {
 		return nil, types.ErrInsufficientStakeToRemove
 	}
 
@@ -152,7 +160,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	if err != nil {
 		return nil, err
 	}
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, sdk.AccAddress(targetAddr))
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, targetAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +209,7 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	}
 
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAddr)
+	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +222,11 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	if delegateStakePlaced.LT(msg.Amount) {
+	amountDec, err := alloraMath.NewDecFromSdkUint(msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+	if delegateStakePlaced.Amount.Lt(amountDec) {
 		return nil, types.ErrInsufficientDelegateStakeToRemove
 	}
 
@@ -280,4 +292,50 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	}
 
 	return &types.MsgConfirmRemoveDelegateStakeResponse{}, nil
+}
+
+func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
+	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	// Check the target reputer exists and is registered
+	reputer, err := sdk.AccAddressFromBech32(msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, reputer)
+	if err != nil {
+		return nil, err
+	}
+	if !isRegistered {
+		return nil, types.ErrAddressIsNotRegisteredInThisTopic
+	}
+
+	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer)
+	if err != nil {
+		return nil, err
+	}
+	share, err := ms.k.GetDelegateRewardPerShare(ctx, msg.TopicId, reputer)
+	if err != nil {
+		return nil, err
+	}
+	pendingReward, err := delegateInfo.Amount.Mul(share)
+	if err != nil {
+		return nil, err
+	}
+	pendingReward, err = pendingReward.Sub(delegateInfo.RewardDebt)
+	if err != nil {
+		return nil, err
+	}
+	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
+		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
+		delegateInfo.RewardDebt, err = delegateInfo.Amount.Mul(share)
+		if err != nil {
+			return nil, err
+		}
+		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer, delegateInfo)
+	}
+	return &types.MsgRewardDelegateStakeResponse{}, nil
 }

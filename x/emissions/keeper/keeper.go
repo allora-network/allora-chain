@@ -6,6 +6,10 @@ import (
 	"errors"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
+
+	"github.com/allora-network/allora-chain/app/params"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
@@ -53,13 +57,13 @@ type Keeper struct {
 	topics       collections.Map[TopicId, types.Topic]
 	activeTopics collections.KeySet[TopicId]
 	// every topics that has been churned and ready to get inferences in the block
-	churnReadyTopics collections.Item[types.TopicList]
+	churnReadyTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
 	topicWorkers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// for a topic, what is every reputer node that has registered to it?
 	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
 	// map of (topic) -> nonce/block height
-	topicRewardNonce collections.Map[TopicId, int64]
+	topicRewardNonce collections.Map[TopicId, BlockHeight]
 
 	/// SCORES
 
@@ -99,22 +103,11 @@ type Keeper struct {
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, Delegator], Uint]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
-	delegateStakePlacement collections.Map[collections.Triple[TopicId, Reputer, Delegator], Uint]
+	delegateStakePlacement collections.Map[collections.Triple[TopicId, Reputer, Delegator], types.DelegatorInfo]
 	// map of (target) -> amount of stake that has been placed on that target
 	stakeUponReputer collections.Map[collections.Pair[TopicId, Reputer], Uint]
-
-	/// INFERENCE REQUEST MEMPOOL
-
-	// map of (request_id) -> full InferenceRequest information for that request
-	requests collections.Map[RequestId, types.InferenceRequest]
-	// map of (topic, request_index) -> bounded list of request_ids
-	topicRequests collections.Map[collections.Pair[TopicId, uint64], RequestId]
-	// map of (topic) -> number of active requests in a topic
-	numRequestsPerTopic collections.Map[TopicId, uint64]
-	// amount of money available for an inference request id that has been placed in the mempool but has not yet been fully satisfied
-	requestUnmetDemand collections.Map[RequestId, Uint]
-	// total amount of demand for a topic that has been placed in the mempool as a request for inference but has not yet been satisfied
-	topicUnmetDemand collections.Map[TopicId, Uint]
+	// map of (topidId, reputer) -> share of delegate reward
+	delegateRewardPerShare collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
 
 	/// MISC GLOBAL STATE
 
@@ -130,17 +123,11 @@ type Keeper struct {
 	// map of reputer id to node data about that reputer
 	reputers collections.Map[LibP2pKey, types.OffchainNode]
 
-	// the last block the token inflation rewards were updated: int64 same as BlockHeight()
-	lastRewardsUpdate collections.Item[BlockHeight]
-
 	// fee revenue collected by a topic over the course of the last reward cadence
 	topicFeeRevenue collections.Map[TopicId, types.TopicFeeRevenue]
 
-	// feeRevenueEpoch marks the current epoch for fee revenue
-	feeRevenueEpoch collections.Sequence
-
-	// store previous wieghts for exponential moving average in rewards calc
-	previousTopicWeight collections.Map[TopicId, types.PreviousTopicWeight]
+	// store previous weights for exponential moving average in rewards calc
+	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
 
 	// map of (topic, block_height) -> Inference
 	allInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.Inferences]
@@ -175,10 +162,6 @@ type Keeper struct {
 	/// WHITELISTS
 
 	whitelistAdmins collections.KeySet[sdk.AccAddress]
-
-	topicCreationWhitelist collections.KeySet[sdk.AccAddress]
-
-	reputerWhitelist collections.KeySet[sdk.AccAddress]
 }
 
 func NewKeeper(
@@ -200,27 +183,21 @@ func NewKeeper(
 		bankKeeper:                          bk,
 		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", alloraMath.UintValue),
 		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, alloraMath.UintValue),
-		lastRewardsUpdate:                   collections.NewItem(sb, types.LastRewardsUpdateKey, "last_rewards_update", collections.Int64Value),
 		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                        collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnReadyTopics:                    collections.NewItem(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", codec.CollValue[types.TopicList](cdc)),
+		churnReadyTopics:                    collections.NewKeySet(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", collections.Uint64Key),
 		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
 		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
 		stakeRemoval:                        collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
 		delegateStakeRemoval:                collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
 		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), alloraMath.UintValue),
+		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegatorInfo](cdc)),
 		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		requests:                            collections.NewMap(sb, types.RequestsKey, "requests", collections.StringKey, codec.CollValue[types.InferenceRequest](cdc)),
-		topicRequests:                       collections.NewMap(sb, types.TopicRequestsKey, "topic_requests", collections.PairKeyCodec(collections.Uint64Key, collections.Uint64Key), collections.StringValue),
-		numRequestsPerTopic:                 collections.NewMap(sb, types.NumRequestsPerTopicKey, "num_requests_per_topic", collections.Uint64Key, collections.Uint64Value),
-		requestUnmetDemand:                  collections.NewMap(sb, types.RequestUnmetDemandKey, "request_unmet_demand", collections.StringKey, alloraMath.UintValue),
-		topicUnmetDemand:                    collections.NewMap(sb, types.TopicUnmetDemandKey, "topic_unmet_demand", collections.Uint64Key, alloraMath.UintValue),
+		delegateRewardPerShare:              collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
 		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
-		feeRevenueEpoch:                     collections.NewSequence(sb, types.FeeRevenueEpochKey, "fee_revenue_epoch"),
-		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, codec.CollValue[types.PreviousTopicWeight](cdc)),
+		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                          collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                           collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                             collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
@@ -233,8 +210,6 @@ func NewKeeper(
 		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
 		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
-		topicCreationWhitelist:              collections.NewKeySet(sb, types.TopicCreationWhitelistKey, "topic_creation_whitelist", sdk.AccAddressKey),
-		reputerWhitelist:                    collections.NewKeySet(sb, types.ReputerWhitelistKey, "weight_setting_whitelist", sdk.AccAddressKey),
 		infererScoresByBlock:                collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecasterScoresByBlock:             collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		latestInfererScoresByWorker:         collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
@@ -403,6 +378,12 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	if err != nil {
 		return err
 	}
+	if nonce == nil {
+		return errors.New("nil reputer's nonce provided")
+	}
+	if associatedWorkerNonce == nil {
+		return errors.New("nil reputer's worker nonce provided")
+	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
 	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
@@ -456,6 +437,14 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 		return types.ReputerRequestNonces{}, err
 	}
 	return nonces, nil
+}
+
+func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
+	return k.unfulfilledWorkerNonces.Set(ctx, topicId, types.Nonces{})
+}
+
+func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
+	return k.unfulfilledReputerNonces.Set(ctx, topicId, types.ReputerRequestNonces{})
 }
 
 /// REGRETS
@@ -551,20 +540,12 @@ func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error)
 	return params.MaxTopicsPerBlock, nil
 }
 
-func (k *Keeper) GetParamsMinRequestUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
+func (k *Keeper) GetParamsMinTopicWeight(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return cosmosMath.Uint{}, err
+		return alloraMath.Dec{}, err
 	}
-	return params.MinRequestUnmetDemand, nil
-}
-
-func (k *Keeper) GetParamsMinTopicUnmetDemand(ctx context.Context) (cosmosMath.Uint, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-	return params.MinTopicUnmetDemand, nil
+	return params.MinTopicWeight, nil
 }
 
 func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (cosmosMath.Uint, error) {
@@ -583,14 +564,6 @@ func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (BlockHeig
 	return params.RemoveStakeDelayWindow, nil
 }
 
-func (k *Keeper) GetParamsMaxInferenceRequestValidity(ctx context.Context) (BlockHeight, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxInferenceRequestValidity, nil
-}
-
 func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BlockHeight, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -599,44 +572,12 @@ func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BlockHeight, erro
 	return params.MinEpochLength, nil
 }
 
-func (k *Keeper) GetParamsMaxRequestCadence(ctx context.Context) (BlockHeight, error) {
+func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
-		return 0, err
+		return types.DefaultParamsEpsilon(), err
 	}
-	return params.MaxRequestCadence, nil
-}
-
-func (k *Keeper) GetParamsSharpness(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.Sharpness, nil
-}
-
-func (k *Keeper) GetParamsLearningRate(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.LearningRate, nil
-}
-
-func (k *Keeper) GetParamsGradientDescentMaxIters(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.GradientDescentMaxIters, nil
-}
-
-func (k *Keeper) GetParamsStakeAndFeeRevenueImportance(ctx context.Context) (alloraMath.Dec, alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
-	}
-	return params.TopicRewardStakeImportance, params.TopicRewardFeeRevenueImportance, nil
+	return params.Epsilon, nil
 }
 
 func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
@@ -653,14 +594,6 @@ func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (ui
 		return 0, err
 	}
 	return params.MaxUnfulfilledReputerRequests, nil
-}
-
-func (k *Keeper) GetParamsTopicRewardAlpha(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.TopicRewardAlpha, nil
 }
 
 func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
@@ -719,14 +652,6 @@ func (k *Keeper) GetParamsRegistrationFee(ctx context.Context) (cosmosMath.Int, 
 	return params.RegistrationFee, nil
 }
 
-func (k *Keeper) GetParamsMaxRequestsPerTopic(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxRequestsPerTopic, nil
-}
-
 func (k *Keeper) GetParamsDefaultLimit(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -779,14 +704,13 @@ func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicI
 	defer iter.Close() // Ensure that resources are released
 
 	// Iterate through entries in descending order and collect all inferences after the specified block
-	for ; iter.Valid(); iter.Next() {
+	if iter.Valid() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
 		currentBlockHeight = kv.Key.K2() // Current entry's block height
 		inferencesToReturn.Inferences = kv.Value.Inferences
-		break
 	}
 
 	// Return the collected inferences and the lowest block height at which they were found
@@ -807,14 +731,13 @@ func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId
 	}
 	defer iter.Close() // Ensure that resources are released
 
-	for ; iter.Valid(); iter.Next() {
+	if iter.Valid() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, err
 		}
 		currentBlockHeight = kv.Key.K2() // Current entry's block height
 		forecastsToReturn.Forecasts = kv.Value.Forecasts
-		break
 	}
 
 	return &forecastsToReturn, currentBlockHeight, nil
@@ -871,51 +794,10 @@ func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	return k.inferences.Get(ctx, key)
 }
 
-// Returns the last block height at which rewards emissions were updated
-func (k *Keeper) GetLastRewardsUpdate(ctx context.Context) (int64, error) {
-	lastRewardsUpdate, err := k.lastRewardsUpdate.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil
-		} else {
-			return 0, err
-		}
-	}
-	return lastRewardsUpdate, nil
-}
-
-// Set the last block height at which rewards emissions were updated
-func (k *Keeper) SetLastRewardsUpdate(ctx context.Context, blockHeight int64) error {
-	if blockHeight < 0 {
-		return types.ErrBlockHeightNegative
-	}
-	previousBlockHeight, err := k.lastRewardsUpdate.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			previousBlockHeight = 0
-		} else {
-			return err
-		}
-	}
-	if blockHeight < previousBlockHeight {
-		return types.ErrBlockHeightLessThanPrevious
-	}
-	return k.lastRewardsUpdate.Set(ctx, blockHeight)
-}
-
-// return epoch length
-func (k *Keeper) GetParamsRewardCadence(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.RewardCadence, nil
-}
-
 /// TOPIC REWARD NONCE
 
 // GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
-func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (int64, error) {
+func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (BlockHeight, error) {
 	nonce, err := k.topicRewardNonce.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -927,7 +809,7 @@ func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (int6
 }
 
 // SetTopicRewardNonce sets the reward nonce for a given topic ID.
-func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce int64) error {
+func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce BlockHeight) error {
 	return k.topicRewardNonce.Set(ctx, topicId, nonce)
 }
 
@@ -1025,7 +907,7 @@ func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, to
 
 // Adds stake to the system for a given topic and reputer
 func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that the stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that the stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return nil
 	}
@@ -1066,26 +948,11 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 	// Set new sum topic stake for all topics
 	if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
 		fmt.Println("Setting topic stake failed -- rolling back reputer stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
 		fmt.Println("Setting total stake failed -- rolling back reputer and topic stake")
-		// Rollback reputer stake in topic
-		err2 := k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeInTopic)
-		if err2 != nil {
-			return err2
-		}
-		// Rollback topic stake
-		err2 = k.topicStake.Set(ctx, topicId, topicStake)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
@@ -1093,9 +960,9 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 }
 
 func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
-	// Run checks to ensure that delegate stake can be added, and then update the types all at once, applying rollbacks if necessary
+	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
-		return errors.New("stake must be greater than zero")
+		return errorsmod.Wrapf(types.ErrInvalidValue, "stake must be greater than zero")
 	}
 
 	stakeFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
@@ -1108,7 +975,49 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	if err != nil {
 		return err
 	}
-	stakePlacementNew := delegateStakePlacement.Add(stake)
+	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
+	if delegateStakePlacement.Amount.Gt(alloraMath.NewDecFromInt64(0)) {
+		// Calculate pending reward and send to delegator
+		pendingReward, err := delegateStakePlacement.Amount.Mul(share)
+		if err != nil {
+			return err
+		}
+		pendingReward, err = pendingReward.Sub(delegateStakePlacement.RewardDebt)
+		if err != nil {
+			return err
+		}
+		if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+			err = k.BankKeeper().SendCoinsFromModuleToAccount(
+				ctx,
+				types.AlloraPendingRewardForDelegatorAccountName,
+				delegator,
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	stakeDec, err := alloraMath.NewDecFromSdkUint(stake)
+	if err != nil {
+		return err
+	}
+	newAmount, err := delegateStakePlacement.Amount.Add(stakeDec)
+	if err != nil {
+		return err
+	}
+	newDebt, err := newAmount.Mul(share)
+	if err != nil {
+		return err
+	}
+	stakePlacementNew := types.DelegatorInfo{
+		Amount:     newAmount,
+		RewardDebt: newDebt,
+	}
 
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
@@ -1125,24 +1034,10 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 
 	// Set new sum topic stake for all topics
 	if err := k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
-		fmt.Println("Setting topic stake failed -- rolling back stake from delegator")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
-		fmt.Println("Setting total stake failed -- rolling back stake from delegator and delegate stake placement")
-		err2 := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegator)
-		if err2 != nil {
-			return err2
-		}
-		err2 = k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, delegateStakePlacement)
-		if err2 != nil {
-			return err2
-		}
 		return err
 	}
 
@@ -1237,8 +1132,8 @@ func (k *Keeper) RemoveDelegateStake(
 	topicId TopicId,
 	delegator sdk.AccAddress,
 	reputer sdk.AccAddress,
-	stake Uint) error {
-	if stake.IsZero() {
+	unStake Uint) error {
+	if unStake.IsZero() {
 		return nil
 	}
 
@@ -1247,30 +1142,73 @@ func (k *Keeper) RemoveDelegateStake(
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakeFromDelegator) {
+	if unStake.GT(stakeFromDelegator) {
 		return types.ErrIntegerUnderflowStakeFromDelegator
 	}
-	stakeFromDelegatorNew := stakeFromDelegator.Sub(stake)
+	stakeFromDelegatorNew := stakeFromDelegator.Sub(unStake)
+
+	// Get share for this topicId and reputer
+	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
+	if err != nil {
+		return err
+	}
 
 	// Check stakePlacement >= stake
 	stakePlacement, err := k.GetDelegateStakePlacement(ctx, topicId, delegator, reputer)
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakePlacement) {
+	unStakeDec, err := alloraMath.NewDecFromSdkUint(unStake)
+	if err != nil {
+		return err
+	}
+	if stakePlacement.Amount.Lt(unStakeDec) {
 		return types.ErrIntegerUnderflowDelegateStakePlacement
 	}
-	stakePlacementNew := stakePlacement.Sub(stake)
+
+	// Calculate pending reward and send to delegator
+	pendingReward, err := stakePlacement.Amount.Mul(share)
+	if err != nil {
+		return err
+	}
+	pendingReward, err = pendingReward.Sub(stakePlacement.RewardDebt)
+	if err != nil {
+		return err
+	}
+	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		err = k.BankKeeper().SendCoinsFromModuleToAccount(
+			ctx,
+			types.AlloraPendingRewardForDelegatorAccountName,
+			delegator,
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	newAmount, err := stakePlacement.Amount.Sub(unStakeDec)
+	if err != nil {
+		return err
+	}
+	newRewardDebt, err := newAmount.Mul(share)
+	if err != nil {
+		return err
+	}
+	stakePlacementNew := types.DelegatorInfo{
+		Amount:     newAmount,
+		RewardDebt: newRewardDebt,
+	}
 
 	// Check stakeUponReputer >= stake
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
 		return err
 	}
-	if stake.GT(stakeUponReputer) {
+	if unStake.GT(stakeUponReputer) {
 		return types.ErrIntegerUnderflowDelegateStakeUponReputer
 	}
-	stakeUponReputerNew := stakeUponReputer.Sub(stake)
+	stakeUponReputerNew := stakeUponReputer.Sub(unStake)
 
 	// Set new stake from delegator
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
@@ -1324,7 +1262,9 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (Uint, erro
 	return ret, nil
 }
 
-func (k *Keeper) GetStakeOnTopicFromReputer(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (Uint, error) {
+// Returns the amount of stake placed by a specific reputer on a specific topic.
+// Includes the stake placed by delegators on the reputer in that topic.
+func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (Uint, error) {
 	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeByReputerAndTopicId.Get(ctx, key)
 	if err != nil {
@@ -1359,25 +1299,44 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 }
 
 // Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (Uint, error) {
+func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
+			return types.DelegatorInfo{Amount: alloraMath.NewDecFromInt64(0), RewardDebt: alloraMath.NewDecFromInt64(0)}, nil
 		}
-		return cosmosMath.Uint{}, err
+		return types.DelegatorInfo{}, err
 	}
 	return stake, nil
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake Uint) error {
+func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake types.DelegatorInfo) error {
 	key := collections.Join3(topicId, delegator, target)
-	if stake.IsZero() {
+	if stake.Amount.IsZero() {
 		return k.delegateStakePlacement.Remove(ctx, key)
 	}
 	return k.delegateStakePlacement.Set(ctx, key, stake)
+}
+
+// Returns the share of reward by a specific topic and reputer
+func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer) (alloraMath.Dec, error) {
+	key := collections.Join(topicId, reputer)
+	share, err := k.delegateRewardPerShare.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.NewDecFromInt64(0), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return share, nil
+}
+
+// Set the share on specific reputer and topicId
+func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer, share alloraMath.Dec) error {
+	key := collections.Join(topicId, reputer)
+	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
 // Returns the amount of stake placed on a specific target.
@@ -1530,20 +1489,16 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 
 // Get the previous weight during rewards calculation for a topic
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
-func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (types.PreviousTopicWeight, bool, error) {
+func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (alloraMath.Dec, bool, error) {
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
-		ret := types.PreviousTopicWeight{
-			Weight: alloraMath.ZeroDec(),
-			Epoch:  0,
-		}
-		return ret, true, nil
+		return alloraMath.ZeroDec(), true, nil
 	}
 	return topicWeight, false, err
 }
 
 // Set the previous weight during rewards calculation for a topic
-func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight types.PreviousTopicWeight) error {
+func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
@@ -1615,46 +1570,25 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 	return k.activeTopics.Has(ctx, topicId)
 }
 
-func (k Keeper) GetActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
-	limit, startTopicId, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
+	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rng := new(collections.Range[uint64]).StartInclusive(startTopicId)
+	startKey := make([]byte, binary.MaxVarintLen64)
+	binary.BigEndian.PutUint64(startKey, start)
+	nextKey := make([]byte, binary.MaxVarintLen64)
+	binary.BigEndian.PutUint64(nextKey, start+limit)
 
-	iter, err := k.activeTopics.Iterate(ctx, rng)
-	if err != nil {
-		return nil, nil, err
+	rng, _ := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
+	activeTopics, _ := rng.Keys()
+	defer rng.Close()
+
+	// If there are no topics, we return the nil for next key
+	if activeTopics == nil {
+		nextKey = make([]byte, 0)
 	}
-	defer iter.Close()
-
-	activeTopics := make([]TopicId, 0)
-	count := uint64(0)
-	for ; iter.Valid(); iter.Next() {
-		newKey, err := iter.Key()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		activeTopics = append(activeTopics, newKey)
-
-		if count >= limit {
-			break
-		}
-		count++
-	}
-
-	// If there are no more topics, we return the same cursor as the last one
-	if !iter.Valid() {
-		return activeTopics, &types.SimpleCursorPaginationResponse{
-			NextKey: pagination.Key,
-		}, nil
-	}
-
-	// If there are more topics, we return the next key
-	nextKey := make([]byte, 8)
-	binary.BigEndian.PutUint64(nextKey, startTopicId+limit)
 
 	return activeTopics, &types.SimpleCursorPaginationResponse{
 		NextKey: nextKey,
@@ -1692,7 +1626,7 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 	return k.topicReputers.Has(ctx, topickey)
 }
 
-/// FEE REVENUE
+/// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
@@ -1706,296 +1640,59 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types
 	return feeRev, nil
 }
 
-// Add to the fee revenue collected by a topic for this reward epoch
-func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Uint) error {
+// Add to the fee revenue collected by a topic incurred at a block
+func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Int) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	currEpoch, err := k.GetFeeRevenueEpoch(ctx)
-	if err != nil {
-		return err
-	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{}
-	if topicFeeRevenue.Epoch != currEpoch {
-		newTopicFeeRevenue.Epoch = currEpoch
-		newTopicFeeRevenue.Revenue = cosmosMath.NewIntFromBigInt(amount.BigInt())
-	} else {
-		newTopicFeeRevenue.Epoch = topicFeeRevenue.Epoch
-		amountInt := cosmosMath.NewIntFromBigInt(amount.BigInt())
-		newTopicFeeRevenue.Revenue = topicFeeRevenue.Revenue.Add(amountInt)
+	newTopicFeeRevenue := types.TopicFeeRevenue{
+		Epoch:   topicFeeRevenue.Epoch,
+		Revenue: topicFeeRevenue.Revenue.Add(amount),
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
 
-// what is the current latest fee revenue epoch
-func (k *Keeper) GetFeeRevenueEpoch(ctx context.Context) (uint64, error) {
-	return k.feeRevenueEpoch.Peek(ctx)
+// Reset the fee revenue collected by a topic incurred at a block
+func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	newTopicFeeRevenue := types.TopicFeeRevenue{
+		Epoch:   block,
+		Revenue: cosmosMath.ZeroInt(),
+	}
+	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
 
-// at the end of a rewards epoch, increment the fee revenue
-func (k *Keeper) IncrementFeeRevenueEpoch(ctx context.Context) error {
-	_, err := k.feeRevenueEpoch.Next(ctx)
-	return err
+/// TOPIC CHURN
+
+// Add a topic as churn ready
+func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error {
+	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
-/// MEMPOOL & INFERENCE REQUESTS
-
-func (k *Keeper) AddUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) (Uint, error) {
-	topicUnmetDemand, err := k.GetTopicUnmetDemand(ctx, topicId)
+// returns a single churn ready topic for processing. Order out is not guaranteed.
+// if there are no churn ready topics, returns the reserved topic id 0,
+// which cannot be used as a topic id - callers are responsible for checking
+// that the returned topic id is not 0.
+func (k *Keeper) PopChurnReadyTopic(ctx context.Context) (TopicId, error) {
+	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
 	if err != nil {
-		return cosmosMath.Uint{}, err
+		return uint64(0), err
 	}
-	topicUnmetDemand = topicUnmetDemand.Add(amt)
-	return topicUnmetDemand, k.topicUnmetDemand.Set(ctx, topicId, topicUnmetDemand)
-}
 
-func (k *Keeper) RemoveUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
-	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	if amt.GT(topicUnmetDemand) {
-		return types.ErrIntegerUnderflowUnmetDemand
-	}
-	topicUnmetDemand = topicUnmetDemand.Sub(amt)
-	return k.SetTopicUnmetDemand(ctx, topicId, topicUnmetDemand)
-}
-
-func (k *Keeper) SetTopicUnmetDemand(ctx context.Context, topicId TopicId, amt cosmosMath.Uint) error {
-	if amt.IsZero() {
-		return k.topicUnmetDemand.Remove(ctx, topicId)
-	}
-	return k.topicUnmetDemand.Set(ctx, topicId, amt)
-}
-
-func (k *Keeper) GetTopicUnmetDemand(ctx context.Context, topicId TopicId) (Uint, error) {
-	topicUnmetDemand, err := k.topicUnmetDemand.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewUint(0), nil
-		} else {
-			return cosmosMath.Uint{}, err
-		}
-	}
-	return topicUnmetDemand, nil
-}
-
-func (k *Keeper) GetTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
-	num, err := k.numRequestsPerTopic.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return uint64(0), nil
-		} else {
+	if iter.Valid() {
+		poppedTopic, err := iter.Key()
+		if err != nil {
 			return uint64(0), err
 		}
-	}
-	return num, nil
-}
-
-func (k *Keeper) IncrementTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
-	num, err := k.GetTopicMempoolRequestCount(ctx, topicId)
-	if err != nil {
-		return uint64(0), err
-	}
-	num++
-	err = k.numRequestsPerTopic.Set(ctx, topicId, num)
-	if err != nil {
-		return uint64(0), err
-	}
-	return num, nil
-}
-
-func (k *Keeper) DecrementTopicMempoolRequestCount(ctx context.Context, topicId TopicId) (RequestIndex, error) {
-	num, err := k.GetTopicMempoolRequestCount(ctx, topicId)
-	if err != nil {
-		return uint64(0), err
-	}
-	num--
-	if num < 0 {
-		return uint64(0), nil
-	}
-	err = k.numRequestsPerTopic.Set(ctx, topicId, num)
-	if err != nil {
-		return uint64(0), err
-	}
-	return num, nil
-}
-
-func (k *Keeper) addToTopicMempool(ctx context.Context, topicId TopicId, requestIndex RequestIndex, requestId RequestId) error {
-	key := collections.Join(topicId, requestIndex)
-	return k.topicRequests.Set(ctx, key, requestId)
-}
-
-func (k *Keeper) removeFromTopicMempool(ctx context.Context, topicId TopicId, requestIndex RequestIndex) error {
-	key := collections.Join(topicId, requestIndex)
-	return k.topicRequests.Remove(ctx, key)
-}
-
-// Throws an error if we are already at capacity
-// Does not check for pre-existing inclusion in the topic mempool before adding!
-func (k *Keeper) AddToMempool(ctx context.Context, request types.InferenceRequest) (Uint, error) {
-	hasRequest, err := k.requests.Has(ctx, request.Id)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-	if hasRequest {
-		return cosmosMath.Uint{}, types.ErrRequestAlreadyExists
-	}
-
-	count, err := k.GetTopicMempoolRequestCount(ctx, request.TopicId)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-	maxCount, err := k.GetParamsMaxRequestsPerTopic(ctx)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-	if count >= maxCount {
-		return cosmosMath.Uint{}, types.ErrTopicMempoolAtCapacity
-	}
-
-	err = k.requests.Set(ctx, request.Id, request)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-
-	newIndex, err := k.IncrementTopicMempoolRequestCount(ctx, request.TopicId)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-
-	err = k.addToTopicMempool(ctx, request.TopicId, newIndex-1, request.Id)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-
-	unmetDemand, err := k.AddUnmetDemand(ctx, request.TopicId, request.BidAmount)
-	if err != nil {
-		return cosmosMath.Uint{}, err
-	}
-
-	return unmetDemand, nil
-}
-
-// Does not check for pre-existing exclusion in the topic mempool before removing!
-func (k *Keeper) RemoveFromMempool(ctx context.Context, requestId RequestId) error {
-	request, err := k.GetMempoolInferenceRequestById(ctx, requestId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.ErrRequestDoesNotExist
+		if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
+			return uint64(0), err
 		}
-		return err
+		return poppedTopic, nil
 	}
+	iter.Close()
 
-	err = k.requests.Remove(ctx, requestId)
-	if err != nil {
-		return err
-	}
-
-	newCount, err := k.DecrementTopicMempoolRequestCount(ctx, request.TopicId)
-	if err != nil {
-		return err
-	}
-
-	err = k.removeFromTopicMempool(ctx, request.TopicId, newCount)
-	if err != nil {
-		return err
-	}
-
-	return k.RemoveUnmetDemand(ctx, request.TopicId, request.BidAmount)
-}
-
-func (k *Keeper) IsRequestInMempool(ctx context.Context, requestId RequestId) (bool, error) {
-	return k.requests.Has(ctx, requestId)
-}
-
-func (k *Keeper) GetMempoolInferenceRequestById(ctx context.Context, requestId RequestId) (types.InferenceRequest, error) {
-	return k.requests.Get(ctx, requestId)
-}
-
-// Returns pages of inference requests in the mempool for a given topic
-func (k *Keeper) GetMempoolInferenceRequestsForTopic(
-	ctx context.Context,
-	topicId TopicId,
-	pagination *types.SimpleCursorPaginationRequest,
-) ([]types.InferenceRequest, *types.SimpleCursorPaginationResponse, error) {
-	limit, cursor, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	numRequestsInTopic, err := k.numRequestsPerTopic.Get(ctx, topicId)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// If the cursor is greater than the number of requests in the topic, return an empty list
-	if numRequestsInTopic <= cursor {
-		return []types.InferenceRequest{}, nil, nil
-	}
-
-	// Get the requests in the page
-	requests := make([]types.InferenceRequest, 0)
-	for i := cursor; i < k.Uint64Min(numRequestsInTopic, limit+numRequestsInTopic); i++ {
-		key := collections.Join(topicId, i)
-		requestId, err := k.topicRequests.Get(ctx, key)
-		if err != nil {
-			return nil, nil, err
-		}
-		request, err := k.GetMempoolInferenceRequestById(ctx, requestId)
-		if err != nil {
-			return nil, nil, err
-		}
-		requests = append(requests, request)
-	}
-
-	// If the number of requests in the topic is less than the limit, return an empty key
-	var nextKey []byte
-	if numRequestsInTopic <= cursor+limit {
-		nextKey = nil
-	} else {
-		nextKey = make([]byte, 8)
-		binary.BigEndian.PutUint64(nextKey, cursor+limit)
-	}
-
-	return requests, &types.SimpleCursorPaginationResponse{
-		NextKey: nextKey,
-	}, nil
-}
-
-func (k *Keeper) SetRequestDemand(ctx context.Context, requestId string, amount Uint) error {
-	if amount.IsZero() {
-		return k.requestUnmetDemand.Remove(ctx, requestId)
-	}
-	return k.requestUnmetDemand.Set(ctx, requestId, amount)
-}
-
-func (k *Keeper) GetRequestDemand(ctx context.Context, requestId string) (Uint, error) {
-	return k.requestUnmetDemand.Get(ctx, requestId)
-}
-
-// Reset the mapping entirely. Should be called at the end of every block
-func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
-	return k.churnReadyTopics.Remove(ctx)
-}
-
-// Set a topic as churn ready
-func (k *Keeper) SetChurnReadyTopics(ctx context.Context, topicList types.TopicList) error {
-	return k.churnReadyTopics.Set(ctx, topicList)
-}
-
-// Get all churn ready topics
-// In practice, shouldn't be more than a max amount, enforced by other functionality
-func (k *Keeper) GetChurnReadyTopics(ctx context.Context) (types.TopicList, error) {
-	topicList, err := k.churnReadyTopics.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.TopicList{}, nil
-		}
-		return types.TopicList{}, err
-	}
-	return topicList, nil
+	// if no topics exist to be churned, return the reserved topic id 0
+	return uint64(0), nil
 }
 
 /// SCORES
@@ -2097,10 +1794,10 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
+func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(blockNumber).
+		EndInclusive(blockHeight).
 		Descending()
 
 	scores := make([]*types.Score, 0)
@@ -2109,17 +1806,21 @@ func (k *Keeper) GetWorkerInferenceScoresUntilBlock(ctx context.Context, topicId
 		return nil, err
 	}
 
+	// Get max number of time steps that should be retrieved
+	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	count := 0
-	for ; iter.Valid() && count < 10; iter.Next() {
+	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
 			return nil, err
 		}
 		for _, score := range existingScores.Value.Scores {
-			if score.Address == worker.String() {
-				scores = append(scores, score)
-				count++
-			}
+			scores = append(scores, score)
+			count++
 		}
 	}
 
@@ -2160,10 +1861,10 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockNumber BlockHeight, worker Worker) ([]*types.Score, error) {
+func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(blockNumber).
+		EndInclusive(blockHeight).
 		Descending()
 
 	scores := make([]*types.Score, 0)
@@ -2172,17 +1873,21 @@ func (k *Keeper) GetWorkerForecastScoresUntilBlock(ctx context.Context, topicId 
 		return nil, err
 	}
 
+	// Get max number of time steps that should be retrieved
+	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	count := 0
-	for ; iter.Valid() && count < 10; iter.Next() {
+	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
 			return nil, err
 		}
 		for _, score := range existingScores.Value.Scores {
-			if score.Address == worker.String() {
-				scores = append(scores, score)
-				count++
-			}
+			scores = append(scores, score)
+			count++
 		}
 	}
 
@@ -2329,30 +2034,6 @@ func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin sdk.AccAddress)
 	return k.whitelistAdmins.Remove(ctx, admin)
 }
 
-func (k *Keeper) IsInTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
-	return k.topicCreationWhitelist.Has(ctx, address)
-}
-
-func (k *Keeper) AddToTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.topicCreationWhitelist.Set(ctx, address)
-}
-
-func (k *Keeper) RemoveFromTopicCreationWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.topicCreationWhitelist.Remove(ctx, address)
-}
-
-func (k *Keeper) IsInReputerWhitelist(ctx context.Context, address sdk.AccAddress) (bool, error) {
-	return k.reputerWhitelist.Has(ctx, address)
-}
-
-func (k *Keeper) AddToReputerWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.reputerWhitelist.Set(ctx, address)
-}
-
-func (k *Keeper) RemoveFromReputerWhitelist(ctx context.Context, address sdk.AccAddress) error {
-	return k.reputerWhitelist.Remove(ctx, address)
-}
-
 /// BANK KEEPER WRAPPERS
 
 // SendCoinsFromModuleToModule
@@ -2374,40 +2055,238 @@ func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sd
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }
 
-/// UTILS
-
-func (k *Keeper) Uint64Min(a, b uint64) uint64 {
-	if a < b {
-		return a
+// GetTotalRewardToDistribute
+func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
+	// Get Allora Rewards Account
+	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
+	// Get Total Allocation
+	totalReward := k.BankKeeper().GetBalance(
+		ctx,
+		alloraRewardsAccountAddr,
+		params.DefaultBondDenom).Amount
+	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
+	if err != nil {
+		return alloraMath.Dec{}, err
 	}
-	return b
+	return totalRewardDec, nil
 }
+
+/// UTILS
 
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
-	cursor := uint64(0)
-	limit, err := k.GetParamsDefaultLimit(ctx)
+	defaultLimit, err := k.GetParamsDefaultLimit(ctx)
 	if err != nil {
 		return uint64(0), uint64(0), err
 	}
+	limit := defaultLimit
+	cursor := uint64(0)
+
 	if pagination != nil {
 		if len(pagination.Key) > 0 {
 			cursor = binary.BigEndian.Uint64(pagination.Key)
 		}
-		if pagination.Limit == 0 {
-			return limit, cursor, nil
-		} else {
-			maxLimit, err := k.GetParamsMaxLimit(ctx)
-			if err != nil {
-				return uint64(0), uint64(0), err
-			}
-			if limit > maxLimit {
-				limit = maxLimit
-			}
-			return limit, cursor, nil
+		if pagination.Limit > 0 {
+			limit = pagination.Limit
+		}
+		maxLimit, err := k.GetParamsMaxLimit(ctx)
+		if err != nil {
+			return uint64(0), uint64(0), err
+		}
+		if limit > maxLimit {
+			limit = maxLimit
 		}
 	}
 
 	return limit, cursor, nil
+}
+
+/// STATE MANAGEMENT
+
+// Iterate through topic state and prune records that are no longer needed
+func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
+	// Delete records until the blockHeight
+	blockRange := collections.
+		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
+		EndInclusive(blockHeight)
+
+	err := k.pruneInferences(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneForecasts(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneLossBundles(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	err = k.pruneNetworkLosses(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allInferences.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allInferences.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allForecasts.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allForecasts.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.allLossBundles.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	// Make array of keys to data to remove
+	keysToDelete := make([]collections.Pair[uint64, int64], 0)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.KeyValue()
+		if err != nil {
+			return err
+		}
+		keysToDelete = append(keysToDelete, key.Key)
+	}
+
+	// Remove data at all keys
+	for _, key := range keysToDelete {
+		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Filter Nonces based on block_height
+	filteredNonces := make([]*types.Nonce, 0)
+	for _, nonce := range nonces.Nonces {
+		if nonce.BlockHeight >= blockHeightThreshold {
+			filteredNonces = append(filteredNonces, nonce)
+		}
+	}
+
+	// Update nonces in the map
+	nonces.Nonces = filteredNonces
+	if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	// Filter Nonces based on block_height
+	filteredNonces := make([]*types.ReputerRequestNonce, 0)
+	for _, nonce := range nonces.Nonces {
+		if nonce.ReputerNonce.BlockHeight >= blockHeightThreshold {
+			filteredNonces = append(filteredNonces, nonce)
+		}
+	}
+
+	// Update nonces in the map
+	nonces.Nonces = filteredNonces
+	if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Return true if the topic has met its cadence or is the first run
+func CheckCadence(blockHeight int64, topic types.Topic) bool {
+	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
+		topic.EpochLastEnded == 0
 }

@@ -20,6 +20,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		Creator:          sender,
 		Metadata:         "Some metadata for the new topic",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      10800,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -41,7 +42,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	pagination := &types.SimpleCursorPaginationRequest{
 		Limit: 100,
 	}
-	activeTopics, _, err := s.emissionsKeeper.GetActiveTopics(s.ctx, pagination)
+	activeTopics, _, err := s.emissionsKeeper.GetIdsOfActiveTopics(s.ctx, pagination)
 	require.NoError(err, "CreateTopic fails on first creation")
 	found := false
 	for _, topicId := range activeTopics {
@@ -50,31 +51,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 			break
 		}
 	}
-	require.True(found, "Added topic not found in active topics")
-}
-
-func (s *KeeperTestSuite) TestMsgCreateNewTopicInvalidUnauthorized() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          nonAdminAccounts[0].String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
-	}
-
-	_, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
-	require.ErrorIs(err, types.ErrNotInTopicCreationWhitelist, "CreateTopic should return an error")
+	require.False(found, "Added topic found in active topics")
 }
 
 func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {

@@ -26,7 +26,9 @@ data/
 *.account_info
 # Integration testing data
 integration/testnet
+integration/devnet
 
 # coverage
 coverage
-
+coverage_raw.lcov
+coverage.lcov

@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	l "log"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,7 +19,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	ctx context.Context,
 	msg *types.MsgInsertBulkReputerPayload,
 ) (*types.MsgInsertBulkReputerPayloadResponse, error) {
-	// Check if the topic exists
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
+
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -30,19 +33,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
 	/// All filters should be done in order of increasing computational complexity
-
-	// Check if the sender is in the reputer whitelist
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isLossSetter, err := ms.k.IsInReputerWhitelist(ctx, sender)
-	if err != nil {
-		return nil, err
-	}
-	if !isLossSetter {
-		return nil, types.ErrNotInReputerWhitelist
-	}
 
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
@@ -84,8 +74,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		// TODO: need to check if parameters are not nil to avoid panic
-
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
 			continue
@@ -98,22 +86,9 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		requiredMinimumStake, err := ms.k.GetParamsRequiredMinimumStake(ctx)
-		if err != nil {
-			return nil, err
-		}
-
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
-			// Check if the reputer is in the reputer whitelist
-			isWhitelisted, err := ms.k.IsInReputerWhitelist(ctx, reputer)
-			if err != nil {
-				return nil, err
-			}
-			// We'll keep what we can get from the payload, but we'll ignore the rest
-			if !isWhitelisted {
-				continue
-			}
+			l.Println("Reputer ", bundle.ValueBundle.Reputer, "not seen yet!")
 
 			// Check that the reputer is registered in the topic
 			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
@@ -126,11 +101,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputer)
+			stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
 			if err != nil {
 				return nil, err
 			}
-			if stake.LT(requiredMinimumStake) {
+			if stake.LT(params.RequiredMinimumStake) {
 				continue
 			}
 
@@ -173,7 +148,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxReputersPerTopicRequest, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Uint)
@@ -190,7 +165,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			return nil, err
 		}
 
-		stake, err := ms.k.GetStakeOnTopicFromReputer(ctx, msg.TopicId, reputerAccAddress)
+		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAccAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -217,24 +192,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	err = synth.GetCalcSetNetworkRegrets(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the reputer scores
-	_, err = rewards.GenerateReputerScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the worker scores for their inference work
-	_, err = rewards.GenerateInferenceScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
-	if err != nil {
-		return nil, err
-	}
-
-	// Calculate and Set the worker scores for their forecast work
-	_, err = rewards.GenerateForecastScores(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}

@@ -12,15 +12,15 @@ import (
 
 // Registers a new network participant to the network for the first time
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
-	if msg.GetLibP2PKey() == "" {
-		return nil, types.ErrLibP2PKeyRequired
+	if err := msg.Validate(); err != nil {
+		return nil, err
 	}
+
 	address, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, address)
+	hasEnoughBal, fee, _ := ms.CheckBalanceForRegistration(ctx, address)
 	if !hasEnoughBal {
 		return nil, types.ErrTopicRegistrantNotEnoughDenom
 	}
@@ -44,22 +44,16 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		NodeAddress:  msg.Sender,
 		LibP2PKey:    msg.LibP2PKey,
 		MultiAddress: msg.MultiAddress,
+		Owner:        msg.Owner,
+		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
 	}
-	nodeInfo.Owner = msg.Owner
-	nodeInfo.NodeId = msg.Owner + "|" + msg.LibP2PKey
+
 	if msg.IsReputer {
-		// add node to topicReputers
-		// add node to reputers
 		err = ms.k.InsertReputer(ctx, msg.TopicId, address, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		if msg.Owner == "" {
-			return nil, types.ErrOwnerCannotBeEmpty
-		}
-		// add node to topicWorkers
-		// add node to workers
 		err = ms.k.InsertWorker(ctx, msg.TopicId, address, nodeInfo)
 		if err != nil {
 			return nil, err
@@ -91,11 +85,6 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 
 	// Proceed based on whether requester is removing their reputer or worker registration
 	if msg.IsReputer {
-		// Remove the reputer registration from the topic
-		err = ms.k.RemoveReputer(ctx, msg.TopicId, address)
-		if err != nil {
-			return nil, err
-		}
 
 		isRegisteredInTopic, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, address)
 		if err != nil {
@@ -105,7 +94,23 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 		if !isRegisteredInTopic {
 			return nil, types.ErrAddressIsNotRegisteredInThisTopic
 		}
+
+		// Remove the reputer registration from the topic
+		err = ms.k.RemoveReputer(ctx, msg.TopicId, address)
+		if err != nil {
+			return nil, err
+		}
+
 	} else {
+		isRegisteredInTopic, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, address)
+		if err != nil {
+			return nil, err
+		}
+
+		if !isRegisteredInTopic {
+			return nil, types.ErrAddressIsNotRegisteredInThisTopic
+		}
+
 		// Remove the worker registration from the topic
 		err = ms.k.RemoveWorker(ctx, msg.TopicId, address)
 		if err != nil {

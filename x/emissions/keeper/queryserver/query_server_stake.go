@@ -2,22 +2,13 @@ package queryserver
 
 import (
 	"context"
-
+	cosmosMath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-// Get timestamp of the last rewards update
-func (qs queryServer) GetLastRewardsUpdate(ctx context.Context, req *types.QueryLastRewardsUpdateRequest) (*types.QueryLastRewardsUpdateResponse, error) {
-	lastRewardsUpdate, err := qs.k.GetLastRewardsUpdate(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &types.QueryLastRewardsUpdateResponse{LastRewardsUpdate: lastRewardsUpdate}, nil
-}
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
 func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalStakeRequest) (*types.QueryTotalStakeResponse, error) {
@@ -37,7 +28,7 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 		return nil, err
 	}
 
-	stake, err := qs.k.GetStakeOnTopicFromReputer(ctx, req.TopicId, address)
+	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -76,7 +67,7 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake}, nil
+	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: cosmosMath.NewUintFromString(stake.Amount.String())}, nil
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {

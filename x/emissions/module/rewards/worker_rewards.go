@@ -8,29 +8,138 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type TaskRewardType int
+
+const (
+	ReputerRewardType TaskRewardType = iota // iota resets to 0 for the first constant in the block.
+	WorkerInferenceRewardType
+	WorkerForecastRewardType
+)
+
 type TaskRewards struct {
 	Address sdk.AccAddress
 	Reward  alloraMath.Dec
+	TopicId TopicId
+	Type    TaskRewardType
 }
 
 var TASK_FORECAST = true
 var TASK_INFERENCE = false
+
+func GetInferenceTaskRewardFractions(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	blockHeight int64,
+	pRewardSpread alloraMath.Dec,
+	actualNetworkLoss *types.ValueBundle,
+) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, actualNetworkLoss)
+}
+
+func GetForecastingTaskRewardFractions(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	blockHeight int64,
+	pRewardSpread alloraMath.Dec,
+	actualNetworkLoss *types.ValueBundle,
+) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, actualNetworkLoss)
+}
+
+func GetWorkersRewardFractions(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	blockHeight int64,
+	which bool,
+	pRewardSpread alloraMath.Dec,
+	actualNetworkLoss *types.ValueBundle,
+) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+	// Get all latest score for each worker and the scores from the latest time steps
+	// to be used in the standard deviantion
+	scores := make([][]alloraMath.Dec, 0)
+	latestWorkerScores := make([]alloraMath.Dec, 0)
+	workers := make([]sdk.AccAddress, 0)
+	if which == TASK_INFERENCE {
+		// Get latest score for each worker
+		for _, oneOutLoss := range actualNetworkLoss.OneOutInfererValues {
+			workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
+			if err != nil {
+				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
+			}
+			workers = append(workers, workerAddr)
+
+			// Get worker last scores
+			workerLastScores, err := k.GetLatestInfererScore(ctx, topicId, workerAddr)
+			if err != nil {
+				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker latest inference scores")
+			}
+			latestWorkerScores = append(latestWorkerScores, workerLastScores.Score)
+		}
+
+		// Get worker scores from the latest time steps
+		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
+		if err != nil {
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
+		}
+		var workerLastScoresDec []alloraMath.Dec
+		for _, score := range latestScoresFromLastestTimeSteps {
+			workerLastScoresDec = append(workerLastScoresDec, score.Score)
+		}
+		scores = append(scores, workerLastScoresDec)
+
+	} else { // TASK_FORECAST
+		// Get latest score for each worker
+		for _, oneOutLoss := range actualNetworkLoss.OneOutForecasterValues {
+			workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
+			if err != nil {
+				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
+			}
+			workers = append(workers, workerAddr)
+
+			// Get worker last scores
+			workerLastScores, err := k.GetLatestForecasterScore(ctx, topicId, workerAddr)
+			if err != nil {
+				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker latest forecast score")
+			}
+			latestWorkerScores = append(latestWorkerScores, workerLastScores.Score)
+		}
+
+		// Get worker scores from the latest time steps
+		latestScoresFromLastestTimeSteps, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
+		if err != nil {
+			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker forecast scores from the latest time steps")
+		}
+		var workerLastScoresDec []alloraMath.Dec
+		for _, score := range latestScoresFromLastestTimeSteps {
+			workerLastScoresDec = append(workerLastScoresDec, score.Score)
+		}
+		scores = append(scores, workerLastScoresDec)
+	}
+
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread)
+	if err != nil {
+		return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
+	}
+
+	return workers, rewardFractions, nil
+}
 
 func GetInferenceTaskEntropy(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
-	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	blockHeight int64,
+	workers []sdk.AccAddress,
+	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
-	modifiedRewardFractions []alloraMath.Dec,
-	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_INFERENCE, blockHeight)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_INFERENCE, workers, workersFractions)
 }
 
 func GetForecastingTaskEntropy(
@@ -38,16 +147,14 @@ func GetForecastingTaskEntropy(
 	k keeper.Keeper,
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
-	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	blockHeight int64,
+	workers []sdk.AccAddress,
+	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
-	modifiedRewardFractions []alloraMath.Dec,
-	workers []sdk.AccAddress,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, pRewardSpread, betaEntropy, TASK_FORECAST, blockHeight)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_FORECAST, workers, workersFractions)
 }
 
 func getInferenceOrForecastTaskEntropy(
@@ -55,87 +162,84 @@ func getInferenceOrForecastTaskEntropy(
 	k keeper.Keeper,
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
-	pRewardSpread alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 	which bool,
-	blockHeight int64,
+	workers []sdk.AccAddress,
+	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
-	modifiedRewardFractions []alloraMath.Dec,
-	workers []sdk.AccAddress,
 	err error,
 ) {
-	var scoresAtBlock types.Scores
-	if which == TASK_INFERENCE {
-		scoresAtBlock, err = k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
-		if err != nil {
-			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get worker inference scores at block")
-		}
-	} else { // TASK_FORECAST
-		scoresAtBlock, err = k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
-		if err != nil {
-			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get worker forecast scores at block")
-		}
-	}
-	numWorkers := len(scoresAtBlock.Scores)
-	scores := make([]alloraMath.Dec, numWorkers)
-	workers = make([]sdk.AccAddress, numWorkers)
-	for i, scorePtr := range scoresAtBlock.Scores {
-		scores[i] = scorePtr.Score
-		addrStr := scorePtr.Address
-		workerAddr, err := sdk.AccAddressFromBech32(addrStr)
-		if err != nil {
-			return alloraMath.Dec{}, nil, nil, err
-		}
-		workers[i] = workerAddr
-	}
-	var previousRewardFraction alloraMath.Dec
-	rewardFractions, err := GetScoreFractions(scores, pRewardSpread)
-	if err != nil {
-		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get score fractions")
-	}
+	numWorkers := len(workers)
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
-	for i, fraction := range rewardFractions {
+	var previousRewardFraction alloraMath.Dec
+	for i, worker := range workers {
 		noPriorScore := false
 		if which == TASK_INFERENCE {
-			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 			if err != nil {
-				return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get previous inference reward fraction")
+				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous inference reward fraction")
 			}
 		} else { // TASK_FORECAST
-			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, workers[i])
+			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 			if err != nil {
-				return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to get previous forecast reward fraction")
+				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast reward fraction")
 			}
 		}
 		emaRewardFractions[i], err = alloraMath.CalcEma(
 			emaAlpha,
-			fraction,
+			workersFractions[i],
 			previousRewardFraction,
 			noPriorScore,
 		)
 		if err != nil {
-			return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate EMA")
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate EMA")
 		}
 	}
-	numberRatio, err := NumberRatio(rewardFractions)
+
+	// Calculate modified reward fractions and persist for next round
+	numberRatio, err := NumberRatio(workersFractions)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate number ratio")
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate number ratio")
 	}
-	modifiedRewardFractions, err = ModifiedRewardFractions(emaRewardFractions)
+	modifiedRewardFractions, err := ModifiedRewardFractions(emaRewardFractions)
 	if err != nil {
-		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate modified reward fractions")
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
 	}
-	entropy, err = Entropy(
-		modifiedRewardFractions,
-		numberRatio,
-		alloraMath.NewDecFromInt64(int64(numWorkers)),
-		betaEntropy,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, nil, nil, errors.Wrapf(err, "failed to calculate entropy")
+	if which == TASK_INFERENCE {
+		for i, worker := range workers {
+			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
+			if err != nil {
+				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous inference reward fraction")
+			}
+		}
+	} else { // TASK_FORECAST
+		for i, worker := range workers {
+			err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
+			if err != nil {
+				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast reward fraction")
+			}
+		}
 	}
-	return entropy, modifiedRewardFractions, workers, nil
+
+	if numWorkers > 1 {
+		entropy, err = Entropy(
+			modifiedRewardFractions,
+			numberRatio,
+			alloraMath.NewDecFromInt64(int64(numWorkers)),
+			betaEntropy,
+		)
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy")
+		}
+	} else {
+		entropy, err = EntropyForSingleParticipant()
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate entropy for single participant")
+		}
+	}
+
+	return entropy, nil
 }
 
 // The performance score of the entire forecasting task T_i
@@ -265,17 +369,17 @@ func getChiAndGamma(
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func GetRewardForInferenceTaskInTopic(
-	niaveNetworkInferenceLoss alloraMath.Dec,
+	naiveNetworkInferenceLoss alloraMath.Dec,
 	networkInferenceLoss alloraMath.Dec,
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	totalReward alloraMath.Dec, // E_i
+	totalReward *alloraMath.Dec, // E_i
 	a alloraMath.Dec, // global param used for chi χ
 	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
-		niaveNetworkInferenceLoss,
+		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,
@@ -297,7 +401,7 @@ func GetRewardForInferenceTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := oneMinusChiGammaEntropyInference.Mul(totalReward)
+	numerator, err := oneMinusChiGammaEntropyInference.Mul(*totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -324,7 +428,7 @@ func GetRewardForForecastingTaskInTopic(
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
-	totalReward alloraMath.Dec, // E_i
+	totalReward *alloraMath.Dec, // E_i
 	sigmoidA alloraMath.Dec, // a used for sigmoid
 	sigmoidB alloraMath.Dec, // b used for sigmoid
 ) (alloraMath.Dec, error) {
@@ -347,7 +451,7 @@ func GetRewardForForecastingTaskInTopic(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	numerator, err := chiGammaEntropyForecasting.Mul(totalReward)
+	numerator, err := chiGammaEntropyForecasting.Mul(*totalReward)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -366,99 +470,28 @@ func GetRewardForForecastingTaskInTopic(
 	return ret, nil
 }
 
-func GetWorkersRewardsInferenceTask(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
+// GetRewardPerWorker calculates the reward for workers for forecast and inference tasks
+// U_ij = u_ij * Ui,
+// V_ik = v_ik * Vi
+func GetRewardPerWorker(
 	topicId uint64,
-	block int64,
-	preward alloraMath.Dec,
-	totalInferenceRewards alloraMath.Dec,
+	taskRewardType TaskRewardType,
+	totalRewards alloraMath.Dec,
+	workerAddresses []sdk.AccAddress,
+	workerFractions []alloraMath.Dec,
 ) ([]TaskRewards, error) {
-	// Get network loss
-	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get network loss bundle at or before block")
-	}
-
-	// Get last score for each worker
-	var scoresDec [][]alloraMath.Dec
-	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
-		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
+	var rewards []TaskRewards
+	for i, fraction := range workerFractions {
+		reward, err := fraction.Mul(totalRewards)
 		if err != nil {
 			return nil, err
 		}
-
-		// Get worker last scores
-		workerLastScores, err := keeper.GetWorkerInferenceScoresUntilBlock(ctx, topicId, block, workerAddr)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to get worker inference scores until block")
-		}
-
-		// Add worker address in the worker addresses array
-		workerAddresses = append(workerAddresses, workerAddr)
-
-		var workerLastScoresDec []alloraMath.Dec
-		for _, score := range workerLastScores {
-			workerLastScoresDec = append(workerLastScoresDec, score.Score)
-		}
-		scoresDec = append(scoresDec, workerLastScoresDec)
-	}
-
-	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalInferenceRewards, workerAddresses)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
-	}
-
-	return rewards, nil
-}
-
-func GetWorkersRewardsForecastTask(
-	ctx sdk.Context,
-	keeper keeper.Keeper,
-	topicId uint64,
-	block int64,
-	preward alloraMath.Dec,
-	totalForecastRewards alloraMath.Dec,
-) ([]TaskRewards, error) {
-	// Get network loss
-	networkLosses, _, err := keeper.GetNetworkLossBundleAtOrBeforeBlock(ctx, topicId, block)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get network loss bundle at or before block")
-	}
-
-	// Get new score for each worker
-	var scoresDec [][]alloraMath.Dec
-	var workerAddresses []sdk.AccAddress
-	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
-		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
-		if err != nil {
-			return nil, err
-		}
-
-		// Get worker last scores
-		workerLastScores, err := keeper.GetWorkerForecastScoresUntilBlock(ctx, topicId, block, workerAddr)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to get worker forecast scores until block")
-		}
-
-		// Add worker address in the worker addresses array
-		workerAddresses = append(workerAddresses, workerAddr)
-
-		// Convert scores to alloraMath.Dec
-		var workerLastScoresDec []alloraMath.Dec
-		for _, score := range workerLastScores {
-			workerLastScoresDec = append(workerLastScoresDec, score.Score)
-		}
-		scoresDec = append(scoresDec, workerLastScoresDec)
-	}
-
-	// Get worker portion of rewards
-	rewards, err := GetWorkerPortionOfRewards(scoresDec, preward, totalForecastRewards, workerAddresses)
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get worker portion of rewards")
+		rewards = append(rewards, TaskRewards{
+			Address: workerAddresses[i],
+			Reward:  reward,
+			TopicId: topicId,
+			Type:    taskRewardType,
+		})
 	}
 
 	return rewards, nil

@@ -100,12 +100,12 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	return k.EcosystemTokensMinted.Set(ctx, new)
 }
 
-/// STAKIND KEEPER RELATED FUNCTIONS
+/// STAKING KEEPER RELATED FUNCTIONS
 
 // StakingTokenSupply implements an alias call to the underlying staking keeper's
 // StakingTokenSupply to be used in BeginBlocker.
-func (k Keeper) StakingTokenSupply(ctx context.Context) (math.Int, error) {
-	return k.stakingKeeper.StakingTokenSupply(ctx)
+func (k Keeper) CosmosValidatorStakedSupply(ctx context.Context) (math.Int, error) {
+	return k.stakingKeeper.TotalBondedTokens(ctx)
 }
 
 /// BANK KEEPER RELATED FUNCTIONS
