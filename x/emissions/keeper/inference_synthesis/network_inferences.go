@@ -313,7 +313,7 @@ func CalcOneOutInferences(
 		}
 
 		// Recalculate the forecast-implied inferences without the worker's inference
-		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForcastImpliedInferences(
+		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
 			inferencesWithoutWorker,
 			forecasts,
 			networkCombinedLoss,
@@ -452,7 +452,7 @@ func CalcNetworkInferences(
 	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
 
 	// Calculate forecast-implied inferences I_ik
-	forecastImpliedInferenceByWorker, err := CalcForcastImpliedInferences(
+	forecastImpliedInferenceByWorker, err := CalcForecastImpliedInferences(
 		inferenceByWorker,
 		forecasts,
 		networkCombinedLoss,
@@ -634,8 +634,6 @@ func GetNetworkInferencesAtBlock(
 	if err != nil {
 		return nil, 0, err
 	}
-
-	log.Printf("forecasts: %v", forecasts)
 
 	networkInferences, err := CalcNetworkInferences(
 		ctx,

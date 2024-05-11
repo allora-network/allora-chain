@@ -154,7 +154,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			result, err := inference_synthesis.CalcForcastImpliedInferences(
+			result, err := inference_synthesis.CalcForecastImpliedInferences(
 				tc.inferenceByWorker,
 				tc.forecasts,
 				tc.networkCombinedLoss,
