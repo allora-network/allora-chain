@@ -68,26 +68,30 @@ func (k *Keeper) GetCurrentTopicWeight(
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
 	}
-	targetWeight, err := k.GetTargetWeight(
-		topicStakeDec,
-		topicEpochLength,
-		feeRevenue,
-		stakeImportance,
-		feeImportance,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get target weight")
+	if !feeRevenue.Equal(alloraMath.ZeroDec()) {
+		targetWeight, err := k.GetTargetWeight(
+			topicStakeDec,
+			topicEpochLength,
+			feeRevenue,
+			stakeImportance,
+			feeImportance,
+		)
+		if err != nil {
+			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get target weight")
+		}
+
+		// Take EMA of target weight with previous weight
+		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+		if err != nil {
+			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
+		}
+		weight, err = alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousTopicWeight, noPrior)
+		if err != nil {
+			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
+		}
+
+		return weight, topicFeeRevenue.Revenue, nil
 	}
 
-	// Take EMA of target weight with previous weight
-	previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
-	}
-	weight, err = alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousTopicWeight, noPrior)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
-	}
-
-	return weight, topicFeeRevenue.Revenue, nil
+	return alloraMath.ZeroDec(), topicFeeRevenue.Revenue, nil
 }

@@ -28,8 +28,8 @@ func DefaultParams() Params {
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests from the chain
-		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(5),                                 // maximum number of outstanding nonces for worker requests per topic from the chain
+		MaxUnfulfilledReputerRequests:   uint64(5),                                 // maximum number of outstanding nonces for reputer requests per topic from the chain
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
@@ -42,7 +42,7 @@ func DefaultParams() Params {
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
+		MaxRetriesToFulfilNoncesReputer: int64(5),                                  // max throttle of simultaneous unfulfilled reputer requests
 		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
 		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic

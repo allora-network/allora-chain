@@ -129,6 +129,53 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 			expectedLoss: alloraMath.MustNewDecFromString("0.1587401051968199"), // exp(0.1) ≈ 1.258925
 			expectedErr:  nil,
 		},
+		{ // EPOCH 3
+			name: "Epoch 3",
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
+				"reputer0": cosmosMath.NewUintFromString("210935888148105000000000"),
+				"reputer1": cosmosMath.NewUintFromString("217043118020878000000000"),
+				"reputer2": cosmosMath.NewUintFromString("162033293627176000000000"),
+				"reputer3": cosmosMath.NewUintFromString("395517779633374000000000"),
+				"reputer4": cosmosMath.NewUintFromString("206619852485799000000000"),
+			},
+			reportedLosses: &emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer0",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000122971348383675"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer1",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000101776865013273"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer2",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000318342673789797"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer3",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000146628664594261"),
+						},
+					},
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "reputer4",
+							CombinedValue: alloraMath.MustNewDecFromString(".0000129033371858907"),
+						},
+					},
+				},
+			},
+			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
+			expectedLoss: alloraMath.MustNewDecFromString(".0000144532959522353"),
+			expectedErr:  nil,
+		},
 	}
 
 	for _, tc := range tests {
@@ -145,8 +192,117 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
-	tests := []struct {
+func getTestCasesOneWorker() []struct {
+	name            string
+	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+	reportedLosses  emissions.ReputerValueBundles
+	epsilon         alloraMath.Dec
+	expectedOutput  emissions.ValueBundle
+	expectedError   error
+} {
+	return []struct {
+		name            string
+		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+		reportedLosses  emissions.ReputerValueBundles
+		epsilon         alloraMath.Dec
+		expectedOutput  emissions.ValueBundle
+		expectedError   error
+	}{
+		{
+			name: "simple one reputer combined loss",
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
+				"worker1": inference_synthesis.CosmosUintOneE18(), // 1 token
+			},
+			reportedLosses: emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "worker1",
+							CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+							NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+							InfererValues: []*emissions.WorkerAttributedValue{
+								{
+									Worker: "worker1",
+									Value:  alloraMath.MustNewDecFromString("0.1"),
+								},
+							},
+							ForecasterValues: []*emissions.WorkerAttributedValue{
+								{
+									Worker: "worker1",
+									Value:  alloraMath.MustNewDecFromString("0.1"),
+								},
+							},
+							OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+								{
+									Worker: "worker1",
+									Value:  alloraMath.MustNewDecFromString("0.1"),
+								},
+							},
+							OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+								{
+									Worker: "worker1",
+									Value:  alloraMath.MustNewDecFromString("0.1"),
+								},
+							},
+							OneInForecasterValues: []*emissions.WorkerAttributedValue{
+								{
+									Worker: "worker1",
+									Value:  alloraMath.MustNewDecFromString("0.1"),
+								},
+							},
+						},
+					},
+				},
+			},
+			epsilon: alloraMath.MustNewDecFromString("1e-4"),
+			expectedOutput: emissions.ValueBundle{
+				CombinedValue: alloraMath.MustNewDecFromString("0.1587401051968199"),
+				NaiveValue:    alloraMath.MustNewDecFromString("0.1587401051968199"),
+				InfererValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: "worker1",
+						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+					},
+				},
+				ForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: "worker1",
+						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+					},
+				},
+				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: "worker1",
+						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+					},
+				},
+				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+					{
+						Worker: "worker1",
+						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+					},
+				},
+				OneInForecasterValues: []*emissions.WorkerAttributedValue{
+					{
+						Worker: "worker1",
+						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+					},
+				},
+			},
+			expectedError: nil,
+		},
+	}
+}
+
+func getTestCasesTwoWorkers() []struct {
+	name            string
+	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+	reportedLosses  emissions.ReputerValueBundles
+	epsilon         alloraMath.Dec
+	expectedOutput  emissions.ValueBundle
+	expectedError   error
+} {
+	return []struct {
 		name            string
 		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
 		reportedLosses  emissions.ReputerValueBundles
@@ -336,6 +492,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 			expectedError: nil,
 		},
 	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
+	tests := getTestCasesTwoWorkers()
 
 	require := s.Require()
 
@@ -381,6 +541,31 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 						require.True(alloraMath.InDelta(expectedValue.Value, output.OneInForecasterValues[i].Value, alloraMath.MustNewDecFromString("0.00001")))
 					}
 				}
+			}
+		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
+	tests := append(getTestCasesOneWorker(), getTestCasesTwoWorkers()...)
+
+	require := s.Require()
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			if tc.expectedError != nil {
+				require.Error(err)
+				require.EqualError(err, tc.expectedError.Error())
+			} else {
+				require.NoError(err)
+
+				// Verify the length of each attribute in the ValueBundle
+				require.Len(output.InfererValues, len(tc.expectedOutput.InfererValues), "Mismatch in number of InfererValues")
+				require.Len(output.ForecasterValues, len(tc.expectedOutput.ForecasterValues), "Mismatch in number of ForecasterValues")
+				require.Len(output.OneInForecasterValues, len(tc.expectedOutput.OneInForecasterValues), "Mismatch in number of OneInForecasterValues")
+				require.Len(output.OneOutInfererValues, len(tc.expectedOutput.OneOutInfererValues), "Mismatch in number of OneOutInfererValues")
+				require.Len(output.OneOutForecasterValues, len(tc.expectedOutput.OneOutForecasterValues), "Mismatch in number of OneOutForecasterValues")
 			}
 		})
 	}

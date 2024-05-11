@@ -159,7 +159,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetNetworkInferencesAtBlock",
 					Use:       "get-network-inferences-at-block [topic_id] [block]",
-					Short:     "Get the Network Inferences for a topic at block height ",
+					Short:     "Get the Network Inferences for a topic at given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
@@ -168,10 +168,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetNetworkLossBundleAtBlock",
 					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
-					Short:     "Get the network loss bundle for a topic at block height ",
+					Short:     "Get the network loss bundle for a topic at given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "IsWhitelistAdmin",
+					Use:       "is-whitelist-admin [address]",
+					Short:     "Check if an address is a whitelist admin. True if so, else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "address"},
 					},
 				},
 			},
