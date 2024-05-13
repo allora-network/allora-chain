@@ -856,10 +856,9 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId1,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId1,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
