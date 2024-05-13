@@ -46,7 +46,10 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update the stake data structures, spread the stake across all topics evenly
 	err = ms.k.AddStake(ctx, msg.TopicId, senderAddr, msg.Amount)
@@ -135,7 +138,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, sender, coins)
+	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, sender, coins)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update the stake data structures
 	err = ms.k.RemoveStake(ctx, stakeRemoval.Placement.TopicId, sender, stakeRemoval.Placement.Amount)
@@ -173,7 +179,10 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update the stake data structures
 	err = ms.k.AddStake(ctx, msg.TopicId, targetAddr, msg.Amount)
@@ -283,7 +292,10 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, senderAddr, coins)
+	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, senderAddr, coins)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update the stake data structures
 	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, senderAddr, reputerAddr, stakeRemoval.Placement.Amount)
@@ -330,7 +342,10 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
-		ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
+		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
+		if err != nil {
+			return nil, err
+		}
 		delegateInfo.RewardDebt, err = delegateInfo.Amount.Mul(share)
 		if err != nil {
 			return nil, err
