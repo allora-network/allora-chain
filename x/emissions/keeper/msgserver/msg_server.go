@@ -5,6 +5,7 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/gogo/protobuf/proto"
 )
 
 type msgServer struct {
@@ -18,14 +19,19 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServer {
 	return &msgServer{k: keeper}
 }
 
-func (ms msgServer) CheckInputLength(ctx context.Context, inputLength int) error {
+func (ms msgServer) CheckInputLength(ctx context.Context, msg proto.Message) error {
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 
+	serializedMsg, err := proto.Marshal(msg)
+	if err != nil {
+		return types.ErrFailedToSerializePayload
+	}
+
 	// Check the length of the serialized message
-	if int64(inputLength) > params.MaxSerializedMsgLength {
+	if int64(len(serializedMsg)) > params.MaxSerializedMsgLength {
 		return types.ErrQueryTooLarge
 	}
 

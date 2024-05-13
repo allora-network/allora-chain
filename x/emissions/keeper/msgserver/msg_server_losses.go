@@ -12,7 +12,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
 )
 
 // Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
@@ -20,12 +19,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	ctx context.Context,
 	msg *types.MsgInsertBulkReputerPayload,
 ) (*types.MsgInsertBulkReputerPayloadResponse, error) {
-	serializedMsg, err := proto.Marshal(msg)
-	if err != nil {
-		return nil, types.ErrFailedToSerializePayload
-	}
-
-	err = ms.CheckInputLength(ctx, len(serializedMsg))
+	err := ms.CheckInputLength(ctx, msg)
 	if err != nil {
 		return nil, err
 	}
