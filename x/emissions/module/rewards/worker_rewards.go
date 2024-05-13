@@ -32,9 +32,9 @@ func GetInferenceTaskRewardFractions(
 	topicId uint64,
 	blockHeight int64,
 	pRewardSpread alloraMath.Dec,
-	actualNetworkLoss *types.ValueBundle,
+	latestScores []types.Score,
 ) ([]sdk.AccAddress, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, actualNetworkLoss)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, latestScores)
 }
 
 func GetForecastingTaskRewardFractions(
@@ -43,9 +43,9 @@ func GetForecastingTaskRewardFractions(
 	topicId uint64,
 	blockHeight int64,
 	pRewardSpread alloraMath.Dec,
-	actualNetworkLoss *types.ValueBundle,
+	latestScores []types.Score,
 ) ([]sdk.AccAddress, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, actualNetworkLoss)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, latestScores)
 }
 
 func GetWorkersRewardFractions(
@@ -55,7 +55,7 @@ func GetWorkersRewardFractions(
 	blockHeight int64,
 	which bool,
 	pRewardSpread alloraMath.Dec,
-	actualNetworkLoss *types.ValueBundle,
+	latestScores []types.Score,
 ) ([]sdk.AccAddress, []alloraMath.Dec, error) {
 	// Get all latest score for each worker and the scores from the latest time steps
 	// to be used in the standard deviantion
@@ -64,19 +64,13 @@ func GetWorkersRewardFractions(
 	workers := make([]sdk.AccAddress, 0)
 	if which == TASK_INFERENCE {
 		// Get latest score for each worker
-		for _, oneOutLoss := range actualNetworkLoss.OneOutInfererValues {
-			workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
+		for _, latestScore := range latestScores {
+			workerAddr, err := sdk.AccAddressFromBech32(latestScore.Address)
 			if err != nil {
 				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
 			}
 			workers = append(workers, workerAddr)
-
-			// Get worker last scores
-			workerLastScores, err := k.GetLatestInfererScore(ctx, topicId, workerAddr)
-			if err != nil {
-				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker latest inference scores")
-			}
-			latestWorkerScores = append(latestWorkerScores, workerLastScores.Score)
+			latestWorkerScores = append(latestWorkerScores, latestScore.Score)
 		}
 
 		// Get worker scores from the latest time steps
@@ -92,19 +86,13 @@ func GetWorkersRewardFractions(
 
 	} else { // TASK_FORECAST
 		// Get latest score for each worker
-		for _, oneOutLoss := range actualNetworkLoss.OneOutForecasterValues {
-			workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
+		for _, latestScore := range latestScores {
+			workerAddr, err := sdk.AccAddressFromBech32(latestScore.Address)
 			if err != nil {
 				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
 			}
 			workers = append(workers, workerAddr)
-
-			// Get worker last scores
-			workerLastScores, err := k.GetLatestForecasterScore(ctx, topicId, workerAddr)
-			if err != nil {
-				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker latest forecast score")
-			}
-			latestWorkerScores = append(latestWorkerScores, workerLastScores.Score)
+			latestWorkerScores = append(latestWorkerScores, latestScore.Score)
 		}
 
 		// Get worker scores from the latest time steps

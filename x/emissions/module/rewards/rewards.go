@@ -290,25 +290,25 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Calculate and Set the reputer scores
-	scores, err := GenerateReputerScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *bundles)
+	reputerScores, err := GenerateReputerScores(ctx, k, topicId, blockHeight, *bundles)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate and Set the worker scores for their inference work
-	_, err = GenerateInferenceScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *lossBundles)
+	infererScores, err := GenerateInferenceScores(ctx, k, topicId, blockHeight, *lossBundles)
 	if err != nil {
 		return nil, err
 	}
 
 	// Calculate and Set the worker scores for their forecast work
-	_, err = GenerateForecastScores(sdk.UnwrapSDKContext(ctx), k, topicId, blockHeight, *lossBundles)
+	forecasterScores, err := GenerateForecastScores(ctx, k, topicId, blockHeight, *lossBundles)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
-	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, scores)
+	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, reputerScores)
 	if err != nil {
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
@@ -334,7 +334,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		topicId,
 		blockHeight,
 		moduleParams.PRewardSpread,
-		lossBundles,
+		infererScores,
 	)
 	if err != nil {
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get inferer reward fractions")
@@ -361,7 +361,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		topicId,
 		blockHeight,
 		moduleParams.PRewardSpread,
-		lossBundles,
+		forecasterScores,
 	)
 	if err != nil {
 		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecaster reward fractions")
