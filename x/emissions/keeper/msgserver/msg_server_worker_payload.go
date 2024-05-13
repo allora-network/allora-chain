@@ -22,7 +22,6 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
-
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
 	for _, workerDataBundle := range workerDataBundles {
@@ -30,7 +29,11 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		/// Do filters on the per payload first, then on each inferer
 		/// All filters should be done in order of increasing computational complexity
 
-		// check signatures from the bundle throw if invalid!
+		if err := workerDataBundle.Validate(); err != nil {
+			return nil, err
+		}
+
+		// Check signatures from the bundle throw if invalid!
 		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
 		if err != nil || len(pk) != secp256k1.PubKeySize {
 			return nil, types.ErrSignatureVerificationFailed
@@ -128,8 +131,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		/// Do filters on the per payload first, then on each forecaster
 		/// All filters should be done in order of increasing computational complexity
 
-		// check signatures from the bundle throw if invalid!
-
+		// Check signatures from the bundle throw if invalid!
 		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
 		if err != nil || len(pk) != secp256k1.PubKeySize {
 			return types.ErrSignatureVerificationFailed
@@ -141,6 +143,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
 			return types.ErrSignatureVerificationFailed
 		}
+
 		/// If we do PoX-like anti-sybil procedure, would go here
 
 		forecast := workerDataBundle.InferenceForecastsBundle.Forecast
@@ -224,6 +227,10 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
 	err := ms.CheckInputLength(ctx, msg)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := msg.ValidateTopLevel(); err != nil {
 		return nil, err
 	}
 

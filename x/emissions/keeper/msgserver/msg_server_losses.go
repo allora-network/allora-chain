@@ -26,7 +26,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	if err := msg.Validate(); err != nil {
+	// Validate top level here. We avoid validating the full message here because that would allow for 1 bundle to fail the whole message.
+	if err := msg.ValidateTopLevel(); err != nil {
 		return nil, err
 	}
 
@@ -77,6 +78,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
 	latestReputerScores := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
+		if err := bundle.Validate(); err != nil {
+			fmt.Println("Error validating reputer value bundle: ", err)
+			continue
+		}
+
 		reputer, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
 		if err != nil {
 			return nil, err
