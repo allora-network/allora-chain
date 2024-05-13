@@ -18,7 +18,6 @@ func DefaultParams() Params {
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
 		MinEpochLength:                  1,                                         // 1 block
-		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
@@ -83,10 +82,6 @@ func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
 
 func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
-}
-
-func DefaultParamsSharpness() alloraMath.Dec {
-	return DefaultParams().Sharpness
 }
 
 func DefaultParamsBetaEntropy() alloraMath.Dec {

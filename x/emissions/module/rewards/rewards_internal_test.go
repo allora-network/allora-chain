@@ -56,7 +56,6 @@ func (s *MathTestSuite) TestAdjustedStakeSimple() {
 		listeningCoefficient,
 		allListeningCoefficients,
 		numReputers,
-		alloraMath.MustNewDecFromString("20"),
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
@@ -633,7 +632,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("17.4346"), alloraMath.MustNewDecFromString("20.13897"), alloraMath.MustNewDecFromString("24.08276"), alloraMath.MustNewDecFromString("11.41393"), alloraMath.MustNewDecFromString("15.33319")}
 	wantErr := false
 
-	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, alloraMath.MustNewDecFromString("20"))
+	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers)
 	if (err != nil) != wantErr {
 		t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, wantErr)
 		return
@@ -692,7 +691,6 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		initialCoefficients,
 		numReputers,
 		params.LearningRate,
-		params.Sharpness,
 		1,
 	)
 	require.NoError(err)
@@ -703,7 +701,6 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		initialCoefficients,
 		numReputers,
 		params.LearningRate,
-		params.Sharpness,
 		2,
 	)
 	require.NoError(err)
@@ -714,7 +711,6 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		initialCoefficients,
 		numReputers,
 		params.LearningRate,
-		params.Sharpness,
 		3,
 	)
 	require.NoError(err)

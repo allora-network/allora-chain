@@ -49,9 +49,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinEpochLength) == 1 {
 		existingParams.MinEpochLength = newParams.MinEpochLength[0]
 	}
-	if len(newParams.Sharpness) == 1 {
-		existingParams.Sharpness = newParams.Sharpness[0]
-	}
 	if len(newParams.BetaEntropy) == 1 {
 		existingParams.BetaEntropy = newParams.BetaEntropy[0]
 	}
