@@ -164,6 +164,11 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
 }
 
+func (s *KeeperTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+	s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
+}
+
 func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()

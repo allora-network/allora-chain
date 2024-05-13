@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"encoding/hex"
 
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -29,6 +30,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -160,6 +162,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -306,6 +310,8 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
