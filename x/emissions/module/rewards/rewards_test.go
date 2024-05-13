@@ -142,6 +142,18 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(RewardsTestSuite))
 }
 
+func (s *RewardsTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+}
+
+func (s *RewardsTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+	s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
+}
+
 func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -225,6 +237,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		cosmosMath.NewUint(368582).Mul(cosmosOneE18),
 	}
 	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
@@ -357,6 +370,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	}
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
@@ -498,6 +512,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	}
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
@@ -653,6 +668,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		cosmosMath.NewUint(368582).Mul(cosmosOneE18),
 	}
 	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
@@ -846,6 +862,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		if i > 2 {
 			addStakeMsg.TopicId = topicId2
 		}
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, addStakeMsg)
 		s.Require().NoError(err)
 	}
@@ -1025,6 +1042,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	cosmosOneE18 := inference_synthesis.CosmosUintOneE18()
 
+	s.MintTokensToAddress(reputer, cosmosMath.NewInt(1176644).Mul(cosmosMath.NewIntFromBigInt(cosmosOneE18.BigInt())))
 	// Add Stake for reputer
 	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 		Sender:  reputer.String(),
