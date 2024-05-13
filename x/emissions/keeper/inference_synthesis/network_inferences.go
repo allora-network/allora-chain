@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"sort"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -640,20 +641,37 @@ func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength 
 	return filtered
 }
 
+func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
+	sort.Slice(r.Nonces, func(i, j int) bool {
+		// Sorting in descending order (bigger values first)
+		return r.Nonces[i].ReputerNonce.BlockHeight > r.Nonces[j].ReputerNonce.BlockHeight
+	})
+}
+
 // Select the top N latest reputer nonces
-func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int) []*emissions.ReputerRequestNonce {
-	var topN []*emissions.ReputerRequestNonce
-	if len(reputerRequestNonces.Nonces) <= N {
-		topN = reputerRequestNonces.Nonces
-	} else {
-		topN = reputerRequestNonces.Nonces[:N]
+func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
+	topN := make([]*emissions.ReputerRequestNonce, 0)
+	// sort reputerRequestNonces by reputer block height
+	SortByBlockHeight(reputerRequestNonces)
+
+	// loop reputerRequestNonces
+	for _, nonce := range reputerRequestNonces.Nonces {
+		nonceCopy := nonce
+		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag {
+			topN = append(topN, nonceCopy)
+		} else {
+			fmt.Println("Reputer block height: ", nonceCopy, " lag not passed yet")
+		}
+		if len(topN) >= N {
+			break
+		}
 	}
 	return topN
 }
 
 // Select the top N latest worker nonces
 func SelectTopNWorkerNonces(workerNonces emissions.Nonces, N int) []*emissions.Nonce {
-	var topN []*emissions.Nonce
+	topN := make([]*emissions.Nonce, 0)
 	if len(workerNonces.Nonces) <= N {
 		topN = workerNonces.Nonces
 	} else {

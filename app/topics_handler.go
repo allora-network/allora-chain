@@ -87,7 +87,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		fmt.Println("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
 		maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 	}
-	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
+	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
 	fmt.Println("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
@@ -107,7 +107,6 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.WorkerNonce, "previous block approx time: ", previousBlockApproxTime)
 		go generateLossesRequest(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 	}
-
 }
 
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
