@@ -54,4 +54,6 @@ var (
 	ErrTopicMempoolAtCapacity                   = errors.Register(ModuleName, 50, "topic mempool at capacity")
 	ErrReceivedZeroAmount                       = errors.Register(ModuleName, 51, "received zero amount")
 	ErrInvalidValue                             = errors.Register(ModuleName, 52, "invalid value")
+	ErrQueryTooLarge                            = errors.Register(ModuleName, 53, "Query is too large")
+	ErrFailedToSerializePayload                 = errors.Register(ModuleName, 54, "Failed to serialize payload")
 )

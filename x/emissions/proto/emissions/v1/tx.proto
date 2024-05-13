@@ -130,6 +130,7 @@ message OptionalParams {
   repeated uint64 default_limit = 37;
   repeated uint64 max_limit = 38;
   repeated int64 min_epoch_length_record_limit = 39;
+  repeated int64 max_serialized_msg_length = 40;
 }
 
 message MsgUpdateParams {
@@ -317,8 +318,7 @@ message MsgFundTopic {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                     // how many funds to send from alice with this Inference Request
-  bytes extra_data = 4;  // maybe later consumers get to "vote" on the argument passed to workers
+  ];  // how many funds to send from alice with this Inference Request
 }
 
 message MsgFundTopicResponse {}

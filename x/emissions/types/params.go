@@ -49,6 +49,7 @@ func DefaultParams() Params {
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
+		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 	}
 }
 
