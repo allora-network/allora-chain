@@ -1157,6 +1157,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		Creator:          reputerAddrs[0].String(),
 		Metadata:         "test",
 		LossLogic:        "logic",
+		LossMethod:       "method",
 		EpochLength:      epochLength,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
@@ -1195,6 +1196,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 			MultiAddress: "test",
 			TopicId:      topicId,
 			IsReputer:    true,
+			Owner:        addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -1286,6 +1288,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		params.PRewardSpread,
 		networkLossBundles,
 	)
+
 	s.Require().Equal(len(inferers), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
 	s.Require().Equal(len(forecasts), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
 
