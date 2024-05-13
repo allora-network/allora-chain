@@ -1209,10 +1209,9 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	s.FaucetAddress(initialStake, reputerAddrs[0])
 
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -1265,25 +1264,23 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
 
-	inferers, _, err := rewards.GetInferenceTaskRewardFractions(
+	infererScores, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		block,
-		params.PRewardSpread,
-		networkLossBundles,
-	)
+		*networkLossBundles)
+	s.Require().NoError(err)
 
-	forecasts, _, err := rewards.GetForecastingTaskRewardFractions(
+	forecasterScores, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		block,
-		params.PRewardSpread,
-		networkLossBundles,
-	)
+		*networkLossBundles)
+	s.Require().NoError(err)
 
-	s.Require().Equal(len(inferers), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
-	s.Require().Equal(len(forecasts), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
+	s.Require().Equal(len(infererScores), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
+	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
 
 }
