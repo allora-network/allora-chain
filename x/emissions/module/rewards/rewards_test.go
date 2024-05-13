@@ -1096,7 +1096,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		NaiveValue:             alloraMath.MustNewDecFromString("0.0116"),
 		InfererValues:          []*types.WorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
 		ForecasterValues:       []*types.WorkerAttributedValue{},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
 		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
 		OneInForecasterValues:  []*types.WorkerAttributedValue{},
 	}
@@ -1128,5 +1128,4 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
-
 }
