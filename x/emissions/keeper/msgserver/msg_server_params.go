@@ -139,6 +139,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinEpochLengthRecordLimit) == 1 {
 		existingParams.MinEpochLengthRecordLimit = newParams.MinEpochLengthRecordLimit[0]
 	}
+	if len(newParams.MaxSerializedMsgLength) == 1 {
+		existingParams.MaxSerializedMsgLength = newParams.MaxSerializedMsgLength[0]
+	}
 
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

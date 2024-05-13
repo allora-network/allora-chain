@@ -21,10 +21,16 @@ func (ms msgServer) InsertBulkReputerPayload(
 	ctx context.Context,
 	msg *types.MsgInsertBulkReputerPayload,
 ) (*types.MsgInsertBulkReputerPayloadResponse, error) {
+	err := ms.CheckInputLength(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
 
+	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err

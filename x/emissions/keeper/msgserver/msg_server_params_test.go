@@ -94,6 +94,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		DefaultLimit:                    []uint64{1234},
 		MaxLimit:                        []uint64{1234},
 		MinEpochLengthRecordLimit:       []int64{1234},
+		MaxSerializedMsgLength:          []int64{1234},
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -146,6 +147,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.DefaultLimit[0], updatedParams.DefaultLimit)
 	require.Equal(newParams.MaxLimit[0], updatedParams.MaxLimit)
 	require.Equal(newParams.MinEpochLengthRecordLimit[0], updatedParams.MinEpochLengthRecordLimit)
+	require.Equal(newParams.MaxSerializedMsgLength[0], updatedParams.MaxSerializedMsgLength)
 }
 
 func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {

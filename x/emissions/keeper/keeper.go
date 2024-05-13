@@ -668,6 +668,22 @@ func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
 	return params.MaxLimit, nil
 }
 
+func (k *Keeper) GetMinEpochLengthRecordLimit(ctx context.Context) (int64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return int64(0), err
+	}
+	return params.MinEpochLengthRecordLimit, nil
+}
+
+func (k *Keeper) GetMaxSerializedMsgLength(ctx context.Context) (int64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return int64(0), err
+	}
+	return params.MaxSerializedMsgLength, nil
+}
+
 /// INFERENCES, FORECASTS
 
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
