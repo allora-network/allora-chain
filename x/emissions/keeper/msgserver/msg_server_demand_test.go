@@ -20,10 +20,9 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgFundTopic{
-		Sender:    sender,
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  sender,
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err, "GetParams should not return an error")
@@ -78,16 +77,14 @@ func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	r := types.MsgFundTopic{
-		Sender:    sender,
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  sender,
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	r2 := types.MsgFundTopic{
-		Sender:    sender,
-		TopicId:   topicId2,
-		Amount:    cosmosMath.NewInt(initialStake2),
-		ExtraData: []byte("Test"),
+		Sender:  sender,
+		TopicId: topicId2,
+		Amount:  cosmosMath.NewInt(initialStake2),
 	}
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err, "GetParams should not return an error")

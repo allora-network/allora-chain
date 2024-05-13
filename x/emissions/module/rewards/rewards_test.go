@@ -370,10 +370,9 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	var initialStake int64 = 1000
 	s.FaucetAddress(initialStake, reputerAddrs[0])
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -510,10 +509,9 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.FaucetAddress(initialStake, reputerAddrs[0])
 
 	fundTopicMessage = types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -667,10 +665,9 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.FaucetAddress(initialStake, reputerAddrs[0])
 
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -858,10 +855,9 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputerAddrs[0].String(),
-		TopicId:   topicId1,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId1,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -1041,10 +1037,9 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
 	fundTopicMessage := types.MsgFundTopic{
-		Sender:    reputer.String(),
-		TopicId:   topicId,
-		Amount:    cosmosMath.NewInt(initialStake),
-		ExtraData: []byte("Test"),
+		Sender:  reputer.String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -1100,7 +1095,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		NaiveValue:             alloraMath.MustNewDecFromString("0.0116"),
 		InfererValues:          []*types.WorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
 		ForecasterValues:       []*types.WorkerAttributedValue{},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
 		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
 		OneInForecasterValues:  []*types.WorkerAttributedValue{},
 	}
@@ -1132,7 +1127,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
-
 }
 
 func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {

@@ -450,7 +450,6 @@ func GetAllConsensusScores(
 	stakes []alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers int64,
-	sharpness alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
 	var adjustedStakes []alloraMath.Dec
@@ -461,7 +460,6 @@ func GetAllConsensusScores(
 			allListeningCoefficients[i],
 			allListeningCoefficients,
 			alloraMath.NewDecFromInt64(numReputers),
-			sharpness,
 		)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error in GetAdjustedStake")
@@ -500,7 +498,6 @@ func GetAllReputersOutput(
 	initialCoefficients []alloraMath.Dec,
 	numReputers int64,
 	learningRate alloraMath.Dec,
-	sharpness alloraMath.Dec,
 	gradientDescentMaxIters uint64,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
@@ -526,7 +523,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, sharpness)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -537,7 +534,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, sharpness)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -709,9 +706,7 @@ func Phi(p, x alloraMath.Dec) (alloraMath.Dec, error) {
 }
 
 // Adjusted stake for calculating consensus S hat
-// ^S_im = 1 - ϕ_1^−1(η) * ϕ1[ −η * (((N_r * a_im * S_im) / (Σ_m(a_im * S_im))) − 1 )]
-// we use eta = 20 as the fiducial value decided in the paper
-// phi_1 refers to the phi function with p = 1
+// ^S_im = min((N_r * a_im * S_im)/(Σ_m(a_im * S_im)), 1)
 // INPUTS:
 // This function expects that allStakes (S_im)
 // and allListeningCoefficients are slices of the same length (a_im)
@@ -722,7 +717,6 @@ func GetAdjustedStake(
 	listeningCoefficient alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers alloraMath.Dec,
-	sharpness alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(allStakes) != len(allListeningCoefficients) ||
 		len(allStakes) == 0 ||
@@ -745,41 +739,7 @@ func GetAdjustedStake(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	stakeFraction, err = stakeFraction.Sub(alloraMath.OneDec())
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	negativeEta, err := sharpness.Mul(alloraMath.NewDecFromInt64(-1))
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	stakeFraction, err = stakeFraction.Mul(negativeEta)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-
-	phi_1_stakeFraction, err := Phi(alloraMath.OneDec(), stakeFraction)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	phi_1_Eta, err := Phi(alloraMath.OneDec(), sharpness)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	if phi_1_Eta.Equal(alloraMath.ZeroDec()) {
-		return alloraMath.ZeroDec(), types.ErrPhiCannotBeZero
-	}
-	// phi_1_Eta is taken to the -1 power
-	// and then multiplied by phi_1_stakeFraction
-	// so we can just treat it as phi_1_stakeFraction / phi_1_Eta
-	phiVal, err := phi_1_stakeFraction.Quo(phi_1_Eta)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	ret, err := alloraMath.OneDec().Sub(phiVal)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
+	ret := alloraMath.Min(stakeFraction, alloraMath.OneDec())
 	return ret, nil
 }
 
