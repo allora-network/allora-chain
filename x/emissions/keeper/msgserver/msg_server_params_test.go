@@ -64,7 +64,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		RequiredMinimumStake:            []cosmosMath.Uint{cosmosMath.NewUint(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
-		Sharpness:                       []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		BetaEntropy:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		LearningRate:                    []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
@@ -118,7 +117,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.RequiredMinimumStake[0], updatedParams.RequiredMinimumStake)
 	require.Equal(newParams.RemoveStakeDelayWindow[0], updatedParams.RemoveStakeDelayWindow)
 	require.Equal(newParams.MinEpochLength[0], updatedParams.MinEpochLength)
-	require.Equal(newParams.Sharpness[0], updatedParams.Sharpness)
 	require.Equal(newParams.BetaEntropy[0], updatedParams.BetaEntropy)
 	require.Equal(newParams.LearningRate[0], updatedParams.LearningRate)
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)

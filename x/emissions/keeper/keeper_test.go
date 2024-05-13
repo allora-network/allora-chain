@@ -1805,7 +1805,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		RequiredMinimumStake:            cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
-		Sharpness:                       alloraMath.NewDecFromInt64(0),
 		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
 		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),

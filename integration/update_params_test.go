@@ -26,12 +26,12 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	require.False(m.t, checkIfAdmin(m, m.n.BobAddr))
 
 	// Should succeed for Alice because she's a whitelist admin
-	newSharpness := alloraMath.NewDecFinite(1, 99)
-	input := []alloraMath.Dec{newSharpness}
+	newEpsilon := alloraMath.NewDecFinite(1, 99)
+	input := []alloraMath.Dec{newEpsilon}
 	updateParamRequest := &emissionstypes.MsgUpdateParams{
 		Sender: m.n.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Sharpness: input,
+			Epsilon: input,
 		},
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, updateParamRequest)
@@ -44,7 +44,7 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.n.BobAddr,
 		Params: &emissionstypes.OptionalParams{
-			Sharpness: input,
+			Epsilon: input,
 		},
 	}
 	txResp, err = m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, updateParamRequest)
@@ -52,8 +52,8 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	// Check that error is due to Bob not being a whitelist admin
 	require.Contains(m.t, err.Error(), "not whitelist admin")
 
-	// Check that the sharpness was updated by Alice successfully
+	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
-	require.Equal(m.t, updatedParams.Sharpness.String(), newSharpness.String())
+	require.Equal(m.t, updatedParams.Epsilon.String(), newEpsilon.String())
 	return updatedParams
 }
