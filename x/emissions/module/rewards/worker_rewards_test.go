@@ -13,11 +13,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	blockHeight := int64(1003)
 
 	// Generate old scores
-	err := mockWorkerLastScores(s, topicId)
-	s.Require().NoError(err)
-
-	// Generate last network loss
-	networkLosses, err := mockNetworkLosses(s, topicId, blockHeight)
+	lastScores, err := mockWorkerLastScores(s, topicId)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -27,7 +23,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
-		&networkLosses,
+		lastScores,
 	)
 	s.Require().NoError(err)
 	inferenceRewards, err := rewards.GetRewardPerWorker(
@@ -46,11 +42,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	blockHeight := int64(1003)
 
 	// Generate old scores
-	err := mockWorkerLastScores(s, topicId)
-	s.Require().NoError(err)
-
-	// Generate last network loss
-	networkLosses, err := mockNetworkLosses(s, topicId, blockHeight)
+	lastScores, err := mockWorkerLastScores(s, topicId)
 	s.Require().NoError(err)
 
 	// Get worker rewards
@@ -60,7 +52,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
-		&networkLosses,
+		lastScores,
 	)
 	s.Require().NoError(err)
 	forecastRewards, err := rewards.GetRewardPerWorker(
@@ -162,7 +154,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	return networkLosses, nil
 }
 
-func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
+func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, error) {
 	workerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -184,6 +176,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 		{alloraMath.MustNewDecFromString("0.09719"), alloraMath.MustNewDecFromString("0.09675"), alloraMath.MustNewDecFromString("0.09418")},
 	}
 
+	lastScores := make([]types.Score, 0)
 	for i, workerAddr := range workerAddrs {
 		for j, workerNewScore := range scores[i] {
 			scoreToAdd := types.Score{
@@ -196,16 +189,22 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) error {
 			// Persist worker inference score
 			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			// Persist worker forecast score
 			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blocks[j], scoreToAdd)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
+		lastScores = append(lastScores, types.Score{
+			TopicId:     topicId,
+			BlockNumber: blocks[len(blocks)-1],
+			Address:     workerAddr.String(),
+			Score:       scores[i][len(scores[i])-1],
+		})
 	}
 
-	return nil
+	return lastScores, nil
 }

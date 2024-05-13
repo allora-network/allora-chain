@@ -96,6 +96,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
 		if err != nil {
 			fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
+			continue
 		}
 
 		blockDifference := currentBlockHeight - inferencesBlockHeight
