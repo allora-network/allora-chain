@@ -75,7 +75,6 @@ func GenerateReputerScores(
 		reputerListeningCoefficients,
 		int64(len(reputerStakes)),
 		params.LearningRate,
-		params.Sharpness,
 		params.GradientDescentMaxIters,
 	)
 	if err != nil {
