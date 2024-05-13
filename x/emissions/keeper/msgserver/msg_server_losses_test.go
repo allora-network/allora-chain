@@ -225,8 +225,8 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 				Value:  alloraMath.NewDecFromInt64(100),
 			},
 		},
-		NaiveValue:             alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
+		NaiveValue:          alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{},
 		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),

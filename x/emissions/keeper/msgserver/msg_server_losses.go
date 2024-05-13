@@ -282,6 +282,11 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 		}
 	}
 
+	// If 1 inferer, there's no one-out inferer data to receive
+	if len(acceptedInfererValues) == 1 && len(acceptedOneOutInfererValues) > 0 {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid one-out inferer values - there's just one inferer to report")
+	}
+
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
 			TopicId:                reputerValueBundle.ValueBundle.TopicId,
@@ -297,11 +302,6 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 			CombinedValue:          reputerValueBundle.ValueBundle.CombinedValue,
 		},
 		Signature: reputerValueBundle.Signature,
-	}
-
-	// If 1 inferer, there's no one-out inferer data to receive
-	if len(acceptedInfererValues) == 1 && len(acceptedOneOutInfererValues) > 0 {
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid one-out inferer values - there's just one inferer to report")
 	}
 
 	return acceptedReputerValueBundle, nil
