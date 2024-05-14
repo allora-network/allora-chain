@@ -1218,6 +1218,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	}
 
 	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
