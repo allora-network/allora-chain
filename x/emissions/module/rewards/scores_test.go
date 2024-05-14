@@ -85,7 +85,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestHigherLossesHigherInferenceScore() {
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	topidId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
@@ -154,7 +154,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestHigherLossesHigherForecastScore() {
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	topidId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
