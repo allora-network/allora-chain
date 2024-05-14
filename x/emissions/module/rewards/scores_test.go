@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	"encoding/hex"
+	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -83,6 +84,110 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
 	}
+}
+
+func (s *RewardsTestSuite) TestHigherLossesLowerScore() {
+
+	mockSimpleNetworkLosses := func(
+		s *RewardsTestSuite,
+		topicId uint64,
+		block int64,
+		worker0Value string,
+
+	) (types.ValueBundle, error) {
+		genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrs[0].String(),
+				Value:  alloraMath.MustNewDecFromString(worker0Value),
+			},
+			{
+				Worker: s.addrs[1].String(),
+				Value:  alloraMath.MustNewDecFromString("0.3"),
+			},
+		}
+
+		genericLosses := []*types.WorkerAttributedValue{
+			{
+				Worker: s.addrs[0].String(),
+				Value:  alloraMath.MustNewDecFromString(worker0Value),
+			},
+			{
+				Worker: s.addrs[1].String(),
+				Value:  alloraMath.MustNewDecFromString("0.3"),
+			},
+		}
+
+		networkLosses := types.ValueBundle{
+			TopicId:                topicId,
+			CombinedValue:          alloraMath.MustNewDecFromString("0.01"),
+			NaiveValue:             alloraMath.MustNewDecFromString("0.02"),
+			OneOutInfererValues:    genericLossesWithheld,
+			OneOutForecasterValues: genericLossesWithheld,
+			OneInForecasterValues:  genericLosses,
+		}
+
+		err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+		if err != nil {
+			return types.ValueBundle{}, err
+		}
+
+		return networkLosses, nil
+	}
+
+	topidId := uint64(1)
+	block0 := int64(1003)
+	require := s.Require()
+
+	networkLosses, err := mockSimpleNetworkLosses(s, topidId, block0, "0.1")
+	require.NoError(err)
+
+	for i := 0; i < len(networkLosses.OneInForecasterValues); i++ {
+		log.Printf("Worker %v: %v", networkLosses.OneOutInfererValues[i].Worker, networkLosses.OneOutInfererValues[i].Value)
+		log.Printf("Worker %v: %v", networkLosses.OneOutInfererValues[i].Worker, networkLosses.OneOutForecasterValues[i].Value)
+		log.Printf("Worker %v: %v", networkLosses.OneOutInfererValues[i].Worker, networkLosses.OneInForecasterValues[i].Value)
+	}
+
+	// Get inference scores
+	scores, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		block0,
+		networkLosses,
+	)
+	require.NoError(err)
+
+	for i := 0; i < len(scores); i++ {
+		log.Printf("Worker %v: %v", scores[i].Address, scores[i].Score)
+	}
+
+	block1 := int64(1003)
+
+	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
+	require.NoError(err)
+
+	for i := 0; i < len(networkLosses.OneInForecasterValues); i++ {
+		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutInfererValues[i].Value)
+		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutForecasterValues[i].Value)
+		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneInForecasterValues[i].Value)
+	}
+
+	// Get inference scores
+	scores1, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		block1,
+		networkLosses1,
+	)
+	require.NoError(err)
+
+	for i := 0; i < len(scores1); i++ {
+		log.Printf("Worker %v: %v", scores1[i].Address, scores1[i].Score)
+	}
+
+	// require.True(scores[0].Score.Gt(scores[1].Score))
+	// require.True(scores[1].Score.Gt(scores[2].Score))
 }
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
