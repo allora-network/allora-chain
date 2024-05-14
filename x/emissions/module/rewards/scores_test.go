@@ -143,6 +143,41 @@ func (s *RewardsTestSuite) TestHigherLossesLowerInferenceScore() {
 	// require.True(scores[1].Score.Gt(scores[2].Score))
 }
 
+func (s *RewardsTestSuite) TestGetForecastScores() {
+	topidId := uint64(1)
+	block := int64(1003)
+
+	// Generate workers data for tests
+	reportedLosses, err := mockNetworkLosses(s, topidId, block)
+	s.Require().NoError(err)
+
+	// Get inference scores
+	scores, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+
+	expectedScores := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.012463129004928653"),
+		alloraMath.MustNewDecFromString("-0.0053656225135989164"),
+		alloraMath.MustNewDecFromString("0.07992212136127204"),
+		alloraMath.MustNewDecFromString("-0.035977785673031996"),
+		alloraMath.MustNewDecFromString("-0.0031785253425987165"),
+	}
+	for i, reputerScore := range scores {
+		delta, err := reputerScore.Score.Sub(expectedScores[i])
+		s.Require().NoError(err)
+		deltaTightness := delta.Abs().Cmp(alloraMath.MustNewDecFromString("0.00001"))
+		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
+			s.Fail("Expected reward is not equal to the actual reward")
+		}
+	}
+}
+
 func (s *RewardsTestSuite) TestHigherLossesLowerForecastScore() {
 	topidId := uint64(1)
 	block0 := int64(1003)
@@ -198,41 +233,6 @@ func (s *RewardsTestSuite) TestHigherLossesLowerForecastScore() {
 
 	// require.True(scores[0].Score.Gt(scores[1].Score))
 	// require.True(scores[1].Score.Gt(scores[2].Score))
-}
-
-func (s *RewardsTestSuite) TestGetForecastScores() {
-	topidId := uint64(1)
-	block := int64(1003)
-
-	// Generate workers data for tests
-	reportedLosses, err := mockNetworkLosses(s, topidId, block)
-	s.Require().NoError(err)
-
-	// Get inference scores
-	scores, err := rewards.GenerateForecastScores(
-		s.ctx,
-		s.emissionsKeeper,
-		topidId,
-		block,
-		reportedLosses,
-	)
-	s.Require().NoError(err)
-
-	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.012463129004928653"),
-		alloraMath.MustNewDecFromString("-0.0053656225135989164"),
-		alloraMath.MustNewDecFromString("0.07992212136127204"),
-		alloraMath.MustNewDecFromString("-0.035977785673031996"),
-		alloraMath.MustNewDecFromString("-0.0031785253425987165"),
-	}
-	for i, reputerScore := range scores {
-		delta, err := reputerScore.Score.Sub(expectedScores[i])
-		s.Require().NoError(err)
-		deltaTightness := delta.Abs().Cmp(alloraMath.MustNewDecFromString("0.00001"))
-		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
-			s.Fail("Expected reward is not equal to the actual reward")
-		}
-	}
 }
 
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
