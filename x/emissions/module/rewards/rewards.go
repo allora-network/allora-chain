@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -14,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight math.Dec, totalRevenue cosmosMath.Int) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight alloraMath.Dec, totalRevenue cosmosMath.Int) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
@@ -90,8 +89,8 @@ func GenerateRewardsDistributionByTopic(
 	maxTopicsPerBlock uint64,
 	blockHeight BlockHeight,
 	totalReward alloraMath.Dec,
-	weights map[uint64]*math.Dec,
-	sumWeight math.Dec,
+	weights map[uint64]*alloraMath.Dec,
+	sumWeight alloraMath.Dec,
 	totalRevenue cosmosMath.Int,
 ) (map[uint64]*alloraMath.Dec, error) {
 	if sumWeight.IsZero() {
