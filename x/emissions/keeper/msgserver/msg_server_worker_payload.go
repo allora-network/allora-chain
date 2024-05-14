@@ -249,6 +249,20 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, types.ErrInvalidTopicId
+	}
+
+	workerNonce := &types.Nonce{
+		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
+	}
+
+	ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
+	if err != nil {
+		return nil, err
+	}
+
 	// Return an empty response as the operation was successful
 	return &types.MsgInsertBulkWorkerPayloadResponse{}, nil
 }
