@@ -204,7 +204,7 @@ func GetRewardForReputerFromTotalReward(
 			if err != nil {
 				return nil, err
 			}
-			err = keeper.BankKeeper().SendCoinsFromModuleToModule(
+			err = keeper.SendCoinsFromModuleToModule(
 				ctx,
 				types.AlloraRewardsAccountName,
 				types.AlloraPendingRewardForDelegatorAccountName,

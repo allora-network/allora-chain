@@ -2061,14 +2061,19 @@ func (k *Keeper) BankKeeper() BankKeeper {
 	return k.bankKeeper
 }
 
-// SendCoinsFromModuleToAccount
+// wrapper around bank keeper SendCoinsFromModuleToAccount
 func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
 }
 
-// SendCoinsFromAccountToModule
+// wrapper around bank keeper SendCoinsFromAccountToModule
 func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
+}
+
+// wrapper around bank keeper SendCoinsFromModuleToModule
+func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
+	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
 }
 
 // GetTotalRewardToDistribute

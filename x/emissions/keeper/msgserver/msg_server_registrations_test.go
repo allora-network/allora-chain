@@ -1,11 +1,17 @@
 package msgserver_test
 
 import (
+	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
 func (s *KeeperTestSuite) TestMsgRegisterReputer() {
@@ -281,6 +287,83 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
 	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+}
+
+func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
+	// Reputer Addresses
+	reputer := s.addrs[2]
+	// Worker Addresses
+	worker := s.addrs[3]
+	cosmosOneE18, ok := cosmosMath.NewIntFromString("1000000000000000000")
+	s.Require().True(ok)
+
+	s.bankKeeper = bankkeeper.NewBaseKeeper(
+		s.codec,
+		s.storeService,
+		s.accountKeeper,
+		map[string]bool{
+			s.addrsStr[0]: true,
+		},
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		log.NewNopLogger(),
+	)
+	s.emissionsKeeper = keeper.NewKeeper(
+		s.codec,
+		s.addressCodec,
+		s.storeService,
+		s.accountKeeper,
+		s.bankKeeper,
+		authtypes.FeeCollectorName,
+	)
+
+	blockHeight := int64(600)
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+	epochLength := int64(10800)
+
+	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          worker.String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      epochLength,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Register 1 worker
+	workerRegMsg := &types.MsgRegister{
+		Sender:       worker.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    false,
+		Owner:        worker.String(),
+	}
+	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
+	s.Require().NoError(err)
+
+	reputerRegMsg := &types.MsgRegister{
+		Sender:       reputer.String(),
+		LibP2PKey:    "test",
+		MultiAddress: "test",
+		TopicId:      topicId,
+		IsReputer:    true,
+		Owner:        reputer.String(),
+	}
+	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
+	s.Require().ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {

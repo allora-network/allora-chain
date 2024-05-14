@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
+	cosmosAddress "cosmossdk.io/core/address"
 	"cosmossdk.io/core/header"
+
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/cosmos/cosmos-sdk/codec/address"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
-
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -20,6 +19,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/testutil"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
@@ -55,8 +58,11 @@ type KeeperTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
-	accountKeeper   keeper.AccountKeeper
-	bankKeeper      keeper.BankKeeper
+	codec           codec.Codec
+	addressCodec    cosmosAddress.Codec
+	storeService    store.KVStoreService
+	accountKeeper   authkeeper.AccountKeeper
+	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
 	msgServer       types.MsgServer
@@ -72,10 +78,13 @@ func TestKeeperTestSuite(t *testing.T) {
 func (s *KeeperTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
+	s.storeService = storeService
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
+	s.codec = encCfg.Codec
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
+	s.addressCodec = addressCodec
 
 	maccPerms := map[string][]string{
 		"fee_collector":                                  {"minter"},
@@ -162,6 +171,11 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+}
+
+func (s *KeeperTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
+	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
+	s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
 }
 
 func (s *KeeperTestSuite) CreateOneTopic() uint64 {
