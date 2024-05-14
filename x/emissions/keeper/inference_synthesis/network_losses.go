@@ -198,7 +198,7 @@ func CalcNetworkLosses(
 			}
 
 			// Update one-in forecaster losses
-			for _, loss := range report.ValueBundle.OneOutForecasterValues {
+			for _, loss := range report.ValueBundle.OneInForecasterValues {
 				if runningWeightedOneInForecasterLosses[loss.Worker] == nil {
 					runningWeightedOneInForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
 						SumWeight: alloraMath.ZeroDec(),
