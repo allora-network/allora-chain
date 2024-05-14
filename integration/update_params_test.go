@@ -20,10 +20,14 @@ func checkIfAdmin(m TestMetadata, address string) bool {
 }
 
 // Test that whitelisted admin can successfully update params and others cannot
-func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
+func UpdateParamsChecks(m TestMetadata) {
 	// Ensure Alice is in the whitelist and Bob is not
 	require.True(m.t, checkIfAdmin(m, m.n.AliceAddr))
 	require.False(m.t, checkIfAdmin(m, m.n.BobAddr))
+
+	// Keep old params to revert back to
+	oldParams := GetEmissionsParams(m)
+	oldEpsilon := oldParams.Epsilon
 
 	// Should succeed for Alice because she's a whitelist admin
 	newEpsilon := alloraMath.NewDecFinite(1, 99)
@@ -55,5 +59,17 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
 	require.Equal(m.t, updatedParams.Epsilon.String(), newEpsilon.String())
-	return updatedParams
+
+	// Set the epsilon back to the original value
+	input = []alloraMath.Dec{oldEpsilon}
+	updateParamRequest = &emissionstypes.MsgUpdateParams{
+		Sender: m.n.AliceAddr,
+		Params: &emissionstypes.OptionalParams{
+			Epsilon: input,
+		},
+	}
+	txResp, err = m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, updateParamRequest)
+	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 }

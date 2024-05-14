@@ -152,19 +152,9 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 				Value:  alloraMath.NewDecFromInt64(100),
 			},
 		},
-		NaiveValue: alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
+		NaiveValue:             alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
 		OneInForecasterValues: []*types.WorkerAttributedValue{
 			{
 				Worker: workerAddr,
