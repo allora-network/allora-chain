@@ -371,12 +371,12 @@ func (x Dec) Coeff() big.Int {
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
 	if y.dec.Exponent != 0 {
-		decs :=  apd.NewBigInt(10)
+		decs := apd.NewBigInt(10)
 		if y.dec.Exponent > 0 {
-			decs.Exp(decs,  apd.NewBigInt(int64(y.dec.Exponent)), nil)
+			decs.Exp(decs, apd.NewBigInt(int64(y.dec.Exponent)), nil)
 			r.Mul(&y.dec.Coeff, decs)
 		} else {
-			decs.Exp(decs,  apd.NewBigInt(int64(-y.dec.Exponent)), nil)
+			decs.Exp(decs, apd.NewBigInt(int64(-y.dec.Exponent)), nil)
 			r.Quo(&y.dec.Coeff, decs)
 		}
 	}
