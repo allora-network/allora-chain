@@ -1217,7 +1217,7 @@ func (s *InferenceSynthesisTestSuite) TestSelectTopNReputerNonces() {
 			groundTruthLag:     0,
 		},
 		{
-			name: "Ground truth lag cutting selection",
+			name: "Ground truth lag cutting selection midway",
 			reputerRequestNonces: &emissions.ReputerRequestNonces{
 				Nonces: []*emissions.ReputerRequestNonce{
 					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}, WorkerNonce: &emissions.Nonce{BlockHeight: 1}},
@@ -1234,7 +1234,7 @@ func (s *InferenceSynthesisTestSuite) TestSelectTopNReputerNonces() {
 			groundTruthLag:     6,
 		},
 		{
-			name: "Ground truth lag no yielding selection",
+			name: "Big Ground truth lag, not selecting any nonces",
 			reputerRequestNonces: &emissions.ReputerRequestNonces{
 				Nonces: []*emissions.ReputerRequestNonce{
 					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}, WorkerNonce: &emissions.Nonce{BlockHeight: 1}},
@@ -1246,6 +1246,24 @@ func (s *InferenceSynthesisTestSuite) TestSelectTopNReputerNonces() {
 			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{},
 			currentBlockHeight:       10,
 			groundTruthLag:           10,
+		},
+		{
+			name: "Small ground truth lag, selecting all nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N: 3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+			},
+			currentBlockHeight: 10,
+			groundTruthLag:     2,
 		},
 	}
 

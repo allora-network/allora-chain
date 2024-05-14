@@ -16,7 +16,7 @@ import (
 
 const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
-const minWaitingNumberofEpochs = 3
+const minWaitingNumberofEpochs = 5
 
 func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
@@ -30,6 +30,8 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 				return topicResponse.Topic, nil
 			}
 			sleepingTimeBlocks = int(storedTopic.EpochLength)
+		} else {
+			fmt.Println("Error getting topic, ", err)
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
@@ -109,7 +111,7 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 }
 
 // Worker Bob inserts bulk inference and forecast
-func InsertWorkerBulkBob(m TestMetadata, topic *types.Topic) (int64, int64) {
+func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
 	// Insert and fulfill nonces for the last two epochs
 	blockHeightEval := topic.EpochLastEnded - topic.EpochLength
 	InsertSingleWorkerBulk(m, topic, blockHeightEval)
@@ -120,7 +122,7 @@ func InsertWorkerBulkBob(m TestMetadata, topic *types.Topic) (int64, int64) {
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
@@ -227,7 +229,7 @@ func WorkerInferenceAndForecastChecks(m TestMetadata) {
 		require.NoError(m.t, err)
 	}
 	m.t.Log("--- Insert Worker Bulk ---")
-	blockHeightCurrent, blockHeightEval := InsertWorkerBulkBob(m, topic)
+	blockHeightCurrent, blockHeightEval := InsertWorkerBulk(m, topic)
 	m.t.Log("--- Insert Reputer Bulk ---")
-	InsertReputerBulkAlice(m, topic, blockHeightCurrent, blockHeightEval)
+	InsertReputerBulk(m, topic, blockHeightCurrent, blockHeightEval)
 }

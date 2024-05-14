@@ -31,7 +31,7 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkee
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
-func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, blockDifference int64) (uint64, error) {
+func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
 	mintParams, err := th.mintKeeper.GetParams(ctx)
 	if err != nil {
 		fmt.Println("Error getting mint params: ", err)
@@ -39,6 +39,13 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, block
 	}
 	BlocksPerMonth := mintParams.GetBlocksPerMonth()
 	var approximateTimePerBlockSeconds float64 = float64(secondsInAMonth) / float64(BlocksPerMonth)
+	var blockDifference = ctx.BlockHeight() - inferenceBlockHeight
+	if groundTruthLag > blockDifference {
+		blockDifference = 0
+	} else {
+		blockDifference -= groundTruthLag
+	}
+
 	var diffFloat = (float64(blockDifference) * approximateTimePerBlockSeconds)
 	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(diffFloat))
 	return previousBlockApproxTime, nil
@@ -98,8 +105,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
 		}
 
-		blockDifference := currentBlockHeight - inferencesBlockHeight
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, inferencesBlockHeight, topic.GroundTruthLag)
 		if err != nil {
 			fmt.Println("Error calculating previous block approx time: ", err)
 			continue
