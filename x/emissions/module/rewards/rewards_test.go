@@ -17,7 +17,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cosmos/cosmos-sdk/codec/address"
+	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,8 +41,8 @@ type RewardsTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
-	accountKeeper   keeper.AccountKeeper
-	bankKeeper      keeper.BankKeeper
+	accountKeeper   authkeeper.AccountKeeper
+	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
 	msgServer       types.MsgServer
@@ -58,7 +58,7 @@ func (s *RewardsTestSuite) SetupTest() {
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
+	addressCodec := codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
 		"fee_collector":                 {"minter"},
