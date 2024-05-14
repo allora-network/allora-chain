@@ -610,6 +610,7 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 		workerSig, err := GenerateWorkerSignature(s, workerInferenceForecastBundle, worker)
 		s.Require().NoError(err)
 		workerBundle := &types.WorkerDataBundle{
+			Worker:                             worker.String(),
 			InferenceForecastsBundle:           workerInferenceForecastBundle,
 			InferencesForecastsBundleSignature: workerSig,
 			Pubkey:                             GetAccPubKey(s, worker),
