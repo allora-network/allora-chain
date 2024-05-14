@@ -39,15 +39,16 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 	}
 	BlocksPerMonth := mintParams.GetBlocksPerMonth()
 	var approximateTimePerBlockSeconds float64 = float64(secondsInAMonth) / float64(BlocksPerMonth)
-	var blockDifference = ctx.BlockHeight() - inferenceBlockHeight
-	if groundTruthLag > blockDifference {
-		blockDifference = 0
+	var timeDifferenceInBlocks = ctx.BlockHeight() - inferenceBlockHeight
+	// Ensure no time in the future is calculated because of ground truth lag
+	if groundTruthLag > timeDifferenceInBlocks {
+		timeDifferenceInBlocks = 0
 	} else {
-		blockDifference -= groundTruthLag
+		timeDifferenceInBlocks -= groundTruthLag
 	}
 
-	var diffFloat = (float64(blockDifference) * approximateTimePerBlockSeconds)
-	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(diffFloat))
+	var timeDifferenceInSeconds = (float64(timeDifferenceInBlocks) * approximateTimePerBlockSeconds)
+	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(timeDifferenceInSeconds))
 	return previousBlockApproxTime, nil
 }
 
