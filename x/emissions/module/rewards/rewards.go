@@ -492,7 +492,7 @@ func payoutRewards(
 
 		if reward.Type == ReputerRewardType {
 			coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
-			k.SendCoinsFromAccountToModule(ctx, reward.Address, types.AlloraStakingAccountName, coins)
+			k.BankKeeper().SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
 			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
 		} else {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
