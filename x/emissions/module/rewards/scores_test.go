@@ -86,7 +86,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestHigherLossesLowerInferenceScore() {
+func (s *RewardsTestSuite) TestHigherLossesHigherInferenceScore() {
 	topidId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
@@ -114,7 +114,7 @@ func (s *RewardsTestSuite) TestHigherLossesLowerInferenceScore() {
 		log.Printf("Worker %v: %v", scores0[i].Address, scores0[i].Score)
 	}
 
-	block1 := int64(1004)
+	block1 := block0 + 1
 
 	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
 	require.NoError(err)
@@ -139,8 +139,7 @@ func (s *RewardsTestSuite) TestHigherLossesLowerInferenceScore() {
 		log.Printf("Worker %v: %v", scores1[i].Address, scores1[i].Score)
 	}
 
-	// require.True(scores[0].Score.Gt(scores[1].Score))
-	// require.True(scores[1].Score.Gt(scores[2].Score))
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
@@ -178,7 +177,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestHigherLossesLowerForecastScore() {
+func (s *RewardsTestSuite) TestHigherLossesHigherForecastScore() {
 	topidId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
@@ -206,7 +205,7 @@ func (s *RewardsTestSuite) TestHigherLossesLowerForecastScore() {
 		log.Printf("Worker %v: %v", scores0[i].Address, scores0[i].Score)
 	}
 
-	block1 := int64(1004)
+	block1 := block0 + 1
 
 	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
 	require.NoError(err)
@@ -231,8 +230,7 @@ func (s *RewardsTestSuite) TestHigherLossesLowerForecastScore() {
 		log.Printf("Worker %v: %v", scores1[i].Address, scores1[i].Score)
 	}
 
-	// require.True(scores[0].Score.Gt(scores[1].Score))
-	// require.True(scores[1].Score.Gt(scores[2].Score))
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
 
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {

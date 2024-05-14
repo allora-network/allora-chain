@@ -169,6 +169,10 @@ func mockSimpleNetworkLosses(
 			Worker: s.addrs[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.3"),
 		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
 	}
 
 	genericLosses := []*types.WorkerAttributedValue{
@@ -180,12 +184,16 @@ func mockSimpleNetworkLosses(
 			Worker: s.addrs[1].String(),
 			Value:  alloraMath.MustNewDecFromString("0.3"),
 		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
 	}
 
 	networkLosses := types.ValueBundle{
 		TopicId:                topicId,
-		CombinedValue:          alloraMath.MustNewDecFromString("0.01"),
-		NaiveValue:             alloraMath.MustNewDecFromString("0.02"),
+		CombinedValue:          alloraMath.MustNewDecFromString("0.05"),
+		NaiveValue:             alloraMath.MustNewDecFromString("0.05"),
 		OneOutInfererValues:    genericLossesWithheld,
 		OneOutForecasterValues: genericLossesWithheld,
 		OneInForecasterValues:  genericLosses,
