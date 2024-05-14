@@ -56,4 +56,5 @@ var (
 	ErrInvalidValue                             = errors.Register(ModuleName, 52, "invalid value")
 	ErrQueryTooLarge                            = errors.Register(ModuleName, 53, "Query is too large")
 	ErrFailedToSerializePayload                 = errors.Register(ModuleName, 54, "Failed to serialize payload")
+	ErrNoValidBundles                           = errors.Register(ModuleName, 55, "no valid bundles found")
 )

@@ -1088,6 +1088,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, worker)
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
+		Worker:                             worker.String(),
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker),
