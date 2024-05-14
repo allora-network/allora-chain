@@ -727,6 +727,9 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
 
+	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
+
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
