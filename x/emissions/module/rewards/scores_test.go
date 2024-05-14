@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"encoding/hex"
-	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -94,13 +93,6 @@ func (s *RewardsTestSuite) TestHigherLossesHigherInferenceScore() {
 	networkLosses0, err := mockSimpleNetworkLosses(s, topidId, block0, "0.1")
 	require.NoError(err)
 
-	for i := 0; i < len(networkLosses0.OneInForecasterValues); i++ {
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneOutInfererValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneOutForecasterValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneInForecasterValues[i].Value)
-	}
-
-	// Get inference scores0
 	scores0, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
@@ -110,22 +102,11 @@ func (s *RewardsTestSuite) TestHigherLossesHigherInferenceScore() {
 	)
 	require.NoError(err)
 
-	for i := 0; i < len(scores0); i++ {
-		log.Printf("Worker %v: %v", scores0[i].Address, scores0[i].Score)
-	}
-
 	block1 := block0 + 1
 
 	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
 	require.NoError(err)
 
-	for i := 0; i < len(networkLosses0.OneInForecasterValues); i++ {
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutInfererValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutForecasterValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneInForecasterValues[i].Value)
-	}
-
-	// Get inference scores
 	scores1, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
@@ -134,10 +115,6 @@ func (s *RewardsTestSuite) TestHigherLossesHigherInferenceScore() {
 		networkLosses1,
 	)
 	require.NoError(err)
-
-	for i := 0; i < len(scores1); i++ {
-		log.Printf("Worker %v: %v", scores1[i].Address, scores1[i].Score)
-	}
 
 	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
@@ -185,13 +162,6 @@ func (s *RewardsTestSuite) TestHigherLossesHigherForecastScore() {
 	networkLosses0, err := mockSimpleNetworkLosses(s, topidId, block0, "0.1")
 	require.NoError(err)
 
-	for i := 0; i < len(networkLosses0.OneInForecasterValues); i++ {
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneOutInfererValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneOutForecasterValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses0.OneOutInfererValues[i].Worker, networkLosses0.OneInForecasterValues[i].Value)
-	}
-
-	// Get inference scores0
 	scores0, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
@@ -201,20 +171,10 @@ func (s *RewardsTestSuite) TestHigherLossesHigherForecastScore() {
 	)
 	require.NoError(err)
 
-	for i := 0; i < len(scores0); i++ {
-		log.Printf("Worker %v: %v", scores0[i].Address, scores0[i].Score)
-	}
-
 	block1 := block0 + 1
 
 	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
 	require.NoError(err)
-
-	for i := 0; i < len(networkLosses0.OneInForecasterValues); i++ {
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutInfererValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneOutForecasterValues[i].Value)
-		log.Printf("Worker %v: %v", networkLosses1.OneOutInfererValues[i].Worker, networkLosses1.OneInForecasterValues[i].Value)
-	}
 
 	// Get inference scores
 	scores1, err := rewards.GenerateForecastScores(
@@ -225,10 +185,6 @@ func (s *RewardsTestSuite) TestHigherLossesHigherForecastScore() {
 		networkLosses1,
 	)
 	require.NoError(err)
-
-	for i := 0; i < len(scores1); i++ {
-		log.Printf("Worker %v: %v", scores1[i].Address, scores1[i].Score)
-	}
 
 	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
