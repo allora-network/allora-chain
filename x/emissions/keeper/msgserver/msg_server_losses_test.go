@@ -8,7 +8,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
@@ -285,7 +284,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 		},
 	}
 	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
-	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
+	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
 func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {

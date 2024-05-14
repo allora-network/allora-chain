@@ -1,7 +1,10 @@
 package types
 
 import (
+	"encoding/hex"
+
 	"cosmossdk.io/errors"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -36,6 +39,19 @@ func (bundle *WorkerDataBundle) Validate() error {
 		if err := bundle.InferenceForecastsBundle.Forecast.Validate(); err != nil {
 			return err
 		}
+	}
+
+	// Check signature from the bundle, throw if invalid!
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+	pubkey := secp256k1.PubKey(pk)
+
+	src := make([]byte, 0)
+	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 
 	return nil

@@ -2,10 +2,8 @@ package msgserver
 
 import (
 	"context"
-	"encoding/hex"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -30,20 +28,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		/// All filters should be done in order of increasing computational complexity
 
 		if err := workerDataBundle.Validate(); err != nil {
-			return nil, err
-		}
-
-		// Check signatures from the bundle throw if invalid!
-		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
-		if err != nil || len(pk) != secp256k1.PubKeySize {
-			return nil, types.ErrSignatureVerificationFailed
-		}
-		pubkey := secp256k1.PubKey(pk)
-
-		src := make([]byte, 0)
-		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
-			return nil, types.ErrSignatureVerificationFailed
+			continue // Ignore only invalid worker data bundles
 		}
 
 		/// If we do PoX-like anti-sybil procedure, would go here
@@ -63,22 +48,22 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 			infereraddr, _ := sdk.AccAddressFromBech32(inference.Inferer)
 			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, infereraddr)
 			if err != nil {
-				return nil, err
+				continue
 			}
 			if !isInfererRegistered {
 				continue
 			}
 
-			/// Filtering done now, now write what we must for inclusion
-
-			inferencesByInferer[inference.Inferer] = inference
-
 			// Get the latest score for each inferer => only take top few by score descending
 			latestScore, err := ms.k.GetLatestInfererScore(ctx, topicId, infereraddr)
 			if err != nil {
-				return nil, err
+				continue
 			}
+
+			/// Filtering done now, now write what we must for inclusion
+
 			latestInfererScores[inference.Inferer] = latestScore
+			inferencesByInferer[inference.Inferer] = inference
 		}
 	}
 
@@ -89,13 +74,13 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	// AND are from top performing inferers among those who have submitted inferences in this batch
 	inferencesFromTopInferers := make([]*types.Inference, 0)
 	acceptedInferers := make(map[string]bool, 0)
-	for worker, inference := range inferencesByInferer {
-		if _, ok := topInferers[worker]; !ok {
-			continue
-		}
-
+	for worker := range topInferers {
 		acceptedInferers[worker] = true
-		inferencesFromTopInferers = append(inferencesFromTopInferers, inference)
+		inferencesFromTopInferers = append(inferencesFromTopInferers, inferencesByInferer[worker])
+	}
+
+	if len(inferencesFromTopInferers) == 0 {
+		return nil, types.ErrNoValidBundles
 	}
 
 	// Store the final list of inferences
@@ -131,17 +116,8 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		/// Do filters on the per payload first, then on each forecaster
 		/// All filters should be done in order of increasing computational complexity
 
-		// Check signatures from the bundle throw if invalid!
-		pk, err := hex.DecodeString(workerDataBundle.Pubkey)
-		if err != nil || len(pk) != secp256k1.PubKeySize {
-			return types.ErrSignatureVerificationFailed
-		}
-		pubkey := secp256k1.PubKey(pk)
-
-		src := make([]byte, 0)
-		src, _ = workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-		if !pubkey.VerifySignature(src, workerDataBundle.InferencesForecastsBundleSignature) {
-			return types.ErrSignatureVerificationFailed
+		if err := workerDataBundle.Validate(); err != nil {
+			continue // Ignore only invalid worker data bundles
 		}
 
 		/// If we do PoX-like anti-sybil procedure, would go here
@@ -161,7 +137,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 			forecsterAddr, _ := sdk.AccAddressFromBech32(forecast.Forecaster)
 			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecsterAddr)
 			if err != nil {
-				return err
+				continue
 			}
 			if !isForecasterRegistered {
 				continue
@@ -185,14 +161,13 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 
 			/// Filtering done now, now write what we must for inclusion
 
-			forecastsByForecaster[forecast.Forecaster] = forecast
-
 			// Get the latest score for each forecaster => only take top few by score descending
 			latestScore, err := ms.k.GetLatestForecasterScore(ctx, topicId, forecsterAddr)
 			if err != nil {
-				return err
+				continue
 			}
 			latestForecasterScores[forecast.Forecaster] = latestScore
+			forecastsByForecaster[forecast.Forecaster] = forecast
 		}
 	}
 
@@ -202,13 +177,13 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
-	for worker, forecast := range forecastsByForecaster {
-		if _, ok := topForecasters[worker]; !ok {
-			continue
-		}
-
-		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecast)
+	for worker := range topForecasters {
+		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
 	}
+
+	// Though less than ideal because it produces less-acurate network inferences,
+	// it is fine if no forecasts are accepted
+	// => no need to check len(forecastsFromTopForecasters) == 0
 
 	// Store the final list of forecasts
 	forecastsToInsert := types.Forecasts{

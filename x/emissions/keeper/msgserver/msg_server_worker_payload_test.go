@@ -263,7 +263,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	}
 
 	_, err := msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
-	require.ErrorIs(err, types.ErrSignatureVerificationFailed)
+	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
