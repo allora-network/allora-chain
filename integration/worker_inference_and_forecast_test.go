@@ -16,7 +16,7 @@ import (
 
 const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
-const minWaitingNumberofEpochs = 5
+const minWaitingNumberofEpochs = 4
 
 func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
