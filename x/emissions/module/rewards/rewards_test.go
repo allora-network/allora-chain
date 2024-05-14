@@ -588,6 +588,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
 	epochLength := int64(10800)
+	s.MintTokensToModule(types.AlloraStakingAccountName, cosmosMath.NewInt(10000000000))
 
 	// Reputer Addresses
 	reputerAddrs := []sdk.AccAddress{
@@ -677,14 +678,12 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	var initialStake int64 = 1000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	initialStake := cosmosMath.NewInt(1000)
+	s.MintTokensToAddress(reputerAddrs[0], initialStake)
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
-		Amount:  cosmosMath.NewInt(initialStake),
+		Amount:  initialStake,
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)

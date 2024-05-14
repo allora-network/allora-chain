@@ -143,7 +143,7 @@ func GenerateRewardsDistributionByTopic(
 	// Send remaining collected inference request fees to the Ecosystem module account
 	// They will be paid out to reputers, workers, and validators
 	// according to the formulas in the beginblock of the mint module
-	err = k.BankKeeper().SendCoinsFromModuleToModule(
+	err = k.SendCoinsFromModuleToModule(
 		ctx,
 		types.AlloraRequestsAccountName,
 		mintTypes.EcosystemModuleName,
@@ -496,16 +496,15 @@ func payoutRewards(
 		}
 
 		rewardInt := reward.Reward.Abs().SdkIntTrim()
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == ReputerRewardType {
-			coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
-			err = k.SendCoinsFromAccountToModule(ctx, reward.Address, types.AlloraStakingAccountName, coins)
+			err = k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(
 					err,
-					"failed to send coins from account to rewards module %s -> %s",
-					reward.Address.String(),
-					types.AlloraStakingAccountName,
+					"failed to send coins from rewards module to staking module: %s",
+					coins.String(),
 				))
 				continue
 			}
@@ -519,7 +518,7 @@ func payoutRewards(
 				ctx,
 				types.AlloraRewardsAccountName,
 				address,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt)),
+				coins,
 			)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(
