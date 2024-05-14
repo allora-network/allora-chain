@@ -1265,6 +1265,23 @@ func (s *InferenceSynthesisTestSuite) TestSelectTopNReputerNonces() {
 			currentBlockHeight: 10,
 			groundTruthLag:     2,
 		},
+		{
+			name: "Mid ground truth lag, selecting some nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N: 3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+			},
+			currentBlockHeight: 10,
+			groundTruthLag:     5,
+		},
 	}
 
 	// Run test cases
