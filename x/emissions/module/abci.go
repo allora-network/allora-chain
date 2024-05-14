@@ -57,19 +57,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					fmt.Println("Error adding worker nonce: ", err)
 					return
 				}
-				// Add Reputer Nonces
-				if blockHeight-topic.EpochLength > 0 {
-					ReputerReputerNonce := types.Nonce{BlockHeight: blockHeight}
-					ReputerWorkerNonce := types.Nonce{BlockHeight: blockHeight - topic.EpochLength}
-					err = am.keeper.AddReputerNonce(sdkCtx, topic.Id, &ReputerReputerNonce, &ReputerWorkerNonce)
-					if err != nil {
-						fmt.Println("Error adding reputer nonce: ", err)
-						return
-					}
-				} else {
-					fmt.Println("Not adding reputer nonce, too early in topic history", blockHeight, topic.EpochLength)
-				}
-
 				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
 				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
 				if err != nil {
