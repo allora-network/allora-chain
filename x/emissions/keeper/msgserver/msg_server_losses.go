@@ -242,7 +242,8 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 		acceptedForecastersOfBatch[forecast.Forecaster] = true
 	}
 
-	// Filter out values of unaccepted workers
+	// Filter out values submitted by unaccepted workers
+
 	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
 		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
@@ -258,9 +259,12 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	acceptedOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
-	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
-		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-			acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+	// If 1 or fewer inferers, there's no one-out inferer data to receive
+	if len(acceptedInfererValues) > 1 {
+		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
+			if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+				acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+			}
 		}
 	}
 
@@ -276,11 +280,6 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
 			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
 		}
-	}
-
-	// If 1 inferer, there's no one-out inferer data to receive
-	if len(acceptedInfererValues) == 1 && len(acceptedOneOutInfererValues) > 0 {
-		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid one-out inferer values - there's just one inferer to report")
 	}
 
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
