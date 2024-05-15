@@ -129,7 +129,8 @@ service Query {
   rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest)
       returns (QueryNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}/current/{block_height_inference}/last_reward/{block_height_last_reward}";
+    option (google.api.http).get =
+        "/emissions/v1/network_inferences/{topic_id}/current/{block_height_inference}/last_reward/{block_height_last_reward}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
