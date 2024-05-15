@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	stdLog "log"
 	"testing"
 	"time"
 
@@ -293,6 +294,176 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Trigger end block - rewards distribution
 	err = s.appModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
+}
+
+func (s *RewardsTestSuite) getRewardsDistribution(
+	blockHeight int64,
+	workerValues []TestWorkerValue,
+	reputerValues []TestWorkerValue,
+	stake cosmosMath.Uint,
+) []rewards.TaskRewards {
+	require := s.Require()
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	require.NoError(err)
+
+	getAddrsFromValues := func(values []TestWorkerValue) []sdk.AccAddress {
+		addrs := make([]sdk.AccAddress, 0)
+		for _, value := range values {
+			addrs = append(addrs, value.Address)
+		}
+		return addrs
+	}
+
+	workerAddrs := getAddrsFromValues(workerValues)
+	reputerAddrs := getAddrsFromValues(reputerValues)
+
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputerValues[0].Address.String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	require.NoError(err)
+
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Register 5 workers
+	for _, workerValue := range workerValues {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       workerValue.Address.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    false,
+			Owner:        workerValue.Address.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		require.NoError(err)
+	}
+
+	for _, reputerValue := range reputerValues {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       reputerValue.Address.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    true,
+			Owner:        reputerValue.Address.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		require.NoError(err)
+	}
+	// Add Stake for reputers
+	for _, reputerValue := range reputerValues {
+		s.MintTokensToAddress(reputerValue.Address, cosmosMath.NewIntFromBigInt(stake.BigInt()))
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  reputerValue.Address.String(),
+			Amount:  stake,
+			TopicId: topicId,
+		})
+		require.NoError(err)
+	}
+
+	var initialStake int64 = 1000
+	s.FaucetAddress(initialStake, reputerValues[0].Address)
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:  reputerValues[0].Address.String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: blockHeight,
+	})
+	require.NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: blockHeight,
+	}, &types.Nonce{
+		BlockHeight: blockHeight,
+	})
+	require.NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, reputerAddrs)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: blockHeight},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	require.NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles := GenerateSimpleLossBundles(s, topicId, blockHeight, workerValues, reputerValues)
+
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerValues[0].Address.String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
+			WorkerNonce:  &types.Nonce{BlockHeight: blockHeight},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	require.NoError(err)
+
+	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
+
+	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		&topicTotalRewards,
+		blockHeight,
+		params,
+	)
+	require.NoError(err)
+
+	return firstRewardsDistribution
+}
+
+func (s *RewardsTestSuite) TestVaryingAlphaChangesPerformanceImportanceOfPastVsPresent() {
+	// require := s.Require()
+
+	blockHeight0 := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(blockHeight0)
+
+	workerValues0 := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
+
+	reputerValues0 := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
+
+	stake := cosmosMath.NewUint(1000000000000000000).Mul(inference_synthesis.CosmosUintOneE18())
+
+	rewardsDistribution0 := s.getRewardsDistribution(blockHeight0, workerValues0, reputerValues0, stake)
+
+	stdLog.Printf("First rewards distribution: %v", rewardsDistribution0)
+
+	// blockHeight += 1
+	// s.ctx = s.ctx.WithBlockHeight(blockHeight)
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {

@@ -832,3 +832,126 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 
 	return inferences
 }
+
+type TestWorkerValue struct {
+	Address sdk.AccAddress
+	Value   string
+}
+
+func GenerateSimpleWorkerDataBundles(
+	s *RewardsTestSuite,
+	topicId uint64,
+	blockHeight int64,
+	workerValues []TestWorkerValue,
+	infererAddrs []sdk.AccAddress,
+) []*types.WorkerDataBundle {
+	require := s.Require()
+	if len(workerValues) < 2 {
+		require.Fail("workerValues must have at least 2 elements")
+	}
+	if len(infererAddrs) < 2 {
+		require.Fail("infererAddrs must have at least 2 elements")
+	}
+
+	var inferences []*types.WorkerDataBundle
+
+	infererIndex := 0
+
+	getInfererIndex := func() int {
+		if infererIndex >= len(infererAddrs) {
+			infererIndex = 0
+		}
+		currentInfererIndex := infererIndex
+		infererIndex++
+		return currentInfererIndex
+	}
+
+	for i, workerValue := range workerValues {
+		newWorkerInferenceForecastBundle := &types.InferenceForecastBundle{
+			Inference: &types.Inference{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     workerValue.Address.String(),
+				Value:       alloraMath.MustNewDecFromString(workerValues[i].Value),
+			},
+			Forecast: &types.Forecast{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  workerValue.Address.String(),
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: infererAddrs[getInfererIndex()].String(),
+						Value:   alloraMath.MustNewDecFromString(workerValues[i].Value),
+					},
+					{
+						Inferer: infererAddrs[getInfererIndex()].String(),
+						Value:   alloraMath.MustNewDecFromString(workerValues[i].Value),
+					},
+				},
+			},
+		}
+		workerSig, err := GenerateWorkerSignature(s, newWorkerInferenceForecastBundle, workerValue.Address)
+		s.Require().NoError(err)
+		workerBundle := &types.WorkerDataBundle{
+			Worker:                             workerValue.Address.String(),
+			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
+			InferencesForecastsBundleSignature: workerSig,
+			Pubkey:                             GetAccPubKey(s, workerValue.Address),
+		}
+		inferences = append(inferences, workerBundle)
+	}
+
+	return inferences
+}
+
+func GenerateSimpleLossBundles(
+	s *RewardsTestSuite,
+	topicId uint64,
+	blockHeight int64,
+	workerValues []TestWorkerValue,
+	reputerValues []TestWorkerValue,
+) types.ReputerValueBundles {
+
+	var reputerValueBundles types.ReputerValueBundles
+	for _, reputer := range reputerValues {
+		valueBundle := &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: blockHeight,
+				},
+				WorkerNonce: &types.Nonce{
+					BlockHeight: blockHeight,
+				},
+			},
+			Reputer:                reputer.Address.String(),
+			CombinedValue:          alloraMath.MustNewDecFromString(reputer.Value),
+			NaiveValue:             alloraMath.MustNewDecFromString(reputer.Value),
+			InfererValues:          make([]*types.WorkerAttributedValue, len(workerValues)),
+			ForecasterValues:       make([]*types.WorkerAttributedValue, len(workerValues)),
+			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
+			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
+			OneInForecasterValues:  make([]*types.WorkerAttributedValue, len(workerValues)),
+		}
+
+		for j, worker := range workerValues {
+			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+		}
+
+		sig, err := GenerateReputerSignature(s, valueBundle, reputer.Address)
+		s.Require().NoError(err)
+
+		bundle := &types.ReputerValueBundle{
+			Pubkey:      GetAccPubKey(s, reputer.Address),
+			Signature:   sig,
+			ValueBundle: valueBundle,
+		}
+		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
+	}
+
+	return reputerValueBundles
+}
