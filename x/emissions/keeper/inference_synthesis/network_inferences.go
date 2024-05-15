@@ -118,6 +118,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 
 		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
 		log.Printf("oneInForecasterSelfRegret: %v", oneInForecasterSelfRegret)
+
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
