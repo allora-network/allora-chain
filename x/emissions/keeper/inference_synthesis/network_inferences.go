@@ -110,7 +110,6 @@ func FindMaxRegretAmongWorkersWithLosses(
 	for forecaster := range forecastImpliedInferenceByWorker {
 		for inferer := range inferenceByWorker {
 			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
-			log.Printf("oneInForecasterRegret: %v", oneInForecasterRegret)
 			if err != nil {
 				fmt.Println("Error getting forecaster regret: ", err)
 				return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -121,7 +120,6 @@ func FindMaxRegretAmongWorkersWithLosses(
 		}
 
 		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
-		log.Printf("oneInForecasterSelfRegret: %v", oneInForecasterSelfRegret)
 
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
@@ -225,18 +223,14 @@ func CalcWeightedInference(
 		fmt.Println("Error maxRegret < epsilon: ", maxRegret, epsilon)
 		maxRegret = epsilon
 	}
-	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
 
 	// Calculate the network combined inference and network worker regrets
 	unnormalizedI_i := alloraMath.ZeroDec()
 	sumWeights := alloraMath.ZeroDec()
 
-	log.Printf("inferenceByWorker: %v", inferenceByWorker)
-
 	for inferer := range inferenceByWorker {
 		// Get the regret of the inferer
 		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
-		log.Printf("inferer %v, regret %v, noPriorRegret: %v", inferer, regret, noPriorRegret)
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return InferenceValue{}, err
@@ -257,12 +251,9 @@ func CalcWeightedInference(
 		}
 	}
 
-	log.Printf("forecastImpliedInferenceByWorker: %v", forecastImpliedInferenceByWorker)
-
 	for forecaster := range forecastImpliedInferenceByWorker {
 		// Get the regret of the forecaster
 		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
-		log.Printf("forecaster %v, regret %v, noPriorRegret: %v", forecaster, regret, noPriorRegret)
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return InferenceValue{}, err
@@ -367,7 +358,7 @@ func CalcOneOutInferences(
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
 
-		for workerOfImpliedInference, inference := range inferenceByWorker {
+		for workerOfImpliedInference, inference := range forecastImpliedInferenceByWorker {
 			if workerOfImpliedInference != worker {
 				impliedInferenceWithoutWorker[workerOfImpliedInference] = inference
 			}
@@ -461,7 +452,6 @@ func CalcNetworkInferences(
 		fmt.Println("Error checking if all workers are new: ", err)
 		return nil, err
 	}
-	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
 
 	// Calculate forecast-implied inferences I_ik
 	forecastImpliedInferenceByWorker, err := CalcForecastImpliedInferences(
@@ -473,18 +463,9 @@ func CalcNetworkInferences(
 		pInferenceSynthesis,
 	)
 
-	log.Printf("inferenceByWorker: %v", inferenceByWorker)
-	log.Printf("forecasts: %v", forecasts)
-	log.Printf("networkCombinedLoss: %v", networkCombinedLoss)
-	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
-	log.Printf("epsilon: %v", epsilon)
-	log.Printf("pInferenceSynthesis: %v", pInferenceSynthesis)
-
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
-
-	log.Printf("forecastImpliedInferenceByWorker: %v", forecastImpliedInferenceByWorker)
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
 	currentMaxRegrets, err := FindMaxRegretAmongWorkersWithLosses(

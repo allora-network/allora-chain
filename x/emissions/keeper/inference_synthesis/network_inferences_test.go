@@ -469,9 +469,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				test.pInferenceSynthesis,
 			)
 
-			log.Printf("oneOutInfererValues: %v", oneOutInfererValues)
-			log.Printf("oneOutForecasterValues: %v", oneOutForecasterValues)
-
 			s.Require().NoError(err, "CalcOneOutInferences should not return an error")
 
 			s.Require().Len(oneOutInfererValues, len(test.expectedOneOutInferences), "Unexpected number of one-out inferences")
