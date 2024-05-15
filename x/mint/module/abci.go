@@ -9,13 +9,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func GetEmissionPerTimestep(
+func GetEmissionPerMonth(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	params types.Params,
 	ecosystemMintSupplyRemaining math.Int,
 ) (
-	emissionPerTimestep math.Int,
+	emissionPerMonth math.Int,
 	emissionPerUnitStakedToken math.LegacyDec,
 	err error,
 ) {
@@ -48,11 +48,14 @@ func GetEmissionPerTimestep(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	smoothingDegree := keeper.GetSmoothingFactorPerTimestep(
-		ctx,
-		k,
-		params.OneMonthSmoothingDegree,
-		params.EmissionCalibrationsTimestepPerMonth,
+	maximumMonthlyEmissionPerUnitStakedToken := keeper.GetMaximumMonthlyEmissionPerUnitStakedToken(
+		params.MaximumMonthlyPercentageYield,
+		networkStaked,
+		circulatingSupply,
+	)
+	targetRewardEmissionPerUnitStakedToken = keeper.GetCappedTargetEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		maximumMonthlyEmissionPerUnitStakedToken,
 	)
 	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
 	if err != nil {
@@ -60,11 +63,11 @@ func GetEmissionPerTimestep(
 	}
 	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
-		smoothingDegree,
+		params.OneMonthSmoothingDegree,
 		previousRewardEmissionPerUnitStakedToken,
 	)
-	emissionPerTimestep = keeper.GetTotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
-	return emissionPerTimestep, emissionPerUnitStakedToken, nil
+	emissionPerMonth = keeper.GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStaked)
+	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
 
 // How many tokens are left that the ecosystem bucket is allowed to mint?
@@ -97,11 +100,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 
-	// find out if we need to update the block emissions rate
-	// EmissionsCalibrationsTimesepPerMonth can never be zero
-	// validateEmissionCalibrationTimestepPerMonth prevents zero
-	emissionRateUpdateCadence := params.BlocksPerMonth / params.EmissionCalibrationsTimestepPerMonth
-
 	blockHeight := sdkCtx.BlockHeight()
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
@@ -115,8 +113,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	updateEmission := false
 	var e_i math.LegacyDec
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
-	if uint64(blockHeight)%emissionRateUpdateCadence == 1 { // easier to test when genesis starts at 1
-		emissionPerTimestep, emissionPerUnitStakedToken, err := GetEmissionPerTimestep(
+	if uint64(blockHeight)%params.BlocksPerMonth == 1 { // easier to test when genesis starts at 1
+		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
 			k,
 			params,
@@ -125,9 +123,8 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if err != nil {
 			return err
 		}
-		// emission/block = (emission/timestep) * (timestep/month) / (block/month)
-		blockEmission = emissionPerTimestep.
-			Mul(math.NewIntFromUint64(params.EmissionCalibrationsTimestepPerMonth)).
+		// emission/block = (emission/month) / (block/month)
+		blockEmission = emissionPerMonth.
 			Quo(math.NewIntFromUint64(params.BlocksPerMonth))
 		e_i = emissionPerUnitStakedToken
 		updateEmission = true

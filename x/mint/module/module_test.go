@@ -185,7 +185,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerTimestep(
+	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
 		params,
@@ -202,7 +202,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerTimestep(
+	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
 		params,

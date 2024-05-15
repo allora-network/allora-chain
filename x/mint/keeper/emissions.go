@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // return the uncirculating supply, i.e. tokens on a vesting schedule
@@ -19,7 +18,7 @@ func GetLockedTokenSupply(
 ) math.Int {
 	// foundation is unlocked from genesis
 	// participants are unlocked from genesis
-	//investors and team tokens are locked on a 1 year cliff three year vesting schedule
+	// investors and team tokens are locked on a 1 year cliff three year vesting schedule
 	blocksInAYear := math.NewIntFromUint64(params.BlocksPerMonth * 12)
 	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
 	maxSupply := params.MaxSupply.ToLegacyDec()
@@ -62,16 +61,46 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 	return cosmosValidatorsStaked.Add(math.NewIntFromBigInt(reputersStaked.BigInt())), nil
 }
 
-// The total amount of tokens emitted as rewards at timestep i
+// The total amount of tokens emitted for a full month
 // E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token
 // and N_{staked,i} is the total amount of tokens staked at timestep i
 // THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
-func GetTotalEmissionPerTimestep(
+func GetTotalEmissionPerMonth(
 	rewardEmissionPerUnitStakedToken math.LegacyDec,
 	numStakedTokens math.Int,
 ) math.Int {
 	return rewardEmissionPerUnitStakedToken.MulInt(numStakedTokens).TruncateInt()
+}
+
+// maximum monthly emission per unit staked token
+// given a maximum monthly percentage yield
+// ^e_{max,i} = Xi_max / f_{staked,i}
+// where Xi_{max} is the maximum MPY,
+// and f_{staked,i} is the fraction of the circulating supply
+// that is staked i.e. N_{staked,i} / N_{circ,i}
+func GetMaximumMonthlyEmissionPerUnitStakedToken(
+	maximumMonthlyPercentageYield math.LegacyDec,
+	networkStaked math.Int,
+	circulatingSupply math.Int,
+) math.LegacyDec {
+	f_staked := networkStaked.ToLegacyDec().Quo(circulatingSupply.ToLegacyDec())
+	return maximumMonthlyPercentageYield.Quo(f_staked)
+}
+
+// Target Monthly Emission Per Unit Staked Token
+// is the capped value of either the computed target for this
+// timestep, or simply the maximum allowable emission per unit
+// staked token
+// ^e_i = min(^e_{target,i}, ^e_{max,i})
+func GetCappedTargetEmissionPerUnitStakedToken(
+	targetRewardEmissionPerUnitStakedToken math.LegacyDec,
+	maximumMonthlyEmissionPerUnitStakedToken math.LegacyDec,
+) math.LegacyDec {
+	if targetRewardEmissionPerUnitStakedToken.GT(maximumMonthlyEmissionPerUnitStakedToken) {
+		return maximumMonthlyEmissionPerUnitStakedToken
+	}
+	return targetRewardEmissionPerUnitStakedToken
 }
 
 // Target Reward Emission Per Unit Staked Token
@@ -138,21 +167,4 @@ func GetExponentialMovingAverage(
 	secondTerm := math.OneInt().ToLegacyDec().Sub(alphaEmission).
 		Mul(previousRewardEmissionPerUnitStakedToken)
 	return firstTerm.Add(secondTerm)
-}
-
-// a_e needs to be set to the correct value for the timestep in question
-// a_e has a fiduciary value of 0.1 but that's for a one-month timestep
-// so it must be corrected for whatever timestep we actually use
-// in this first version of the allora network we will use a "daily" timestep
-// so the value for delta t should be 30 (assuming a perfect world of 30 day months)
-// ^α_e = 1 - (1 - α_e)^(∆t/month)
-func GetSmoothingFactorPerTimestep(
-	ctx sdk.Context,
-	k Keeper,
-	a_e math.LegacyDec,
-	dt uint64,
-) math.LegacyDec {
-	base := math.OneInt().ToLegacyDec().Sub(a_e)
-	secondTerm := base.Power(dt)
-	return math.OneInt().ToLegacyDec().Sub(secondTerm)
 }
