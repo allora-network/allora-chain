@@ -1145,34 +1145,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	}
 
-	/*
-		/// Epoch 2 values
-
-		setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "0.2908686083275610")
-		setOneInForecasterNetworkRegret(forecaster0Acc, reputer1Acc, "0.41668359891147100")
-		setOneInForecasterNetworkRegret(forecaster0Acc, reputer2Acc, "0.1750965216173760")
-		setOneInForecasterNetworkRegret(forecaster0Acc, reputer3Acc, "0.4946361393170890")
-		setOneInForecasterNetworkRegret(forecaster0Acc, reputer4Acc, "0.27842211442291100")
-
-		// setOneInForecasterNetworkRegret(forecaster0Acc, forecaster0Acc, "0.8145278799312940")
-
-		setOneInForecasterNetworkRegret(forecaster1Acc, reputer0Acc, "0.27805335477337800")
-		setOneInForecasterNetworkRegret(forecaster1Acc, reputer1Acc, "0.40386834535728700")
-		setOneInForecasterNetworkRegret(forecaster1Acc, reputer2Acc, "0.1622812680631930")
-		setOneInForecasterNetworkRegret(forecaster1Acc, reputer3Acc, "0.4818208857629060")
-		setOneInForecasterNetworkRegret(forecaster1Acc, reputer4Acc, "0.2656068608687280")
-
-		// setOneInForecasterNetworkRegret(forecaster1Acc, forecaster1Acc, "0.8091021410557080")
-
-		setOneInForecasterNetworkRegret(forecaster2Acc, reputer0Acc, "0.2769256582158990")
-		setOneInForecasterNetworkRegret(forecaster2Acc, reputer1Acc, "0.40274064879980900")
-		setOneInForecasterNetworkRegret(forecaster2Acc, reputer2Acc, "0.16115357150571500")
-		setOneInForecasterNetworkRegret(forecaster2Acc, reputer3Acc, "0.4806931892054280")
-		setOneInForecasterNetworkRegret(forecaster2Acc, reputer4Acc, "0.2644791643112500")
-
-		// setOneInForecasterNetworkRegret(forecaster2Acc, forecaster2Acc, "0.804185909355192")
-	*/
-
 	/// Epoch 3 values
 
 	setOneInForecasterNetworkRegret(forecaster0Acc, reputer0Acc, "-0.005488956369080480")
