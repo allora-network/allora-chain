@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -14,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight math.Dec, totalRevenue cosmosMath.Int) error {
+func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight alloraMath.Dec, totalRevenue cosmosMath.Int) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
@@ -55,14 +54,16 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		}
 
 		// Pay out rewards to topic participants
-		err = payoutRewards(ctx, k, totalRewardsDistribution)
-		if err != nil {
-			fmt.Printf(
-				"Failed to pay out rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-				topicId,
-				topicReward.String(),
-				err,
-			)
+		payoutErrors := payoutRewards(ctx, k, totalRewardsDistribution)
+		if len(payoutErrors) > 0 {
+			for _, err := range payoutErrors {
+				fmt.Printf(
+					"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+					topicId,
+					topicReward.String(),
+					err,
+				)
+			}
 			continue
 		}
 
@@ -88,8 +89,8 @@ func GenerateRewardsDistributionByTopic(
 	maxTopicsPerBlock uint64,
 	blockHeight BlockHeight,
 	totalReward alloraMath.Dec,
-	weights map[uint64]*math.Dec,
-	sumWeight math.Dec,
+	weights map[uint64]*alloraMath.Dec,
+	sumWeight alloraMath.Dec,
 	totalRevenue cosmosMath.Int,
 ) (map[uint64]*alloraMath.Dec, error) {
 	if sumWeight.IsZero() {
@@ -141,7 +142,7 @@ func GenerateRewardsDistributionByTopic(
 	// Send remaining collected inference request fees to the Ecosystem module account
 	// They will be paid out to reputers, workers, and validators
 	// according to the formulas in the beginblock of the mint module
-	err = k.BankKeeper().SendCoinsFromModuleToModule(
+	err = k.SendCoinsFromModuleToModule(
 		ctx,
 		types.AlloraRequestsAccountName,
 		mintTypes.EcosystemModuleName,
@@ -473,15 +474,20 @@ func GenerateRewardsDistributionByTopicParticipant(
 	return totalRewardsDistribution, nil
 }
 
+// pay out the rewards to the participants
+// this function moves tokens from the rewards module to the participants
+// if it fails to pay a particular participant, it will continue to the next participant
 func payoutRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	rewards []TaskRewards,
-) error {
+) []error {
+	ret := make([]error, 0)
 	for _, reward := range rewards {
 		address, err := sdk.AccAddressFromBech32(reward.Address.String())
 		if err != nil {
-			return errors.Wrapf(err, "failed to decode payout address")
+			ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address.String()))
+			continue
 		}
 
 		if reward.Reward.IsZero() {
@@ -489,25 +495,43 @@ func payoutRewards(
 		}
 
 		rewardInt := reward.Reward.Abs().SdkIntTrim()
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == ReputerRewardType {
-			coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
-			k.BankKeeper().SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
-			k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
+			err = k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
+			if err != nil {
+				ret = append(ret, errors.Wrapf(
+					err,
+					"failed to send coins from rewards module to staking module: %s",
+					coins.String(),
+				))
+				continue
+			}
+			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
+			if err != nil {
+				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address.String(), rewardInt.String()))
+				continue
+			}
 		} else {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
 				address,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt)),
+				coins,
 			)
 			if err != nil {
-				return errors.Wrapf(err, "failed to send coins from rewards module to payout address")
+				ret = append(ret, errors.Wrapf(
+					err,
+					"failed to send coins from rewards module to payout address %s, %s",
+					types.AlloraRewardsAccountName,
+					reward.Address.String(),
+				))
+				continue
 			}
 		}
 	}
 
-	return nil
+	return ret
 }
 
 func pruneRecordsAfterRewards(

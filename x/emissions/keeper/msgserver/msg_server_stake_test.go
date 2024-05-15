@@ -127,6 +127,8 @@ func (s *KeeperTestSuite) TestStartRemoveStake() {
 	topicId := uint64(123)
 	stakeAmount := cosmosMath.NewUint(50)
 
+	s.MintTokensToAddress(senderAddr, cosmosMath.NewInt(1000))
+
 	// Assuming you have methods to directly manipulate the state
 	// Simulate that sender has already staked the required amount
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
@@ -181,6 +183,8 @@ func (s *KeeperTestSuite) TestConfirmRemoveStake() {
 	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
 	require.NoError(err)
 
+	s.MintTokensToAddress(senderAddr, cosmosMath.NewInt(1000))
+	s.MintTokensToModule(types.AlloraStakingAccountName, cosmosMath.NewInt(1000))
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr, stakeAmount)
 
 	// Simulate the stake removal request.
@@ -311,6 +315,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
 	topicId := uint64(123)
 	stakeAmount := cosmosMath.NewUint(50)
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
 		LibP2PKey:    "reputer-libp2p-key-sample",
@@ -360,6 +365,7 @@ func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
 	topicId := uint64(123)
 	stakeAmount := cosmosMath.NewUint(50)
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
 		LibP2PKey:    "reputer-libp2p-key-sample",
@@ -446,6 +452,8 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
 
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
 	msg := &types.MsgDelegateStake{
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
@@ -499,6 +507,8 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStakeError() {
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
 
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
 	msg := &types.MsgDelegateStake{
 		Sender:  delegatorAddr.String(),
 		Reputer: reputerAddr.String(),
@@ -535,6 +545,8 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	startBlock := sdkCtx.BlockHeight()
+
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	// Simulate adding a reputer and delegating stake to them
 	keeper.InsertReputer(ctx, topicId, reputerAddr, types.OffchainNode{})
@@ -602,6 +614,9 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	delegator2StakeAmount := cosmosMath.NewUint(5000)
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialBalance)
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
+	s.MintTokensToAddress(delegator2Addr, cosmosMath.NewInt(1000000))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),

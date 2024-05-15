@@ -25,7 +25,7 @@ func UpdateParamsChecks(m TestMetadata) {
 	require.True(m.t, checkIfAdmin(m, m.n.AliceAddr))
 	require.False(m.t, checkIfAdmin(m, m.n.BobAddr))
 
-	// Keep old params
+	// Keep old params to revert back to
 	oldParams := GetEmissionsParams(m)
 	oldEpsilon := oldParams.Epsilon
 
@@ -72,5 +72,4 @@ func UpdateParamsChecks(m TestMetadata) {
 	require.NoError(m.t, err)
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
-
 }

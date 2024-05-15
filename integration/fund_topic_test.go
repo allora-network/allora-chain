@@ -12,7 +12,7 @@ func FundTopic1(m TestMetadata) {
 		m.n.BobAcc,
 		&emissionstypes.MsgFundTopic{
 			Sender:  m.n.BobAddr,
-			TopicId: 1,
+			TopicId: uint64(1),
 			Amount:  cosmosMath.NewInt(10000),
 		},
 	)
