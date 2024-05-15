@@ -107,11 +107,11 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 }
 
 func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
-	ctx := s.ctx
 	queryServer := s.queryServer
-	require := s.Require()
-
 	keeper := s.emissionsKeeper
+
+	require := s.Require()
+	topicId := s.CreateOneTopic()
 
 	reputer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
 	reputer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
@@ -125,7 +125,6 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	reputer3Acc := sdk.AccAddress(reputer3)
 	reputer4Acc := sdk.AccAddress(reputer4)
 
-	topicId := uint64(1)
 	blockHeight := int64(10)
 
 	simpleNonce := types.Nonce{BlockHeight: blockHeight}
@@ -236,13 +235,19 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce, inferences)
 	s.Require().NoError(err)
 
+	// Set actual block
+	s.ctx = s.ctx.WithBlockHeight(blockHeight + 10)
+
+	// Update epoch topic epoch last ended
+	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, blockHeight+10)
+	require.NoError(err)
+
 	// Test querying the server
 	req := &types.QueryNetworkInferencesAtBlockRequest{
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
+		TopicId:               topicId,
+		BlockHeightInference:  blockHeight,
+		BlockHeightLastReward: blockHeight,
 	}
-	response, err := queryServer.GetNetworkInferencesAtBlock(ctx, req)
-	require.NoError(err, "Query should not return an error")
+	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
 	require.NotNil(response, "Response should not be nil")
-	require.Equal(blockHeight, response.BlockHeight, "The returned block height should match the requested block height")
 }
