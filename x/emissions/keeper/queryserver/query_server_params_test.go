@@ -8,8 +8,7 @@ func (s *KeeperTestSuite) TestParams() {
 	queryServer := s.queryServer
 
 	expectedParams := types.Params{
-		Version:       "1.0",
-		RewardCadence: 86400,
+		Version: "1.0",
 	}
 
 	err := keeper.SetParams(ctx, expectedParams)
@@ -20,5 +19,4 @@ func (s *KeeperTestSuite) TestParams() {
 	s.Require().NoError(err, "Retrieving parameters should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(expectedParams.Version, response.Params.Version)
-	s.Require().Equal(expectedParams.RewardCadence, response.Params.RewardCadence)
 }
