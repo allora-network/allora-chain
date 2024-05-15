@@ -185,10 +185,14 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	return k.Params.Get(ctx)
 }
 
+// What split of the rewards should be given to cosmos validators vs
+// allora participants (reputers, forecaster workers, inferrer workers)
 func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
 	return k.emissionsKeeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
 }
 
+// The last time we paid out rewards, what was the percentage of those rewards that went to staked reputers
+// (as opposed to forecaster workers and inferrer workers)
 func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
-	return k.emissionsKeeper.GetParamsPreviousPercentageRewardToStakedReputers(ctx)
+	return k.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(ctx)
 }

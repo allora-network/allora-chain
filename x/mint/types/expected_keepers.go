@@ -39,4 +39,5 @@ type BankKeeper interface {
 type EmissionsKeeper interface {
 	GetTotalStake(ctx context.Context) (math.Uint, error)
 	GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error)
+	GetPrevious
 }
