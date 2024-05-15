@@ -12,6 +12,7 @@ import (
 func GetEmissionPerMonth(
 	ctx sdk.Context,
 	k keeper.Keeper,
+	blocksPerMonth uint64,
 	params types.Params,
 	ecosystemMintSupplyRemaining math.Int,
 ) (
@@ -26,6 +27,7 @@ func GetEmissionPerMonth(
 	}
 	totalSupply := k.GetTotalCurrTokenSupply(ctx).Amount
 	lockedSupply := keeper.GetLockedTokenSupply(
+		blocksPerMonth,
 		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
 		params,
 	)
@@ -112,11 +114,16 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	updateEmission := false
 	var e_i math.LegacyDec
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return err
+	}
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
-	if uint64(blockHeight)%params.BlocksPerMonth == 1 { // easier to test when genesis starts at 1
+	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
 			k,
+			blocksPerMonth,
 			params,
 			ecosystemMintSupplyRemaining,
 		)
@@ -125,7 +132,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		}
 		// emission/block = (emission/month) / (block/month)
 		blockEmission = emissionPerMonth.
-			Quo(math.NewIntFromUint64(params.BlocksPerMonth))
+			Quo(math.NewIntFromUint64(blocksPerMonth))
 		e_i = emissionPerUnitStakedToken
 		updateEmission = true
 	}

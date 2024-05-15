@@ -13,13 +13,14 @@ import (
 // this function returns the circulating supply based off of what
 // the agreements off chain say were supposed to happen for token lockup
 func GetLockedTokenSupply(
+	blocksPerMonth uint64,
 	blockHeight math.Int,
 	params types.Params,
 ) math.Int {
 	// foundation is unlocked from genesis
 	// participants are unlocked from genesis
 	// investors and team tokens are locked on a 1 year cliff three year vesting schedule
-	blocksInAYear := math.NewIntFromUint64(params.BlocksPerMonth * 12)
+	blocksInAYear := math.NewIntFromUint64(blocksPerMonth * 12)
 	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
 	maxSupply := params.MaxSupply.ToLegacyDec()
 	percentInvestors := params.InvestorsPercentOfTotalSupply
@@ -34,7 +35,7 @@ func GetLockedTokenSupply(
 	} else if blockHeight.GTE(blocksInAYear) && blockHeight.LT(blocksInThreeYears) {
 		// between 1 and 3 years, investors and team tokens are vesting and partially unlocked
 		thirtySix := math.LegacyNewDec(36)
-		monthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(params.BlocksPerMonth)).ToLegacyDec()
+		monthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth)).ToLegacyDec()
 		monthsLocked := thirtySix.Sub(monthsUnlocked)
 		investors = monthsLocked.Quo(thirtySix).Mul(fullInvestors.ToLegacyDec()).TruncateInt()
 		team = monthsLocked.Quo(thirtySix).Mul(fullTeam.ToLegacyDec()).TruncateInt()

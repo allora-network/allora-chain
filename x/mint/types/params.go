@@ -13,7 +13,6 @@ import (
 // NewParams returns Params instance with the given values.
 func NewParams(
 	mintDenom string,
-	blocksPerMonth uint64,
 	maxSupply math.Int,
 	fEmission math.LegacyDec,
 	oneMonthSmoothingDegree math.LegacyDec,
@@ -26,7 +25,6 @@ func NewParams(
 ) Params {
 	return Params{
 		MintDenom:                              mintDenom,
-		BlocksPerMonth:                         blocksPerMonth,
 		MaxSupply:                              maxSupply,
 		FEmission:                              fEmission,
 		OneMonthSmoothingDegree:                oneMonthSmoothingDegree,
@@ -47,7 +45,6 @@ func DefaultParams() Params {
 	}
 	return Params{
 		MintDenom:                              sdk.DefaultBondDenom,
-		BlocksPerMonth:                         DefaultBlocksPerMonth(),
 		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
 		FEmission:                              math.LegacyMustNewDecFromStr("0.025"),  // 0.025 per month
 		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
@@ -75,17 +72,9 @@ func DefaultEcosystemTokensMinted() math.Int {
 	return math.ZeroInt()
 }
 
-// ~5 seconds block time, 6311520 per year, 525960 per month
-func DefaultBlocksPerMonth() uint64 {
-	return uint64(525960)
-}
-
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {
-		return err
-	}
-	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
 	}
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
@@ -138,19 +127,6 @@ func validateMintDenom(i interface{}) error {
 	}
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func validateBlocksPerMonth(i interface{}) error {
-	v, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v == 0 {
-		return fmt.Errorf("blocks per month must be positive: %d", v)
 	}
 
 	return nil

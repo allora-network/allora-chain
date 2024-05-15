@@ -196,3 +196,8 @@ func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraM
 func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
 	return k.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(ctx)
 }
+
+// wrapper around emissions keeper call to get the number of blocks expected in a month
+func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
+	return k.emissionsKeeper.GetParamsBlocksPerMonth(ctx)
+}
