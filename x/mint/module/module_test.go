@@ -476,10 +476,9 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUpButPerUnit
 	)
 	s.Require().NoError(err)
 
-	mintParams, err := s.mintKeeper.GetParams(s.ctx)
+	blocksPerMonth, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	emissionRateUpdateCadence := mintParams.BlocksPerMonth / mintParams.EmissionCalibrationsTimestepPerMonth
-	s.ctx = s.ctx.WithBlockHeight(int64(emissionRateUpdateCadence + 1))
+	s.ctx = s.ctx.WithBlockHeight(int64(blocksPerMonth + 1))
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
