@@ -1,0 +1,24 @@
+  ${moniker}:
+    container_name: ${moniker}
+    image: allorad
+    environment:
+      - HOME=/data/${moniker}
+    volumes:
+      - ${LOCALNET_DATADIR}:/data
+    user: "${UID_GID}"
+    entrypoint:
+      - allorad
+    command:
+      - --home=/data/${moniker}
+      - start
+      - --moniker=${moniker}
+      - --minimum-gas-prices=0uallo
+      - --rpc.laddr=tcp://0.0.0.0:26657
+      - --p2p.persistent_peers=${PEERS}
+    ports:
+      - ${validatorPort}:26657
+    networks:
+      local-net:
+        aliases:
+          - ${moniker}
+        ipv4_address: ${ipAddress}
