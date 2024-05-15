@@ -627,8 +627,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferences() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestIncreasingPInferenceIncreasingRegretSkewness() {
+	require := s.Require()
 	k := s.emissionsKeeper
 	ctx := s.ctx
+
 	topicId := uint64(1)
 
 	worker0 := "worker0"
@@ -673,29 +675,28 @@ func (s *InferenceSynthesisTestSuite) TestIncreasingPInferenceIncreasingRegretSk
 	getNetworkInferencesForPInferenceSynthesis := func(pInferenceSynthesis alloraMath.Dec) *emissions.ValueBundle {
 		// Set inferer network regrets
 		err := k.SetInfererNetworkRegret(ctx, topicId, worker0Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-		s.Require().NoError(err)
+		require.NoError(err)
 		err = k.SetInfererNetworkRegret(ctx, topicId, worker1Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-		s.Require().NoError(err)
+		require.NoError(err)
 
 		// Set forecaster network regrets
 		err = k.SetForecasterNetworkRegret(ctx, topicId, worker2Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-		s.Require().NoError(err)
+		require.NoError(err)
 		err = k.SetForecasterNetworkRegret(ctx, topicId, worker3Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
-		s.Require().NoError(err)
+		require.NoError(err)
 
 		// Set one-in forecaster network regrets
 		err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2Add, worker0Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-		s.Require().NoError(err)
+		require.NoError(err)
 		err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2Add, worker1Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-		s.Require().NoError(err)
+		require.NoError(err)
 		err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3Add, worker0Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
-		s.Require().NoError(err)
+		require.NoError(err)
 		err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3Add, worker1Add, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-		s.Require().NoError(err)
+		require.NoError(err)
 
 		// Call the function
 		valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pInferenceSynthesis)
-		s.Require().NoError(err)
 
 		return valueBundle
 	}
