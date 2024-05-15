@@ -16,7 +16,7 @@ func DefaultParams() Params {
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
+		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds
 		MinEpochLength:                  1,                                         // 1 block
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
