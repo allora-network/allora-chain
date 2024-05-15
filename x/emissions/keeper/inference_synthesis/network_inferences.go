@@ -225,14 +225,18 @@ func CalcWeightedInference(
 		fmt.Println("Error maxRegret < epsilon: ", maxRegret, epsilon)
 		maxRegret = epsilon
 	}
+	log.Printf("allWorkersAreNew: %v", allWorkersAreNew)
 
 	// Calculate the network combined inference and network worker regrets
 	unnormalizedI_i := alloraMath.ZeroDec()
 	sumWeights := alloraMath.ZeroDec()
 
+	log.Printf("inferenceByWorker: %v", inferenceByWorker)
+
 	for inferer := range inferenceByWorker {
 		// Get the regret of the inferer
 		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		log.Printf("inferer %v, regret %v, noPriorRegret: %v", inferer, regret, noPriorRegret)
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return InferenceValue{}, err
@@ -253,9 +257,12 @@ func CalcWeightedInference(
 		}
 	}
 
+	log.Printf("forecastImpliedInferenceByWorker: %v", forecastImpliedInferenceByWorker)
+
 	for forecaster := range forecastImpliedInferenceByWorker {
 		// Get the regret of the forecaster
 		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
+		log.Printf("forecaster %v, regret %v, noPriorRegret: %v", forecaster, regret, noPriorRegret)
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return InferenceValue{}, err
