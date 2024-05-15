@@ -188,3 +188,7 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
 	return k.emissionsKeeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
 }
+
+func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
+	return k.emissionsKeeper.GetParamsPreviousPercentageRewardToStakedReputers(ctx)
+}
