@@ -1456,7 +1456,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 
 	params := types.Params{
 		Version:                         "v1.0.0",
-		RewardCadence:                   60 * 60 * 24 * 7 * 24,
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:               1000,
 		MaxMissingInferencePercent:      alloraMath.NewDecFromInt64(10),
@@ -1502,7 +1501,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 	paramsFromKeeper, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
-	s.Require().Equal(params.RewardCadence, paramsFromKeeper.RewardCadence, "Params should be equal to the set params: EpochLength")
 	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
 	s.Require().Equal(params.MaxMissingInferencePercent, paramsFromKeeper.MaxMissingInferencePercent, "Params should be equal to the set params: MaxMissingInferencePercent")

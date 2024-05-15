@@ -42,7 +42,6 @@ func (s *KeeperTestSuite) TestUpdateParams() {
 	require.Equal(uint64(20), updatedParams.MaxTopicsPerBlock)
 
 	require.Equal(existingParams.Version, updatedParams.Version)
-	require.Equal(existingParams.RewardCadence, updatedParams.RewardCadence)
 }
 
 func (s *KeeperTestSuite) TestUpdateAllParams() {
@@ -57,7 +56,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},
-		RewardCadence:                   []int64{1234},
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxTopicsPerBlock:               []uint64{1234},
 		MaxMissingInferencePercent:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
@@ -110,7 +108,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.NoError(err)
 
 	require.Equal(newParams.Version[0], updatedParams.Version)
-	require.Equal(newParams.RewardCadence[0], updatedParams.RewardCadence)
 	require.Equal(newParams.MinTopicWeight[0], updatedParams.MinTopicWeight)
 	require.Equal(newParams.MaxTopicsPerBlock[0], updatedParams.MaxTopicsPerBlock)
 	require.Equal(newParams.MaxMissingInferencePercent[0], updatedParams.MaxMissingInferencePercent)
