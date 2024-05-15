@@ -1,9 +1,7 @@
 package rewards_test
 
 import (
-	"encoding/json"
 	"fmt"
-	stdLog "log"
 	"testing"
 	"time"
 
@@ -453,7 +451,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	return rewardsDistributionByTopicParticipant
 }
 
-func areTaskRewardsArraysEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRewards, B []rewards.TaskRewards) bool {
+func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRewards, B []rewards.TaskRewards) bool {
 	if len(A) != len(B) {
 		s.Fail("Lengths are different")
 	}
@@ -492,6 +490,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 	require.NoError(err)
 
 	blockHeight0 := int64(100)
+	blockHeightDelta := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(blockHeight0)
 
 	workerAddrs := []sdk.AccAddress{
@@ -504,14 +503,6 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		s.addrs[3],
 		s.addrs[4],
 		s.addrs[5],
-	}
-
-	for i, workerAddr := range workerAddrs {
-		stdLog.Printf("Worker%v: %v", i, workerAddr.String())
-	}
-
-	for i, reputerAddr := range reputerAddrs {
-		stdLog.Printf("Reputer%v: %v", i, reputerAddr.String())
 	}
 
 	defineValues := func(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
@@ -579,51 +570,31 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
 
-	jsonRewardsDistribution0_0, err := json.Marshal(rewardsDistribution0_0)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution0_0))
-
 	/// TEST 0 PART B
 
-	blockHeight1 := blockHeight0 + 10
+	blockHeight1 := blockHeight0 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight1)
 
 	rewardsDistribution0_1 := s.getRewardsDistribution(topicId, blockHeight1, workerValues1, reputerValues1)
 
-	jsonRewardsDistribution0_1, err := json.Marshal(rewardsDistribution0_1)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution0_1))
-
 	/// TEST 1 PART A
 
-	topicId1 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
-
-	blockHeight2 := blockHeight1 + 10
+	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
+
+	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(topicId1, blockHeight2, workerValues0, reputerValues0)
 
-	jsonRewardsDistribution1_0, err := json.Marshal(rewardsDistribution1_0)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution1_0))
-
 	/// TEST 1 PART B
 
-	blockHeight3 := blockHeight2 + 10
+	blockHeight3 := blockHeight2 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight3)
 
 	rewardsDistribution1_1 := s.getRewardsDistribution(topicId1, blockHeight3, workerValues1, reputerValues1)
 
-	jsonRewardsDistribution1_1, err := json.Marshal(rewardsDistribution1_1)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution1_1))
-
-	require.True(areTaskRewardsArraysEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
-	require.True(areTaskRewardsArraysEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
+	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
+	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 }
 
 func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanceOfPastVsPresent() {
@@ -635,6 +606,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	require.NoError(err)
 
 	blockHeight0 := int64(100)
+	blockHeightDelta := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(blockHeight0)
 
 	workerAddrs := []sdk.AccAddress{
@@ -647,14 +619,6 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		s.addrs[3],
 		s.addrs[4],
 		s.addrs[5],
-	}
-
-	for i, workerAddr := range workerAddrs {
-		stdLog.Printf("Worker%v: %v", i, workerAddr.String())
-	}
-
-	for i, reputerAddr := range reputerAddrs {
-		stdLog.Printf("Reputer%v: %v", i, reputerAddr.String())
 	}
 
 	defineValues := func(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
@@ -719,28 +683,17 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	require.NoError(err)
 
 	params, err := k.GetParams(s.ctx)
-	stdLog.Printf("params.TaskRewardAlpha: %v", params.TaskRewardAlpha)
 
 	/// TEST 0 PART A
 
 	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
 
-	jsonRewardsDistribution0_0, err := json.Marshal(rewardsDistribution0_0)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution0_0))
-
 	/// TEST 0 PART B
 
-	blockHeight1 := blockHeight0 + 10
+	blockHeight1 := blockHeight0 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight1)
 
 	rewardsDistribution0_1 := s.getRewardsDistribution(topicId, blockHeight1, workerValues1, reputerValues1)
-
-	jsonRewardsDistribution0_1, err := json.Marshal(rewardsDistribution0_1)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution0_1))
 
 	/// CHANGE TASK REWARD ALPHA
 
@@ -748,37 +701,24 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
-	params, err = k.GetParams(s.ctx)
-	stdLog.Printf("params.TaskRewardAlpha: %v", params.TaskRewardAlpha)
-
 	/// TEST 1 PART A
 
-	topicId1 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
-
-	blockHeight2 := blockHeight1 + 10
+	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
+
+	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(topicId1, blockHeight2, workerValues0, reputerValues0)
 
-	jsonRewardsDistribution1_0, err := json.Marshal(rewardsDistribution1_0)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution1_0))
-
 	/// TEST 1 PART B
 
-	blockHeight3 := blockHeight2 + 10
+	blockHeight3 := blockHeight2 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight3)
 
 	rewardsDistribution1_1 := s.getRewardsDistribution(topicId1, blockHeight3, workerValues1, reputerValues1)
 
-	jsonRewardsDistribution1_1, err := json.Marshal(rewardsDistribution1_1)
-	require.NoError(err)
-
-	stdLog.Printf("First rewards distribution: %s", string(jsonRewardsDistribution1_1))
-
-	require.False(areTaskRewardsArraysEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
-	require.False(areTaskRewardsArraysEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
+	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
+	require.False(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
