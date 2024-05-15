@@ -3,7 +3,6 @@ package inference_synthesis
 import (
 	"errors"
 	"fmt"
-	"log"
 	"sort"
 
 	"cosmossdk.io/collections"

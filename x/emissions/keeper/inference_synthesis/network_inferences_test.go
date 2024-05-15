@@ -1,7 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
 	"reflect"
 	"testing"
 
@@ -285,8 +284,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		pInferenceSynthesis              alloraMath.Dec
 		infererNetworkRegrets            map[string]inference_synthesis.Regret
 		forecasterNetworkRegrets         map[string]inference_synthesis.Regret
-		expectedOneOutInferences         []*emissions.WithheldWorkerAttributedValue
-		expectedOneOutImpliedInferences  []*emissions.WithheldWorkerAttributedValue
+		expectedOneOutInferences         []struct {
+			Worker string
+			Value  string
+		}
+		expectedOneOutImpliedInferences []struct {
+			Worker string
+			Value  string
+		}
 	}{
 		{
 			name: "basic functionality, multiple workers",
@@ -342,15 +347,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			networkCombinedLoss: alloraMath.MustNewDecFromString("0.0156937658327922"),
 			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
-			expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
-				{Worker: "worker0", Value: alloraMath.MustNewDecFromString("-0.07291976702609980")},
-				{Worker: "worker1", Value: alloraMath.MustNewDecFromString("-0.07795430811050460")},
-				{Worker: "worker2", Value: alloraMath.MustNewDecFromString("-0.042814093565554400")},
+			expectedOneOutInferences: []struct {
+				Worker string
+				Value  string
+			}{
+				{Worker: "worker0", Value: "-0.07291976702609980"},
+				{Worker: "worker1", Value: "-0.07795430811050460"},
+				{Worker: "worker2", Value: "-0.042814093565554400"},
 			},
-			expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-				{Worker: "worker3", Value: alloraMath.MustNewDecFromString("-0.0635171449618356")},
-				{Worker: "worker4", Value: alloraMath.MustNewDecFromString("-0.06471822091625930")},
-				{Worker: "worker5", Value: alloraMath.MustNewDecFromString("-0.0649534852873976")},
+			expectedOneOutImpliedInferences: []struct {
+				Worker string
+				Value  string
+			}{
+				{Worker: "worker3", Value: "-0.0635171449618356"},
+				{Worker: "worker4", Value: "-0.06471822091625930"},
+				{Worker: "worker5", Value: "-0.0649534852873976"},
 			},
 		},
 		{
@@ -420,17 +431,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			networkCombinedLoss: alloraMath.MustNewDecFromString(".0000127791308799785"),
 			epsilon:             alloraMath.MustNewDecFromString("0.0001"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
-			expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
-				{Worker: "worker0", Value: alloraMath.MustNewDecFromString("-0.09154683788664610")},
-				{Worker: "worker1", Value: alloraMath.MustNewDecFromString("-0.08794790996372430")},
-				{Worker: "worker2", Value: alloraMath.MustNewDecFromString("-0.07594021292207610")},
-				{Worker: "worker3", Value: alloraMath.MustNewDecFromString("-0.0792252490898395")},
-				{Worker: "worker4", Value: alloraMath.MustNewDecFromString("-0.0993013271015888")},
+			expectedOneOutInferences: []struct {
+				Worker string
+				Value  string
+			}{
+				{Worker: "worker0", Value: "-0.09154683788664610"},
+				{Worker: "worker1", Value: "-0.08794790996372430"},
+				{Worker: "worker2", Value: "-0.07594021292207610"},
+				{Worker: "worker3", Value: "-0.0792252490898395"},
+				{Worker: "worker4", Value: "-0.0993013271015888"},
 			},
-			expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-				{Worker: "forecaster0", Value: alloraMath.MustNewDecFromString("-0.08503863595710710")},
-				{Worker: "forecaster1", Value: alloraMath.MustNewDecFromString("-0.08833982502870460")},
-				{Worker: "forecaster2", Value: alloraMath.MustNewDecFromString("-0.08746610645716590")},
+			expectedOneOutImpliedInferences: []struct {
+				Worker string
+				Value  string
+			}{
+				{Worker: "forecaster0", Value: "-0.08503863595710710"},
+				{Worker: "forecaster1", Value: "-0.08833982502870460"},
+				{Worker: "forecaster2", Value: "-0.08746610645716590"},
 			},
 		},
 	}
@@ -479,13 +496,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				for _, oneOutInference := range oneOutInfererValues {
 					if expected.Worker == oneOutInference.Worker {
 						found = true
-						log.Printf("expected.Value: %v, oneOutInference.Value %v", expected.Value, oneOutInference.Value)
-						s.Require().True(
-							alloraMath.InDelta(
-								expected.Value,
-								oneOutInference.Value,
-								alloraMath.MustNewDecFromString("0.0001"),
-							), "Mismatch in value for one-out inference of worker %s", expected.Worker)
+						s.inEpsilon2(oneOutInference.Value, expected.Value)
 					}
 				}
 				if !found {
@@ -498,13 +509,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				for _, oneOutImpliedInference := range oneOutForecasterValues {
 					if expected.Worker == oneOutImpliedInference.Worker {
 						found = true
-						log.Printf("expected.Value: %v, oneOutImpliedInference.Value %v", expected.Value, oneOutImpliedInference.Value)
-						s.Require().True(
-							alloraMath.InDelta(
-								expected.Value,
-								oneOutImpliedInference.Value,
-								alloraMath.MustNewDecFromString("0.01"),
-							), "Mismatch in value for one-out implied inference of worker %s", expected.Worker)
+						s.inEpsilon3(oneOutImpliedInference.Value, expected.Value)
 					}
 				}
 				if !found {
@@ -1262,8 +1267,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
 	}
-
-	log.Printf("valueBundle.OneOutForecasterValues %v", valueBundle.OneOutForecasterValues)
 
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
