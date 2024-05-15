@@ -704,61 +704,6 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	return &forecasts, nil
 }
 
-func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, BlockHeight, error) {
-	// Define the range query starting from the highest available block down to and including the specified block
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
-
-	var inferencesToReturn types.Inferences
-	currentBlockHeight := BlockHeight(0)
-
-	iter, err := k.allInferences.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure that resources are released
-
-	// Iterate through entries in descending order and collect all inferences after the specified block
-	if iter.Valid() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, 0, err
-		}
-		currentBlockHeight = kv.Key.K2() // Current entry's block height
-		inferencesToReturn.Inferences = kv.Value.Inferences
-	}
-
-	// Return the collected inferences and the lowest block height at which they were found
-	return &inferencesToReturn, currentBlockHeight, nil
-}
-
-func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
-
-	forecastsToReturn := types.Forecasts{}
-	currentBlockHeight := BlockHeight(0)
-
-	iter, err := k.allForecasts.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure that resources are released
-
-	if iter.Valid() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, 0, err
-		}
-		currentBlockHeight = kv.Key.K2() // Current entry's block height
-		forecastsToReturn.Forecasts = kv.Value.Forecasts
-	}
-
-	return &forecastsToReturn, currentBlockHeight, nil
-}
-
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
 	block := nonce.BlockHeight
@@ -866,57 +811,6 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 		return nil, err
 	}
 	return &lossBundle, nil
-}
-
-func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ValueBundle, BlockHeight, error) {
-	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
-
-	iter, err := k.networkLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure resources are released properly
-
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.ValueBundle{}, 0, nil
-	}
-
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Return the found bundle and the associated block height
-	return &kv.Value, kv.Key.K2(), nil
-}
-
-func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, BlockHeight, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block). // Correctly set the end of the range to include the block
-		Descending()
-
-	iter, err := k.allLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Properly manage resources by closing the iterator when done
-
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.ReputerValueBundles{}, 0, nil
-	}
-
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Return the found bundle and the associated block height
-	return &kv.Value, kv.Key.K2(), nil
 }
 
 /// STAKING
