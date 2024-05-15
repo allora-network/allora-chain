@@ -3,13 +3,15 @@ package inference_synthesis
 import (
 	"fmt"
 	"log"
+	"sort"
 
+	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
@@ -593,62 +595,72 @@ func GetNetworkInferencesAtBlock(
 	topicId TopicId,
 	blockHeight BlockHeight,
 ) (*emissions.ValueBundle, BlockHeight, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	log.Printf("reputerReportedLosses: %v", len(reputerReportedLosses.ReputerValueBundles))
-
-	// Map list of stakesOnTopic to map of stakesByReputer
-	stakesByReputer := make(map[string]cosmosMath.Uint)
-	for _, bundle := range reputerReportedLosses.ReputerValueBundles {
-		stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
-		if err != nil {
-			return nil, 0, err
-		}
-		stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
-	}
-
-	log.Printf("stakesByReputer: %v", stakesByReputer)
-
-	networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	log.Printf("networkCombinedLoss: %v", networkCombinedLoss)
-
 	inferences, blockHeight, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
+	} else if len(inferences.Inferences) == 0 {
+		return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, blockHeight)
 	}
-
-	log.Printf("inferences: %v", inferences)
 
 	forecasts, _, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	networkInferences, err := CalcNetworkInferences(
-		ctx,
-		k,
-		topicId,
-		inferences,
-		forecasts,
-		networkCombinedLoss,
-		params.Epsilon,
-		params.PInferenceSynthesis,
-	)
-	if err != nil {
-		fmt.Println("Error calculating network inferences: ", err)
+	var networkInferences *emissions.ValueBundle
+	if len(inferences.Inferences) > 1 {
+		params, err := k.GetParams(ctx)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		// Map list of stakesOnTopic to map of stakesByReputer
+		stakesByReputer := make(map[string]cosmosMath.Uint)
+		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
+			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+			if err != nil {
+				return nil, 0, err
+			}
+			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
+		}
+
+		networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+		if err != nil {
+			fmt.Println("Error calculating network inferences: ", err)
+			return nil, 0, err
+		}
+	} else {
+		// If there is only one valid inference, then the network inference is the same as the single inference
+		// For the forecasts to be meaningful, there should be at least 2 inferences
+		singleInference := inferences.Inferences[0]
+
+		networkInferences = &emissions.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: singleInference.Value,
+			InfererValues: []*emissions.WorkerAttributedValue{
+				{
+					Worker: singleInference.Inferer,
+					Value:  singleInference.Value,
+				},
+			},
+			ForecasterValues:       []*emissions.WorkerAttributedValue{},
+			NaiveValue:             singleInference.Value,
+			OneOutInfererValues:    []*emissions.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:  []*emissions.WorkerAttributedValue{},
+		}
 	}
+
 	// Even in case of error (partially filled data), the ValueBundle is returned
 	return networkInferences, blockHeight, err
 }
@@ -664,20 +676,37 @@ func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength 
 	return filtered
 }
 
+func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
+	sort.Slice(r.Nonces, func(i, j int) bool {
+		// Sorting in descending order (bigger values first)
+		return r.Nonces[i].ReputerNonce.BlockHeight > r.Nonces[j].ReputerNonce.BlockHeight
+	})
+}
+
 // Select the top N latest reputer nonces
-func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int) []*emissions.ReputerRequestNonce {
-	var topN []*emissions.ReputerRequestNonce
-	if len(reputerRequestNonces.Nonces) <= N {
-		topN = reputerRequestNonces.Nonces
-	} else {
-		topN = reputerRequestNonces.Nonces[:N]
+func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
+	topN := make([]*emissions.ReputerRequestNonce, 0)
+	// sort reputerRequestNonces by reputer block height
+	SortByBlockHeight(reputerRequestNonces)
+
+	// loop reputerRequestNonces
+	for _, nonce := range reputerRequestNonces.Nonces {
+		nonceCopy := nonce
+		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag {
+			topN = append(topN, nonceCopy)
+		} else {
+			fmt.Println("Reputer block height: ", nonceCopy, " lag not passed yet")
+		}
+		if len(topN) >= N {
+			break
+		}
 	}
 	return topN
 }
 
 // Select the top N latest worker nonces
 func SelectTopNWorkerNonces(workerNonces emissions.Nonces, N int) []*emissions.Nonce {
-	var topN []*emissions.Nonce
+	topN := make([]*emissions.Nonce, 0)
 	if len(workerNonces.Nonces) <= N {
 		topN = workerNonces.Nonces
 	} else {

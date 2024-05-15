@@ -851,6 +851,38 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
 }
 
+func (s *KeeperTestSuite) TestGetMinEpochLengthRecordLimit() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(10)
+
+	// Set the parameter
+	params := types.Params{MinEpochLengthRecordLimit: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetMinEpochLengthRecordLimit(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MinEpochLengthRecordLimit should be equal to the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetMaxSerializedMsgLength() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := int64(2048)
+
+	// Set the parameter
+	params := types.Params{MaxSerializedMsgLength: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+	actualValue, err := keeper.GetMaxSerializedMsgLength(ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxSerializedMsgLength should be equal to the expected value")
+}
+
 /// INFERENCES, FORECASTS
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
@@ -1773,7 +1805,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		RequiredMinimumStake:            cosmosMath.NewUint(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
-		Sharpness:                       alloraMath.NewDecFromInt64(0),
 		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
 		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),

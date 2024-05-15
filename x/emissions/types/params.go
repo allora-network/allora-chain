@@ -18,7 +18,6 @@ func DefaultParams() Params {
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
 		MinEpochLength:                  1,                                         // 1 block
-		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
@@ -28,8 +27,8 @@ func DefaultParams() Params {
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(5),                                 // maximum number of outstanding nonces for worker requests per topic from the chain
-		MaxUnfulfilledReputerRequests:   uint64(5),                                 // maximum number of outstanding nonces for reputer requests per topic from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain
+		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
@@ -49,6 +48,7 @@ func DefaultParams() Params {
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
+		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 	}
 }
 
@@ -82,10 +82,6 @@ func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
 
 func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
-}
-
-func DefaultParamsSharpness() alloraMath.Dec {
-	return DefaultParams().Sharpness
 }
 
 func DefaultParamsBetaEntropy() alloraMath.Dec {

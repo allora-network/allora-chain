@@ -1152,7 +1152,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	// TODO add more checks
 }
 
-func TestFilterNoncesWithinEpochLength(t *testing.T) {
+func (s *InferenceSynthesisTestSuite) TestFilterNoncesWithinEpochLength() {
 	tests := []struct {
 		name          string
 		nonces        emissions.Nonces
@@ -1196,25 +1196,25 @@ func TestFilterNoncesWithinEpochLength(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		s.Run(tc.name, func() {
 			actual := inference_synthesis.FilterNoncesWithinEpochLength(tc.nonces, tc.blockHeight, tc.epochLength)
-			if !reflect.DeepEqual(actual, tc.expectedNonce) {
-				t.Errorf("Expected %v, but got %v", tc.expectedNonce, actual)
-			}
+			s.Require().Equal(tc.expectedNonce, actual, "Filter nonces do not match")
 		})
 	}
 }
 
-func TestSelectTopNReputerNonces(t *testing.T) {
+func (s *InferenceSynthesisTestSuite) TestSelectTopNReputerNonces() {
 	// Define test cases
 	tests := []struct {
 		name                     string
 		reputerRequestNonces     *emissions.ReputerRequestNonces
 		N                        int
 		expectedTopNReputerNonce []*emissions.ReputerRequestNonce
+		currentBlockHeight       int64
+		groundTruthLag           int64
 	}{
 		{
-			name: "N greater than length of nonces",
+			name: "N greater than length of nonces, zero lag",
 			reputerRequestNonces: &emissions.ReputerRequestNonces{
 				Nonces: []*emissions.ReputerRequestNonce{
 					{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
@@ -1223,12 +1223,14 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			},
 			N: 5,
 			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
-				{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
 				{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
 			},
+			currentBlockHeight: 10,
+			groundTruthLag:     0,
 		},
 		{
-			name: "N less than length of nonces",
+			name: "N less than length of nonces, zero lag",
 			reputerRequestNonces: &emissions.ReputerRequestNonces{
 				Nonces: []*emissions.ReputerRequestNonce{
 					{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
@@ -1238,24 +1240,90 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			},
 			N: 2,
 			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
-				{ReputerNonce: &emissions.Nonce{BlockHeight: 1}, WorkerNonce: &emissions.Nonce{BlockHeight: 2}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 6}},
 				{ReputerNonce: &emissions.Nonce{BlockHeight: 3}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
 			},
+			currentBlockHeight: 10,
+			groundTruthLag:     0,
+		},
+		{
+			name: "Ground truth lag cutting selection midway",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}, WorkerNonce: &emissions.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N: 3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 2}, WorkerNonce: &emissions.Nonce{BlockHeight: 1}},
+			},
+			currentBlockHeight: 10,
+			groundTruthLag:     6,
+		},
+		{
+			name: "Big Ground truth lag, not selecting any nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}, WorkerNonce: &emissions.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N:                        3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{},
+			currentBlockHeight:       10,
+			groundTruthLag:           10,
+		},
+		{
+			name: "Small ground truth lag, selecting all nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N: 3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+			},
+			currentBlockHeight: 10,
+			groundTruthLag:     2,
+		},
+		{
+			name: "Mid ground truth lag, selecting some nonces",
+			reputerRequestNonces: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 6}, WorkerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			N: 3,
+			expectedTopNReputerNonce: []*emissions.ReputerRequestNonce{
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 5}, WorkerNonce: &emissions.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissions.Nonce{BlockHeight: 4}, WorkerNonce: &emissions.Nonce{BlockHeight: 3}},
+			},
+			currentBlockHeight: 10,
+			groundTruthLag:     5,
 		},
 	}
 
 	// Run test cases
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N)
-			if !reflect.DeepEqual(actual, tc.expectedTopNReputerNonce) {
-				t.Errorf("Expected %v, but got %v", tc.expectedTopNReputerNonce, actual)
-			}
+		s.Run(tc.name, func() {
+			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N, tc.currentBlockHeight, tc.groundTruthLag)
+			s.Require().Equal(tc.expectedTopNReputerNonce, actual, "Reputer nonces do not match")
 		})
 	}
 }
 
-func TestSelectTopNWorkerNonces(t *testing.T) {
+func (s *InferenceSynthesisTestSuite) TestSelectTopNWorkerNonces() {
 	// Define test cases
 	tests := []struct {
 		name               string
@@ -1296,11 +1364,9 @@ func TestSelectTopNWorkerNonces(t *testing.T) {
 
 	// Run test cases
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		s.Run(tc.name, func() {
 			actual := inference_synthesis.SelectTopNWorkerNonces(tc.workerNonces, tc.N)
-			if !reflect.DeepEqual(actual, tc.expectedTopNNonces) {
-				t.Errorf("Expected %v, but got %v", tc.expectedTopNNonces, actual)
-			}
+			s.Require().Equal(actual, tc.expectedTopNNonces, "Worker nonces to not match")
 		})
 	}
 }
@@ -1497,4 +1563,80 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	s.Require().Len(valueBundle.OneOutInfererValues, 3)
 	s.Require().Len(valueBundle.OneOutForecasterValues, 3)
 	s.Require().Len(valueBundle.OneInForecasterValues, 3)
+}
+
+func (s *InferenceSynthesisTestSuite) TestSortByBlockHeight() {
+	// Create some test data
+	tests := []struct {
+		name   string
+		input  *emissions.ReputerRequestNonces
+		output *emissions.ReputerRequestNonces
+	}{
+		{
+			name: "Sorted in descending order",
+			input: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 7}},
+				},
+			},
+			output: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 7}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 2}},
+				},
+			},
+		},
+		{
+			name: "Already sorted",
+			input: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 10}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 9}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 7}},
+				},
+			},
+			output: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 10}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 9}},
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 7}},
+				},
+			},
+		},
+		{
+			name: "Empty input",
+			input: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{},
+			},
+			output: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{},
+			},
+		},
+		{
+			name: "Single element",
+			input: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+			output: &emissions.ReputerRequestNonces{
+				Nonces: []*emissions.ReputerRequestNonce{
+					{ReputerNonce: &emissions.Nonce{BlockHeight: 3}},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			// Call the sorting function
+			inference_synthesis.SortByBlockHeight(test.input)
+
+			// Compare the sorted input with the expected output
+			s.Require().Equal(test.input.Nonces, test.output.Nonces, "Sorting result mismatch.\nExpected: %v\nGot: %v")
+		})
+	}
 }

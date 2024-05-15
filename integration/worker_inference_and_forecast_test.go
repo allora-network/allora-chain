@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -25,11 +26,16 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 		topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
-			if storedTopic.EpochLastEnded != 0 &&
-				storedTopic.EpochLastEnded-(storedTopic.EpochLength*minWaitingNumberofEpochs) > 0 {
+			if storedTopic.EpochLastEnded != 0 {
+				sleepingTimeSeconds := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
+				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTimeSeconds)
+				time.Sleep(sleepingTimeSeconds)
+				fmt.Println(time.Now(), " Slept.")
 				return topicResponse.Topic, nil
 			}
 			sleepingTimeBlocks = int(storedTopic.EpochLength)
+		} else {
+			fmt.Println("Error getting topic, retry...", err)
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
@@ -88,8 +94,19 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, workerMsg)
+	if err != nil && err.Error() == types.ErrNonceAlreadyFulfilled.Error() {
+		// May already be fulfilled due to other tests or multiple runs of these tests
+		log.Println("Nonce already fulfilled -- continuing")
+		return
+	}
 	require.NoError(m.t, err)
+
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	if err != nil && err.Error() == types.ErrNonceAlreadyFulfilled.Error() {
+		// May already be fulfilled due to other tests or multiple runs of these tests
+		log.Println("Nonce already fulfilled -- continuing")
+		return
+	}
 	require.NoError(m.t, err)
 
 	// Latest inference
@@ -105,22 +122,27 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	require.Equal(m.t, latestInference.LatestInference.BlockHeight, blockHeight)
 	require.Equal(m.t, latestInference.LatestInference.TopicId, topicId)
 	require.Equal(m.t, latestInference.LatestInference.Inferer, InfererAddress1)
-
 }
 
 // Worker Bob inserts bulk inference and forecast
-func InsertWorkerBulkBob(m TestMetadata, topic *types.Topic) (int64, int64) {
-	// Insert and fulfill nonces for the last two epochs
-	blockHeightEval := topic.EpochLastEnded - topic.EpochLength
-	InsertSingleWorkerBulk(m, topic, blockHeightEval)
+func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
+	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &emissionstypes.QueryTopicRequest{TopicId: topic.Id})
+	require.NoError(m.t, err)
+	freshTopic := topicResponse.Topic
 
-	blockHeightCurrent := topic.EpochLastEnded
-	InsertSingleWorkerBulk(m, topic, blockHeightCurrent)
+	// Insert and fulfill nonces for the last two epochs
+	blockHeightEval := freshTopic.EpochLastEnded - freshTopic.EpochLength
+	fmt.Println("Inserting worker bulk for blockHeightEval: ", blockHeightEval)
+	InsertSingleWorkerBulk(m, freshTopic, blockHeightEval)
+
+	blockHeightCurrent := freshTopic.EpochLastEnded
+	fmt.Println("Inserting worker bulk for blockHeightCurrent: ", blockHeightCurrent)
+	InsertSingleWorkerBulk(m, freshTopic, blockHeightCurrent)
 	return blockHeightCurrent, blockHeightEval
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
@@ -152,6 +174,7 @@ func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic, BlockHeightCurre
 		},
 		NaiveValue: alloraMath.NewDecFromInt64(100),
 		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			// There cannot be a 1-out inferer value if there is just 1 inferer => this will be ignored by msgserver
 			{
 				Worker: workerAddr,
 				Value:  alloraMath.NewDecFromInt64(100),
@@ -163,6 +186,9 @@ func InsertReputerBulkAlice(m TestMetadata, topic *types.Topic, BlockHeightCurre
 				Value:  alloraMath.NewDecFromInt64(100),
 			},
 		},
+		// Just as valid:
+		// OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
+		// OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
 		OneInForecasterValues: []*types.WorkerAttributedValue{
 			{
 				Worker: workerAddr,
@@ -227,7 +253,7 @@ func WorkerInferenceAndForecastChecks(m TestMetadata) {
 		require.NoError(m.t, err)
 	}
 	m.t.Log("--- Insert Worker Bulk ---")
-	blockHeightCurrent, blockHeightEval := InsertWorkerBulkBob(m, topic)
+	blockHeightCurrent, blockHeightEval := InsertWorkerBulk(m, topic)
 	m.t.Log("--- Insert Reputer Bulk ---")
-	InsertReputerBulkAlice(m, topic, blockHeightCurrent, blockHeightEval)
+	InsertReputerBulk(m, topic, blockHeightCurrent, blockHeightEval)
 }

@@ -319,7 +319,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "sender"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "amount"},
-						{ProtoField: "extra_data"},
 					},
 				},
 				{

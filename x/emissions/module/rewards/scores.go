@@ -75,7 +75,6 @@ func GenerateReputerScores(
 		reputerListeningCoefficients,
 		int64(len(reputerStakes)),
 		params.LearningRate,
-		params.Sharpness,
 		params.GradientDescentMaxIters,
 	)
 	if err != nil {
@@ -118,6 +117,24 @@ func GenerateReputerScores(
 // GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
 func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
 	var newScores []types.Score
+
+	// If there is only one inferer, set score to 0
+	// More than one inferer is required to have one-out losses
+	if len(networkLosses.InfererValues) == 1 {
+		newScore := types.Score{
+			TopicId:     topicId,
+			BlockNumber: block,
+			Address:     networkLosses.InfererValues[0].Worker,
+			Score:       alloraMath.ZeroDec(),
+		}
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
+		}
+		newScores = append(newScores, newScore)
+		return newScores, nil
+	}
+
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
 		if err != nil {
@@ -157,6 +174,25 @@ func GenerateForecastScores(
 	block int64,
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
+	var newScores []types.Score
+
+	// If there is only one forecaster, set score to 0
+	// More than one forecaster is required to have one-out losses
+	if len(networkLosses.ForecasterValues) == 1 {
+		newScore := types.Score{
+			TopicId:     topicId,
+			BlockNumber: block,
+			Address:     networkLosses.InfererValues[0].Worker,
+			Score:       alloraMath.ZeroDec(),
+		}
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
+		}
+		newScores = append(newScores, newScore)
+		return newScores, nil
+	}
+
 	// Get worker scores for one out loss
 	var workersScoresOneOut []alloraMath.Dec
 	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
@@ -173,7 +209,7 @@ func GenerateForecastScores(
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting fUniqueAgg")
 	}
-	var newScores []types.Score
+
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		workerAddr, err := sdk.AccAddressFromBech32(oneInNaiveLoss.Worker)
 		if err != nil {

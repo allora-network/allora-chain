@@ -31,7 +31,7 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkee
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
-func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, blockDifference int64) (uint64, error) {
+func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
 	mintParams, err := th.mintKeeper.GetParams(ctx)
 	if err != nil {
 		fmt.Println("Error getting mint params: ", err)
@@ -39,8 +39,16 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, block
 	}
 	BlocksPerMonth := mintParams.GetBlocksPerMonth()
 	var approximateTimePerBlockSeconds float64 = float64(secondsInAMonth) / float64(BlocksPerMonth)
-	var diffFloat = (float64(blockDifference) * approximateTimePerBlockSeconds)
-	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(diffFloat))
+	var timeDifferenceInBlocks = ctx.BlockHeight() - inferenceBlockHeight
+	// Ensure no time in the future is calculated because of ground truth lag
+	if groundTruthLag > timeDifferenceInBlocks {
+		timeDifferenceInBlocks = 0
+	} else {
+		timeDifferenceInBlocks -= groundTruthLag
+	}
+
+	var timeDifferenceInSeconds = (float64(timeDifferenceInBlocks) * approximateTimePerBlockSeconds)
+	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(timeDifferenceInSeconds))
 	return previousBlockApproxTime, nil
 }
 
@@ -87,7 +95,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		fmt.Println("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
 		maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 	}
-	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer))
+	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
 	fmt.Println("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
@@ -96,10 +104,10 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
 		if err != nil {
 			fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
+			continue
 		}
 
-		blockDifference := currentBlockHeight - inferencesBlockHeight
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, blockDifference)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, inferencesBlockHeight, topic.GroundTruthLag)
 		if err != nil {
 			fmt.Println("Error calculating previous block approx time: ", err)
 			continue
@@ -107,7 +115,6 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.WorkerNonce, "previous block approx time: ", previousBlockApproxTime)
 		go generateLossesRequest(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 	}
-
 }
 
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
