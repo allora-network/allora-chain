@@ -54,7 +54,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 	if topic.EpochLastEnded == 0 {
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
-	if req.BlockHeightInference > sdkCtx.BlockHeight() {
+	if req.BlockHeightLastInference > sdkCtx.BlockHeight() {
 		return nil, status.Errorf(codes.InvalidArgument, "block height cannot be greater than current block height %v", sdkCtx.BlockHeight())
 	}
 
@@ -62,7 +62,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		req.BlockHeightInference,
+		req.BlockHeightLastInference,
 		req.BlockHeightLastReward,
 	)
 	if err != nil {

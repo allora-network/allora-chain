@@ -1251,15 +1251,15 @@ func request_Query_GetNetworkInferencesAtBlock_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["block_height_inference"]
+	val, ok = pathParams["block_height_last_inference"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_inference")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_last_inference")
 	}
 
-	protoReq.BlockHeightInference, err = runtime.Int64(val)
+	protoReq.BlockHeightLastInference, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_inference", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_inference", err)
 	}
 
 	val, ok = pathParams["block_height_last_reward"]
@@ -1300,15 +1300,15 @@ func local_request_Query_GetNetworkInferencesAtBlock_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["block_height_inference"]
+	val, ok = pathParams["block_height_last_inference"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_inference")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_last_inference")
 	}
 
-	protoReq.BlockHeightInference, err = runtime.Int64(val)
+	protoReq.BlockHeightLastInference, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_inference", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_inference", err)
 	}
 
 	val, ok = pathParams["block_height_last_reward"]
@@ -2418,7 +2418,7 @@ var (
 
 	pattern_Query_IsReputerRegisteredInTopicId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "reputer_registered", "topic_id", "address"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetNetworkInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"emissions", "v1", "network_inferences", "topic_id", "current", "block_height_inference", "last_reward", "block_height_last_reward"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetNetworkInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"emissions", "v1", "network_inferences", "topic_id", "last_inference", "block_height_last_inference", "last_reward", "block_height_last_reward"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_IsWhitelistAdmin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v1", "whitelist_admin", "address"}, "", runtime.AssumeColonVerbOpt(false)))
 )

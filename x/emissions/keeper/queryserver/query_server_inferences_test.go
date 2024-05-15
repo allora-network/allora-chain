@@ -244,9 +244,9 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Test querying the server
 	req := &types.QueryNetworkInferencesAtBlockRequest{
-		TopicId:               topicId,
-		BlockHeightInference:  blockHeight,
-		BlockHeightLastReward: blockHeight,
+		TopicId:                  topicId,
+		BlockHeightLastInference: blockHeight,
+		BlockHeightLastReward:    blockHeight,
 	}
 	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
 	require.NotNil(response, "Response should not be nil")
