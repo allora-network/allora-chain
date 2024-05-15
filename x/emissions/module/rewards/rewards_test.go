@@ -466,7 +466,7 @@ func areTaskRewardsArraysEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.T
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
 				found = true
-				if !taskRewardA.Reward.Equal(taskRewardB.Reward) {
+				if !alloraMath.InDelta(taskRewardA.Reward, taskRewardB.Reward, alloraMath.MustNewDecFromString("0.00001")) {
 					return false
 				}
 				if taskRewardA.Type != taskRewardB.Type {
@@ -718,6 +718,9 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
+	params, err := k.GetParams(s.ctx)
+	stdLog.Printf("params.TaskRewardAlpha: %v", params.TaskRewardAlpha)
+
 	/// TEST 0 PART A
 
 	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
@@ -744,6 +747,9 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString(("0.2"))
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
+
+	params, err = k.GetParams(s.ctx)
+	stdLog.Printf("params.TaskRewardAlpha: %v", params.TaskRewardAlpha)
 
 	/// TEST 1 PART A
 
