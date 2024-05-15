@@ -86,17 +86,17 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 }
 
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
 
-	networkLosses0, err := mockSimpleNetworkLosses(s, topidId, block0, "0.1")
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
 
 	scores0, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block0,
 		networkLosses0,
 	)
@@ -104,13 +104,13 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 
 	block1 := block0 + 1
 
-	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
 	require.NoError(err)
 
 	scores1, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block1,
 		networkLosses1,
 	)
@@ -155,17 +155,17 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 }
 
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
 
-	networkLosses0, err := mockSimpleNetworkLosses(s, topidId, block0, "0.1")
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
 
 	scores0, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block0,
 		networkLosses0,
 	)
@@ -173,14 +173,14 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 
 	block1 := block0 + 1
 
-	networkLosses1, err := mockSimpleNetworkLosses(s, topidId, block1, "0.2")
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
 	require.NoError(err)
 
 	// Get inference scores
 	scores1, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block1,
 		networkLosses1,
 	)
