@@ -682,8 +682,6 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
-	params, err := k.GetParams(s.ctx)
-
 	/// TEST 0 PART A
 
 	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
