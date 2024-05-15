@@ -11,7 +11,6 @@ import (
 func (s *RewardsTestSuite) UtilSetParams() {
 	s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		Version:                    "0.0.3",
-		RewardCadence:              int64(5),
 		MinTopicWeight:             alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:          uint64(1000),
 		MaxMissingInferencePercent: alloraMath.MustNewDecFromString("0.1"),
