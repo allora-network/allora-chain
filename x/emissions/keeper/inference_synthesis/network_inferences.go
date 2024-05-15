@@ -1,10 +1,12 @@
 package inference_synthesis
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"sort"
 
+	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -593,30 +595,48 @@ func GetNetworkInferencesAtBlock(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	blockHeight BlockHeight,
-) (*emissions.ValueBundle, BlockHeight, error) {
-	inferences, blockHeight, err := k.GetInferencesAtOrAfterBlock(ctx, topicId, blockHeight)
-	if err != nil {
-		return nil, 0, err
-	} else if len(inferences.Inferences) == 0 {
-		return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, blockHeight)
+	inferencesNonce BlockHeight,
+	previousLossNonce BlockHeight,
+) (*emissions.ValueBundle, error) {
+	networkInferences := &emissions.ValueBundle{
+		TopicId:          topicId,
+		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
+		ForecasterValues: make([]*emissions.WorkerAttributedValue, 0),
 	}
 
-	forecasts, _, err := k.GetForecastsAtOrAfterBlock(ctx, topicId, blockHeight)
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		return nil, 0, err
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
+	}
+	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
+	for _, infererence := range inferences.Inferences {
+		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
+			Worker: infererence.Inferer,
+			Value:  infererence.Value,
+		})
 	}
 
-	var networkInferences *emissions.ValueBundle
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferencesNonce)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			forecasts = &emissions.Forecasts{
+				Forecasts: make([]*emissions.Forecast, 0),
+			}
+		} else {
+			return nil, err
+		}
+	}
+
 	if len(inferences.Inferences) > 1 {
 		params, err := k.GetParams(ctx)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
-		reputerReportedLosses, _, err := k.GetReputerReportedLossesAtOrBeforeBlock(ctx, topicId, blockHeight)
+		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
-			return nil, 0, err
+			fmt.Println("Error getting reputer losses: ", err)
+			return networkInferences, nil
 		}
 
 		// Map list of stakesOnTopic to map of stakesByReputer
@@ -624,20 +644,22 @@ func GetNetworkInferencesAtBlock(
 		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
 			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
 			if err != nil {
-				return nil, 0, err
+				fmt.Println("Error getting stake on reputer: ", err)
+				return networkInferences, nil
 			}
 			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 		}
 
 		networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
 		if err != nil {
-			return nil, 0, err
+			fmt.Println("Error calculating network combined loss: ", err)
+			return networkInferences, nil
 		}
 
 		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
 		if err != nil {
 			fmt.Println("Error calculating network inferences: ", err)
-			return nil, 0, err
+			return networkInferences, nil
 		}
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference
@@ -661,8 +683,7 @@ func GetNetworkInferencesAtBlock(
 		}
 	}
 
-	// Even in case of error (partially filled data), the ValueBundle is returned
-	return networkInferences, blockHeight, err
+	return networkInferences, nil
 }
 
 // Filter nonces that are within the epoch length of the current block height
