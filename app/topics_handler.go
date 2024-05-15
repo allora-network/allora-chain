@@ -101,13 +101,19 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
 		fmt.Println("Reputer block height found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
-		reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
+		reputerValueBundle, err := synth.GetNetworkInferencesAtBlock(
+			ctx,
+			th.emissionsKeeper,
+			topic.Id,
+			nonceCopy.ReputerNonce.BlockHeight,
+			nonceCopy.WorkerNonce.BlockHeight,
+		)
 		if err != nil {
 			fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
 			continue
 		}
 
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, inferencesBlockHeight, topic.GroundTruthLag)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
 		if err != nil {
 			fmt.Println("Error calculating previous block approx time: ", err)
 			continue
