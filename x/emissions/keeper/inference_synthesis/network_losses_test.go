@@ -126,7 +126,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 				},
 			},
 			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss: alloraMath.MustNewDecFromString("0.1666"),
+			expectedLoss: alloraMath.MustNewDecFromString("0.16666666666"),
 			expectedErr:  nil,
 		},
 		{ // EPOCH 3
