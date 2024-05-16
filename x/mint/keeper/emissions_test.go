@@ -59,6 +59,8 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	fullTeam := defaultParams.TeamPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
 	expectedLocked := fullInvestors.Add(fullTeam)
+
+	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
 	result := keeper.GetLockedTokenSupply(
@@ -81,6 +83,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).
 		Mul(fractionLocked).TruncateInt()
 	expectedLocked := investors.Add(team)
+	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
 	result := keeper.GetLockedTokenSupply(
@@ -93,6 +96,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 
 func (s *IntegrationTestSuite) TestNumberLockedTokensAfterVest() {
 	defaultParams := types.DefaultParams()
+	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
 	result := keeper.GetLockedTokenSupply(
