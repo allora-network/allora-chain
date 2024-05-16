@@ -18,6 +18,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
 	}
+	if totalReward.IsZero() {
+		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero! Skipping rewards distribution.")
+		return nil
+	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get module params")
