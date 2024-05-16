@@ -2,7 +2,6 @@ package inference_synthesis
 
 import (
 	"fmt"
-	"log"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -117,12 +116,7 @@ func GetCalcSetNetworkRegrets(
 			return err
 		}
 
-		log.Printf("Setting inferer regret for %s on topicId %v: %s", infererLoss.Worker, topicId, newInfererRegret.Value.String())
-
 		k.SetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(infererLoss.Worker), newInfererRegret)
-
-		setRegret, notFound, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(infererLoss.Worker))
-		log.Printf("Set inferer regret for %s on topicId %v: %s, not found: %v", infererLoss.Worker, topicId, setRegret.Value.String(), notFound)
 	}
 
 	// Get old regret R_{i-1,k} and Calculate then Set the new regrets R_ik for forecastsers
