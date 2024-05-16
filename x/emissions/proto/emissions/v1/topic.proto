@@ -30,6 +30,7 @@ message Topic {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   string f_tolerance = 17
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool is_never_negative = 18;
 }
 
 message TopicList {
