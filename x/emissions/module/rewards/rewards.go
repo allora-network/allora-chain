@@ -17,8 +17,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		return errors.Wrapf(err, "failed to get total reward to distribute")
 	}
 	if totalReward.IsZero() {
-		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero! Skipping rewards distribution.")
-		return nil
+		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero!")
 	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -91,15 +90,17 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 			continue
 		}
 	}
-	// set the previous percentage reward to staked reputers
-	// for the mint module to be able to control the inflation rate to that actor
-	percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
-	if err != nil {
-		return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
-	}
-	err = k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputers)
-	if err != nil {
-		return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
+	if !totalReward.IsZero() {
+		// set the previous percentage reward to staked reputers
+		// for the mint module to be able to control the inflation rate to that actor
+		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
+		if err != nil {
+			return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
+		}
+		err = k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputers)
+		if err != nil {
+			return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
+		}
 	}
 
 	return nil

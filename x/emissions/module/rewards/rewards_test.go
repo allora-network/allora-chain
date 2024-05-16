@@ -19,7 +19,6 @@ import (
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -63,7 +62,6 @@ func (s *RewardsTestSuite) SetupTest() {
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
 		"fee_collector":                 {"minter"},
@@ -98,7 +96,7 @@ func (s *RewardsTestSuite) SetupTest() {
 	)
 	emissionsKeeper := keeper.NewKeeper(
 		encCfg.Codec,
-		addressCodec,
+		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
 		storeService,
 		accountKeeper,
 		bankKeeper,
@@ -109,8 +107,8 @@ func (s *RewardsTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		authtypes.NewModuleAddress("gov").String(),
-		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
-		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+		codecAddress.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		codecAddress.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
 	mintKeeper := mintkeeper.NewKeeper(
 		encCfg.Codec,
@@ -424,6 +422,14 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
+	s.Require().True(
+		s.bankKeeper.HasBalance(
+			s.ctx,
+			s.accountKeeper.GetModuleAddress(types.AlloraRequestsAccountName),
+			sdk.NewCoin(params.DefaultBondDenom, initialStake),
+		),
+		"ecosystem account should have something in it after funding",
+	)
 
 	// Insert unfullfiled nonces
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
@@ -574,14 +580,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
-
-	// Trigger begin block - for inflating token supply
-	err = s.mintAppModule.BeginBlock(s.ctx)
-	s.Require().NoError(err)
-	// now there should be some rewards to dole out
-	rewardsReady, err := s.emissionsKeeper.GetTotalRewardToDistribute(s.ctx)
-	s.Require().NoError(err)
-	s.Require().True(rewardsReady.Gt(alloraMath.ZeroDec()))
 
 	// Trigger end block - rewards distribution
 	err = s.emissionsAppModule.EndBlock(s.ctx)
