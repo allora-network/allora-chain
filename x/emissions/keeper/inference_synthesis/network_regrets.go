@@ -115,7 +115,6 @@ func GetCalcSetNetworkRegrets(
 			fmt.Println("Error computing and building inferer regret: ", err)
 			return err
 		}
-
 		k.SetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(infererLoss.Worker), newInfererRegret)
 	}
 
