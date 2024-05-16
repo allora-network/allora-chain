@@ -1574,35 +1574,51 @@ func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, bloc
 
 /// TOPIC CHURN
 
+// Get the churn ready topics
+func (k *Keeper) GetChurnReadyTopics(ctx context.Context) ([]TopicId, error) {
+	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	topics := make([]TopicId, 0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+		topics = append(topics, topicId)
+	}
+
+	return topics, nil
+}
+
 // Add a topic as churn ready
 func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error {
 	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
-// returns a single churn ready topic for processing. Order out is not guaranteed.
-// if there are no churn ready topics, returns the reserved topic id 0,
-// which cannot be used as a topic id - callers are responsible for checking
-// that the returned topic id is not 0.
-func (k *Keeper) PopChurnReadyTopic(ctx context.Context) (TopicId, error) {
+// ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
+func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
 	if err != nil {
-		return uint64(0), err
+		return err
 	}
+	defer iter.Close()
 
-	if iter.Valid() {
-		poppedTopic, err := iter.Key()
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
 		if err != nil {
-			return uint64(0), err
+			return err
 		}
-		if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
-			return uint64(0), err
-		}
-		return poppedTopic, nil
-	}
-	iter.Close()
 
-	// if no topics exist to be churned, return the reserved topic id 0
-	return uint64(0), nil
+		if err := k.churnReadyTopics.Remove(ctx, topicId); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 /// SCORES

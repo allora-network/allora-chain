@@ -1981,7 +1981,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 
 /// TOPIC CHURN
 
-func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
+func (s *KeeperTestSuite) TestChurnReadyTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(123)
@@ -1993,18 +1993,19 @@ func (s *KeeperTestSuite) TestPopChurnReadyTopic() {
 	err = keeper.AddChurnReadyTopic(ctx, topicId2)
 	s.Require().NoError(err)
 
-	poppedId2, err := keeper.PopChurnReadyTopic(ctx)
+	// Ensure the first topic is retrieved
+	retrievedIds, err := keeper.GetChurnReadyTopics(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(topicId, poppedId2)
+	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
 
-	poppedId, err := keeper.PopChurnReadyTopic(ctx)
+	// Reset the churn ready topics
+	err = keeper.ResetChurnReadyTopics(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(topicId2, poppedId)
 
 	// Ensure no topics remain
-	remainingId, err := keeper.PopChurnReadyTopic(ctx)
+	remainingIds, err := keeper.GetChurnReadyTopics(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(0), remainingId)
+	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
 }
 
 /// SCORES
