@@ -1583,13 +1583,12 @@ func (k *Keeper) GetChurnReadyTopics(ctx context.Context) ([]TopicId, error) {
 	defer iter.Close()
 
 	topics := make([]TopicId, 0)
-	for iter.Valid() {
+	for ; iter.Valid(); iter.Next() {
 		topicId, err := iter.Key()
 		if err != nil {
 			return nil, err
 		}
 		topics = append(topics, topicId)
-		iter.Next()
 	}
 
 	return topics, nil
@@ -1608,13 +1607,12 @@ func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 	}
 	defer iter.Close()
 
-	for iter.Valid() {
+	for ; iter.Valid(); iter.Next() {
 		topicId, err := iter.Key()
 		if err != nil {
 			return err
 		}
 
-		// Remove the topic from the churn-ready set
 		if err := k.churnReadyTopics.Remove(ctx, topicId); err != nil {
 			return err
 		}
