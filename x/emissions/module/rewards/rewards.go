@@ -92,7 +92,13 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	// set the previous percentage reward to staked reputers
 	// for the mint module to be able to control the inflation rate to that actor
 	percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
-	k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputers)
+	if err != nil {
+		return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
+	}
+	err = k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputers)
+	if err != nil {
+		return errors.Wrapf(err, "failed to set previous percentage reward to staked reputers")
+	}
 
 	return nil
 }

@@ -15,6 +15,7 @@ func GetEmissionPerMonth(
 	blocksPerMonth uint64,
 	params types.Params,
 	ecosystemMintSupplyRemaining math.Int,
+	validatorsPercent math.LegacyDec,
 ) (
 	emissionPerMonth math.Int,
 	emissionPerUnitStakedToken math.LegacyDec,
@@ -50,10 +51,14 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
+	reputersPercent, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
 	maximumMonthlyEmissionPerUnitStakedToken := keeper.GetMaximumMonthlyEmissionPerUnitStakedToken(
 		params.MaximumMonthlyPercentageYield,
-		networkStaked,
-		circulatingSupply,
+		reputersPercent,
+		validatorsPercent,
 	)
 	targetRewardEmissionPerUnitStakedToken = keeper.GetCappedTargetEmissionPerUnitStakedToken(
 		targetRewardEmissionPerUnitStakedToken,
@@ -118,6 +123,11 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+	vPercentADec, err := k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return err
+	}
+	vPercent := vPercentADec.SdkLegacyDec()
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
 	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
@@ -126,6 +136,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			blocksPerMonth,
 			params,
 			ecosystemMintSupplyRemaining,
+			vPercent,
 		)
 		if err != nil {
 			return err
@@ -159,11 +170,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// if it came from collected fees, great, if it came from minting, also fine
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
-	vPercent, err := k.GetValidatorsVsAlloraPercentReward(ctx)
-	if err != nil {
-		return err
-	}
-	validatorCut := vPercent.SdkLegacyDec().Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
 	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
 	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))

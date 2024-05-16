@@ -76,17 +76,22 @@ func GetTotalEmissionPerMonth(
 
 // maximum monthly emission per unit staked token
 // given a maximum monthly percentage yield
-// ^e_{max,i} = Xi_max / f_{staked,i}
+// ^e_{max,i} = Xi_max / f_{stakers}
 // where Xi_{max} is the maximum MPY,
-// and f_{staked,i} is the fraction of the circulating supply
-// that is staked i.e. N_{staked,i} / N_{circ,i}
+// and f_{stakers} is the fraction of the total token emission during
+// the previous epoch that was paid to reward staking network participants,
+// i.e. reputers and network validators
 func GetMaximumMonthlyEmissionPerUnitStakedToken(
 	maximumMonthlyPercentageYield math.LegacyDec,
-	networkStaked math.Int,
-	circulatingSupply math.Int,
+	reputersPercentOfTopicRewards math.LegacyDec,
+	validatorsPercent math.LegacyDec,
 ) math.LegacyDec {
-	f_staked := networkStaked.ToLegacyDec().Quo(circulatingSupply.ToLegacyDec())
-	return maximumMonthlyPercentageYield.Quo(f_staked)
+	// the reputers percent is in terms of the emission to workers and reputers, not including validators
+	// e.g. if 1/4 goes to validators, then of the 3/4 that goes to workers and reputers, reputers got 1/3
+	// so you have to do 1/3 *3/4 = ACTUAL percent to reputers of the total emission
+	reputersPercent := math.LegacyOneDec().Sub(validatorsPercent).Mul(reputersPercentOfTopicRewards)
+	f_stakers := reputersPercent.Add(validatorsPercent)
+	return maximumMonthlyPercentageYield.Quo(f_stakers)
 }
 
 // Target Monthly Emission Per Unit Staked Token
