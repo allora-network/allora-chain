@@ -481,6 +481,25 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRew
 	return true
 }
 
+func (s *RewardsTestSuite) defineValues(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
+	require := s.Require()
+
+	require.Len(addrs, len(values))
+	for _, addr := range addrs {
+		found := false
+		for _, value := range values {
+			if value.Address.Equals(addr) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			require.Fail("Address not found in values")
+		}
+	}
+	return values
+}
+
 func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImportanceOfPastVsPresent() {
 	/// SETUP
 	require := s.Require()
@@ -505,28 +524,11 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		s.addrs[5],
 	}
 
-	defineValues := func(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
-		require.Len(addrs, len(values))
-		for _, addr := range addrs {
-			found := false
-			for _, value := range values {
-				if value.Address.Equals(addr) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				require.Fail("Address not found in values")
-			}
-		}
-		return values
-	}
-
 	stake := cosmosMath.NewUint(1000000000000000000).Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues0 := defineValues(
+	workerValues0 := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -535,7 +537,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		},
 	)
 
-	reputerValues0 := defineValues(
+	reputerValues0 := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.1"},
@@ -544,7 +546,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		},
 	)
 
-	workerValues1 := defineValues(
+	workerValues1 := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -553,7 +555,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		},
 	)
 
-	reputerValues1 := defineValues(
+	reputerValues1 := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.2"},
@@ -621,28 +623,11 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		s.addrs[5],
 	}
 
-	defineValues := func(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
-		require.Len(addrs, len(values))
-		for _, addr := range addrs {
-			found := false
-			for _, value := range values {
-				if value.Address.Equals(addr) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				require.Fail("Address not found in values")
-			}
-		}
-		return values
-	}
-
 	stake := cosmosMath.NewUint(1000000000000000000).Mul(inference_synthesis.CosmosUintOneE18())
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues0 := defineValues(
+	workerValues0 := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -651,7 +636,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		},
 	)
 
-	reputerValues0 := defineValues(
+	reputerValues0 := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.1"},
@@ -660,7 +645,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		},
 	)
 
-	workerValues1 := defineValues(
+	workerValues1 := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -669,7 +654,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		},
 	)
 
-	reputerValues1 := defineValues(
+	reputerValues1 := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.2"},
