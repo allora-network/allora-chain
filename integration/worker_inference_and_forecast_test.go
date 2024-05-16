@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -94,19 +93,9 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, workerMsg)
-	if err != nil && err.Error() == types.ErrNonceAlreadyFulfilled.Error() {
-		// May already be fulfilled due to other tests or multiple runs of these tests
-		log.Println("Nonce already fulfilled -- continuing")
-		return
-	}
 	require.NoError(m.t, err)
 
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	if err != nil && err.Error() == types.ErrNonceAlreadyFulfilled.Error() {
-		// May already be fulfilled due to other tests or multiple runs of these tests
-		log.Println("Nonce already fulfilled -- continuing")
-		return
-	}
 	require.NoError(m.t, err)
 
 	// Latest inference

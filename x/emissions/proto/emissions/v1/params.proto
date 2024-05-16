@@ -9,8 +9,8 @@ import "gogoproto/gogo.proto";
 
 // Params defines the parameters of the module.
 message Params {
-  string version = 1;        // version of the protocol should be in lockstep with github release tag version
-  int64 reward_cadence = 2;  // length of an "epoch" for rewards payouts in blocks
+  string version = 1;                   // version of the protocol should be in lockstep with github release tag version
+  int64 max_serialized_msg_length = 2;  // max length of input data for msg and query server calls
   string min_topic_weight = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -117,5 +117,4 @@ message Params {
   uint64 max_limit = 37;      // max limit for pagination
   int64 min_epoch_length_record_limit =
       38;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
-  int64 max_serialized_msg_length = 39;  // max length of input data for msg and query server calls
 }
