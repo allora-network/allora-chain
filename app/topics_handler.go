@@ -101,13 +101,19 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
 		fmt.Println("Reputer block height found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
-		reputerValueBundle, inferencesBlockHeight, err := synth.GetNetworkInferencesAtBlock(ctx, th.emissionsKeeper, topic.Id, nonceCopy.ReputerNonce.BlockHeight)
+		reputerValueBundle, err := synth.GetNetworkInferencesAtBlock(
+			ctx,
+			th.emissionsKeeper,
+			topic.Id,
+			nonceCopy.ReputerNonce.BlockHeight,
+			nonceCopy.WorkerNonce.BlockHeight,
+		)
 		if err != nil {
 			fmt.Println("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
 			continue
 		}
 
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, inferencesBlockHeight, topic.GroundTruthLag)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
 		if err != nil {
 			fmt.Println("Error calculating previous block approx time: ", err)
 			continue
@@ -122,7 +128,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
 
-		maxNumberTopics, err := th.emissionsKeeper.GetParamsMaxTopicsPerBlock(ctx)
+		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting max number of topics per block: ", err)
 			return nil, err
@@ -131,16 +137,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for i := uint64(0); i < maxNumberTopics; i++ {
-			// Pop churn ready topic
-			churnReadyTopicId, err := th.emissionsKeeper.PopChurnReadyTopic(ctx)
-			if err != nil {
-				fmt.Println("Error popping churn ready topic: ", err)
-				continue
-			}
-			if churnReadyTopicId == 0 {
-				break
-			}
+		for _, churnReadyTopicId := range churnReadyTopics {
 			wg.Add(1)
 			go func(topicId TopicId) {
 				defer wg.Done()

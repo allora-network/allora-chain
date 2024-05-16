@@ -1162,15 +1162,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Calculate
 
-	valueBundle, returnedBlockHeight, err :=
+	valueBundle, err :=
 		inference_synthesis.GetNetworkInferencesAtBlock(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
 			blockHeight,
+			blockHeight,
 		)
 	require.NoError(err)
-	require.Equal(blockHeight, returnedBlockHeight)
 
 	s.inEpsilon5(valueBundle.CombinedValue, "-0.08578420625884590")
 	s.inEpsilon3(valueBundle.NaiveValue, "-0.09179326141859620")

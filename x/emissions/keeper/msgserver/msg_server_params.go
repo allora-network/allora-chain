@@ -28,9 +28,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Version) == 1 {
 		existingParams.Version = newParams.Version[0]
 	}
-	if len(newParams.RewardCadence) == 1 {
-		existingParams.RewardCadence = newParams.RewardCadence[0]
-	}
 	if len(newParams.MinTopicWeight) == 1 {
 		existingParams.MinTopicWeight = newParams.MinTopicWeight[0]
 	}
