@@ -53,6 +53,28 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
 }
 
+func generateWorkerAttributedValueLosses(m TestMetadata, workerAddresses map[string]string, lowLimit, sum int) []*types.WorkerAttributedValue {
+	values := make([]*types.WorkerAttributedValue, 0)
+	for key := range workerAddresses {
+		values = append(values, &types.WorkerAttributedValue{
+			Worker: workerAddresses[key],
+			Value:  alloraMath.NewDecFromInt64(int64(rand.Intn(lowLimit) + sum)),
+		})
+	}
+	return values
+}
+
+func generateWithheldWorkerAttributedValueLosses(m TestMetadata, workerAddresses map[string]string, lowLimit, sum int) []*types.WithheldWorkerAttributedValue {
+	values := make([]*types.WithheldWorkerAttributedValue, 0)
+	for key := range workerAddresses {
+		values = append(values, &types.WithheldWorkerAttributedValue{
+			Worker: workerAddresses[key],
+			Value:  alloraMath.NewDecFromInt64(int64(rand.Intn(lowLimit) + sum)),
+		})
+	}
+	return values
+}
+
 func generateSingleWorkerBundle(m TestMetadata, topic *types.Topic, blockHeight int64,
 	workerAddressName string, workerAddresses map[string]string) *types.WorkerDataBundle {
 	// Nonce: calculate from EpochLastRan + EpochLength
@@ -101,13 +123,31 @@ func generateSingleWorkerBundle(m TestMetadata, topic *types.Topic, blockHeight 
 	return workerDataBundle
 }
 
+// Generate the same valueBundle for a reputer
+func generateValueBundle(m TestMetadata, topicId uint64, workerAddresses map[string]string, reputerNonce, workerNonce *types.Nonce) types.ValueBundle {
+	return types.ValueBundle{
+		TopicId:                topicId,
+		CombinedValue:          alloraMath.NewDecFromInt64(100),
+		InfererValues:          generateWorkerAttributedValueLosses(m, workerAddresses, 3000, 3500),
+		ForecasterValues:       generateWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		NaiveValue:             alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues:    generateWithheldWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		OneInForecasterValues:  generateWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: reputerNonce,
+			WorkerNonce:  workerNonce,
+		},
+	}
+}
+
 // Inserts worker bulk, given a topic, blockHeight, and leader worker address (which should exist in the keyring)
 func InsertLeaderWorkerBulk(
 	m TestMetadata,
 	topic *types.Topic,
 	blockHeight int64,
 	leaderWorkerAccountName, leaderWorkerAddress string,
-	WorkerDataBundles []*types.WorkerDataBundle) {
+	WorkerDataBundles []*types.WorkerDataBundle) error {
 
 	topicId := topic.Id
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
@@ -121,12 +161,21 @@ func InsertLeaderWorkerBulk(
 	}
 	// serialize workerMsg to json and print
 	LeaderAcc, err := m.n.Client.AccountRegistry.GetByName(leaderWorkerAccountName)
-	require.NoError(m.t, err)
+	if err != nil {
+		fmt.Println("Error getting leader worker account: ", leaderWorkerAccountName, " - ", err)
+		return err
+	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, LeaderAcc, workerMsg)
-	require.NoError(m.t, err)
+	if err != nil {
+		fmt.Println("Error broadcasting worker bulk: ", err)
+		return err
+	}
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
-
+	if err != nil {
+		fmt.Println("Error waiting for worker bulk: ", err)
+		return err
+	}
+	return nil
 }
 
 // Worker Bob inserts bulk inference and forecast
@@ -147,13 +196,56 @@ func InsertWorkerBulk(m TestMetadata, topic *types.Topic, leaderWorkerAccountNam
 	return blockHeight, blockHeight - freshTopic.EpochLength
 }
 
-// register alice as a reputer in topic 1, then check success
-func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+// Generate a ReputerValueBundle
+func generateSingleReputerValueBundle(
+	m TestMetadata,
+	reputerAddressName, reputerAddress string,
+	valueBundle types.ValueBundle) *types.ReputerValueBundle {
+
+	valueBundle.Reputer = reputerAddress
+	// Sign
+	src := make([]byte, 0)
+	src, err := valueBundle.XXX_Marshal(src, true)
+	require.NoError(m.t, err, "Marshall reputer value bundle should not return an error")
+
+	valueBundleSignature, pubKey, err := m.n.Client.Context().Keyring.Sign(reputerAddressName, src, signing.SignMode_SIGN_MODE_DIRECT)
+	require.NoError(m.t, err, "Sign should not return an error")
+	reputerPublicKeyBytes := pubKey.Bytes()
+
+	// Create a MsgInsertBulkReputerPayload message
+	reputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: &valueBundle,
+		Signature:   valueBundleSignature,
+		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
+	}
+
+	return reputerValueBundle
+}
+
+func generateReputerValueBundleMsg(m TestMetadata,
+	topicId uint64,
+	reputerValueBundles []*types.ReputerValueBundle,
+	leaderReputerAccountName, leaderReputerAddress string,
+	reputerNonce, workerNonce *emissionstypes.Nonce) *types.MsgInsertBulkReputerPayload {
+
+	return &types.MsgInsertBulkReputerPayload{
+		Sender:  leaderReputerAddress,
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: reputerNonce,
+			WorkerNonce:  workerNonce,
+		},
+		ReputerValueBundles: reputerValueBundles,
+	}
+}
+
+func InsertReputerBulk(m TestMetadata,
+	topic *types.Topic,
+	leaderReputerAccountName string,
+	reputerAddresses, workerAddresses map[string]string,
+	BlockHeightCurrent, BlockHeightEval int64) error {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
-	// Define inferer address as Bob's address, reputer as Alice's
-	workerAddr := m.n.UpshotAddr
-	reputerAddr := m.n.FaucetAddr
 	// Nonces are last two blockHeights
 	reputerNonce := &types.Nonce{
 		BlockHeight: BlockHeightCurrent,
@@ -161,93 +253,28 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 	workerNonce := &types.Nonce{
 		BlockHeight: BlockHeightEval,
 	}
-
-	reputerValueBundle := &types.ValueBundle{
-		TopicId:       topicId,
-		Reputer:       reputerAddr,
-		CombinedValue: alloraMath.NewDecFromInt64(100),
-		InfererValues: []*types.WorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		ForecasterValues: []*types.WorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		NaiveValue: alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
-			// There cannot be a 1-out inferer value if there is just 1 inferer => this will be ignored by msgserver
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		// Just as valid:
-		// OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
-		// OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
-			{
-				Worker: workerAddr,
-				Value:  alloraMath.NewDecFromInt64(100),
-			},
-		},
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
-		},
+	leaderReputerAddress := reputerAddresses[leaderReputerAccountName]
+	valueBundle := generateValueBundle(m, topicId, workerAddresses, reputerNonce, workerNonce)
+	reputerValueBundles := make([]*types.ReputerValueBundle, 0)
+	for reputerAddressName := range reputerAddresses {
+		reputerAddress := reputerAddresses[reputerAddressName]
+		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAddressName, reputerAddress, valueBundle)
+		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
 	}
 
-	// Sign
-	src := make([]byte, 0)
-	src, err := reputerValueBundle.XXX_Marshal(src, true)
-	require.NoError(m.t, err, "Marshall reputer value bundle should not return an error")
-
-	valueBundleSignature, pubKey, err := m.n.Client.Context().Keyring.Sign(m.n.FaucetAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.t, err, "Sign should not return an error")
-	reputerPublicKeyBytes := pubKey.Bytes()
-
-	// Create a MsgInsertBulkReputerPayload message
-	lossesMsg := &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddr,
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
-		},
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: reputerValueBundle,
-				Signature:   valueBundleSignature,
-				Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
-			},
-		},
+	reputerValueBundleMsg := generateReputerValueBundleMsg(m, topicId, reputerValueBundles, leaderReputerAccountName, leaderReputerAddress, reputerNonce, workerNonce)
+	LeaderAcc, err := m.n.Client.AccountRegistry.GetByName(leaderReputerAccountName)
+	if err != nil {
+		fmt.Println("Error getting leader worker account: ", leaderReputerAccountName, " - ", err)
+		return err
 	}
-
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.FaucetAcc, lossesMsg)
-	require.NoError(m.t, err)
+	txResp, err := m.n.Client.BroadcastTx(m.ctx, LeaderAcc, reputerValueBundleMsg)
+	if err != nil {
+		fmt.Println("Error broadcasting reputer value bundle: ", err)
+		return err
+	}
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
-
-	result, err := m.n.QueryEmissions.GetNetworkLossBundleAtBlock(m.ctx,
-		&emissionstypes.QueryNetworkLossBundleAtBlockRequest{
-			TopicId:     topicId,
-			BlockHeight: BlockHeightCurrent,
-		},
-	)
-	require.NoError(m.t, err)
-	require.NotNil(m.t, result)
-	require.NotNil(m.t, result.LossBundle, "Retrieved data should match inserted data")
-
+	return nil
 }
 
 // Register two actors and check their registrations went through
@@ -255,6 +282,7 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 	const stakeToAdd uint64 = 10000
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
+
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
 	// 2. Pass worker slice in the call to insertWorkerBulk
@@ -268,7 +296,11 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 		require.NoError(m.t, err)
 	}
 
+	// Translate the epoch length into time
+	epochTimeSeconds := time.Duration(topic.EpochLength*approximateBlockLengthSeconds) * time.Second
 	for i := 0; i < MAX_ITERATIONS; i++ {
+		start := time.Now()
+
 		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
 		// Generate new worker accounts
 		workerAccountName := "stressWorker" + strconv.Itoa(i)
@@ -331,24 +363,28 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Error getting random worker address: ", err)
 			continue
 		}
-
 		// Insert worker
 		m.t.Log("--- Insert Worker Bulk --- with leader: ", leaderWorkerAccountName, " and worker address: ", leaderWorkerAddress)
-		start := time.Now()
 		blockHeightCurrent, blockHeightEval := InsertWorkerBulk(m, topic, leaderWorkerAccountName, workerAddresses)
-		elapsed := time.Since(start)
-		fmt.Println("Insert Worker Elapsed time:", elapsed)
-		fmt.Println("BlockHeightCurrent: ", blockHeightCurrent, "BlockHeightEval: ", blockHeightEval)
 
 		// Insert reputer bulk
-		// start = time.Now()
-		// InsertReputerBulk(m, topic, reputerAccounts, blockHeightCurrent, blockHeightEval)
-		// elapsed = time.Since(start)
-		// fmt.Println("Insert Reputer Elapsed time:", elapsed)
+		// Choose one random leader from reputer accounts
+		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
+		if err != nil {
+			fmt.Println("Error getting random worker address: ", err)
+			continue
+		}
+
+		startReputer := time.Now()
+		InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
+		elapsedBulk := time.Since(startReputer)
+		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
 
 		// Sleep for one epoch
-		sleepingTimeSeconds := time.Duration(topic.EpochLength*approximateBlockLengthSeconds) * time.Second
-		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds)
+		elapsed := time.Since(start)
+		fmt.Println("Insert Worker Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
+		sleepingTimeSeconds := epochTimeSeconds - elapsed
+		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", epoch length: ", epochTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
 		fmt.Println(time.Now(), " Slept.")
 	}
