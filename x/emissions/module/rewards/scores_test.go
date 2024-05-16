@@ -589,7 +589,7 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     worker.String(),
-				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -598,11 +598,11 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 					{
 						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 				},
 			},

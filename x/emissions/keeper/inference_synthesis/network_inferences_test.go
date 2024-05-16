@@ -1089,8 +1089,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 
-	s.inEpsilon5(valueBundle.CombinedValue, "-0.08578420625884590")
-	s.inEpsilon3(valueBundle.NaiveValue, "-0.09179326141859620")
+	s.inEpsilon5(valueBundle.CombinedValue, "-0.085329711179")
+	s.inEpsilon3(valueBundle.NaiveValue, "-0.0917828336")
 
 	for _, inference := range inferences.Inferences {
 		found := false

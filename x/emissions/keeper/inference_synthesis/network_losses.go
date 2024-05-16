@@ -51,7 +51,6 @@ func RunningWeightedAvgUpdate(
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-
 	return *runningWeightedAvg, nil
 }
 
@@ -259,12 +258,5 @@ func CalcCombinedNetworkLoss(
 		}
 	}
 
-	// Exponentiate
-	expRunningWeightedCombinedLoss, err := alloraMath.Exp10(runningWeightedCombinedLoss.Loss)
-	if err != nil {
-		fmt.Println("Error exponentiating combined loss: ", err)
-		return alloraMath.ZeroDec(), err
-	}
-
-	return expRunningWeightedCombinedLoss, nil
+	return runningWeightedCombinedLoss.Loss, nil
 }
