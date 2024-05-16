@@ -11,14 +11,12 @@ type BlockHeight = int64
 func DefaultParams() Params {
 	return Params{
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
-		RewardCadence:                   int64(1),                                  // length of an "epoch" for rewards payouts in blocks; coupled with TopicRewardAlpha
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64(60 * 60 * 24),                       // 1 day in seconds
+		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds
 		MinEpochLength:                  1,                                         // 1 block
-		Sharpness:                       alloraMath.NewDecFromInt64(20),            // controls going from stake-weighted consensus at low values to majority vote of above-average stake holders at high values
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
@@ -28,11 +26,11 @@ func DefaultParams() Params {
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(5),                                 // maximum number of outstanding nonces for worker requests per topic from the chain
-		MaxUnfulfilledReputerRequests:   uint64(5),                                 // maximum number of outstanding nonces for reputer requests per topic from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain
+		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with RewardCadence
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
@@ -49,15 +47,12 @@ func DefaultParams() Params {
 		DefaultLimit:                    uint64(100),                               // default limit for pagination
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
+		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 	}
 }
 
 func DefaultParamsVersion() string {
 	return DefaultParams().Version
-}
-
-func DefaultParamsEpochLength() BlockHeight {
-	return DefaultParams().RewardCadence
 }
 
 func DefaultParamsMinTopicUnmetDemand() alloraMath.Dec {
@@ -82,10 +77,6 @@ func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
 
 func DefaultParamsMinEpochLength() BlockHeight {
 	return DefaultParams().MinEpochLength
-}
-
-func DefaultParamsSharpness() alloraMath.Dec {
-	return DefaultParams().Sharpness
 }
 
 func DefaultParamsBetaEntropy() alloraMath.Dec {

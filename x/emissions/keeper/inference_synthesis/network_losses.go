@@ -16,7 +16,7 @@ type WorkerRunningWeightedLoss struct {
 // Update the running weighted loss for the worker
 // Source: "Weighted mean" section of: https://fanf2.user.srcf.net/hermes/doc/antiforgery/stats.pdf
 // nextValue format - raw value
-// weigth format - logged value
+// weight format - logged value
 func RunningWeightedAvgUpdate(
 	runningWeightedAvg *WorkerRunningWeightedLoss,
 	weight Weight,
@@ -198,7 +198,7 @@ func CalcNetworkLosses(
 			}
 
 			// Update one-in forecaster losses
-			for _, loss := range report.ValueBundle.OneOutForecasterValues {
+			for _, loss := range report.ValueBundle.OneInForecasterValues {
 				if runningWeightedOneInForecasterLosses[loss.Worker] == nil {
 					runningWeightedOneInForecasterLosses[loss.Worker] = &WorkerRunningWeightedLoss{
 						SumWeight: alloraMath.ZeroDec(),

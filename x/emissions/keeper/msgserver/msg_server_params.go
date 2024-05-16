@@ -28,9 +28,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Version) == 1 {
 		existingParams.Version = newParams.Version[0]
 	}
-	if len(newParams.RewardCadence) == 1 {
-		existingParams.RewardCadence = newParams.RewardCadence[0]
-	}
 	if len(newParams.MinTopicWeight) == 1 {
 		existingParams.MinTopicWeight = newParams.MinTopicWeight[0]
 	}
@@ -48,9 +45,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MinEpochLength) == 1 {
 		existingParams.MinEpochLength = newParams.MinEpochLength[0]
-	}
-	if len(newParams.Sharpness) == 1 {
-		existingParams.Sharpness = newParams.Sharpness[0]
 	}
 	if len(newParams.BetaEntropy) == 1 {
 		existingParams.BetaEntropy = newParams.BetaEntropy[0]
@@ -141,6 +135,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MinEpochLengthRecordLimit) == 1 {
 		existingParams.MinEpochLengthRecordLimit = newParams.MinEpochLengthRecordLimit[0]
+	}
+	if len(newParams.MaxSerializedMsgLength) == 1 {
+		existingParams.MaxSerializedMsgLength = newParams.MaxSerializedMsgLength[0]
 	}
 
 	err = ms.k.SetParams(ctx, existingParams)

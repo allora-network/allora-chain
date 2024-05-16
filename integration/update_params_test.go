@@ -20,18 +20,22 @@ func checkIfAdmin(m TestMetadata, address string) bool {
 }
 
 // Test that whitelisted admin can successfully update params and others cannot
-func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
+func UpdateParamsChecks(m TestMetadata) {
 	// Ensure Alice is in the whitelist and Bob is not
 	require.True(m.t, checkIfAdmin(m, m.n.AliceAddr))
 	require.False(m.t, checkIfAdmin(m, m.n.BobAddr))
 
+	// Keep old params to revert back to
+	oldParams := GetEmissionsParams(m)
+	oldEpsilon := oldParams.Epsilon
+
 	// Should succeed for Alice because she's a whitelist admin
-	newSharpness := alloraMath.NewDecFinite(1, 99)
-	input := []alloraMath.Dec{newSharpness}
+	newEpsilon := alloraMath.NewDecFinite(1, 99)
+	input := []alloraMath.Dec{newEpsilon}
 	updateParamRequest := &emissionstypes.MsgUpdateParams{
 		Sender: m.n.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Sharpness: input,
+			Epsilon: input,
 		},
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, updateParamRequest)
@@ -44,7 +48,7 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.n.BobAddr,
 		Params: &emissionstypes.OptionalParams{
-			Sharpness: input,
+			Epsilon: input,
 		},
 	}
 	txResp, err = m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, updateParamRequest)
@@ -52,8 +56,20 @@ func UpdateParamsChecks(m TestMetadata) emissionstypes.Params {
 	// Check that error is due to Bob not being a whitelist admin
 	require.Contains(m.t, err.Error(), "not whitelist admin")
 
-	// Check that the sharpness was updated by Alice successfully
+	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
-	require.Equal(m.t, updatedParams.Sharpness.String(), newSharpness.String())
-	return updatedParams
+	require.Equal(m.t, updatedParams.Epsilon.String(), newEpsilon.String())
+
+	// Set the epsilon back to the original value
+	input = []alloraMath.Dec{oldEpsilon}
+	updateParamRequest = &emissionstypes.MsgUpdateParams{
+		Sender: m.n.AliceAddr,
+		Params: &emissionstypes.OptionalParams{
+			Epsilon: input,
+		},
+	}
+	txResp, err = m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, updateParamRequest)
+	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 }

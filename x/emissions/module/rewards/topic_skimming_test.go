@@ -11,7 +11,6 @@ import (
 func (s *RewardsTestSuite) UtilSetParams() {
 	s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		Version:                    "0.0.3",
-		RewardCadence:              int64(5),
 		MinTopicWeight:             alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:          uint64(1000),
 		MaxMissingInferencePercent: alloraMath.MustNewDecFromString("0.1"),
@@ -19,7 +18,6 @@ func (s *RewardsTestSuite) UtilSetParams() {
 		RemoveStakeDelayWindow:     int64(172800),
 		MinEpochLength:             int64(60),
 		MaxTopReputersToReward:     uint64(10),
-		Sharpness:                  alloraMath.MustNewDecFromString("0.0"),
 		BetaEntropy:                alloraMath.MustNewDecFromString("0.0"),
 		LearningRate:               alloraMath.MustNewDecFromString("0.0"),
 		MaxGradientThreshold:       alloraMath.MustNewDecFromString("0.0"),

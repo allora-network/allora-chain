@@ -75,23 +75,32 @@ func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
 	require.Equal(blockHeight, result.BlockHeight)
 }
 
-func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegrets() {
+func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require := s.Require()
 	k := s.emissionsKeeper
+
+	worker1 := "worker1"
+	worker2 := "worker2"
+	worker3 := "worker3"
+
+	worker1Acc := sdk.AccAddress(worker1)
+	worker2Acc := sdk.AccAddress(worker2)
+	worker3Acc := sdk.AccAddress(worker3)
+
 	valueBundle := types.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 		InfererValues: []*types.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("200")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
 		ForecasterValues: []*types.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("200")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
 		OneInForecasterValues: []*types.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("200")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
 	}
 	blockHeight := int64(42)
@@ -104,17 +113,14 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegrets() {
 		Value:       alloraMath.MustNewDecFromString("200"),
 	}
 
-	acc1 := sdk.AccAddress("worker1")
-	acc2 := sdk.AccAddress("worker2")
-
-	k.SetInfererNetworkRegret(s.ctx, topicId, acc1, timestampedValue)
-	k.SetInfererNetworkRegret(s.ctx, topicId, acc2, timestampedValue)
-	k.SetForecasterNetworkRegret(s.ctx, topicId, acc1, timestampedValue)
-	k.SetForecasterNetworkRegret(s.ctx, topicId, acc2, timestampedValue)
-	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, acc1, acc1, timestampedValue)
-	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, acc1, acc2, timestampedValue)
-	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, acc2, acc1, timestampedValue)
-	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, acc2, acc2, timestampedValue)
+	k.SetInfererNetworkRegret(s.ctx, topicId, worker1Acc, timestampedValue)
+	k.SetInfererNetworkRegret(s.ctx, topicId, worker2Acc, timestampedValue)
+	k.SetForecasterNetworkRegret(s.ctx, topicId, worker1Acc, timestampedValue)
+	k.SetForecasterNetworkRegret(s.ctx, topicId, worker2Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1Acc, worker1Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1Acc, worker2Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2Acc, worker1Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2Acc, worker2Acc, timestampedValue)
 
 	err := inference_synthesis.GetCalcSetNetworkRegrets(
 		s.ctx,
@@ -126,9 +132,34 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegrets() {
 	)
 	require.NoError(err)
 
-	bothAccs := []sdk.AccAddress{acc1, acc2}
+	bothAccs := []sdk.AccAddress{worker1Acc, worker2Acc}
 	expected := alloraMath.MustNewDecFromString("210")
 	expectedOneIn := alloraMath.MustNewDecFromString("180")
+
+	worker3LastRegret, worker3NoPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker3Acc)
+	require.NoError(err)
+	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
+	require.True(worker3NoPriorRegret)
+
+	worker3LastRegret, worker3NoPriorRegret, err = k.GetForecasterNetworkRegret(s.ctx, topicId, worker3Acc)
+	require.NoError(err)
+	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
+	require.True(worker3NoPriorRegret)
+
+	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker1Acc)
+	require.NoError(err)
+	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
+	require.True(worker3NoPriorRegret)
+
+	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker2Acc)
+	require.NoError(err)
+	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
+	require.True(worker3NoPriorRegret)
+
+	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker3Acc)
+	require.NoError(err)
+	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
+	require.True(worker3NoPriorRegret)
 
 	for _, acc := range bothAccs {
 		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, acc)
@@ -145,6 +176,99 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegrets() {
 			lastRegret, noPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, acc, accInner)
 			require.NoError(err)
 			require.True(alloraMath.InDelta(expectedOneIn, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
+			require.False(noPriorRegret)
+		}
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers() {
+	require := s.Require()
+	k := s.emissionsKeeper
+
+	worker1 := "worker1"
+	worker2 := "worker2"
+	worker3 := "worker3"
+
+	worker1Acc := sdk.AccAddress(worker1)
+	worker2Acc := sdk.AccAddress(worker2)
+	worker3Acc := sdk.AccAddress(worker3)
+
+	valueBundle := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("500"),
+		NaiveValue:    alloraMath.MustNewDecFromString("123"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
+		},
+		ForecasterValues: []*types.WorkerAttributedValue{
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
+		},
+		OneInForecasterValues: []*types.WorkerAttributedValue{
+			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
+			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
+		},
+	}
+	blockHeight := int64(42)
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	topicId := uint64(1)
+
+	timestampedValue := types.TimestampedValue{
+		BlockHeight: blockHeight,
+		Value:       alloraMath.MustNewDecFromString("200"),
+	}
+
+	k.SetInfererNetworkRegret(s.ctx, topicId, worker1Acc, timestampedValue)
+	k.SetInfererNetworkRegret(s.ctx, topicId, worker2Acc, timestampedValue)
+	k.SetInfererNetworkRegret(s.ctx, topicId, worker3Acc, timestampedValue)
+
+	k.SetForecasterNetworkRegret(s.ctx, topicId, worker1Acc, timestampedValue)
+	k.SetForecasterNetworkRegret(s.ctx, topicId, worker2Acc, timestampedValue)
+	k.SetForecasterNetworkRegret(s.ctx, topicId, worker2Acc, timestampedValue)
+
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1Acc, worker1Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1Acc, worker2Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1Acc, worker3Acc, timestampedValue)
+
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2Acc, worker1Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2Acc, worker2Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2Acc, worker3Acc, timestampedValue)
+
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker1Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker2Acc, timestampedValue)
+	k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3Acc, worker3Acc, timestampedValue)
+
+	err := inference_synthesis.GetCalcSetNetworkRegrets(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		valueBundle,
+		nonce,
+		alpha,
+	)
+	require.NoError(err)
+
+	allWorkerAccs := []sdk.AccAddress{worker1Acc, worker2Acc, worker3Acc}
+	expected := alloraMath.MustNewDecFromString("210")
+	// expectedOneIn := alloraMath.MustNewDecFromString("180")
+
+	for _, workerAcc := range allWorkerAccs {
+		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, workerAcc)
+		require.NoError(err)
+		require.True(alloraMath.InDelta(expected, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
+		require.False(noPriorRegret)
+
+		lastRegret, noPriorRegret, err = k.GetForecasterNetworkRegret(s.ctx, topicId, workerAcc)
+		require.NoError(err)
+		require.False(noPriorRegret)
+
+		for _, innerWorkerAcc := range allWorkerAccs {
+			lastRegret, noPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, workerAcc, innerWorkerAcc)
+			require.NoError(err)
 			require.False(noPriorRegret)
 		}
 	}

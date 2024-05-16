@@ -42,7 +42,6 @@ func (s *KeeperTestSuite) TestUpdateParams() {
 	require.Equal(uint64(20), updatedParams.MaxTopicsPerBlock)
 
 	require.Equal(existingParams.Version, updatedParams.Version)
-	require.Equal(existingParams.RewardCadence, updatedParams.RewardCadence)
 }
 
 func (s *KeeperTestSuite) TestUpdateAllParams() {
@@ -57,14 +56,12 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},
-		RewardCadence:                   []int64{1234},
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxTopicsPerBlock:               []uint64{1234},
 		MaxMissingInferencePercent:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		RequiredMinimumStake:            []cosmosMath.Uint{cosmosMath.NewUint(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
-		Sharpness:                       []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		BetaEntropy:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		LearningRate:                    []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
@@ -95,6 +92,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		DefaultLimit:                    []uint64{1234},
 		MaxLimit:                        []uint64{1234},
 		MinEpochLengthRecordLimit:       []int64{1234},
+		MaxSerializedMsgLength:          []int64{1234},
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -110,14 +108,12 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.NoError(err)
 
 	require.Equal(newParams.Version[0], updatedParams.Version)
-	require.Equal(newParams.RewardCadence[0], updatedParams.RewardCadence)
 	require.Equal(newParams.MinTopicWeight[0], updatedParams.MinTopicWeight)
 	require.Equal(newParams.MaxTopicsPerBlock[0], updatedParams.MaxTopicsPerBlock)
 	require.Equal(newParams.MaxMissingInferencePercent[0], updatedParams.MaxMissingInferencePercent)
 	require.Equal(newParams.RequiredMinimumStake[0], updatedParams.RequiredMinimumStake)
 	require.Equal(newParams.RemoveStakeDelayWindow[0], updatedParams.RemoveStakeDelayWindow)
 	require.Equal(newParams.MinEpochLength[0], updatedParams.MinEpochLength)
-	require.Equal(newParams.Sharpness[0], updatedParams.Sharpness)
 	require.Equal(newParams.BetaEntropy[0], updatedParams.BetaEntropy)
 	require.Equal(newParams.LearningRate[0], updatedParams.LearningRate)
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
@@ -148,6 +144,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.DefaultLimit[0], updatedParams.DefaultLimit)
 	require.Equal(newParams.MaxLimit[0], updatedParams.MaxLimit)
 	require.Equal(newParams.MinEpochLengthRecordLimit[0], updatedParams.MinEpochLengthRecordLimit)
+	require.Equal(newParams.MaxSerializedMsgLength[0], updatedParams.MaxSerializedMsgLength)
 }
 
 func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {
