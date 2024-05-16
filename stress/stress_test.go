@@ -35,16 +35,20 @@ func Setup(t *testing.T) TestMetadata {
 }
 
 func TestStressTestSuite(t *testing.T) {
-	if _, isIntegration := os.LookupEnv("STRESS"); isIntegration == false {
+	if _, isIntegration := os.LookupEnv("STRESS_TEST"); isIntegration == false {
 		t.Skip("Skipping Stress Test unless explicitly enabled")
 	}
+
+	const stakeToAdd uint64 = 10000
+	const topicFunds int64 = 10000000000000000
+
 	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
 	t.Log(">>> Test Topic Creation <<<")
 	topicId := CreateTopic(m)
 
 	t.Log(">>> Test Topic Funding and Activation <<<")
-	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, 10000000000000000)
+	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +62,7 @@ func TestStressTestSuite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	const stakeToAdd uint64 = 10000
+
 	err = StakeReputer(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, stakeToAdd)
 	if err != nil {
 		t.Fatal(err)

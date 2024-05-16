@@ -1694,18 +1694,18 @@ func (k *Keeper) PopChurnReadyTopic(ctx context.Context) (TopicId, error) {
 	if err != nil {
 		return uint64(0), err
 	}
+	defer iter.Close()
 
 	if iter.Valid() {
 		poppedTopic, err := iter.Key()
 		if err != nil {
 			return uint64(0), err
 		}
-		if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
-			return uint64(0), err
-		}
+		// if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
+		// 	return uint64(0), err
+		// }
 		return poppedTopic, nil
 	}
-	iter.Close()
 
 	// if no topics exist to be churned, return the reserved topic id 0
 	return uint64(0), nil
