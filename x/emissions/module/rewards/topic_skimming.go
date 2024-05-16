@@ -43,7 +43,7 @@ func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[
 
 // Returns a map of topicId to weights of the top N topics by weight in descending order
 // It is assumed that topicIds is of a reasonable size, throttled by perhaps MaxTopicsPerBlock global param
-func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) map[TopicId]*alloraMath.Dec {
+func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
 	// Build a slice of topicIds
 	topicIds := make([]TopicId, 0, len(weights))
 	for topicId := range weights {
@@ -64,5 +64,5 @@ func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, bl
 		weightsOfTopN[sortedTopicIds[i]] = weights[sortedTopicIds[i]]
 	}
 
-	return weightsOfTopN
+	return weightsOfTopN, sortedTopicIds
 }

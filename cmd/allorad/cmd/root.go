@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"sort"
 	"time"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
@@ -10,6 +11,7 @@ import (
 	"cosmossdk.io/client/v2/autocli"
 	clientv2keyring "cosmossdk.io/client/v2/autocli/keyring"
 	"cosmossdk.io/core/address"
+	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 
@@ -114,9 +116,10 @@ func NewRootCmd() *cobra.Command {
 	// manually register the modules on the client side.
 	// This needs to be removed after IBC supports App Wiring.
 	ibcModules := app.RegisterIBC(clientCtx.InterfaceRegistry)
-	for name, mod := range ibcModules {
-		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, mod)
-		autoCliOpts.Modules[name] = mod
+	sortedModuleKeys := getSortedKeys(ibcModules)
+	for _, name := range sortedModuleKeys {
+		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, ibcModules[name])
+		autoCliOpts.Modules[name] = ibcModules[name]
 	}
 
 	initRootCmd(rootCmd, clientCtx.TxConfig, moduleBasicManager)
@@ -126,6 +129,15 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	return rootCmd
+}
+
+func getSortedKeys(m map[string]appmodule.AppModule) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func ProvideClientContext(

@@ -132,7 +132,16 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4Address, worker4Address, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
 	s.Require().NoError(err)
 
-	maxRegrets, err := inference_synthesis.FindMaxRegretAmongWorkersWithLosses(s.ctx, k, topicId, inferenceByWorker, forecastImpliedInferenceByWorker, epsilon)
+	maxRegrets, err := inference_synthesis.FindMaxRegretAmongWorkersWithLosses(
+		s.ctx,
+		k,
+		topicId,
+		inferenceByWorker,
+		inference_synthesis.GetSortedStringKeys(inferenceByWorker),
+		forecastImpliedInferenceByWorker,
+		inference_synthesis.GetSortedStringKeys(forecastImpliedInferenceByWorker),
+		epsilon,
+	)
 	s.Require().NoError(err)
 
 	expectedMaxInfererRegret := alloraMath.MustNewDecFromString("0.3")
@@ -243,7 +252,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
+				inference_synthesis.GetSortedStringKeys(tc.inferenceByWorker),
 				tc.forecastImpliedInferenceByWorker,
+				inference_synthesis.GetSortedStringKeys(tc.forecastImpliedInferenceByWorker),
 				NewWorkersAreNew(false),
 				tc.maxRegret,
 				tc.epsilon,
@@ -376,7 +387,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 			s.emissionsKeeper,
 			topicId,
 			test.inferenceByWorker,
+			inference_synthesis.GetSortedStringKeys[*emissions.Inference](test.inferenceByWorker),
 			test.forecastImpliedInferenceByWorker,
+			inference_synthesis.GetSortedStringKeys[*emissions.Inference](test.forecastImpliedInferenceByWorker),
 			test.forecasts,
 			NewWorkersAreNew(false),
 			test.maxRegret,
@@ -506,7 +519,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
+				inference_synthesis.GetSortedStringKeys(tc.inferenceByWorker),
 				tc.forecastImpliedInferences,
+				inference_synthesis.GetSortedStringKeys(tc.forecastImpliedInferences),
 				NewWorkersAreNew(false),
 				tc.maxRegretsByOneInForecaster,
 				tc.epsilon,

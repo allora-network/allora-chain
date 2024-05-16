@@ -148,7 +148,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Uint)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
-	for reputer := range topReputers {
+	for _, reputer := range topReputers {
 		reputerAccAddress, err := sdk.AccAddressFromBech32(reputer)
 		if err != nil {
 			continue

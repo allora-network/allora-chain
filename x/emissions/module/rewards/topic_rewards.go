@@ -105,9 +105,10 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
+	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
 
-	for topicId, weight := range weightsOfTopActiveTopics {
+	for _, topicId := range sortedTopActiveTopics {
+		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
 			fmt.Println("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue

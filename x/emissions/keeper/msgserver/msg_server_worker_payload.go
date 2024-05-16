@@ -87,7 +87,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	// AND are from top performing inferers among those who have submitted inferences in this batch
 	inferencesFromTopInferers := make([]*types.Inference, 0)
 	acceptedInferers := make(map[string]bool, 0)
-	for worker := range topInferers {
+	for _, worker := range topInferers {
 		acceptedInferers[worker] = true
 		inferencesFromTopInferers = append(inferencesFromTopInferers, inferencesByInferer[worker])
 	}
@@ -195,7 +195,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
-	for worker := range topForecasters {
+	for _, worker := range topForecasters {
 		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
 	}
 
