@@ -1942,7 +1942,7 @@ func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId 
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
 
-func (k *Keeper) SettPreviousPercentageRewardToStakedReputers(ctx context.Context, percentageRewardToStakedReputers alloraMath.Dec) error {
+func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(ctx context.Context, percentageRewardToStakedReputers alloraMath.Dec) error {
 	return k.previousPercentageRewardToStakedReputers.Set(ctx, percentageRewardToStakedReputers)
 }
 

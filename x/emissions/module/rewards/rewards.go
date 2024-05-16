@@ -32,6 +32,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		return nil
 	}
 
+	totalRewardToStakedReputers := alloraMath.ZeroDec()
 	// for every topic
 	for topicId, topicReward := range topicRewards {
 		// Get topic reward nonce/block height
@@ -42,7 +43,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		}
 
 		// Distribute rewards between topic participants
-		totalRewardsDistribution, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
+		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
 			fmt.Printf(
 				"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
@@ -51,6 +52,15 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 				err,
 			)
 			continue
+		}
+		totalRewardToStakedReputers, err = totalRewardToStakedReputers.Add(rewardInTopicToReputers)
+		if err != nil {
+			return errors.Wrapf(
+				err,
+				"Error finding sum of rewards to Reputers:\n%s\n%s",
+				totalRewardToStakedReputers.String(),
+				rewardInTopicToReputers.String(),
+			)
 		}
 
 		// Pay out rewards to topic participants
@@ -79,6 +89,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 			continue
 		}
 	}
+	// set the previous percentage reward to staked reputers
+	// for the mint module to be able to control the inflation rate to that actor
+	percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
+	k.SetPreviousPercentageRewardToStakedReputers(ctx, percentageToStakedReputers)
 
 	return nil
 }
@@ -278,40 +292,42 @@ func GenerateRewardsDistributionByTopicParticipant(
 	blockHeight int64,
 	moduleParams types.Params,
 ) (
-	[]TaskRewards, error,
+	totalRewardsDistribution []TaskRewards,
+	taskReputerReward alloraMath.Dec,
+	err error,
 ) {
 	bundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
 	}
 
 	lossBundles, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
 	}
 
 	// Calculate and Set the reputer scores
 	reputerScores, err := GenerateReputerScores(ctx, k, topicId, blockHeight, *bundles)
 	if err != nil {
-		return nil, err
+		return nil, alloraMath.Dec{}, err
 	}
 
 	// Calculate and Set the worker scores for their inference work
 	infererScores, err := GenerateInferenceScores(ctx, k, topicId, blockHeight, *lossBundles)
 	if err != nil {
-		return nil, err
+		return nil, alloraMath.Dec{}, err
 	}
 
 	// Calculate and Set the worker scores for their forecast work
 	forecasterScores, err := GenerateForecastScores(ctx, k, topicId, blockHeight, *lossBundles)
 	if err != nil {
-		return nil, err
+		return nil, alloraMath.Dec{}, err
 	}
 
 	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
 	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, reputerScores)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer reward round data")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
 
 	// Get reputer task entropy
@@ -325,7 +341,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		reputersRewardFractions,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer task entropy")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer task entropy")
 	}
 
 	// Get inferer reward fractions
@@ -338,7 +354,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		infererScores,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get inferer reward fractions")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get inferer reward fractions")
 	}
 
 	// Get inference entropy
@@ -352,7 +368,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		inferersRewardFractions,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get inference task entropy")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get inference task entropy")
 	}
 
 	// Get forecaster reward fractions
@@ -365,7 +381,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecasterScores,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecaster reward fractions")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get forecaster reward fractions")
 	}
 
 	var forecastingEntropy alloraMath.Dec
@@ -381,7 +397,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 			forecastersRewardFractions,
 		)
 		if err != nil {
-			return []TaskRewards{}, err
+			return []TaskRewards{}, alloraMath.Dec{}, err
 		}
 	} else {
 		// If there are no forecasters, set forecasting entropy to zero
@@ -389,14 +405,14 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get Total Rewards for Reputation task
-	taskReputerReward, err := GetRewardForReputerTaskInTopic(
+	taskReputerReward, err = GetRewardForReputerTaskInTopic(
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
 	}
 
 	// Get Total Rewards for Inference task
@@ -411,7 +427,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		moduleParams.SigmoidB,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
 	}
 
 	// Get Total Rewards for Forecasting task
@@ -426,10 +442,10 @@ func GenerateRewardsDistributionByTopicParticipant(
 		moduleParams.SigmoidB,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")
 	}
 
-	totalRewardsDistribution := make([]TaskRewards, 0)
+	totalRewardsDistribution = make([]TaskRewards, 0)
 
 	// Get Distribution of Rewards per Reputer
 	reputerRewards, err := GetRewardPerReputer(
@@ -441,7 +457,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		reputersRewardFractions,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get reputer rewards")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer rewards")
 	}
 	totalRewardsDistribution = append(totalRewardsDistribution, reputerRewards...)
 
@@ -454,7 +470,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		inferersRewardFractions,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get inference rewards")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get inference rewards")
 	}
 	totalRewardsDistribution = append(totalRewardsDistribution, inferenceRewards...)
 
@@ -467,11 +483,11 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastersRewardFractions,
 	)
 	if err != nil {
-		return []TaskRewards{}, errors.Wrapf(err, "failed to get forecast rewards")
+		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get forecast rewards")
 	}
 	totalRewardsDistribution = append(totalRewardsDistribution, forecastRewards...)
 
-	return totalRewardsDistribution, nil
+	return totalRewardsDistribution, taskReputerReward, nil
 }
 
 // pay out the rewards to the participants

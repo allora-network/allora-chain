@@ -433,16 +433,26 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	firstTotalReputerReward := alloraMath.ZeroDec()
+	calcFirstTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
 		if reward.Type == rewards.ReputerRewardType {
-			firstTotalReputerReward, err = firstTotalReputerReward.Add(reward.Reward)
+			calcFirstTotalReputerReward, err = calcFirstTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
 	}
+	s.Require().True(
+		alloraMath.InDelta(
+			firstTotalReputerReward,
+			calcFirstTotalReputerReward,
+			alloraMath.MustNewDecFromString("0.0001"),
+		),
+		"expected: %s, got: %s",
+		firstTotalReputerReward.String(),
+		calcFirstTotalReputerReward.String(),
+	)
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -569,16 +579,26 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	secondTotalReputerReward := alloraMath.ZeroDec()
+	calcSecondTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
 		if reward.Type == rewards.ReputerRewardType {
-			secondTotalReputerReward, err = secondTotalReputerReward.Add(reward.Reward)
+			calcSecondTotalReputerReward, err = calcSecondTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
 	}
+	s.Require().True(
+		alloraMath.InDelta(
+			secondTotalReputerReward,
+			calcSecondTotalReputerReward,
+			alloraMath.MustNewDecFromString("0.0001"),
+		),
+		"expected: %s, got: %s",
+		secondTotalReputerReward.String(),
+		calcSecondTotalReputerReward.String(),
+	)
 
 	// Check if the reward share increased
 	s.Require().True(secondTotalReputerReward.Gt(firstTotalReputerReward))
