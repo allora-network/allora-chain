@@ -381,6 +381,8 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	reputerValues []TestWorkerValue,
+	workerZeroAddress sdk.AccAddress,
+	workerZeroOneOutInfererValue string,
 ) []rewards.TaskRewards {
 	require := s.Require()
 
@@ -414,6 +416,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	// Insert inference from workers
 	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, reputerAddrs)
+
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
 		Sender:            workerAddrs[0].String(),
 		Nonce:             &types.Nonce{BlockHeight: blockHeight},
@@ -423,7 +426,15 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	require.NoError(err)
 
 	// Insert loss bundle from reputers
-	lossBundles := GenerateSimpleLossBundles(s, topicId, blockHeight, workerValues, reputerValues)
+	lossBundles := GenerateSimpleLossBundles(
+		s,
+		topicId,
+		blockHeight,
+		workerValues,
+		reputerValues,
+		workerZeroAddress,
+		workerZeroOneOutInfererValue,
+	)
 
 	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
 		Sender:  reputerValues[0].Address.String(),
@@ -528,7 +539,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues0 := s.defineValues(
+	workerValues := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -537,28 +548,10 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		},
 	)
 
-	reputerValues0 := s.defineValues(
+	reputerValues := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.1"},
-			{Address: s.addrs[4], Value: "0.2"},
-			{Address: s.addrs[5], Value: "0.3"},
-		},
-	)
-
-	workerValues1 := s.defineValues(
-		workerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[0], Value: "0.1"},
-			{Address: s.addrs[1], Value: "0.2"},
-			{Address: s.addrs[2], Value: "0.3"},
-		},
-	)
-
-	reputerValues1 := s.defineValues(
-		reputerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[3], Value: "0.2"},
 			{Address: s.addrs[4], Value: "0.2"},
 			{Address: s.addrs[5], Value: "0.3"},
 		},
@@ -570,14 +563,28 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	/// TEST 0 PART A
 
-	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
+	rewardsDistribution0_0 := s.getRewardsDistribution(
+		topicId,
+		blockHeight0,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+	)
 
 	/// TEST 0 PART B
 
 	blockHeight1 := blockHeight0 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight1)
 
-	rewardsDistribution0_1 := s.getRewardsDistribution(topicId, blockHeight1, workerValues1, reputerValues1)
+	rewardsDistribution0_1 := s.getRewardsDistribution(
+		topicId,
+		blockHeight1,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.2",
+	)
 
 	/// TEST 1 PART A
 
@@ -586,21 +593,34 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
 
-	rewardsDistribution1_0 := s.getRewardsDistribution(topicId1, blockHeight2, workerValues0, reputerValues0)
+	rewardsDistribution1_0 := s.getRewardsDistribution(
+		topicId1,
+		blockHeight2,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+	)
 
 	/// TEST 1 PART B
 
 	blockHeight3 := blockHeight2 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight3)
 
-	rewardsDistribution1_1 := s.getRewardsDistribution(topicId1, blockHeight3, workerValues1, reputerValues1)
+	rewardsDistribution1_1 := s.getRewardsDistribution(
+		topicId1,
+		blockHeight3,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.2",
+	)
 
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 }
 
-func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanceOfPastVsPresent() {
-	/// SETUP
+func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPresentPerformance() {
 	require := s.Require()
 	k := s.emissionsKeeper
 
@@ -627,7 +647,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues0 := s.defineValues(
+	workerValues := s.defineValues(
 		workerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[0], Value: "0.1"},
@@ -636,7 +656,7 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		},
 	)
 
-	reputerValues0 := s.defineValues(
+	reputerValues := s.defineValues(
 		reputerAddrs,
 		[]TestWorkerValue{
 			{Address: s.addrs[3], Value: "0.1"},
@@ -645,38 +665,34 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 		},
 	)
 
-	workerValues1 := s.defineValues(
-		workerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[0], Value: "0.1"},
-			{Address: s.addrs[1], Value: "0.2"},
-			{Address: s.addrs[2], Value: "0.3"},
-		},
-	)
-
-	reputerValues1 := s.defineValues(
-		reputerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[3], Value: "0.2"},
-			{Address: s.addrs[4], Value: "0.2"},
-			{Address: s.addrs[5], Value: "0.3"},
-		},
-	)
-
-	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString(("0.1"))
+	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString("0.1")
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
 	/// TEST 0 PART A
 
-	rewardsDistribution0_0 := s.getRewardsDistribution(topicId, blockHeight0, workerValues0, reputerValues0)
+	rewardsDistribution0_0 := s.getRewardsDistribution(
+		topicId,
+		blockHeight0,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+	)
 
 	/// TEST 0 PART B
 
 	blockHeight1 := blockHeight0 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight1)
 
-	rewardsDistribution0_1 := s.getRewardsDistribution(topicId, blockHeight1, workerValues1, reputerValues1)
+	rewardsDistribution0_1 := s.getRewardsDistribution(
+		topicId,
+		blockHeight1,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.2",
+	)
 
 	/// CHANGE TASK REWARD ALPHA
 
@@ -691,17 +707,57 @@ func (s *RewardsTestSuite) TestVaryingTaskRewardAlphaChangesPerformanceImportanc
 
 	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
 
-	rewardsDistribution1_0 := s.getRewardsDistribution(topicId1, blockHeight2, workerValues0, reputerValues0)
+	rewardsDistribution1_0 := s.getRewardsDistribution(
+		topicId1,
+		blockHeight2,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+	)
 
 	/// TEST 1 PART B
 
 	blockHeight3 := blockHeight2 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight3)
 
-	rewardsDistribution1_1 := s.getRewardsDistribution(topicId1, blockHeight3, workerValues1, reputerValues1)
+	rewardsDistribution1_1 := s.getRewardsDistribution(
+		topicId1,
+		blockHeight3,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.2",
+	)
 
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
 	require.False(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
+
+	var workerReward_0_0_1_Reward alloraMath.Dec
+	found := false
+	for _, reward := range rewardsDistribution0_1 {
+		if reward.Address.Equals(workerAddrs[0]) {
+			found = true
+			workerReward_0_0_1_Reward = reward.Reward
+		}
+	}
+	if !found {
+		require.Fail("Worker not found")
+	}
+
+	var workerReward_0_1_1_Reward alloraMath.Dec
+	found = false
+	for _, reward := range rewardsDistribution1_1 {
+		if reward.Address.Equals(workerAddrs[0]) {
+			found = true
+			workerReward_0_1_1_Reward = reward.Reward
+		}
+	}
+	if !found {
+		require.Fail("Worker not found")
+	}
+
+	require.True(workerReward_0_0_1_Reward.Lt(workerReward_0_1_1_Reward))
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
