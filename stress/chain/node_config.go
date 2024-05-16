@@ -57,6 +57,7 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 		cosmosclient.WithNodeAddress(nc.NodeRPCAddress),
 		cosmosclient.WithAddressPrefix(params.HumanCoinUnit),
 		cosmosclient.WithHome(nc.AlloraHomeDir),
+		cosmosclient.WithGas("auto"),
 	)
 	require.NoError(t, err)
 
