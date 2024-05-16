@@ -800,9 +800,6 @@ func (s *RewardsTestSuite) TestFixingAlphaRegretDoesNotChangePerformanceImportan
 		},
 	)
 
-	params, err := k.GetParams(s.ctx)
-	require.NoError(err)
-
 	currentParams.AlphaRegret = alloraMath.MustNewDecFromString(("0.1"))
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
@@ -838,7 +835,7 @@ func (s *RewardsTestSuite) TestFixingAlphaRegretDoesNotChangePerformanceImportan
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 }
 
-func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesEffectOnRegret() {
+func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegret() {
 	/// SETUP
 	require := s.Require()
 	k := s.emissionsKeeper
