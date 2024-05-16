@@ -910,6 +910,8 @@ func GenerateSimpleLossBundles(
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	reputerValues []TestWorkerValue,
+	workerZeroAddress sdk.AccAddress,
+	workerZeroOneOutInfererValue string,
 ) types.ReputerValueBundles {
 
 	var reputerValueBundles types.ReputerValueBundles
@@ -937,7 +939,11 @@ func GenerateSimpleLossBundles(
 		for j, worker := range workerValues {
 			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
-			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			if worker.Address.Equals(workerZeroAddress) {
+				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue)}
+			} else {
+				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			}
 			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 		}
