@@ -16,7 +16,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
+	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -29,6 +32,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -40,16 +44,17 @@ const (
 type RewardsTestSuite struct {
 	suite.Suite
 
-	ctx             sdk.Context
-	accountKeeper   authkeeper.AccountKeeper
-	bankKeeper      bankkeeper.BaseKeeper
-	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	msgServer       types.MsgServer
-	key             *storetypes.KVStoreKey
-	privKeys        map[string]secp256k1.PrivKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
+	ctx                sdk.Context
+	accountKeeper      authkeeper.AccountKeeper
+	bankKeeper         bankkeeper.BaseKeeper
+	emissionsKeeper    keeper.Keeper
+	emissionsAppModule module.AppModule
+	mintAppModule      mint.AppModule
+	msgServer          types.MsgServer
+	key                *storetypes.KVStoreKey
+	privKeys           map[string]secp256k1.PrivKey
+	addrs              []sdk.AccAddress
+	addrsStr           []string
 }
 
 func (s *RewardsTestSuite) SetupTest() {
@@ -98,17 +103,40 @@ func (s *RewardsTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName)
+	stakingKeeper := stakingkeeper.NewKeeper(
+		encCfg.Codec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.NewModuleAddress("gov").String(),
+		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+	)
+	mintKeeper := mintkeeper.NewKeeper(
+		encCfg.Codec,
+		storeService,
+		stakingKeeper,
+		accountKeeper,
+		bankKeeper,
+		emissionsKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
+	)
 
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = emissionsKeeper
 	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	emissionsAppModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	defaultEmissionsGenesis := emissionsAppModule.DefaultGenesis(encCfg.Codec)
+	emissionsAppModule.InitGenesis(ctx, encCfg.Codec, defaultEmissionsGenesis)
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-	s.appModule = appModule
+	s.emissionsAppModule = emissionsAppModule
+	mintAppModule := mint.NewAppModule(encCfg.Codec, mintKeeper, accountKeeper)
+	defaultMintGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
+	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultMintGenesis)
+	s.mintAppModule = mintAppModule
 
 	// Create accounts and fund it
 	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
@@ -291,7 +319,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 
@@ -547,8 +575,16 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
 
+	// Trigger begin block - for inflating token supply
+	err = s.mintAppModule.BeginBlock(s.ctx)
+	s.Require().NoError(err)
+	// now there should be some rewards to dole out
+	rewardsReady, err := s.emissionsKeeper.GetTotalRewardToDistribute(s.ctx)
+	s.Require().NoError(err)
+	s.Require().True(rewardsReady.Gt(alloraMath.ZeroDec()))
+
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	afterRewardsTopic1FeeRevenue, err := s.emissionsKeeper.GetTopicFeeRevenue(s.ctx, topicId)
@@ -1034,7 +1070,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
 
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
@@ -1269,8 +1305,11 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
 
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
+
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 
@@ -1433,8 +1472,11 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	blockHeight += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
 
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
+
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 

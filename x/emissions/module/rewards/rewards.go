@@ -1,8 +1,6 @@
 package rewards
 
 import (
-	"fmt"
-
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -49,7 +47,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
-			fmt.Printf(
+			ctx.Logger().Warn(
 				"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 				topicId,
 				topicReward.String(),
@@ -71,7 +69,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		payoutErrors := payoutRewards(ctx, k, totalRewardsDistribution)
 		if len(payoutErrors) > 0 {
 			for _, err := range payoutErrors {
-				fmt.Printf(
+				ctx.Logger().Warn(
 					"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 					topicId,
 					topicReward.String(),
@@ -84,7 +82,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		// Prune records after rewards have been paid out
 		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
 		if err != nil {
-			fmt.Printf(
+			ctx.Logger().Warn(
 				"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 				topicId,
 				topicReward.String(),
@@ -118,7 +116,7 @@ func GenerateRewardsDistributionByTopic(
 	totalRevenue cosmosMath.Int,
 ) (map[uint64]*alloraMath.Dec, error) {
 	if sumWeight.IsZero() {
-		fmt.Println("No weights, no rewards!")
+		ctx.Logger().Warn("No weights, no rewards!")
 		return nil, nil
 	}
 	// Filter out topics that are not reward-ready, inactivate if needed
@@ -135,7 +133,7 @@ func GenerateRewardsDistributionByTopic(
 		return nil, errors.Wrapf(err, "failed to inactivate topics and update sums")
 	}
 	if sumWeight.IsZero() {
-		fmt.Println("No filtered weights, no rewards!")
+		ctx.Logger().Warn("No filtered weights, no rewards!")
 		return nil, nil
 	}
 
@@ -172,7 +170,7 @@ func GenerateRewardsDistributionByTopic(
 		mintTypes.EcosystemModuleName,
 		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
 	if err != nil {
-		fmt.Println("Error sending coins from module to module: ", err)
+		ctx.Logger().Error("Error sending coins from module to module: ", err)
 		return nil, err
 	}
 
@@ -229,12 +227,12 @@ func FilterAndInactivateTopicsUpdatingSums(
 		filterOutTopic := false
 		filterOutErrorMessage := ""
 		if err != nil {
-			fmt.Println("Error getting reputer request nonces: ", err)
+			ctx.Logger().Warn("Error getting reputer request nonces: ", err)
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove from sum weight and revenue"
 		}
 		if rewardNonce == 0 {
-			fmt.Println("Reputer request nonces is nil")
+			ctx.Logger().Warn("Reputer request nonces is nil")
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove nil-reputer-nonce topic from sum weight and revenue"
 		}

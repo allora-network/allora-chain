@@ -194,6 +194,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 		blocksPerMonth,
 		params,
 		ecosystemMintSupplyRemaining,
+		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
 	s.Require().NoError(err)
 
@@ -212,6 +213,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 		blocksPerMonth,
 		params,
 		ecosystemMintSupplyRemaining,
+		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
 	s.Require().NoError(err)
 
