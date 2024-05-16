@@ -20,7 +20,8 @@ import (
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions/module"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -66,17 +67,18 @@ func (s *MintModuleTestSuite) SetupTest() {
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                     nil,
-		"third_party":                       {"minter"},
-		"ecosystem":                         {"burner", "minter", "staking"},
-		"allorarewards":                     nil,
-		"mint":                              {"minter"},
-		emissions.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		emissions.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":                {"burner", "staking"},
-		"not_bonded_tokens_pool":            {"burner", "staking"},
-		multiPerm:                           {"burner", "minter", "staking"},
-		randomPerm:                          {"random"},
+		"fee_collector":                         nil,
+		"third_party":                           {"minter"},
+		"ecosystem":                             {"burner", "minter", "staking"},
+		"mint":                                  {"minter"},
+		emissionstypes.AlloraRewardsAccountName: nil,
+		emissionstypes.AlloraPendingRewardForDelegatorAccountName: nil,
+		emissionstypes.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
+		emissionstypes.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
+		"bonded_tokens_pool":                                      {"burner", "staking"},
+		"not_bonded_tokens_pool":                                  {"burner", "staking"},
+		multiPerm:                                                 {"burner", "minter", "staking"},
+		randomPerm:                                                {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -142,10 +144,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.emissionsKeeper = emissionsKeeper
 	s.mintKeeper = mintKeeper
 
-	appModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.appModule = appModule
+	emissionsModule := emissions.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	emissionsDefaultGenesis := emissionsModule.DefaultGenesis(encCfg.Codec)
+	emissionsModule.InitGenesis(ctx, encCfg.Codec, emissionsDefaultGenesis)
+
+	mintAppModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
+	defaultGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
+	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	s.appModule = mintAppModule
 }
 
 func TestMintModuleTestSuite(t *testing.T) {
@@ -171,11 +177,11 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().NoError(err)
 
 	// mint enough tokens so that the circulating supply is non zero
-	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
-		emissions.AlloraRequestsAccountName,
+		emissionstypes.AlloraRequestsAccountName,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.MintDenom,
@@ -265,7 +271,7 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 
 func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissions.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
 	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
@@ -334,7 +340,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 
 func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissions.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
 	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
