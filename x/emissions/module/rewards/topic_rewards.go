@@ -151,7 +151,6 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
-	// for i, topic := range activeTopics {
 	fn := func(ctx context.Context, topic *types.Topic) error {
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(

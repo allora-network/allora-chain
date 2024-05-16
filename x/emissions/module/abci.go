@@ -16,7 +16,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
-	// Get active weights
+	// Get unnormalized weights of active topics
 	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
