@@ -239,8 +239,9 @@ func FilterAndInactivateTopicsUpdatingSums(
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, filterOutErrorMessage)
 			}
+		} else {
+			weightsOfActiveTopics[topicId] = weight
 		}
-		weightsOfActiveTopics[topicId] = weight
 	}
 	return weightsOfActiveTopics, sumWeight, sumRevenue, nil
 }
