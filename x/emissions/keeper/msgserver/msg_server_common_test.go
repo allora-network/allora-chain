@@ -29,7 +29,7 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	latestReputerScores := make(map[string]types.Score)
 	latestReputerScores[worker1Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)}
 	latestReputerScores[worker2Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)}
-	latestReputerScores[worker3Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(90)}
+	latestReputerScores[worker3Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)}
 	latestReputerScores[worker4Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
 	latestReputerScores[worker5Addr.String()] = types.Score{TopicId: topicId, BlockNumber: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
