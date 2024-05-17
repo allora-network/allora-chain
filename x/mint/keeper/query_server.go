@@ -38,12 +38,12 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 	if err != nil {
 		return nil, err
 	}
-	params, err := q.k.Params.Get(ctx)
+	blocksPerMonth, err := q.k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
 		return nil, err
 	}
 	EmissionPerYearAtCurrentBlockEmissionRate := blockEmission.
-		Mul(math.NewIntFromUint64(params.BlocksPerMonth)).
+		Mul(math.NewIntFromUint64(blocksPerMonth)).
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
 	totalSupply := q.k.GetTotalCurrTokenSupply(ctx).Amount.ToLegacyDec()

@@ -33,8 +33,6 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 				Authority: s.mintKeeper.GetAuthority(),
 				Params: types.Params{
 					MintDenom:                              defaultParams.MintDenom,
-					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
-					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
 					MaxSupply:                              sdkmath.NewIntFromUint64(0),
 					FEmission:                              defaultParams.FEmission,
 					OneMonthSmoothingDegree:                defaultParams.OneMonthSmoothingDegree,
@@ -43,6 +41,7 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 					ParticipantsPercentOfTotalSupply:       defaultParams.ParticipantsPercentOfTotalSupply,
 					InvestorsPercentOfTotalSupply:          defaultParams.InvestorsPercentOfTotalSupply,
 					TeamPercentOfTotalSupply:               defaultParams.TeamPercentOfTotalSupply,
+					MaximumMonthlyPercentageYield:          defaultParams.MaximumMonthlyPercentageYield,
 				},
 			},
 			expectErr: true,
@@ -54,8 +53,6 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 				Params: types.Params{
 					MintDenom:                              defaultParams.MintDenom,
 					MaxSupply:                              defaultParams.MaxSupply,
-					BlocksPerMonth:                         defaultParams.BlocksPerMonth,
-					EmissionCalibrationsTimestepPerMonth:   defaultParams.EmissionCalibrationsTimestepPerMonth,
 					FEmission:                              defaultParams.FEmission,
 					OneMonthSmoothingDegree:                defaultParams.OneMonthSmoothingDegree,
 					EcosystemTreasuryPercentOfTotalSupply:  defaultParams.EcosystemTreasuryPercentOfTotalSupply,
@@ -63,6 +60,7 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 					ParticipantsPercentOfTotalSupply:       defaultParams.ParticipantsPercentOfTotalSupply,
 					InvestorsPercentOfTotalSupply:          defaultParams.InvestorsPercentOfTotalSupply,
 					TeamPercentOfTotalSupply:               defaultParams.TeamPercentOfTotalSupply,
+					MaximumMonthlyPercentageYield:          defaultParams.MaximumMonthlyPercentageYield,
 				},
 			},
 			expectErr: false,

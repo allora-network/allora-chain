@@ -28,9 +28,6 @@ var (
 // ConsensusVersion defines the current module consensus version.
 const ConsensusVersion = 1
 
-// Precision used to convert any float or double to an integer during arithmetic operations
-const Precision = 1000000
-
 type AppModule struct {
 	cdc    codec.Codec
 	keeper keeper.Keeper
