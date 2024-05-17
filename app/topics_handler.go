@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -18,27 +17,23 @@ const secondsInAMonth uint64 = 2592000
 
 type TopicsHandler struct {
 	emissionsKeeper emissionskeeper.Keeper
-	mintKeeper      mintkeeper.Keeper
 }
 
 type TopicId = uint64
 
-func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkeeper.Keeper) *TopicsHandler {
+func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
 	return &TopicsHandler{
 		emissionsKeeper: emissionsKeeper,
-		mintKeeper:      mintKeeper,
 	}
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
 func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
-	mintParams, err := th.mintKeeper.GetParams(ctx)
+	blocksPerMonth, err := th.emissionsKeeper.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
-		fmt.Println("Error getting mint params: ", err)
 		return 0, err
 	}
-	BlocksPerMonth := mintParams.GetBlocksPerMonth()
-	approximateTimePerBlockSeconds := secondsInAMonth / BlocksPerMonth
+	approximateTimePerBlockSeconds := secondsInAMonth / blocksPerMonth
 	timeDifferenceInBlocks := ctx.BlockHeight() - inferenceBlockHeight
 	// Ensure no time in the future is calculated because of ground truth lag
 	if groundTruthLag > timeDifferenceInBlocks {
@@ -48,7 +43,7 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 	}
 
 	timeDifferenceInSeconds := uint64(timeDifferenceInBlocks) * approximateTimePerBlockSeconds
-	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix()) - timeDifferenceInSeconds
+	previousBlockApproxTime := uint64(ctx.BlockTime().Unix()) - timeDifferenceInSeconds
 	return previousBlockApproxTime, nil
 }
 
