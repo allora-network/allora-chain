@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -61,6 +62,63 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 			reputerReward.Reward.String(),
 		)
 	}
+}
+
+func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegators() {
+	topidId := uint64(1)
+	block := int64(1003)
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Generate reputers data for tests
+	_, err := mockReputersData(s, topidId, block, reputerAddrs)
+	s.Require().NoError(err)
+
+	// Add balance to the reward account
+	rewardToDistribute := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(100000000)))
+	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, rewardToDistribute)
+
+	// Check delegator rewards account balance
+	moduleAccAddr := s.accountKeeper.GetModuleAddress(types.AlloraPendingRewardForDelegatorAccountName)
+	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
+
+	// Add delegator for the reputer 1
+	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5], reputerAddrs[0], cosmosMath.NewUint(10000000000))
+	s.Require().NoError(err)
+
+	// Reputers fractions of total reward
+	reputerFractions := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.4486159141384113784159014720544400"),
+		alloraMath.MustNewDecFromString("0.1697311778065889569890976063020783"),
+		alloraMath.MustNewDecFromString("0.2082807308270030931355055033750957"),
+		alloraMath.MustNewDecFromString("0.05141234465321950512077936581311225"),
+		alloraMath.MustNewDecFromString("0.1219598325747770663387160524552737"),
+	}
+
+	// Get reputer rewards
+	reputerRewards, err := rewards.GetRewardPerReputer(
+		s.ctx,
+		s.emissionsKeeper,
+		topidId,
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+		reputerAddrs,
+		reputerFractions,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(reputerRewards))
+
+	finalBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
+
+	// Check that the delegator has received rewards
+	s.Require().True(
+		finalBalance.Amount.GT(inicialBalance.Amount),
+	)
 }
 
 // After removing the number of reputers, the rewards should increase for the remaining reputers

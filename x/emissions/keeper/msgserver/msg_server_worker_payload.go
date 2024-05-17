@@ -2,6 +2,8 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
+	"sort"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,15 +24,19 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 ) (map[string]bool, error) {
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
+	errors := make(map[string]string)
+	if len(workerDataBundles) == 0 {
+		return nil, types.ErrNoValidBundles
+	}
 	for _, workerDataBundle := range workerDataBundles {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each inferer
 		/// All filters should be done in order of increasing computational complexity
 
 		if err := workerDataBundle.Validate(); err != nil {
+			errors[workerDataBundle.Worker] = "Validate: Invalid worker data bundle"
 			continue // Ignore only invalid worker data bundles
 		}
-
 		/// If we do PoX-like anti-sybil procedure, would go here
 
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
@@ -38,6 +44,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		// Check if the topic and nonce are correct
 		if inference.TopicId != topicId ||
 			inference.BlockHeight != nonce.BlockHeight {
+			errors[workerDataBundle.Worker] = "Worker data bundle does not match topic or nonce"
 			continue
 		}
 
@@ -48,23 +55,29 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 			infereraddr, _ := sdk.AccAddressFromBech32(inference.Inferer)
 			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, infereraddr)
 			if err != nil {
+				errors[workerDataBundle.Worker] = "Err to check if worker is registered in topic"
 				continue
 			}
 			if !isInfererRegistered {
+				errors[workerDataBundle.Worker] = "Inferer is not registered"
 				continue
 			}
 
 			// Get the latest score for each inferer => only take top few by score descending
 			latestScore, err := ms.k.GetLatestInfererScore(ctx, topicId, infereraddr)
 			if err != nil {
+				errors[workerDataBundle.Worker] = "Latest score not found"
 				continue
 			}
-
 			/// Filtering done now, now write what we must for inclusion
-
 			latestInfererScores[inference.Inferer] = latestScore
 			inferencesByInferer[inference.Inferer] = inference
 		}
+	}
+
+	// iterate errors
+	for worker, err := range errors {
+		fmt.Println("Error for worker:", worker, "Error message:", err)
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
@@ -74,7 +87,7 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	// AND are from top performing inferers among those who have submitted inferences in this batch
 	inferencesFromTopInferers := make([]*types.Inference, 0)
 	acceptedInferers := make(map[string]bool, 0)
-	for worker := range topInferers {
+	for _, worker := range topInferers {
 		acceptedInferers[worker] = true
 		inferencesFromTopInferers = append(inferencesFromTopInferers, inferencesByInferer[worker])
 	}
@@ -82,6 +95,11 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	if len(inferencesFromTopInferers) == 0 {
 		return nil, types.ErrNoValidBundles
 	}
+
+	// Ensure deterministic ordering of inferences
+	sort.Slice(inferencesFromTopInferers, func(i, j int) bool {
+		return inferencesFromTopInferers[i].Inferer < inferencesFromTopInferers[j].Inferer
+	})
 
 	// Store the final list of inferences
 	inferencesToInsert := types.Inferences{
@@ -177,7 +195,7 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
-	for worker := range topForecasters {
+	for _, worker := range topForecasters {
 		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
 	}
 
@@ -185,6 +203,10 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	// it is fine if no forecasts are accepted
 	// => no need to check len(forecastsFromTopForecasters) == 0
 
+	// Ensure deterministic ordering
+	sort.Slice(forecastsFromTopForecasters, func(i, j int) bool {
+		return forecastsFromTopForecasters[i].Forecaster < forecastsFromTopForecasters[j].Forecaster
+	})
 	// Store the final list of forecasts
 	forecastsToInsert := types.Forecasts{
 		Forecasts: forecastsFromTopForecasters,
@@ -242,7 +264,6 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	if err != nil {
 		return nil, err
 	}
-
 	// Update the unfulfilled worker nonce
 	_, err = ms.k.FulfillWorkerNonce(ctx, msg.TopicId, msg.Nonce)
 	if err != nil {

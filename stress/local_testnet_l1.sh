@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu  #e
 
-# Ensure we're in integration folder
+# Ensure we're in stress folder
 cd "$(dirname "$0")"
 
 DOCKER_IMAGE=allorad

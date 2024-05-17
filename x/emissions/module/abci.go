@@ -16,7 +16,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
-	// Get active weights
+	// Get unnormalized weights of active topics
 	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
@@ -27,6 +27,13 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	if err != nil {
 		fmt.Println("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")
+	}
+
+	// Reset the churn ready topics
+	err = am.keeper.ResetChurnReadyTopics(ctx)
+	if err != nil {
+		fmt.Println("Error resetting churn ready topics: ", err)
+		return errors.Wrapf(err, "Resetting churn ready topics error")
 	}
 
 	// NONCE MGMT with churnReady weights
