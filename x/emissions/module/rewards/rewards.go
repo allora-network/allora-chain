@@ -90,7 +90,11 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 			continue
 		}
 	}
-	if !totalReward.IsZero() {
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get blocks per month")
+	}
+	if !totalReward.IsZero() && uint64(blockHeight)%blocksPerMonth == 0 {
 		// set the previous percentage reward to staked reputers
 		// for the mint module to be able to control the inflation rate to that actor
 		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
