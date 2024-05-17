@@ -59,7 +59,7 @@ func (pq *PriorityQueue) Pop() any {
 
 // Sorts the given actors by score, desc, breaking ties randomly
 // Returns the top N actors as a map with the actor as the key and a boolean (True) as the value
-func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed BlockHeight) map[Actor]bool {
+func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed BlockHeight) []Actor {
 	r := rand.New(rand.NewSource(randSeed))
 	queue := &PriorityQueue{}
 	i := 0
@@ -70,13 +70,13 @@ func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed Block
 
 	heap.Init(queue)
 
-	topN := make(map[Actor]bool)
+	topN := make([]Actor, 0)
 	for i := 0; i < int(n); i++ {
 		if queue.Len() == 0 {
 			break
 		}
 		item := heap.Pop(queue).(*SortableItem)
-		topN[item.Value] = true
+		topN = append(topN, item.Value)
 	}
 
 	return topN

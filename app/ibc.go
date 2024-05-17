@@ -3,6 +3,7 @@ package app
 import (
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/ibc/gmp"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -197,8 +198,9 @@ func RegisterIBC(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppMo
 		solomachine.ModuleName:      solomachine.AppModule{},
 	}
 
-	for _, module := range modules {
-		if mod, ok := module.(interface {
+	sortedModuleKeys := alloraMath.GetSortedKeys(modules)
+	for _, key := range sortedModuleKeys {
+		if mod, ok := modules[key].(interface {
 			RegisterInterfaces(registry cdctypes.InterfaceRegistry)
 		}); ok {
 			mod.RegisterInterfaces(registry)

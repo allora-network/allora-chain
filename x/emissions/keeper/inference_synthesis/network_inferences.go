@@ -33,11 +33,11 @@ func AreAllWorkersNew(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	inferenceByWorker map[Worker]*emissions.Inference,
+	sortedInferers []Worker,
 	forecasts *emissions.Forecasts,
 ) (AllWorkersAreNew, error) {
 	allInferersAreNew := true
-	for inferer := range inferenceByWorker {
+	for _, inferer := range sortedInferers {
 		_, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
@@ -76,11 +76,13 @@ func FindMaxRegretAmongWorkersWithLosses(
 	k keeper.Keeper,
 	topicId TopicId,
 	inferenceByWorker map[Worker]*emissions.Inference,
+	sortedInferers []Worker,
 	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
+	sortedForecasters []Worker,
 	epsilon alloraMath.Dec,
 ) (MaximalRegrets, error) {
 	maxInfererRegret := epsilon // averts div by 0 error
-	for inferer := range inferenceByWorker {
+	for _, inferer := range sortedInferers {
 		infererRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
@@ -93,7 +95,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 	}
 
 	maxForecasterRegret := epsilon // averts div by 0 error
-	for forecaster := range forecastImpliedInferenceByWorker {
+	for _, forecaster := range sortedForecasters {
 		forecasterRegret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
@@ -106,8 +108,8 @@ func FindMaxRegretAmongWorkersWithLosses(
 	}
 
 	maxOneInForecasterRegret := make(map[Worker]Regret) // averts div by 0 error
-	for forecaster := range forecastImpliedInferenceByWorker {
-		for inferer := range inferenceByWorker {
+	for _, forecaster := range sortedForecasters {
+		for _, inferer := range sortedInferers {
 			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
 			if err != nil {
 				fmt.Println("Error getting forecaster regret: ", err)
@@ -211,7 +213,9 @@ func CalcWeightedInference(
 	k keeper.Keeper,
 	topicId TopicId,
 	inferenceByWorker map[Worker]*emissions.Inference,
+	sortedInferers []Worker,
 	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
+	sortedForecasters []Worker,
 	allWorkersAreNew AllWorkersAreNew,
 	maxRegret Regret,
 	epsilon alloraMath.Dec,
@@ -226,7 +230,7 @@ func CalcWeightedInference(
 	unnormalizedI_i := alloraMath.ZeroDec()
 	sumWeights := alloraMath.ZeroDec()
 
-	for inferer := range inferenceByWorker {
+	for _, inferer := range sortedInferers {
 		// Get the regret of the inferer
 		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
 		if err != nil {
@@ -249,7 +253,7 @@ func CalcWeightedInference(
 		}
 	}
 
-	for forecaster := range forecastImpliedInferenceByWorker {
+	for _, forecaster := range sortedForecasters {
 		// Get the regret of the forecaster
 		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
 		if err != nil {
@@ -293,7 +297,9 @@ func CalcOneOutInferences(
 	k keeper.Keeper,
 	topicId TopicId,
 	inferenceByWorker map[Worker]*emissions.Inference,
+	sortedInferers []Worker,
 	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
+	sortedForecasters []Worker,
 	forecasts *emissions.Forecasts,
 	allWorkersAreNew AllWorkersAreNew,
 	maxRegret Regret,
@@ -303,19 +309,22 @@ func CalcOneOutInferences(
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for worker := range inferenceByWorker {
+	for _, worker := range sortedInferers {
 		// Remove the inference of the worker from the inferences
 		inferencesWithoutWorker := make(map[Worker]*emissions.Inference)
 
-		for workerOfInference, inference := range inferenceByWorker {
+		for _, workerOfInference := range sortedInferers {
 			if workerOfInference != worker {
-				inferencesWithoutWorker[workerOfInference] = inference
+				inferencesWithoutWorker[workerOfInference] = inferenceByWorker[workerOfInference]
 			}
 		}
+
+		sortedInferersWithoutWorker := GetSortedStringKeys(inferencesWithoutWorker)
 
 		// Recalculate the forecast-implied inferences without the worker's inference
 		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
 			inferencesWithoutWorker,
+			sortedInferersWithoutWorker,
 			forecasts,
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
@@ -333,7 +342,9 @@ func CalcOneOutInferences(
 			k,
 			topicId,
 			inferencesWithoutWorker,
+			sortedInferersWithoutWorker,
 			forecastImpliedInferencesWithoutWorkerByWorker,
+			sortedForecasters,
 			allWorkersAreNew,
 			maxRegret,
 			epsilon,
@@ -352,15 +363,17 @@ func CalcOneOutInferences(
 
 	// Loop over forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
 	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for worker := range forecastImpliedInferenceByWorker {
+	for _, worker := range sortedForecasters {
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
 
-		for workerOfImpliedInference, inference := range inferenceByWorker {
+		for _, workerOfImpliedInference := range sortedInferers {
 			if workerOfImpliedInference != worker {
-				impliedInferenceWithoutWorker[workerOfImpliedInference] = inference
+				impliedInferenceWithoutWorker[workerOfImpliedInference] = inferenceByWorker[workerOfImpliedInference]
 			}
 		}
+
+		sortedForecastersWithoutWorker := GetSortedStringKeys(impliedInferenceWithoutWorker)
 
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
@@ -368,7 +381,9 @@ func CalcOneOutInferences(
 			k,
 			topicId,
 			inferenceByWorker,
+			sortedInferers,
 			impliedInferenceWithoutWorker,
+			sortedForecastersWithoutWorker,
 			allWorkersAreNew,
 			maxRegret,
 			epsilon,
@@ -393,8 +408,10 @@ func CalcOneInInferences(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	inferences map[Worker]*emissions.Inference,
+	inferencesByWorker map[Worker]*emissions.Inference,
+	sortedInferers []Worker,
 	forecastImpliedInferences map[Worker]*emissions.Inference,
+	sortedForecasters []Worker,
 	allWorkersAreNew AllWorkersAreNew,
 	maxRegretsByOneInForecaster map[Worker]Regret,
 	epsilon alloraMath.Dec,
@@ -402,17 +419,22 @@ func CalcOneInInferences(
 ) ([]*emissions.WorkerAttributedValue, error) {
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
-	for oneInForecaster := range forecastImpliedInferences {
+	for _, oneInForecaster := range sortedForecasters {
 		// In each loop, remove all forecast-implied inferences except one
 		forecastImpliedInferencesWithForecaster := make(map[Worker]*emissions.Inference)
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
+
+		sortedForecastersWithForecaster := GetSortedStringKeys(forecastImpliedInferencesWithForecaster)
+
 		oneInInference, err := CalcWeightedInference(
 			ctx,
 			k,
 			topicId,
-			inferences,
+			inferencesByWorker,
+			sortedInferers,
 			forecastImpliedInferencesWithForecaster,
+			sortedForecastersWithForecaster,
 			allWorkersAreNew,
 			maxRegretsByOneInForecaster[oneInForecaster],
 			epsilon,
@@ -444,8 +466,9 @@ func CalcNetworkInferences(
 ) (*emissions.ValueBundle, error) {
 	// Map each worker to their inference
 	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
+	sortedInferers := GetSortedStringKeys(inferenceByWorker)
 
-	allWorkersAreNew, err := AreAllWorkersNew(ctx, k, topicId, inferenceByWorker, forecasts)
+	allWorkersAreNew, err := AreAllWorkersNew(ctx, k, topicId, sortedInferers, forecasts)
 	if err != nil {
 		fmt.Println("Error checking if all workers are new: ", err)
 		return nil, err
@@ -454,6 +477,7 @@ func CalcNetworkInferences(
 	// Calculate forecast-implied inferences I_ik
 	forecastImpliedInferenceByWorker, err := CalcForecastImpliedInferences(
 		inferenceByWorker,
+		sortedInferers,
 		forecasts,
 		networkCombinedLoss,
 		allWorkersAreNew.AllInferersAreNew,
@@ -463,6 +487,7 @@ func CalcNetworkInferences(
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
+	sortedForecasters := GetSortedStringKeys(forecastImpliedInferenceByWorker)
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
 	currentMaxRegrets, err := FindMaxRegretAmongWorkersWithLosses(
@@ -470,7 +495,9 @@ func CalcNetworkInferences(
 		k,
 		topicId,
 		inferenceByWorker,
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
+		sortedForecasters,
 		epsilon,
 	)
 	if err != nil {
@@ -484,7 +511,9 @@ func CalcNetworkInferences(
 		k,
 		topicId,
 		inferenceByWorker,
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
+		sortedForecasters,
 		allWorkersAreNew,
 		maxCombinedRegret,
 		epsilon,
@@ -500,6 +529,8 @@ func CalcNetworkInferences(
 		k,
 		topicId,
 		inferenceByWorker,
+		sortedInferers,
+		nil,
 		nil,
 		allWorkersAreNew,
 		currentMaxRegrets.MaxInferenceRegret,
@@ -516,7 +547,9 @@ func CalcNetworkInferences(
 		k,
 		topicId,
 		inferenceByWorker,
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
+		sortedForecasters,
 		forecasts,
 		allWorkersAreNew,
 		maxCombinedRegret,
@@ -534,7 +567,9 @@ func CalcNetworkInferences(
 	oneInInferences, err := CalcOneInInferences(ctx, k,
 		topicId,
 		inferenceByWorker,
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
+		sortedForecasters,
 		allWorkersAreNew,
 		currentMaxRegrets.MaxOneInForecastRegret,
 		epsilon,
@@ -556,10 +591,10 @@ func CalcNetworkInferences(
 	}
 
 	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
-	for _, forecastImpliedInference := range forecastImpliedInferenceByWorker {
+	for _, forecaster := range sortedForecasters {
 		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
-			Worker: forecastImpliedInference.Inferer,
-			Value:  forecastImpliedInference.Value,
+			Worker: forecastImpliedInferenceByWorker[forecaster].Inferer,
+			Value:  forecastImpliedInferenceByWorker[forecaster].Value,
 		})
 	}
 
@@ -682,10 +717,10 @@ func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength 
 	return filtered
 }
 
-func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
-	sort.Slice(r.Nonces, func(i, j int) bool {
+func SortByBlockHeight(r []*emissions.ReputerRequestNonce) {
+	sort.Slice(r, func(i, j int) bool {
 		// Sorting in descending order (bigger values first)
-		return r.Nonces[i].ReputerNonce.BlockHeight > r.Nonces[j].ReputerNonce.BlockHeight
+		return r[i].ReputerNonce.BlockHeight > r[j].ReputerNonce.BlockHeight
 	})
 }
 
@@ -693,10 +728,14 @@ func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
 func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
 	topN := make([]*emissions.ReputerRequestNonce, 0)
 	// sort reputerRequestNonces by reputer block height
-	SortByBlockHeight(reputerRequestNonces)
+
+	// Create a copy of the original slice to avoid modifying chain state
+	sortedSlice := make([]*emissions.ReputerRequestNonce, len(reputerRequestNonces.Nonces))
+	copy(sortedSlice, reputerRequestNonces.Nonces)
+	SortByBlockHeight(sortedSlice)
 
 	// loop reputerRequestNonces
-	for _, nonce := range reputerRequestNonces.Nonces {
+	for _, nonce := range sortedSlice {
 		nonceCopy := nonce
 		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag {
 			topN = append(topN, nonceCopy)

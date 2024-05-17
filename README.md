@@ -194,3 +194,14 @@ make init
 bash integration/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./integration -v
 ```
+
+## Run Stress Tests
+
+To run stress tests, execute the following commands:
+
+```bash
+make install
+make init
+bash stress/local_testnet_l1.sh
+STRESS=TRUE go test -timeout 10m ./stress -v
+```

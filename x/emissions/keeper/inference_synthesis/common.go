@@ -1,6 +1,8 @@
 package inference_synthesis
 
 import (
+	"sort"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
@@ -25,4 +27,13 @@ func AlloraOneE18() (alloraMath.Dec, error) {
 
 func CosmosUintOneE18() cosmosMath.Uint {
 	return cosmosMath.NewUintFromString(oneE18)
+}
+
+func GetSortedStringKeys[T any](m map[string]T) []string {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
