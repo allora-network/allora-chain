@@ -139,7 +139,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxSerializedMsgLength) == 1 {
 		existingParams.MaxSerializedMsgLength = newParams.MaxSerializedMsgLength[0]
 	}
-
+	if len(newParams.BlocksPerMonth) == 1 {
+		existingParams.BlocksPerMonth = newParams.BlocksPerMonth[0]
+	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err

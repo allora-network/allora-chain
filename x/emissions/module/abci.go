@@ -29,6 +29,13 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
+	// Reset the churn ready topics
+	err = am.keeper.ResetChurnReadyTopics(ctx)
+	if err != nil {
+		fmt.Println("Error resetting churn ready topics: ", err)
+		return errors.Wrapf(err, "Resetting churn ready topics error")
+	}
+
 	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served

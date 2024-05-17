@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -18,28 +17,24 @@ const secondsInAMonth uint64 = 2592000
 
 type TopicsHandler struct {
 	emissionsKeeper emissionskeeper.Keeper
-	mintKeeper      mintkeeper.Keeper
 }
 
 type TopicId = uint64
 
-func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper, mintKeeper mintkeeper.Keeper) *TopicsHandler {
+func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
 	return &TopicsHandler{
 		emissionsKeeper: emissionsKeeper,
-		mintKeeper:      mintKeeper,
 	}
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
 func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
-	mintParams, err := th.mintKeeper.GetParams(ctx)
+	blocksPerMonth, err := th.emissionsKeeper.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
-		fmt.Println("Error getting mint params: ", err)
 		return 0, err
 	}
-	BlocksPerMonth := mintParams.GetBlocksPerMonth()
-	var approximateTimePerBlockSeconds float64 = float64(secondsInAMonth) / float64(BlocksPerMonth)
-	var timeDifferenceInBlocks = ctx.BlockHeight() - inferenceBlockHeight
+	approximateTimePerBlockSeconds := secondsInAMonth / blocksPerMonth
+	timeDifferenceInBlocks := ctx.BlockHeight() - inferenceBlockHeight
 	// Ensure no time in the future is calculated because of ground truth lag
 	if groundTruthLag > timeDifferenceInBlocks {
 		timeDifferenceInBlocks = 0
@@ -47,8 +42,8 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 		timeDifferenceInBlocks -= groundTruthLag
 	}
 
-	var timeDifferenceInSeconds = (float64(timeDifferenceInBlocks) * approximateTimePerBlockSeconds)
-	var previousBlockApproxTime = uint64(ctx.BlockTime().Unix() - int64(timeDifferenceInSeconds))
+	timeDifferenceInSeconds := uint64(timeDifferenceInBlocks) * approximateTimePerBlockSeconds
+	previousBlockApproxTime := uint64(ctx.BlockTime().Unix()) - timeDifferenceInSeconds
 	return previousBlockApproxTime, nil
 }
 
@@ -128,7 +123,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
 		currentBlockHeight := ctx.BlockHeight()
 
-		maxNumberTopics, err := th.emissionsKeeper.GetParamsMaxTopicsPerBlock(ctx)
+		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting max number of topics per block: ", err)
 			return nil, err
@@ -137,16 +132,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for i := uint64(0); i < maxNumberTopics; i++ {
-			// Pop churn ready topic
-			churnReadyTopicId, err := th.emissionsKeeper.PopChurnReadyTopic(ctx)
-			if err != nil {
-				fmt.Println("Error popping churn ready topic: ", err)
-				continue
-			}
-			if churnReadyTopicId == 0 {
-				break
-			}
+		for _, churnReadyTopicId := range churnReadyTopics {
 			wg.Add(1)
 			go func(topicId TopicId) {
 				defer wg.Done()
