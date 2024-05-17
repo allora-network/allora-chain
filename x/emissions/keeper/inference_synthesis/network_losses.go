@@ -63,7 +63,11 @@ func convertAndExpMapOfRunningWeightedLossesToWorkerValue[T emissions.WorkerAttr
 ) ([]*T, error) {
 	weightedLosses := make([]*T, 0)
 	for _, worker := range sortedWorkers {
-		expLoss, err := alloraMath.Exp10(runningWeightedLosses[worker].Loss)
+		runningLoss, ok := runningWeightedLosses[worker]
+		if !ok {
+			continue
+		}
+		expLoss, err := alloraMath.Exp10(runningLoss.Loss)
 		if err != nil {
 			return nil, err
 		}
