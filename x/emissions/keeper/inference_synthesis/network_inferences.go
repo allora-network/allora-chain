@@ -682,10 +682,10 @@ func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength 
 	return filtered
 }
 
-func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
-	sort.Slice(r.Nonces, func(i, j int) bool {
+func SortByBlockHeight(r []*emissions.ReputerRequestNonce) {
+	sort.Slice(r, func(i, j int) bool {
 		// Sorting in descending order (bigger values first)
-		return r.Nonces[i].ReputerNonce.BlockHeight > r.Nonces[j].ReputerNonce.BlockHeight
+		return r[i].ReputerNonce.BlockHeight > r[j].ReputerNonce.BlockHeight
 	})
 }
 
@@ -693,10 +693,14 @@ func SortByBlockHeight(r *emissions.ReputerRequestNonces) {
 func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
 	topN := make([]*emissions.ReputerRequestNonce, 0)
 	// sort reputerRequestNonces by reputer block height
-	SortByBlockHeight(reputerRequestNonces)
+
+	// Create a copy of the original slice to avoid modifying chain state
+	sortedSlice := make([]*emissions.ReputerRequestNonce, len(reputerRequestNonces.Nonces))
+	copy(sortedSlice, reputerRequestNonces.Nonces)
+	SortByBlockHeight(sortedSlice)
 
 	// loop reputerRequestNonces
-	for _, nonce := range reputerRequestNonces.Nonces {
+	for _, nonce := range sortedSlice {
 		nonceCopy := nonce
 		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag {
 			topN = append(topN, nonceCopy)
