@@ -58,3 +58,29 @@ func (mr *MockEmissionsKeeperMockRecorder) GetParamsValidatorsVsAlloraPercentRew
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParamsValidatorsVsAlloraPercentReward", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsValidatorsVsAlloraPercentReward), ctx)
 }
+
+func (mr *MockEmissionsKeeperMockRecorder) GetParamsBlocksPerMonth(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParamsBlocksPerMonth", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsBlocksPerMonth), ctx)
+}
+
+func (m *MockEmissionsKeeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParamsBlocksPerMonth", ctx)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (mr *MockEmissionsKeeperMockRecorder) GetPreviousPercentageRewardToStakedReputers(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPreviousPercentageRewardToStakedReputers", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetPreviousPercentageRewardToStakedReputers), ctx)
+}
+
+func (m *MockEmissionsKeeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPreviousPercentageRewardToStakedReputers", ctx)
+	ret0, _ := ret[0].(alloraMath.Dec)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}

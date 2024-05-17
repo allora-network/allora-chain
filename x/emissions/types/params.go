@@ -1,6 +1,8 @@
 package types
 
 import (
+	fmt "fmt"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
@@ -48,6 +50,7 @@ func DefaultParams() Params {
 		MaxLimit:                        uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
+		BlocksPerMonth:                  DefaultParamsBlocksPerMonth(),             // ~5 seconds block time, 6311520 per year, 525960 per month
 	}
 }
 
@@ -195,8 +198,28 @@ func DefaultParamsMinEpochLengthRecordLimit() int64 {
 	return DefaultParams().MinEpochLengthRecordLimit
 }
 
+// ~5 seconds block time, 6311520 per year, 525960 per month
+func DefaultParamsBlocksPerMonth() uint64 {
+	return uint64(525960)
+}
+
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
-	// Sanity check goes here.
+	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateBlocksPerMonth(i interface{}) error {
+	v, ok := i.(uint64)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("blocks per month must be positive: %d", v)
+	}
+
 	return nil
 }

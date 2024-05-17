@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 
-	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -25,7 +24,10 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	if err != nil {
 		return nil, err
 	}
-	amountDec := alloraMath.NewDecFromInt64(msg.Amount.Int64())
+	amountDec, err := alloraMath.NewDecFromSdkInt(msg.Amount)
+	if err != nil {
+		return nil, err
+	}
 	if amountDec.Lte(epsilon) {
 		return nil, types.ErrFundAmountTooLow
 	}
@@ -36,8 +38,7 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	if err != nil {
 		return nil, err
 	}
-	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(appParams.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(appParams.DefaultBondDenom, msg.Amount))
 	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraRequestsAccountName, coins)
 	if err != nil {
 		return nil, err
