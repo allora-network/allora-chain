@@ -315,7 +315,7 @@ func CalcOneOutInferences(
 
 		for _, workerOfInference := range sortedInferers {
 			if workerOfInference != worker {
-				inferencesWithoutWorker[workerOfInference] = inferenceByWorker[worker]
+				inferencesWithoutWorker[workerOfInference] = inferenceByWorker[workerOfInference]
 			}
 		}
 
