@@ -1669,6 +1669,7 @@ func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
 		1,
 		totalReward,
 		weights,
+		[]uint64{1, 2, 3, 4},
 		sumWeight,
 		sumRevenue,
 	)
@@ -1706,10 +1707,12 @@ func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
 		s.ctx,
 		s.emissionsKeeper,
 		weights,
+		[]uint64{1, 2, 3, 4},
 		sumWeight,
 		sumRevenue,
 		totalReward,
-		1)
+		1,
+	)
 
 	s.Require().NoError(err)
 	s.Require().NotNil(filteredWeights)

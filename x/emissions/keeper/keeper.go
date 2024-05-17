@@ -2164,6 +2164,7 @@ func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.P
 }
 
 func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+	fmt.Println("Pruning network losses...")
 	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
 	if err != nil {
 		return err
