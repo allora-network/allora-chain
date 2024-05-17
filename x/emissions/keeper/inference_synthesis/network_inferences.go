@@ -319,10 +319,12 @@ func CalcOneOutInferences(
 			}
 		}
 
+		sortedInferersWithoutWorker := GetSortedStringKeys(inferencesWithoutWorker)
+
 		// Recalculate the forecast-implied inferences without the worker's inference
 		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
 			inferencesWithoutWorker,
-			sortedInferers,
+			sortedInferersWithoutWorker,
 			forecasts,
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
@@ -340,7 +342,7 @@ func CalcOneOutInferences(
 			k,
 			topicId,
 			inferencesWithoutWorker,
-			sortedInferers,
+			sortedInferersWithoutWorker,
 			forecastImpliedInferencesWithoutWorkerByWorker,
 			sortedForecasters,
 			allWorkersAreNew,
@@ -371,6 +373,8 @@ func CalcOneOutInferences(
 			}
 		}
 
+		sortedForecastersWithoutWorker := GetSortedStringKeys(impliedInferenceWithoutWorker)
+
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
 			ctx,
@@ -379,7 +383,7 @@ func CalcOneOutInferences(
 			inferenceByWorker,
 			sortedInferers,
 			impliedInferenceWithoutWorker,
-			sortedForecasters,
+			sortedForecastersWithoutWorker,
 			allWorkersAreNew,
 			maxRegret,
 			epsilon,
@@ -420,6 +424,9 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster := make(map[Worker]*emissions.Inference)
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
+
+		sortedForecastersWithForecaster := GetSortedStringKeys(forecastImpliedInferencesWithForecaster)
+
 		oneInInference, err := CalcWeightedInference(
 			ctx,
 			k,
@@ -427,7 +434,7 @@ func CalcOneInInferences(
 			inferencesByWorker,
 			sortedInferers,
 			forecastImpliedInferencesWithForecaster,
-			sortedForecasters,
+			sortedForecastersWithForecaster,
 			allWorkersAreNew,
 			maxRegretsByOneInForecaster[oneInForecaster],
 			epsilon,
