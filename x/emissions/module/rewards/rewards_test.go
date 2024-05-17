@@ -16,6 +16,8 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -29,6 +31,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -40,16 +43,17 @@ const (
 type RewardsTestSuite struct {
 	suite.Suite
 
-	ctx             sdk.Context
-	accountKeeper   authkeeper.AccountKeeper
-	bankKeeper      bankkeeper.BaseKeeper
-	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	msgServer       types.MsgServer
-	key             *storetypes.KVStoreKey
-	privKeys        map[string]secp256k1.PrivKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
+	ctx                sdk.Context
+	accountKeeper      authkeeper.AccountKeeper
+	bankKeeper         bankkeeper.BaseKeeper
+	emissionsKeeper    keeper.Keeper
+	emissionsAppModule module.AppModule
+	mintAppModule      mint.AppModule
+	msgServer          types.MsgServer
+	key                *storetypes.KVStoreKey
+	privKeys           map[string]secp256k1.PrivKey
+	addrs              []sdk.AccAddress
+	addrsStr           []string
 }
 
 func (s *RewardsTestSuite) SetupTest() {
@@ -58,7 +62,6 @@ func (s *RewardsTestSuite) SetupTest() {
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
-	addressCodec := codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
 		"fee_collector":                 {"minter"},
@@ -93,22 +96,45 @@ func (s *RewardsTestSuite) SetupTest() {
 	)
 	emissionsKeeper := keeper.NewKeeper(
 		encCfg.Codec,
-		addressCodec,
+		codecAddress.NewBech32Codec(params.Bech32PrefixAccAddr),
 		storeService,
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName)
+	stakingKeeper := stakingkeeper.NewKeeper(
+		encCfg.Codec,
+		storeService,
+		accountKeeper,
+		bankKeeper,
+		authtypes.NewModuleAddress("gov").String(),
+		codecAddress.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		codecAddress.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+	)
+	mintKeeper := mintkeeper.NewKeeper(
+		encCfg.Codec,
+		storeService,
+		stakingKeeper,
+		accountKeeper,
+		bankKeeper,
+		emissionsKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress("gov").String(),
+	)
 
 	s.ctx = ctx
 	s.accountKeeper = accountKeeper
 	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = emissionsKeeper
 	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	emissionsAppModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	defaultEmissionsGenesis := emissionsAppModule.DefaultGenesis(encCfg.Codec)
+	emissionsAppModule.InitGenesis(ctx, encCfg.Codec, defaultEmissionsGenesis)
 	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-	s.appModule = appModule
+	s.emissionsAppModule = emissionsAppModule
+	mintAppModule := mint.NewAppModule(encCfg.Codec, mintKeeper, accountKeeper)
+	defaultMintGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
+	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultMintGenesis)
+	s.mintAppModule = mintAppModule
 
 	// Create accounts and fund it
 	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
@@ -291,7 +317,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 
@@ -396,6 +422,14 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	}
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
+	s.Require().True(
+		s.bankKeeper.HasBalance(
+			s.ctx,
+			s.accountKeeper.GetModuleAddress(types.AlloraRequestsAccountName),
+			sdk.NewCoin(params.DefaultBondDenom, initialStake),
+		),
+		"ecosystem account should have something in it after funding",
+	)
 
 	// Insert unfullfiled nonces
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
@@ -548,7 +582,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	afterRewardsTopic1FeeRevenue, err := s.emissionsKeeper.GetTopicFeeRevenue(s.ctx, topicId)
@@ -700,16 +734,26 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	firstTotalReputerReward := alloraMath.ZeroDec()
+	calcFirstTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
 		if reward.Type == rewards.ReputerRewardType {
-			firstTotalReputerReward, err = firstTotalReputerReward.Add(reward.Reward)
+			calcFirstTotalReputerReward, err = calcFirstTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
 	}
+	s.Require().True(
+		alloraMath.InDelta(
+			firstTotalReputerReward,
+			calcFirstTotalReputerReward,
+			alloraMath.MustNewDecFromString("0.0001"),
+		),
+		"expected: %s, got: %s",
+		firstTotalReputerReward.String(),
+		calcFirstTotalReputerReward.String(),
+	)
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -836,16 +880,26 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondRewardsDistribution, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	secondTotalReputerReward := alloraMath.ZeroDec()
+	calcSecondTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
 		if reward.Type == rewards.ReputerRewardType {
-			secondTotalReputerReward, err = secondTotalReputerReward.Add(reward.Reward)
+			calcSecondTotalReputerReward, err = calcSecondTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
 	}
+	s.Require().True(
+		alloraMath.InDelta(
+			secondTotalReputerReward,
+			calcSecondTotalReputerReward,
+			alloraMath.MustNewDecFromString("0.0001"),
+		),
+		"expected: %s, got: %s",
+		secondTotalReputerReward.String(),
+		calcSecondTotalReputerReward.String(),
+	)
 
 	// Check if the reward share increased
 	s.Require().True(secondTotalReputerReward.Gt(firstTotalReputerReward))
@@ -1014,7 +1068,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
 
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
@@ -1249,8 +1303,11 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
 
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
+
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 
@@ -1413,8 +1470,11 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	blockHeight += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
 
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
+
 	// Trigger end block - rewards distribution
-	err = s.appModule.EndBlock(s.ctx)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
 

@@ -9,13 +9,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func GetEmissionPerTimestep(
+func GetEmissionPerMonth(
 	ctx sdk.Context,
 	k keeper.Keeper,
+	blocksPerMonth uint64,
 	params types.Params,
 	ecosystemMintSupplyRemaining math.Int,
+	validatorsPercent math.LegacyDec,
 ) (
-	emissionPerTimestep math.Int,
+	emissionPerMonth math.Int,
 	emissionPerUnitStakedToken math.LegacyDec,
 	err error,
 ) {
@@ -26,6 +28,7 @@ func GetEmissionPerTimestep(
 	}
 	totalSupply := k.GetTotalCurrTokenSupply(ctx).Amount
 	lockedSupply := keeper.GetLockedTokenSupply(
+		blocksPerMonth,
 		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
 		params,
 	)
@@ -48,11 +51,18 @@ func GetEmissionPerTimestep(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	smoothingDegree := keeper.GetSmoothingFactorPerTimestep(
-		ctx,
-		k,
-		params.OneMonthSmoothingDegree,
-		params.EmissionCalibrationsTimestepPerMonth,
+	reputersPercent, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
+	maximumMonthlyEmissionPerUnitStakedToken := keeper.GetMaximumMonthlyEmissionPerUnitStakedToken(
+		params.MaximumMonthlyPercentageYield,
+		reputersPercent,
+		validatorsPercent,
+	)
+	targetRewardEmissionPerUnitStakedToken = keeper.GetCappedTargetEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		maximumMonthlyEmissionPerUnitStakedToken,
 	)
 	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
 	if err != nil {
@@ -60,11 +70,11 @@ func GetEmissionPerTimestep(
 	}
 	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
-		smoothingDegree,
+		params.OneMonthSmoothingDegree,
 		previousRewardEmissionPerUnitStakedToken,
 	)
-	emissionPerTimestep = keeper.GetTotalEmissionPerTimestep(emissionPerUnitStakedToken, networkStaked)
-	return emissionPerTimestep, emissionPerUnitStakedToken, nil
+	emissionPerMonth = keeper.GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStaked)
+	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
 
 // How many tokens are left that the ecosystem bucket is allowed to mint?
@@ -97,11 +107,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 
-	// find out if we need to update the block emissions rate
-	// EmissionsCalibrationsTimesepPerMonth can never be zero
-	// validateEmissionCalibrationTimestepPerMonth prevents zero
-	emissionRateUpdateCadence := params.BlocksPerMonth / params.EmissionCalibrationsTimestepPerMonth
-
 	blockHeight := sdkCtx.BlockHeight()
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
@@ -114,21 +119,31 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	updateEmission := false
 	var e_i math.LegacyDec
+	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return err
+	}
+	vPercentADec, err := k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return err
+	}
+	vPercent := vPercentADec.SdkLegacyDec()
 	// every emissionsRateUpdateCadence blocks, update the emissions rate
-	if uint64(blockHeight)%emissionRateUpdateCadence == 1 { // easier to test when genesis starts at 1
-		emissionPerTimestep, emissionPerUnitStakedToken, err := GetEmissionPerTimestep(
+	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
 			k,
+			blocksPerMonth,
 			params,
 			ecosystemMintSupplyRemaining,
+			vPercent,
 		)
 		if err != nil {
 			return err
 		}
-		// emission/block = (emission/timestep) * (timestep/month) / (block/month)
-		blockEmission = emissionPerTimestep.
-			Mul(math.NewIntFromUint64(params.EmissionCalibrationsTimestepPerMonth)).
-			Quo(math.NewIntFromUint64(params.BlocksPerMonth))
+		// emission/block = (emission/month) / (block/month)
+		blockEmission = emissionPerMonth.
+			Quo(math.NewIntFromUint64(blocksPerMonth))
 		e_i = emissionPerUnitStakedToken
 		updateEmission = true
 	}
@@ -155,11 +170,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// if it came from collected fees, great, if it came from minting, also fine
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
-	vPercent, err := k.GetValidatorsVsAlloraPercentReward(ctx)
-	if err != nil {
-		return err
-	}
-	validatorCut := vPercent.SdkLegacyDec().Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
 	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
 	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))
