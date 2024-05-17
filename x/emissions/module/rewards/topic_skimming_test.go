@@ -54,8 +54,9 @@ func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
 		weights[topicId] = &weight
 	}
 	N := uint64(3)
-	mapOfTopN := rewards.SkimTopTopicsByWeightDesc(weights, N, 0)
+	mapOfTopN, listOfTopN := rewards.SkimTopTopicsByWeightDesc(weights, N, 0)
 
+	// Check that mapOfTopN has the expected keys
 	s.Require().Equal(N, uint64(len(mapOfTopN)), "SkimTopTopicsByWeightDesc should return a map with N keys")
 	s.Require().Equal("700", mapOfTopN[3].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
 	s.Require().Equal("400", mapOfTopN[4].String(), "SkimTopTopicsByWeightDesc should return the expected sorted list")
@@ -65,4 +66,10 @@ func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
 	s.Require().Equal(false, ok, "SkimTopTopicsByWeightDesc should not have any other keys")
 	_, ok = mapOfTopN[5]
 	s.Require().Equal(false, ok, "SkimTopTopicsByWeightDesc should not have any other keys")
+
+	// Check that listOfTopN has the expected values and size
+	s.Require().Equal(N, uint64(len(listOfTopN)), "SkimTopTopicsByWeightDesc should return a list with N elements")
+	s.Require().Equal(uint64(3), listOfTopN[0], "SkimTopTopicsByWeightDesc should return the expected sorted list")
+	s.Require().Equal(uint64(4), listOfTopN[1], "SkimTopTopicsByWeightDesc should return the expected sorted list")
+	s.Require().Equal(uint64(2), listOfTopN[2], "SkimTopTopicsByWeightDesc should return the expected sorted list")
 }

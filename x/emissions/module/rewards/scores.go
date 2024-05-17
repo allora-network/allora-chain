@@ -289,7 +289,10 @@ func EnsureAllWorkersPresent(
 		foundWorkers[value.Worker] = true
 	}
 
-	for worker := range allWorkers {
+	// Need to sort here and not in encapsulating scope because of edge cases e.g. if 1 forecaster => there's 1-in but not 1-out
+	sortedWorkers := alloraMath.GetSortedKeys(allWorkers)
+
+	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
 			values = append(values, &types.WorkerAttributedValue{
 				Worker: worker,
@@ -312,7 +315,10 @@ func EnsureAllWorkersPresentWithheld(
 		foundWorkers[value.Worker] = true
 	}
 
-	for worker := range allWorkers {
+	// Need to sort here and not in encapsulating scope because of edge cases e.g. if 1 forecaster => there's 1-in but not 1-out
+	sortedWorkers := alloraMath.GetSortedKeys(allWorkers)
+
+	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
 			values = append(values, &types.WithheldWorkerAttributedValue{
 				Worker: worker,

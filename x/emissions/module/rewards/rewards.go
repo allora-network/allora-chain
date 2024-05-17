@@ -24,8 +24,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		return errors.Wrapf(err, "failed to get module params")
 	}
 
+	sortedTopics := alloraMath.GetSortedKeys(weights)
+
 	// Distribute rewards between topics
-	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward, weights, sumWeight, totalRevenue)
+	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward, weights, sortedTopics, sumWeight, totalRevenue)
 	if err != nil {
 		return errors.Wrapf(err, "failed to generate total reward by topic")
 		// Will return nil if there are no topics to reward
@@ -35,7 +37,8 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 
 	totalRewardToStakedReputers := alloraMath.ZeroDec()
 	// for every topic
-	for topicId, topicReward := range topicRewards {
+	for _, topicId := range sortedTopics {
+		topicReward := topicRewards[topicId]
 		// Get topic reward nonce/block height
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
@@ -113,6 +116,7 @@ func GenerateRewardsDistributionByTopic(
 	blockHeight BlockHeight,
 	totalReward alloraMath.Dec,
 	weights map[uint64]*alloraMath.Dec,
+	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
 	totalRevenue cosmosMath.Int,
 ) (map[uint64]*alloraMath.Dec, error) {
@@ -121,10 +125,12 @@ func GenerateRewardsDistributionByTopic(
 		return nil, nil
 	}
 	// Filter out topics that are not reward-ready, inactivate if needed
+	// Update sum weight and revenue
 	weightsOfActiveTopics, sumWeight, sumRevenue, err := FilterAndInactivateTopicsUpdatingSums(
 		ctx,
 		k,
 		weights,
+		sortedTopics,
 		sumWeight,
 		totalRevenue,
 		totalReward,
@@ -139,26 +145,33 @@ func GenerateRewardsDistributionByTopic(
 	}
 
 	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-	weightsOfTopActiveTopics := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
+	weightsOfTopActiveTopics, _ := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
 
 	// Return the revenue to those topics that didn't make the cut
-	// Loop though weightsOfActiveTopics and if the topic is not in weightsOfTopActiveTopics, add to running revenue sum
+	// Loop though sortedTopics and if the topic is not in sortedTopics, add to running revenue sum
 	sumRevenueOfBottomTopics := cosmosMath.ZeroInt()
-	for topicId := range weightsOfActiveTopics {
-		// If the topic is not in the top active topics, add its revenue to the running sum
-		if _, ok := weightsOfTopActiveTopics[topicId]; !ok {
-			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to get topic fee revenue")
+	sumWeightOfBottomTopics := alloraMath.ZeroDec()
+	for _, topicId := range sortedTopics {
+		// If the topic is in weightsOfActiveTopics but not in weightsOfTopActiveTopics, add its revenue to the running sum
+		if _, isActive := weightsOfActiveTopics[topicId]; isActive {
+			if _, isTop := weightsOfTopActiveTopics[topicId]; !isTop {
+				topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to get topic fee revenue")
+				}
+				sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
+				sumWeightOfBottomTopics, err = sumWeightOfBottomTopics.Add(*weights[topicId])
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to add weight to sum")
+				}
 			}
-			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
-		}
 
-		// This way we won't double count from this earlier epoch revenue the next epoch
-		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-		err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			// This way we won't double count from this earlier epoch revenue the next epoch
+			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			}
 		}
 	}
 
@@ -175,7 +188,15 @@ func GenerateRewardsDistributionByTopic(
 		return nil, err
 	}
 
-	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfTopActiveTopics, sumWeight, totalReward)
+	sortedTopTopics := alloraMath.GetSortedKeys(weightsOfTopActiveTopics)
+
+	weightOfTopTopics, err := sumWeight.Sub(sumWeightOfBottomTopics)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to subtract weight of bottom topics from sum")
+	}
+	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
+	// The reward and revenue calculations are coupled here to minimize excessive
+	topicRewards, err := CalcTopicRewards(ctx, k, weightsOfTopActiveTopics, sortedTopTopics, weightOfTopTopics, totalReward)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to calculate topic rewards")
 	}
@@ -204,6 +225,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	weights map[uint64]*alloraMath.Dec,
+	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
 	sumRevenue cosmosMath.Int,
 	totalReward alloraMath.Dec,
@@ -221,7 +243,8 @@ func FilterAndInactivateTopicsUpdatingSums(
 	}
 
 	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
-	for topicId, weight := range weights {
+	for _, topicId := range sortedTopics {
+		weight := weights[topicId]
 		// Filter out if not reward-ready
 		// Check topic has an unfulfilled reward nonce
 		rewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
@@ -273,6 +296,7 @@ func CalcTopicRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	weights map[uint64]*alloraMath.Dec,
+	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
 	totalReward alloraMath.Dec,
 ) (
@@ -280,7 +304,8 @@ func CalcTopicRewards(
 	error,
 ) {
 	topicRewards := make(map[TopicId]*alloraMath.Dec)
-	for topicId, weight := range weights {
+	for _, topicId := range sortedTopics {
+		weight := weights[topicId]
 		topicRewardFraction, err := GetTopicRewardFraction(weight, sumWeight)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward fraction error")
