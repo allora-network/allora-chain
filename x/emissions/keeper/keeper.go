@@ -141,6 +141,9 @@ type Keeper struct {
 	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
 	networkLossBundles collections.Map[collections.Pair[TopicId, BlockHeight], types.ValueBundle]
 
+	// Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
+	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
+
 	/// NONCES
 
 	// map of (topic) -> unfulfilled nonces
@@ -175,54 +178,55 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                                 cdc,
-		addressCodec:                        addressCodec,
-		feeCollectorName:                    feeCollectorName,
-		params:                              collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		authKeeper:                          ak,
-		bankKeeper:                          bk,
-		totalStake:                          collections.NewItem(sb, types.TotalStakeKey, "total_stake", alloraMath.UintValue),
-		topicStake:                          collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, alloraMath.UintValue),
-		nextTopicId:                         collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
-		topics:                              collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
-		activeTopics:                        collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnReadyTopics:                    collections.NewKeySet(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", collections.Uint64Key),
-		topicWorkers:                        collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		topicReputers:                       collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:            collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		stakeRemoval:                        collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
-		delegateStakeRemoval:                collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
-		stakeFromDelegator:                  collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateStakePlacement:              collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegatorInfo](cdc)),
-		stakeUponReputer:                    collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateRewardPerShare:              collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		topicFeeRevenue:                     collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
-		previousTopicWeight:                 collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
-		inferences:                          collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
-		forecasts:                           collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
-		workers:                             collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		reputers:                            collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		allInferences:                       collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:                        collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:                      collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
-		networkLossBundles:                  collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
-		latestInfererNetworkRegrets:         collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestForecasterNetworkRegrets:      collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestOneInForecasterNetworkRegrets: collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		whitelistAdmins:                     collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
-		infererScoresByBlock:                collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		forecasterScoresByBlock:             collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		latestInfererScoresByWorker:         collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		latestForecasterScoresByWorker:      collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		latestReputerScoresByReputer:        collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		previousReputerRewardFraction:       collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		previousInferenceRewardFraction:     collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		previousForecastRewardFraction:      collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		reputerScoresByBlock:                collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		reputerListeningCoefficient:         collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
-		unfulfilledWorkerNonces:             collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:            collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
-		topicRewardNonce:                    collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		cdc:                                      cdc,
+		addressCodec:                             addressCodec,
+		feeCollectorName:                         feeCollectorName,
+		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		authKeeper:                               ak,
+		bankKeeper:                               bk,
+		totalStake:                               collections.NewItem(sb, types.TotalStakeKey, "total_stake", alloraMath.UintValue),
+		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, alloraMath.UintValue),
+		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
+		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
+		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
+		churnReadyTopics:                         collections.NewKeySet(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", collections.Uint64Key),
+		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
+		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
+		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
+		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegatorInfo](cdc)),
+		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
+		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
+		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
+		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
+		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
+		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
+		allForecasts:                             collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
+		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
+		networkLossBundles:                       collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
+		previousPercentageRewardToStakedReputers: collections.NewItem(sb, types.PreviousPercentageRewardToStakedReputersKey, "previous_percentage_reward_to_staked_reputers", alloraMath.DecValue),
+		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
+		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		infererScoresByBlock:                     collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecasterScoresByBlock:                  collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		latestInfererScoresByWorker:              collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
+		latestForecasterScoresByWorker:           collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
+		latestReputerScoresByReputer:             collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
+		previousReputerRewardFraction:            collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousInferenceRewardFraction:          collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		previousForecastRewardFraction:           collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		reputerScoresByBlock:                     collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerListeningCoefficient:              collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		unfulfilledWorkerNonces:                  collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:                 collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -652,6 +656,14 @@ func (k *Keeper) GetParamsRegistrationFee(ctx context.Context) (cosmosMath.Int, 
 	return params.RegistrationFee, nil
 }
 
+func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.BlocksPerMonth, nil
+}
+
 func (k *Keeper) GetParamsDefaultLimit(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
@@ -702,61 +714,6 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 		return nil, err
 	}
 	return &forecasts, nil
-}
-
-func (k *Keeper) GetInferencesAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, BlockHeight, error) {
-	// Define the range query starting from the highest available block down to and including the specified block
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
-
-	var inferencesToReturn types.Inferences
-	currentBlockHeight := BlockHeight(0)
-
-	iter, err := k.allInferences.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure that resources are released
-
-	// Iterate through entries in descending order and collect all inferences after the specified block
-	if iter.Valid() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, 0, err
-		}
-		currentBlockHeight = kv.Key.K2() // Current entry's block height
-		inferencesToReturn.Inferences = kv.Value.Inferences
-	}
-
-	// Return the collected inferences and the lowest block height at which they were found
-	return &inferencesToReturn, currentBlockHeight, nil
-}
-
-func (k *Keeper) GetForecastsAtOrAfterBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, BlockHeight, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		StartInclusive(block) // Set the lower boundary as the specified block, inclusive
-
-	forecastsToReturn := types.Forecasts{}
-	currentBlockHeight := BlockHeight(0)
-
-	iter, err := k.allForecasts.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure that resources are released
-
-	if iter.Valid() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			return nil, 0, err
-		}
-		currentBlockHeight = kv.Key.K2() // Current entry's block height
-		forecastsToReturn.Forecasts = kv.Value.Forecasts
-	}
-
-	return &forecastsToReturn, currentBlockHeight, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -866,57 +823,6 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 		return nil, err
 	}
 	return &lossBundle, nil
-}
-
-func (k *Keeper) GetNetworkLossBundleAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ValueBundle, BlockHeight, error) {
-	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block).
-		Descending()
-
-	iter, err := k.networkLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Ensure resources are released properly
-
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.ValueBundle{}, 0, nil
-	}
-
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Return the found bundle and the associated block height
-	return &kv.Value, kv.Key.K2(), nil
-}
-
-func (k *Keeper) GetReputerReportedLossesAtOrBeforeBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, BlockHeight, error) {
-	rng := collections.
-		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
-		EndInclusive(block). // Correctly set the end of the range to include the block
-		Descending()
-
-	iter, err := k.allLossBundles.Iterate(ctx, rng)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer iter.Close() // Properly manage resources by closing the iterator when done
-
-	if !iter.Valid() {
-		// Return empty loss bundle if no loss bundle is found
-		return &types.ReputerValueBundles{}, 0, nil
-	}
-
-	kv, err := iter.KeyValue()
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Return the found bundle and the associated block height
-	return &kv.Value, kv.Key.K2(), nil
 }
 
 /// STAKING
@@ -1680,35 +1586,51 @@ func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, bloc
 
 /// TOPIC CHURN
 
+// Get the churn ready topics
+func (k *Keeper) GetChurnReadyTopics(ctx context.Context) ([]TopicId, error) {
+	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	topics := make([]TopicId, 0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, err
+		}
+		topics = append(topics, topicId)
+	}
+
+	return topics, nil
+}
+
 // Add a topic as churn ready
 func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error {
 	return k.churnReadyTopics.Set(ctx, topicId)
 }
 
-// returns a single churn ready topic for processing. Order out is not guaranteed.
-// if there are no churn ready topics, returns the reserved topic id 0,
-// which cannot be used as a topic id - callers are responsible for checking
-// that the returned topic id is not 0.
-func (k *Keeper) PopChurnReadyTopic(ctx context.Context) (TopicId, error) {
+// ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
+func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
 	if err != nil {
-		return uint64(0), err
+		return err
 	}
+	defer iter.Close()
 
-	if iter.Valid() {
-		poppedTopic, err := iter.Key()
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
 		if err != nil {
-			return uint64(0), err
+			return err
 		}
-		if err := k.churnReadyTopics.Remove(ctx, poppedTopic); err != nil {
-			return uint64(0), err
-		}
-		return poppedTopic, nil
-	}
-	iter.Close()
 
-	// if no topics exist to be churned, return the reserved topic id 0
-	return uint64(0), nil
+		if err := k.churnReadyTopics.Remove(ctx, topicId); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 /// SCORES
@@ -2034,6 +1956,14 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
 	key := collections.Join(topicId, worker)
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
+}
+
+func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(ctx context.Context, percentageRewardToStakedReputers alloraMath.Dec) error {
+	return k.previousPercentageRewardToStakedReputers.Set(ctx, percentageRewardToStakedReputers)
+}
+
+func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
+	return k.previousPercentageRewardToStakedReputers.Get(ctx)
 }
 
 /// WHITELISTS

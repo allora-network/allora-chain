@@ -59,7 +59,7 @@ service Msg {
 // same as if the field was not set
 message OptionalParams {
   repeated string version = 1;
-  repeated int64 reward_cadence = 2;
+  repeated int64 max_serialized_msg_length = 2;
   repeated string min_topic_weight = 3
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 max_topics_per_block = 4;
@@ -128,7 +128,7 @@ message OptionalParams {
   repeated uint64 default_limit = 36;
   repeated uint64 max_limit = 37;
   repeated int64 min_epoch_length_record_limit = 38;
-  repeated int64 max_serialized_msg_length = 39;
+  repeated uint64 blocks_per_month = 39;
 }
 
 message MsgUpdateParams {
