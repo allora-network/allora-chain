@@ -125,6 +125,7 @@ func GenerateRewardsDistributionByTopic(
 		return nil, nil
 	}
 	// Filter out topics that are not reward-ready, inactivate if needed
+	// Update sum weight and revenue
 	weightsOfActiveTopics, sumWeight, sumRevenue, err := FilterAndInactivateTopicsUpdatingSums(
 		ctx,
 		k,
@@ -151,24 +152,26 @@ func GenerateRewardsDistributionByTopic(
 	sumRevenueOfBottomTopics := cosmosMath.ZeroInt()
 	sumWeightOfBottomTopics := alloraMath.ZeroDec()
 	for _, topicId := range sortedTopics {
-		// If the topic is not in the top active topics, add its revenue to the running sum
-		if _, ok := weightsOfTopActiveTopics[topicId]; !ok {
-			topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to get topic fee revenue")
+		// If the topic is in weightsOfActiveTopics but not in weightsOfTopActiveTopics, add its revenue to the running sum
+		if _, isActive := weightsOfActiveTopics[topicId]; isActive {
+			if _, isTop := weightsOfTopActiveTopics[topicId]; !isTop {
+				topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to get topic fee revenue")
+				}
+				sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
+				sumWeightOfBottomTopics, err = sumWeightOfBottomTopics.Add(*weights[topicId])
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to add weight to sum")
+				}
 			}
-			sumRevenueOfBottomTopics = sumRevenueOfBottomTopics.Add(topicFeeRevenue.Revenue)
-			sumWeightOfBottomTopics, err = sumWeightOfBottomTopics.Add(*weights[topicId])
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to add weight to sum")
-			}
-		}
 
-		// This way we won't double count from this earlier epoch revenue the next epoch
-		// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-		err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			// This way we won't double count from this earlier epoch revenue the next epoch
+			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			}
 		}
 	}
 
