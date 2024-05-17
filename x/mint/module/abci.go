@@ -128,7 +128,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 	vPercent := vPercentADec.SdkLegacyDec()
-	// every emissionsRateUpdateCadence blocks, update the emissions rate
+	// every month on the first block of the month, update the emissions rate
 	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
