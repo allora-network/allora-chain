@@ -215,17 +215,6 @@ func GetFinalWorkerScoreForecastTask(
 	return ret, nil
 }
 
-// GetWorkerScore calculates the worker score based on the losses and lossesCut.
-// Consider the staked weighted inference loss and one-out loss to calculate the worker score.
-// T_ij / T^-_ik / T^+_ik
-func GetWorkerScore(losses, lossesOneOut alloraMath.Dec) (alloraMath.Dec, error) {
-	deltaLogLoss, err := lossesOneOut.Sub(losses)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return deltaLogLoss, nil
-}
-
 // GetStakeWeightedLoss calculates the stake-weighted average loss.
 // Consider the losses and the stake of each reputer to calculate the stake-weighted loss.
 // The stake weighted loss is used to calculate the network-wide losses.

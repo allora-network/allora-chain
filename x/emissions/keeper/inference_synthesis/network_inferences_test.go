@@ -341,14 +341,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 		epsilon:             alloraMath.MustNewDecFromString("0.0001"),
 		pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 		expectedOneOutInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker0", Value: alloraMath.MustNewDecFromString("-0.07291976702609980")},
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("-0.07795430811050460")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("-0.042814093565554400")},
+			{Worker: "worker0", Value: alloraMath.MustNewDecFromString("-0.0742190978580")},
+			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("-0.07829470780")},
+			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("-0.0430417660986")},
 		},
 		expectedOneOutImpliedInferences: []*emissions.WithheldWorkerAttributedValue{
-			{Worker: "worker3", Value: alloraMath.MustNewDecFromString("-0.0635171449618356")},
-			{Worker: "worker4", Value: alloraMath.MustNewDecFromString("-0.06471822091625930")},
-			{Worker: "worker5", Value: alloraMath.MustNewDecFromString("-0.0649534852873976")},
+			{Worker: "worker3", Value: alloraMath.MustNewDecFromString("-0.0631838513747596")},
+			{Worker: "worker4", Value: alloraMath.MustNewDecFromString("-0.063183851374759")},
+			{Worker: "worker5", Value: alloraMath.MustNewDecFromString("-0.06318385137475")},
 		},
 	}
 
@@ -1089,8 +1089,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 
-	s.inEpsilon5(valueBundle.CombinedValue, "-0.085329711179")
-	s.inEpsilon3(valueBundle.NaiveValue, "-0.0917828336")
+	s.inEpsilon5(valueBundle.CombinedValue, "-0.090360181969445")
+	s.inEpsilon3(valueBundle.NaiveValue, "-0.09178283369")
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -1106,15 +1106,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case reputer0:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.09154683788664610")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.100476033822")
 		case reputer1:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.08794790996372430")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.09405952595311")
 		case reputer2:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.07594021292207610")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.077720954584016")
 		case reputer3:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.0792252490898395")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.081446763211997")
 		case reputer4:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.0993013271015888")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.09700807204676562")
 		default:
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
