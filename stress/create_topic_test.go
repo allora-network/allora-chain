@@ -22,7 +22,7 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 		LossMethod:       "loss-calculation-eth.wasm",
 		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod:  "allora-inference-function.wasm",
-		EpochLength:      5,
+		EpochLength:      2,
 		GroundTruthLag:   0,
 		DefaultArg:       "ETH",
 		Pnorm:            2,

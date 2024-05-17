@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -97,6 +98,9 @@ func GetCalcSetNetworkRegrets(
 	blockHeight := nonce.BlockHeight
 
 	// Get old regret R_{i-1,j} and Calculate then Set the new regrets R_ij for inferers
+	sort.Slice(networkLosses.InfererValues, func(i, j int) bool {
+		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
+	})
 	for _, infererLoss := range networkLosses.InfererValues {
 		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(infererLoss.Worker))
 		if err != nil {
@@ -118,7 +122,10 @@ func GetCalcSetNetworkRegrets(
 		k.SetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(infererLoss.Worker), newInfererRegret)
 	}
 
-	// Get old regret R_{i-1,k} and Calculate then Set the new regrets R_ik for forecastsers
+	// Get old regret R_{i-1,k} and Calculate then Set the new regrets R_ik for forecasters
+	sort.Slice(networkLosses.ForecasterValues, func(i, j int) bool {
+		return networkLosses.ForecasterValues[i].Worker < networkLosses.ForecasterValues[j].Worker
+	})
 	for _, forecasterLoss := range networkLosses.ForecasterValues {
 		lastRegret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecasterLoss.Worker))
 		if err != nil {
@@ -141,6 +148,9 @@ func GetCalcSetNetworkRegrets(
 	}
 
 	// Calculate the new one-in regrets for the forecasters R^+_ij'k where j' includes all j and forecast implied inference from forecaster k
+	sort.Slice(networkLosses.OneInForecasterValues, func(i, j int) bool {
+		return networkLosses.OneInForecasterValues[i].Worker < networkLosses.OneInForecasterValues[j].Worker
+	})
 	for _, oneInForecasterLoss := range networkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range networkLosses.InfererValues {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
@@ -162,6 +163,15 @@ func (ms msgServer) InsertBulkReputerPayload(
 		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
 		stakesByReputer[reputer] = stake
 	}
+	// sort by reputer score descending
+	sort.Slice(lossBundlesFromTopReputers, func(i, j int) bool {
+		if lossBundlesFromTopReputers[i] == nil || lossBundlesFromTopReputers[j] == nil ||
+			lossBundlesFromTopReputers[i].ValueBundle == nil || lossBundlesFromTopReputers[j].ValueBundle == nil {
+			return false
+		} else {
+			return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
+		}
+	})
 
 	if len(lossBundlesFromTopReputers) == 0 {
 		return nil, types.ErrNoValidBundles

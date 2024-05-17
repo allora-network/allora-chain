@@ -53,6 +53,12 @@ docker run \
     --entrypoint=chown \
     $DOCKER_IMAGE -R $(id -u):$(id -g) /data
 
+docker run \
+    -u 0:0 \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=chmod \
+    $DOCKER_IMAGE -R 777 /data
+
 echo "Generate genesis and accounts"
 docker run \
     -u $(id -u):$(id -g) \
