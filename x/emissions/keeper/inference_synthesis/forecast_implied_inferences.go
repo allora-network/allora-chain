@@ -124,14 +124,9 @@ func CalcForecastImpliedInferences(
 				var maxjRijk alloraMath.Dec
 				for j, el := range forecastElementsByInferer {
 					// Calculate the approximate forecast regret of the network inference
-					networkLossPerValue, err := networkCombinedLoss.Quo(el.Value)
+					R_ik[j], err = networkCombinedLoss.Quo(el.Value)
 					if err != nil {
 						fmt.Println("Error calculating network loss per value: ", err)
-						return nil, err
-					}
-					R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
-					if err != nil {
-						fmt.Println("Error calculating forecasted regrets: ", err)
 						return nil, err
 					}
 					if first {

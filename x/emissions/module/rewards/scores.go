@@ -142,7 +142,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		}
 
 		// Calculate new score
-		workerNewScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		workerNewScore, err := networkLosses.CombinedValue.Sub(oneOutLoss.Value)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
@@ -196,7 +196,7 @@ func GenerateForecastScores(
 	// Get worker scores for one out loss
 	var workersScoresOneOut []alloraMath.Dec
 	for _, oneOutLoss := range networkLosses.OneOutForecasterValues {
-		workerScore, err := GetWorkerScore(networkLosses.CombinedValue, oneOutLoss.Value)
+		workerScore, err := networkLosses.CombinedValue.Sub(oneOutLoss.Value)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
@@ -217,7 +217,7 @@ func GenerateForecastScores(
 		}
 
 		// Get worker score for one in loss
-		workerScoreOneIn, err := GetWorkerScore(oneInNaiveLoss.Value, networkLosses.NaiveValue)
+		workerScoreOneIn, err := oneInNaiveLoss.Value.Sub(networkLosses.NaiveValue)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}

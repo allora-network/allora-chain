@@ -219,15 +219,7 @@ func GetFinalWorkerScoreForecastTask(
 // Consider the staked weighted inference loss and one-out loss to calculate the worker score.
 // T_ij / T^-_ik / T^+_ik
 func GetWorkerScore(losses, lossesOneOut alloraMath.Dec) (alloraMath.Dec, error) {
-	log10LossesOneOut, err := alloraMath.Log10(lossesOneOut)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	log10Losses, err := alloraMath.Log10(losses)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	deltaLogLoss, err := log10LossesOneOut.Sub(log10Losses)
+	deltaLogLoss, err := lossesOneOut.Sub(losses)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -254,11 +246,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []alloraMath.De
 
 	stakeWeightedLoss := alloraMath.ZeroDec()
 	for i, loss := range reputersReportedLosses {
-		log10Loss, err := alloraMath.Log10(loss)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		reputerStakesByLoss, err := reputersStakes[i].Mul(log10Loss)
+		reputerStakesByLoss, err := reputersStakes[i].Mul(loss)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
@@ -271,12 +259,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []alloraMath.De
 			return alloraMath.ZeroDec(), err
 		}
 	}
-	ten := alloraMath.NewDecFromInt64(10)
-	ret, err := alloraMath.Pow(ten, stakeWeightedLoss)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	return ret, nil
+	return stakeWeightedLoss, nil
 }
 
 // GetStakeWeightedLossMatrix calculates the stake-weighted
@@ -310,35 +293,27 @@ func GetStakeWeightedLossMatrix(
 			}
 		}
 
-		logSum := alloraMath.ZeroDec()
+		sum := alloraMath.ZeroDec()
 		for i, losses := range reputersReportedLosses {
 			// Skip if loss is NaN
 			if losses[j].IsNaN() {
 				continue
 			}
 
-			logLosses, err := alloraMath.Log10(losses[j])
+			lossesTimesStake, err := losses[j].Mul(reputersAdjustedStakes[i])
 			if err != nil {
 				return nil, nil, err
 			}
-			logLossesTimesStake, err := logLosses.Mul(reputersAdjustedStakes[i])
+			lossesTimesStakeOverTotalStake, err := lossesTimesStake.Quo(totalStakeToConsider)
 			if err != nil {
 				return nil, nil, err
 			}
-			logLossesTimesStakeOverTotalStake, err := logLossesTimesStake.Quo(totalStakeToConsider)
-			if err != nil {
-				return nil, nil, err
-			}
-			logSum, err = logSum.Add(logLossesTimesStakeOverTotalStake)
+			sum, err = sum.Add(lossesTimesStakeOverTotalStake)
 			if err != nil {
 				return nil, nil, err
 			}
 		}
-		ten := alloraMath.NewDecFromInt64(10)
-		stakeWeightedLoss[j], err = alloraMath.Pow(ten, logSum)
-		if err != nil {
-			return nil, nil, err
-		}
+		stakeWeightedLoss[j] = sum
 
 		// Find most distant value from consensus value
 		maxDistance, err := alloraMath.OneDec().Mul(alloraMath.MustNewDecFromString("-1")) // Initialize with an impossible value
@@ -351,11 +326,7 @@ func GetStakeWeightedLossMatrix(
 				continue
 			}
 
-			logLosses, err := alloraMath.Log10(losses[j])
-			if err != nil {
-				return nil, nil, err
-			}
-			distance, err := logSum.Sub(logLosses)
+			distance, err := sum.Sub(losses[j])
 			if err != nil {
 				return nil, nil, err
 			}
@@ -378,22 +349,18 @@ func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []allor
 	}
 
 	var err error = nil
-	var sumLogConsensusSquared alloraMath.Dec = alloraMath.ZeroDec()
+	var sumConsensusSquared alloraMath.Dec = alloraMath.ZeroDec()
 	for _, cLoss := range consensusLosses {
-		log10CLoss, err := alloraMath.Log10(cLoss)
+		cLossSquared, err := cLoss.Mul(cLoss)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
-		log10CLossSquared, err := log10CLoss.Mul(log10CLoss)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		sumLogConsensusSquared, err = sumLogConsensusSquared.Add(log10CLossSquared)
+		sumConsensusSquared, err = sumConsensusSquared.Add(cLossSquared)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
 	}
-	consensusNorm, err := sumLogConsensusSquared.Sqrt()
+	consensusNorm, err := sumConsensusSquared.Sqrt()
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -408,15 +375,11 @@ func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []allor
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
-		log10RLossOverCLoss, err := alloraMath.Log10(rLossOverConsensusLoss)
+		rLossOverCLossSquared, err := rLossOverConsensusLoss.Mul(rLossOverConsensusLoss) // == Pow(x,2)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
-		log10RLossOverCLossSquared, err := log10RLossOverCLoss.Mul(log10RLossOverCLoss) // == Pow(x,2)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		distanceSquared, err = distanceSquared.Add(log10RLossOverCLossSquared)
+		distanceSquared, err = distanceSquared.Add(rLossOverCLossSquared)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
