@@ -425,8 +425,7 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
-		exclusiveSortedForecasters := make([]string, 0)
-		exclusiveSortedForecasters = append(exclusiveSortedForecasters, oneInForecaster)
+		sortedForecastersWithForecaster := GetSortedStringKeys(forecastImpliedInferencesWithForecaster)
 
 		oneInInference, err := CalcWeightedInference(
 			ctx,
@@ -435,7 +434,7 @@ func CalcOneInInferences(
 			inferencesByWorker,
 			sortedInferers,
 			forecastImpliedInferencesWithForecaster,
-			exclusiveSortedForecasters,
+			sortedForecastersWithForecaster,
 			allWorkersAreNew,
 			maxRegretsByOneInForecaster[oneInForecaster],
 			epsilon,
