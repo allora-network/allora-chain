@@ -370,7 +370,7 @@ func CalcOneOutInferences(
 
 		for _, workerOfImpliedInference := range sortedForecasters {
 			if workerOfImpliedInference != worker {
-				impliedInferenceWithoutWorker[workerOfImpliedInference] = inferenceByWorker[workerOfImpliedInference]
+				impliedInferenceWithoutWorker[workerOfImpliedInference] = forecastImpliedInferenceByWorker[workerOfImpliedInference]
 			}
 		}
 
