@@ -1618,7 +1618,7 @@ func (s *InferenceSynthesisTestSuite) TestSortByBlockHeight() {
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			// Call the sorting function
-			inference_synthesis.SortByBlockHeight(test.input)
+			inference_synthesis.SortByBlockHeight(test.input.Nonces)
 
 			// Compare the sorted input with the expected output
 			s.Require().Equal(test.input.Nonces, test.output.Nonces, "Sorting result mismatch.\nExpected: %v\nGot: %v")
