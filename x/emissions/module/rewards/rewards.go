@@ -24,7 +24,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		return errors.Wrapf(err, "failed to get module params")
 	}
 
-	sortedTopics := GetSortedUint64Keys(weights)
+	sortedTopics := alloraMath.GetSortedKeys(weights)
 
 	// Distribute rewards between topics
 	topicRewards, err := GenerateRewardsDistributionByTopic(ctx, k, moduleParams.MaxTopicsPerBlock, blockHeight, totalReward, weights, sortedTopics, sumWeight, totalRevenue)
@@ -185,7 +185,7 @@ func GenerateRewardsDistributionByTopic(
 		return nil, err
 	}
 
-	sortedTopTopics := GetSortedUint64Keys(weightsOfTopActiveTopics)
+	sortedTopTopics := alloraMath.GetSortedKeys(weightsOfTopActiveTopics)
 
 	weightOfTopTopics, err := sumWeight.Sub(sumWeightOfBottomTopics)
 	if err != nil {

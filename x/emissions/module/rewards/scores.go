@@ -290,7 +290,7 @@ func EnsureAllWorkersPresent(
 	}
 
 	// Need to sort here and not in encapsulating scope because of edge cases e.g. if 1 forecaster => there's 1-in but not 1-out
-	sortedWorkers := GetSortedStringKeys(allWorkers)
+	sortedWorkers := alloraMath.GetSortedKeys(allWorkers)
 
 	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
@@ -316,7 +316,7 @@ func EnsureAllWorkersPresentWithheld(
 	}
 
 	// Need to sort here and not in encapsulating scope because of edge cases e.g. if 1 forecaster => there's 1-in but not 1-out
-	sortedWorkers := GetSortedStringKeys(allWorkers)
+	sortedWorkers := alloraMath.GetSortedKeys(allWorkers)
 
 	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {

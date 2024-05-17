@@ -1,10 +1,9 @@
 package app
 
 import (
-	"sort"
-
 	"cosmossdk.io/core/appmodule"
 	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/ibc/gmp"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -185,15 +184,6 @@ func (app *AlloraApp) registerIBCModules() {
 	}
 }
 
-func getSortedKeys(m map[string]appmodule.AppModule) []string {
-	keys := make([]string, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
-}
-
 // Since the IBC modules don't support dependency injection, we need to
 // manually register the modules on the client side.
 // This needs to be removed after IBC supports App Wiring.
@@ -208,8 +198,7 @@ func RegisterIBC(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppMo
 		solomachine.ModuleName:      solomachine.AppModule{},
 	}
 
-	sortedModuleKeys := getSortedKeys(modules)
-
+	sortedModuleKeys := alloraMath.GetSortedKeys(modules)
 	for _, key := range sortedModuleKeys {
 		if mod, ok := modules[key].(interface {
 			RegisterInterfaces(registry cdctypes.InterfaceRegistry)
