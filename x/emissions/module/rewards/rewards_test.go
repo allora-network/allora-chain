@@ -665,7 +665,7 @@ func (s *RewardsTestSuite) setUpTopic(
 	}
 
 	var initialStake int64 = 1000
-	s.FaucetAddress(initialStake, reputerAddrs[0])
+	s.MintTokensToAddress(reputerAddrs[0], cosmosMath.NewInt(initialStake))
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
@@ -750,7 +750,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 
-	rewardsDistributionByTopicParticipant, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+	rewardsDistributionByTopicParticipant, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
