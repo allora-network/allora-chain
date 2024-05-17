@@ -172,12 +172,12 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()),
-		cosmosMath.NewUintFromString("40000000000000000000"),
+		cosmosMath.NewUintFromString("300000000000000000000000000"),
 	)
 	s.Require().NoError(err)
 
 	// mint enough tokens so that the circulating supply is non zero
-	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000")
+	spareCoins, ok := cosmosMath.NewIntFromString("1000000000000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
@@ -209,7 +209,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()),
-		cosmosMath.NewUintFromString("50000000000000000000"),
+		cosmosMath.NewUintFromString("400000000000000000000000000"),
 	)
 	s.Require().NoError(err)
 
