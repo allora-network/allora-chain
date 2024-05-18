@@ -53,6 +53,7 @@ func Gradient(p alloraMath.Dec, x Regret) (Weight, error) {
 // Inference without forecast => only weight in calculation of I_ik set to 0
 func CalcForecastImpliedInferences(
 	inferenceByWorker map[Worker]*emissions.Inference,
+	sortedWorkers []Worker,
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
 	allInferersAreNew bool,
@@ -74,12 +75,14 @@ func CalcForecastImpliedInferences(
 			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
 			forecastElementsByInferer := make(map[Worker]*emissions.ForecastElement, 0)
+			sortedInferersInForecast := make([]Worker, 0)
 			for _, el := range forecast.ForecastElements {
-				for worker := range inferenceByWorker {
+				for _, worker := range sortedWorkers {
 					// Check that there is an inference for the worker forecasted before including the forecast element
 					// otherwise the max value below will be incorrect.
 					if el.Inferer == worker {
 						forecastElementsByInferer[el.Inferer] = el
+						sortedInferersInForecast = append(sortedInferersInForecast, el.Inferer)
 						break
 					}
 				}
@@ -95,9 +98,9 @@ func CalcForecastImpliedInferences(
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
 				// However this seeds losses for forecasters for future rounds
 
-				for _, el := range forecastElementsByInferer {
-					if inferenceByWorker[el.Inferer] != nil {
-						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[el.Inferer].Value)
+				for _, inferer := range sortedInferersInForecast {
+					if inferenceByWorker[inferer] != nil {
+						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[inferer].Value)
 						if err != nil {
 							fmt.Println("Error adding dot product: ", err)
 							return nil, err
@@ -122,9 +125,10 @@ func CalcForecastImpliedInferences(
 				// Define variable to store maximum regret for forecast k
 				first := true
 				var maxjRijk alloraMath.Dec
-				for j, el := range forecastElementsByInferer {
+				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
+				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
-					R_ik[j], err = networkCombinedLoss.Quo(el.Value)
+					R_ik[j], err = networkCombinedLoss.Quo(forecastElementsByInferer[j].Value)
 					if err != nil {
 						fmt.Println("Error calculating network loss per value: ", err)
 						return nil, err
@@ -141,7 +145,8 @@ func CalcForecastImpliedInferences(
 
 				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
 				var err error
-				for j := range forecastElementsByInferer {
+				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
+				for _, j := range sortedInferersInForecast {
 					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 					if err != nil {
 						fmt.Println("Error calculating normalized forecasted regrets: ", err)
@@ -156,8 +161,8 @@ func CalcForecastImpliedInferences(
 				}
 
 				// Calculate the forecast-implied inferences I_ik
-
-				for j, w_ijk := range w_ik {
+				for _, j := range sortedInferersInForecast {
+					w_ijk := w_ik[j]
 					if inferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := w_ijk.Mul(inferenceByWorker[j].Value)
 						if err != nil {

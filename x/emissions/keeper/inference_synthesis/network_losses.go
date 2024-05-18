@@ -55,28 +55,19 @@ func RunningWeightedAvgUpdate(
 }
 
 // Convert and exponentiate the running weighted averages to WorkerAttributedValues
-func convertMapOfRunningWeightedLossesToWorkerAttributedValue(
+func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.WorkerAttributedValue | emissions.WithheldWorkerAttributedValue](
 	runningWeightedLosses map[Worker]*WorkerRunningWeightedLoss,
-) []*emissions.WorkerAttributedValue {
-	weightedLosses := make([]*emissions.WorkerAttributedValue, 0)
-	for worker, loss := range runningWeightedLosses {
-		weightedLosses = append(weightedLosses, &emissions.WorkerAttributedValue{
+	sortedWorkers []Worker,
+) []*T {
+	weightedLosses := make([]*T, 0)
+	for _, worker := range sortedWorkers {
+		runningLoss, ok := runningWeightedLosses[worker]
+		if !ok {
+			continue
+		}
+		weightedLosses = append(weightedLosses, &T{
 			Worker: worker,
-			Value:  loss.Loss,
-		})
-	}
-	return weightedLosses
-}
-
-// Convert and exponentiate the running weighted averages to WithheldWorkerAttributedValue
-func convertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(
-	runningWeightedLosses map[Worker]*WorkerRunningWeightedLoss,
-) []*emissions.WithheldWorkerAttributedValue {
-	weightedLosses := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for worker, loss := range runningWeightedLosses {
-		weightedLosses = append(weightedLosses, &emissions.WithheldWorkerAttributedValue{
-			Worker: worker,
-			Value:  loss.Loss,
+			Value:  runningLoss.Loss,
 		})
 	}
 	return weightedLosses
@@ -206,12 +197,14 @@ func CalcNetworkLosses(
 		}
 	}
 
+	sortedInferers := GetSortedStringKeys(runningWeightedInfererLosses)
+	sortedForecasters := GetSortedStringKeys(runningWeightedForecasterLosses)
 	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
-	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses)
-	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses)
-	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutInfererLosses)
-	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWithheldWorkerAttributedValue(runningWeightedOneOutForecasterLosses)
-	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses)
+	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses, sortedInferers)
+	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses, sortedForecasters)
+	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneOutInfererLosses, sortedInferers)
+	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneOutForecasterLosses, sortedForecasters)
+	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses, sortedForecasters)
 
 	output := emissions.ValueBundle{
 		CombinedValue:          runningWeightedCombinedLoss.Loss,
