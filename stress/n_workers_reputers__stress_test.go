@@ -141,13 +141,16 @@ func generateValueBundle(m TestMetadata, topicId uint64, workerAddresses map[str
 	}
 }
 
+
+
 // Inserts worker bulk, given a topic, blockHeight, and leader worker address (which should exist in the keyring)
 func InsertLeaderWorkerBulk(
 	m TestMetadata,
 	topic *types.Topic,
 	blockHeight int64,
 	leaderWorkerAccountName, leaderWorkerAddress string,
-	WorkerDataBundles []*types.WorkerDataBundle) error {
+	WorkerDataBundles []*types.WorkerDataBundle
+) error {
 
 	topicId := topic.Id
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
@@ -275,11 +278,9 @@ func InsertReputerBulk(m TestMetadata,
 	return nil
 }
 
-func CreateTopicLoop(m TestMetadata, topicId uint64) {
+func CreateTopicLoop(m TestMetadata) {
 	const stakeToAdd uint64 = 10000
 	const topicFunds int64 = 10000000000000000
-	workerAddresses := make(map[string]string)
-	reputerAddresses := make(map[string]string)
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
@@ -333,6 +334,7 @@ func CreateTopicLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
 			continue
 		}
+		workerAddresses := make(map[string]string)
 		workerAddresses[workerAccountName] = workerAddress
 
 		// Generate new reputer account
@@ -363,7 +365,32 @@ func CreateTopicLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
 			continue
 		}
+		reputerAddresses := make(map[string]string)
 		reputerAddresses[reputerAccountName] = reputerAddress
+
+		// Choose one random leader from the worker accounts
+		leaderWorkerAccountName, leaderWorkerAddress, err := GetRandomMapEntryValue(workerAddresses)
+		if err != nil {
+			fmt.Println("Error getting random worker address: ", err)
+			continue
+		}
+		// Insert worker
+		m.t.Log("--- Insert Worker Bulk --- with leader: ", leaderWorkerAccountName, " and worker address: ", leaderWorkerAddress)
+		InsertWorkerBulk(m, topic, workerAccountName, workerAddresses, blockHeightCurrent)
+		InsertWorkerBulk(m, topic, workerAccountName, workerAddresses, blockHeightEval)
+
+		// Insert reputer bulk
+		// Choose one random leader from reputer accounts
+		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
+		if err != nil {
+			fmt.Println("Error getting random worker address: ", err)
+			continue
+		}
+
+		startReputer := time.Now()
+		InsertReputerBulk(m, topic, reputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
+		elapsedBulk := time.Since(startReputer)
+		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
 
 		// Sleep for one epoch
 		elapsed := time.Since(start)
@@ -376,7 +403,6 @@ func CreateTopicLoop(m TestMetadata, topicId uint64) {
 		blockHeightCurrent += topic.EpochLength * 2
 		blockHeightEval += topic.EpochLength * 2
 	}
-
 }
 
 // Register two actors and check their registrations went through

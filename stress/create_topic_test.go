@@ -8,6 +8,13 @@ import (
 
 // test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m TestMetadata) (topicId uint64, topic emissionstypes.Topic) {
+	return CreateTopicWithEpochLength(m, 2)
+}
+
+func CreateTopicWithEpochLength(
+	m TestMetadata,
+	epochLength int64,
+) (topicId uint64, topic emissionstypes.Topic) {
 	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
@@ -22,7 +29,7 @@ func CreateTopic(m TestMetadata) (topicId uint64, topic emissionstypes.Topic) {
 		LossMethod:       "loss-calculation-eth.wasm",
 		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod:  "allora-inference-function.wasm",
-		EpochLength:      2,
+		EpochLength:      epochLength,
 		GroundTruthLag:   0,
 		DefaultArg:       "ETH",
 		Pnorm:            2,
