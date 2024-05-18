@@ -29,8 +29,8 @@ func SetupTopicLimitsTest(t *testing.T) TestMetadata {
 }
 
 func TestStressTestTopicLimitsSuite(t *testing.T) {
-	if _, isIntegration := os.LookupEnv("STRESS_TEST"); isIntegration == false {
-		t.Skip("Skipping Stress Test unless explicitly enabled")
+	if _, isIntegration := os.LookupEnv("STRESS_TEST_TOPIC_LIMIT"); isIntegration == false {
+		t.Skip("Skipping Stress Test topic limit unless explicitly enabled")
 	}
 
 	const stakeToAdd uint64 = 10000

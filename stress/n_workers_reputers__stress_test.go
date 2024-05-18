@@ -141,15 +141,13 @@ func generateValueBundle(m TestMetadata, topicId uint64, workerAddresses map[str
 	}
 }
 
-
-
 // Inserts worker bulk, given a topic, blockHeight, and leader worker address (which should exist in the keyring)
 func InsertLeaderWorkerBulk(
 	m TestMetadata,
 	topic *types.Topic,
 	blockHeight int64,
 	leaderWorkerAccountName, leaderWorkerAddress string,
-	WorkerDataBundles []*types.WorkerDataBundle
+	WorkerDataBundles []*types.WorkerDataBundle,
 ) error {
 
 	topicId := topic.Id
@@ -281,31 +279,26 @@ func InsertReputerBulk(m TestMetadata,
 func CreateTopicLoop(m TestMetadata) {
 	const stakeToAdd uint64 = 10000
 	const topicFunds int64 = 10000000000000000
+	const epochLength int64 = 2
 
 	// Make a loop, in each iteration
-	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
-	// 2. Pass worker slice in the call to insertWorkerBulk
-	// 3. Pass reputer slice in the call to insertReputerBulk
-	// 4. sleep one epoch, then repeat.
-
-	// Get fresh topic
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5)
-	if err != nil {
-		m.t.Log("--- Failed getting a topic that was ran ---")
-		require.NoError(m.t, err)
-	}
+	// 1. Create a topic and fund it
+	// 2. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
+	// 3. Pass worker slice in the call to insertWorkerBulk
+	// 4. Pass reputer slice in the call to insertReputerBulk
+	// 5. sleep one epoch, then repeat.
 
 	blockHeightCurrent := topic.EpochLastEnded
-	blockHeightEval := blockHeightCurrent + topic.EpochLength
+	blockHeightEval := blockHeightCurrent + epochLength
 	// Translate the epoch length into time
-	epochTimeSeconds := time.Duration(topic.EpochLength*approximateBlockLengthSeconds) * time.Second
+	epochTimeSeconds := time.Duration(epochLength*approximateBlockLengthSeconds) * time.Second
 	for i := 0; i < MAX_ITERATIONS; i++ {
 		start := time.Now()
 
 		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
 		// Generate new worker accounts
 
-		topicId, topic := CreateTopic(m)
+		topicId, topic := CreateTopicWithEpochLength(m, epochLength)
 
 		err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
 		if err != nil {
@@ -369,26 +362,11 @@ func CreateTopicLoop(m TestMetadata) {
 		reputerAddresses[reputerAccountName] = reputerAddress
 
 		// Choose one random leader from the worker accounts
-		leaderWorkerAccountName, leaderWorkerAddress, err := GetRandomMapEntryValue(workerAddresses)
-		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
-			continue
-		}
-		// Insert worker
-		m.t.Log("--- Insert Worker Bulk --- with leader: ", leaderWorkerAccountName, " and worker address: ", leaderWorkerAddress)
-		InsertWorkerBulk(m, topic, workerAccountName, workerAddresses, blockHeightCurrent)
-		InsertWorkerBulk(m, topic, workerAccountName, workerAddresses, blockHeightEval)
-
-		// Insert reputer bulk
-		// Choose one random leader from reputer accounts
-		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
-		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
-			continue
-		}
+		InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightCurrent)
+		InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightEval)
 
 		startReputer := time.Now()
-		InsertReputerBulk(m, topic, reputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
+		InsertReputerBulk(m, &topic, reputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
 		elapsedBulk := time.Since(startReputer)
 		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
 
