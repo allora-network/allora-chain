@@ -121,8 +121,6 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		fmt.Printf("\n ---------------- TopicsHandler ------------------- \n")
-		currentBlockHeight := ctx.BlockHeight()
-
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
 			fmt.Println("Error getting max number of topics per block: ", err)
@@ -141,12 +139,8 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					fmt.Println("Error getting topic: ", err)
 					return
 				}
-				if emissionskeeper.CheckCadence(currentBlockHeight, topic) {
-					th.requestTopicWorkers(ctx, topic)
-					th.requestTopicReputers(ctx, topic)
-				} else {
-					fmt.Println("TopicsHandler: Inference and Losses cadence not met for topic: ", topic.Id, "block height: ", currentBlockHeight, "epoch length: ", topic.EpochLength, "last ended: ", topic.EpochLastEnded)
-				}
+				th.requestTopicWorkers(ctx, topic)
+				th.requestTopicReputers(ctx, topic)
 			}(churnReadyTopicId)
 		}
 		wg.Wait()
