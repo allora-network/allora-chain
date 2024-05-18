@@ -200,11 +200,11 @@ func CalcNetworkLosses(
 	sortedInferers := GetSortedStringKeys(runningWeightedInfererLosses)
 	sortedForecasters := GetSortedStringKeys(runningWeightedForecasterLosses)
 	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
-	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedInfererLosses, sortedInferers)
-	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedForecasterLosses, sortedForecasters)
-	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneOutInfererLosses, sortedInferers)
-	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneOutForecasterLosses, sortedForecasters)
-	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue(runningWeightedOneInForecasterLosses, sortedForecasters)
+	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers)
+	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters)
+	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers)
+	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters)
+	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters)
 
 	output := emissions.ValueBundle{
 		CombinedValue:          runningWeightedCombinedLoss.Loss,
