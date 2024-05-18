@@ -121,6 +121,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 		}
 
 		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
+
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -367,9 +368,9 @@ func CalcOneOutInferences(
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
 
-		for _, workerOfImpliedInference := range sortedInferers {
+		for _, workerOfImpliedInference := range sortedForecasters {
 			if workerOfImpliedInference != worker {
-				impliedInferenceWithoutWorker[workerOfImpliedInference] = inferenceByWorker[workerOfImpliedInference]
+				impliedInferenceWithoutWorker[workerOfImpliedInference] = forecastImpliedInferenceByWorker[workerOfImpliedInference]
 			}
 		}
 
@@ -484,6 +485,7 @@ func CalcNetworkInferences(
 		epsilon,
 		pInferenceSynthesis,
 	)
+
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
