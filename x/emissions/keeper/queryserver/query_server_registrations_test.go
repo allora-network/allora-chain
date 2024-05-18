@@ -22,7 +22,7 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 		NodeId:       "worker-node-id-sample",
 	}
 
-	worker := sdk.AccAddress("sampleWorkerAddress")
+	worker := "sampleWorkerAddress"
 	topicId := uint64(401)
 	err := keeper.InsertWorker(ctx, topicId, worker, expectedNode)
 	s.Require().NoError(err, "InsertWorker should not produce an error")
@@ -59,7 +59,7 @@ func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 		NodeId:       "nodeId123",
 	}
 
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 	err := keeper.InsertReputer(ctx, topicId, reputer, expectedReputer)
 	s.Require().NoError(err, "InsertReputer should not produce an error")
@@ -90,7 +90,7 @@ func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 	nonexistentWorkerP2pKey := "allo19xyq5emxtnt9095t9cr6s556yax8ml6kf5fcdt"
 
 	worker := "allo1chtzkeje04c6n82mgm59vvlgc23fv3knwewsvf"
-	workerAcc := sdk.AccAddress(worker)
+	workerAcc := worker
 
 	topicId := uint64(401)
 	workerInfo := types.OffchainNode{
@@ -129,7 +129,7 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	nonexistentReputerP2pKey := "allo1th6xy9d8gghcps8kyknrk0ry22av0ntjfj3kcc"
 
 	reputer := "allo1cfaw83zzx4rmcq6es0qx9av240xv7hh6jczp4w"
-	reputerAcc := sdk.AccAddress(reputer)
+	reputerAcc := reputer
 
 	topicId := uint64(501) // Assuming a different topic ID for reputers
 	reputerInfo := types.OffchainNode{
@@ -184,22 +184,22 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := sdk.AccAddress(PKS[0].Address())
-	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	workerAddr := PKS[0].Address().String()
+	creatorAddress := PKS[1].Address().String()
 	topicId := uint64(1)
-	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+	topic1 := types.Topic{Id: topicId, Creator: creatorAddress}
 
 	// Topic register
 	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Worker register
 	registerMsg := &types.MsgRegister{
-		Sender:       workerAddr.String(),
+		Sender:       workerAddr,
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    false,
-		Owner:        workerAddr.String(),
+		Owner:        workerAddr,
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -208,13 +208,13 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
-		workerAddr,
+		sdk.AccAddress(workerAddr),
 		mintAmount,
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
 	queryReq := &types.QueryIsWorkerRegisteredInTopicIdRequest{
-		Address: workerAddr.String(),
+		Address: workerAddr,
 		TopicId: topicId,
 	}
 	queryResp, err := s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)

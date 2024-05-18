@@ -68,7 +68,7 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range PKS {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, sdk.AccAddress(addr.Address()))
+		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr.Address().String())
 	}
 }
 
@@ -406,7 +406,7 @@ func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("worker-address")
+	worker := "worker-address"
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 
 	// Set Inferer Network Regret
@@ -423,7 +423,7 @@ func (s *KeeperTestSuite) TestSetAndGetForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("forecaster-address") // Assuming sdk.AccAddress is initialized with a string representing the address
+	worker := "forecaster-address" // Assuming sdk.AccAddress is initialized with a string representing the address
 
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(20)}
 
@@ -443,8 +443,8 @@ func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	forecaster := sdk.AccAddress("forecaster-address")
-	inferer := sdk.AccAddress("inferer-address")
+	forecaster := "forecaster-address"
+	inferer := "inferer-address"
 
 	regret := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(30)}
 
@@ -464,7 +464,7 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("nonexistent-inferer-address")
+	worker := "nonexistent-inferer-address"
 
 	// Attempt to get Inferer Network Regret for a nonexistent worker
 	regret, noPrior, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
@@ -477,7 +477,7 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("nonexistent-forecaster-address")
+	worker := "nonexistent-forecaster-address"
 
 	// Attempt to get Forecaster Network Regret for a nonexistent worker
 	regret, noPrior, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
@@ -490,8 +490,8 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	forecaster := sdk.AccAddress("nonexistent-forecaster-address")
-	inferer := sdk.AccAddress("nonexistent-inferer-address")
+	forecaster := "nonexistent-forecaster-address"
+	inferer := "nonexistent-inferer-address"
 
 	// Attempt to get One-In Forecaster Network Regret for a nonexistent forecaster-inferer pair
 	regret, noPrior, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
@@ -503,7 +503,7 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	worker := sdk.AccAddress("worker-address")
+	worker := "worker-address"
 
 	// Topic IDs
 	topicId1 := uint64(1)
@@ -552,7 +552,7 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	worker := sdk.AccAddress("forecaster-address")
+	worker := "forecaster-address"
 
 	// Topic IDs
 	topicId1 := uint64(1)
@@ -593,8 +593,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	forecaster := sdk.AccAddress("forecaster-address")
-	inferer := sdk.AccAddress("inferer-address")
+	forecaster := "forecaster-address"
+	inferer := "inferer-address"
 
 	// Topic IDs
 	topicId1 := uint64(1)
@@ -919,9 +919,8 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 
 	topicId := uint64(1)
 	workerAccStr := "allo1xy0pf5hq85j873glav6aajkvtennmg3fpu3cec"
-	workerAcc, _ := sdk.AccAddressFromBech32(workerAccStr)
 
-	_, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	_, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().Error(err, "Retrieving an inference that does not exist should result in an error")
 
 	blockHeight1 := int64(12345)
@@ -956,7 +955,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
-	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAcc)
+	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
 	s.Require().NoError(err, "Retrieving an existing inference should not fail")
 	s.Require().Equal(newInference2, retrievedInference, "Retrieved inference should match the inserted one")
 }
@@ -1074,7 +1073,7 @@ func (s *KeeperTestSuite) TestAddStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewUint(500)
 
 	// Initial Values
@@ -1105,8 +1104,8 @@ func (s *KeeperTestSuite) TestAddDelegateStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	delegatorAddr := PKS[0].Address().String()
+	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewUint(500)
 	additionalStakeAmount := cosmosMath.NewUint(300)
 
@@ -1133,7 +1132,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	delegatorAddr := PKS[0].Address().String()
 	zeroStakeAmount := cosmosMath.NewUint(0)
 
 	// Try to add zero stake
@@ -1145,7 +1144,7 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewUint(500)
 
 	// Setup initial stake
@@ -1180,8 +1179,8 @@ func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	delegatorAddr := PKS[0].Address().String()
+	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewUint(1000)
 	removeStakeAmount := cosmosMath.NewUint(500)
 
@@ -1208,8 +1207,8 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	delegatorAddr := PKS[0].Address().String()
+	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewUint(1000)
 
 	// Setup initial stake
@@ -1235,7 +1234,7 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := PKS[0].Address().String()
 	initialStakeAmount := cosmosMath.NewUint(500)
 	zeroStakeAmount := cosmosMath.NewUint(0)
 
@@ -1252,7 +1251,7 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	nonExistingDelegatorAddr := sdk.AccAddress(PKS[0].Address())
+	nonExistingDelegatorAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewUint(500)
 
 	// Try to remove stake with non-existing delegator or target
@@ -1263,11 +1262,11 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	delegatorAddr := sdk.AccAddress(PKS[2].Address())
+	delegatorAddr := PKS[2].Address().String()
 
 	// Mock setup
 	topicId := uint64(1)
-	targetAddr := sdk.AccAddress(PKS[1].Address())
+	targetAddr := PKS[1].Address().String()
 	stakeAmount := cosmosMath.NewUint(500)
 
 	// Add stake to create bonds
@@ -1291,13 +1290,9 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 
 	topic0 := uint64(101)
 	reputer0 := "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n"
-	reputerAcc0, err := sdk.AccAddressFromBech32(reputer0)
-	s.Require().NoError(err)
 
 	topic1 := uint64(102)
 	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
-	reputerAcc1, err := sdk.AccAddressFromBech32(reputer1)
-	s.Require().NoError(err)
 
 	// Create sample stake placement information with multiple topics and reputers
 	placements := []*types.StakePlacement{
@@ -1324,15 +1319,15 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 	}
 
 	// Set stake removal information
-	err = keeper.SetStakeRemoval(ctx, reputerAcc0, removalInfo0)
+	err := keeper.SetStakeRemoval(ctx, reputer0, removalInfo0)
 	s.Require().NoError(err)
-	err = keeper.SetStakeRemoval(ctx, reputerAcc1, removalInfo1)
+	err = keeper.SetStakeRemoval(ctx, reputer1, removalInfo1)
 	s.Require().NoError(err)
 
 	// Topic 101
 
 	// Retrieve the stake removal information
-	retrievedInfo, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topic0, reputerAcc0)
+	retrievedInfo, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topic0, reputer0)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
@@ -1344,7 +1339,7 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 	// Topic 102
 
 	// Retrieve the stake removal information
-	retrievedInfo, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topic1, reputerAcc1)
+	retrievedInfo, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topic1, reputer1)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
@@ -1357,7 +1352,7 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 func (s *KeeperTestSuite) TestGetStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	address := sdk.AccAddress("sampleAddress2")
+	address := "sampleAddress2"
 
 	// Attempt to retrieve stake removal info for an address with no set info
 	_, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, 202, address)
@@ -1372,18 +1367,10 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	topic0 := uint64(201)
 	reputer0 := "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n"
 	delegator0 := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
-	reputerAcc0, err := sdk.AccAddressFromBech32(reputer0)
-	s.Require().NoError(err)
-	delegatorAcc0, err := sdk.AccAddressFromBech32(delegator0)
-	s.Require().NoError(err)
 
 	topic1 := uint64(202)
 	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 	delegator1 := "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu"
-	reputerAcc1, err := sdk.AccAddressFromBech32(reputer1)
-	s.Require().NoError(err)
-	delegatorAcc1, err := sdk.AccAddressFromBech32(delegator1)
-	s.Require().NoError(err)
 
 	// Create sample delegate stake removal information
 	removalInfo0 := types.DelegateStakeRemoval{
@@ -1406,7 +1393,7 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	}
 
 	// Set delegate stake removal information
-	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo0)
+	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo0)
 	s.Require().NoError(err)
 	err = keeper.SetDelegateStakeRemoval(ctx, removalInfo1)
 	s.Require().NoError(err)
@@ -1414,7 +1401,7 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	// Topic 201
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic0, reputerAcc0, delegatorAcc0)
+	retrievedInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic0, reputer0, delegator0)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
@@ -1427,7 +1414,7 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	// Topic 202
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic1, reputerAcc1, delegatorAcc1)
+	retrievedInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic1, reputer1, delegator1)
 	s.Require().NoError(err)
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
@@ -1441,8 +1428,8 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	reputer := sdk.AccAddress("sampleAddress2")
-	delegator := sdk.AccAddress("sampleAddress3")
+	reputer := "sampleAddress2"
+	delegator := "sampleAddress3"
 
 	// Attempt to retrieve delegate stake removal info for an address with no set info
 	_, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, 201, reputer, delegator)
@@ -1515,7 +1502,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 func (s *KeeperTestSuite) TestInsertWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	worker := sdk.AccAddress("sampleWorkerAddress")
+	worker := "sampleWorkerAddress"
 	key := "worker-libp2p-key-sample"
 	topicId := uint64(401)
 
@@ -1545,7 +1532,7 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	worker := sdk.AccAddress("sampleWorkerAddress")
+	worker := "sampleWorkerAddress"
 	topicId := uint64(401)
 
 	// Define sample OffchainNode information for a worker
@@ -1572,7 +1559,7 @@ func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 func (s *KeeperTestSuite) TestRemoveWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	worker := sdk.AccAddress("sampleWorkerAddress")
+	worker := "sampleWorkerAddress"
 	topicId := uint64(401) // Assume the worker is associated with this topicId initially
 
 	// Define sample OffchainNode information for a worker
@@ -1606,7 +1593,7 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 func (s *KeeperTestSuite) TestInsertReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 
 	// Define sample OffchainNode information for a reputer
@@ -1630,7 +1617,7 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 
 func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
 	ctx := s.ctx
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 	keeper := s.emissionsKeeper
 	reputerKey := "someLibP2PKey123"
@@ -1657,7 +1644,7 @@ func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
 func (s *KeeperTestSuite) TestRemoveReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 
 	// Pre-setup: Insert the reputer for initial setup
@@ -1682,7 +1669,7 @@ func (s *KeeperTestSuite) TestRemoveReputer() {
 func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 
 	// Define sample OffchainNode information for a reputer
@@ -2019,15 +2006,15 @@ func (s *KeeperTestSuite) TestGetLatestScores() {
 	reputer := "reputer1"
 
 	// Test getting latest scores when none are set
-	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, sdk.AccAddress(worker))
+	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
 	s.Require().Equal(types.Score{}, infererScore, "Inferer score should be empty if not set")
 
-	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, sdk.AccAddress(forecaster))
+	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
 	s.Require().Equal(types.Score{}, forecasterScore, "Forecaster score should be empty if not set")
 
-	reputerScore, err := keeper.GetLatestReputerScore(ctx, topicId, sdk.AccAddress(reputer))
+	reputerScore, err := keeper.GetLatestReputerScore(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching latest reputer score should not fail")
 	s.Require().Equal(types.Score{}, reputerScore, "Reputer score should be empty if not set")
 }
@@ -2036,11 +2023,11 @@ func (s *KeeperTestSuite) TestSetLatestScores() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("worker1")
-	forecaster := sdk.AccAddress("forecaster1")
-	reputer := sdk.AccAddress("reputer1")
-	oldScore := types.Score{TopicId: topicId, BlockNumber: 1, Address: worker.String(), Score: alloraMath.NewDecFromInt64(90)}
-	newScore := types.Score{TopicId: topicId, BlockNumber: 2, Address: worker.String(), Score: alloraMath.NewDecFromInt64(95)}
+	worker := "worker1"
+	forecaster := "forecaster1"
+	reputer := "reputer1"
+	oldScore := types.Score{TopicId: topicId, BlockNumber: 1, Address: worker, Score: alloraMath.NewDecFromInt64(90)}
+	newScore := types.Score{TopicId: topicId, BlockNumber: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
 	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
@@ -2293,7 +2280,7 @@ func (s *KeeperTestSuite) TestSetListeningCoefficient() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 
 	// Define a listening coefficient
 	coefficient := types.ListeningCoefficient{
@@ -2314,7 +2301,7 @@ func (s *KeeperTestSuite) TestGetListeningCoefficient() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := sdk.AccAddress("sampleReputerAddress")
+	reputer := "sampleReputerAddress"
 
 	// Attempt to fetch a coefficient before setting it
 	defaultCoef, err := keeper.GetListeningCoefficient(ctx, topicId, reputer)
@@ -2339,7 +2326,7 @@ func (s *KeeperTestSuite) TestSetPreviousReputerRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := sdk.AccAddress("reputerAddressExample")
+	reputer := "reputerAddressExample"
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(75) // Assuming 0.75 as a fraction example
@@ -2359,7 +2346,7 @@ func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := sdk.AccAddress("reputerAddressExample")
+	reputer := "reputerAddressExample"
 
 	// Attempt to fetch a reward fraction before setting it
 	defaultReward, _, err := keeper.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
@@ -2381,7 +2368,7 @@ func (s *KeeperTestSuite) TestSetPreviousInferenceRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("workerAddressExample")
+	worker := "workerAddressExample"
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(25)
@@ -2401,7 +2388,7 @@ func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("workerAddressExample")
+	worker := "workerAddressExample"
 
 	// Attempt to fetch a reward fraction before setting it
 	defaultReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
@@ -2424,7 +2411,7 @@ func (s *KeeperTestSuite) TestSetPreviousForecastRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("forecastWorkerAddress")
+	worker := "forecastWorkerAddress"
 
 	// Define a reward fraction to set
 	rewardFraction := alloraMath.NewDecFromInt64(50) // Assume setting the fraction to 0.50
@@ -2444,7 +2431,7 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := sdk.AccAddress("forecastWorkerAddress")
+	worker := "forecastWorkerAddress"
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
 	defaultReward, noPrior, err := keeper.GetPreviousForecastRewardFraction(ctx, topicId, worker)
@@ -2468,7 +2455,7 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	adminAddress := sdk.AccAddress("adminAddressExample")
+	adminAddress := "adminAddressExample"
 
 	// Test Adding to whitelist
 	err := keeper.AddWhitelistAdmin(ctx, adminAddress)

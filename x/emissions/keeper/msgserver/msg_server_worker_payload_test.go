@@ -7,7 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
@@ -28,20 +27,20 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+	reputerAddr := reputerPrivateKey.PubKey().Address().String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	workerAddr := workerPrivateKey.PubKey().Address().String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address())
+	InfererAddr := InfererPrivateKey.PubKey().Address().String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address())
+	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address())
+	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -54,30 +53,30 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr.String(),
+		Sender:  workerAddr,
 		Nonce:   &nonce,
 		TopicId: topicId,
 		WorkerDataBundles: []*types.WorkerDataBundle{
 			{
-				Worker: InfererAddr.String(),
+				Worker: InfererAddr,
 				InferenceForecastsBundle: &types.InferenceForecastBundle{
 					Inference: &types.Inference{
 						TopicId:     topicId,
 						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr.String(),
+						Inferer:     InfererAddr,
 						Value:       alloraMath.NewDecFromInt64(100),
 					},
 					Forecast: &types.Forecast{
 						TopicId:     0,
 						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr.String(),
+						Forecaster:  ForecasterAddr,
 						ForecastElements: []*types.ForecastElement{
 							{
-								Inferer: InfererAddr.String(),
+								Inferer: InfererAddr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 							{
-								Inferer: Inferer2Addr.String(),
+								Inferer: Inferer2Addr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 						},
@@ -117,17 +116,17 @@ func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+	reputerAddr := reputerPrivateKey.PubKey().Address().String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	workerAddr := workerPrivateKey.PubKey().Address().String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address())
+	InfererAddr := InfererPrivateKey.PubKey().Address().String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address())
+	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -141,30 +140,30 @@ func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	forecastElements := []*types.ForecastElement{}
 	for i := 0; i < 1000000; i++ {
 		forecastElements = append(forecastElements, &types.ForecastElement{
-			Inferer: InfererAddr.String(),
+			Inferer: InfererAddr,
 			Value:   alloraMath.NewDecFromInt64(100),
 		})
 	}
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr.String(),
+		Sender:  workerAddr,
 		Nonce:   &nonce,
 		TopicId: topicId,
 		WorkerDataBundles: []*types.WorkerDataBundle{
 			{
-				Worker: InfererAddr.String(),
+				Worker: InfererAddr,
 				InferenceForecastsBundle: &types.InferenceForecastBundle{
 					Inference: &types.Inference{
 						TopicId:     topicId,
 						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr.String(),
+						Inferer:     InfererAddr,
 						Value:       alloraMath.NewDecFromInt64(100),
 					},
 					Forecast: &types.Forecast{
 						TopicId:          0,
 						BlockHeight:      nonce.BlockHeight,
-						Forecaster:       ForecasterAddr.String(),
+						Forecaster:       ForecasterAddr,
 						ForecastElements: forecastElements,
 					},
 				},
@@ -202,19 +201,19 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+	reputerAddr := reputerPrivateKey.PubKey().Address().String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	workerAddr := workerPrivateKey.PubKey().Address().String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address())
+	InfererAddr := InfererPrivateKey.PubKey().Address().String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address())
+	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address())
+	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -227,30 +226,30 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr.String(),
+		Sender:  workerAddr,
 		Nonce:   &nonce,
 		TopicId: topicId,
 		WorkerDataBundles: []*types.WorkerDataBundle{
 			{
-				Worker: InfererAddr.String(),
+				Worker: InfererAddr,
 				InferenceForecastsBundle: &types.InferenceForecastBundle{
 					Inference: &types.Inference{
 						TopicId:     topicId,
 						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr.String(),
+						Inferer:     InfererAddr,
 						Value:       alloraMath.NewDecFromInt64(100),
 					},
 					Forecast: &types.Forecast{
 						TopicId:     0,
 						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr.String(),
+						Forecaster:  ForecasterAddr,
 						ForecastElements: []*types.ForecastElement{
 							{
-								Inferer: InfererAddr.String(),
+								Inferer: InfererAddr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 							{
-								Inferer: Inferer2Addr.String(),
+								Inferer: Inferer2Addr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 						},
@@ -284,20 +283,20 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+	reputerAddr := reputerPrivateKey.PubKey().Address().String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	workerAddr := workerPrivateKey.PubKey().Address().String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address())
+	InfererAddr := InfererPrivateKey.PubKey().Address().String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address())
+	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address())
+	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -310,30 +309,30 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr.String(),
+		Sender:  workerAddr,
 		Nonce:   &nonce,
 		TopicId: topicId,
 		WorkerDataBundles: []*types.WorkerDataBundle{
 			{
-				Worker: InfererAddr.String(),
+				Worker: InfererAddr,
 				InferenceForecastsBundle: &types.InferenceForecastBundle{
 					Inference: &types.Inference{
 						TopicId:     topicId,
 						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr.String(),
+						Inferer:     InfererAddr,
 						Value:       alloraMath.NewDecFromInt64(100),
 					},
 					Forecast: &types.Forecast{
 						TopicId:     0,
 						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr.String(),
+						Forecaster:  ForecasterAddr,
 						ForecastElements: []*types.ForecastElement{
 							{
-								Inferer: InfererAddr.String(),
+								Inferer: InfererAddr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 							{
-								Inferer: Inferer2Addr.String(),
+								Inferer: Inferer2Addr,
 								Value:   alloraMath.NewDecFromInt64(100),
 							},
 						},

@@ -13,12 +13,12 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	topidId := uint64(1)
 	block := int64(1003)
 
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
 	}
 
 	// Generate reputers data for tests
@@ -68,12 +68,12 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	topidId := uint64(1)
 	block := int64(1003)
 
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
 	}
 
 	// Generate reputers data for tests
@@ -89,7 +89,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5], reputerAddrs[0], cosmosMath.NewUint(10000000000))
+	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewUint(10000000000))
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -126,12 +126,12 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	topicId := uint64(1)
 	block := int64(1003)
 
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
 	}
 
 	// Generate reputers data for tests
@@ -192,11 +192,11 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	topicId = uint64(2)
 	block = int64(1004)
 	// Reduce number of reputer addresses
-	reputerAddrs = []sdk.AccAddress{
-		s.addrs[5],
-		s.addrs[6],
-		s.addrs[7],
-		s.addrs[8],
+	reputerAddrs = []string{
+		s.addrs[5].String(),
+		s.addrs[6].String(),
+		s.addrs[7].String(),
+		s.addrs[8].String(),
 	}
 
 	// Generate reputers same loss data for less reputers
@@ -252,12 +252,12 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	topicId := uint64(1)
 	block := int64(1003)
 
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
 	}
 
 	// Generate reputers data for tests
@@ -302,12 +302,12 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	topicId := uint64(1)
 	block := int64(1003)
 
-	reputerAddrs := []sdk.AccAddress{
-		s.addrs[0],
-		s.addrs[1],
-		s.addrs[2],
-		s.addrs[3],
-		s.addrs[4],
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
 	}
 
 	// Generate reputers data for tests
@@ -346,7 +346,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 }
 
 // mockReputersData generates reputer scores, stakes and losses
-func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerAddrs []sdk.AccAddress) (types.ReputerValueBundles, error) {
+func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerAddrs []string) (types.ReputerValueBundles, error) {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),
 		alloraMath.MustNewDecFromString("20.29489"),
@@ -372,7 +372,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
 			BlockNumber: block,
-			Address:     reputerAddr.String(),
+			Address:     reputerAddr,
 			Score:       scores[i],
 		}
 		err = s.emissionsKeeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
@@ -383,7 +383,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 		reputerValueBundle := &types.ReputerValueBundle{
 			ValueBundle: &types.ValueBundle{
 				TopicId:       topicId,
-				Reputer:       reputerAddr.String(),
+				Reputer:       reputerAddr,
 				CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
 				NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 			},
