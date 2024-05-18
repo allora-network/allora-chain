@@ -539,12 +539,6 @@ func payoutRewards(
 ) []error {
 	ret := make([]error, 0)
 	for _, reward := range rewards {
-		address, err := sdk.AccAddressFromBech32(reward.Address.String())
-		if err != nil {
-			ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address.String()))
-			continue
-		}
-
 		if reward.Reward.IsZero() {
 			continue
 		}
@@ -553,7 +547,7 @@ func payoutRewards(
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == ReputerRewardType {
-			err = k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
+			err := k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(
 					err,
@@ -564,14 +558,19 @@ func payoutRewards(
 			}
 			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
 			if err != nil {
-				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address.String(), rewardInt.String()))
+				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
 				continue
 			}
 		} else {
+			accAddress, err := sdk.AccAddressFromBech32(reward.Address)
+			if err != nil {
+				ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address))
+				continue
+			}
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
-				address,
+				accAddress,
 				coins,
 			)
 			if err != nil {
@@ -579,7 +578,7 @@ func payoutRewards(
 					err,
 					"failed to send coins from rewards module to payout address %s, %s",
 					types.AlloraRewardsAccountName,
-					reward.Address.String(),
+					reward.Address,
 				))
 				continue
 			}

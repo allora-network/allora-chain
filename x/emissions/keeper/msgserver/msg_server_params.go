@@ -4,15 +4,10 @@ import (
 	"context"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, sender)
+	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
