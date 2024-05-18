@@ -82,10 +82,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		reputer, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
-		if err != nil {
-			continue
-		}
+		reputer := bundle.ValueBundle.Reputer
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
@@ -150,12 +147,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	stakesByReputer := make(map[string]cosmosMath.Uint)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
-		reputerAccAddress, err := sdk.AccAddressFromBech32(reputer)
-		if err != nil {
-			continue
-		}
-
-		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAccAddress)
+		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
 		if err != nil {
 			continue
 		}

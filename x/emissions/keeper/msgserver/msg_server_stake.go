@@ -18,11 +18,6 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-
 	// Check the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -33,7 +28,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	}
 
 	// Check sender is registered in topic
-	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, senderAddr)
+	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -46,13 +41,13 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures, spread the stake across all topics evenly
-	err = ms.k.AddStake(ctx, msg.TopicId, senderAddr, msg.Amount)
+	err = ms.k.AddStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -70,19 +65,13 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	// Check the sender is registered
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-
 	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, sender)
+	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, sender)
+	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +91,7 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	err = ms.k.SetStakeRemoval(ctx, sender, stakeToRemove)
+	err = ms.k.SetStakeRemoval(ctx, msg.Sender, stakeToRemove)
 	if err != nil {
 		return nil, err
 	}
@@ -112,12 +101,8 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 // Function for reputers or workers to call to remove stake from an existing stake position.
 func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfirmRemoveStake) (*types.MsgConfirmRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
 	// Pull the stake removal from the delayed queue
-	stakeRemoval, err := ms.k.GetStakeRemovalByTopicAndAddress(ctx, msg.TopicId, sender)
+	stakeRemoval, err := ms.k.GetStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
@@ -138,13 +123,13 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, sender, coins)
+	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveStake(ctx, stakeRemoval.Placement.TopicId, sender, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, stakeRemoval.Placement.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -157,16 +142,8 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
 	// Check the target reputer exists and is registered
-	targetAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, targetAddr)
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -179,18 +156,18 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	err = ms.k.SendCoinsFromAccountToModule(ctx, senderAddr, types.AlloraStakingAccountName, coins)
+	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.AddStake(ctx, msg.TopicId, targetAddr, msg.Amount)
+	err = ms.k.AddStake(ctx, msg.TopicId, msg.Reputer, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.k.AddDelegateStake(ctx, msg.TopicId, senderAddr, targetAddr, msg.Amount)
+	err = ms.k.AddDelegateStake(ctx, msg.TopicId, msg.Sender, msg.Reputer, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -207,18 +184,8 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	// Check the sender is registered
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	reputerAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAddr)
+	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +194,7 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	}
 
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputerAddr)
+	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -262,15 +229,7 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.MsgConfirmDelegateRemoveStake) (*types.MsgConfirmRemoveDelegateStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Pull the stake removal from the delayed queue
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	reputerAddr, err := sdk.AccAddressFromBech32(msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, reputerAddr, senderAddr)
+	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Reputer, msg.Sender)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
@@ -292,13 +251,13 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	// Send the funds
 	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
-	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, senderAddr, coins)
+	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, senderAddr, reputerAddr, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, msg.Reputer, stakeRemoval.Placement.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -307,16 +266,8 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
-	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
 	// Check the target reputer exists and is registered
-	reputer, err := sdk.AccAddressFromBech32(msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, reputer)
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -324,11 +275,11 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		return nil, types.ErrAddressIsNotRegisteredInThisTopic
 	}
 
-	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer)
+	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
-	share, err := ms.k.GetDelegateRewardPerShare(ctx, msg.TopicId, reputer)
+	share, err := ms.k.GetDelegateRewardPerShare(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +293,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
-		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, senderAddr, coins)
+		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
 		if err != nil {
 			return nil, err
 		}
@@ -350,7 +301,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		if err != nil {
 			return nil, err
 		}
-		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, senderAddr, reputer, delegateInfo)
+		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil
 }
