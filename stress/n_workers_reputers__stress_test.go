@@ -277,6 +277,7 @@ func InsertReputerBulk(m TestMetadata,
 
 func CreateTopicLoop(m TestMetadata, topicId uint64) {
 	const stakeToAdd uint64 = 10000
+	const topicFunds int64 = 10000000000000000
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
 
@@ -302,6 +303,14 @@ func CreateTopicLoop(m TestMetadata, topicId uint64) {
 
 		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
 		// Generate new worker accounts
+
+		topicId, topic := CreateTopic(m)
+
+		err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
+		if err != nil {
+			m.t.Fatal(err)
+		}
+
 		workerAccountName := "stressWorker" + strconv.Itoa(i)
 		workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
 		if err != nil {
@@ -356,33 +365,9 @@ func CreateTopicLoop(m TestMetadata, topicId uint64) {
 		}
 		reputerAddresses[reputerAccountName] = reputerAddress
 
-		// Choose one random leader from the worker accounts
-		leaderWorkerAccountName, leaderWorkerAddress, err := GetRandomMapEntryValue(workerAddresses)
-		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
-			continue
-		}
-		// Insert worker
-		m.t.Log("--- Insert Worker Bulk --- with leader: ", leaderWorkerAccountName, " and worker address: ", leaderWorkerAddress)
-		InsertWorkerBulk(m, topic, leaderWorkerAccountName, workerAddresses, blockHeightCurrent)
-		InsertWorkerBulk(m, topic, leaderWorkerAccountName, workerAddresses, blockHeightEval)
-
-		// Insert reputer bulk
-		// Choose one random leader from reputer accounts
-		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
-		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
-			continue
-		}
-
-		startReputer := time.Now()
-		InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
-		elapsedBulk := time.Since(startReputer)
-		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
-
 		// Sleep for one epoch
 		elapsed := time.Since(start)
-		fmt.Println("Insert Worker Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
+		fmt.Println("Create Topic Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
 		sleepingTimeSeconds := epochTimeSeconds - elapsed
 		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", epoch length: ", epochTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
