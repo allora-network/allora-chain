@@ -63,6 +63,6 @@ func TestStressTestTopicLimitsSuite(t *testing.T) {
 	}
 
 	t.Log(">>> Test Making Inference <<<")
-	WorkerReputerLoop(m, topicId)
+	CreateTopicLoop(m, topicId)
 
 }
