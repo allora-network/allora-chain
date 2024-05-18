@@ -57,4 +57,5 @@ var (
 	ErrQueryTooLarge                            = errors.Register(ModuleName, 53, "Query is too large")
 	ErrFailedToSerializePayload                 = errors.Register(ModuleName, 54, "Failed to serialize payload")
 	ErrNoValidBundles                           = errors.Register(ModuleName, 55, "no valid bundles found")
+	ErrCantSelfDelegate                         = errors.Register(ModuleName, 56, "cant delegate to yourself")
 )

@@ -166,6 +166,11 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	if err != nil {
 		return nil, err
 	}
+
+	if senderAddr.Equals(targetAddr) {
+		return nil, types.ErrCantSelfDelegate
+	}
+
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, targetAddr)
 	if err != nil {
 		return nil, err
