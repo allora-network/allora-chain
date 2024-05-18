@@ -17,8 +17,8 @@ func (s *KeeperTestSuite) commonStakingSetup(
 	worker string,
 	reputerInitialBalanceUint cosmosMath.Uint,
 ) uint64 {
-	workerAddr := sdk.AccAddress(worker)
-	reputerAddr := sdk.AccAddress(reputer)
+	workerAddr := sdk.MustAccAddressFromBech32(worker)
+	reputerAddr := sdk.MustAccAddressFromBech32(reputer)
 	msgServer := s.msgServer
 	require := s.Require()
 
@@ -86,8 +86,8 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	ctx := s.ctx
 	require := s.Require()
 
-	reputerAddr := PKS[0].Address().String() // delegator
-	workerAddr := PKS[1].Address().String()  // target
+	reputerAddr := sdk.AccAddress(PKS[0].Address()).String() // delegator
+	workerAddr := sdk.AccAddress(PKS[1].Address()).String()  // target
 	stakeAmount := cosmosMath.NewUint(10)
 	registrationInitialBalance := cosmosMath.NewUint(100)
 

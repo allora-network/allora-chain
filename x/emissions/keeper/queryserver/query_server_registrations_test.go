@@ -184,8 +184,9 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := PKS[0].Address().String()
-	creatorAddress := PKS[1].Address().String()
+	workerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddrString := workerAddr.String()
+	creatorAddress := sdk.AccAddress(PKS[1].Address()).String()
 	topicId := uint64(1)
 	topic1 := types.Topic{Id: topicId, Creator: creatorAddress}
 
@@ -194,12 +195,12 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Worker register
 	registerMsg := &types.MsgRegister{
-		Sender:       workerAddr,
+		Sender:       workerAddrString,
 		LibP2PKey:    "test",
 		MultiAddress: "test",
 		TopicId:      topicId,
 		IsReputer:    false,
-		Owner:        workerAddr,
+		Owner:        workerAddrString,
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -208,13 +209,13 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
-		sdk.AccAddress(workerAddr),
+		workerAddr,
 		mintAmount,
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
 	queryReq := &types.QueryIsWorkerRegisteredInTopicIdRequest{
-		Address: workerAddr,
+		Address: workerAddrString,
 		TopicId: topicId,
 	}
 	queryResp, err := s.queryServer.IsWorkerRegisteredInTopicId(ctx, queryReq)

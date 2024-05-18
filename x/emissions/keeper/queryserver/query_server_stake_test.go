@@ -3,6 +3,7 @@ package queryserver_test
 import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *KeeperTestSuite) TestGetTotalStake() {
@@ -97,7 +98,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 	keeper := s.emissionsKeeper
 
 	topicId := uint64(1)
-	delegatorAddr := PKS[0].Address().String()
+	delegatorAddr := sdk.AccAddress(PKS[0].Address()).String()
 	initialStakeAmount := cosmosMath.NewUint(500)
 	additionalStakeAmount := cosmosMath.NewUint(300)
 

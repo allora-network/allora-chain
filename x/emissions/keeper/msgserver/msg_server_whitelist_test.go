@@ -12,8 +12,8 @@ func (s *KeeperTestSuite) TestAddWhitelistAdmin() {
 	require := s.Require()
 	msgServer := s.msgServer
 
-	adminAddr := PKS[0].Address().String()
-	newAdminAddr := nonAdminAccounts[0].String()
+	adminAddr := sdk.AccAddress(PKS[0].Address()).String()
+	newAdminAddr := sdk.AccAddress(nonAdminAccounts[0]).String()
 
 	// Verify that newAdminAddr is not a whitelist admin
 	isWhitelistAdmin, err := s.emissionsKeeper.IsWhitelistAdmin(ctx, newAdminAddr)
@@ -57,8 +57,8 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
 	require := s.Require()
 	msgServer := s.msgServer
 
-	adminAddr := PKS[0].Address().String()
-	adminToRemove := PKS[1].Address().String()
+	adminAddr := sdk.AccAddress(PKS[0].Address()).String()
+	adminToRemove := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Attempt to remove adminToRemove from the whitelist by adminAddr
 	removeMsg := &types.MsgRemoveFromWhitelistAdmin{

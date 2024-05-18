@@ -1104,8 +1104,8 @@ func (s *KeeperTestSuite) TestAddDelegateStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := PKS[0].Address().String()
-	reputerAddr := PKS[1].Address().String()
+	delegatorAddr := sdk.AccAddress(PKS[0].Address()).String()
+	reputerAddr := sdk.AccAddress(PKS[1].Address()).String()
 	initialStakeAmount := cosmosMath.NewUint(500)
 	additionalStakeAmount := cosmosMath.NewUint(300)
 
@@ -1262,7 +1262,7 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	delegatorAddr := PKS[2].Address().String()
+	delegatorAddr := sdk.AccAddress(PKS[2].Address()).String()
 
 	// Mock setup
 	topicId := uint64(1)

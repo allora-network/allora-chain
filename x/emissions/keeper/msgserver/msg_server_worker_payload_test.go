@@ -7,6 +7,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
@@ -27,20 +28,20 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := reputerPrivateKey.PubKey().Address().String()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := workerPrivateKey.PubKey().Address().String()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := InfererPrivateKey.PubKey().Address().String()
+	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
+	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address()).String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
+	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -116,17 +117,17 @@ func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := reputerPrivateKey.PubKey().Address().String()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := workerPrivateKey.PubKey().Address().String()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := InfererPrivateKey.PubKey().Address().String()
+	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
+	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -201,19 +202,19 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := reputerPrivateKey.PubKey().Address().String()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
-	workerAddr := workerPrivateKey.PubKey().Address().String()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := InfererPrivateKey.PubKey().Address().String()
+	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
+	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address()).String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
+	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
@@ -283,20 +284,20 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	// Mock setup for addresses
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := reputerPrivateKey.PubKey().Address().String()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := workerPrivateKey.PubKey().Address().String()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
 	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := InfererPrivateKey.PubKey().Address().String()
+	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
 
 	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := Inferer2PrivateKey.PubKey().Address().String()
+	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address()).String()
 
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := ForecasterPrivateKey.PubKey().Address().String()
+	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	registrationInitialStake := cosmosMath.NewUint(100)
 
