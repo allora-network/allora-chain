@@ -170,7 +170,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("300000000000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -207,7 +207,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("400000000000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -279,7 +279,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("40000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -351,7 +351,7 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("40000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -434,7 +434,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		changeInAmountStakedBefore,
 	)
 	s.Require().NoError(err)
@@ -484,7 +484,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[1].Address()),
+		sdk.AccAddress(s.PKS[1].Address()).String(),
 		changeInAmounStakedAfter,
 	)
 	s.Require().NoError(err)
