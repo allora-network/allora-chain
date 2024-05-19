@@ -31,6 +31,7 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 		PrewardInference: alloraMath.MustNewDecFromString("7.3"),
 		PrewardForecast:  alloraMath.MustNewDecFromString("8.4"),
 		FTolerance:       alloraMath.MustNewDecFromString("5.5"),
+		IsNeverNegative:  true,
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, createTopicRequest)
 	require.NoError(m.t, err)
