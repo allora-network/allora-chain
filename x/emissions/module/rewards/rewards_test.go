@@ -773,7 +773,7 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRew
 	for _, taskRewardA := range A {
 		found := false
 		for _, taskRewardB := range B {
-			if taskRewardA.Address.Equals(taskRewardB.Address) {
+			if taskRewardA.Address == taskRewardB.Address {
 				if found {
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
@@ -1047,7 +1047,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_0_1_Reward alloraMath.Dec
 	found := false
 	for _, reward := range rewardsDistribution0_1 {
-		if reward.Address.Equals(workerAddrs[0]) {
+		if reward.Address == workerAddrs[0].String() {
 			found = true
 			workerReward_0_0_1_Reward = reward.Reward
 		}
@@ -1059,7 +1059,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_1_1_Reward alloraMath.Dec
 	found = false
 	for _, reward := range rewardsDistribution1_1 {
-		if reward.Address.Equals(workerAddrs[0]) {
+		if reward.Address == workerAddrs[0].String() {
 			found = true
 			workerReward_0_1_1_Reward = reward.Reward
 		}
@@ -1121,15 +1121,15 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
-	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[0].String()))
+	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
 	require.True(notFound)
 
-	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[1].String()))
+	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
 	require.True(notFound)
 
-	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[2].String()))
+	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
 	require.NoError(err)
 	require.True(notFound)
 
@@ -1160,15 +1160,15 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[0].String()))
+	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
 	require.False(notFound)
 
-	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[1].String()))
+	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
 	require.False(notFound)
 
-	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[2].String()))
+	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
 	require.NoError(err)
 	require.False(notFound)
 
@@ -1213,15 +1213,15 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	blockHeight4 := blockHeight3 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight4)
 
-	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[0].String()))
+	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
 	require.False(notFound)
 
-	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[1].String()))
+	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
 	require.NoError(err)
 	require.False(notFound)
 
-	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[2].String()))
+	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
 	require.NoError(err)
 	require.False(notFound)
 
