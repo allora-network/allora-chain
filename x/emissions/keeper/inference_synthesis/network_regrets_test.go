@@ -265,6 +265,8 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	}
 }
 
+// In this test we run two trials of calculating setting network regrets with different losses.
+// We then compare the resulting regrets to see if the higher losses result in lower regrets.
 func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	require := s.Require()
 	k := s.emissionsKeeper
