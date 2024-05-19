@@ -24,7 +24,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("2.0"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.400514997"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
+			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("1.25"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
 			expectedErr:         nil,
 		},
 		{
@@ -33,7 +33,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.1"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("-1.0"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
 		},
 		{
@@ -42,7 +42,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 			weight:              alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.2"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("-0.698970004336018804"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
 		},
 		{
@@ -126,7 +126,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 				},
 			},
 			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss: alloraMath.MustNewDecFromString("0.1587401051968199"), // exp(0.1) ≈ 1.258925
+			expectedLoss: alloraMath.MustNewDecFromString("0.16666666666"),
 			expectedErr:  nil,
 		},
 		{ // EPOCH 3
@@ -173,7 +173,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 				},
 			},
 			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss: alloraMath.MustNewDecFromString(".0000144532959522353"),
+			expectedLoss: alloraMath.MustNewDecFromString(".000015456633"),
 			expectedErr:  nil,
 		},
 	}
@@ -181,7 +181,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
 			loss, err := inference_synthesis.CalcCombinedNetworkLoss(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
-
 			if tc.expectedErr != nil {
 				s.Require().ErrorIs(err, tc.expectedErr)
 			} else {
@@ -436,56 +435,56 @@ func getTestCasesTwoWorkers() []struct {
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
-				CombinedValue: alloraMath.MustNewDecFromString("0.1587401051968199"),
-				NaiveValue:    alloraMath.MustNewDecFromString("0.1587401051968199"),
+				CombinedValue: alloraMath.MustNewDecFromString("0.166666666"),
+				NaiveValue:    alloraMath.MustNewDecFromString("0.166666666"),
 				InfererValues: []*emissions.WorkerAttributedValue{
 					{
 						Worker: "worker1",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
 						Worker: "worker2",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				ForecasterValues: []*emissions.WorkerAttributedValue{
 					{
 						Worker: "worker1",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
 						Worker: "worker2",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
 					{
 						Worker: "worker1",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
 						Worker: "worker2",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
 					{
 						Worker: "worker1",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
 						Worker: "worker2",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneInForecasterValues: []*emissions.WorkerAttributedValue{
 					{
 						Worker: "worker1",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
 						Worker: "worker2",
-						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
+						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 			},
@@ -507,7 +506,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 				require.EqualError(err, tc.expectedError.Error())
 			} else {
 				require.NoError(err)
-
 				require.True(alloraMath.InDelta(tc.expectedOutput.CombinedValue, output.CombinedValue, alloraMath.MustNewDecFromString("0.00001")))
 				require.True(alloraMath.InDelta(tc.expectedOutput.NaiveValue, output.NaiveValue, alloraMath.MustNewDecFromString("0.00001")))
 

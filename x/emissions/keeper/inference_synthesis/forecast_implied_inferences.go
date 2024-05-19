@@ -128,14 +128,9 @@ func CalcForecastImpliedInferences(
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
-					networkLossPerValue, err := networkCombinedLoss.Quo(forecastElementsByInferer[j].Value)
+					R_ik[j], err = networkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
 					if err != nil {
 						fmt.Println("Error calculating network loss per value: ", err)
-						return nil, err
-					}
-					R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
-					if err != nil {
-						fmt.Println("Error calculating forecasted regrets: ", err)
 						return nil, err
 					}
 					if first {

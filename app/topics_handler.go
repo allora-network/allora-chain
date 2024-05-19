@@ -71,7 +71,7 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	for _, nonce := range sortedWorkerNonces {
 		nonceCopy := nonce
 		fmt.Println("Current Worker block height has been found unfulfilled, requesting inferences ", nonceCopy)
-		go generateInferencesRequest(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, *nonceCopy)
+		go generateInferencesRequest(topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, topic.AllowNegative, *nonceCopy)
 	}
 }
 
@@ -114,7 +114,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			continue
 		}
 		fmt.Println("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.WorkerNonce, "previous block approx time: ", previousBlockApproxTime)
-		go generateLossesRequest(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
+		go generateLossesRequest(reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 	}
 }
 

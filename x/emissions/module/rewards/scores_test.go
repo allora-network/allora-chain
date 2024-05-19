@@ -68,11 +68,11 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("-0.006859433456235635"),
-		alloraMath.MustNewDecFromString("-0.015119372088498012"),
-		alloraMath.MustNewDecFromString("0.0038085520495462163"),
-		alloraMath.MustNewDecFromString("0.043747287132323336"),
-		alloraMath.MustNewDecFromString("0.09712721396805202"),
+		alloraMath.MustNewDecFromString("-0.00021125601"),
+		alloraMath.MustNewDecFromString("-0.000461256018"),
+		alloraMath.MustNewDecFromString("0.0001187439"),
+		alloraMath.MustNewDecFromString("0.0014287439"),
+		alloraMath.MustNewDecFromString("0.00337874398"),
 	}
 	for i, reputerScore := range scores {
 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
@@ -141,11 +141,11 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.012463129004928653"),
-		alloraMath.MustNewDecFromString("-0.0053656225135989164"),
-		alloraMath.MustNewDecFromString("0.07992212136127204"),
-		alloraMath.MustNewDecFromString("-0.035977785673031996"),
-		alloraMath.MustNewDecFromString("-0.0031785253425987165"),
+		alloraMath.MustNewDecFromString("0.000389744278"),
+		alloraMath.MustNewDecFromString("-0.00017400572"),
+		alloraMath.MustNewDecFromString("0.0027597442"),
+		alloraMath.MustNewDecFromString("-0.001075880"),
+		alloraMath.MustNewDecFromString("-0.000099005721"),
 	}
 	for i, reputerScore := range scores {
 		delta, err := reputerScore.Score.Sub(expectedScores[i])
@@ -665,7 +665,7 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     worker.String(),
-				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -674,11 +674,11 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 					{
 						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 				},
 			},

@@ -36,47 +36,41 @@ func RunningWeightedAvgUpdate(
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-	log10NextValue, err := alloraMath.Log10(nextValue)
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-	log10NextValueMinusLoss, err := log10NextValue.Sub(runningWeightedAvg.Loss)
+	nextValueMinusLoss, err := nextValue.Sub(runningWeightedAvg.Loss)
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-	weightFracTimesLog10NextValueMinusLoss, err := weightFrac.Mul(log10NextValueMinusLoss)
+	weightFracTimesNextValueMinusLoss, err := weightFrac.Mul(nextValueMinusLoss)
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-	runningWeightedAvg.Loss, err = runningWeightedAvg.Loss.Add(weightFracTimesLog10NextValueMinusLoss)
+	runningWeightedAvg.Loss, err = runningWeightedAvg.Loss.Add(weightFracTimesNextValueMinusLoss)
 	if err != nil {
 		return WorkerRunningWeightedLoss{}, err
 	}
-
 	return *runningWeightedAvg, nil
 }
 
-// Convert and exponentiate the running weighted averages to WorkerValues
-func convertAndExpMapOfRunningWeightedLossesToWorkerValue[T emissions.WorkerAttributedValue | emissions.WithheldWorkerAttributedValue](
+// Convert and exponentiate the running weighted averages to WorkerAttributedValues
+func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.WorkerAttributedValue | emissions.WithheldWorkerAttributedValue](
 	runningWeightedLosses map[Worker]*WorkerRunningWeightedLoss,
 	sortedWorkers []Worker,
-) ([]*T, error) {
+) []*T {
 	weightedLosses := make([]*T, 0)
 	for _, worker := range sortedWorkers {
 		runningLoss, ok := runningWeightedLosses[worker]
 		if !ok {
 			continue
 		}
-		expLoss, err := alloraMath.Exp10(runningLoss.Loss)
-		if err != nil {
-			return nil, err
-		}
 		weightedLosses = append(weightedLosses, &T{
 			Worker: worker,
-			Value:  expLoss,
+			Value:  runningLoss.Loss,
 		})
 	}
-	return weightedLosses, nil
+	return weightedLosses
 }
 
 func CalcNetworkLosses(
@@ -205,45 +199,21 @@ func CalcNetworkLosses(
 
 	sortedInferers := GetSortedStringKeys(runningWeightedInfererLosses)
 	sortedForecasters := GetSortedStringKeys(runningWeightedForecasterLosses)
-
-	// Convert the running weighted averages to WorkerAttributedValue | WithheldWorkerAttributedValue for inferers and forecasters + exponentiate
-	expRunningWeightedCombinedLoss, err := alloraMath.Exp10(runningWeightedCombinedLoss.Loss)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expInfererLosses, err := convertAndExpMapOfRunningWeightedLossesToWorkerValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expForecasterLosses, err := convertAndExpMapOfRunningWeightedLossesToWorkerValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expRunningWeightedNaiveLoss, err := alloraMath.Exp10(runningWeightedNaiveLoss.Loss)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expOneOutInfererLosses, err := convertAndExpMapOfRunningWeightedLossesToWorkerValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expOneOutForecasterLosses, err := convertAndExpMapOfRunningWeightedLossesToWorkerValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
-	expOneInForecasterLosses, err := convertAndExpMapOfRunningWeightedLossesToWorkerValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters)
-	if err != nil {
-		return emissions.ValueBundle{}, err
-	}
+	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
+	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers)
+	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters)
+	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers)
+	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters)
+	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters)
 
 	output := emissions.ValueBundle{
-		CombinedValue:          expRunningWeightedCombinedLoss,
-		InfererValues:          expInfererLosses,
-		ForecasterValues:       expForecasterLosses,
-		NaiveValue:             expRunningWeightedNaiveLoss,
-		OneOutInfererValues:    expOneOutInfererLosses,
-		OneOutForecasterValues: expOneOutForecasterLosses,
-		OneInForecasterValues:  expOneInForecasterLosses,
+		CombinedValue:          runningWeightedCombinedLoss.Loss,
+		InfererValues:          infererLosses,
+		ForecasterValues:       forecasterLosses,
+		NaiveValue:             runningWeightedNaiveLoss.Loss,
+		OneOutInfererValues:    oneOutInfererLosses,
+		OneOutForecasterValues: oneOutForecasterLosses,
+		OneInForecasterValues:  oneInForecasterLosses,
 	}
 
 	return output, nil
@@ -281,12 +251,5 @@ func CalcCombinedNetworkLoss(
 		}
 	}
 
-	// Exponentiate
-	expRunningWeightedCombinedLoss, err := alloraMath.Exp10(runningWeightedCombinedLoss.Loss)
-	if err != nil {
-		fmt.Println("Error exponentiating combined loss: ", err)
-		return alloraMath.ZeroDec(), err
-	}
-
-	return expRunningWeightedCombinedLoss, nil
+	return runningWeightedCombinedLoss.Loss, nil
 }

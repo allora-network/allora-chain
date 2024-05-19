@@ -51,6 +51,7 @@ func generateLossesRequest(
 	functionId string,
 	functionMethod string,
 	topicId uint64,
+	topicAllowsNegative bool,
 	blockHeight emissionstypes.Nonce,
 	blockHeightEval emissionstypes.Nonce,
 	blocktime uint64) {
@@ -86,6 +87,10 @@ func generateLossesRequest(
 					Name:  "ALLORA_BLOCK_HEIGHT_EVAL",
 					Value: strconv.FormatInt(blockHeightEval.BlockHeight, 10),
 				},
+				{
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
+				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
 			Timeout:            2,      // seconds to time out before rollcall complete
@@ -107,6 +112,7 @@ func generateInferencesRequest(
 	functionMethod string,
 	param string,
 	topicId uint64,
+	topicAllowsNegative bool,
 	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
@@ -126,6 +132,10 @@ func generateInferencesRequest(
 				{
 					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
 					Value: strconv.FormatInt(nonce.BlockHeight, 10),
+				},
+				{
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max

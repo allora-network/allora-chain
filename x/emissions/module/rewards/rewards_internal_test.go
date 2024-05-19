@@ -469,13 +469,13 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 				{alloraMath.MustNewDecFromString("0.02093"), alloraMath.MustNewDecFromString("0.00213"), alloraMath.MustNewDecFromString("0.02462"), alloraMath.MustNewDecFromString("0.0203"), alloraMath.MustNewDecFromString("0.03115"), alloraMath.MustNewDecFromString("0.01"), alloraMath.MustNewDecFromString("0.01545"), alloraMath.MustNewDecFromString("0.01785"), alloraMath.MustNewDecFromString("0.01662"), alloraMath.MustNewDecFromString("0.01156"), alloraMath.MustNewDecFromString("0.02284"), alloraMath.MustNewDecFromString("0.01475"), alloraMath.MustNewDecFromString("0.01331"), alloraMath.MustNewDecFromString("0.01592"), alloraMath.MustNewDecFromString("0.01462"), alloraMath.MustNewDecFromString("0.02333"), alloraMath.MustNewDecFromString("0.01836"), alloraMath.MustNewDecFromString("0.01465"), alloraMath.MustNewDecFromString("0.0186"), alloraMath.MustNewDecFromString("0.01566"), alloraMath.MustNewDecFromString("0.01506"), alloraMath.MustNewDecFromString("0.01678"), alloraMath.MustNewDecFromString("0.01423"), alloraMath.MustNewDecFromString("0.01658"), alloraMath.MustNewDecFromString("0.01741"), alloraMath.MustNewDecFromString("0.03491"), alloraMath.MustNewDecFromString("0.01408"), alloraMath.MustNewDecFromString("0.01191"), alloraMath.MustNewDecFromString("0.01572"), alloraMath.MustNewDecFromString("0.01355"), alloraMath.MustNewDecFromString("0.01477"), alloraMath.MustNewDecFromString("0.01662"), alloraMath.MustNewDecFromString("0.01128"), alloraMath.MustNewDecFromString("0.02581"), alloraMath.MustNewDecFromString("0.01718"), alloraMath.MustNewDecFromString("0.01705"), alloraMath.MustNewDecFromString("0.01251"), alloraMath.MustNewDecFromString("0.02158"), alloraMath.MustNewDecFromString("0.01187"), alloraMath.MustNewDecFromString("0.01504"), alloraMath.MustNewDecFromString("0.0135"), alloraMath.MustNewDecFromString("0.02432"), alloraMath.MustNewDecFromString("0.01602"), alloraMath.MustNewDecFromString("0.01194"), alloraMath.MustNewDecFromString("0.0153"), alloraMath.MustNewDecFromString("0.0199"), alloraMath.MustNewDecFromString("0.01673"), alloraMath.MustNewDecFromString("0.01049"), alloraMath.MustNewDecFromString("0.02068"), alloraMath.MustNewDecFromString("0.01573"), alloraMath.MustNewDecFromString("0.01487"), alloraMath.MustNewDecFromString("0.02639"), alloraMath.MustNewDecFromString("0.01981"), alloraMath.MustNewDecFromString("0.02123"), alloraMath.MustNewDecFromString("0.02134"), alloraMath.MustNewDecFromString("0.0217"), alloraMath.MustNewDecFromString("0.01177")},
 			},
 			want: []alloraMath.Dec{
-				alloraMath.MustNewDecFromString("0.01489"), alloraMath.MustNewDecFromString("0.00219"), alloraMath.MustNewDecFromString("0.02752"), alloraMath.MustNewDecFromString("0.01684"), alloraMath.MustNewDecFromString("0.02502"), alloraMath.MustNewDecFromString("0.01395"), alloraMath.MustNewDecFromString("0.01242"), alloraMath.MustNewDecFromString("0.01769"), alloraMath.MustNewDecFromString("0.01372"),
-				alloraMath.MustNewDecFromString("0.01469"), alloraMath.MustNewDecFromString("0.01416"), alloraMath.MustNewDecFromString("0.01442"), alloraMath.MustNewDecFromString("0.01423"), alloraMath.MustNewDecFromString("0.01304"), alloraMath.MustNewDecFromString("0.01354"), alloraMath.MustNewDecFromString("0.01813"), alloraMath.MustNewDecFromString("0.01556"), alloraMath.MustNewDecFromString("0.01455"),
-				alloraMath.MustNewDecFromString("0.0154"), alloraMath.MustNewDecFromString("0.01215"), alloraMath.MustNewDecFromString("0.01435"), alloraMath.MustNewDecFromString("0.01659"), alloraMath.MustNewDecFromString("0.01431"), alloraMath.MustNewDecFromString("0.01579"), alloraMath.MustNewDecFromString("0.01683"), alloraMath.MustNewDecFromString("0.01821"), alloraMath.MustNewDecFromString("0.01389"),
-				alloraMath.MustNewDecFromString("0.01348"), alloraMath.MustNewDecFromString("0.01405"), alloraMath.MustNewDecFromString("0.01439"), alloraMath.MustNewDecFromString("0.01301"), alloraMath.MustNewDecFromString("0.01501"), alloraMath.MustNewDecFromString("0.0123"), alloraMath.MustNewDecFromString("0.01788"), alloraMath.MustNewDecFromString("0.01325"), alloraMath.MustNewDecFromString("0.01417"),
-				alloraMath.MustNewDecFromString("0.01438"), alloraMath.MustNewDecFromString("0.01578"), alloraMath.MustNewDecFromString("0.01104"), alloraMath.MustNewDecFromString("0.0127"), alloraMath.MustNewDecFromString("0.01332"), alloraMath.MustNewDecFromString("0.01414"), alloraMath.MustNewDecFromString("0.01508"), alloraMath.MustNewDecFromString("0.01191"), alloraMath.MustNewDecFromString("0.01598"),
-				alloraMath.MustNewDecFromString("0.01506"), alloraMath.MustNewDecFromString("0.01459"), alloraMath.MustNewDecFromString("0.01277"), alloraMath.MustNewDecFromString("0.01406"), alloraMath.MustNewDecFromString("0.01426"), alloraMath.MustNewDecFromString("0.01532"), alloraMath.MustNewDecFromString("0.01683"), alloraMath.MustNewDecFromString("0.0151"), alloraMath.MustNewDecFromString("0.01364"),
-				alloraMath.MustNewDecFromString("0.01688"), alloraMath.MustNewDecFromString("0.01362"), alloraMath.MustNewDecFromString("0.01342"),
+				alloraMath.MustNewDecFromString("0.0152671"), alloraMath.MustNewDecFromString("0.002216"), alloraMath.MustNewDecFromString("0.02790"), alloraMath.MustNewDecFromString("0.017319"), alloraMath.MustNewDecFromString("0.025520"), alloraMath.MustNewDecFromString("0.0148812"), alloraMath.MustNewDecFromString("0.012625"), alloraMath.MustNewDecFromString("0.01780378"), alloraMath.MustNewDecFromString("0.0140014"),
+				alloraMath.MustNewDecFromString("0.015013"), alloraMath.MustNewDecFromString("0.014774"), alloraMath.MustNewDecFromString("0.014550"), alloraMath.MustNewDecFromString("0.0144484"), alloraMath.MustNewDecFromString("0.0133076"), alloraMath.MustNewDecFromString("0.0137"), alloraMath.MustNewDecFromString("0.018843"), alloraMath.MustNewDecFromString("0.0158344"), alloraMath.MustNewDecFromString("0.014681"),
+				alloraMath.MustNewDecFromString("0.015683"), alloraMath.MustNewDecFromString("0.012371"), alloraMath.MustNewDecFromString("0.014564"), alloraMath.MustNewDecFromString("0.0166473"), alloraMath.MustNewDecFromString("0.0145905"), alloraMath.MustNewDecFromString("0.01598"), alloraMath.MustNewDecFromString("0.01696"), alloraMath.MustNewDecFromString("0.01964"), alloraMath.MustNewDecFromString("0.0144"),
+				alloraMath.MustNewDecFromString("0.0136411"), alloraMath.MustNewDecFromString("0.014375"), alloraMath.MustNewDecFromString("0.0145467"), alloraMath.MustNewDecFromString("0.01319248"), alloraMath.MustNewDecFromString("0.01555"), alloraMath.MustNewDecFromString("0.01246"), alloraMath.MustNewDecFromString("0.01849"), alloraMath.MustNewDecFromString("0.01386"), alloraMath.MustNewDecFromString("0.01430"),
+				alloraMath.MustNewDecFromString("0.0148031"), alloraMath.MustNewDecFromString("0.016073"), alloraMath.MustNewDecFromString("0.01154604"), alloraMath.MustNewDecFromString("0.01281518"), alloraMath.MustNewDecFromString("0.01340968"), alloraMath.MustNewDecFromString("0.014733235"), alloraMath.MustNewDecFromString("0.01520795"), alloraMath.MustNewDecFromString("0.012093517"), alloraMath.MustNewDecFromString("0.0160167"),
+				alloraMath.MustNewDecFromString("0.01547095"), alloraMath.MustNewDecFromString("0.01496103"), alloraMath.MustNewDecFromString("0.01296408"), alloraMath.MustNewDecFromString("0.0151219369"), alloraMath.MustNewDecFromString("0.014375538"), alloraMath.MustNewDecFromString("0.01548074"), alloraMath.MustNewDecFromString("0.017446629"), alloraMath.MustNewDecFromString("0.015452587"), alloraMath.MustNewDecFromString("0.01407107"),
+				alloraMath.MustNewDecFromString("0.01700426"), alloraMath.MustNewDecFromString("0.014413132"), alloraMath.MustNewDecFromString("0.013480447"),
 			},
 			wantErr: false,
 		},
@@ -484,7 +484,6 @@ func TestGetStakeWeightedLossMatrix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, _, err := rewards.GetStakeWeightedLossMatrix(tt.reputersAdjustedStakes, tt.reputersReportedLosses)
-
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeWeightedLossMatrix() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -517,7 +516,7 @@ func TestGetStakeWeightedLossMatrixWithMissingLosses(t *testing.T) {
 				{alloraMath.NewNaN(), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("2.0")},
 			},
 			want: []alloraMath.Dec{
-				alloraMath.MustNewDecFromString("1.41421"), alloraMath.MustNewDecFromString("2.00000"), alloraMath.MustNewDecFromString("2.46621"), alloraMath.MustNewDecFromString("2.88449"),
+				alloraMath.MustNewDecFromString("1.5"), alloraMath.MustNewDecFromString("2.00000"), alloraMath.MustNewDecFromString("3.0"), alloraMath.MustNewDecFromString("2.999999"),
 			},
 			wantErr: false,
 		},
@@ -549,7 +548,7 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 			name:                   "simple average",
 			reputersStakes:         []alloraMath.Dec{alloraMath.MustNewDecFromString("1176644.37627"), alloraMath.MustNewDecFromString("384623.3607"), alloraMath.MustNewDecFromString("394676.13226"), alloraMath.MustNewDecFromString("207999.66194"), alloraMath.MustNewDecFromString("368582.76542")},
 			reputersReportedLosses: []alloraMath.Dec{alloraMath.MustNewDecFromString("0.0112"), alloraMath.MustNewDecFromString("0.01635"), alloraMath.MustNewDecFromString("0.01345"), alloraMath.MustNewDecFromString("0.01675"), alloraMath.MustNewDecFromString("0.02093")},
-			want:                   alloraMath.MustNewDecFromString("0.01381883491416319"),
+			want:                   alloraMath.MustNewDecFromString("0.0142047230098813"),
 			wantErr:                false,
 		},
 	}
@@ -564,27 +563,6 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 
 			if !(alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.00001"))) {
 				t.Errorf("GetStakeWeightedLoss() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetWorkerScore(t *testing.T) {
-	tests := []struct {
-		name         string
-		losses       alloraMath.Dec
-		lossesOneOut alloraMath.Dec
-		want         alloraMath.Dec
-	}{
-		{"basic", alloraMath.MustNewDecFromString("0.011411892282242868"), alloraMath.MustNewDecFromString("0.01344474872292"), alloraMath.MustNewDecFromString("0.07119502617735574")},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetWorkerScore(tt.losses, tt.lossesOneOut)
-			require.NoError(t, err)
-			if !(alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.00000000000001"))) {
-				t.Errorf("GetWorkerScore() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -629,7 +607,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 	stakes := []alloraMath.Dec{alloraMath.MustNewDecFromString("1176644.37627"), alloraMath.MustNewDecFromString("384623.3607"), alloraMath.MustNewDecFromString("394676.13226"), alloraMath.MustNewDecFromString("207999.66194"), alloraMath.MustNewDecFromString("368582.76542")}
 	allListeningCoefficients := []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0")}
 	var numReputers int64 = 5
-	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("17.4346"), alloraMath.MustNewDecFromString("20.13897"), alloraMath.MustNewDecFromString("24.08276"), alloraMath.MustNewDecFromString("11.41393"), alloraMath.MustNewDecFromString("15.33319")}
+	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("0.0169833"), alloraMath.MustNewDecFromString("0.01706869"), alloraMath.MustNewDecFromString("0.016047"), alloraMath.MustNewDecFromString("0.01164"), alloraMath.MustNewDecFromString("0.01345")}
 	wantErr := false
 
 	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers)
@@ -672,11 +650,11 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	}
 	var numReputers int64 = 5
 	wantScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("17.46894"),
-		alloraMath.MustNewDecFromString("20.19617"),
-		alloraMath.MustNewDecFromString("24.15073"),
-		alloraMath.MustNewDecFromString("11.39661"),
-		alloraMath.MustNewDecFromString("15.29052"),
+		alloraMath.MustNewDecFromString("0.016983"),
+		alloraMath.MustNewDecFromString("0.017068"),
+		alloraMath.MustNewDecFromString("0.016047"),
+		alloraMath.MustNewDecFromString("0.011649"),
+		alloraMath.MustNewDecFromString("0.013453"),
 	}
 	wantCoefficients := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("0.99987"),
@@ -746,8 +724,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.NoError(err)
 
 	for i := 0; i < len(wantScores); i++ {
-		require.True(scores2DifferenceAbs[i].Lt(scores1DifferenceAbs[i]))
-		require.True(scores3DifferenceAbs[i].Lt(scores2DifferenceAbs[i]))
+		require.True(scores2DifferenceAbs[i].Gt(scores1DifferenceAbs[i]))
+		require.True(scores3DifferenceAbs[i].Gt(scores2DifferenceAbs[i]))
 	}
 
 	require.True(len(gotCoefficients1) == len(wantCoefficients))
@@ -762,7 +740,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.NoError(err)
 
 	for i := 0; i < len(wantCoefficients); i++ {
-		require.True(coefficients2DifferenceAbs[i].Lte(coefficients1DifferenceAbs[i]))
-		require.True(coefficients3DifferenceAbs[i].Lte(coefficients2DifferenceAbs[i]))
+		require.True(coefficients2DifferenceAbs[i].Gte(coefficients1DifferenceAbs[i]))
+		require.True(coefficients3DifferenceAbs[i].Gte(coefficients2DifferenceAbs[i]))
 	}
 }
