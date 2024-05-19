@@ -168,13 +168,13 @@ func GenerateRewardsDistributionByTopic(
 				if err != nil {
 					return nil, errors.Wrapf(err, "failed to add weight to sum")
 				}
-			}
-
-			// This way we won't double count from this earlier epoch revenue the next epoch
-			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			} else {
+				// This way we won't double count from this earlier epoch revenue the next epoch
+				// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
+				err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+				}
 			}
 		}
 	}
