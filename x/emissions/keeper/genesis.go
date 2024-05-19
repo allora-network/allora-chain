@@ -4,8 +4,8 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
@@ -33,6 +33,12 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		return err
 	}
 
+	// For mint module inflation rate calculation set the initial
+	// "previous percentage of rewards that went to staked reputers" to 30%
+	if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, alloraMath.MustNewDecFromString("0.3")); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -50,11 +56,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 
 func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses []string) error {
 	for _, addr := range coreTeamAddresses {
-		accAddress, err := sdk.AccAddressFromBech32(addr)
-		if err != nil {
-			return err
-		}
-		k.AddWhitelistAdmin(ctx, accAddress)
+		k.AddWhitelistAdmin(ctx, addr)
 	}
 	return nil
 }

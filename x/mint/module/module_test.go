@@ -9,7 +9,6 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -20,7 +19,8 @@ import (
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions/module"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -66,17 +66,18 @@ func (s *MintModuleTestSuite) SetupTest() {
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                     nil,
-		"third_party":                       {"minter"},
-		"ecosystem":                         {"burner", "minter", "staking"},
-		"allorarewards":                     nil,
-		"mint":                              {"minter"},
-		emissions.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		emissions.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		"bonded_tokens_pool":                {"burner", "staking"},
-		"not_bonded_tokens_pool":            {"burner", "staking"},
-		multiPerm:                           {"burner", "minter", "staking"},
-		randomPerm:                          {"random"},
+		"fee_collector":                         nil,
+		"third_party":                           {"minter"},
+		"ecosystem":                             {"burner", "minter", "staking"},
+		"mint":                                  {"minter"},
+		emissionstypes.AlloraRewardsAccountName: nil,
+		emissionstypes.AlloraPendingRewardForDelegatorAccountName: nil,
+		emissionstypes.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
+		emissionstypes.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
+		"bonded_tokens_pool":                                      {"burner", "staking"},
+		"not_bonded_tokens_pool":                                  {"burner", "staking"},
+		multiPerm:                                                 {"burner", "minter", "staking"},
+		randomPerm:                                                {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -142,10 +143,14 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.emissionsKeeper = emissionsKeeper
 	s.mintKeeper = mintKeeper
 
-	appModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.appModule = appModule
+	emissionsModule := emissions.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	emissionsDefaultGenesis := emissionsModule.DefaultGenesis(encCfg.Codec)
+	emissionsModule.InitGenesis(ctx, encCfg.Codec, emissionsDefaultGenesis)
+
+	mintAppModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
+	defaultGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
+	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	s.appModule = mintAppModule
 }
 
 func TestMintModuleTestSuite(t *testing.T) {
@@ -165,17 +170,17 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
-		cosmosMath.NewUintFromString("40000000000000000000"),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
+		cosmosMath.NewUintFromString("300000000000000000000000000"),
 	)
 	s.Require().NoError(err)
 
 	// mint enough tokens so that the circulating supply is non zero
-	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	spareCoins, ok := cosmosMath.NewIntFromString("1000000000000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
-		emissions.AlloraRequestsAccountName,
+		emissionstypes.AlloraRequestsAccountName,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.MintDenom,
@@ -185,11 +190,16 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerTimestep(
+	blocksPerMonth, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
+	s.Require().NoError(err)
+
+	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		blocksPerMonth,
 		params,
 		ecosystemMintSupplyRemaining,
+		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
 	s.Require().NoError(err)
 
@@ -197,16 +207,18 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
-		cosmosMath.NewUintFromString("50000000000000000000"),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
+		cosmosMath.NewUintFromString("400000000000000000000000000"),
 	)
 	s.Require().NoError(err)
 
-	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerTimestep(
+	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		blocksPerMonth,
 		params,
 		ecosystemMintSupplyRemaining,
+		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
 	s.Require().NoError(err)
 
@@ -258,7 +270,7 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 
 func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissions.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
 	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
@@ -267,7 +279,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("40000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -327,7 +339,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 
 func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissions.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
 	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
 	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
@@ -339,7 +351,7 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		cosmosMath.NewUintFromString("40000000000000000000"),
 	)
 	s.Require().NoError(err)
@@ -414,21 +426,21 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	)
 }
 
-func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUpButPerUnitStakeGoesDown() {
+func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	s.ctx = s.ctx.WithBlockHeight(1)
 
 	// stake enough tokens so that the networkStaked is non zero
-	changeInAmountStakedBefore := cosmosMath.NewUintFromString("40000000000000000000")
+	changeInAmountStakedBefore := cosmosMath.NewUintFromString("300000000000000000000000000")
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[0].Address()),
+		sdk.AccAddress(s.PKS[0].Address()).String(),
 		changeInAmountStakedBefore,
 	)
 	s.Require().NoError(err)
 
 	// mint enough tokens so that the circulating supply is non zero
-	spareCoinAmount, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	spareCoinAmount, ok := cosmosMath.NewIntFromString("1000000000000000000000000000")
 	s.Require().True(ok)
 	spareCoins := sdk.NewCoins(
 		sdk.NewCoin(
@@ -459,22 +471,27 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUpButPerUnit
 	ecosystemTokensMintedBefore, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
 	s.Require().NoError(err)
 	tokenSupplyBefore := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
+	s.Require().True(
+		tokenSupplyBefore.Amount.GT(tokenSupplyZero.Amount),
+		"Token supply should go up when minting tokens as inflationary rewards: %s > %s",
+		tokenSupplyBefore,
+		tokenSupplyZero,
+	)
 
 	// now have someone come and stake,
 	// then move to the blockheight where we calculate inflation again
-	changeInAmounStakedAfter := cosmosMath.NewUintFromString("800000000000000000000")
+	changeInAmounStakedAfter := cosmosMath.NewUintFromString("400000000000000000000000000")
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
-		sdk.AccAddress(s.PKS[1].Address()),
+		sdk.AccAddress(s.PKS[1].Address()).String(),
 		changeInAmounStakedAfter,
 	)
 	s.Require().NoError(err)
 
-	mintParams, err := s.mintKeeper.GetParams(s.ctx)
+	blocksPerMonth, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	emissionRateUpdateCadence := mintParams.BlocksPerMonth / mintParams.EmissionCalibrationsTimestepPerMonth
-	s.ctx = s.ctx.WithBlockHeight(int64(emissionRateUpdateCadence + 1))
+	s.ctx = s.ctx.WithBlockHeight(int64(blocksPerMonth + 1))
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
@@ -482,39 +499,17 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUpButPerUnit
 	tokenSupplyAfter := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 	ecosystemTokensMintedAfter, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
 	s.Require().NoError(err)
+	s.Require().True(ecosystemTokensMintedAfter.GT(ecosystemTokensMintedZero))
 
 	tokenSupplyDelta1 := tokenSupplyBefore.Amount.Sub(tokenSupplyZero.Amount)
+	s.Require().True(tokenSupplyDelta1.GT(cosmosMath.ZeroInt()))
 	tokenSupplyDelta2 := tokenSupplyAfter.Amount.Sub(tokenSupplyBefore.Amount)
-
-	tokenSupplyDelta1Dec, err := alloraMath.NewDecFromSdkInt(tokenSupplyDelta1)
-	s.Require().NoError(err)
-	changeInAmountStakedBeforeDec, err := alloraMath.NewDecFromSdkUint(changeInAmountStakedBefore)
-	s.Require().NoError(err)
-	tokenSupplyPerAmountStaked1, err := tokenSupplyDelta1Dec.Quo(changeInAmountStakedBeforeDec)
-	s.Require().NoError(err)
-	tokenSupplyDelta2Dec, err := alloraMath.NewDecFromSdkInt(tokenSupplyDelta2)
-	s.Require().NoError(err)
-	changeInAmountStakedAfterDec, err := alloraMath.NewDecFromSdkUint(changeInAmounStakedAfter)
-	s.Require().NoError(err)
-	tokenSupplyPerAmountStaked2, err := tokenSupplyDelta2Dec.Quo(changeInAmountStakedAfterDec)
-	s.Require().NoError(err)
+	s.Require().True(tokenSupplyDelta2.GT(cosmosMath.ZeroInt()))
 
 	ecosystemTokensMintedDelta1 := ecosystemTokensMintedBefore.Sub(ecosystemTokensMintedZero)
 	ecosystemTokensMintedDelta2 := ecosystemTokensMintedAfter.Sub(ecosystemTokensMintedBefore)
 
-	ecosystemTokenMintedDelta1Dec, err := alloraMath.NewDecFromSdkInt(ecosystemTokensMintedDelta1)
-	s.Require().NoError(err)
-	ecosystemTokensMintedPerAmountStaked1, err := ecosystemTokenMintedDelta1Dec.Quo(changeInAmountStakedBeforeDec)
-	s.Require().NoError(err)
-	ecosystemTokenMintedDelta2Dec, err := alloraMath.NewDecFromSdkInt(ecosystemTokensMintedDelta2)
-	s.Require().NoError(err)
-	ecosystemTokensMintedPerAmountStaked2, err := ecosystemTokenMintedDelta2Dec.Quo(changeInAmountStakedAfterDec)
-	s.Require().NoError(err)
-
-	// Check that:
-	// the amount of tokens we minted was greater than the first time
-	// but the amount of tokens minted PER amount of tokens staked was less
-	// i.e. each additional staked token earned less minted token or caused less inflation
+	// Check that the amount of tokens we minted was greater than the first time
 	s.Require().True(
 		tokenSupplyDelta2.GT(tokenSupplyDelta1),
 		"More stakers more inflation: %s > %s",
@@ -526,17 +521,5 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUpButPerUnit
 		"Ecosystem tokens minted more stakers more inflation: %s > %s",
 		ecosystemTokensMintedDelta2.String(),
 		ecosystemTokensMintedDelta1.String(),
-	)
-	s.Require().True(
-		tokenSupplyPerAmountStaked2.Lt(tokenSupplyPerAmountStaked1),
-		"Token supply per amount staked should go down when more people stake: %s < %s",
-		tokenSupplyPerAmountStaked2.String(),
-		tokenSupplyPerAmountStaked1.String(),
-	)
-	s.Require().True(
-		ecosystemTokensMintedPerAmountStaked2.Lt(ecosystemTokensMintedPerAmountStaked1),
-		"Ecosystem tokens minted per amount staked should go down when more people stake: %s < %s",
-		ecosystemTokensMintedPerAmountStaked2.String(),
-		ecosystemTokensMintedPerAmountStaked1.String(),
 	)
 }

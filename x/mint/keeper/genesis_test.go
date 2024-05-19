@@ -69,8 +69,6 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	defaultParams := types.DefaultParams()
 	genesisState.Params = types.NewParams(
 		"testDenom",
-		uint64(60/5*60*24*30),
-		uint64(2),
 		maxSupply,
 		defaultParams.FEmission,
 		defaultParams.OneMonthSmoothingDegree,
@@ -79,6 +77,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		defaultParams.ParticipantsPercentOfTotalSupply,
 		defaultParams.InvestorsPercentOfTotalSupply,
 		defaultParams.TeamPercentOfTotalSupply,
+		defaultParams.MaximumMonthlyPercentageYield,
 	)
 	genesisState.PreviousRewardEmissionPerUnitStakedToken = types.DefaultPreviousRewardEmissionPerUnitStakedToken()
 	genesisState.PreviousBlockEmission = types.DefaultPreviousBlockEmission()
