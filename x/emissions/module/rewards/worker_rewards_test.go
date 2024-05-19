@@ -154,6 +154,59 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	return networkLosses, nil
 }
 
+func mockSimpleNetworkLosses(
+	s *RewardsTestSuite,
+	topicId uint64,
+	block int64,
+	worker0Value string,
+) (types.ValueBundle, error) {
+	genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString(worker0Value),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
+
+	genericLosses := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString(worker0Value),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
+
+	networkLosses := types.ValueBundle{
+		TopicId:                topicId,
+		CombinedValue:          alloraMath.MustNewDecFromString("0.05"),
+		NaiveValue:             alloraMath.MustNewDecFromString("0.05"),
+		OneOutInfererValues:    genericLossesWithheld,
+		OneOutForecasterValues: genericLossesWithheld,
+		OneInForecasterValues:  genericLosses,
+	}
+
+	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	if err != nil {
+		return types.ValueBundle{}, err
+	}
+
+	return networkLosses, nil
+}
+
 func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, error) {
 	workerAddrs := []sdk.AccAddress{
 		s.addrs[0],

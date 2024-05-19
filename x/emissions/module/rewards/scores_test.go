@@ -85,6 +85,40 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
+	topicId := uint64(1)
+	block0 := int64(1003)
+	require := s.Require()
+
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
+	require.NoError(err)
+
+	scores0, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block0,
+		networkLosses0,
+	)
+	require.NoError(err)
+
+	block1 := block0 + 1
+
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
+	require.NoError(err)
+
+	scores1, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block1,
+		networkLosses1,
+	)
+	require.NoError(err)
+
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
+}
+
 func (s *RewardsTestSuite) TestGetForecastScores() {
 	topidId := uint64(1)
 	block := int64(1003)
@@ -118,6 +152,41 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
 	}
+}
+
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
+	topicId := uint64(1)
+	block0 := int64(1003)
+	require := s.Require()
+
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
+	require.NoError(err)
+
+	scores0, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block0,
+		networkLosses0,
+	)
+	require.NoError(err)
+
+	block1 := block0 + 1
+
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
+	require.NoError(err)
+
+	// Get inference scores
+	scores1, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block1,
+		networkLosses1,
+	)
+	require.NoError(err)
+
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
 
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
