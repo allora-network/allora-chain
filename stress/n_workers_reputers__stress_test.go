@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
@@ -288,87 +289,111 @@ func CreateTopicLoop(m TestMetadata) {
 	// 4. Pass reputer slice in the call to insertReputerBulk
 	// 5. sleep one epoch, then repeat.
 
+	topicsPerBlockString, found := os.LookupEnv("TOPICS_PER_BLOCK")
+	if !found {
+		m.t.Fatal("TOPICS_PER_BLOCK not found")
+	}
+
+	topicsPerBlock, err := strconv.Atoi(topicsPerBlockString)
+	if err != nil {
+		fmt.Println("Error converting string to int:", err)
+		return
+	}
+
+	topicId, _ := CreateTopicWithEpochLength(m, epochLength)
+
+	err = FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
+	if err != nil {
+		m.t.Fatal(err)
+	}
+
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5)
+	if err != nil {
+		m.t.Log("--- Failed getting a topic that was ran ---")
+		require.NoError(m.t, err)
+	}
+
 	blockHeightCurrent := topic.EpochLastEnded
 	blockHeightEval := blockHeightCurrent + epochLength
 	// Translate the epoch length into time
 	epochTimeSeconds := time.Duration(epochLength*approximateBlockLengthSeconds) * time.Second
+
+	workerAccountName := "stressWorker"
+	workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
+	if err != nil {
+		fmt.Println("Error creating worker address: ", workerAccountName, " - ", err)
+	}
+	workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		fmt.Println("Error getting worker address: ", workerAccountName, " - ", err)
+	}
+	fmt.Println("Worker address: ", workerAddress)
+	err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 10000000)
+	if err != nil {
+		fmt.Println("Error funding worker address: ", workerAddress, " - ", err)
+	}
+
+	workerAddresses := make(map[string]string)
+	workerAddresses[workerAccountName] = workerAddress
+
+	// Generate new reputer account
+	reputerAccountName := "stressReputer"
+	reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
+	if err != nil {
+		fmt.Println("Error creating reputer address: ", reputerAccountName, " - ", err)
+	}
+	reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		fmt.Println("Error getting reputer address: ", reputerAccountName, " - ", err)
+	}
+	fmt.Println("Reputer address: ", reputerAddress)
+	err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
+	if err != nil {
+		fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
+	}
+	reputerAddresses := make(map[string]string)
+	reputerAddresses[reputerAccountName] = reputerAddress
+
 	for i := 0; i < MAX_ITERATIONS; i++ {
 		start := time.Now()
 
 		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
-		// Generate new worker accounts
 
-		topicId, topic := CreateTopicWithEpochLength(m, epochLength)
+		for i := 0; i < topicsPerBlock; i++ {
 
-		err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
-		if err != nil {
-			m.t.Fatal(err)
-		}
+			topicId, topic := CreateTopicWithEpochLength(m, epochLength)
 
-		workerAccountName := "stressWorker" + strconv.Itoa(i)
-		workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
-		if err != nil {
-			fmt.Println("Error creating worker address: ", workerAccountName, " - ", err)
-			continue
-		}
-		workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
-		if err != nil {
-			fmt.Println("Error getting worker address: ", workerAccountName, " - ", err)
-			continue
-		}
-		fmt.Println("Worker address: ", workerAddress)
-		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
-		if err != nil {
-			fmt.Println("Error funding worker address: ", workerAddress, " - ", err)
-			continue
-		}
-		err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
-		if err != nil {
-			fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
-			continue
-		}
-		workerAddresses := make(map[string]string)
-		workerAddresses[workerAccountName] = workerAddress
+			err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
+			if err != nil {
+				m.t.Fatal(err)
+			}
 
-		// Generate new reputer account
-		reputerAccountName := "stressReputer" + strconv.Itoa(i)
-		reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
-		if err != nil {
-			fmt.Println("Error creating reputer address: ", reputerAccountName, " - ", err)
-			continue
-		}
-		reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
-		if err != nil {
-			fmt.Println("Error getting reputer address: ", reputerAccountName, " - ", err)
-			continue
-		}
-		fmt.Println("Reputer address: ", reputerAddress)
-		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
-		if err != nil {
-			fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
-			continue
-		}
-		err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
-		if err != nil {
-			fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
-			continue
-		}
-		err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
-		if err != nil {
-			fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
-			continue
-		}
-		reputerAddresses := make(map[string]string)
-		reputerAddresses[reputerAccountName] = reputerAddress
+			err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
+			if err != nil {
+				fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
+				continue
+			}
 
-		// Choose one random leader from the worker accounts
-		InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightCurrent)
-		InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightEval)
+			err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
+			if err != nil {
+				fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
+				continue
+			}
+			err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
+			if err != nil {
+				fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
+				continue
+			}
 
-		startReputer := time.Now()
-		InsertReputerBulk(m, &topic, reputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
-		elapsedBulk := time.Since(startReputer)
-		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
+			// Choose one random leader from the worker accounts
+			InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightCurrent)
+			InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightEval)
+
+			startReputer := time.Now()
+			InsertReputerBulk(m, &topic, reputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
+			elapsedBulk := time.Since(startReputer)
+			fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
+		}
 
 		// Sleep for one epoch
 		elapsed := time.Since(start)
