@@ -92,7 +92,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 			expected: map[string]*emissions.Inference{
-				"forecaster0": {Value: alloraMath.MustNewDecFromString("1.445753495")},
+				"forecaster0": {Value: alloraMath.MustNewDecFromString("1.34103809")},
 			},
 			expectedErr: nil,
 		},
@@ -119,7 +119,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 			expected: map[string]*emissions.Inference{
-				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.000901377688219")},
+				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.06298087")},
 			},
 			expectedErr: nil,
 		},
@@ -146,7 +146,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
 			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
 			expected: map[string]*emissions.Inference{
-				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.0743066993456")},
+				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.068680221617")},
 			},
 			expectedErr: nil,
 		},
