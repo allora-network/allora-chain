@@ -33,9 +33,6 @@ func TestStressTestTopicLimitsSuite(t *testing.T) {
 		t.Skip("Skipping Stress Test topic limit unless explicitly enabled")
 	}
 
-	const stakeToAdd uint64 = 10000
-	const topicFunds int64 = 10000000000000000
-
 	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
 
