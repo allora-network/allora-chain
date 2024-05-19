@@ -68,11 +68,11 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.000211256018186383"),
-		alloraMath.MustNewDecFromString("0.000461256018186383"),
-		alloraMath.MustNewDecFromString("-0.000118743981813617"),
-		alloraMath.MustNewDecFromString("-0.001428743981813617"),
-		alloraMath.MustNewDecFromString("-0.003378743981813617"),
+		alloraMath.MustNewDecFromString("-0.00021125601"),
+		alloraMath.MustNewDecFromString("-0.000461256018"),
+		alloraMath.MustNewDecFromString("0.0001187439"),
+		alloraMath.MustNewDecFromString("0.0014287439"),
+		alloraMath.MustNewDecFromString("0.00337874398"),
 	}
 	for i, reputerScore := range scores {
 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
@@ -141,11 +141,11 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("-0.00038974427813"),
-		alloraMath.MustNewDecFromString("0.00017400572"),
-		alloraMath.MustNewDecFromString("-0.00275974427"),
-		alloraMath.MustNewDecFromString("0.001075880721867234"),
-		alloraMath.MustNewDecFromString("0.00009900572186"),
+		alloraMath.MustNewDecFromString("0.000389744278"),
+		alloraMath.MustNewDecFromString("-0.00017400572"),
+		alloraMath.MustNewDecFromString("0.0027597442"),
+		alloraMath.MustNewDecFromString("-0.001075880"),
+		alloraMath.MustNewDecFromString("-0.000099005721"),
 	}
 	for i, reputerScore := range scores {
 		delta, err := reputerScore.Score.Sub(expectedScores[i])
