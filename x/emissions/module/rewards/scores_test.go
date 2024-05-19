@@ -85,6 +85,9 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
+// In this test we run two trials of generating inference scores, the first with lower one out losses
+// and the second with higher one out losses.
+// We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
@@ -154,6 +157,10 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
+// In this test we run two trials of generating forecast scores, the first with lower one out losses
+// and the second with higher one out losses.
+// We then compare the resulting forecaster scores and check that the higher one out losses result
+// in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
