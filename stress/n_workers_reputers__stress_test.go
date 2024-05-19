@@ -374,14 +374,6 @@ func CreateTopicLoop(m TestMetadata) {
 				continue
 			}
 
-			/*
-				err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
-				if err != nil {
-					fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
-					continue
-				}
-			*/
-
 			// Choose one random leader from the worker accounts
 			InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightCurrent)
 			InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightEval)
