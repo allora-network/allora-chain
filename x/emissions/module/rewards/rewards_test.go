@@ -684,6 +684,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	reputerValues []TestWorkerValue,
 	workerZeroAddress sdk.AccAddress,
 	workerZeroOneOutInfererValue string,
+	workerZeroInfererValue string,
 ) []rewards.TaskRewards {
 	require := s.Require()
 
@@ -735,6 +736,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		reputerValues,
 		workerZeroAddress,
 		workerZeroOneOutInfererValue,
+		workerZeroInfererValue,
 	)
 
 	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
@@ -871,6 +873,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		reputerValues,
 		workerAddrs[0],
 		"0.1",
+		"0.1",
 	)
 
 	/// TEST 0 PART B
@@ -885,6 +888,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		reputerValues,
 		workerAddrs[0],
 		"0.2",
+		"0.1",
 	)
 
 	/// TEST 1 PART A
@@ -901,6 +905,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		reputerValues,
 		workerAddrs[0],
 		"0.1",
+		"0.1",
 	)
 
 	/// TEST 1 PART B
@@ -915,6 +920,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		reputerValues,
 		workerAddrs[0],
 		"0.2",
+		"0.1",
 	)
 
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
@@ -979,6 +985,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		reputerValues,
 		workerAddrs[0],
 		"0.1",
+		"0.1",
 	)
 
 	/// TEST 0 PART B
@@ -993,6 +1000,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		reputerValues,
 		workerAddrs[0],
 		"0.2",
+		"0.1",
 	)
 
 	/// CHANGE TASK REWARD ALPHA
@@ -1015,6 +1023,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		reputerValues,
 		workerAddrs[0],
 		"0.1",
+		"0.1",
 	)
 
 	/// TEST 1 PART B
@@ -1029,6 +1038,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		reputerValues,
 		workerAddrs[0],
 		"0.2",
+		"0.1",
 	)
 
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
@@ -1059,6 +1069,165 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	}
 
 	require.True(workerReward_0_0_1_Reward.Lt(workerReward_0_1_1_Reward))
+}
+
+func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegret() {
+	/// SETUP
+	require := s.Require()
+	k := s.emissionsKeeper
+
+	currentParams, err := k.GetParams(s.ctx)
+	require.NoError(err)
+
+	blockHeight0 := int64(100)
+	blockHeightDelta := int64(1)
+	s.ctx = s.ctx.WithBlockHeight(blockHeight0)
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[3],
+		s.addrs[4],
+		s.addrs[5],
+	}
+
+	stake := cosmosMath.NewUint(1000000000000000000).Mul(inference_synthesis.CosmosUintOneE18())
+
+	topicId0 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
+
+	workerValues := s.defineValues(
+		workerAddrs,
+		[]TestWorkerValue{
+			{Address: s.addrs[0], Value: "0.1"},
+			{Address: s.addrs[1], Value: "0.2"},
+			{Address: s.addrs[2], Value: "0.3"},
+		},
+	)
+
+	reputerValues := s.defineValues(
+		reputerAddrs,
+		[]TestWorkerValue{
+			{Address: s.addrs[3], Value: "0.1"},
+			{Address: s.addrs[4], Value: "0.2"},
+			{Address: s.addrs[5], Value: "0.3"},
+		},
+	)
+
+	currentParams.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+	err = k.SetParams(s.ctx, currentParams)
+	require.NoError(err)
+
+	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[0].String()))
+	require.NoError(err)
+	require.True(notFound)
+
+	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[1].String()))
+	require.NoError(err)
+	require.True(notFound)
+
+	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[2].String()))
+	require.NoError(err)
+	require.True(notFound)
+
+	/// TEST 0 PART A
+
+	s.getRewardsDistribution(
+		topicId0,
+		blockHeight0,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	/// TEST 0 PART B
+
+	blockHeight1 := blockHeight0 + blockHeightDelta
+	s.ctx = s.ctx.WithBlockHeight(blockHeight1)
+
+	s.getRewardsDistribution(
+		topicId0,
+		blockHeight1,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+		"0.2",
+	)
+
+	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[0].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[1].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, sdk.AccAddress(workerAddrs[2].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	/// INCREASE ALPHA REGRET
+
+	currentParams.AlphaRegret = alloraMath.MustNewDecFromString(("0.2"))
+	err = k.SetParams(s.ctx, currentParams)
+	require.NoError(err)
+
+	/// TEST 1 PART A
+
+	blockHeight2 := blockHeight1 + blockHeightDelta
+	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
+
+	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
+
+	s.getRewardsDistribution(
+		topicId1,
+		blockHeight2,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	/// TEST 1 PART B
+
+	blockHeight3 := blockHeight2 + blockHeightDelta
+	s.ctx = s.ctx.WithBlockHeight(blockHeight3)
+
+	s.getRewardsDistribution(
+		topicId1,
+		blockHeight3,
+		workerValues,
+		reputerValues,
+		workerAddrs[0],
+		"0.1",
+		"0.2",
+	)
+
+	blockHeight4 := blockHeight3 + blockHeightDelta
+	s.ctx = s.ctx.WithBlockHeight(blockHeight4)
+
+	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[0].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[1].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, sdk.AccAddress(workerAddrs[2].String()))
+	require.NoError(err)
+	require.False(notFound)
+
+	require.True(worker0_0.Value.Gt(worker0_1.Value))
+	require.True(alloraMath.InDelta(worker1_0.Value, worker1_1.Value, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(alloraMath.InDelta(worker2_0.Value, worker2_1.Value, alloraMath.MustNewDecFromString("0.00001")))
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
