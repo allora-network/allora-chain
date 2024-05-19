@@ -156,7 +156,7 @@ func (s *RewardsTestSuite) SetupTest() {
 	s.privKeys = privKeys
 
 	// Add all tests addresses in whitelists
-	for _, addr := range s.addrs {
+	for _, addr := range s.addrsStr {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 	}
 }
@@ -1659,7 +1659,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	reputerStake := make([]cosmosMath.Uint, 5)
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
-		reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr)
+		reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr.String())
 		s.Require().NoError(err)
 	}
 
@@ -1706,7 +1706,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
-		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr)
+		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr.String())
 		s.Require().NoError(err)
 		s.Require().True(reputerStakeCurrent.GT(reputerStake[i]))
 		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.Equal(reputerBalances[i].Amount))
@@ -1871,10 +1871,10 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
 		if i > 2 {
-			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId2, addr)
+			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId2, addr.String())
 			s.Require().NoError(err)
 		} else {
-			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, addr)
+			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, addr.String())
 			s.Require().NoError(err)
 		}
 	}

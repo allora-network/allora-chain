@@ -16,33 +16,28 @@ func GetReputersRewardFractions(
 	topicId uint64,
 	pRewardSpread alloraMath.Dec,
 	scoresAtBlock []types.Score,
-) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+) ([]string, []alloraMath.Dec, error) {
 
 	numReputers := len(scoresAtBlock)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
-	reputers := make([]sdk.AccAddress, numReputers)
+	reputers := make([]string, numReputers)
 	for i, scorePtr := range scoresAtBlock {
 		scores[i] = scorePtr.Score
-		addrStr := scorePtr.Address
-		reputerAddr, err := sdk.AccAddressFromBech32(addrStr)
+		reputers[i] = scorePtr.Address
+		stake, err := k.GetStakeOnReputerInTopic(ctx, topicId, scorePtr.Address)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to convert reputer address %s", addrStr)
-		}
-		reputers[i] = reputerAddr
-		stake, err := k.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
-		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
 		stakes[i], err = alloraMath.NewDecFromSdkUint(stake)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to convert reputer stake %d", stake)
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to convert reputer stake %d", stake)
 		}
 	}
 
 	rewardFractions, err := CalculateReputerRewardFractions(stakes, scores, pRewardSpread)
 	if err != nil {
-		return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward fractions")
+		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward fractions")
 	}
 
 	return reputers, rewardFractions, nil
@@ -54,7 +49,7 @@ func GetReputerTaskEntropy(
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	reputers []sdk.AccAddress,
+	reputers []string,
 	reputerFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
@@ -237,7 +232,7 @@ func GetRewardPerReputer(
 	keeper keeper.Keeper,
 	topicId uint64,
 	totalReputerRewards alloraMath.Dec,
-	reputerAddresses []sdk.AccAddress,
+	reputerAddresses []string,
 	reputersFractions []alloraMath.Dec,
 ) ([]TaskRewards, error) {
 	var reputerDelegatorTotalRewards []TaskRewards
