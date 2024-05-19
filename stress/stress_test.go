@@ -45,7 +45,7 @@ func TestStressTestSuite(t *testing.T) {
 	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
 	t.Log(">>> Test Topic Creation <<<")
-	topicId, _ := CreateTopic(m)
+	topicId := CreateTopic(m)
 
 	t.Log(">>> Test Topic Funding and Activation <<<")
 	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)

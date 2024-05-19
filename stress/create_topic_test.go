@@ -6,15 +6,49 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// test that we can create topics and that the resultant topics are what we asked for
-func CreateTopic(m TestMetadata) (topicId uint64, topic emissionstypes.Topic) {
-	return CreateTopicWithEpochLength(m, 2)
-}
-
 func CreateTopicWithEpochLength(
 	m TestMetadata,
 	epochLength int64,
 ) (topicId uint64, topic emissionstypes.Topic) {
+	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
+		Creator:          m.n.FaucetAddr,
+		Metadata:         "ETH 24h Prediction",
+		LossLogic:        "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
+		LossMethod:       "loss-calculation-eth.wasm",
+		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
+		InferenceMethod:  "allora-inference-function.wasm",
+		EpochLength:      2,
+		GroundTruthLag:   0,
+		DefaultArg:       "ETH",
+		Pnorm:            2,
+		AlphaRegret:      alloraMath.MustNewDecFromString("3.14"),
+		PrewardReputer:   alloraMath.MustNewDecFromString("6.2"),
+		PrewardInference: alloraMath.MustNewDecFromString("7.3"),
+		PrewardForecast:  alloraMath.MustNewDecFromString("8.4"),
+		FTolerance:       alloraMath.MustNewDecFromString("5.5"),
+	}
+	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.FaucetAcc, createTopicRequest)
+	require.NoError(m.t, err)
+	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
+	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
+	err = txResp.Decode(createTopicResponse)
+	require.NoError(m.t, err)
+	topicId = createTopicResponse.TopicId
+	storedTopicResponse, err := m.n.QueryEmissions.GetTopic(
+		m.ctx,
+		&emissionstypes.QueryTopicRequest{
+			TopicId: topicId,
+		},
+	)
+	require.NoError(m.t, err)
+	storedTopic := storedTopicResponse.Topic
+
+	return topicId, *storedTopic
+}
+
+// test that we can create topics and that the resultant topics are what we asked for
+func CreateTopic(m TestMetadata) (topicId uint64) {
 	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
@@ -29,7 +63,7 @@ func CreateTopicWithEpochLength(
 		LossMethod:       "loss-calculation-eth.wasm",
 		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod:  "allora-inference-function.wasm",
-		EpochLength:      epochLength,
+		EpochLength:      2,
 		GroundTruthLag:   0,
 		DefaultArg:       "ETH",
 		Pnorm:            2,
@@ -78,5 +112,5 @@ func CreateTopicWithEpochLength(
 	require.True(m.t, createTopicRequest.PrewardForecast.Equal(storedTopic.PrewardForecast), "Preward Forecast not equal %s != %s", createTopicRequest.PrewardForecast, storedTopic.PrewardForecast)
 	require.True(m.t, createTopicRequest.FTolerance.Equal(storedTopic.FTolerance), "FTolerance not equal %s != %s", createTopicRequest.FTolerance, storedTopic.FTolerance)
 
-	return topicId, *storedTopic
+	return topicId
 }

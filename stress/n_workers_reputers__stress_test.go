@@ -300,14 +300,7 @@ func CreateTopicLoop(m TestMetadata) {
 		return
 	}
 
-	topicId, _ := CreateTopicWithEpochLength(m, epochLength)
-
-	err = FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
-	if err != nil {
-		m.t.Fatal(err)
-	}
-
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5)
 	if err != nil {
 		m.t.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
@@ -357,10 +350,10 @@ func CreateTopicLoop(m TestMetadata) {
 	for i := 0; i < MAX_ITERATIONS; i++ {
 		start := time.Now()
 
-		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
+		fmt.Println("iteration: ", i+1, " / ", MAX_ITERATIONS)
 
 		for j := 0; j < topicsPerBlock; j++ {
-			fmt.Print("new topic: ", j, " / ", topicsPerBlock, ", ")
+			fmt.Print("new topic: ", j+1, " / ", topicsPerBlock, ", ")
 
 			topicId, topic := CreateTopicWithEpochLength(m, epochLength)
 
@@ -380,11 +373,14 @@ func CreateTopicLoop(m TestMetadata) {
 				fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
 				continue
 			}
-			err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
-			if err != nil {
-				fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
-				continue
-			}
+
+			/*
+				err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
+				if err != nil {
+					fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
+					continue
+				}
+			*/
 
 			// Choose one random leader from the worker accounts
 			InsertWorkerBulk(m, &topic, workerAccountName, workerAddresses, blockHeightCurrent)
