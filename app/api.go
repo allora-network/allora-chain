@@ -51,7 +51,7 @@ func generateLossesRequest(
 	functionId string,
 	functionMethod string,
 	topicId uint64,
-	topicNeverNegative bool,
+	topicAllowsNegative bool,
 	blockHeight emissionstypes.Nonce,
 	blockHeightEval emissionstypes.Nonce,
 	blocktime uint64) {
@@ -88,8 +88,8 @@ func generateLossesRequest(
 					Value: strconv.FormatInt(blockHeightEval.BlockHeight, 10),
 				},
 				{
-					Name:  "IS_NEVER_NEGATIVE",
-					Value: strconv.FormatBool(topicNeverNegative),
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
@@ -112,7 +112,7 @@ func generateInferencesRequest(
 	functionMethod string,
 	param string,
 	topicId uint64,
-	topicNeverNegative bool,
+	topicAllowsNegative bool,
 	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
@@ -134,8 +134,8 @@ func generateInferencesRequest(
 					Value: strconv.FormatInt(nonce.BlockHeight, 10),
 				},
 				{
-					Name:  "IS_NEVER_NEGATIVE",
-					Value: strconv.FormatBool(topicNeverNegative),
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
 				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
