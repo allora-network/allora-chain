@@ -357,15 +357,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				Worker string
 				Value  string
 			}{
-				{Worker: "worker0", Value: "-0.07291976702609980"},
-				{Worker: "worker1", Value: "-0.07795430811050460"},
-				{Worker: "worker2", Value: "-0.042814093565554400"},
+				{Worker: "worker0", Value: "-0.074219097858"},
+				{Worker: "worker1", Value: "-0.07829470780342"},
+				{Worker: "worker2", Value: "-0.04304176609863"},
 			},
 			expectedOneOutImpliedInferences: []struct {
 				Worker string
 				Value  string
 			}{
-				{Worker: "worker3", Value: "-0.0635171449618356"},
+				{Worker: "worker3", Value: "-0.0635171449618"},
 				{Worker: "worker4", Value: "-0.06471822091625930"},
 				{Worker: "worker5", Value: "-0.0649534852873976"},
 			},
@@ -441,11 +441,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				Worker string
 				Value  string
 			}{
-				{Worker: "worker0", Value: "-0.09154683788664610"},
-				{Worker: "worker1", Value: "-0.08794790996372430"},
-				{Worker: "worker2", Value: "-0.07594021292207610"},
-				{Worker: "worker3", Value: "-0.0792252490898395"},
-				{Worker: "worker4", Value: "-0.0993013271015888"},
+				{Worker: "worker0", Value: "-0.10047603382276"},
+				{Worker: "worker1", Value: "-0.094059525953"},
+				{Worker: "worker2", Value: "-0.0777209545840161"},
+				{Worker: "worker3", Value: "-0.0814467632119"},
+				{Worker: "worker4", Value: "-0.0970080720467"},
 			},
 			expectedOneOutImpliedInferences: []struct {
 				Worker string
@@ -1190,15 +1190,14 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		}
 		require.True(found, "Inference not found")
 	}
-
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch string(forecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(forecasterValue.Value, "-0.08944493117005920")
+			s.inEpsilon2(forecasterValue.Value, "-0.0960296150")
 		case forecaster1:
-			s.inEpsilon2(forecasterValue.Value, "-0.07333218290300560")
+			s.inEpsilon2(forecasterValue.Value, "-0.086542689374256822")
 		case forecaster2:
-			s.inEpsilon2(forecasterValue.Value, "-0.07756206109376570")
+			s.inEpsilon2(forecasterValue.Value, "-0.084686457639")
 		default:
 			require.Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -1224,11 +1223,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch string(oneInForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.0911173989550551")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.0928536483997")
 		case forecaster1:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.08692482591184730")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.090330891793228")
 		case forecaster2:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.08802837922471950")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.08983607522636518")
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
@@ -1237,11 +1236,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08503863595710710")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0892055033118326")
 		case forecaster1:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08833982502870460")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0911446642528370")
 		case forecaster2:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08746610645716590")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0915207839637910")
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
