@@ -359,7 +359,8 @@ func CreateTopicLoop(m TestMetadata) {
 
 		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
 
-		for i := 0; i < topicsPerBlock; i++ {
+		for j := 0; j < topicsPerBlock; j++ {
+			fmt.Print("new topic: ", j, " / ", topicsPerBlock, ", ")
 
 			topicId, topic := CreateTopicWithEpochLength(m, epochLength)
 
