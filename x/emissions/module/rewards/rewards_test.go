@@ -795,25 +795,10 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRew
 	return true
 }
 
-func (s *RewardsTestSuite) defineValues(addrs []sdk.AccAddress, values []TestWorkerValue) []TestWorkerValue {
-	require := s.Require()
-
-	require.Len(addrs, len(values))
-	for _, addr := range addrs {
-		found := false
-		for _, value := range values {
-			if value.Address.Equals(addr) {
-				found = true
-				break
-			}
-		}
-		if !found {
-			require.Fail("Address not found in values")
-		}
-	}
-	return values
-}
-
+// We have 2 trials with 2 epochs each, and the first worker does better in the 2nd epoch in both trials.
+// We show that keeping the TaskRewardAlpha the same means that the worker is rewarded the same amount
+// in both cases.
+// This is a sanity test to ensure that we are isolating the effect of TaskRewardAlpha in subsequent tests.
 func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImportanceOfPastVsPresent() {
 	/// SETUP
 	require := s.Require()
@@ -842,23 +827,17 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues := s.defineValues(
-		workerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[0], Value: "0.1"},
-			{Address: s.addrs[1], Value: "0.2"},
-			{Address: s.addrs[2], Value: "0.3"},
-		},
-	)
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
 
-	reputerValues := s.defineValues(
-		reputerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[3], Value: "0.1"},
-			{Address: s.addrs[4], Value: "0.2"},
-			{Address: s.addrs[5], Value: "0.3"},
-		},
-	)
+	reputerValues := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
 
 	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString(("0.1"))
 	err = k.SetParams(s.ctx, currentParams)
@@ -927,6 +906,10 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 }
 
+// We have 2 trials with 2 epochs each, and the first worker does better in the 2nd epoch in both trials,
+// due to a worse one out inferer value, indicating that the network is better off with the worker.
+// We increase TaskRewardAlpha between the trials to show that weighting current performance more heavily
+// means that the worker is rewarded more for their better performance in the 2nd epoch of the 2nd trial.
 func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPresentPerformance() {
 	require := s.Require()
 	k := s.emissionsKeeper
@@ -954,23 +937,17 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues := s.defineValues(
-		workerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[0], Value: "0.1"},
-			{Address: s.addrs[1], Value: "0.2"},
-			{Address: s.addrs[2], Value: "0.3"},
-		},
-	)
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
 
-	reputerValues := s.defineValues(
-		reputerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[3], Value: "0.1"},
-			{Address: s.addrs[4], Value: "0.2"},
-			{Address: s.addrs[5], Value: "0.3"},
-		},
-	)
+	reputerValues := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
 
 	currentParams.TaskRewardAlpha = alloraMath.MustNewDecFromString("0.1")
 	err = k.SetParams(s.ctx, currentParams)
@@ -1071,6 +1048,13 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	require.True(workerReward_0_0_1_Reward.Lt(workerReward_0_1_1_Reward))
 }
 
+// We have 2 trials with 2 epochs each, and the first worker does worse in 2nd epoch in both trials,
+// enacted by their increasing loss between epochs.
+// We increase alpha between the trials to prove that their worsening performance decreases regret.
+// This is somewhat counterintuitive, but can be explained by the following passage from the litepaper:
+// "A positive regret implies that the inference of worker j is expected by worker k to outperform
+// the network’s previously reported accuracy, whereas a negative regret indicates that the network
+// is expected to be more accurate."
 func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegret() {
 	/// SETUP
 	require := s.Require()
@@ -1099,23 +1083,17 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 	topicId0 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
 
-	workerValues := s.defineValues(
-		workerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[0], Value: "0.1"},
-			{Address: s.addrs[1], Value: "0.2"},
-			{Address: s.addrs[2], Value: "0.3"},
-		},
-	)
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
 
-	reputerValues := s.defineValues(
-		reputerAddrs,
-		[]TestWorkerValue{
-			{Address: s.addrs[3], Value: "0.1"},
-			{Address: s.addrs[4], Value: "0.2"},
-			{Address: s.addrs[5], Value: "0.3"},
-		},
-	)
+	reputerValues := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
 
 	currentParams.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
 	err = k.SetParams(s.ctx, currentParams)
