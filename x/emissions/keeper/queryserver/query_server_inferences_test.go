@@ -119,12 +119,6 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	reputer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
 	reputer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
 
-	reputer0Acc := sdk.AccAddress(reputer0)
-	reputer1Acc := sdk.AccAddress(reputer1)
-	reputer2Acc := sdk.AccAddress(reputer2)
-	reputer3Acc := sdk.AccAddress(reputer3)
-	reputer4Acc := sdk.AccAddress(reputer4)
-
 	blockHeight := int64(10)
 
 	simpleNonce := types.Nonce{BlockHeight: blockHeight}
@@ -184,15 +178,15 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Stake
 
-	err = keeper.AddStake(s.ctx, topicId, reputer0Acc, cosmosMath.NewUintFromString("210535101370326000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer0, cosmosMath.NewUintFromString("210535101370326000000000"))
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer1Acc, cosmosMath.NewUintFromString("216697093951021000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer1, cosmosMath.NewUintFromString("216697093951021000000000"))
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer2Acc, cosmosMath.NewUintFromString("161740241803855000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer2, cosmosMath.NewUintFromString("161740241803855000000000"))
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer3Acc, cosmosMath.NewUintFromString("394848305052250000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer3, cosmosMath.NewUintFromString("394848305052250000000000"))
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer4Acc, cosmosMath.NewUintFromString("206169717590569000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer4, cosmosMath.NewUintFromString("206169717590569000000000"))
 	require.NoError(err)
 
 	// Set Inferences

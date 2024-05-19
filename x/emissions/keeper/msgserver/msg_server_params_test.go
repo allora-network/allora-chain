@@ -17,7 +17,7 @@ func (s *KeeperTestSuite) TestUpdateParams() {
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	keeper.AddWhitelistAdmin(ctx, adminAddr)
+	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
 
 	existingParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
@@ -52,7 +52,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	keeper.AddWhitelistAdmin(ctx, adminAddr)
+	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
 
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},

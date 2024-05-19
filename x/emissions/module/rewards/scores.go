@@ -29,19 +29,15 @@ func GenerateReputerScores(
 	reportedLosses = ensureWorkerPresence(reportedLosses)
 
 	// Fetch reputers data
-	var reputerAddresses []sdk.AccAddress
+	var reputers []string
 	var reputerStakes []alloraMath.Dec
 	var reputerListeningCoefficients []alloraMath.Dec
 	var losses [][]alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
-		reputerAddr, err := sdk.AccAddressFromBech32(reportedLoss.ValueBundle.Reputer)
-		if err != nil {
-			return []types.Score{}, err
-		}
-		reputerAddresses = append(reputerAddresses, reputerAddr)
+		reputers = append(reputers, reportedLoss.ValueBundle.Reputer)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
+		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}
@@ -52,7 +48,7 @@ func GenerateReputerScores(
 		reputerStakes = append(reputerStakes, reputerStakeDec)
 
 		// Get reputer listening coefficient
-		res, err := keeper.GetListeningCoefficient(ctx, topicId, reputerAddr)
+		res, err := keeper.GetListeningCoefficient(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetListeningCoefficient")
 		}
@@ -83,11 +79,11 @@ func GenerateReputerScores(
 
 	// Insert new coeffients and scores
 	var newScores []types.Score
-	for i, reputerAddr := range reputerAddresses {
+	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
 			topicId,
-			reputerAddr,
+			reputer,
 			types.ListeningCoefficient{Coefficient: newCoefficients[i]},
 		)
 		if err != nil {
@@ -97,14 +93,14 @@ func GenerateReputerScores(
 		newScore := types.Score{
 			TopicId:     topicId,
 			BlockNumber: block,
-			Address:     reputerAddr.String(),
+			Address:     reputer,
 			Score:       scores[i],
 		}
 		err = keeper.InsertReputerScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
-		err = keeper.SetLatestReputerScore(ctx, topicId, reputerAddr, newScore)
+		err = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
 		}
@@ -136,11 +132,6 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 	}
 
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
-		workerAddr, err := sdk.AccAddressFromBech32(oneOutLoss.Worker)
-		if err != nil {
-			return []types.Score{}, err
-		}
-
 		// Calculate new score
 		workerNewScore, err := networkLosses.CombinedValue.Sub(oneOutLoss.Value)
 		if err != nil {
@@ -150,14 +141,14 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		newScore := types.Score{
 			TopicId:     topicId,
 			BlockNumber: block,
-			Address:     workerAddr.String(),
+			Address:     oneOutLoss.Worker,
 			Score:       workerNewScore,
 		}
 		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		err = keeper.SetLatestInfererScore(ctx, topicId, workerAddr, newScore)
+		err = keeper.SetLatestInfererScore(ctx, topicId, oneOutLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
 		}
@@ -211,11 +202,6 @@ func GenerateForecastScores(
 	}
 
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
-		workerAddr, err := sdk.AccAddressFromBech32(oneInNaiveLoss.Worker)
-		if err != nil {
-			return []types.Score{}, err
-		}
-
 		// Get worker score for one in loss
 		workerScoreOneIn, err := oneInNaiveLoss.Value.Sub(networkLosses.NaiveValue)
 		if err != nil {
@@ -231,14 +217,14 @@ func GenerateForecastScores(
 		newScore := types.Score{
 			TopicId:     topicId,
 			BlockNumber: block,
-			Address:     workerAddr.String(),
+			Address:     oneInNaiveLoss.Worker,
 			Score:       workerFinalScore,
 		}
 		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
-		err = keeper.SetLatestForecasterScore(ctx, topicId, workerAddr, newScore)
+		err = keeper.SetLatestForecasterScore(ctx, topicId, oneInNaiveLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
 		}

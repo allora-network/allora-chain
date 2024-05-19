@@ -27,12 +27,8 @@ type Int = cosmosMath.Int
 
 type TopicId = uint64
 type LibP2pKey = string
-type Delegator = sdk.AccAddress
-type Worker = sdk.AccAddress
-type Reputer = sdk.AccAddress
-type AccAddress = string
-type Workers = string
-type Reputers = string
+type Delegator = string
+type ActorId = string
 type BlockHeight = int64
 type RequestId = string
 type RequestIndex = uint64 // A concept completely internal to the keeper. Each request in a topic is indexed by a unique request index.
@@ -59,9 +55,9 @@ type Keeper struct {
 	// every topics that has been churned and ready to get inferences in the block
 	churnReadyTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
-	topicWorkers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
+	topicWorkers collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// for a topic, what is every reputer node that has registered to it?
-	topicReputers collections.KeySet[collections.Pair[TopicId, sdk.AccAddress]]
+	topicReputers collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// map of (topic) -> nonce/block height
 	topicRewardNonce collections.Map[TopicId, BlockHeight]
 
@@ -74,19 +70,19 @@ type Keeper struct {
 	// map of (topic, block_number, reputer) -> score
 	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_number, worker) -> score
-	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, Worker], types.Score]
+	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_number, worker) -> score
-	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, Worker], types.Score]
+	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_number, reputer) -> score
-	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, Reputer], types.Score]
+	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, reputer) -> listening coefficient
-	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, Reputer], types.ListeningCoefficient]
+	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, ActorId], types.ListeningCoefficient]
 	// map of (topic, reputer) -> previous reward (used for EMA)
-	previousReputerRewardFraction collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
+	previousReputerRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for inference (used for EMA)
-	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
+	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
-	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, Worker], alloraMath.Dec]
+	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 
 	/// STAKING
 
@@ -95,27 +91,27 @@ type Keeper struct {
 	// for every topic, how much total stake does that topic have accumulated?
 	topicStake collections.Map[TopicId, Uint]
 	// amount of stake a reputer has placed in a topic + delegate stake placed in them, signalling their authority on the topic
-	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, Reputer], Uint]
+	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, ActorId], Uint]
 	// map of (reputer) -> removal information for that reputer
-	stakeRemoval collections.Map[collections.Pair[TopicId, Reputer], types.StakeRemoval]
+	stakeRemoval collections.Map[collections.Pair[TopicId, ActorId], types.StakeRemoval]
 	// map of (delegator) -> removal information for that delegator
-	delegateStakeRemoval collections.Map[collections.Triple[TopicId, Reputer, Delegator], types.DelegateStakeRemoval]
+	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, Delegator], types.DelegateStakeRemoval]
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, Delegator], Uint]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
-	delegateStakePlacement collections.Map[collections.Triple[TopicId, Reputer, Delegator], types.DelegatorInfo]
+	delegateStakePlacement collections.Map[collections.Triple[TopicId, ActorId, Delegator], types.DelegatorInfo]
 	// map of (target) -> amount of stake that has been placed on that target
-	stakeUponReputer collections.Map[collections.Pair[TopicId, Reputer], Uint]
+	stakeUponReputer collections.Map[collections.Pair[TopicId, ActorId], Uint]
 	// map of (topidId, reputer) -> share of delegate reward
-	delegateRewardPerShare collections.Map[collections.Pair[TopicId, Reputer], alloraMath.Dec]
+	delegateRewardPerShare collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 
 	/// MISC GLOBAL STATE
 
 	// map of (topic, worker) -> inference
-	inferences collections.Map[collections.Pair[TopicId, Worker], types.Inference]
+	inferences collections.Map[collections.Pair[TopicId, ActorId], types.Inference]
 
 	// map of (topic, worker) -> forecast[]
-	forecasts collections.Map[collections.Pair[TopicId, Worker], types.Forecast]
+	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of worker id to node data about that worker
 	workers collections.Map[LibP2pKey, types.OffchainNode]
@@ -155,16 +151,16 @@ type Keeper struct {
 	/// REGRETS
 
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
-	latestInfererNetworkRegrets collections.Map[collections.Pair[TopicId, Worker], types.TimestampedValue]
+	latestInfererNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
-	latestForecasterNetworkRegrets collections.Map[collections.Pair[TopicId, Worker], types.TimestampedValue]
+	latestForecasterNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
 	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
 	// all network inferer losses L_ij including the network forecast-implied inference L_ik^* of the forecaster
-	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, Worker, Worker], types.TimestampedValue]
+	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
 	/// WHITELISTS
 
-	whitelistAdmins collections.KeySet[sdk.AccAddress]
+	whitelistAdmins collections.KeySet[ActorId]
 }
 
 func NewKeeper(
@@ -190,19 +186,19 @@ func NewKeeper(
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
 		churnReadyTopics:                         collections.NewKeySet(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", collections.Uint64Key),
-		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey)),
-		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.StakeRemoval](cdc)),
-		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
-		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.DelegatorInfo](cdc)),
-		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.UintValue),
-		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.UintValue),
+		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakeRemoval](cdc)),
+		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
+		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.UintValue),
+		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegatorInfo](cdc)),
+		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.UintValue),
+		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
-		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Inference](cdc)),
-		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Forecast](cdc)),
+		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
+		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
 		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
@@ -210,20 +206,20 @@ func NewKeeper(
 		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
 		networkLossBundles:                       collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
 		previousPercentageRewardToStakedReputers: collections.NewItem(sb, types.PreviousPercentageRewardToStakedReputersKey, "previous_percentage_reward_to_staked_reputers", alloraMath.DecValue),
-		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, sdk.AccAddressKey, sdk.AccAddressKey), codec.CollValue[types.TimestampedValue](cdc)),
-		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", sdk.AccAddressKey),
+		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
 		infererScoresByBlock:                     collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecasterScoresByBlock:                  collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		latestInfererScoresByWorker:              collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		latestForecasterScoresByWorker:           collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		latestReputerScoresByReputer:             collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.Score](cdc)),
-		previousReputerRewardFraction:            collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		previousInferenceRewardFraction:          collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
-		previousForecastRewardFraction:           collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), alloraMath.DecValue),
+		latestInfererScoresByWorker:              collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		latestForecasterScoresByWorker:           collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		latestReputerScoresByReputer:             collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		previousReputerRewardFraction:            collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousInferenceRewardFraction:          collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecastRewardFraction:           collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		reputerScoresByBlock:                     collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		reputerListeningCoefficient:              collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, sdk.AccAddressKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		reputerListeningCoefficient:              collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:                  collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 		unfulfilledReputerNonces:                 collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
 		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
@@ -311,7 +307,7 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 			continue
 		}
 		if n.BlockHeight == nonce.BlockHeight {
-			fmt.Println("Worker nonce found", nonce)
+			fmt.Println("ActorId nonce found", nonce)
 			return true, nil
 		}
 	}
@@ -336,7 +332,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 			continue
 		}
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
-			fmt.Println("Reputer nonce found", nonce)
+			fmt.Println("ActorId nonce found", nonce)
 			return true, nil
 		}
 	}
@@ -453,24 +449,24 @@ func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId Top
 
 /// REGRETS
 
-func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
+func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker, regret types.TimestampedValue) error {
+func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
 	key := collections.Join(topicId, worker)
 	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
 	key := collections.Join3(topicId, forecaster, inferer)
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -487,7 +483,7 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker Worker) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -504,7 +500,7 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster Worker, inferer Worker) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -721,15 +717,9 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 	block := nonce.BlockHeight
 
 	for _, inference := range inferences.Inferences {
-		inferenceCopy := *inference
 		// Update latests inferences for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(inferenceCopy.Inferer)
-		if err != nil {
-			return err
-		}
-		key := collections.Join(topicId, workerAcc)
-		err = k.inferences.Set(ctx, key, inferenceCopy)
-		if err != nil {
+		key := collections.Join(topicId, inference.Inferer)
+		if err := k.inferences.Set(ctx, key, *inference); err != nil {
 			return err
 		}
 	}
@@ -744,13 +734,8 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
-		workerAcc, err := sdk.AccAddressFromBech32(forecast.Forecaster)
-		if err != nil {
-			return err
-		}
-		key := collections.Join(topicId, workerAcc)
-		err = k.forecasts.Set(ctx, key, *forecast)
-		if err != nil {
+		key := collections.Join(topicId, forecast.Forecaster)
+		if err := k.forecasts.Set(ctx, key, *forecast); err != nil {
 			return err
 		}
 	}
@@ -762,7 +747,7 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TopicId,
-	worker sdk.AccAddress) (types.Inference, error) {
+	worker ActorId) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
 }
@@ -828,7 +813,7 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 /// STAKING
 
 // Adds stake to the system for a given topic and reputer
-func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, stake Uint) error {
+func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer ActorId, stake Uint) error {
 	// Run checks to ensure that the stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return nil
@@ -881,7 +866,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer sdk.AccA
 	return nil
 }
 
-func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator sdk.AccAddress, reputer sdk.AccAddress, stake Uint) error {
+func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator Delegator, reputer ActorId, stake Uint) error {
 	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return errorsmod.Wrapf(types.ErrInvalidValue, "stake must be greater than zero")
@@ -911,11 +896,15 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 		if err != nil {
 			return err
 		}
+		delegatorAccAddr, err := sdk.AccAddressFromBech32(delegator)
+		if err != nil {
+			return err
+		}
 		if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraPendingRewardForDelegatorAccountName,
-				delegator,
+				delegatorAccAddr,
 				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 			)
 			if err != nil {
@@ -970,7 +959,7 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 func (k *Keeper) RemoveStake(
 	ctx context.Context,
 	topicId TopicId,
-	reputer sdk.AccAddress,
+	reputer ActorId,
 	stake Uint) error {
 	if stake.IsZero() {
 		return nil
@@ -1052,8 +1041,8 @@ func (k *Keeper) RemoveStake(
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
 	topicId TopicId,
-	delegator sdk.AccAddress,
-	reputer sdk.AccAddress,
+	delegator Delegator,
+	reputer ActorId,
 	unStake Uint) error {
 	if unStake.IsZero() {
 		return nil
@@ -1098,10 +1087,14 @@ func (k *Keeper) RemoveDelegateStake(
 		return err
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		delegatorAccAddr, err := sdk.AccAddressFromBech32(delegator)
+		if err != nil {
+			return err
+		}
 		err = k.BankKeeper().SendCoinsFromModuleToAccount(
 			ctx,
 			types.AlloraPendingRewardForDelegatorAccountName,
-			delegator,
+			delegatorAccAddr,
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 		)
 		if err != nil {
@@ -1186,7 +1179,7 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (Uint, erro
 
 // Returns the amount of stake placed by a specific reputer on a specific topic.
 // Includes the stake placed by delegators on the reputer in that topic.
-func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (Uint, error) {
+func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (Uint, error) {
 	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeByReputerAndTopicId.Get(ctx, key)
 	if err != nil {
@@ -1221,7 +1214,7 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 }
 
 // Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer) (types.DelegatorInfo, error) {
+func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target ActorId) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
@@ -1234,7 +1227,7 @@ func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target Reputer, stake types.DelegatorInfo) error {
+func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target ActorId, stake types.DelegatorInfo) error {
 	key := collections.Join3(topicId, delegator, target)
 	if stake.Amount.IsZero() {
 		return k.delegateStakePlacement.Remove(ctx, key)
@@ -1243,7 +1236,7 @@ func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 }
 
 // Returns the share of reward by a specific topic and reputer
-func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer) (alloraMath.Dec, error) {
+func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId) (alloraMath.Dec, error) {
 	key := collections.Join(topicId, reputer)
 	share, err := k.delegateRewardPerShare.Get(ctx, key)
 	if err != nil {
@@ -1256,13 +1249,13 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 }
 
 // Set the share on specific reputer and topicId
-func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer Reputer, share alloraMath.Dec) error {
+func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
 	key := collections.Join(topicId, reputer)
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
 // Returns the amount of stake placed on a specific target.
-func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target Reputer) (Uint, error) {
+func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId) (Uint, error) {
 	key := collections.Join(topicId, target)
 	stake, err := k.stakeUponReputer.Get(ctx, key)
 	if err != nil {
@@ -1275,7 +1268,7 @@ func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 }
 
 // Sets the amount of stake placed on a specific target.
-func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target Reputer, stake Uint) error {
+func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId, stake Uint) error {
 	key := collections.Join(topicId, target)
 	if stake.IsZero() {
 		return k.stakeUponReputer.Remove(ctx, key)
@@ -1284,7 +1277,7 @@ func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, address sdk.AccAddress) (types.StakeRemoval, error) {
+func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, address ActorId) (types.StakeRemoval, error) {
 	key := collections.Join(topicId, address)
 	return k.stakeRemoval.Get(ctx, key)
 }
@@ -1292,13 +1285,13 @@ func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId T
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetStakeRemoval(ctx context.Context, address sdk.AccAddress, removalInfo types.StakeRemoval) error {
+func (k *Keeper) SetStakeRemoval(ctx context.Context, address ActorId, removalInfo types.StakeRemoval) error {
 	key := collections.Join(removalInfo.Placement.TopicId, address)
 	return k.stakeRemoval.Set(ctx, key, removalInfo)
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, delegator sdk.AccAddress) (types.DelegateStakeRemoval, error) {
+func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator Delegator) (types.DelegateStakeRemoval, error) {
 	key := collections.Join3(topicId, reputer, delegator)
 	return k.delegateStakeRemoval.Get(ctx, key)
 }
@@ -1307,22 +1300,14 @@ func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, t
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
 func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakeRemoval) error {
-	reputerAddress, err := sdk.AccAddressFromBech32(removalInfo.Placement.Reputer)
-	if err != nil {
-		return err
-	}
-	delegatorAddress, err := sdk.AccAddressFromBech32(removalInfo.Placement.Delegator)
-	if err != nil {
-		return err
-	}
-	key := collections.Join3(removalInfo.Placement.TopicId, reputerAddress, delegatorAddress)
+	key := collections.Join3(removalInfo.Placement.TopicId, removalInfo.Placement.Reputer, removalInfo.Placement.Delegator)
 	return k.delegateStakeRemoval.Set(ctx, key, removalInfo)
 }
 
 /// REPUTERS
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, reputerInfo types.OffchainNode) error {
+func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer ActorId, reputerInfo types.OffchainNode) error {
 	topicKey := collections.Join(topicId, reputer)
 	err := k.topicReputers.Set(ctx, topicKey)
 	if err != nil {
@@ -1336,8 +1321,8 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer sdk
 }
 
 // Remove a reputer to the reputer tracking data structures and topicReputers
-func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputerAddr sdk.AccAddress) error {
-	topicKey := collections.Join(topicId, reputerAddr)
+func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputer ActorId) error {
+	topicKey := collections.Join(topicId, reputer)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1352,7 +1337,7 @@ func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (type
 /// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker sdk.AccAddress, workerInfo types.OffchainNode) error {
+func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
 	topickey := collections.Join(topicId, worker)
 	err := k.topicWorkers.Set(ctx, topickey)
 	if err != nil {
@@ -1366,8 +1351,8 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker sdk.A
 }
 
 // Remove a worker to the worker tracking data structures and topicWorkers
-func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, workerAddr sdk.AccAddress) error {
-	topicKey := collections.Join(topicId, workerAddr)
+func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker ActorId) error {
+	topicKey := collections.Join(topicId, worker)
 	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
 		return err
@@ -1537,13 +1522,13 @@ func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (B
 }
 
 // True if worker is registered in topic, else False
-func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (bool, error) {
+func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker ActorId) (bool, error) {
 	topickey := collections.Join(topicId, worker)
 	return k.topicWorkers.Has(ctx, topickey)
 }
 
 // True if reputer is registered in topic, else False
-func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (bool, error) {
+func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
 }
@@ -1636,7 +1621,7 @@ func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 /// SCORES
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
+func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
 	if err != nil {
 		return err
@@ -1648,7 +1633,7 @@ func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	return k.latestInfererScoresByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
 	if err != nil {
@@ -1661,7 +1646,7 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker, score types.Score) error {
+func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	oldScore, err := k.GetLatestForecasterScore(ctx, topicId, worker)
 	if err != nil {
 		return err
@@ -1673,7 +1658,7 @@ func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker Worker) (types.Score, error) {
+func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
 	if err != nil {
@@ -1686,7 +1671,7 @@ func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer, score types.Score) error {
+func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
 	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
 	if err != nil {
 		return err
@@ -1698,7 +1683,7 @@ func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	return k.latestReputerScoresByReputer.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer Reputer) (types.Score, error) {
+func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
 	key := collections.Join(topicId, reputer)
 	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
 	if err != nil {
@@ -1878,12 +1863,12 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 	return scores, nil
 }
 
-func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, coefficient types.ListeningCoefficient) error {
+func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
 }
 
-func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (types.ListeningCoefficient, error) {
+func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId) (types.ListeningCoefficient, error) {
 	key := collections.Join(topicId, reputer)
 	coef, err := k.reputerListeningCoefficient.Get(ctx, key)
 	if err != nil {
@@ -1900,7 +1885,7 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 
 // Gets the previous W_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer ActorId) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, reputer)
 	reward, err := k.previousReputerRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1913,14 +1898,14 @@ func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId T
 }
 
 // Sets the previous W_{i-1,m}
-func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer sdk.AccAddress, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer ActorId, reward alloraMath.Dec) error {
 	key := collections.Join(topicId, reputer)
 	return k.previousReputerRewardFraction.Set(ctx, key, reward)
 }
 
 // Gets the previous U_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousInferenceRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1933,14 +1918,14 @@ func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId
 }
 
 // Sets the previous U_{i-1,m}
-func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
 	key := collections.Join(topicId, worker)
 	return k.previousInferenceRewardFraction.Set(ctx, key, reward)
 }
 
 // Gets the previous V_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousForecastRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1953,7 +1938,7 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 }
 
 // Sets the previous V_{i-1,m}
-func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker sdk.AccAddress, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
 	key := collections.Join(topicId, worker)
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
@@ -1968,15 +1953,15 @@ func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context)
 
 /// WHITELISTS
 
-func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) (bool, error) {
+func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin ActorId) (bool, error) {
 	return k.whitelistAdmins.Has(ctx, admin)
 }
 
-func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin ActorId) error {
 	return k.whitelistAdmins.Set(ctx, admin)
 }
 
-func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin sdk.AccAddress) error {
+func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin ActorId) error {
 	return k.whitelistAdmins.Remove(ctx, admin)
 }
 
@@ -1992,12 +1977,20 @@ func (k *Keeper) BankKeeper() BankKeeper {
 }
 
 // wrapper around bank keeper SendCoinsFromModuleToAccount
-func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
+	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
+	if err != nil {
+		return err
+	}
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
 }
 
 // wrapper around bank keeper SendCoinsFromAccountToModule
-func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, sender ActorId, recipientModule string, amt sdk.Coins) error {
+	senderAddr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return err
+	}
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }
 

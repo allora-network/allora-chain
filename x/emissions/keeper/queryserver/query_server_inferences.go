@@ -13,11 +13,6 @@ import (
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
 func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *types.QueryWorkerLatestInferenceRequest) (*types.QueryWorkerLatestInferenceResponse, error) {
-	workerAddr, err := sdk.AccAddressFromBech32(req.WorkerAddress)
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "worker with address %s not found", req.WorkerAddress)
-	}
-
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -25,7 +20,7 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
-	inference, err := qs.k.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, workerAddr)
+	inference, err := qs.k.GetWorkerLatestInferenceByTopicId(ctx, req.TopicId, req.WorkerAddress)
 	if err != nil {
 		return nil, err
 	}

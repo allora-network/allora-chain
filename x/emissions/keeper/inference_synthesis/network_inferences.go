@@ -38,7 +38,7 @@ func AreAllWorkersNew(
 ) (AllWorkersAreNew, error) {
 	allInferersAreNew := true
 	for _, inferer := range sortedInferers {
-		_, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		_, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return AllWorkersAreNew{}, err // TODO: THIS OR continue ??
@@ -49,7 +49,7 @@ func AreAllWorkersNew(
 
 	allForecastersAreNew := true
 	for _, forecast := range forecasts.Forecasts {
-		_, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecast.Forecaster))
+		_, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecast.Forecaster)
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return AllWorkersAreNew{}, err // TODO: THIS OR continue ??
@@ -83,7 +83,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 ) (MaximalRegrets, error) {
 	maxInfererRegret := epsilon // averts div by 0 error
 	for _, inferer := range sortedInferers {
-		infererRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		infererRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -96,7 +96,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 
 	maxForecasterRegret := epsilon // averts div by 0 error
 	for _, forecaster := range sortedForecasters {
-		forecasterRegret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
+		forecasterRegret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -110,7 +110,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 	maxOneInForecasterRegret := make(map[Worker]Regret) // averts div by 0 error
 	for _, forecaster := range sortedForecasters {
 		for _, inferer := range sortedInferers {
-			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(inferer))
+			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 			if err != nil {
 				fmt.Println("Error getting forecaster regret: ", err)
 				return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -120,7 +120,7 @@ func FindMaxRegretAmongWorkersWithLosses(
 			}
 		}
 
-		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster), sdk.AccAddress(forecaster))
+		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, forecaster)
 		if err != nil {
 			fmt.Println("Error getting one-in forecaster self regret: ", err)
 			return MaximalRegrets{}, err // TODO: THIS OR continue ??
@@ -232,7 +232,7 @@ func CalcWeightedInference(
 
 	for _, inferer := range sortedInferers {
 		// Get the regret of the inferer
-		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, sdk.AccAddress(inferer))
+		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			fmt.Println("Error getting inferer regret: ", err)
 			return InferenceValue{}, err
@@ -255,7 +255,7 @@ func CalcWeightedInference(
 
 	for _, forecaster := range sortedForecasters {
 		// Get the regret of the forecaster
-		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, sdk.AccAddress(forecaster))
+		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
 		if err != nil {
 			fmt.Println("Error getting forecaster regret: ", err)
 			return InferenceValue{}, err
@@ -367,9 +367,9 @@ func CalcOneOutInferences(
 		// Remove the inference of the worker from the inferences
 		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
 
-		for _, workerOfImpliedInference := range sortedInferers {
+		for _, workerOfImpliedInference := range sortedForecasters {
 			if workerOfImpliedInference != worker {
-				impliedInferenceWithoutWorker[workerOfImpliedInference] = inferenceByWorker[workerOfImpliedInference]
+				impliedInferenceWithoutWorker[workerOfImpliedInference] = forecastImpliedInferenceByWorker[workerOfImpliedInference]
 			}
 		}
 
@@ -484,6 +484,7 @@ func CalcNetworkInferences(
 		epsilon,
 		pInferenceSynthesis,
 	)
+
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
@@ -662,7 +663,7 @@ func GetNetworkInferencesAtBlock(
 		// Map list of stakesOnTopic to map of stakesByReputer
 		stakesByReputer := make(map[string]cosmosMath.Uint)
 		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
-			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, sdk.AccAddress(bundle.ValueBundle.Reputer))
+			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
 			if err != nil {
 				fmt.Println("Error getting stake on reputer: ", err)
 				return networkInferences, nil
