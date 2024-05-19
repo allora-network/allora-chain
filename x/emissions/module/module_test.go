@@ -4,8 +4,6 @@ import (
 	"testing"
 	"time"
 
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
 
@@ -84,12 +82,9 @@ func (s *ModuleTestSuite) SetupTest() {
 
 	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
 	var addrsStr []string = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
 	for i := 0; i < 5; i++ {
-		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
 		addrsStr = append(addrsStr, addrs[i].String())
 	}
-	s.addrs = addrs
 	s.addrsStr = addrsStr
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
@@ -119,7 +114,7 @@ func (s *ModuleTestSuite) SetupTest() {
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
-	for _, addr := range addrs {
+	for _, addr := range addrsStr {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 	}
 }

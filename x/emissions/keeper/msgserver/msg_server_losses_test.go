@@ -28,7 +28,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
-	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
@@ -160,7 +160,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
-	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 
@@ -308,7 +308,7 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 
 	minStakeScaled := minStake.Mul(inference_synthesis.CosmosUintOneE18())
 
-	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, minStakeScaled)
+	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
 

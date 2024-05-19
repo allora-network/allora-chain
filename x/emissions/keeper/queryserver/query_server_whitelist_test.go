@@ -2,7 +2,6 @@ package queryserver_test
 
 import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *KeeperTestSuite) TestIsWhitelistAdmin() {
@@ -14,9 +13,7 @@ func (s *KeeperTestSuite) TestIsWhitelistAdmin() {
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	accAddress, err := sdk.AccAddressFromBech32(testAddress)
-	s.Require().NoError(err, "AccAddressFromBech32 should not produce an error")
-	keeper.AddWhitelistAdmin(ctx, accAddress)
+	keeper.AddWhitelistAdmin(ctx, testAddress)
 
 	req := &types.QueryIsWhitelistAdminRequest{
 		Address: testAddress,
