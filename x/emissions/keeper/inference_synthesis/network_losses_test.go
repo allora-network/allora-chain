@@ -176,6 +176,25 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 			expectedLoss: alloraMath.MustNewDecFromString(".000015456633"),
 			expectedErr:  nil,
 		},
+		{
+			name: "One reputer reporting a zero combined loss",
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
+				"worker1": inference_synthesis.CosmosUintOneE18(), // 1 token
+			},
+			reportedLosses: &emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "worker1",
+							CombinedValue: alloraMath.MustNewDecFromString("0"),
+						},
+					},
+				},
+			},
+			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
+			expectedLoss: alloraMath.MustNewDecFromString("1e-4"), // Should be equal to epsilon
+			expectedErr:  nil,
+		},	
 	}
 
 	for _, tc := range tests {

@@ -100,6 +100,10 @@ func CalcNetworkLosses(
 				fmt.Println("Error updating running weighted average for next combined loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
+			// If the combined loss is zero, set it to epsilon to avoid divide by zero
+			if nextCombinedLoss.Loss.IsZero() {		
+				nextCombinedLoss.Loss = epsilon
+			}
 			runningWeightedCombinedLoss = nextCombinedLoss
 
 			// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
@@ -245,11 +249,14 @@ func CalcCombinedNetworkLoss(
 			)
 			if err != nil {
 				fmt.Println("Error updating running weighted average for combined loss: ", err)
-				return alloraMath.ZeroDec(), err
+				return Loss{}, err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
 		}
 	}
-
+	// If the combined loss is zero, set it to epsilon to avoid divide by zero
+	if runningWeightedCombinedLoss.Loss.IsZero() {
+		runningWeightedCombinedLoss.Loss = epsilon
+	}
 	return runningWeightedCombinedLoss.Loss, nil
 }
