@@ -1163,17 +1163,17 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	// Check updated stake for delegator after removal
 	delegatorStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.ZeroUint(), delegatorStake, "Delegator stake should be zero after removal")
+	s.Require().Equal(cosmosMath.ZeroInt(), delegatorStake, "Delegator stake should be zero after removal")
 
 	// Check updated topic stake after removal
 	topicStake, err := keeper.GetTopicStake(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.ZeroUint(), topicStake, "Topic stake should be zero after removal")
+	s.Require().Equal(cosmosMath.ZeroInt(), topicStake, "Topic stake should be zero after removal")
 
 	// Check updated total stake after removal
 	finalTotalStake, err := keeper.GetTotalStake(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(initialTotalStake.Sub(stakeAmount), finalTotalStake, "Total stake should be decremented by stake amount after removal")
+	s.Require().True(initialTotalStake.Sub(stakeAmount).Equal(finalTotalStake), "Total stake should be decremented by stake amount after removal")
 }
 
 func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
@@ -1223,12 +1223,12 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	// Check remaining stake for delegator
 	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.ZeroUint(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
+	s.Require().Equal(cosmosMath.ZeroInt(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
 	// Check remaining stake for delegator
 	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
-	s.Require().Equal(cosmosMath.ZeroUint(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
+	s.Require().Equal(cosmosMath.ZeroInt(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
 func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
@@ -2897,8 +2897,11 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 	}
 
 	targetweight, err := alloraMath.NewDecFromString("1.0")
+	s.Require().NoError(err)
 	previousTopicWeight, err := alloraMath.NewDecFromString("0.8")
+	s.Require().NoError(err)
 	emaWeight, err := alloraMath.NewDecFromString("0.9")
+	s.Require().NoError(err)
 
 	topicId := uint64(1)
 	topicEpochLength := int64(10)
@@ -2908,9 +2911,9 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 	additionalRevenue := cosmosMath.NewInt(100)
 
 	s.topicKeeper.EXPECT().GetTopicStake(s.ctx, topicId).Return(cosmosMath.NewInt(1000), nil).AnyTimes()
-	s.topicKeeper.EXPECT().NewDecFromSdkUint(cosmosMath.NewInt(1000)).Return(alloraMath.NewDecFromInt64(1000), nil).AnyTimes()
+	s.topicKeeper.EXPECT().NewDecFromSdkInt(cosmosMath.NewInt(1000)).Return(alloraMath.NewDecFromInt64(1000), nil).AnyTimes()
 	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(types.TopicFeeRevenue{Revenue: cosmosMath.NewInt(500)}, nil).AnyTimes()
-	newFeeRevenue := cosmosMath.NewIntFromBigInt(additionalRevenue.BigInt()).Add(cosmosMath.NewInt(500))
+	newFeeRevenue := additionalRevenue.Add(cosmosMath.NewInt(500))
 	s.topicKeeper.EXPECT().NewDecFromSdkInt(newFeeRevenue).Return(alloraMath.NewDecFromInt64(600), nil).AnyTimes()
 	s.topicKeeper.EXPECT().GetTargetWeight(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(targetweight, nil).AnyTimes()
 	s.topicKeeper.EXPECT().GetPreviousTopicWeight(s.ctx, topicId).Return(previousTopicWeight, false, nil).AnyTimes()

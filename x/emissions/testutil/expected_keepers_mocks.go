@@ -2,6 +2,8 @@ package testutil
 
 import (
 	context "context"
+	reflect "reflect"
+
 	address "cosmossdk.io/core/address"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -9,7 +11,6 @@ import (
 	types0 "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/x/auth/types"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
 type MockBankKeeper struct {
@@ -464,10 +465,10 @@ func (m *MockTopicKeeper) EXPECT() *MockTopicKeeperMockRecorder {
 }
 
 // GetTopicStake mocks base method
-func (m *MockTopicKeeper) GetTopicStake(ctx context.Context, topicId uint64) (cosmosMath.Uint, error) {
+func (m *MockTopicKeeper) GetTopicStake(ctx context.Context, topicId uint64) (cosmosMath.Int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTopicStake", ctx, topicId)
-	ret0, _ := ret[0].(cosmosMath.Uint)
+	ret0, _ := ret[0].(cosmosMath.Int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

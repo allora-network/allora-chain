@@ -101,11 +101,11 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 
 	reputerStake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), reputerStake, "Stake amount mismatch")
+	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
 
 	topicStake, err := s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), topicStake, "Stake amount mismatch")
+	require.Equal(cosmosMath.ZeroInt(), topicStake, "Stake amount mismatch")
 
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
@@ -338,7 +338,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	reputerStake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr.String())
 	require.NoError(err)
-	require.Equal(cosmosMath.ZeroUint(), reputerStake, "Stake amount mismatch")
+	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
 
 	amount0, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
@@ -355,7 +355,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount.SdkUintTrim())
+	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
 }
 
 func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
@@ -396,7 +396,7 @@ func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount.SdkUintTrim())
+	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
 
 	// Attempt to withdraw the delegated stake
 	removeMsg := &types.MsgStartRemoveStake{

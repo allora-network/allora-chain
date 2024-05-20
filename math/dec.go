@@ -385,13 +385,6 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 	return sdkmath.NewIntFromBigInt(&r)
 }
 
-// SdkUintTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Uint`.
-// Panics if x is bigger the SDK Uint max value
-func (x Dec) SdkUintTrim() sdkmath.Uint {
-	var r = x.Coeff()
-	return sdkmath.NewUintFromBigInt(&r)
-}
-
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
 	y, _ := sdkmath.LegacyNewDecFromStr(x.dec.Text('f'))
 	return y
