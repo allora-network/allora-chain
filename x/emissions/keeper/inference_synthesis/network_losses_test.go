@@ -11,48 +11,35 @@ import (
 func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 	tests := []struct {
 		name                string
-		initialWeightedLoss inference_synthesis.WorkerRunningWeightedLoss
-		weight              inference_synthesis.Weight
+		initialWeightedLoss inference_synthesis.RunningWeightedLoss
+		nextWeight          inference_synthesis.Weight
 		nextValue           inference_synthesis.Weight
-		epsilon             inference_synthesis.Weight
-		expectedLoss        inference_synthesis.WorkerRunningWeightedLoss
+		expectedLoss        inference_synthesis.RunningWeightedLoss
 		expectedErr         error
 	}{
 		{
 			name:                "normal operation",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.5"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
-			weight:              alloraMath.MustNewDecFromString("1.0"),
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.5"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("2.0"),
-			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("1.25"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
+			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("2.5"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
 			expectedErr:         nil,
 		},
 		{
 			name:                "simple example",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
-			weight:              alloraMath.MustNewDecFromString("1.0"),
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
+			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.1"),
-			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
 		},
 		{
 			name:                "simple example2",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
-			weight:              alloraMath.MustNewDecFromString("1.0"),
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
+			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.2"),
-			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
-		},
-		{
-			name:                "division by zero error",
-			initialWeightedLoss: inference_synthesis.WorkerRunningWeightedLoss{Loss: alloraMath.MustNewDecFromString("1.01"), SumWeight: alloraMath.ZeroDec()},
-			weight:              alloraMath.MustNewDecFromString("2.0"),
-			nextValue:           alloraMath.MustNewDecFromString("1.0"),
-			epsilon:             alloraMath.MustNewDecFromString("3.0"),
-			expectedLoss:        inference_synthesis.WorkerRunningWeightedLoss{},
-			expectedErr:         emissions.ErrFractionDivideByZero,
 		},
 	}
 
@@ -60,15 +47,14 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 		s.Run(tc.name, func() {
 			updatedLoss, err := inference_synthesis.RunningWeightedAvgUpdate(
 				&tc.initialWeightedLoss,
-				tc.weight,
+				tc.nextWeight,
 				tc.nextValue,
-				tc.epsilon,
 			)
 			if tc.expectedErr != nil {
 				s.Require().ErrorIs(err, tc.expectedErr, "Error should match the expected error")
 			} else {
 				s.Require().NoError(err, "No error expected but got one")
-				s.Require().True(alloraMath.InDelta(tc.expectedLoss.Loss, updatedLoss.Loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match the expected value within epsilon")
+				s.Require().True(alloraMath.InDelta(tc.expectedLoss.UnnormalizedWeightedLoss, updatedLoss.UnnormalizedWeightedLoss, alloraMath.MustNewDecFromString("0.00001")), "UnnormalizedWeightedLoss should match the expected value within epsilon")
 				s.Require().Equal(tc.expectedLoss.SumWeight, updatedLoss.SumWeight, "Sum of weights should match the expected value")
 			}
 		})

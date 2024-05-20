@@ -27,7 +27,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputerAddr := PKS[0].Address().String()
+	reputerAddr := sdk.AccAddress(PKS[0].Address()).String()
 
 	initialStake := cosmosMath.NewUint(250)
 	err := keeper.AddStake(ctx, topicId, reputerAddr, initialStake)
@@ -49,8 +49,8 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	delegatorAddr := PKS[0].Address().String()
-	reputerAddr := PKS[1].Address().String()
+	delegatorAddr := sdk.AccAddress(PKS[0].Address()).String()
+	reputerAddr := sdk.AccAddress(PKS[1].Address()).String()
 	initialStakeAmount := cosmosMath.NewUint(1000)
 
 	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
@@ -73,8 +73,8 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	keeper := s.emissionsKeeper
 
 	topicId := uint64(123)
-	delegatorAddr := PKS[0].Address().String()
-	reputerAddr := PKS[1].Address().String()
+	delegatorAddr := sdk.AccAddress(PKS[0].Address()).String()
+	reputerAddr := sdk.AccAddress(PKS[1].Address()).String()
 	stakeAmount := cosmosMath.NewUint(50)
 
 	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
