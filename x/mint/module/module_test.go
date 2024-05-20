@@ -167,11 +167,13 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
 	s.Require().NoError(err)
 	// stake enough tokens so that the networkStaked is non zero
+	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
+	s.Require().True(ok)
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
-		cosmosMath.NewUintFromString("300000000000000000000000000"),
+		stake,
 	)
 	s.Require().NoError(err)
 
@@ -203,12 +205,14 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
+	stake, ok = cosmosMath.NewIntFromString("400000000000000000000000000")
+	s.Require().True(ok)
 	// ok now add some stake
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
-		cosmosMath.NewUintFromString("400000000000000000000000000"),
+		stake,
 	)
 	s.Require().NoError(err)
 
@@ -276,11 +280,13 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
 	s.ctx = s.ctx.WithBlockHeight(1)
 	// stake enough tokens so that the networkStaked is non zero
+	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
+	s.Require().True(ok)
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
-		cosmosMath.NewUintFromString("40000000000000000000"),
+		stake,
 	)
 	s.Require().NoError(err)
 
@@ -348,11 +354,13 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(1)
 	// stake enough tokens so that the networkStaked is non zero
+	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
+	s.Require().True(ok)
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
-		cosmosMath.NewUintFromString("40000000000000000000"),
+		stake,
 	)
 	s.Require().NoError(err)
 
@@ -430,7 +438,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	s.ctx = s.ctx.WithBlockHeight(1)
 
 	// stake enough tokens so that the networkStaked is non zero
-	changeInAmountStakedBefore := cosmosMath.NewUintFromString("300000000000000000000000000")
+	changeInAmountStakedBefore, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
+	s.Require().True(ok)
 	err := s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,
@@ -480,7 +489,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 
 	// now have someone come and stake,
 	// then move to the blockheight where we calculate inflation again
-	changeInAmounStakedAfter := cosmosMath.NewUintFromString("400000000000000000000000000")
+	changeInAmounStakedAfter, ok := cosmosMath.NewIntFromString("400000000000000000000000000")
+	s.Require().True(ok)
 	err = s.emissionsKeeper.AddStake(
 		s.ctx,
 		0,

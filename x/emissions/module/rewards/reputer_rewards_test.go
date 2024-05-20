@@ -89,7 +89,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewUint(10000000000))
+	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewInt(10000000000))
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -279,7 +279,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Increase stake for the first reputer
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1000000))
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1000000))
 	s.Require().NoError(err)
 
 	// Get new reputer rewards
@@ -315,7 +315,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	s.Require().NoError(err)
 
 	// Remove stake for the first reputer
-	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1176644))
+	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1176644))
 	s.Require().NoError(err)
 
 	// Check if stake is zero
@@ -354,12 +354,12 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 		alloraMath.MustNewDecFromString("11.36754"),
 		alloraMath.MustNewDecFromString("15.21749"),
 	}
-	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644),
-		cosmosMath.NewUint(384623),
-		cosmosMath.NewUint(394676),
-		cosmosMath.NewUint(207999),
-		cosmosMath.NewUint(368582),
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewInt(1176644),
+		cosmosMath.NewInt(384623),
+		cosmosMath.NewInt(394676),
+		cosmosMath.NewInt(207999),
+		cosmosMath.NewInt(368582),
 	}
 
 	var reputerValueBundles types.ReputerValueBundles

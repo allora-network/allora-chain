@@ -11,7 +11,7 @@ func (s *KeeperTestSuite) TestGetTotalStake() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
-	expectedTotalStake := cosmosMath.NewUint(1000)
+	expectedTotalStake := cosmosMath.NewInt(1000)
 	err := keeper.SetTotalStake(ctx, expectedTotalStake)
 	s.Require().NoError(err, "SetTotalStake should not produce an error")
 
@@ -30,7 +30,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
 	s.Require().NoError(err)
 	reputerAddr := reputer.String()
-	initialStake := cosmosMath.NewUint(250)
+	initialStake := cosmosMath.NewInt(250)
 
 	err = keeper.AddStake(ctx, topicId, reputerAddr, initialStake)
 	s.Require().NoError(err, "AddStake should not produce an error")
@@ -57,7 +57,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
 	s.Require().NoError(err)
 	reputerAddr := reputer.String()
-	initialStakeAmount := cosmosMath.NewUint(1000)
+	initialStakeAmount := cosmosMath.NewInt(1000)
 
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err, "AddDelegateStake should not produce an error")
@@ -85,7 +85,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
 	s.Require().NoError(err)
 	reputerAddr := reputer.String()
-	stakeAmount := cosmosMath.NewUint(50)
+	stakeAmount := cosmosMath.NewInt(50)
 
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
 	s.Require().NoError(err, "AddDelegateStake should not produce an error")
@@ -111,8 +111,8 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 	delegator, err := sdk.AccAddressFromHexUnsafe(PKS[0].Address().String())
 	s.Require().NoError(err)
 	delegatorAddr := delegator.String()
-	initialStakeAmount := cosmosMath.NewUint(500)
-	additionalStakeAmount := cosmosMath.NewUint(300)
+	initialStakeAmount := cosmosMath.NewInt(500)
+	additionalStakeAmount := cosmosMath.NewInt(300)
 
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), initialStakeAmount)
 	s.Require().NoError(err)
@@ -139,7 +139,7 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 
 	topicId := uint64(1)
 	reputerAddr := PKS[0].Address().String()
-	stakeAmount := cosmosMath.NewUint(500)
+	stakeAmount := cosmosMath.NewInt(500)
 
 	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)

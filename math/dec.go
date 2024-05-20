@@ -156,14 +156,6 @@ func NewDecFromSdkInt(x sdkmath.Int) (Dec, error) {
 	return NewDecFromString(strRep)
 }
 
-// NewDec takes a cosmos `sdkmath.Uint` and turns it into a Dec
-// it converts via strings and throws an error if the string
-// is unable to be parsed
-func NewDecFromSdkUint(x sdkmath.Uint) (Dec, error) {
-	strRep := x.String()
-	return NewDecFromString(strRep)
-}
-
 // NewDec takes a cosmos `sdkmath.LegacyDec` and turns it into a Dec
 // it converts via strings and throws an error if the string
 // is unable to be parsed
@@ -391,13 +383,6 @@ func (x Dec) Coeff() big.Int {
 func (x Dec) SdkIntTrim() sdkmath.Int {
 	var r = x.Coeff()
 	return sdkmath.NewIntFromBigInt(&r)
-}
-
-// SdkUintTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Uint`.
-// Panics if x is bigger the SDK Uint max value
-func (x Dec) SdkUintTrim() sdkmath.Uint {
-	var r = x.Coeff()
-	return sdkmath.NewUintFromBigInt(&r)
 }
 
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
