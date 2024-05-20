@@ -326,12 +326,62 @@ const topicFunds int64 = 10000000000000000
 // Register two actors and check their registrations went through
 func WorkerReputerLoop(m TestMetadata) {
 
-	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 1)
-	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", MAX_ITERATIONS)
-	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 1)
-	workersMax := lookupEnvInt(m, "WORKERS_MAX", MAX_ITERATIONS)
+	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
+	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 10000)
+	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
+	workersMax := lookupEnvInt(m, "WORKERS_MAX", 10000)
 	topicsPerEpoch := lookupEnvInt(m, "TOPICS_PER_EPOCH", 0)
 	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
+
+	workerCount := 0
+	reputerCount := 0
+
+	createAccount := func(accountName string) (string, string) {
+		account, _, err := m.n.Client.AccountRegistry.Create(accountName)
+		if err != nil {
+			m.t.Log("Error creating account: ", accountName, " - ", err)
+			return accountName, ""
+		}
+
+		m.t.Log("Created new account ", accountName)
+
+		address, err := account.Address(params.HumanCoinUnit)
+		if err != nil {
+			m.t.Log("Error getting address: ", accountName, " - ", err)
+			return accountName, address
+		}
+
+		m.t.Log("Worker address: ", address)
+
+		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, address, 100000)
+		if err != nil {
+			m.t.Log("Error funding address: ", address, " - ", err)
+			return accountName, address
+		}
+
+		return accountName, address
+	}
+
+	createWorkerAccount := func() (string, string) {
+		cacheWorkerAcount := workerCount
+		workerCount++
+		return createAccount("stressWorker" + strconv.Itoa(cacheWorkerAcount))
+	}
+
+	createReputerAccount := func() (string, string) {
+		cacheReputerAcount := reputerCount
+		reputerCount++
+		return createAccount("stressReputer" + strconv.Itoa(cacheReputerAcount))
+	}
+
+	workerAddresses := make(map[string]string)
+	reputerAddresses := make(map[string]string)
+
+	workerAccountName, workerAddress := createWorkerAccount()
+	workerAddresses[workerAccountName] = workerAddress
+
+	reputerAccountName, reputerAddress := createReputerAccount()
+	reputerAddresses[reputerAccountName] = reputerAddress
 
 	initialTopicId, _ := SetupTopic(m)
 
@@ -344,43 +394,23 @@ func WorkerReputerLoop(m TestMetadata) {
 	topics := []*types.Topic{}
 	topics = append(topics, topic)
 
-	workerCount := 0
-	reputerCount := 0
-
-	createWorker := func() (string, string) {
-		workerAccountName := "stressWorker" + strconv.Itoa(workerCount)
-		workerCount++
-		workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
-		if err != nil {
-			m.t.Fatal("Error creating worker account: ", workerAccountName, " - ", err)
-		}
-		m.t.Log("Created new worker ", workerAccountName)
-
-		workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
-		if err != nil {
-			m.t.Fatal("Error getting worker address: ", workerAccountName, " - ", err)
-		}
-
-		fmt.Println("Worker address: ", workerAddress)
-
-		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
-		if err != nil {
-			m.t.Fatal("Error funding worker address: ", workerAddress, " - ", err)
-		}
-
-		return workerAccountName, workerAddress
-	}
-
-	workerAddresses := make(map[string]string)
-	reputerAddresses := make(map[string]string)
-
-	workerAccountName, workerAddress := createWorker()
-	workerAddresses[workerAccountName] = workerAddress
-
 	blockHeightCurrent := topic.EpochLastEnded
 	blockHeightEval := blockHeightCurrent + topic.EpochLength
+
+	ProcessTopicLoopInner(
+		m,
+		make(map[string]string),
+		workerAddresses,
+		make(map[string]string),
+		reputerAddresses,
+		topic,
+		blockHeightCurrent,
+		blockHeightEval,
+	)
+
 	// Translate the epoch length into time
 	epochTimeSeconds := time.Duration(topic.EpochLength*approximateBlockLengthSeconds) * time.Second
+
 	for i := 0; i < MAX_ITERATIONS; i++ {
 		start := time.Now()
 
@@ -393,7 +423,7 @@ func WorkerReputerLoop(m TestMetadata) {
 			if workerCount >= workersMax {
 				break
 			}
-			workerAccountName, workerAddress := createWorker()
+			workerAccountName, workerAddress := createWorkerAccount()
 			newWorkerAddresses[workerAccountName] = workerAddress
 		}
 
@@ -401,27 +431,7 @@ func WorkerReputerLoop(m TestMetadata) {
 			if reputerCount >= reputersMax {
 				break
 			}
-			// Generate new reputer account
-			reputerAccountName := "stressReputer" + strconv.Itoa(reputerCount)
-			m.t.Log("Created new reputer ", reputerAccountName)
-
-			reputerCount++
-			reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
-			if err != nil {
-				fmt.Println("Error creating reputer address: ", reputerAccountName, " - ", err)
-				continue
-			}
-			reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
-			if err != nil {
-				fmt.Println("Error getting reputer address: ", reputerAccountName, " - ", err)
-				continue
-			}
-			fmt.Println("Reputer address: ", reputerAddress)
-			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
-			if err != nil {
-				fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
-				continue
-			}
+			reputerAccountName, reputerAddress := createReputerAccount()
 			newReputerAddresses[reputerAccountName] = reputerAddress
 		}
 
