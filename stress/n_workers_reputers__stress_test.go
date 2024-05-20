@@ -289,20 +289,18 @@ func lookupEnvInt(m TestMetadata, key string, defaultValue int) int {
 	return intValue
 }
 
-func SetupTopic(m TestMetadata) uint64 {
+func SetupTopic(m TestMetadata) (uint64, *types.Topic) {
+	m.t.Log("Creating new Topic")
 	const stakeToAdd uint64 = 10000
 	const topicFunds int64 = 10000000000000000
 
-	m.t.Log(">>> Test Topic Creation <<<")
-	topicId := CreateTopic(m)
+	topicId, topic := CreateTopic(m)
 
-	m.t.Log(">>> Test Topic Funding and Activation <<<")
 	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
 	if err != nil {
 		m.t.Fatal(err)
 	}
 
-	m.t.Log(">>> Starting initial registration, to start topic churn cycle <<<")
 	err = RegisterWorkerForTopic(m, m.n.UpshotAddr, m.n.UpshotAcc, topicId)
 	if err != nil {
 		m.t.Fatal(err)
@@ -317,12 +315,15 @@ func SetupTopic(m TestMetadata) uint64 {
 		m.t.Fatal(err)
 	}
 
-	return topicId
+	m.t.Log("Created new Topic with topicId", topicId)
+
+	return topicId, topic
 }
 
+const stakeToAdd uint64 = 10000
+
 // Register two actors and check their registrations went through
-func WorkerReputerLoop(m TestMetadata, topicId uint64) {
-	const stakeToAdd uint64 = 10000
+func WorkerReputerLoop(m TestMetadata) {
 
 	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 1)
 	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", MAX_ITERATIONS)
@@ -331,11 +332,10 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 	topicsPerEpoch := lookupEnvInt(m, "TOPICS_PER_EPOCH", 0)
 	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
 
-	initialTopicId := SetupTopic(m)
+	initialTopicId, _ := SetupTopic(m)
 
 	workerCount := 0
 	reputerCount := 0
-	topicCount := 1
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
@@ -348,6 +348,9 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 		m.t.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
 	}
+
+	topics := []*types.Topic{}
+	topics = append(topics, topic)
 
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
@@ -370,6 +373,7 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			}
 			// Generate new worker accounts
 			workerAccountName := "stressWorker" + strconv.Itoa(workerCount)
+			m.t.Log("Created new worker ", workerAccountName)
 			workerCount++
 			workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
 			if err != nil {
@@ -388,11 +392,6 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 				continue
 			}
 
-			err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
-			if err != nil {
-				fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
-				continue
-			}
 			newWorkerAddresses[workerAccountName] = workerAddress
 		}
 
@@ -402,6 +401,8 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			}
 			// Generate new reputer account
 			reputerAccountName := "stressReputer" + strconv.Itoa(reputerCount)
+			m.t.Log("Created new reputer ", reputerAccountName)
+
 			reputerCount++
 			reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
 			if err != nil {
@@ -419,21 +420,45 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 				fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
 				continue
 			}
-			err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
-			if err != nil {
-				fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
-				continue
-			}
-			err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
-			if err != nil {
-				fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
-				continue
-			}
 			newReputerAddresses[reputerAccountName] = reputerAddress
 		}
 
 		var wg sync.WaitGroup
-		wg.Add(topicCount)
+		wg.Add(len(topics))
+
+		for _, topic := range topics {
+			go ProcessTopicLoop(
+				m,
+				workerAddresses,
+				newWorkerAddresses,
+				reputerAddresses,
+				newReputerAddresses,
+				topic,
+				blockHeightCurrent,
+				blockHeightEval,
+				&wg,
+			)
+		}
+
+		wg.Wait()
+
+		for workerAccountName, workerAddress := range newWorkerAddresses {
+			workerAddresses[workerAccountName] = workerAddress
+		}
+
+		for reputerAccountName, reputerAddress := range newReputerAddresses {
+			reputerAddresses[reputerAccountName] = reputerAddress
+		}
+
+		for j := 0; j < topicsPerEpoch; j++ {
+			if len(topics) >= topicsMax {
+				break
+			}
+			// Generate new topic
+			_, topic := SetupTopic(m)
+			require.NoError(m.t, err)
+			topics = append(topics, topic)
+		}
 
 		// Sleep for one epoch
 		elapsed := time.Since(start)
@@ -449,14 +474,56 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 }
 
 func ProcessTopicLoop(
+	m TestMetadata,
 	workerAddresses map[string]string,
 	newWorkerAddresses map[string]string,
 	reputerAddresses map[string]string,
 	newReputerAddresses map[string]string,
-	topicId *types.Topic,
+	topic *types.Topic,
 	blockHeightCurrent,
 	blockHeightEval int64,
+	wg *sync.WaitGroup,
 ) {
+	defer wg.Done()
+
+	topicId := topic.Id
+
+	for workerAccountName, workerAddress := range newWorkerAddresses {
+		workerAddresses[workerAccountName] = workerAddress
+
+		workerAccount, err := m.n.Client.AccountRegistry.GetByName(workerAccountName)
+		if err != nil {
+			fmt.Println("Error getting worker account: ", workerAccountName, " - ", err)
+			continue
+		}
+
+		err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
+		if err != nil {
+			fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
+			continue
+		}
+	}
+
+	for reputerAccountName, reputerAddress := range newReputerAddresses {
+		reputerAddresses[reputerAccountName] = reputerAddress
+
+		reputerAccount, err := m.n.Client.AccountRegistry.GetByName(reputerAccountName)
+		if err != nil {
+			fmt.Println("Error getting reputer account: ", reputerAccountName, " - ", err)
+			continue
+		}
+		err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
+		if err != nil {
+			fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
+			continue
+		}
+		err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
+		if err != nil {
+			fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
+			continue
+		}
+	}
+
 	// Choose one random leader from the worker accounts
 	leaderWorkerAccountName, leaderWorkerAddress, err := GetRandomMapEntryValue(workerAddresses)
 	if err != nil {
@@ -474,7 +541,7 @@ func ProcessTopicLoop(
 	leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
 	if err != nil {
 		fmt.Println("Error getting random worker address: ", err)
-		continue
+		return
 	}
 
 	startReputer := time.Now()

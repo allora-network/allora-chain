@@ -7,7 +7,7 @@ import (
 )
 
 // test that we can create topics and that the resultant topics are what we asked for
-func CreateTopic(m TestMetadata) (topicId uint64) {
+func CreateTopic(m TestMetadata) (topicId uint64, topic *emissionstypes.Topic) {
 	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
@@ -72,5 +72,5 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	require.True(m.t, createTopicRequest.PrewardForecast.Equal(storedTopic.PrewardForecast), "Preward Forecast not equal %s != %s", createTopicRequest.PrewardForecast, storedTopic.PrewardForecast)
 	require.True(m.t, createTopicRequest.FTolerance.Equal(storedTopic.FTolerance), "FTolerance not equal %s != %s", createTopicRequest.FTolerance, storedTopic.FTolerance)
 
-	return topicId
+	return topicId, storedTopicResponse.Topic
 }
