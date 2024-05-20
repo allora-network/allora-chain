@@ -289,28 +289,28 @@ const stakeToAdd uint64 = 90000
 const topicFunds int64 = 1000000
 const epochLength int64 = 5
 
-func SetupTopic(m TestMetadata) uint64 {
+func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account) uint64 {
 
 	m.t.Log("Creating new Topic")
 
 	topicId := CreateTopic(m, epochLength)
 
-	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
+	err := FundTopic(m, topicId, topicFunderAddress, topicFunderAccount, topicFunds)
 	if err != nil {
 		m.t.Fatal(err)
 	}
 
-	err = RegisterWorkerForTopic(m, m.n.UpshotAddr, m.n.UpshotAcc, topicId)
+	err = RegisterWorkerForTopic(m, topicFunderAddress, topicFunderAccount, topicId)
 	if err != nil {
 		m.t.Fatal(err)
 	}
 
-	err = RegisterReputerForTopic(m, m.n.FaucetAddr, m.n.FaucetAcc, topicId)
+	err = RegisterReputerForTopic(m, topicFunderAddress, topicFunderAccount, topicId)
 	if err != nil {
 		m.t.Fatal(err)
 	}
 
-	err = StakeReputer(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, stakeToAdd)
+	err = StakeReputer(m, topicId, topicFunderAddress, topicFunderAccount, stakeToAdd)
 	if err != nil {
 		m.t.Fatal(err)
 	}
@@ -339,17 +339,40 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
 	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
 
-	iterationTimeSeconds := time.Duration(epochLength) * approximateBlockTimeSeconds * iterationsInABatch
+	iterationTimeSeconds := time.Duration(epochLength) * approximateBlockTimeSeconds * iterationsInABatch * 2
 	topicCount := 0
 
+	getTopicFunder := func() (string, cosmosaccount.Account) {
+		topicFunderAccountName := "topicFunder" + strconv.Itoa(int(topicCount))
+		topicFunderAccount, _, err := m.n.Client.AccountRegistry.Create(topicFunderAccountName)
+		if err != nil {
+			fmt.Println("Error creating funder address: ", topicFunderAccountName, " - ", err)
+			return "", topicFunderAccount
+		}
+		topicFunderAddress, err := topicFunderAccount.Address(params.HumanCoinUnit)
+		if err != nil {
+			fmt.Println("Error getting funder address: ", topicFunderAccountName, " - ", err)
+			return topicFunderAddress, topicFunderAccount
+		}
+		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, topicFunderAddress, 100000000000000000)
+		if err != nil {
+			fmt.Println("Error funding funder address: ", topicFunderAddress, " - ", err)
+			return topicFunderAddress, topicFunderAccount
+		}
+		return topicFunderAddress, topicFunderAccount
+	}
+
 	if topicsPerEpoch == 0 {
-		WorkerReputerLoop(m)
+		topicFunderAddress, topicFunderAccount := getTopicFunder()
+		WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount)
+		topicCount++
 	} else {
 		for {
 			startIteration := time.Now()
 
 			for j := 0; j < topicsPerEpoch && topicCount < topicsMax; j++ {
-				go WorkerReputerLoop(m)
+				topicFunderAddress, topicFunderAccount := getTopicFunder()
+				go WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount)
 				topicCount++
 			}
 
@@ -362,8 +385,8 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 }
 
 // Register two actors and check their registrations went through
-func WorkerReputerLoop(m TestMetadata) {
-	topicId := SetupTopic(m)
+func WorkerReputerLoop(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account) {
+	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount)
 
 	report := func(a ...any) {
 		fmt.Println("[ TOPIC", topicId, "] ", a)
@@ -405,7 +428,7 @@ func WorkerReputerLoop(m TestMetadata) {
 	for i := 0; i < MAX_ITERATIONS; i++ {
 
 		// Funding topic
-		err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
+		err := FundTopic(m, topicId, topicFunderAddress, topicFunderAccount, topicFunds)
 		if err != nil {
 			report("Funding topic failed: ", err)
 		}
@@ -420,6 +443,7 @@ func WorkerReputerLoop(m TestMetadata) {
 		createNewWorkerAccount := func() {
 			// Generate new worker accounts
 			workerAccountName := "stressWorker" + strconv.Itoa(len(workerAddresses)) + "_topic" + strconv.Itoa(int(topicId))
+			report("Creating worker address: ", workerAccountName)
 			workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
 			if err != nil {
 				report("Error creating worker address: ", workerAccountName, " - ", err)
@@ -430,7 +454,7 @@ func WorkerReputerLoop(m TestMetadata) {
 				report("Error getting worker address: ", workerAccountName, " - ", err)
 				return
 			}
-			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
+			err = fundAccount(m, topicFunderAccount, topicFunderAddress, workerAddress, 100000)
 			if err != nil {
 				report("Error funding worker address: ", workerAddress, " - ", err)
 				return
@@ -446,6 +470,7 @@ func WorkerReputerLoop(m TestMetadata) {
 		createNewReputerAccount := func() {
 			// Generate new reputer account
 			reputerAccountName := "stressReputer" + strconv.Itoa(len(reputerAddresses)) + "_topic" + strconv.Itoa(int(topicId))
+			report("Creating reputer address: ", reputerAccountName)
 			reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
 			if err != nil {
 				report("Error creating reputer address: ", reputerAccountName, " - ", err)
@@ -456,7 +481,7 @@ func WorkerReputerLoop(m TestMetadata) {
 				report("Error getting reputer address: ", reputerAccountName, " - ", err)
 				return
 			}
-			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
+			err = fundAccount(m, topicFunderAccount, topicFunderAddress, reputerAddress, 100000)
 			if err != nil {
 				report("Error funding reputer address: ", reputerAddress, " - ", err)
 				return
