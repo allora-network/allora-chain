@@ -42,6 +42,6 @@ func TestStressTestSuite(t *testing.T) {
 	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
 
-	t.Log(">>> Test Making Inference <<<")
+	t.Log(">>> Start Test <<<")
 	WorkerReputerLoop(m)
 }
