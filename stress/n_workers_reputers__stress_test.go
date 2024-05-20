@@ -465,6 +465,10 @@ func WorkerReputerLoop(m TestMetadata) {
 		elapsed := time.Since(start)
 		fmt.Println("Insert Worker Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
 		sleepingTimeSeconds := epochTimeSeconds - elapsed
+		for sleepingTimeSeconds < 0 {
+			fmt.Println("Passed over an epoch, moving to the next one")
+			sleepingTimeSeconds += epochTimeSeconds
+		}
 		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", epoch length: ", epochTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
 
@@ -489,16 +493,20 @@ func ProcessTopicLoop(
 
 	topicId := topic.Id
 
+	topicTxRunnerAccountName := "stressTopicTxRunner" + strconv.Itoa(int(topicId))
+	topicTxRunnerAccount, err := m.n.Client.AccountRegistry.GetByName(topicTxRunnerAccountName)
+	if err != nil {
+		topicTxRunnerAccount, _, err = m.n.Client.AccountRegistry.Create(topicTxRunnerAccountName)
+		if err != nil {
+			fmt.Println("Error creating topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
+			return
+		}
+	}
+
 	for workerAccountName, workerAddress := range newWorkerAddresses {
 		workerAddresses[workerAccountName] = workerAddress
 
-		workerAccount, err := m.n.Client.AccountRegistry.GetByName(workerAccountName)
-		if err != nil {
-			fmt.Println("Error getting worker account: ", workerAccountName, " - ", err)
-			continue
-		}
-
-		err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
+		err = RegisterWorkerForTopic(m, workerAddress, topicTxRunnerAccount, topicId)
 		if err != nil {
 			fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
 			continue
@@ -508,17 +516,12 @@ func ProcessTopicLoop(
 	for reputerAccountName, reputerAddress := range newReputerAddresses {
 		reputerAddresses[reputerAccountName] = reputerAddress
 
-		reputerAccount, err := m.n.Client.AccountRegistry.GetByName(reputerAccountName)
-		if err != nil {
-			fmt.Println("Error getting reputer account: ", reputerAccountName, " - ", err)
-			continue
-		}
-		err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
+		err = RegisterReputerForTopic(m, reputerAddress, topicTxRunnerAccount, topicId)
 		if err != nil {
 			fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
 			continue
 		}
-		err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
+		err = StakeReputer(m, topicId, reputerAddress, topicTxRunnerAccount, stakeToAdd)
 		if err != nil {
 			fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
 			continue
