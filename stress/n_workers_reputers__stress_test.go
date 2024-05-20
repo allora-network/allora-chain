@@ -305,6 +305,7 @@ func SetupTopic(m TestMetadata) (uint64, *types.Topic) {
 	if err != nil {
 		m.t.Fatal(err)
 	}
+
 	err = RegisterReputerForTopic(m, m.n.FaucetAddr, m.n.FaucetAcc, topicId)
 	if err != nil {
 		m.t.Fatal(err)
