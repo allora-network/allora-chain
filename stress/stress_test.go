@@ -49,5 +49,5 @@ func TestStressTestSuite(t *testing.T) {
 	m := Setup(t)
 
 	t.Log(">>> Test Making Inference <<<")
-	WorkerReputerLoop(m, true)
+	WorkerReputerCoordinationLoop(m)
 }

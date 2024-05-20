@@ -287,12 +287,13 @@ func lookupEnvInt(m TestMetadata, key string, defaultValue int) int {
 
 const stakeToAdd uint64 = 90000
 const topicFunds int64 = 1000000
+const epochLength int64 = 5
 
 func SetupTopic(m TestMetadata) uint64 {
 
 	m.t.Log("Creating new Topic")
 
-	topicId := CreateTopic(m)
+	topicId := CreateTopic(m, epochLength)
 
 	err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
 	if err != nil {
@@ -319,10 +320,7 @@ func SetupTopic(m TestMetadata) uint64 {
 	return topicId
 }
 
-// Register two actors and check their registrations went through
-func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
-	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
-	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
+func WorkerReputerCoordinationLoop(m TestMetadata) {
 
 	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
 	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 10000)
@@ -338,12 +336,48 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 	fmt.Println("Topics per epoch: ", topicsPerEpoch)
 	fmt.Println("Topics max: ", topicsMax)
 
-	topicCount := 1
+	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
+	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
 
+	iterationTimeSeconds := time.Duration(epochLength) * approximateBlockTimeSeconds * iterationsInABatch
+	topicCount := 0
+
+	if topicsPerEpoch == 0 {
+		WorkerReputerLoop(m)
+	} else {
+		for {
+			startIteration := time.Now()
+
+			for j := 0; j < topicsPerEpoch && topicCount < topicsMax; j++ {
+				go WorkerReputerLoop(m)
+				topicCount++
+			}
+
+			elapsedIteration := time.Since(startIteration)
+			sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
+			fmt.Println(time.Now(), "Main loop sleeping", sleepingTimeSeconds)
+			time.Sleep(sleepingTimeSeconds)
+		}
+	}
+}
+
+// Register two actors and check their registrations went through
+func WorkerReputerLoop(m TestMetadata) {
 	topicId := SetupTopic(m)
+
+	report := func(a ...any) {
+		fmt.Println("[ TOPIC", topicId, "] ", a)
+	}
+
+	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
+	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 10000)
+	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
+	workersMax := lookupEnvInt(m, "WORKERS_MAX", 10000)
 
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
+
+	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
@@ -359,7 +393,7 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 	// Get fresh topic
 	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateBlockTimeSeconds)
 	if err != nil {
-		m.t.Log("--- Failed getting a topic that was ran ---")
+		report("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
 	}
 
@@ -369,10 +403,11 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 	iterationTimeSeconds := time.Duration(topic.EpochLength) * approximateBlockTimeSeconds * iterationsInABatch
 
 	for i := 0; i < MAX_ITERATIONS; i++ {
+
 		// Funding topic
 		err := FundTopic(m, topicId, m.n.FaucetAddr, m.n.FaucetAcc, topicFunds)
 		if err != nil {
-			fmt.Println("Funding topic failed: ", err)
+			report("Funding topic failed: ", err)
 		}
 
 		blockHeightCurrent += topic.EpochLength * iterationsInABatch
@@ -380,75 +415,88 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 
 		startIteration := time.Now()
 
-		fmt.Println("iteration: ", i, " / ", MAX_ITERATIONS)
+		report("iteration: ", i, " / ", MAX_ITERATIONS)
 
-		for j := 0; j < workersPerEpoch; j++ {
-			if len(workerAddresses) >= workersMax {
-				break
-			}
+		createNewWorkerAccount := func() {
 			// Generate new worker accounts
 			workerAccountName := "stressWorker" + strconv.Itoa(len(workerAddresses)) + "_topic" + strconv.Itoa(int(topicId))
 			workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
 			if err != nil {
-				fmt.Println("Error creating worker address: ", workerAccountName, " - ", err)
-				continue
+				report("Error creating worker address: ", workerAccountName, " - ", err)
+				return
 			}
 			workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
 			if err != nil {
-				fmt.Println("Error getting worker address: ", workerAccountName, " - ", err)
-				continue
+				report("Error getting worker address: ", workerAccountName, " - ", err)
+				return
 			}
 			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
 			if err != nil {
-				fmt.Println("Error funding worker address: ", workerAddress, " - ", err)
-				continue
+				report("Error funding worker address: ", workerAddress, " - ", err)
+				return
 			}
 			err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
 			if err != nil {
-				fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
-				continue
+				report("Error registering worker address: ", workerAddress, " - ", err)
+				return
 			}
 			workerAddresses[workerAccountName] = workerAddress
 		}
 
-		for j := 0; j < reputersPerEpoch; j++ {
-			if len(reputerAddresses) >= reputersMax {
-				break
-			}
+		createNewReputerAccount := func() {
 			// Generate new reputer account
 			reputerAccountName := "stressReputer" + strconv.Itoa(len(reputerAddresses)) + "_topic" + strconv.Itoa(int(topicId))
 			reputerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
 			if err != nil {
-				fmt.Println("Error creating reputer address: ", reputerAccountName, " - ", err)
-				continue
+				report("Error creating reputer address: ", reputerAccountName, " - ", err)
+				return
 			}
 			reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
 			if err != nil {
-				fmt.Println("Error getting reputer address: ", reputerAccountName, " - ", err)
-				continue
+				report("Error getting reputer address: ", reputerAccountName, " - ", err)
+				return
 			}
 			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
 			if err != nil {
-				fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
-				continue
+				report("Error funding reputer address: ", reputerAddress, " - ", err)
+				return
 			}
 			err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
 			if err != nil {
-				fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
-				continue
+				report("Error registering reputer address: ", reputerAddress, " - ", err)
+				return
 			}
 			err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
 			if err != nil {
-				fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
-				continue
+				report("Error staking reputer address: ", reputerAddress, " - ", err)
+				return
 			}
 			reputerAddresses[reputerAccountName] = reputerAddress
+		}
+
+		if i == 0 {
+			createNewWorkerAccount()
+			createNewReputerAccount()
+		} else {
+			for j := 0; j < workersPerEpoch; j++ {
+				if len(workerAddresses) >= workersMax {
+					break
+				}
+				createNewWorkerAccount()
+			}
+
+			for j := 0; j < reputersPerEpoch; j++ {
+				if len(reputerAddresses) >= reputersMax {
+					break
+				}
+				createNewReputerAccount()
+			}
 		}
 
 		// Insert worker bulk, choosing one random leader from the worker accounts
 		leaderWorkerAccountName, _, err := GetRandomMapEntryValue(workerAddresses)
 		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
+			report("Error getting random worker address: ", err)
 			continue
 		}
 		startWorker := time.Now()
@@ -460,20 +508,20 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
-					fmt.Println("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+					report("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
 				} else {
-					fmt.Println("Error getting topic!")
+					report("Error getting topic!")
 				}
 			}
 			continue
 		}
 		elapsedBulk := time.Since(startWorker)
-		fmt.Println("Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
+		report("Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
 
 		// Insert reputer bulk, choosing one random leader from reputer accounts
 		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
 		if err != nil {
-			fmt.Println("Error getting random worker address: ", err)
+			report("Error getting random worker address: ", err)
 			continue
 		}
 		startReputer := time.Now()
@@ -485,27 +533,20 @@ func WorkerReputerLoop(m TestMetadata, isPrimary bool) {
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
-					fmt.Println("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+					report("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
 				} else {
-					fmt.Println("Error getting topic!")
+					report("Error getting topic!")
 				}
 			}
 			continue
 		}
 		elapsedBulk = time.Since(startReputer)
-		fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
-
-		if isPrimary && topicCount < topicsMax {
-			for j := 0; j < topicsPerEpoch; j++ {
-				go WorkerReputerLoop(m, false)
-				topicCount++
-			}
-		}
+		report("Insert Reputer Elapsed time:", elapsedBulk)
 
 		// Sleep for 2 epoch
 		elapsedIteration := time.Since(startIteration)
 		sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
-		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTimeSeconds)
+		report(time.Now(), " Sleeping...", sleepingTimeSeconds, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
 	}
 
