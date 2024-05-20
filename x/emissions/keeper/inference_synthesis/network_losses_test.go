@@ -194,7 +194,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
 			expectedLoss: alloraMath.MustNewDecFromString("1e-4"), // Should be equal to epsilon
 			expectedErr:  nil,
-		},	
+		},
 	}
 
 	for _, tc := range tests {

@@ -101,7 +101,7 @@ func CalcNetworkLosses(
 				return emissions.ValueBundle{}, err
 			}
 			// If the combined loss is zero, set it to epsilon to avoid divide by zero
-			if nextCombinedLoss.Loss.IsZero() {		
+			if nextCombinedLoss.Loss.IsZero() {
 				nextCombinedLoss.Loss = epsilon
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
