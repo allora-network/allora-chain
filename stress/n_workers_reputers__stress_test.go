@@ -22,15 +22,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const MAX_ITERATIONS = 10000
-
-const defaultEpochLength = 10
-const approximateBlockLengthSeconds = 5
-const minWaitingNumberofEpochs = 3
 const secondsInAMonth = 2592000
-const iterationsInABatch = 2
 
-func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
+const MAX_ITERATIONS = 10000       // Maximum loop number of iterations
+const defaultEpochLength = 10      // Default epoch length in blocks if none is found yet from chain
+const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait before inserting the first batch
+const iterationsInABatch = 1       // To control the number of epochs in each iteration of the loop (eg to manage insertions)
+
+// This function gets the topic checking activity. After that it will sleep for a number of epoch to ensure nonces are available.
+func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int, approximateBlockLengthSeconds time.Duration) (*emissionstypes.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
@@ -38,7 +38,8 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
-				sleepingTimeSeconds := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
+				nBlocks := storedTopic.EpochLength * minWaitingNumberofEpochs
+				sleepingTimeSeconds := time.Duration(nBlocks) * approximateBlockLengthSeconds
 				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTimeSeconds)
 				time.Sleep(sleepingTimeSeconds)
 				fmt.Println(time.Now(), " Slept.")
@@ -50,13 +51,13 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
-		time.Sleep(time.Duration(sleepingTimeBlocks*approximateBlockLengthSeconds) * time.Second)
+		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateBlockLengthSeconds * time.Second)
 	}
 
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
 }
 
-func generateWorkerAttributedValueLosses(m TestMetadata, workerAddresses map[string]string, lowLimit, sum int) []*types.WorkerAttributedValue {
+func generateWorkerAttributedValueLosses(workerAddresses map[string]string, lowLimit, sum int) []*types.WorkerAttributedValue {
 	values := make([]*types.WorkerAttributedValue, 0)
 	for key := range workerAddresses {
 		values = append(values, &types.WorkerAttributedValue{
@@ -67,7 +68,7 @@ func generateWorkerAttributedValueLosses(m TestMetadata, workerAddresses map[str
 	return values
 }
 
-func generateWithheldWorkerAttributedValueLosses(m TestMetadata, workerAddresses map[string]string, lowLimit, sum int) []*types.WithheldWorkerAttributedValue {
+func generateWithheldWorkerAttributedValueLosses(workerAddresses map[string]string, lowLimit, sum int) []*types.WithheldWorkerAttributedValue {
 	values := make([]*types.WithheldWorkerAttributedValue, 0)
 	for key := range workerAddresses {
 		values = append(values, &types.WithheldWorkerAttributedValue{
@@ -78,10 +79,8 @@ func generateWithheldWorkerAttributedValueLosses(m TestMetadata, workerAddresses
 	return values
 }
 
-func generateSingleWorkerBundle(m TestMetadata, topic *types.Topic, blockHeight int64,
+func generateSingleWorkerBundle(m TestMetadata, topicId uint64, blockHeight int64,
 	workerAddressName string, workerAddresses map[string]string) *types.WorkerDataBundle {
-	// Nonce: calculate from EpochLastRan + EpochLength
-	topicId := topic.Id
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
 	forecastElements := make([]*types.ForecastElement, 0)
 	for key := range workerAddresses {
@@ -127,16 +126,16 @@ func generateSingleWorkerBundle(m TestMetadata, topic *types.Topic, blockHeight 
 }
 
 // Generate the same valueBundle for a reputer
-func generateValueBundle(m TestMetadata, topicId uint64, workerAddresses map[string]string, reputerNonce, workerNonce *types.Nonce) types.ValueBundle {
+func generateValueBundle(topicId uint64, workerAddresses map[string]string, reputerNonce, workerNonce *types.Nonce) types.ValueBundle {
 	return types.ValueBundle{
 		TopicId:                topicId,
 		CombinedValue:          alloraMath.NewDecFromInt64(100),
-		InfererValues:          generateWorkerAttributedValueLosses(m, workerAddresses, 3000, 3500),
-		ForecasterValues:       generateWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		InfererValues:          generateWorkerAttributedValueLosses(workerAddresses, 3000, 3500),
+		ForecasterValues:       generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
 		NaiveValue:             alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues:    generateWithheldWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
-		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
-		OneInForecasterValues:  generateWorkerAttributedValueLosses(m, workerAddresses, 50, 50),
+		OneOutInfererValues:    generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		OneInForecasterValues:  generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 			WorkerNonce:  workerNonce,
@@ -147,12 +146,11 @@ func generateValueBundle(m TestMetadata, topicId uint64, workerAddresses map[str
 // Inserts worker bulk, given a topic, blockHeight, and leader worker address (which should exist in the keyring)
 func InsertLeaderWorkerBulk(
 	m TestMetadata,
-	topic *types.Topic,
+	topicId uint64,
 	blockHeight int64,
 	leaderWorkerAccountName, leaderWorkerAddress string,
 	WorkerDataBundles []*types.WorkerDataBundle) error {
 
-	topicId := topic.Id
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 
 	// Create a MsgInsertBulkReputerPayload message
@@ -183,18 +181,14 @@ func InsertLeaderWorkerBulk(
 
 // Worker Bob inserts bulk inference and forecast
 func InsertWorkerBulk(m TestMetadata, topic *types.Topic, leaderWorkerAccountName string, workerAddresses map[string]string, blockHeight int64) error {
-	// Get fresh topic to use its EpochLastRan
-	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &emissionstypes.QueryTopicRequest{TopicId: topic.Id})
-	require.NoError(m.t, err)
-	freshTopic := topicResponse.Topic
 	// Get Bundles
 	workerDataBundles := make([]*types.WorkerDataBundle, 0)
 	for key := range workerAddresses {
-		workerDataBundles = append(workerDataBundles, generateSingleWorkerBundle(m, topic, blockHeight, key, workerAddresses))
+		workerDataBundles = append(workerDataBundles, generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workerAddresses))
 	}
 	leaderWorkerAddress := workerAddresses[leaderWorkerAccountName]
 	fmt.Println("Inserting worker bulk for blockHeight: ", blockHeight, "leader name: ", leaderWorkerAccountName, ", addr: ", leaderWorkerAddress, " len: ", len(workerDataBundles))
-	return InsertLeaderWorkerBulk(m, freshTopic, blockHeight, leaderWorkerAccountName, leaderWorkerAddress, workerDataBundles)
+	return InsertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorkerAddress, workerDataBundles)
 }
 
 // Generate a ReputerValueBundle
@@ -255,7 +249,7 @@ func InsertReputerBulk(m TestMetadata,
 		BlockHeight: BlockHeightEval,
 	}
 	leaderReputerAddress := reputerAddresses[leaderReputerAccountName]
-	valueBundle := generateValueBundle(m, topicId, workerAddresses, reputerNonce, workerNonce)
+	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce, workerNonce)
 	reputerValueBundles := make([]*types.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputerAddress := reputerAddresses[reputerAddressName]
@@ -290,12 +284,17 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
-	// 2. Pass worker slice in the call to insertWorkerBulk
-	// 3. Pass reputer slice in the call to insertReputerBulk
-	// 4. sleep one epoch, then repeat.
+	// 2. Fund the accounts
+	// 3. Register the accounts
+	// 4. Generate a worker bundle
+	// 5. Generate a reputer bundle
+	// 6. Insert the worker bundle (adjust nonces if failure)
+	// 7. Insert the reputer bundle (adjust nonces if failure)
+	// 8. Sleep one epoch
+	// 9. Repeat
 
 	// Get fresh topic
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5, approximateBlockTimeSeconds)
 	if err != nil {
 		m.t.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
@@ -312,8 +311,8 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Funding topic failed: ", err)
 		}
 
-		blockHeightCurrent += topic.EpochLength * 2
-		blockHeightEval += topic.EpochLength * 2
+		blockHeightCurrent += topic.EpochLength * iterationsInABatch
+		blockHeightEval += topic.EpochLength * iterationsInABatch
 
 		startIteration := time.Now()
 
@@ -330,7 +329,6 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Error getting worker address: ", workerAccountName, " - ", err)
 			continue
 		}
-		fmt.Println("Worker address: ", workerAddress)
 		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
 		if err != nil {
 			fmt.Println("Error funding worker address: ", workerAddress, " - ", err)
@@ -355,7 +353,6 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 			fmt.Println("Error getting reputer address: ", reputerAccountName, " - ", err)
 			continue
 		}
-		fmt.Println("Reputer address: ", reputerAddress)
 		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, reputerAddress, 100000)
 		if err != nil {
 			fmt.Println("Error funding reputer address: ", reputerAddress, " - ", err)
@@ -373,63 +370,50 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 		}
 		reputerAddresses[reputerAccountName] = reputerAddress
 
-		// Choose one random leader from the worker accounts
+		// Insert worker bulk, choosing one random leader from the worker accounts
 		leaderWorkerAccountName, _, err := GetRandomMapEntryValue(workerAddresses)
 		if err != nil {
 			fmt.Println("Error getting random worker address: ", err)
 			continue
 		}
-		// Insert worker
 		startWorker := time.Now()
 		err = InsertWorkerBulk(m, topic, leaderWorkerAccountName, workerAddresses, blockHeightCurrent)
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") {
-				fmt.Println("Repeating nonce ", blockHeightEval)
-				blockHeightCurrent -= topic.EpochLength * 2
-				blockHeightEval -= topic.EpochLength * 2
+				// realign blockHeights before retrying
+				topic, err = getLastTopic(m.ctx, m.n.QueryEmissions, topicId)
+				if err == nil {
+					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
+					blockHeightEval = blockHeightCurrent - topic.EpochLength
+					fmt.Println("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+				} else {
+					fmt.Println("Error getting topic!")
+				}
 			}
 			continue
 		}
 		elapsedBulk := time.Since(startWorker)
 		fmt.Println("Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
-		startWorker = time.Now()
-		InsertWorkerBulk(m, topic, leaderWorkerAccountName, workerAddresses, blockHeightEval)
-		if err != nil {
-			if strings.Contains(err.Error(), "nonce already fulfilled") {
-				fmt.Println("Repeating nonce ", blockHeightEval)
-				blockHeightCurrent -= topic.EpochLength * 2
-				blockHeightEval -= topic.EpochLength * 2
-			}
-			continue
-		}
-		elapsedBulk = time.Since(startWorker)
-		fmt.Println("Insert Worker ", blockHeightEval, "Elapsed time:", elapsedBulk)
 
-		// Insert reputer bulk
-		// Choose one random leader from reputer accounts
+		// Insert reputer bulk, choosing one random leader from reputer accounts
 		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
 		if err != nil {
 			fmt.Println("Error getting random worker address: ", err)
 			continue
 		}
-
 		startReputer := time.Now()
-		InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
+		err = InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
 		if err != nil {
-			if strings.Contains(err.Error(), "nonce already fulfilled") {
-				fmt.Println("Repeating nonce ", blockHeightEval)
-				blockHeightCurrent -= topic.EpochLength * 2
-				blockHeightEval -= topic.EpochLength * 2
-			}
-			continue
-		}
-		// Insert second one
-		InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent-topic.EpochLength, blockHeightEval-topic.EpochLength)
-		if err != nil {
-			if strings.Contains(err.Error(), "nonce already fulfilled") {
-				fmt.Println("Repeating nonce ", blockHeightEval)
-				blockHeightCurrent -= topic.EpochLength * 2
-				blockHeightEval -= topic.EpochLength * 2
+			if strings.Contains(err.Error(), "nonce already fulfilled") || strings.Contains(err.Error(), "nonce still unfulfilled") {
+				// realign blockHeights before retrying
+				topic, err = getLastTopic(m.ctx, m.n.QueryEmissions, topicId)
+				if err == nil {
+					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
+					blockHeightEval = blockHeightCurrent - topic.EpochLength
+					fmt.Println("Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+				} else {
+					fmt.Println("Error getting topic!")
+				}
 			}
 			continue
 		}
@@ -441,10 +425,6 @@ func WorkerReputerLoop(m TestMetadata, topicId uint64) {
 		sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
 		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
-
-		// Update blockHeights
-		// blockHeightCurrent += topic.EpochLength * 2
-		// blockHeightEval += topic.EpochLength * 2
 	}
 
 }
@@ -494,6 +474,13 @@ func getApproximateBlockTimeSeconds(m TestMetadata) time.Duration {
 	emissionsParams := GetEmissionsParams(m)
 	blocksPerMonth := emissionsParams.GetBlocksPerMonth()
 	approximateBlockTimeSeconds := time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
-	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
 	return approximateBlockTimeSeconds
+}
+
+func getLastTopic(ctx context.Context, query emissionstypes.QueryClient, topicID uint64) (*emissionstypes.Topic, error) {
+	topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
+	if err == nil {
+		return topicResponse.Topic, nil
+	}
+	return nil, err
 }

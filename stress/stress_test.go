@@ -40,7 +40,7 @@ func TestStressTestSuite(t *testing.T) {
 	}
 
 	const stakeToAdd uint64 = 10000
-	const topicFunds int64 = 10000000000000000
+	const topicFunds int64 = 1000000
 
 	t.Log(">>> Setting up connection to local node <<<")
 	m := Setup(t)
