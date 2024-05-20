@@ -474,7 +474,7 @@ func WorkerReputerLoop(m TestMetadata) {
 
 		// Sleep for one epoch
 		elapsed := time.Since(start)
-		fmt.Println("Insert Worker Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
+		fmt.Println("Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
 		sleepingTimeSeconds := epochTimeSeconds - elapsed
 		for sleepingTimeSeconds < 0 {
 			fmt.Println("Passed over an epoch, moving to the next one")
@@ -577,16 +577,14 @@ func ProcessTopicLoopInner(
 
 	// Insert reputer bulk
 	// Choose one random leader from reputer accounts
-	leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
+	leaderReputerAccountName, leaderReputerAddress, err := GetRandomMapEntryValue(reputerAddresses)
 	if err != nil {
-		fmt.Println("Error getting random worker address: ", err)
+		fmt.Println("Error getting random reputer address: ", err)
 		return
 	}
 
-	startReputer := time.Now()
+	m.t.Log("--- Insert Reputer Bulk --- with leader: ", leaderReputerAccountName, " and reputer address: ", leaderReputerAddress)
 	InsertReputerBulk(m, topic, leaderReputerAccountName, reputerAddresses, workerAddresses, blockHeightCurrent, blockHeightEval)
-	elapsedBulk := time.Since(startReputer)
-	fmt.Println("Insert Reputer Elapsed time:", elapsedBulk)
 }
 
 func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, error) {
