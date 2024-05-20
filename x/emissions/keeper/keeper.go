@@ -27,7 +27,6 @@ type Int = cosmosMath.Int
 
 type TopicId = uint64
 type LibP2pKey = string
-type Delegator = string
 type ActorId = string
 type BlockHeight = int64
 type RequestId = string
@@ -95,11 +94,11 @@ type Keeper struct {
 	// map of (reputer) -> removal information for that reputer
 	stakeRemoval collections.Map[collections.Pair[TopicId, ActorId], types.StakeRemoval]
 	// map of (delegator) -> removal information for that delegator
-	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, Delegator], types.DelegateStakeRemoval]
+	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegateStakeRemoval]
 	// map of (delegator) -> amount of stake that has been placed by that delegator
-	stakeFromDelegator collections.Map[collections.Pair[TopicId, Delegator], Uint]
+	stakeFromDelegator collections.Map[collections.Pair[TopicId, ActorId], Uint]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
-	delegateStakePlacement collections.Map[collections.Triple[TopicId, ActorId, Delegator], types.DelegatorInfo]
+	delegateStakePlacement collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegatorInfo]
 	// map of (target) -> amount of stake that has been placed on that target
 	stakeUponReputer collections.Map[collections.Pair[TopicId, ActorId], Uint]
 	// map of (topidId, reputer) -> share of delegate reward
@@ -866,7 +865,7 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer ActorId,
 	return nil
 }
 
-func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator Delegator, reputer ActorId, stake Uint) error {
+func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator ActorId, reputer ActorId, stake Uint) error {
 	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return errorsmod.Wrapf(types.ErrInvalidValue, "stake must be greater than zero")
@@ -1041,7 +1040,7 @@ func (k *Keeper) RemoveStake(
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
 	topicId TopicId,
-	delegator Delegator,
+	delegator ActorId,
 	reputer ActorId,
 	unStake Uint) error {
 	if unStake.IsZero() {
@@ -1192,7 +1191,7 @@ func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, 
 }
 
 // Returns the amount of stake placed by a specific delegator.
-func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator Delegator) (Uint, error) {
+func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator ActorId) (Uint, error) {
 	key := collections.Join(topicId, delegator)
 	stake, err := k.stakeFromDelegator.Get(ctx, key)
 	if err != nil {
@@ -1205,7 +1204,7 @@ func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId Topic
 }
 
 // Sets the amount of stake placed by a specific delegator.
-func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator Delegator, stake Uint) error {
+func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator ActorId, stake Uint) error {
 	key := collections.Join(topicId, delegator)
 	if stake.IsZero() {
 		return k.stakeFromDelegator.Remove(ctx, key)
@@ -1214,7 +1213,7 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 }
 
 // Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target ActorId) (types.DelegatorInfo, error) {
+func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
@@ -1227,7 +1226,7 @@ func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator Delegator, target ActorId, stake types.DelegatorInfo) error {
+func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId, stake types.DelegatorInfo) error {
 	key := collections.Join3(topicId, delegator, target)
 	if stake.Amount.IsZero() {
 		return k.delegateStakePlacement.Remove(ctx, key)
@@ -1291,7 +1290,7 @@ func (k *Keeper) SetStakeRemoval(ctx context.Context, address ActorId, removalIn
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator Delegator) (types.DelegateStakeRemoval, error) {
+func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator ActorId) (types.DelegateStakeRemoval, error) {
 	key := collections.Join3(topicId, reputer, delegator)
 	return k.delegateStakeRemoval.Get(ctx, key)
 }
@@ -2234,4 +2233,12 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 func CheckCadence(blockHeight int64, topic types.Topic) bool {
 	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
 		topic.EpochLastEnded == 0
+}
+
+func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
+	_, err := sdk.AccAddressFromBech32(actor)
+	if err != nil {
+		return err
+	}
+	return nil
 }
