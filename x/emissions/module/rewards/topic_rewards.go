@@ -172,12 +172,9 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 
 		if updatePreviousWeights {
-
 			err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
 			if err != nil {
 				return errors.Wrapf(err, "failed to set previous topic weight")
-			} else {
-				fmt.Println("Topic ID: ", topic.Id, " Setting Previous Weight: ", weight)
 			}
 		}
 		weights[topic.Id] = &weight

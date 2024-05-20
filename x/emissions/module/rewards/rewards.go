@@ -277,7 +277,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
-			ctx.Logger().Warn("Topic weight is below the minimum")
+			ctx.Logger().Warn("Topic weight is below the minimum: ", topicId)
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")

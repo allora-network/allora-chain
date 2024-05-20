@@ -1549,7 +1549,6 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types
 
 // Add to the fee revenue collected by a topic incurred at a block
 func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount Int) error {
-	fmt.Println("Adding fee revenue ", amount, " to topic")
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
@@ -1563,7 +1562,6 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 
 // Reset the fee revenue collected by a topic incurred at a block
 func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
-	fmt.Println("Resetting fee revenue for topic")
 	newTopicFeeRevenue := types.TopicFeeRevenue{
 		Epoch:   block,
 		Revenue: cosmosMath.ZeroInt(),
