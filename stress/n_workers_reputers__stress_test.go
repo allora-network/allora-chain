@@ -318,6 +318,25 @@ func SetupTopic(m TestMetadata) (uint64, *types.Topic) {
 
 	m.t.Log("Created new Topic with topicId", topicId)
 
+	topicTxRunnerAccountName := getTxRunnerAccountName(topic.Id)
+
+	topicTxRunnerAccount, _, err := m.n.Client.AccountRegistry.Create(topicTxRunnerAccountName)
+	if err != nil {
+		m.t.Fatal("Error creating topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
+	}
+
+	topicTxRunnerAccountAddress, err := topicTxRunnerAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		m.t.Fatal("Error getting topic tx runner account address: ", topicTxRunnerAccountName, " - ", err)
+	}
+
+	err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, topicTxRunnerAccountAddress, 100000)
+	if err != nil {
+		m.t.Fatal("Error funding topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
+	}
+
+	m.t.Log("Created account", topicTxRunnerAccountName)
+
 	return topicId, topic
 }
 
@@ -478,6 +497,10 @@ func WorkerReputerLoop(m TestMetadata) {
 	}
 }
 
+func getTxRunnerAccountName(topicId uint64) string {
+	return "stressTxRunnerTopic" + strconv.Itoa(int(topicId))
+}
+
 func ProcessTopicLoop(
 	m TestMetadata,
 	workerAddresses map[string]string,
@@ -493,20 +516,24 @@ func ProcessTopicLoop(
 
 	topicId := topic.Id
 
-	topicTxRunnerAccountName := "stressTopicTxRunner" + strconv.Itoa(int(topicId))
-	topicTxRunnerAccount, err := m.n.Client.AccountRegistry.GetByName(topicTxRunnerAccountName)
-	if err != nil {
-		topicTxRunnerAccount, _, err = m.n.Client.AccountRegistry.Create(topicTxRunnerAccountName)
+	/*
+		topicTxRunnerAccount, err := m.n.Client.AccountRegistry.GetByName(getTxRunnerAccountName(topicId))
 		if err != nil {
-			fmt.Println("Error creating topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
+			fmt.Println("Error getting topic tx runner account: ", getTxRunnerAccountName(topicId), " - ", err)
 			return
 		}
-	}
+	*/
 
 	for workerAccountName, workerAddress := range newWorkerAddresses {
 		workerAddresses[workerAccountName] = workerAddress
 
-		err = RegisterWorkerForTopic(m, workerAddress, topicTxRunnerAccount, topicId)
+		workerAccount, err := m.n.Client.AccountRegistry.GetByName(workerAccountName)
+		if err != nil {
+			fmt.Println("Error getting worker account: ", workerAccountName, " - ", err)
+			continue
+		}
+
+		err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
 		if err != nil {
 			fmt.Println("Error registering worker address: ", workerAddress, " - ", err)
 			continue
@@ -516,12 +543,17 @@ func ProcessTopicLoop(
 	for reputerAccountName, reputerAddress := range newReputerAddresses {
 		reputerAddresses[reputerAccountName] = reputerAddress
 
-		err = RegisterReputerForTopic(m, reputerAddress, topicTxRunnerAccount, topicId)
+		reputerAccount, err := m.n.Client.AccountRegistry.GetByName(reputerAccountName)
+		if err != nil {
+			fmt.Println("Error getting reputer account: ", reputerAccountName, " - ", err)
+			continue
+		}
+		err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
 		if err != nil {
 			fmt.Println("Error registering reputer address: ", reputerAddress, " - ", err)
 			continue
 		}
-		err = StakeReputer(m, topicId, reputerAddress, topicTxRunnerAccount, stakeToAdd)
+		err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
 		if err != nil {
 			fmt.Println("Error staking reputer address: ", reputerAddress, " - ", err)
 			continue
