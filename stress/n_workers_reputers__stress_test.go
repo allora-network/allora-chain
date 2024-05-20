@@ -455,7 +455,6 @@ func WorkerReputerLoop(m TestMetadata) {
 		fmt.Println("Elapsed time:", elapsed, " BlockHeightCurrent: ", blockHeightCurrent, " BlockHeightEval: ", blockHeightEval)
 		sleepingTimeSeconds := epochTimeSeconds - elapsed
 		for sleepingTimeSeconds < 0 {
-			fmt.Println("Passed over an epoch, moving to the next one")
 			sleepingTimeSeconds += epochTimeSeconds
 		}
 		fmt.Println(time.Now(), " Sleeping...", sleepingTimeSeconds, ", epoch length: ", epochTimeSeconds)
