@@ -59,7 +59,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxTopicsPerBlock:               []uint64{1234},
 		MaxMissingInferencePercent:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		RequiredMinimumStake:            []cosmosMath.Uint{cosmosMath.NewUint(1234)},
+		RequiredMinimumStake:            []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
 		BetaEntropy:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},

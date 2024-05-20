@@ -11,8 +11,8 @@ message StakePlacement {
   uint64 topic_id = 1;
   string reputer = 2;
   string amount = 3 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -28,8 +28,8 @@ message DelegateStakePlacement {
   string reputer = 2;
   string delegator = 3;
   string amount = 4 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

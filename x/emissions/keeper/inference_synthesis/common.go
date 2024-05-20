@@ -1,8 +1,6 @@
 package inference_synthesis
 
 import (
-	"sort"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
@@ -14,7 +12,7 @@ type Regret = alloraMath.Dec
 type Loss = alloraMath.Dec
 type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
-type Stake = cosmosMath.Uint
+type Stake = cosmosMath.Int
 
 const (
 	oneE18 = "1000000000000000000"
@@ -25,15 +23,10 @@ func AlloraOneE18() (alloraMath.Dec, error) {
 	return oneE18, err
 }
 
-func CosmosUintOneE18() cosmosMath.Uint {
-	return cosmosMath.NewUintFromString(oneE18)
-}
-
-func GetSortedStringKeys[T any](m map[string]T) []string {
-	keys := make([]string, 0, len(m))
-	for key := range m {
-		keys = append(keys, key)
+func CosmosIntOneE18() cosmosMath.Int {
+	ret, ok := cosmosMath.NewIntFromString(oneE18)
+	if !ok {
+		panic("1*10^18 is not a valid cosmos int")
 	}
-	sort.Strings(keys)
-	return keys
+	return ret
 }

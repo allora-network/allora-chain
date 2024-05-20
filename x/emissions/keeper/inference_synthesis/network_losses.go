@@ -89,7 +89,7 @@ func CalcNetworkLosses(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
@@ -197,8 +197,8 @@ func CalcNetworkLosses(
 		}
 	}
 
-	sortedInferers := GetSortedStringKeys(runningWeightedInfererLosses)
-	sortedForecasters := GetSortedStringKeys(runningWeightedForecasterLosses)
+	sortedInferers := alloraMath.GetSortedKeys(runningWeightedInfererLosses)
+	sortedForecasters := alloraMath.GetSortedKeys(runningWeightedForecasterLosses)
 	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
 	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers)
 	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters)
@@ -230,7 +230,7 @@ func CalcCombinedNetworkLoss(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err

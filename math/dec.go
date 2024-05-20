@@ -156,14 +156,6 @@ func NewDecFromSdkInt(x sdkmath.Int) (Dec, error) {
 	return NewDecFromString(strRep)
 }
 
-// NewDec takes a cosmos `sdkmath.Uint` and turns it into a Dec
-// it converts via strings and throws an error if the string
-// is unable to be parsed
-func NewDecFromSdkUint(x sdkmath.Uint) (Dec, error) {
-	strRep := x.String()
-	return NewDecFromString(strRep)
-}
-
 // NewDec takes a cosmos `sdkmath.LegacyDec` and turns it into a Dec
 // it converts via strings and throws an error if the string
 // is unable to be parsed

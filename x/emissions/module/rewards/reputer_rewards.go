@@ -29,7 +29,7 @@ func GetReputersRewardFractions(
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
-		stakes[i], err = alloraMath.NewDecFromSdkUint(stake)
+		stakes[i], err = alloraMath.NewDecFromSdkInt(stake)
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to convert reputer stake %d", stake)
 		}
@@ -159,8 +159,8 @@ func GetRewardForReputerFromTotalReward(
 			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
 		}
 
-		fraction := totalDelegatorStakeAmount.Mul(synth.CosmosUintOneE18()).Quo(totalStakeAmount)
-		fractionUint, err := alloraMath.NewDecFromSdkUint(fraction)
+		fraction := totalDelegatorStakeAmount.Mul(synth.CosmosIntOneE18()).Quo(totalStakeAmount)
+		fractionUint, err := alloraMath.NewDecFromSdkInt(fraction)
 		if err != nil {
 			return nil, err
 		}
@@ -168,7 +168,7 @@ func GetRewardForReputerFromTotalReward(
 		if err != nil {
 			return nil, err
 		}
-		e18, err := alloraMath.NewDecFromSdkUint(synth.CosmosUintOneE18())
+		e18, err := alloraMath.NewDecFromSdkInt(synth.CosmosIntOneE18())
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +179,7 @@ func GetRewardForReputerFromTotalReward(
 		if delegatorReward.Gt(alloraMath.NewDecFromInt64(0)) {
 			// update reward share
 			// new_share = current_share + (reward / total_stake)
-			totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkUint(totalDelegatorStakeAmount)
+			totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkInt(totalDelegatorStakeAmount)
 			if err != nil {
 				return nil, err
 			}
