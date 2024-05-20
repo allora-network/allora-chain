@@ -62,9 +62,19 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
+	reputer0Val, ok := cosmosMath.NewIntFromString("210935888148105000000000")
+	s.Require().True(ok)
+	reputer1Val, ok := cosmosMath.NewIntFromString("217043118020878000000000")
+	s.Require().True(ok)
+	reputer2Val, ok := cosmosMath.NewIntFromString("162033293627176000000000")
+	s.Require().True(ok)
+	reputer3Val, ok := cosmosMath.NewIntFromString("395517779633374000000000")
+	s.Require().True(ok)
+	reputer4Val, ok := cosmosMath.NewIntFromString("206619852485799000000000")
+	s.Require().True(ok)
 	tests := []struct {
 		name            string
-		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
 		reportedLosses  *emissions.ReputerValueBundles
 		epsilon         alloraMath.Dec
 		expectedLoss    inference_synthesis.Loss
@@ -72,8 +82,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 	}{
 		{
 			name: "Simple case with one reputer",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"worker1": inference_synthesis.CosmosUintOneE18(), // 1 token
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"worker1": inference_synthesis.CosmosIntOneE18(), // 1 token
 			},
 			reportedLosses: &emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -91,9 +101,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 		},
 		{
 			name: "Two reputers",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"worker1": inference_synthesis.CosmosUintOneE18(),                            // 1 token
-				"worker2": inference_synthesis.CosmosUintOneE18().Mul(cosmosMath.NewUint(2)), // 2 tokens
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"worker1": inference_synthesis.CosmosIntOneE18(),                           // 1 token
+				"worker2": inference_synthesis.CosmosIntOneE18().Mul(cosmosMath.NewInt(2)), // 2 tokens
 			},
 			reportedLosses: &emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -117,12 +127,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 		},
 		{ // EPOCH 3
 			name: "Epoch 3",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"reputer0": cosmosMath.NewUintFromString("210935888148105000000000"),
-				"reputer1": cosmosMath.NewUintFromString("217043118020878000000000"),
-				"reputer2": cosmosMath.NewUintFromString("162033293627176000000000"),
-				"reputer3": cosmosMath.NewUintFromString("395517779633374000000000"),
-				"reputer4": cosmosMath.NewUintFromString("206619852485799000000000"),
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"reputer0": reputer0Val,
+				"reputer1": reputer1Val,
+				"reputer2": reputer2Val,
+				"reputer3": reputer3Val,
+				"reputer4": reputer4Val,
 			},
 			reportedLosses: &emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -162,6 +172,25 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 			expectedLoss: alloraMath.MustNewDecFromString(".000015456633"),
 			expectedErr:  nil,
 		},
+		{
+			name: "One reputer reporting a zero combined loss",
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"worker1": inference_synthesis.CosmosIntOneE18(), // 1 token
+			},
+			reportedLosses: &emissions.ReputerValueBundles{
+				ReputerValueBundles: []*emissions.ReputerValueBundle{
+					{
+						ValueBundle: &emissions.ValueBundle{
+							Reputer:       "worker1",
+							CombinedValue: alloraMath.MustNewDecFromString("0"),
+						},
+					},
+				},
+			},
+			epsilon:      alloraMath.MustNewDecFromString("1e-4"),
+			expectedLoss: alloraMath.MustNewDecFromString("1e-4"), // Should be equal to epsilon
+			expectedErr:  nil,
+		},
 	}
 
 	for _, tc := range tests {
@@ -179,7 +208,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLoss() {
 
 func getTestCasesOneWorker() []struct {
 	name            string
-	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
@@ -187,7 +216,7 @@ func getTestCasesOneWorker() []struct {
 } {
 	return []struct {
 		name            string
-		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
 		reportedLosses  emissions.ReputerValueBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
@@ -195,8 +224,8 @@ func getTestCasesOneWorker() []struct {
 	}{
 		{
 			name: "simple one reputer combined loss",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"worker1": inference_synthesis.CosmosUintOneE18(), // 1 token
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"worker1": inference_synthesis.CosmosIntOneE18(), // 1 token
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -281,7 +310,7 @@ func getTestCasesOneWorker() []struct {
 
 func getTestCasesTwoWorkers() []struct {
 	name            string
-	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
@@ -289,7 +318,7 @@ func getTestCasesTwoWorkers() []struct {
 } {
 	return []struct {
 		name            string
-		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Uint
+		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
 		reportedLosses  emissions.ReputerValueBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
@@ -297,9 +326,9 @@ func getTestCasesTwoWorkers() []struct {
 	}{
 		{
 			name: "simple two reputer combined loss",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Uint{
-				"worker1": inference_synthesis.CosmosUintOneE18(),                            // 1 token
-				"worker2": inference_synthesis.CosmosUintOneE18().Mul(cosmosMath.NewUint(2)), // 2 tokens
+			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
+				"worker1": inference_synthesis.CosmosIntOneE18(),           // 1 token
+				"worker2": inference_synthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{

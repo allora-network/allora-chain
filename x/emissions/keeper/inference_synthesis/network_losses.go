@@ -82,7 +82,7 @@ func CalcNetworkLosses(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				return emissions.ValueBundle{}, err
 			}
@@ -92,6 +92,10 @@ func CalcNetworkLosses(
 			if err != nil {
 				fmt.Println("Error updating running weighted average for next combined loss: ", err)
 				return emissions.ValueBundle{}, err
+			}
+			// If the combined loss is zero, set it to epsilon to avoid divide by zero
+			if runningWeightedCombinedLoss.SumWeight.IsZero() {
+				runningWeightedCombinedLoss.SumWeight = epsilon
 			}
 
 			// Not all reputers may have reported losses on the same set of inferers => important that the code below doesn't assume that!
@@ -188,8 +192,8 @@ func CalcNetworkLosses(
 		}
 	}
 
-	sortedInferers := GetSortedStringKeys(runningWeightedInfererLosses)
-	sortedForecasters := GetSortedStringKeys(runningWeightedForecasterLosses)
+	sortedInferers := alloraMath.GetSortedKeys(runningWeightedInfererLosses)
+	sortedForecasters := alloraMath.GetSortedKeys(runningWeightedForecasterLosses)
 	if runningWeightedCombinedLoss.SumWeight.Lt(epsilon) {
 		fmt.Println("Sum weight for combined and naive loss is 0")
 		return emissions.ValueBundle{}, emissions.ErrFractionDivideByZero
@@ -235,7 +239,7 @@ func CalcCombinedNetworkLoss(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkUint(stakesByReputer[report.ValueBundle.Reputer])
+			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				fmt.Println("Error converting stake to Dec: ", err)
 				return Loss{}, err
@@ -249,15 +253,13 @@ func CalcCombinedNetworkLoss(
 			)
 			if err != nil {
 				fmt.Println("Error updating running weighted average for combined loss: ", err)
-				return alloraMath.ZeroDec(), err
+				return Loss{}, err
 			}
 			runningWeightedCombinedLoss = nextCombinedLoss
 		}
 	}
-
 	if runningWeightedCombinedLoss.SumWeight.Lt(epsilon) {
-		fmt.Println("Sum weight for combined loss is 0")
-		return Loss{}, emissions.ErrFractionDivideByZero
+		runningWeightedCombinedLoss.SumWeight = epsilon
 	}
 	combinedValue, err := runningWeightedCombinedLoss.UnnormalizedWeightedLoss.Quo(runningWeightedCombinedLoss.SumWeight)
 	if err != nil {

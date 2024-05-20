@@ -41,7 +41,7 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}
-		reputerStakeDec, err := alloraMath.NewDecFromSdkUint(reputerStake)
+		reputerStakeDec, err := alloraMath.NewDecFromSdkInt(reputerStake)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error converting reputer stake to Dec")
 		}
