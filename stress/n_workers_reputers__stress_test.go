@@ -290,9 +290,8 @@ func lookupEnvInt(m TestMetadata, key string, defaultValue int) int {
 }
 
 func SetupTopic(m TestMetadata) (uint64, *types.Topic) {
+
 	m.t.Log("Creating new Topic")
-	const stakeToAdd uint64 = 10000
-	const topicFunds int64 = 10000000000000000
 
 	topicId, topic := CreateTopic(m)
 
@@ -318,29 +317,11 @@ func SetupTopic(m TestMetadata) (uint64, *types.Topic) {
 
 	m.t.Log("Created new Topic with topicId", topicId)
 
-	topicTxRunnerAccountName := getTxRunnerAccountName(topic.Id)
-
-	topicTxRunnerAccount, _, err := m.n.Client.AccountRegistry.Create(topicTxRunnerAccountName)
-	if err != nil {
-		m.t.Fatal("Error creating topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
-	}
-
-	topicTxRunnerAccountAddress, err := topicTxRunnerAccount.Address(params.HumanCoinUnit)
-	if err != nil {
-		m.t.Fatal("Error getting topic tx runner account address: ", topicTxRunnerAccountName, " - ", err)
-	}
-
-	err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, topicTxRunnerAccountAddress, 100000)
-	if err != nil {
-		m.t.Fatal("Error funding topic tx runner account: ", topicTxRunnerAccountName, " - ", err)
-	}
-
-	m.t.Log("Created account", topicTxRunnerAccountName)
-
 	return topicId, topic
 }
 
 const stakeToAdd uint64 = 10000
+const topicFunds int64 = 10000000000000000
 
 // Register two actors and check their registrations went through
 func WorkerReputerLoop(m TestMetadata) {
@@ -354,15 +335,6 @@ func WorkerReputerLoop(m TestMetadata) {
 
 	initialTopicId, _ := SetupTopic(m)
 
-	workerCount := 0
-	reputerCount := 0
-
-	// Make a loop, in each iteration
-	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
-	// 2. Pass worker slice in the call to insertWorkerBulk
-	// 3. Pass reputer slice in the call to insertReputerBulk
-	// 4. sleep one epoch, then repeat.
-
 	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, initialTopicId, 5)
 	if err != nil {
 		m.t.Log("--- Failed getting a topic that was ran ---")
@@ -372,8 +344,38 @@ func WorkerReputerLoop(m TestMetadata) {
 	topics := []*types.Topic{}
 	topics = append(topics, topic)
 
+	workerCount := 0
+	reputerCount := 0
+
+	createWorker := func() (string, string) {
+		workerAccountName := "stressWorker" + strconv.Itoa(workerCount)
+		workerCount++
+		workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
+		if err != nil {
+			m.t.Fatal("Error creating worker account: ", workerAccountName, " - ", err)
+		}
+		m.t.Log("Created new worker ", workerAccountName)
+
+		workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
+		if err != nil {
+			m.t.Fatal("Error getting worker address: ", workerAccountName, " - ", err)
+		}
+
+		fmt.Println("Worker address: ", workerAddress)
+
+		err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
+		if err != nil {
+			m.t.Fatal("Error funding worker address: ", workerAddress, " - ", err)
+		}
+
+		return workerAccountName, workerAddress
+	}
+
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
+
+	workerAccountName, workerAddress := createWorker()
+	workerAddresses[workerAccountName] = workerAddress
 
 	blockHeightCurrent := topic.EpochLastEnded
 	blockHeightEval := blockHeightCurrent + topic.EpochLength
@@ -391,27 +393,7 @@ func WorkerReputerLoop(m TestMetadata) {
 			if workerCount >= workersMax {
 				break
 			}
-			// Generate new worker accounts
-			workerAccountName := "stressWorker" + strconv.Itoa(workerCount)
-			m.t.Log("Created new worker ", workerAccountName)
-			workerCount++
-			workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
-			if err != nil {
-				fmt.Println("Error creating worker address: ", workerAccountName, " - ", err)
-				continue
-			}
-			workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
-			if err != nil {
-				fmt.Println("Error getting worker address: ", workerAccountName, " - ", err)
-				continue
-			}
-			fmt.Println("Worker address: ", workerAddress)
-			err = fundAccount(m, m.n.FaucetAcc, m.n.FaucetAddr, workerAddress, 100000)
-			if err != nil {
-				fmt.Println("Error funding worker address: ", workerAddress, " - ", err)
-				continue
-			}
-
+			workerAccountName, workerAddress := createWorker()
 			newWorkerAddresses[workerAccountName] = workerAddress
 		}
 
@@ -497,10 +479,6 @@ func WorkerReputerLoop(m TestMetadata) {
 	}
 }
 
-func getTxRunnerAccountName(topicId uint64) string {
-	return "stressTxRunnerTopic" + strconv.Itoa(int(topicId))
-}
-
 func ProcessTopicLoop(
 	m TestMetadata,
 	workerAddresses map[string]string,
@@ -514,15 +492,30 @@ func ProcessTopicLoop(
 ) {
 	defer wg.Done()
 
-	topicId := topic.Id
+	ProcessTopicLoopInner(
+		m,
+		workerAddresses,
+		newWorkerAddresses,
+		reputerAddresses,
+		newReputerAddresses,
+		topic,
+		blockHeightCurrent,
+		blockHeightEval,
+	)
+}
 
-	/*
-		topicTxRunnerAccount, err := m.n.Client.AccountRegistry.GetByName(getTxRunnerAccountName(topicId))
-		if err != nil {
-			fmt.Println("Error getting topic tx runner account: ", getTxRunnerAccountName(topicId), " - ", err)
-			return
-		}
-	*/
+func ProcessTopicLoopInner(
+	m TestMetadata,
+	workerAddresses map[string]string,
+	newWorkerAddresses map[string]string,
+	reputerAddresses map[string]string,
+	newReputerAddresses map[string]string,
+	topic *types.Topic,
+	blockHeightCurrent,
+	blockHeightEval int64,
+) {
+
+	topicId := topic.Id
 
 	for workerAccountName, workerAddress := range newWorkerAddresses {
 		workerAddresses[workerAccountName] = workerAddress
