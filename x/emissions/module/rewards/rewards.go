@@ -7,7 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -130,13 +129,12 @@ func GenerateRewardsDistributionByTopic(
 	}
 	// Filter out topics that are not reward-ready, inactivate if needed
 	// Update sum weight and revenue
-	weightsOfActiveTopics, sumWeight, sumRevenue, err := FilterAndInactivateTopicsUpdatingSums(
+	weightsOfActiveTopics, sumWeight, err := FilterAndInactivateTopicsUpdatingSums(
 		ctx,
 		k,
 		weights,
 		sortedTopics,
 		sumWeight,
-		totalRevenue,
 		totalReward,
 		blockHeight,
 	)
@@ -179,19 +177,6 @@ func GenerateRewardsDistributionByTopic(
 		}
 	}
 
-	// Send remaining collected inference request fees to the Ecosystem module account
-	// They will be paid out to reputers, workers, and validators
-	// according to the formulas in the beginblock of the mint module
-	err = k.SendCoinsFromModuleToModule(
-		ctx,
-		types.AlloraRequestsAccountName,
-		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
-	if err != nil {
-		ctx.Logger().Error("Error sending coins from module to module: ", err)
-		return nil, err
-	}
-
 	sortedTopTopics := alloraMath.GetSortedKeys(weightsOfTopActiveTopics)
 
 	weightOfTopTopics, err := sumWeight.Sub(sumWeightOfBottomTopics)
@@ -208,21 +193,17 @@ func GenerateRewardsDistributionByTopic(
 	return topicRewards, nil
 }
 
-func removeFromSumWeightAndRevenue(ctx sdk.Context, k keeper.Keeper, sumWeight alloraMath.Dec, sumRevenue cosmosMath.Int,
-	weight *alloraMath.Dec, topicId uint64) (alloraMath.Dec, cosmosMath.Int, error) {
+func removeFromSumWeightAndRevenue(
+	sumWeight alloraMath.Dec,
+	weight *alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
 	// i.e. we'll neither emit their worker/reputer requests or calculate rewards for its participants this epoch
 	sumWeight, err := sumWeight.Sub(*weight)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to subtract weight from sum")
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to subtract weight from sum")
 	}
-	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
-	}
-	sumRevenue = sumRevenue.Sub(topicFeeRevenue.Revenue)
-
-	return sumWeight, sumRevenue, nil
+	return sumWeight, nil
 }
 
 func FilterAndInactivateTopicsUpdatingSums(
@@ -231,19 +212,17 @@ func FilterAndInactivateTopicsUpdatingSums(
 	weights map[uint64]*alloraMath.Dec,
 	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
-	sumRevenue cosmosMath.Int,
 	totalReward alloraMath.Dec,
 	blockHeight BlockHeight,
 ) (
 	map[uint64]*alloraMath.Dec,
 	alloraMath.Dec,
-	cosmosMath.Int,
 	error,
 ) {
 
 	minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get min topic weight")
+		return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to get min topic weight")
 	}
 
 	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
@@ -269,14 +248,14 @@ func FilterAndInactivateTopicsUpdatingSums(
 		if weight.Lt(minTopicWeight) {
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
 
 			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
 			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
 			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
 
 			// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
@@ -285,15 +264,15 @@ func FilterAndInactivateTopicsUpdatingSums(
 			filterOutErrorMessage = "failed to remove inactivated from sum weight and revenue"
 		}
 		if filterOutTopic {
-			sumWeight, sumRevenue, err = removeFromSumWeightAndRevenue(ctx, k, sumWeight, sumRevenue, weight, topicId)
+			sumWeight, err = removeFromSumWeightAndRevenue(sumWeight, weight)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, filterOutErrorMessage)
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, filterOutErrorMessage)
 			}
 		} else {
 			weightsOfActiveTopics[topicId] = weight
 		}
 	}
-	return weightsOfActiveTopics, sumWeight, sumRevenue, nil
+	return weightsOfActiveTopics, sumWeight, nil
 }
 
 func CalcTopicRewards(

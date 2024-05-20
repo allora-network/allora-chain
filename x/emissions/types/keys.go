@@ -6,7 +6,6 @@ const (
 	ModuleName                                 = "emissions"
 	StoreKey                                   = "emissions"
 	AlloraStakingAccountName                   = "allorastaking"
-	AlloraRequestsAccountName                  = "allorarequests"
 	AlloraRewardsAccountName                   = "allorarewards"
 	AlloraPendingRewardForDelegatorAccountName = "allorapendingrewards"
 )
