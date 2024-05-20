@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -325,6 +326,9 @@ const topicFunds int64 = 10000000000000000
 
 // Register two actors and check their registrations went through
 func WorkerReputerLoop(m TestMetadata) {
+	numCPUs := runtime.NumCPU()
+	gomaxprocs := runtime.GOMAXPROCS(0)
+	fmt.Printf("Number of logical CPUs: %d, GOMAXPROCS %d \n", numCPUs, gomaxprocs)
 
 	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
 	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 10000)
