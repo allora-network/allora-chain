@@ -99,7 +99,11 @@ func GetWorkersRewardFractions(
 		scores = append(scores, workerLastScoresDec)
 	}
 
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread)
+	epsilon, err := k.GetParamsEpsilon(ctx)
+	if err != nil {
+		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
+	}
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread, epsilon)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}

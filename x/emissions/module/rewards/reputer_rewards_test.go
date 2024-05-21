@@ -1,6 +1,8 @@
 package rewards_test
 
 import (
+	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -249,9 +251,6 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionOfRewardsForHigherStake() {
-	topicId := uint64(1)
-	block := int64(1003)
-
 	reputerAddrs := []string{
 		s.addrs[0].String(),
 		s.addrs[1].String(),
@@ -259,6 +258,10 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 		s.addrs[3].String(),
 		s.addrs[4].String(),
 	}
+
+	topicId, err := CreateTopic(s.ctx, s.msgServer, s.addrs[0].String())
+	s.Require().NoError(err)
+	block := int64(1003)
 
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
@@ -299,7 +302,6 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForReputerWithZeroStake() {
-	topicId := uint64(1)
 	block := int64(1003)
 
 	reputerAddrs := []string{
@@ -309,6 +311,9 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 		s.addrs[3].String(),
 		s.addrs[4].String(),
 	}
+
+	topicId, err := CreateTopic(s.ctx, s.msgServer, s.addrs[0].String())
+	s.Require().NoError(err)
 
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
@@ -397,4 +402,28 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 	}
 
 	return reputerValueBundles, nil
+}
+
+func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string) (uint64, error) {
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          creator,
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.MustNewDecFromString("0.01"),
+	}
+	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	if err != nil {
+		return 0, err
+	}
+	return res.TopicId, nil
 }
