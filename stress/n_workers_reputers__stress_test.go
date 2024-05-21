@@ -405,6 +405,9 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 
 			elapsedIteration := time.Since(startIteration)
 			sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
+			for sleepingTimeSeconds < 0 {
+				sleepingTimeSeconds += iterationTimeSeconds
+			}
 			fmt.Println(time.Now(), "Main loop sleeping", sleepingTimeSeconds)
 			time.Sleep(sleepingTimeSeconds)
 		}
@@ -722,7 +725,7 @@ func fundAccounts(
 		})
 	}
 
-	// Fund the account from faucet account
+	// Fund the accounts from faucet account in a single transaction
 	sendMsg := &banktypes.MsgMultiSend{
 		Inputs: []banktypes.Input{
 			{
