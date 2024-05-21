@@ -62,14 +62,14 @@ func generateLossesRequest(
 		return
 	}
 
-	params := string(inferencesPayloadJSON)
+	stdin := string(inferencesPayloadJSON)
 	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
 		TopicID:    topicIdStr,
 		Config: Config{
-			Stdin: &params,
+			Stdin: &stdin,
 			Environment: []EnvVar{
 				{
 					Name:  "BLS_REQUEST_PATH",

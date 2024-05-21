@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	cosmossdk_io_math "cosmossdk.io/math"
@@ -25,7 +26,6 @@ import (
 
 const secondsInAMonth = 2592000
 
-const MAX_ITERATIONS = 10000       // Maximum loop number of iterations
 const defaultEpochLength = 10      // Default epoch length in blocks if none is found yet from chain
 const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait before inserting the first batch
 const iterationsInABatch = 1       // To control the number of epochs in each iteration of the loop (eg to manage insertions)
@@ -188,7 +188,6 @@ func InsertWorkerBulk(m TestMetadata, topic *types.Topic, leaderWorkerAccountNam
 		workerDataBundles = append(workerDataBundles, generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workerAddresses))
 	}
 	leaderWorkerAddress := workerAddresses[leaderWorkerAccountName]
-	fmt.Println("Inserting worker bulk for blockHeight: ", blockHeight, "leader name: ", leaderWorkerAccountName, ", addr: ", leaderWorkerAddress, " len: ", len(workerDataBundles))
 	return InsertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorkerAddress, workerDataBundles)
 }
 
@@ -320,21 +319,7 @@ func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount co
 	return topicId
 }
 
-func WorkerReputerCoordinationLoop(m TestMetadata) {
-
-	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
-	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 10000)
-	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
-	workersMax := lookupEnvInt(m, "WORKERS_MAX", 10000)
-	topicsPerEpoch := lookupEnvInt(m, "TOPICS_PER_EPOCH", 0)
-	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
-
-	fmt.Println("Reputers per epoch: ", reputersPerEpoch)
-	fmt.Println("Reputers max: ", reputersMax)
-	fmt.Println("Workers per epoch: ", workersPerEpoch)
-	fmt.Println("Workers max: ", workersMax)
-	fmt.Println("Topics per epoch: ", topicsPerEpoch)
-	fmt.Println("Topics max: ", topicsMax)
+func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations int) {
 
 	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
 	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
@@ -386,9 +371,12 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 	workerCount := 1
 	reputerCount := 1
 
+	var wg sync.WaitGroup
 	if topicsPerEpoch == 0 {
 		topicFunderAddress, topicFunderAccount := getTopicFunder()
-		WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount)
+		wg.Add(1)
+		WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
+			reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations)
 		topicCount++
 	} else {
 		for {
@@ -396,22 +384,26 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 
 			for j := 0; j < topicsPerEpoch && topicCount < topicsMax; j++ {
 				topicFunderAddress, topicFunderAccount := getTopicFunder()
-				go WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount)
+				wg.Add(1)
+				go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
+					reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations)
 				topicCount++
 			}
-
+			if topicCount >= topicsMax {
+				fmt.Println("Exiting main loop: reached maximum number of topics.")
+				break
+			}
 			workerCount += workersPerEpoch
 			reputerCount += reputersPerEpoch
 
 			elapsedIteration := time.Since(startIteration)
 			sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
-			for sleepingTimeSeconds < 0 {
-				sleepingTimeSeconds += iterationTimeSeconds
-			}
 			fmt.Println(time.Now(), "Main loop sleeping", sleepingTimeSeconds)
 			time.Sleep(sleepingTimeSeconds)
 		}
 	}
+
+	wg.Wait()
 }
 
 func getTopicFunderAccountName(topicFunderIndex int) string {
@@ -426,24 +418,22 @@ func getReputerAccountName(reputerIndex int, topicId uint64) string {
 	return "stressReputer" + strconv.Itoa(reputerIndex) + "_topic" + strconv.Itoa(int(topicId))
 }
 
-// Register two actors and check their registrations went through
+// Main worker-reputer per-topic loop
 func WorkerReputerLoop(
+	wg *sync.WaitGroup,
 	m TestMetadata,
 	topicFunderAddress string,
 	topicFunderAccount cosmosaccount.Account,
-	initialWorkerCount int,
-	initialReputerCount int,
+	initialWorkerCount, initialReputerCount,
+	reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations int,
 ) {
+	defer wg.Done()
+
 	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount)
 
 	report := func(a ...any) {
 		fmt.Println("[ TOPIC", topicId, "] ", a)
 	}
-
-	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
-	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 100)
-	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
-	workersMax := lookupEnvInt(m, "WORKERS_MAX", 100)
 
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
@@ -521,7 +511,7 @@ func WorkerReputerLoop(
 	// Translate the epoch length into time
 	iterationTimeSeconds := time.Duration(topic.EpochLength) * approximateBlockTimeSeconds * iterationsInABatch
 
-	for i := 0; i < MAX_ITERATIONS; i++ {
+	for i := 0; i < maxIterations; i++ {
 
 		// Funding topic
 		err := FundTopic(m, topicId, topicFunderAddress, topicFunderAccount, topicFunds)
@@ -534,7 +524,7 @@ func WorkerReputerLoop(
 
 		startIteration := time.Now()
 
-		report("iteration: ", i, " / ", MAX_ITERATIONS)
+		report("iteration: ", i, " / ", maxIterations)
 
 		initializeNewWorkerAccount := func() {
 			// Generate new worker accounts
@@ -629,9 +619,11 @@ func WorkerReputerLoop(
 				}
 			}
 			continue
+		} else {
+			report("Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workerAddresses), " workers")
+			elapsedBulk := time.Since(startWorker)
+			report("Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
 		}
-		elapsedBulk := time.Since(startWorker)
-		report("Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
 
 		// Insert reputer bulk, choosing one random leader from reputer accounts
 		leaderReputerAccountName, _, err := GetRandomMapEntryValue(reputerAddresses)
@@ -654,9 +646,11 @@ func WorkerReputerLoop(
 				}
 			}
 			continue
+		} else {
+			report("Inserted reputer bulk, blockHeight: ", blockHeightCurrent, " with ", len(reputerAddresses), " reputers")
+			elapsedBulk := time.Since(startReputer)
+			report("Insert Reputer Elapsed time:", elapsedBulk)
 		}
-		elapsedBulk = time.Since(startReputer)
-		report("Insert Reputer Elapsed time:", elapsedBulk)
 
 		// Sleep for 2 epoch
 		elapsedIteration := time.Since(startIteration)
