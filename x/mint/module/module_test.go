@@ -73,7 +73,6 @@ func (s *MintModuleTestSuite) SetupTest() {
 		emissionstypes.AlloraRewardsAccountName: nil,
 		emissionstypes.AlloraPendingRewardForDelegatorAccountName: nil,
 		emissionstypes.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
-		emissionstypes.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
 		"bonded_tokens_pool":                                      {"burner", "staking"},
 		"not_bonded_tokens_pool":                                  {"burner", "staking"},
 		multiPerm:                                                 {"burner", "minter", "staking"},
@@ -182,7 +181,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
-		emissionstypes.AlloraRequestsAccountName,
+		"rando",
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.MintDenom,
