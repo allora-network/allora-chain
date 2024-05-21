@@ -49,11 +49,7 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 		if !ok {
 			continue
 		}
-		if runningLoss.SumWeight.Lt(epsilon) {
-			fmt.Println("Sum weight for worker is 0", worker)
-			continue
-		}
-		normalizedWeightedLoss, err := normalizeWeightedLoss(runningLoss.UnnormalizedWeightedLoss, runningLoss.SumWeight, epsilon)
+		normalizedWeightedLoss, err := normalizeWeightedLoss(runningLoss, epsilon)
 		if err != nil {
 			fmt.Println("Error normalizing weighted loss: ", err)
 			continue
@@ -66,6 +62,7 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 	return weightedLosses
 }
 
+// Assumes stakes are all positive
 func CalcNetworkLosses(
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses emissions.ReputerValueBundles,
@@ -192,30 +189,14 @@ func CalcNetworkLosses(
 	sortedForecasters := alloraMath.GetSortedKeys(runningWeightedForecasterLosses)
 
 	// Normalize the combined loss
-	if runningWeightedCombinedLoss.SumWeight.Lt(epsilon) {
-		fmt.Println("Sum weight for combined naive loss is 0")
-		return emissions.ValueBundle{}, emissions.ErrFractionDivideByZero
-	}
-	combinedValue, err := normalizeWeightedLoss(
-		runningWeightedCombinedLoss.UnnormalizedWeightedLoss,
-		runningWeightedCombinedLoss.SumWeight,
-		epsilon,
-	)
+	combinedValue, err := normalizeWeightedLoss(&runningWeightedCombinedLoss, epsilon)
 	if err != nil {
 		fmt.Println("Error normalizing combined loss: ", err)
 		return emissions.ValueBundle{}, err
 	}
 
 	// Normalize the naive loss
-	if runningWeightedCombinedLoss.SumWeight.Lt(epsilon) {
-		fmt.Println("Sum weight for combined naive loss is 0")
-		return emissions.ValueBundle{}, emissions.ErrFractionDivideByZero
-	}
-	naiveValue, err := normalizeWeightedLoss(
-		runningWeightedNaiveLoss.UnnormalizedWeightedLoss,
-		runningWeightedNaiveLoss.SumWeight,
-		epsilon,
-	)
+	naiveValue, err := normalizeWeightedLoss(&runningWeightedNaiveLoss, epsilon)
 	if err != nil {
 		fmt.Println("Error normalizing naive loss: ", err)
 		return emissions.ValueBundle{}, err
@@ -272,11 +253,7 @@ func CalcCombinedNetworkLoss(
 		}
 	}
 
-	combinedValue, err := normalizeWeightedLoss(
-		runningWeightedCombinedLoss.UnnormalizedWeightedLoss,
-		runningWeightedCombinedLoss.SumWeight,
-		epsilon,
-	)
+	combinedValue, err := normalizeWeightedLoss(&runningWeightedCombinedLoss, epsilon)
 	if err != nil {
 		fmt.Println("Error normalizing combined loss: ", err)
 		return Loss{}, err
@@ -286,11 +263,15 @@ func CalcCombinedNetworkLoss(
 }
 
 func normalizeWeightedLoss(
-	unnormalizedWeightedLoss alloraMath.Dec,
-	sumWeight alloraMath.Dec,
+	runningWeightedLossData *RunningWeightedLoss,
 	epsilon alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	normalizedWeightedLoss, err := unnormalizedWeightedLoss.Quo(sumWeight)
+	if runningWeightedLossData.SumWeight.Lt(epsilon) {
+		fmt.Println("Sum weight for combined naive loss is 0")
+		return alloraMath.Dec{}, emissions.ErrFractionDivideByZero
+	}
+
+	normalizedWeightedLoss, err := runningWeightedLossData.UnnormalizedWeightedLoss.Quo(runningWeightedLossData.SumWeight)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
