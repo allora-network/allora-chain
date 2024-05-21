@@ -18,7 +18,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -87,13 +87,12 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.addressCodec = addressCodec
 
 	maccPerms := map[string][]string{
-		"fee_collector":                                  {"minter"},
-		"mint":                                           {"minter"},
-		types.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
-		mintTypes.EcosystemModuleName:                    {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName:                   {"minter"},
+		"fee_collector":                {"minter"},
+		"mint":                         {"minter"},
+		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName: {"minter"},
 		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
+		minttypes.EcosystemModuleName:                    nil,
 		"bonded_tokens_pool":                             {"burner", "staking"},
 		"not_bonded_tokens_pool":                         {"burner", "staking"},
 		multiPerm:                                        {"burner", "minter", "staking"},

@@ -20,6 +20,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(ctx, am.keeper, blockHeight, true)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
+	} else {
+		fmt.Println("Weights: Weights: ", weights)
+		fmt.Println("Weights: Sum of weights: ", sumWeight)
+		fmt.Println("Weights: Total revenue: ", totalRevenue)
 	}
 
 	// REWARDS (will internally filter any non-RewardReady topics)

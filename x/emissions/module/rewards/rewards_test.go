@@ -19,6 +19,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
+	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -65,11 +66,10 @@ func (s *RewardsTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 
 	maccPerms := map[string][]string{
-		"fee_collector":                 {"minter"},
-		"mint":                          {"minter"},
-		types.AlloraStakingAccountName:  {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName: {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName:  {"minter"},
+		"fee_collector":                {"minter"},
+		"mint":                         {"minter"},
+		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName: {"minter"},
 		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
 		"ecosystem":              {"minter"},
 		"bonded_tokens_pool":     {"burner", "staking"},
@@ -426,7 +426,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.Require().True(
 		s.bankKeeper.HasBalance(
 			s.ctx,
-			s.accountKeeper.GetModuleAddress(types.AlloraRequestsAccountName),
+			s.accountKeeper.GetModuleAddress(minttypes.EcosystemModuleName),
 			sdk.NewCoin(params.DefaultBondDenom, initialStake),
 		),
 		"ecosystem account should have something in it after funding",
@@ -2263,10 +2263,6 @@ func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
 	sumRevenue := cosmosMath.NewInt(3000)
 	totalReward := alloraMath.NewDecFromInt64(1000)
 
-	// Send revenue to requests account
-	sumRevenueCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, sumRevenue))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraRequestsAccountName, sumRevenueCoins)
-
 	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 2, 1)
@@ -2304,7 +2300,6 @@ func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
 		4: &topic4Weight, // Above the minimum weight, but no reward nonce
 	}
 	sumWeight := alloraMath.NewDecFromInt64(1210)
-	sumRevenue := cosmosMath.NewInt(3000)
 	totalReward := alloraMath.NewDecFromInt64(1000)
 
 	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
@@ -2315,13 +2310,12 @@ func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
 	s.Require().NoError(err)
 
 	// Test execution
-	filteredWeights, _, _, err := rewards.FilterAndInactivateTopicsUpdatingSums(
+	filteredWeights, _, err := rewards.FilterAndInactivateTopicsUpdatingSums(
 		s.ctx,
 		s.emissionsKeeper,
 		weights,
 		[]uint64{1, 2, 3, 4},
 		sumWeight,
-		sumRevenue,
 		totalReward,
 		1,
 	)

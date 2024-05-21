@@ -276,7 +276,7 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
 	}
 
-	ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
+	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
 	if err != nil {
 		return nil, err
 	}

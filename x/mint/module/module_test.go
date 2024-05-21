@@ -40,6 +40,7 @@ import (
 const (
 	multiPerm  = "multiple permissions account"
 	randomPerm = "random permission"
+	thirdParty = "third_party"
 )
 
 type MintModuleTestSuite struct {
@@ -67,13 +68,12 @@ func (s *MintModuleTestSuite) SetupTest() {
 
 	maccPerms := map[string][]string{
 		"fee_collector":                         nil,
-		"third_party":                           {"minter"},
+		thirdParty:                              {"minter"},
 		"ecosystem":                             {"burner", "minter", "staking"},
 		"mint":                                  {"minter"},
 		emissionstypes.AlloraRewardsAccountName: nil,
 		emissionstypes.AlloraPendingRewardForDelegatorAccountName: nil,
 		emissionstypes.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
-		emissionstypes.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
 		"bonded_tokens_pool":                                      {"burner", "staking"},
 		"not_bonded_tokens_pool":                                  {"burner", "staking"},
 		multiPerm:                                                 {"burner", "minter", "staking"},
@@ -182,7 +182,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
-		emissionstypes.AlloraRequestsAccountName,
+		thirdParty,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				params.MintDenom,
@@ -369,7 +369,7 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
-		"third_party",
+		thirdParty,
 		sdk.NewCoins(
 			sdk.NewCoin(
 				sdk.DefaultBondDenom,
