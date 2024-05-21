@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"fmt"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -180,6 +182,8 @@ func GenerateRewardsDistributionByTopic(
 					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
 				}
 			}
+		} else {
+			fmt.Println("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
 		}
 	}
 
@@ -245,13 +249,14 @@ func FilterAndInactivateTopicsUpdatingSums(
 			filterOutErrorMessage = "failed to remove from sum weight and revenue"
 		}
 		if rewardNonce == 0 {
-			ctx.Logger().Warn("Reputer request nonces is nil")
+			ctx.Logger().Warn("Reward nonce is 0")
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove nil-reputer-nonce topic from sum weight and revenue"
 		}
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
+			ctx.Logger().Warn("Topic weight is below the minimum: ", topicId)
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
