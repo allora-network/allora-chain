@@ -203,6 +203,9 @@ func CalcNetworkLosses(
 		fmt.Println("Error normalizing combined loss: ", err)
 		return emissions.ValueBundle{}, err
 	}
+	if combinedValue.Lt(epsilon) {
+		combinedValue = epsilon
+	}
 	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
 	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers, epsilon)
 	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters, epsilon)
