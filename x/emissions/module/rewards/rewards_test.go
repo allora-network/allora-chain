@@ -2328,3 +2328,447 @@ func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
 		s.Require().NotEqual(topicId, uint64(2))
 	}
 }
+
+func (s *RewardsTestSuite) TestTotalInferresRewardFractionGrowsWithMoreInferrers() {
+	block := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[5],
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+		s.addrs[9],
+	}
+
+	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+
+	stakes := []cosmosMath.Int{
+		cosmosMath.NewInt(1000000000000000000).Mul(cosmosOneE18),
+		cosmosMath.NewInt(1000000000000000000).Mul(cosmosOneE18),
+		cosmosMath.NewInt(1000000000000000000).Mul(cosmosOneE18),
+	}
+
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId := res.TopicId
+
+	// Register 5 workers
+	for _, addr := range workerAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Register 3 reputers
+	for _, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    true,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+	// Add Stake for reputers
+	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId,
+		})
+		s.Require().NoError(err)
+	}
+
+	var initialStake int64 = 1000
+	s.FundAccount(initialStake, reputerAddrs[0])
+	fundTopicMessage := types.MsgFundTopic{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            workerAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles := GenerateHugeLossBundles(s, block, topicId, reputerAddrs, workerAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
+	firstRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	s.Require().NoError(err)
+
+	totalInferrersReward := alloraMath.ZeroDec()
+	totalForecastersReward := alloraMath.ZeroDec()
+	totalReputersReward := alloraMath.ZeroDec()
+	totalForecasterReputersReward := alloraMath.ZeroDec()
+	totalInferrerRputersReward := alloraMath.ZeroDec()
+	firstInferrerFraction := alloraMath.ZeroDec()
+	firstForecasterFraction := alloraMath.ZeroDec()
+	for _, reward := range firstRewardsDistribution {
+		if reward.Type == rewards.WorkerInferenceRewardType {
+			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
+		} else if reward.Type == rewards.WorkerForecastRewardType {
+			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
+		} else if reward.Type == rewards.ReputerRewardType {
+			totalReputersReward, _ = totalReputersReward.Add(reward.Reward)
+		}
+	}
+	totalForecasterReputersReward, err = totalForecastersReward.Add(totalReputersReward)
+	s.Require().NoError(err)
+	totalInferrerRputersReward, err = totalInferrerRputersReward.Add(totalReputersReward)
+	s.Require().NoError(err)
+
+	firstInferrerFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	s.Require().NoError(err)
+	firstForecasterFraction, err = totalForecastersReward.Quo(totalInferrerRputersReward)
+	s.Require().NoError(err)
+
+	block += 1
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// Add new worker(inferencer) and stakes
+	newSecondWorkersAddrs := []sdk.AccAddress{
+		s.addrs[10],
+		s.addrs[11],
+	}
+	newSecondWorkersAddrs = append(workerAddrs, newSecondWorkersAddrs...)
+
+	// Create new topic
+	newTopicMsg = &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId = res.TopicId
+
+	// Register 7 workers with 2 new inferencers
+	for _, addr := range newSecondWorkersAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Register 3 reputers
+	for _, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    true,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+	// Add Stake for reputers
+	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId,
+		})
+		s.Require().NoError(err)
+	}
+
+	s.FundAccount(initialStake, reputerAddrs[0])
+
+	fundTopicMessage = types.MsgFundTopic{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newSecondWorkersAddrs)
+	// Add more inferencer
+	newInferenceBundles := GenerateMoreInferencesDataBundles(s, block, topicId)
+	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            newSecondWorkersAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newSecondWorkersAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
+	secondRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	s.Require().NoError(err)
+
+	totalInferrersReward = alloraMath.ZeroDec()
+	totalForecasterReputersReward = alloraMath.ZeroDec()
+	secondInferrerFraction := alloraMath.ZeroDec()
+	for _, reward := range secondRewardsDistribution {
+		if reward.Type == rewards.WorkerInferenceRewardType {
+			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
+		} else if reward.Type == rewards.WorkerForecastRewardType || reward.Type == rewards.ReputerRewardType {
+			totalForecasterReputersReward, _ = totalForecasterReputersReward.Add(reward.Reward)
+		}
+	}
+	secondInferrerFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	s.Require().True(firstInferrerFraction.Lt(secondInferrerFraction), "Second inference fraction must be bigger than first fraction")
+
+	// Add new worker(forecsater) and stakes
+	newThirdWorkersAddrs := []sdk.AccAddress{
+		s.addrs[10],
+		s.addrs[11],
+	}
+	newThirdWorkersAddrs = append(workerAddrs, newThirdWorkersAddrs...)
+
+	// Create new topic
+	newTopicMsg = &types.MsgCreateNewTopic{
+		Creator:          reputerAddrs[0].String(),
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.NewDecFromInt64(14),
+	}
+	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+
+	// Get Topic Id
+	topicId = res.TopicId
+
+	// Register 7 workers with 2 new forecasters
+	for _, addr := range newThirdWorkersAddrs {
+		workerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    false,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+	}
+
+	// Register 3 reputers
+	for _, addr := range reputerAddrs {
+		reputerRegMsg := &types.MsgRegister{
+			Sender:       addr.String(),
+			LibP2PKey:    "test",
+			MultiAddress: "test",
+			TopicId:      topicId,
+			IsReputer:    true,
+			Owner:        addr.String(),
+		}
+		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
+		s.Require().NoError(err)
+	}
+	// Add Stake for reputers
+	for i, addr := range reputerAddrs {
+		s.MintTokensToAddress(addr, cosmosMath.NewIntFromBigInt(stakes[i].BigInt()))
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  addr.String(),
+			Amount:  stakes[i],
+			TopicId: topicId,
+		})
+		s.Require().NoError(err)
+	}
+
+	s.FundAccount(initialStake, reputerAddrs[0])
+
+	fundTopicMessage = types.MsgFundTopic{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(initialStake),
+	}
+	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
+		BlockHeight: block,
+	}, &types.Nonce{
+		BlockHeight: block,
+	})
+	s.Require().NoError(err)
+
+	// Insert inference from workers
+	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newThirdWorkersAddrs)
+	// Add more inferencer
+	newInferenceBundles = GenerateMoreForecastersDataBundles(s, block, topicId)
+	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
+	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
+		Sender:            newThirdWorkersAddrs[0].String(),
+		Nonce:             &types.Nonce{BlockHeight: block},
+		TopicId:           topicId,
+		WorkerDataBundles: inferenceBundles,
+	})
+	s.Require().NoError(err)
+
+	// Insert loss bundle from reputers
+	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newThirdWorkersAddrs)
+	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
+		Sender:  reputerAddrs[0].String(),
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+			WorkerNonce: &types.Nonce{
+				BlockHeight: block,
+			},
+		},
+		ReputerValueBundles: lossBundles.ReputerValueBundles,
+	})
+	s.Require().NoError(err)
+
+	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
+	thirdRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	s.Require().NoError(err)
+
+	totalInferrersReward = alloraMath.ZeroDec()
+	totalForecasterReputersReward = alloraMath.ZeroDec()
+	thirdForecasterFraction := alloraMath.ZeroDec()
+	for _, reward := range thirdRewardsDistribution {
+		if reward.Type == rewards.WorkerInferenceRewardType {
+			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
+		} else if reward.Type == rewards.WorkerForecastRewardType || reward.Type == rewards.ReputerRewardType {
+			totalForecasterReputersReward, _ = totalForecasterReputersReward.Add(reward.Reward)
+		}
+	}
+	thirdForecasterFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
+}
