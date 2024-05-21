@@ -100,7 +100,6 @@ func CalcNetworkLosses(
 				fmt.Println("Error updating running weighted average for next combined loss: ", err)
 				return emissions.ValueBundle{}, err
 			}
-			// If the combined loss is zero, set it to epsilon to avoid divide by zero
 			if nextCombinedLoss.Loss.IsZero() {
 				nextCombinedLoss.Loss = epsilon
 			}
@@ -121,6 +120,9 @@ func CalcNetworkLosses(
 					fmt.Println("Error updating running weighted average for inferer: ", err)
 					return emissions.ValueBundle{}, err
 				}
+				if nextAvg.Loss.IsZero() {
+					nextAvg.Loss = epsilon
+				}
 				runningWeightedInfererLosses[loss.Worker] = &nextAvg
 			}
 
@@ -138,6 +140,9 @@ func CalcNetworkLosses(
 					fmt.Println("Error updating running weighted average for forecaster: ", err)
 					return emissions.ValueBundle{}, err
 				}
+				if nextAvg.Loss.IsZero() {
+					nextAvg.Loss = epsilon
+				}
 				runningWeightedForecasterLosses[loss.Worker] = &nextAvg
 			}
 
@@ -146,6 +151,9 @@ func CalcNetworkLosses(
 			if err != nil {
 				fmt.Println("Error updating running weighted average for naive loss: ", err)
 				return emissions.ValueBundle{}, err
+			}
+			if nextNaiveLoss.Loss.IsZero() {
+				nextNaiveLoss.Loss = epsilon
 			}
 			runningWeightedNaiveLoss = nextNaiveLoss
 
@@ -161,6 +169,9 @@ func CalcNetworkLosses(
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-out inferer: ", err)
 					return emissions.ValueBundle{}, err
+				}
+				if nextAvg.Loss.IsZero() {
+					nextAvg.Loss = epsilon
 				}
 				runningWeightedOneOutInfererLosses[loss.Worker] = &nextAvg
 			}
@@ -179,6 +190,9 @@ func CalcNetworkLosses(
 					fmt.Println("Error updating running weighted average for one-out forecaster: ", err)
 					return emissions.ValueBundle{}, err
 				}
+				if nextAvg.Loss.IsZero() {
+					nextAvg.Loss = epsilon
+				}
 				runningWeightedOneOutForecasterLosses[loss.Worker] = &nextAvg
 			}
 
@@ -195,6 +209,9 @@ func CalcNetworkLosses(
 				if err != nil {
 					fmt.Println("Error updating running weighted average for one-in forecaster: ", err)
 					return emissions.ValueBundle{}, err
+				}
+				if nextAvg.Loss.IsZero() {
+					nextAvg.Loss = epsilon
 				}
 				runningWeightedOneInForecasterLosses[loss.Worker] = &nextAvg
 			}
