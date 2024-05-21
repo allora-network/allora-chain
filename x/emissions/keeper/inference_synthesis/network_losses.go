@@ -266,6 +266,9 @@ func CalcCombinedNetworkLoss(
 		fmt.Println("Error normalizing combined loss: ", err)
 		return Loss{}, err
 	}
+	if combinedValue.Lt(epsilon) {
+		return epsilon, nil
+	}
 
 	return combinedValue, nil
 }

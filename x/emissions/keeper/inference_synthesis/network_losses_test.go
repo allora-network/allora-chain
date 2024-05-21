@@ -193,7 +193,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossOneReporterZero
 			},
 		}
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	expectedLoss := alloraMath.MustNewDecFromString("0") // Should be equal to zero, since the combined loss is allowed to be zero
+	expectedLoss := alloraMath.MustNewDecFromString("1e-4") // Should be equal to zero, since the combined loss is allowed to be zero
 	loss, err := inference_synthesis.CalcCombinedNetworkLoss(stakesByReputer, reportedLosses, epsilon)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
