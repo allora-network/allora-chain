@@ -909,6 +909,157 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	return inferences
 }
 
+func MoreGenerateInferenceDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+	var newInferences []*types.WorkerDataBundle
+	oldForecaster := s.addrs[5]
+	worker1Addr := s.addrs[10]
+	worker2Addr := s.addrs[11]
+
+	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker1Addr.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  oldForecaster.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[7].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[8].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, worker1Addr)
+	s.Require().NoError(err)
+	worker1Bundle := &types.WorkerDataBundle{
+		Worker:                             worker1Addr.String(),
+		InferenceForecastsBundle:           worker1InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker1Sig,
+		Pubkey:                             GetAccPubKey(s, worker1Addr),
+	}
+	newInferences = append(newInferences, worker1Bundle)
+
+	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker2Addr.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  oldForecaster.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[5].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[6].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, worker2Addr)
+	s.Require().NoError(err)
+	worker2Bundle := &types.WorkerDataBundle{
+		Worker:                             worker2Addr.String(),
+		InferenceForecastsBundle:           worker2InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker2Sig,
+		Pubkey:                             GetAccPubKey(s, worker2Addr),
+	}
+	newInferences = append(newInferences, worker2Bundle)
+
+	return newInferences
+}
+
+func MoreGenerateForecasterDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+	var newForecasts []*types.WorkerDataBundle
+	oldInferencer1 := s.addrs[5]
+	oldInferencer2 := s.addrs[6]
+	worker1Addr := s.addrs[10]
+	worker2Addr := s.addrs[11]
+
+	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     oldInferencer1.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  worker1Addr.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[7].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[8].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, oldInferencer1)
+	s.Require().NoError(err)
+	worker1Bundle := &types.WorkerDataBundle{
+		Worker:                             oldInferencer1.String(),
+		InferenceForecastsBundle:           worker1InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker1Sig,
+		Pubkey:                             GetAccPubKey(s, oldInferencer1),
+	}
+	newForecasts = append(newForecasts, worker1Bundle)
+
+	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     oldInferencer2.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  worker2Addr.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[5].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[6].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, oldInferencer2)
+	s.Require().NoError(err)
+	worker2Bundle := &types.WorkerDataBundle{
+		Worker:                             oldInferencer2.String(),
+		InferenceForecastsBundle:           worker2InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker2Sig,
+		Pubkey:                             GetAccPubKey(s, oldInferencer2),
+	}
+	newForecasts = append(newForecasts, worker2Bundle)
+
+	return newForecasts
+}
+
 type TestWorkerValue struct {
 	Address sdk.AccAddress
 	Value   string
