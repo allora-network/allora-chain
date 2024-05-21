@@ -909,7 +909,7 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	return inferences
 }
 
-func MoreGenerateInferenceDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
 	oldForecaster := s.addrs[5]
 	worker1Addr := s.addrs[10]
@@ -984,7 +984,7 @@ func MoreGenerateInferenceDataBundles(s *RewardsTestSuite, blockHeight int64, to
 	return newInferences
 }
 
-func MoreGenerateForecasterDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newForecasts []*types.WorkerDataBundle
 	oldInferencer1 := s.addrs[5]
 	oldInferencer2 := s.addrs[6]

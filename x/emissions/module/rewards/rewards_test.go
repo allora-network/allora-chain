@@ -2597,7 +2597,7 @@ func (s *RewardsTestSuite) TestTotalInferresRewardFractionGrowsWithMoreInferrers
 	// Insert inference from workers
 	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newSecondWorkersAddrs)
 	// Add more inferencer
-	newInferenceBundles := MoreGenerateInferenceDataBundles(s, block, topicId)
+	newInferenceBundles := GenerateMoreInferenceDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
 		Sender:            newSecondWorkersAddrs[0].String(),
@@ -2733,7 +2733,7 @@ func (s *RewardsTestSuite) TestTotalInferresRewardFractionGrowsWithMoreInferrers
 	// Insert inference from workers
 	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newThirdWorkersAddrs)
 	// Add more inferencer
-	newInferenceBundles = MoreGenerateForecasterDataBundles(s, block, topicId)
+	newInferenceBundles = GenerateMoreForecasterDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
 		Sender:            newThirdWorkersAddrs[0].String(),
