@@ -346,7 +346,7 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 	topicFunderAddresses := make([]string, 0)
 
 	for topicFunderIndex := 0; topicFunderIndex < topicsMax; topicFunderIndex++ {
-		topicFunderAccountName := "topicFunder" + strconv.Itoa(int(topicFunderIndex))
+		topicFunderAccountName := getTopicFunderAccountName(topicFunderIndex)
 		topicFunderAccount, _, err := m.n.Client.AccountRegistry.Create(topicFunderAccountName)
 		if err != nil {
 			fmt.Println("Error creating funder address: ", topicFunderAccountName, " - ", err)
@@ -368,7 +368,7 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 	}
 
 	getTopicFunder := func() (string, cosmosaccount.Account) {
-		topicFunderAccountName := "topicFunder" + strconv.Itoa(int(topicFunderCount))
+		topicFunderAccountName := getTopicFunderAccountName(topicFunderCount)
 		topicFunderCount++
 		topicFunderAccount, err := m.n.Client.AccountRegistry.GetByName(topicFunderAccountName)
 		if err != nil {
@@ -403,6 +403,10 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 			time.Sleep(sleepingTimeSeconds)
 		}
 	}
+}
+
+func getTopicFunderAccountName(topicFunderIndex int) string {
+	return "topicFunder" + strconv.Itoa(int(topicFunderIndex))
 }
 
 func getWorkerAccountName(workerIndex int, topicId uint64) string {
@@ -641,7 +645,6 @@ func WorkerReputerLoop(m TestMetadata, topicFunderAddress string, topicFunderAcc
 		report(time.Now(), " Sleeping...", sleepingTimeSeconds, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTimeSeconds)
 		time.Sleep(sleepingTimeSeconds)
 	}
-
 }
 
 func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, error) {
