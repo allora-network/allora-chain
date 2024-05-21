@@ -197,8 +197,8 @@ func CalcNetworkLosses(
 		return emissions.ValueBundle{}, emissions.ErrFractionDivideByZero
 	}
 	combinedValue, err := normalizeWeightedLoss(
-		runningWeightedCombinedLoss.UnnormalizedWeightedLoss, 
-		runningWeightedCombinedLoss.SumWeight, 
+		runningWeightedCombinedLoss.UnnormalizedWeightedLoss,
+		runningWeightedCombinedLoss.SumWeight,
 		epsilon,
 	)
 	if err != nil {
@@ -294,7 +294,8 @@ func normalizeWeightedLoss(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	if normalizedWeightedLoss.Lt(epsilon) {
+
+	if normalizedWeightedLoss.IsZero() {
 		normalizedWeightedLoss = epsilon
 	}
 
