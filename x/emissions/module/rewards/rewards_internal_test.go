@@ -368,6 +368,7 @@ func TestGetScoreFractions(t *testing.T) {
 		latestWorkerScores    []alloraMath.Dec
 		latestTimeStepsScores []alloraMath.Dec
 		pReward               alloraMath.Dec
+		epsilon               alloraMath.Dec
 		want                  []alloraMath.Dec
 		wantErr               bool
 	}{
@@ -384,6 +385,7 @@ func TestGetScoreFractions(t *testing.T) {
 				alloraMath.MustNewDecFromString("0.09719"), alloraMath.MustNewDecFromString("0.09675"), alloraMath.MustNewDecFromString("0.09418"),
 			},
 			pReward: alloraMath.MustNewDecFromString("1.5"),
+			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			want:    []alloraMath.Dec{alloraMath.MustNewDecFromString("0.07671471224853309"), alloraMath.MustNewDecFromString("0.055310145462117234"), alloraMath.MustNewDecFromString("0.09829388639227018"), alloraMath.MustNewDecFromString("0.21538198445289035"), alloraMath.MustNewDecFromString("0.5542992714441891")},
 			wantErr: false,
 		},
@@ -391,7 +393,7 @@ func TestGetScoreFractions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetScoreFractions(tt.latestWorkerScores, tt.latestTimeStepsScores, tt.pReward)
+			got, err := rewards.GetScoreFractions(tt.latestWorkerScores, tt.latestTimeStepsScores, tt.pReward, tt.epsilon)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -607,10 +609,12 @@ func TestGetAllConsensusScores(t *testing.T) {
 	stakes := []alloraMath.Dec{alloraMath.MustNewDecFromString("1176644.37627"), alloraMath.MustNewDecFromString("384623.3607"), alloraMath.MustNewDecFromString("394676.13226"), alloraMath.MustNewDecFromString("207999.66194"), alloraMath.MustNewDecFromString("368582.76542")}
 	allListeningCoefficients := []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0")}
 	var numReputers int64 = 5
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("0.0169833"), alloraMath.MustNewDecFromString("0.01706869"), alloraMath.MustNewDecFromString("0.016047"), alloraMath.MustNewDecFromString("0.01164"), alloraMath.MustNewDecFromString("0.01345")}
 	wantErr := false
 
-	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers)
+	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, fTolerance, epsilon)
 	if (err != nil) != wantErr {
 		t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, wantErr)
 		return
@@ -626,6 +630,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	require.NoError(err)
+
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 
 	allLosses := [][]alloraMath.Dec{
 		{alloraMath.MustNewDecFromString("0.0112"), alloraMath.MustNewDecFromString("0.00231"), alloraMath.MustNewDecFromString("0.02274"), alloraMath.MustNewDecFromString("0.01299"), alloraMath.MustNewDecFromString("0.02515"), alloraMath.MustNewDecFromString("0.0185"), alloraMath.MustNewDecFromString("0.01018"), alloraMath.MustNewDecFromString("0.02105"), alloraMath.MustNewDecFromString("0.01041"), alloraMath.MustNewDecFromString("0.0183"), alloraMath.MustNewDecFromString("0.01022"), alloraMath.MustNewDecFromString("0.01333"), alloraMath.MustNewDecFromString("0.01298"), alloraMath.MustNewDecFromString("0.01023"), alloraMath.MustNewDecFromString("0.01268"), alloraMath.MustNewDecFromString("0.01381"), alloraMath.MustNewDecFromString("0.01731"), alloraMath.MustNewDecFromString("0.01238"), alloraMath.MustNewDecFromString("0.01168"), alloraMath.MustNewDecFromString("0.00929"), alloraMath.MustNewDecFromString("0.01212"), alloraMath.MustNewDecFromString("0.01806"), alloraMath.MustNewDecFromString("0.01901"), alloraMath.MustNewDecFromString("0.01828"), alloraMath.MustNewDecFromString("0.01522"), alloraMath.MustNewDecFromString("0.01833"), alloraMath.MustNewDecFromString("0.0101"), alloraMath.MustNewDecFromString("0.01224"), alloraMath.MustNewDecFromString("0.01226"), alloraMath.MustNewDecFromString("0.01474"), alloraMath.MustNewDecFromString("0.01218"), alloraMath.MustNewDecFromString("0.01604"), alloraMath.MustNewDecFromString("0.01149"), alloraMath.MustNewDecFromString("0.02075"), alloraMath.MustNewDecFromString("0.00818"), alloraMath.MustNewDecFromString("0.0116"), alloraMath.MustNewDecFromString("0.01127"), alloraMath.MustNewDecFromString("0.01495"), alloraMath.MustNewDecFromString("0.00689"), alloraMath.MustNewDecFromString("0.0108"), alloraMath.MustNewDecFromString("0.01417"), alloraMath.MustNewDecFromString("0.0124"), alloraMath.MustNewDecFromString("0.01588"), alloraMath.MustNewDecFromString("0.01012"), alloraMath.MustNewDecFromString("0.01467"), alloraMath.MustNewDecFromString("0.0128"), alloraMath.MustNewDecFromString("0.01234"), alloraMath.MustNewDecFromString("0.0148"), alloraMath.MustNewDecFromString("0.01046"), alloraMath.MustNewDecFromString("0.01192"), alloraMath.MustNewDecFromString("0.01381"), alloraMath.MustNewDecFromString("0.01687"), alloraMath.MustNewDecFromString("0.01136"), alloraMath.MustNewDecFromString("0.01185"), alloraMath.MustNewDecFromString("0.01568"), alloraMath.MustNewDecFromString("0.00949"), alloraMath.MustNewDecFromString("0.01339")},
@@ -670,6 +676,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		1,
+		fTolerance,
+		params.Epsilon,
 	)
 	require.NoError(err)
 
@@ -680,6 +688,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		2,
+		fTolerance,
+		params.Epsilon,
 	)
 	require.NoError(err)
 
@@ -690,6 +700,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		3,
+		fTolerance,
+		params.Epsilon,
 	)
 	require.NoError(err)
 
