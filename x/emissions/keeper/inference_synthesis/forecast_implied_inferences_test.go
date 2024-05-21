@@ -156,7 +156,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 		s.Run(tc.name, func() {
 			result, err := inference_synthesis.CalcForecastImpliedInferences(
 				tc.inferenceByWorker,
-				inference_synthesis.GetSortedStringKeys(tc.inferenceByWorker),
+				alloraMath.GetSortedKeys(tc.inferenceByWorker),
 				tc.forecasts,
 				tc.networkCombinedLoss,
 				false,

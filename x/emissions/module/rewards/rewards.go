@@ -567,7 +567,7 @@ func payoutRewards(
 				))
 				continue
 			}
-			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
+			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Int(rewardInt))
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
 				continue

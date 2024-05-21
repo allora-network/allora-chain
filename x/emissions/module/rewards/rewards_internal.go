@@ -69,8 +69,9 @@ func GetScoreFractions(
 	latestWorkerScores []alloraMath.Dec,
 	latestTimeStepsScores []alloraMath.Dec,
 	pReward alloraMath.Dec,
+	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward)
+	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward, epsilon)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
@@ -96,6 +97,7 @@ func GetMappingFunctionValues(
 	latestWorkerScores []alloraMath.Dec, // T - latest scores from workers
 	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
+	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	stdDev := alloraMath.OneDec()
 	if len(latestTimeStepsScores) > 1 {
@@ -107,7 +109,7 @@ func GetMappingFunctionValues(
 	}
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
-		if stdDev.IsZero() {
+		if stdDev.IsZero() || stdDev.Lt(epsilon) {
 			// if standard deviation is zero
 			// then all scores are the same and losses are the same
 			// therefore everyone should be paid the same, so we
@@ -331,8 +333,13 @@ func GetStakeWeightedLossMatrix(
 
 // GetConsensusScore calculates the proximity to consensus score for a reputer.
 // T_im
-func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []alloraMath.Dec) (alloraMath.Dec, error) {
-	fTolerance := alloraMath.MustNewDecFromString("0.01") // TODO: Use module param
+func GetConsensusScore(
+	reputerLosses,
+	consensusLosses,
+	mostDistantValues []alloraMath.Dec,
+	fTolerance alloraMath.Dec,
+	epsilon alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	if len(reputerLosses) != len(consensusLosses) {
 		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
@@ -359,6 +366,12 @@ func GetConsensusScore(reputerLosses, consensusLosses, mostDistantValues []allor
 		// Attribute most distant value if loss is NaN
 		if rLoss.IsNaN() {
 			rLoss = mostDistantValues[i]
+		}
+		if rLoss.IsZero() {
+			rLoss = epsilon
+		}
+		if consensusLosses[i].IsZero() {
+			consensusLosses[i] = epsilon
 		}
 		rLossOverConsensusLoss, err := rLoss.Quo(consensusLosses[i])
 		if err != nil {
@@ -402,6 +415,8 @@ func GetAllConsensusScores(
 	stakes []alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers int64,
+	fTolerance alloraMath.Dec,
+	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
 	var adjustedStakes []alloraMath.Dec
@@ -429,7 +444,7 @@ func GetAllConsensusScores(
 	scores := make([]alloraMath.Dec, numReputers)
 	for i := int64(0); i < numReputers; i++ {
 		losses := allLosses[i]
-		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues)
+		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, fTolerance, epsilon)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error in GetConsensusScore")
 		}
@@ -451,6 +466,8 @@ func GetAllReputersOutput(
 	numReputers int64,
 	learningRate alloraMath.Dec,
 	gradientDescentMaxIters uint64,
+	fTolerance alloraMath.Dec,
+	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
@@ -475,7 +492,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, fTolerance, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -486,7 +503,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, fTolerance, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}

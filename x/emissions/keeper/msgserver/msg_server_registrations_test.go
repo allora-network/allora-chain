@@ -270,7 +270,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
@@ -282,7 +282,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 		Owner:        reputerAddr.String(),
 	}
 
-	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoUint64(2))
+	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)

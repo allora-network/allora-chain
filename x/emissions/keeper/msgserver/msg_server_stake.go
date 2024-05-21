@@ -198,7 +198,7 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	amountDec, err := alloraMath.NewDecFromSdkUint(msg.Amount)
+	amountDec, err := alloraMath.NewDecFromSdkInt(msg.Amount)
 	if err != nil {
 		return nil, err
 	}

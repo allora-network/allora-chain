@@ -132,9 +132,9 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 		k,
 		topicId,
 		inferenceByWorker,
-		inference_synthesis.GetSortedStringKeys(inferenceByWorker),
+		alloraMath.GetSortedKeys(inferenceByWorker),
 		forecastImpliedInferenceByWorker,
-		inference_synthesis.GetSortedStringKeys(forecastImpliedInferenceByWorker),
+		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
 		epsilon,
 	)
 	s.Require().NoError(err)
@@ -247,9 +247,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
-				inference_synthesis.GetSortedStringKeys(tc.inferenceByWorker),
+				alloraMath.GetSortedKeys(tc.inferenceByWorker),
 				tc.forecastImpliedInferenceByWorker,
-				inference_synthesis.GetSortedStringKeys(tc.forecastImpliedInferenceByWorker),
+				alloraMath.GetSortedKeys(tc.forecastImpliedInferenceByWorker),
 				NewWorkersAreNew(false),
 				tc.maxRegret,
 				tc.epsilon,
@@ -483,9 +483,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences() {
 				s.emissionsKeeper,
 				topicId,
 				test.inferenceByWorker,
-				inference_synthesis.GetSortedStringKeys[*emissions.Inference](test.inferenceByWorker),
+				alloraMath.GetSortedKeys(test.inferenceByWorker),
 				test.forecastImpliedInferenceByWorker,
-				inference_synthesis.GetSortedStringKeys[*emissions.Inference](test.forecastImpliedInferenceByWorker),
+				alloraMath.GetSortedKeys(test.forecastImpliedInferenceByWorker),
 				test.forecasts,
 				NewWorkersAreNew(false),
 				test.maxRegret,
@@ -606,9 +606,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				s.emissionsKeeper,
 				topicId,
 				tc.inferenceByWorker,
-				inference_synthesis.GetSortedStringKeys(tc.inferenceByWorker),
+				alloraMath.GetSortedKeys(tc.inferenceByWorker),
 				tc.forecastImpliedInferences,
-				inference_synthesis.GetSortedStringKeys(tc.forecastImpliedInferences),
+				alloraMath.GetSortedKeys(tc.forecastImpliedInferences),
 				NewWorkersAreNew(false),
 				tc.maxRegretsByOneInForecaster,
 				tc.epsilon,
@@ -947,15 +947,25 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Stake
 
-	err = keeper.AddStake(s.ctx, topicId, reputer0, cosmosMath.NewUintFromString("210535101370326000000000"))
+	stake1, ok := cosmosMath.NewIntFromString("210535101370326000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer0, stake1)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer1, cosmosMath.NewUintFromString("216697093951021000000000"))
+	stake2, ok := cosmosMath.NewIntFromString("216697093951021000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer1, stake2)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer2, cosmosMath.NewUintFromString("161740241803855000000000"))
+	stake3, ok := cosmosMath.NewIntFromString("161740241803855000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer2, stake3)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer3, cosmosMath.NewUintFromString("394848305052250000000000"))
+	stake4, ok := cosmosMath.NewIntFromString("394848305052250000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer3, stake4)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer4, cosmosMath.NewUintFromString("206169717590569000000000"))
+	stake5, ok := cosmosMath.NewIntFromString("206169717590569000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer4, stake5)
 	require.NoError(err)
 
 	// Set Inferences

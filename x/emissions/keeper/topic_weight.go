@@ -54,7 +54,7 @@ func (k *Keeper) GetCurrentTopicWeight(
 	} else {
 		fmt.Println("Topic stake: ", topicStake)
 	}
-	topicStakeDec, err := alloraMath.NewDecFromSdkUint(topicStake)
+	topicStakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
 	} else {

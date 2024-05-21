@@ -21,8 +21,8 @@ message Params {
     (gogoproto.nullable) = false
   ];  // if a worker has this percentage of inferences missing, penalize them
   string required_minimum_stake = 6 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                                    // minimum amount of tokens to send to stake as a reputer or worker

@@ -1,6 +1,8 @@
 package rewards_test
 
 import (
+	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -89,7 +91,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewUint(10000000000))
+	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewInt(10000000000))
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -249,9 +251,6 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionOfRewardsForHigherStake() {
-	topicId := uint64(1)
-	block := int64(1003)
-
 	reputerAddrs := []string{
 		s.addrs[0].String(),
 		s.addrs[1].String(),
@@ -259,6 +258,10 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 		s.addrs[3].String(),
 		s.addrs[4].String(),
 	}
+
+	topicId, err := CreateTopic(s.ctx, s.msgServer, s.addrs[0].String())
+	s.Require().NoError(err)
+	block := int64(1003)
 
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
@@ -279,7 +282,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Increase stake for the first reputer
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1000000))
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1000000))
 	s.Require().NoError(err)
 
 	// Get new reputer rewards
@@ -299,7 +302,6 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForReputerWithZeroStake() {
-	topicId := uint64(1)
 	block := int64(1003)
 
 	reputerAddrs := []string{
@@ -310,12 +312,15 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 		s.addrs[4].String(),
 	}
 
+	topicId, err := CreateTopic(s.ctx, s.msgServer, s.addrs[0].String())
+	s.Require().NoError(err)
+
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Remove stake for the first reputer
-	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewUint(1176644))
+	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1176644))
 	s.Require().NoError(err)
 
 	// Check if stake is zero
@@ -354,12 +359,12 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 		alloraMath.MustNewDecFromString("11.36754"),
 		alloraMath.MustNewDecFromString("15.21749"),
 	}
-	var stakes = []cosmosMath.Uint{
-		cosmosMath.NewUint(1176644),
-		cosmosMath.NewUint(384623),
-		cosmosMath.NewUint(394676),
-		cosmosMath.NewUint(207999),
-		cosmosMath.NewUint(368582),
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewInt(1176644),
+		cosmosMath.NewInt(384623),
+		cosmosMath.NewInt(394676),
+		cosmosMath.NewInt(207999),
+		cosmosMath.NewInt(368582),
 	}
 
 	var reputerValueBundles types.ReputerValueBundles
@@ -397,4 +402,28 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 	}
 
 	return reputerValueBundles, nil
+}
+
+func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string) (uint64, error) {
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:          creator,
+		Metadata:         "test",
+		LossLogic:        "logic",
+		LossMethod:       "method",
+		EpochLength:      10800,
+		InferenceLogic:   "Ilogic",
+		InferenceMethod:  "Imethod",
+		DefaultArg:       "ETH",
+		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		PrewardReputer:   alloraMath.NewDecFromInt64(11),
+		PrewardInference: alloraMath.NewDecFromInt64(12),
+		PrewardForecast:  alloraMath.NewDecFromInt64(13),
+		FTolerance:       alloraMath.MustNewDecFromString("0.01"),
+	}
+	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	if err != nil {
+		return 0, err
+	}
+	return res.TopicId, nil
 }
