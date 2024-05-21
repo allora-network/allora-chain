@@ -383,9 +383,12 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 		return topicFunderAddress, topicFunderAccount
 	}
 
+	workerCount := 1
+	reputerCount := 1
+
 	if topicsPerEpoch == 0 {
 		topicFunderAddress, topicFunderAccount := getTopicFunder()
-		WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount)
+		WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount)
 		topicCount++
 	} else {
 		for {
@@ -393,9 +396,12 @@ func WorkerReputerCoordinationLoop(m TestMetadata) {
 
 			for j := 0; j < topicsPerEpoch && topicCount < topicsMax; j++ {
 				topicFunderAddress, topicFunderAccount := getTopicFunder()
-				go WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount)
+				go WorkerReputerLoop(m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount)
 				topicCount++
 			}
+
+			workerCount += workersPerEpoch
+			reputerCount += reputersPerEpoch
 
 			elapsedIteration := time.Since(startIteration)
 			sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
@@ -418,7 +424,13 @@ func getReputerAccountName(reputerIndex int, topicId uint64) string {
 }
 
 // Register two actors and check their registrations went through
-func WorkerReputerLoop(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account) {
+func WorkerReputerLoop(
+	m TestMetadata,
+	topicFunderAddress string,
+	topicFunderAccount cosmosaccount.Account,
+	initialWorkerCount int,
+	initialReputerCount int,
+) {
 	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount)
 
 	report := func(a ...any) {
@@ -571,8 +583,12 @@ func WorkerReputerLoop(m TestMetadata, topicFunderAddress string, topicFunderAcc
 		}
 
 		if i == 0 {
-			initializeNewWorkerAccount()
-			initializeNewReputerAccount()
+			for j := 0; j < initialWorkerCount; j++ {
+				initializeNewWorkerAccount()
+			}
+			for j := 0; j < initialReputerCount; j++ {
+				initializeNewReputerAccount()
+			}
 		} else {
 			for j := 0; j < workersPerEpoch; j++ {
 				if len(workerAddresses) >= workersMax {
