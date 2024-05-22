@@ -2337,7 +2337,7 @@ func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
 	}
 }
 
-func (s *RewardsTestSuite) TestTotalInferresRewardFractionGrowsWithMoreInferrers() {
+func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers() {
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -2642,7 +2642,12 @@ func (s *RewardsTestSuite) TestTotalInferresRewardFractionGrowsWithMoreInferrers
 		}
 	}
 	secondInferrerFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
-	s.Require().True(firstInferrerFraction.Lt(secondInferrerFraction), "Second inference fraction must be bigger than first fraction")
+	s.Require().True(
+		firstInferrerFraction.Lt(secondInferrerFraction),
+		"Second inference fraction must be bigger than first fraction %s < %s",
+		firstInferrerFraction,
+		secondInferrerFraction,
+	)
 
 	// Add new worker(forecsater) and stakes
 	newThirdWorkersAddrs := []sdk.AccAddress{
