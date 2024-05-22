@@ -22,8 +22,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Weights error")
 	} else {
 		fmt.Println("Weights: Weights: ", weights)
-		fmt.Println("Weights: Sum of weights: ", sumWeight)
-		fmt.Println("Weights: Total revenue: ", totalRevenue)
 	}
 
 	// REWARDS (will internally filter any non-RewardReady topics)

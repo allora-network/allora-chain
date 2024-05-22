@@ -165,8 +165,6 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 		)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get current topic weight")
-		} else {
-			fmt.Println("Topic ID: ", topic.Id, " Weight: ", weight)
 		}
 
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
