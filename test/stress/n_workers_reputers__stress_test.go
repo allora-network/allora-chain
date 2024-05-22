@@ -669,7 +669,7 @@ func WorkerReputerLoop(
 		balance, err := getAccountBalance(m.ctx, m.n.QueryBank, workerAddresses[getWorkerAccountName(workerIndex, topicId)])
 		if err != nil {
 			report("Error getting worker balance for worker: ", workerIndex, err)
-			if maxIterations > 20 && workerIndex < 10 {
+			if countWorkers >= 10 && workerIndex < 5 {
 				report("ERROR: Worker", workerIndex, "has insufficient stake:", balance)
 			}
 		} else {
@@ -688,7 +688,7 @@ func WorkerReputerLoop(
 		} else {
 			if reputerStake <= stakeToAdd {
 				report("Reputer ", reputerIndex, " stake is not greater than initial amount: ", reputerStake)
-				if maxIterations > 20 && reputerIndex < 10 {
+				if countReputers >= 10 && reputerIndex < 5 {
 					report("ERROR: Reputer", reputerIndex, "has insufficient stake:", reputerStake)
 				}
 			} else {
