@@ -189,7 +189,7 @@ allorad --home="$APP_HOME" \
 To run integration tests, execute the following commands:
 
 ```bash
-bash integration/local_testnet_l1.sh
+bash test/integration/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./integration -v
 ```
 
@@ -198,6 +198,6 @@ INTEGRATION=TRUE go test -timeout 10m ./integration -v
 To run stress tests, execute the following commands:
 
 ```bash
-bash integration/local_testnet_l1.sh
+bash test/stress/local_testnet_l1.sh
 STRESS=TRUE go test -timeout 10m ./stress -v
 ```

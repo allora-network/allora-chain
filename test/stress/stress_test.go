@@ -7,14 +7,14 @@ import (
 	"runtime"
 	"testing"
 
-	chain_test "github.com/allora-network/allora-chain/stress/chain"
+	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/stretchr/testify/require"
 )
 
 type TestMetadata struct {
 	t   *testing.T
 	ctx context.Context
-	n   chain_test.Node
+	n   testCommon.Node
 }
 
 func Setup(t *testing.T) TestMetadata {
@@ -22,13 +22,11 @@ func Setup(t *testing.T) TestMetadata {
 	ret.t = t
 	var err error
 	ret.ctx = context.Background()
-	// userHomeDir, _ := os.UserHomeDir()
-	// home := filepath.Join(userHomeDir, ".allorad")
-	node, err := chain_test.NewNode(
+	node, err := testCommon.NewNode(
 		t,
-		chain_test.NodeConfig{
+		testCommon.NodeConfig{
 			NodeRPCAddress: "http://localhost:26657",
-			AlloraHomeDir:  "./devnet/genesis",
+			AlloraHomeDir:  "../devnet/genesis",
 		},
 	)
 	require.NoError(t, err)
