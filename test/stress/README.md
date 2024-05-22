@@ -2,14 +2,14 @@
 
 To launch a chain: 
 ```
-cd stress
+cd test
 bash local_testnet_l1.sh
 ```
 
 To run stress tests, set the STRESS_TEST variable to true
 
 ```
-STRESS_TEST=true go test -v -timeout 0   -test.run TestStressTestSuite .
+STRESS_TEST=true go test -v -timeout 0 -test.run TestStressTestSuite .
 ```
 
 Stop the chain
