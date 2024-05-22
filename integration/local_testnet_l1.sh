@@ -43,7 +43,8 @@ popd
 
 echo "Download generate_genesis.sh from testnet"
 mkdir -p ${LOCALNET_DATADIR}
-curl -so- https://raw.githubusercontent.com/allora-network/networks/main/${CHAIN_ID}/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
+#curl -so- https://raw.githubusercontent.com/allora-network/networks/main/${CHAIN_ID}/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
+curl -so- https://raw.githubusercontent.com/allora-network/networks/1db734058d93d98464fdc5044829ab6b9f0854fe/devnet/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
 chmod a+x ${LOCALNET_DATADIR}/generate_genesis.sh
 
 echo "Set permissions on data folder"
