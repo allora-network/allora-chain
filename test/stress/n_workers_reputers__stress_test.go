@@ -671,7 +671,7 @@ func WorkerReputerLoop(
 			report("Error getting worker balance for worker: ", workerIndex, err)
 		} else {
 			if balance.Amount.Int64() <= initialWorkerReputerFundAmount {
-				report("Worker ", workerIndex, " balance is less than initial amount: ", balance.Amount.Int64())
+				report("Worker ", workerIndex, " balance is not greater than initial amount: ", balance.Amount.Int64())
 			} else {
 				report("Worker ", workerIndex, " balance: ", balance.Amount.Int64())
 			}
@@ -684,7 +684,7 @@ func WorkerReputerLoop(
 			report("Error getting reputer stake for reputer: ", reputerIndex, err)
 		} else {
 			if reputerStake <= stakeToAdd {
-				report("Reputer ", reputerIndex, " stake is less than initial amount: ", reputerStake)
+				report("Reputer ", reputerIndex, " stake is not greater than initial amount: ", reputerStake)
 			} else {
 				report("Reputer ", reputerIndex, " stake: ", reputerStake)
 			}
