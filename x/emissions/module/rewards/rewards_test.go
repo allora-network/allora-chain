@@ -592,7 +592,12 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.Require().NoError(err)
 
 	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
-	s.Require().True(beforeRewardsTopic1FeeRevenue.Revenue.GT(afterRewardsTopic1FeeRevenue.Revenue))
+	s.Require().True(
+		beforeRewardsTopic1FeeRevenue.Revenue.GT(afterRewardsTopic1FeeRevenue.Revenue),
+		"Topic 1 should have more fee revenue: %s > %s",
+		beforeRewardsTopic1FeeRevenue.Revenue.String(),
+		afterRewardsTopic1FeeRevenue.Revenue.String(),
+	)
 	// Topic 2 should have the same revenue after rewards distribution -> no rewards distributed
 	s.Require().Equal(beforeRewardsTopic2FeeRevenue.Revenue, afterRewardsTopic2FeeRevenue.Revenue)
 }
