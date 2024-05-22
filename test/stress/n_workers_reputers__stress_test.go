@@ -438,7 +438,7 @@ func WorkerReputerLoop(
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
 
-	approximateBlockTime := getApproximateBlockTimeSeconds(m)
+	approximateSecondsBlockTime := getApproximateBlockTimeSeconds(m)
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
@@ -500,7 +500,7 @@ func WorkerReputerLoop(
 	}
 
 	// Get fresh topic
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateBlockTime)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateSecondsBlockTime)
 	if err != nil {
 		report("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
@@ -509,7 +509,7 @@ func WorkerReputerLoop(
 	blockHeightCurrent := topic.EpochLastEnded - topic.EpochLength
 	blockHeightEval := blockHeightCurrent + topic.EpochLength
 	// Translate the epoch length into time
-	iterationTime := time.Duration(topic.EpochLength) * approximateBlockTime * iterationsInABatch
+	iterationTime := time.Duration(topic.EpochLength) * approximateSecondsBlockTime * iterationsInABatch
 
 	for i := 0; i < maxIterations; i++ {
 
@@ -742,8 +742,7 @@ func fundAccounts(
 func getApproximateBlockTimeSeconds(m TestMetadata) time.Duration {
 	emissionsParams := GetEmissionsParams(m)
 	blocksPerMonth := emissionsParams.GetBlocksPerMonth()
-	approximateBlockTime := time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
-	return approximateBlockTime
+	return time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
 }
 
 func getLastTopic(ctx context.Context, query types.QueryClient, topicID uint64) (*types.Topic, error) {
