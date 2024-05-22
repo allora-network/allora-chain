@@ -16,7 +16,6 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -31,18 +30,18 @@ const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait be
 const iterationsInABatch = 1       // To control the number of epochs in each iteration of the loop (eg to manage insertions)
 
 // This function gets the topic checking activity. After that it will sleep for a number of epoch to ensure nonces are available.
-func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int, approximateBlockLengthSeconds time.Duration) (*emissionstypes.Topic, error) {
+func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int, approximateSecondsPerBlock time.Duration) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
+		topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
 				nBlocks := storedTopic.EpochLength * minWaitingNumberofEpochs
-				sleepingTimeSeconds := time.Duration(nBlocks) * approximateBlockLengthSeconds
-				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTimeSeconds)
-				time.Sleep(sleepingTimeSeconds)
+				sleepingTime := time.Duration(nBlocks) * approximateSecondsPerBlock
+				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
+				time.Sleep(sleepingTime)
 				fmt.Println(time.Now(), " Looking for topic: Slept.")
 				return topicResponse.Topic, nil
 			}
@@ -52,7 +51,7 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
-		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateBlockLengthSeconds * time.Second)
+		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock * time.Second)
 	}
 
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
@@ -152,7 +151,7 @@ func InsertLeaderWorkerBulk(
 	leaderWorkerAccountName, leaderWorkerAddress string,
 	WorkerDataBundles []*types.WorkerDataBundle) error {
 
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	nonce := types.Nonce{BlockHeight: blockHeight}
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -221,7 +220,7 @@ func generateReputerValueBundleMsg(
 	topicId uint64,
 	reputerValueBundles []*types.ReputerValueBundle,
 	leaderReputerAddress string,
-	reputerNonce, workerNonce *emissionstypes.Nonce) *types.MsgInsertBulkReputerPayload {
+	reputerNonce, workerNonce *types.Nonce) *types.MsgInsertBulkReputerPayload {
 
 	return &types.MsgInsertBulkReputerPayload{
 		Sender:  leaderReputerAddress,
@@ -269,6 +268,7 @@ func InsertReputerBulk(m TestMetadata,
 		return err
 	}
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	require.NoError(m.t, err)
 	return nil
 }
 
@@ -321,10 +321,10 @@ func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount co
 
 func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations int) {
 
-	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
-	fmt.Println("Approximate block time seconds: ", approximateBlockTimeSeconds)
+	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
+	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
 
-	iterationTimeSeconds := time.Duration(epochLength) * approximateBlockTimeSeconds * iterationsInABatch
+	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
 	topicCount := 0
 	topicFunderCount := 0
 
@@ -397,9 +397,9 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 			reputerCount += reputersPerEpoch
 
 			elapsedIteration := time.Since(startIteration)
-			sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
-			fmt.Println(time.Now(), "Main loop sleeping", sleepingTimeSeconds)
-			time.Sleep(sleepingTimeSeconds)
+			sleepingTime := iterationTime - elapsedIteration
+			fmt.Println(time.Now(), "Main loop sleeping", sleepingTime)
+			time.Sleep(sleepingTime)
 		}
 	}
 
@@ -438,7 +438,7 @@ func WorkerReputerLoop(
 	workerAddresses := make(map[string]string)
 	reputerAddresses := make(map[string]string)
 
-	approximateBlockTimeSeconds := getApproximateBlockTimeSeconds(m)
+	approximateSecondsBlockTime := getApproximateBlockTimeSeconds(m)
 
 	// Make a loop, in each iteration
 	// 1. generate a new bech32 reputer account and a bech32 worker account. Store them in a slice
@@ -500,7 +500,7 @@ func WorkerReputerLoop(
 	}
 
 	// Get fresh topic
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateBlockTimeSeconds)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateSecondsBlockTime)
 	if err != nil {
 		report("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
@@ -509,7 +509,7 @@ func WorkerReputerLoop(
 	blockHeightCurrent := topic.EpochLastEnded - topic.EpochLength
 	blockHeightEval := blockHeightCurrent + topic.EpochLength
 	// Translate the epoch length into time
-	iterationTimeSeconds := time.Duration(topic.EpochLength) * approximateBlockTimeSeconds * iterationsInABatch
+	iterationTime := time.Duration(topic.EpochLength) * approximateSecondsBlockTime * iterationsInABatch
 
 	for i := 0; i < maxIterations; i++ {
 
@@ -654,9 +654,9 @@ func WorkerReputerLoop(
 
 		// Sleep for 2 epoch
 		elapsedIteration := time.Since(startIteration)
-		sleepingTimeSeconds := iterationTimeSeconds - elapsedIteration
-		report(time.Now(), " Sleeping...", sleepingTimeSeconds, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTimeSeconds)
-		time.Sleep(sleepingTimeSeconds)
+		sleepingTime := iterationTime - elapsedIteration
+		report(time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime)
+		time.Sleep(sleepingTime)
 	}
 }
 
@@ -685,6 +685,7 @@ func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, 
 	return randomKey, workerAddresses[randomKey], nil
 }
 
+/* This code is unused
 func fundAccount(m TestMetadata, senderAccount cosmosaccount.Account, senderAddress, address string, amount int64) error {
 	initialCoins := sdktypes.NewCoins(sdktypes.NewCoin(params.BaseCoinUnit, cosmossdk_io_math.NewInt(amount)))
 	// Fund the account from faucet account
@@ -700,6 +701,7 @@ func fundAccount(m TestMetadata, senderAccount cosmosaccount.Account, senderAddr
 	}
 	return nil
 }
+*/
 
 func fundAccounts(
 	m TestMetadata,
@@ -740,12 +742,11 @@ func fundAccounts(
 func getApproximateBlockTimeSeconds(m TestMetadata) time.Duration {
 	emissionsParams := GetEmissionsParams(m)
 	blocksPerMonth := emissionsParams.GetBlocksPerMonth()
-	approximateBlockTimeSeconds := time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
-	return approximateBlockTimeSeconds
+	return time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
 }
 
-func getLastTopic(ctx context.Context, query emissionstypes.QueryClient, topicID uint64) (*emissionstypes.Topic, error) {
-	topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
+func getLastTopic(ctx context.Context, query types.QueryClient, topicID uint64) (*types.Topic, error) {
+	topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
 	if err == nil {
 		return topicResponse.Topic, nil
 	}
