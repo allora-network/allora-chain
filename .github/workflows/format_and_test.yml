@@ -42,8 +42,8 @@ jobs:
       uses: robherley/go-test-action@v0.1.0
 
     - name: Run allora l1 chain
-      run: bash ./integration/local_testnet_l1.sh
+      run: bash ./test/local_testnet_l1.sh
 
     - name: IntegrationTest
-      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v
+      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/test/integration -v
 
