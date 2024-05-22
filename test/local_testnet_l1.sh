@@ -160,7 +160,7 @@ docker run -t \
 if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "Chain is up and running"
     echo
-    echo "Some usefull commands:"
+    echo "Some useful commands:"
     echo "  - 'docker compose -f $L1_COMPOSE logs -f' -- To see logs of the containers"
     echo "  - 'docker compose -f $L1_COMPOSE logs -f validator[0-...]' -- To see logs of the specified validator"
     echo "  - 'docker compose -f $L1_COMPOSE down' -- To stop all the validators"
