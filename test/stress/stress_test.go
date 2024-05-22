@@ -60,6 +60,7 @@ func TestStressTestSuite(t *testing.T) {
 	fmt.Println("Workers max: ", workersMax)
 	fmt.Println("Topics per epoch: ", topicsPerEpoch)
 	fmt.Println("Topics max: ", topicsMax)
+	fmt.Println("Max iterations: ", maxIterations)
 
 	t.Log(">>> Test Making Inference <<<")
 	WorkerReputerCoordinationLoop(m, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations)
