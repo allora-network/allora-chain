@@ -57,8 +57,6 @@ func (k *Keeper) GetCurrentTopicWeight(
 	topicStakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
-	} else {
-		fmt.Println("Topic stake: ", topicStake)
 	}
 
 	// Get and total topic fee revenue
@@ -93,14 +91,10 @@ func (k *Keeper) GetCurrentTopicWeight(
 		previousTopicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
 		if err != nil {
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get previous topic weight")
-		} else {
-			fmt.Println("Previous topic weight: ", previousTopicWeight)
 		}
 		weight, err = alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousTopicWeight, noPrior)
 		if err != nil {
 			return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to calculate EMA")
-		} else {
-			fmt.Println("EMA Weight: ", weight)
 		}
 
 		return weight, topicFeeRevenue.Revenue, nil
