@@ -579,6 +579,9 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	beforeRewardsTopic2FeeRevenue, err := s.emissionsKeeper.GetTopicFeeRevenue(s.ctx, topicId2)
 	s.Require().NoError(err)
 
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -1676,8 +1679,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
+	// mint some rewards to give out
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 	// Trigger end block - rewards distribution
 	err = s.emissionsAppModule.EndBlock(s.ctx)
