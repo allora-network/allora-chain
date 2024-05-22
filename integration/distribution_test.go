@@ -3,7 +3,6 @@ package integration_test
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -91,7 +90,6 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 		vba := balanceAfter.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
 		vbb := balancesBefore[addr].Rewards.Rewards.AmountOf(params.BaseCoinUnit)
 
-		fmt.Println(addr, vba, vbb)
 		if vba.GT(vbb) {
 			balanceIncreased = true
 			break

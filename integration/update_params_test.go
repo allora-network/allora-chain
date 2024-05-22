@@ -51,7 +51,7 @@ func UpdateParamsChecks(m TestMetadata) {
 			Epsilon: input,
 		},
 	}
-	txResp, err = m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, updateParamRequest)
+	_, err = m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, updateParamRequest)
 	require.Error(m.t, err)
 	// Check that error is due to Bob not being a whitelist admin
 	require.Contains(m.t, err.Error(), "not whitelist admin")
