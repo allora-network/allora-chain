@@ -53,7 +53,7 @@ func SortTopicsByWeightDescWithValueTiebreaker(topicIds []TopicId, weights map[T
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].Value == items[j].Value {
-			return items[i].Value > items[j].Value
+			return items[i].Value < items[j].Value // prefer earlier topics
 		}
 		return (*items[i].Weight).Gt(*items[j].Weight)
 	})
