@@ -19,7 +19,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	}
 	if totalReward.IsZero() {
 		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero!")
+		return nil
 	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get module params")
@@ -51,10 +53,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
 			ctx.Logger().Warn(
-				"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-				topicId,
-				topicReward.String(),
-				err,
+				fmt.Sprintf(
+					"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+					topicId,
+					topicReward.String(),
+					err.Error(),
+				),
 			)
 			continue
 		}
@@ -73,10 +77,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		if len(payoutErrors) > 0 {
 			for _, err := range payoutErrors {
 				ctx.Logger().Warn(
-					"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-					topicId,
-					topicReward.String(),
-					err,
+					fmt.Sprintf(
+						"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+						topicId,
+						topicReward.String(),
+						err.Error(),
+					),
 				)
 			}
 			continue
@@ -86,10 +92,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
 		if err != nil {
 			ctx.Logger().Warn(
-				"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-				topicId,
-				topicReward.String(),
-				err,
+				fmt.Sprintf(
+					"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+					topicId,
+					topicReward.String(),
+					err.Error(),
+				),
 			)
 			continue
 		}
