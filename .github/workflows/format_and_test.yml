@@ -3,7 +3,7 @@ name: Run Format, Unit Tests, and Integration Tests
 on: [pull_request]
 
 jobs:
-  formatAndTest:
+  test:
     runs-on: ubuntu-latest
 
     steps:
