@@ -3,6 +3,7 @@ package msgserver
 import (
 	"container/heap"
 	"math/rand"
+	"sort"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -63,7 +64,18 @@ func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed Block
 	r := rand.New(rand.NewSource(randSeed))
 	queue := &PriorityQueue{}
 	i := 0
-	for actor, score := range scoresByActor {
+	// Extract and sort the keys
+	keys := make([]Actor, 0, len(scoresByActor))
+	for actor := range scoresByActor {
+		keys = append(keys, actor)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	// Iterate over the sorted keys
+	for _, actor := range keys {
+		score := scoresByActor[actor]
 		queue.Push(&SortableItem{actor, score, r.Uint32(), i})
 		i++
 	}
