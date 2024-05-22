@@ -1,7 +1,6 @@
 package rewards
 
 import (
-	"math/rand"
 	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -14,21 +13,47 @@ type SortableTopicId struct {
 	Tiebreaker uint32
 }
 
-// Sorts the given slice of topics in descending order according to their corresponding return, using pseudorandom tiebreaker
-// e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
-func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[TopicId]*alloraMath.Dec, randSeed BlockHeight) []TopicId {
+// // Sorts the given slice of topics in descending order according to their corresponding return, using pseudorandom tiebreaker
+// // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
+// func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[TopicId]*alloraMath.Dec, randSeed BlockHeight) []TopicId {
+// 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
+// 	r := rand.New(rand.NewSource(randSeed))
+// 	items := make([]SortableTopicId, len(topicIds))
+// 	for i, topicId := range topicIds {
+// 		items[i] = SortableTopicId{topicId, weights[topicId], r.Uint32()}
+// 	}
+
+// 	// Sort the slice of SortableItems
+// 	// If the values are equal, the tiebreaker will decide their order
+// 	sort.Slice(items, func(i, j int) bool {
+// 		if items[i].Value == items[j].Value {
+// 			return items[i].Tiebreaker > items[j].Tiebreaker
+// 		}
+// 		return (*items[i].Weight).Gt(*items[j].Weight)
+// 	})
+
+// 	// Extract and print the sorted values to demonstrate the sorting
+// 	sortedValues := make([]TopicId, len(topicIds))
+// 	for i, item := range items {
+// 		sortedValues[i] = item.Value
+// 	}
+// 	return sortedValues
+// }
+
+// Sorts the given slice of topics in descending order according to their corresponding return, using value as tiebreaker
+// e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2]
+func SortTopicsByWeightDescWithValueTiebreaker(topicIds []TopicId, weights map[TopicId]*alloraMath.Dec) []TopicId {
 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
-	r := rand.New(rand.NewSource(randSeed))
 	items := make([]SortableTopicId, len(topicIds))
 	for i, topicId := range topicIds {
-		items[i] = SortableTopicId{topicId, weights[topicId], r.Uint32()}
+		items[i] = SortableTopicId{topicId, weights[topicId], 0}
 	}
 
 	// Sort the slice of SortableItems
 	// If the values are equal, the tiebreaker will decide their order
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].Value == items[j].Value {
-			return items[i].Tiebreaker > items[j].Tiebreaker
+			return items[i].Value > items[j].Value
 		}
 		return (*items[i].Weight).Gt(*items[j].Weight)
 	})
@@ -49,7 +74,7 @@ func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, bl
 		topicIds = append(topicIds, topicId)
 	}
 
-	sortedTopicIds := SortTopicsByWeightDescWithRandomTiebreaker(topicIds, weights, block)
+	sortedTopicIds := SortTopicsByWeightDescWithValueTiebreaker(topicIds, weights)
 
 	numberToAdd := N
 	if (uint64)(len(sortedTopicIds)) < N {
