@@ -44,9 +44,8 @@ func TestExternalTestSuite(t *testing.T) {
 	GetParams(m)
 	t.Log(">>> Test Topic Creation <<<")
 	CreateTopic(m)
-	// TODO Uncomment as we stand up devnet
-	// t.Log(">>> Test Distribution Checks <<<")
-	// DistributionChecks(m)
+	t.Log(">>> Test Distribution Checks <<<")
+	DistributionChecks(m)
 	t.Log(">>> Test Actor Registration <<<")
 	RegistrationChecks(m)
 	t.Log(">>> Test Update Params <<<")
