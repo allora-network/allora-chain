@@ -17,6 +17,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
@@ -429,6 +430,8 @@ func WorkerReputerLoop(
 ) {
 	defer wg.Done()
 
+	const initialWorkerReputerFundAmount = 1e5
+
 	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount)
 
 	report := func(a ...any) {
@@ -468,7 +471,7 @@ func WorkerReputerLoop(
 		workerAddressesToFund = append(workerAddressesToFund, workerAddressToFund)
 	}
 
-	err := fundAccounts(m, topicFunderAccount, topicFunderAddress, workerAddressesToFund, 1e5)
+	err := fundAccounts(m, topicFunderAccount, topicFunderAddress, workerAddressesToFund, initialWorkerReputerFundAmount)
 	if err != nil {
 		fmt.Println("Error funding worker accounts: ", err)
 	} else {
@@ -492,7 +495,7 @@ func WorkerReputerLoop(
 		reputerAddressesToFund = append(reputerAddressesToFund, reputerAddressToFund)
 	}
 
-	err = fundAccounts(m, topicFunderAccount, topicFunderAddress, reputerAddressesToFund, 1e5)
+	err = fundAccounts(m, topicFunderAccount, topicFunderAddress, reputerAddressesToFund, initialWorkerReputerFundAmount)
 	if err != nil {
 		fmt.Println("Error funding reputer accounts: ", err)
 	} else {
@@ -658,6 +661,41 @@ func WorkerReputerLoop(
 		report(time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime)
 		time.Sleep(sleepingTime)
 	}
+
+	countWorkers := len(workerAddresses)
+	countReputers := len(reputerAddresses)
+
+	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
+		balance, err := getAccountBalance(m.ctx, m.n.QueryBank, workerAddresses[getWorkerAccountName(workerIndex, topicId)])
+		if err != nil {
+			report("Error getting worker balance for worker: ", workerIndex, err)
+			if maxIterations > 20 && workerIndex < 10 {
+				report("ERROR: Worker", workerIndex, "has insufficient stake:", balance)
+			}
+		} else {
+			if balance.Amount.Int64() <= initialWorkerReputerFundAmount {
+				report("Worker ", workerIndex, " balance is not greater than initial amount: ", balance.Amount.Int64())
+			} else {
+				report("Worker ", workerIndex, " balance: ", balance.Amount.Int64())
+			}
+		}
+	}
+
+	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
+		reputerStake, err := getReputerStake(m.ctx, m.n.QueryEmissions, topicId, reputerAddresses[getReputerAccountName(reputerIndex, topicId)])
+		if err != nil {
+			report("Error getting reputer stake for reputer: ", reputerIndex, err)
+		} else {
+			if reputerStake <= stakeToAdd {
+				report("Reputer ", reputerIndex, " stake is not greater than initial amount: ", reputerStake)
+				if maxIterations > 20 && reputerIndex < 10 {
+					report("ERROR: Reputer", reputerIndex, "has insufficient stake:", reputerStake)
+				}
+			} else {
+				report("Reputer ", reputerIndex, " stake: ", reputerStake)
+			}
+		}
+	}
 }
 
 func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, error) {
@@ -751,4 +789,33 @@ func getLastTopic(ctx context.Context, query types.QueryClient, topicID uint64) 
 		return topicResponse.Topic, nil
 	}
 	return nil, err
+}
+
+func getAccountBalance(ctx context.Context, queryClient banktypes.QueryClient, address string) (*sdktypes.Coin, error) {
+	req := &banktypes.QueryAllBalancesRequest{
+		Address:    address,
+		Pagination: &query.PageRequest{Limit: 1},
+	}
+
+	res, err := queryClient.AllBalances(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res.Balances) > 0 {
+		return &res.Balances[0], nil
+	}
+	return nil, fmt.Errorf("no balance found for address: %s", address)
+}
+
+func getReputerStake(ctx context.Context, queryClient types.QueryClient, topicId uint64, reputerAddress string) (uint64, error) {
+	req := &types.QueryReputerStakeInTopicRequest{
+		Address: reputerAddress,
+		TopicId: topicId,
+	}
+	res, err := queryClient.GetReputerStakeInTopic(ctx, req)
+	if err != nil {
+		return 0, err
+	}
+	return res.Amount.Uint64(), nil
 }
