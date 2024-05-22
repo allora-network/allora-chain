@@ -1,0 +1,49 @@
+name: Run Format, Unit Tests, and Integration Tests
+
+on: [pull_request]
+
+jobs:
+  formatAndTest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.x
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '12'
+
+    - name: Build Source
+      run: go build -v ./...
+
+    - name: Install allorad
+      run: make install
+
+    - name: Check code formatting using gofmt
+      uses: Jerome1337/gofmt-action@v1.0.5
+      with:
+          gofmt-path: '.'
+          gofmt-flags: '-l -d'
+
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: '17'
+        include-regex: '^.*\.proto$'
+
+    - name: Test
+      uses: robherley/go-test-action@v0.1.0
+
+    - name: Run allora l1 chain
+      run: bash ./integration/local_testnet_l1.sh
+
+    - name: IntegrationTest
+      run: INTEGRATION=TRUE /usr/bin/go test -timeout 10m -run ^TestExternalTestSuite$ github.com/allora-network/allora-chain/integration -v
+
