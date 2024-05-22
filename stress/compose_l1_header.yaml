@@ -1,8 +1,0 @@
-networks:
-  local-net:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: ${NETWORK_PREFIX}.0/24
-
-services:
