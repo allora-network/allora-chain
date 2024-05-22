@@ -29,7 +29,7 @@ func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
 // negative aka zero when you don't have stakers
 func (s *IntegrationTestSuite) TestGetNumStakedTokensNonNegative() {
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(math.NewInt(0), nil)
-	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(math.NewUint(0), nil)
+	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(math.NewInt(0), nil)
 	nst, err := keeper.GetNumStakedTokens(s.ctx, s.mintKeeper)
 	s.NoError(err)
 	s.False(nst.IsNegative())

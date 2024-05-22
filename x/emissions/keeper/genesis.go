@@ -10,17 +10,14 @@ import (
 
 // InitGenesis initializes the module state from a genesis state.
 func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
-
 	// ensure the module account exists
 	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraStakingAccountName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRequestsAccountName)
-	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
 	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
-	if err := k.SetTotalStake(ctx, cosmosMath.NewUint(0)); err != nil {
+	if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
 		return err
 	}
 	// reserve topic ID 0 for future use

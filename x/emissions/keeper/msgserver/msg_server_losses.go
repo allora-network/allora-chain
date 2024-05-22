@@ -144,7 +144,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
-	stakesByReputer := make(map[string]cosmosMath.Uint)
+	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
 		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)

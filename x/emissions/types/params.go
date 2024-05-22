@@ -16,7 +16,7 @@ func DefaultParams() Params {
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
-		RequiredMinimumStake:            cosmosMath.NewUint(100),                   // minimum stake required to be a worker or reputer
+		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds
 		MinEpochLength:                  1,                                         // 1 block
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
@@ -70,7 +70,7 @@ func DefaultParamsMaxMissingInferencePercent() alloraMath.Dec {
 	return DefaultParams().MaxMissingInferencePercent
 }
 
-func DefaultParamsRequiredMinimumStake() cosmosMath.Uint {
+func DefaultParamsRequiredMinimumStake() cosmosMath.Int {
 	return DefaultParams().RequiredMinimumStake
 }
 

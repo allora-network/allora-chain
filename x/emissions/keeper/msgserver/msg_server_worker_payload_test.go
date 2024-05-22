@@ -43,7 +43,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -129,7 +129,7 @@ func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -216,7 +216,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
@@ -299,7 +299,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewUint(100)
+	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)

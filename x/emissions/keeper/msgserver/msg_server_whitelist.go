@@ -15,6 +15,10 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddTo
 	if !isAdmin {
 		return nil, types.ErrNotWhitelistAdmin
 	}
+	// Validate the address
+	if err := ms.k.ValidateStringIsBech32(msg.Address); err != nil {
+		return nil, err
+	}
 	// Add the address to the whitelist
 	err = ms.k.AddWhitelistAdmin(ctx, msg.Address)
 	if err != nil {
@@ -31,6 +35,10 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Msg
 	}
 	if !isAdmin {
 		return nil, types.ErrNotWhitelistAdmin
+	}
+	// Validate the address
+	if err := ms.k.ValidateStringIsBech32(msg.Address); err != nil {
+		return nil, err
 	}
 	// Remove the address from the whitelist
 	err = ms.k.RemoveWhitelistAdmin(ctx, msg.Address)

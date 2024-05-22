@@ -319,7 +319,7 @@ func CalcOneOutInferences(
 			}
 		}
 
-		sortedInferersWithoutWorker := GetSortedStringKeys(inferencesWithoutWorker)
+		sortedInferersWithoutWorker := alloraMath.GetSortedKeys(inferencesWithoutWorker)
 
 		// Recalculate the forecast-implied inferences without the worker's inference
 		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
@@ -373,7 +373,7 @@ func CalcOneOutInferences(
 			}
 		}
 
-		sortedForecastersWithoutWorker := GetSortedStringKeys(impliedInferenceWithoutWorker)
+		sortedForecastersWithoutWorker := alloraMath.GetSortedKeys(impliedInferenceWithoutWorker)
 
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
@@ -425,7 +425,7 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
-		sortedForecastersWithForecaster := GetSortedStringKeys(forecastImpliedInferencesWithForecaster)
+		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
 
 		oneInInference, err := CalcWeightedInference(
 			ctx,
@@ -466,7 +466,7 @@ func CalcNetworkInferences(
 ) (*emissions.ValueBundle, error) {
 	// Map each worker to their inference
 	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
-	sortedInferers := GetSortedStringKeys(inferenceByWorker)
+	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
 
 	allWorkersAreNew, err := AreAllWorkersNew(ctx, k, topicId, sortedInferers, forecasts)
 	if err != nil {
@@ -488,7 +488,7 @@ func CalcNetworkInferences(
 	if err != nil {
 		fmt.Println("Error calculating forecast-implied inferences: ", err)
 	}
-	sortedForecasters := GetSortedStringKeys(forecastImpliedInferenceByWorker)
+	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
 
 	// Find the maximum regret admitted by any worker for an inference or forecast task; used to normalize regrets that are passed to the gradient function
 	currentMaxRegrets, err := FindMaxRegretAmongWorkersWithLosses(
@@ -661,7 +661,7 @@ func GetNetworkInferencesAtBlock(
 		}
 
 		// Map list of stakesOnTopic to map of stakesByReputer
-		stakesByReputer := make(map[string]cosmosMath.Uint)
+		stakesByReputer := make(map[string]cosmosMath.Int)
 		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
 			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
 			if err != nil {

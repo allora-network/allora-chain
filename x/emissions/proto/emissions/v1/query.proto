@@ -152,13 +152,13 @@ message QueryTotalStakeRequest {}
 
 // Total Stake returns the total amount of stake in the system
 //
-// NOTE: The amount field is a Uint which implements the custom method
+// NOTE: The amount field is an Int which implements the custom method
 // signatures required by gogoproto.
 message QueryTotalStakeResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -172,8 +172,8 @@ message QueryReputerStakeInTopicRequest {
 message QueryReputerStakeInTopicResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -187,8 +187,8 @@ message QueryDelegateStakeInTopicInReputerRequest {
 message QueryDelegateStakeInTopicInReputerResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -203,8 +203,8 @@ message QueryStakeFromDelegatorInTopicInReputerRequest {
 message QueryStakeFromDelegatorInTopicInReputerResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -218,8 +218,8 @@ message QueryStakeFromDelegatorInTopicRequest {
 message QueryStakeFromDelegatorInTopicResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
@@ -232,8 +232,8 @@ message QueryTopicStakeRequest {
 message QueryTopicStakeResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
-    (cosmos_proto.scalar) = "cosmos.Uint",
-    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

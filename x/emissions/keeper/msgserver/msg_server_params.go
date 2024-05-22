@@ -7,6 +7,9 @@ import (
 )
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+		return nil, err
+	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
