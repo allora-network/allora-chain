@@ -30,7 +30,7 @@ const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait be
 const iterationsInABatch = 1       // To control the number of epochs in each iteration of the loop (eg to manage insertions)
 
 // This function gets the topic checking activity. After that it will sleep for a number of epoch to ensure nonces are available.
-func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int, approximateBlockLength time.Duration) (*types.Topic, error) {
+func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int, approximateSecondsPerBlock time.Duration) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
@@ -39,7 +39,7 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, t
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
 				nBlocks := storedTopic.EpochLength * minWaitingNumberofEpochs
-				sleepingTime := time.Duration(nBlocks) * approximateBlockLength
+				sleepingTime := time.Duration(nBlocks) * approximateSecondsPerBlock
 				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
 				time.Sleep(sleepingTime)
 				fmt.Println(time.Now(), " Looking for topic: Slept.")
@@ -51,7 +51,7 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, t
 		}
 		// Sleep for a while before retrying
 		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
-		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateBlockLength * time.Second)
+		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock * time.Second)
 	}
 
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
@@ -321,10 +321,10 @@ func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount co
 
 func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations int) {
 
-	approximateBlockTime := getApproximateBlockTimeSeconds(m)
-	fmt.Println("Approximate block time seconds: ", approximateBlockTime)
+	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
+	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
 
-	iterationTime := time.Duration(epochLength) * approximateBlockTime * iterationsInABatch
+	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
 	topicCount := 0
 	topicFunderCount := 0
 
