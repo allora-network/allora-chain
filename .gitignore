@@ -24,13 +24,11 @@ go.work
 data/
 # Account info
 *.account_info
-integration/testnet
-integration/devnet
 
-# stress tests
-stress/testnet
-stress/devnet
-stress/*.log
+# test setups
+test/testnet
+test/devnet
+test/stress/*.log
 
 # coverage
 coverage
