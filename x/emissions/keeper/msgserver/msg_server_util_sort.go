@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"container/heap"
-	"math/rand"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -28,7 +27,7 @@ func (pq PriorityQueue) Len() int { return len(pq) }
 func (pq PriorityQueue) Less(i, j int) bool {
 	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
 	if pq[i].Weight.Score.Equal(pq[j].Weight.Score) {
-		return pq[i].Tiebreaker > pq[j].Tiebreaker
+		return pq[i].Value > pq[j].Value
 	}
 
 	return pq[i].Weight.Score.Gt(pq[j].Weight.Score)
@@ -60,11 +59,11 @@ func (pq *PriorityQueue) Pop() any {
 // Sorts the given actors by score, desc, breaking ties randomly
 // Returns the top N actors as a map with the actor as the key and a boolean (True) as the value
 func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed BlockHeight) []Actor {
-	r := rand.New(rand.NewSource(randSeed))
+	// r := rand.New(rand.NewSource(randSeed))
 	queue := &PriorityQueue{}
 	i := 0
 	for actor, score := range scoresByActor {
-		queue.Push(&SortableItem{actor, score, r.Uint32(), i})
+		queue.Push(&SortableItem{actor, score, uint32(1), i})
 		i++
 	}
 
