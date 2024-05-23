@@ -98,7 +98,7 @@ type Keeper struct {
 	delegateStakePlacement collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegatorInfo]
 	// map of (target) -> amount of stake that has been placed on that target
 	stakeUponReputer collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
-	// map of (topidId, reputer) -> share of delegate reward
+	// map of (topicId, reputer) -> share of delegate reward
 	delegateRewardPerShare collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 
 	/// MISC GLOBAL STATE

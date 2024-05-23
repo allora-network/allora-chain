@@ -12,7 +12,7 @@ import (
 )
 
 func (s *RewardsTestSuite) TestGetReputersRewards() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	reputerAddrs := []string{
@@ -24,7 +24,7 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topidId, block, reputerAddrs)
+	_, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -40,7 +40,7 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	reputerRewards, err := rewards.GetRewardPerReputer(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputerAddrs,
 		reputerFractions,
@@ -66,8 +66,97 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 }
 
+func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractionsForEqualScoresAndStakes() {
+	topicId := uint64(1)
+	block := int64(1003)
+
+	reputerAddrs := []string{
+		s.addrs[0].String(),
+		s.addrs[1].String(),
+		s.addrs[2].String(),
+		s.addrs[3].String(),
+		s.addrs[4].String(),
+	}
+
+	// Generate reputers - same scores and stakes
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewInt(100000),
+		cosmosMath.NewInt(100000),
+		cosmosMath.NewInt(100000),
+		cosmosMath.NewInt(100000),
+		cosmosMath.NewInt(100000),
+	}
+	scores := make([]types.Score, 0)
+	for i, reputerAddr := range reputerAddrs {
+		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddr, stakes[i])
+		s.Require().NoError(err)
+
+		scoreToAdd := types.Score{
+			TopicId:     topicId,
+			BlockNumber: block,
+			Address:     reputerAddr,
+			Score:       alloraMath.MustNewDecFromString("0.5"),
+		}
+		scores = append(scores, scoreToAdd)
+	}
+
+	// Get reputer rewards
+	reputers, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		alloraMath.OneDec(),
+		scores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(reputersRewardFractions))
+
+	// Check if fractions are equal for all reputers
+	for i := 0; i < len(reputers); i++ {
+		reputerRewardFraction := reputersRewardFractions[i]
+		for j := i + 1; j < len(reputers); j++ {
+			if !reputerRewardFraction.Equal(reputersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for reputers")
+			}
+		}
+	}
+
+	// Check using zero scores
+	scores = make([]types.Score, 0)
+	for _, reputerAddr := range reputerAddrs {
+		scoreToAdd := types.Score{
+			TopicId:     topicId,
+			BlockNumber: block,
+			Address:     reputerAddr,
+			Score:       alloraMath.ZeroDec(),
+		}
+		scores = append(scores, scoreToAdd)
+	}
+
+	// Get reputer rewards
+	reputers, reputersRewardFractions, err = rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		alloraMath.OneDec(),
+		scores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(reputersRewardFractions))
+
+	// Check if fractions are equal for all reputers
+	for i := 0; i < len(reputers); i++ {
+		reputerRewardFraction := reputersRewardFractions[i]
+		for j := i + 1; j < len(reputers); j++ {
+			if !reputerRewardFraction.Equal(reputersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for reputers")
+			}
+		}
+	}
+}
+
 func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegators() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	reputerAddrs := []string{
@@ -79,7 +168,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	}
 
 	// Generate reputers data for tests
-	_, err := mockReputersData(s, topidId, block, reputerAddrs)
+	_, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Add balance to the reward account
@@ -91,7 +180,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topidId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewInt(10000000000))
+	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topicId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewInt(10000000000))
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -107,7 +196,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	reputerRewards, err := rewards.GetRewardPerReputer(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		alloraMath.MustNewDecFromString("1017.5559072418691"),
 		reputerAddrs,
 		reputerFractions,

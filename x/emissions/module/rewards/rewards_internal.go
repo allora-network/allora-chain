@@ -161,6 +161,9 @@ func CalculateReputerRewardFractions(
 
 	// Normalize fractions
 	for i := range fractions {
+		if fractions[i].IsZero() {
+			continue
+		}
 		fractions[i], err = fractions[i].Quo(totalFraction)
 		if err != nil {
 			return []alloraMath.Dec{}, err
