@@ -287,9 +287,8 @@ func lookupEnvInt(m TestMetadata, key string, defaultValue int) int {
 
 const stakeToAdd uint64 = 90000
 const topicFunds int64 = 1000000
-const epochLength int64 = 5
 
-func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account) uint64 {
+func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account, epochLength int64) uint64 {
 
 	m.t.Log("Creating new Topic")
 
@@ -320,7 +319,7 @@ func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount co
 	return topicId
 }
 
-func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations int) {
+func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations, epochLength int) {
 
 	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
 	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
@@ -376,8 +375,8 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 	if topicsPerEpoch == 0 {
 		topicFunderAddress, topicFunderAccount := getTopicFunder()
 		wg.Add(1)
-		WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
-			reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations)
+		go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
+			reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength)
 		topicCount++
 	} else {
 		for {
@@ -387,11 +386,10 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 				topicFunderAddress, topicFunderAccount := getTopicFunder()
 				wg.Add(1)
 				go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
-					reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations)
+					reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength)
 				topicCount++
 			}
 			if topicCount >= topicsMax {
-				fmt.Println("Exiting main loop: reached maximum number of topics.")
 				break
 			}
 			workerCount += workersPerEpoch
@@ -403,7 +401,7 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 			time.Sleep(sleepingTime)
 		}
 	}
-
+	fmt.Println("All routines launched: waiting for running routines to end.")
 	wg.Wait()
 }
 
@@ -426,13 +424,13 @@ func WorkerReputerLoop(
 	topicFunderAddress string,
 	topicFunderAccount cosmosaccount.Account,
 	initialWorkerCount, initialReputerCount,
-	reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations int,
+	reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength int,
 ) {
 	defer wg.Done()
 
 	const initialWorkerReputerFundAmount = 1e5
 
-	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount)
+	topicId := SetupTopic(m, topicFunderAddress, topicFunderAccount, int64(epochLength))
 
 	report := func(a ...any) {
 		fmt.Println("[ TOPIC", topicId, "] ", a)
