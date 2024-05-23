@@ -390,7 +390,6 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 				topicCount++
 			}
 			if topicCount >= topicsMax {
-				fmt.Println("Exiting main loop: reached maximum number of topics.")
 				break
 			}
 			workerCount += workersPerEpoch
@@ -402,6 +401,7 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 			time.Sleep(sleepingTime)
 		}
 	}
+	fmt.Println("All routines launched: waiting for running routines to end.")
 	wg.Wait()
 }
 
