@@ -374,7 +374,8 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 	var wg sync.WaitGroup
 	if topicsPerEpoch == 0 {
 		topicFunderAddress, topicFunderAccount := getTopicFunder()
-		WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
+		wg.Add(1)
+		go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
 			reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength)
 		topicCount++
 	} else {
@@ -401,7 +402,6 @@ func WorkerReputerCoordinationLoop(m TestMetadata, reputersPerEpoch, reputersMax
 			time.Sleep(sleepingTime)
 		}
 	}
-
 	wg.Wait()
 }
 
