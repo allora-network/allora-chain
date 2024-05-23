@@ -2,4 +2,6 @@
 Language: Proto
 BasedOnStyle: Google
 ColumnLimit: 120
+PropertyDeclaration:
+  Case: snake_case
 ---
