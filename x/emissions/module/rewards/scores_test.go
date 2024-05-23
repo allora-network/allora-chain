@@ -50,18 +50,18 @@ import (
 // }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Generate workers data for tests
-	reportedLosses, err := mockNetworkLosses(s, topidId, block)
+	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
 	// Get inference scores
 	scores, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block,
 		reportedLosses,
 	)
@@ -123,18 +123,18 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 }
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Generate workers data for tests
-	reportedLosses, err := mockNetworkLosses(s, topidId, block)
+	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
 	// Get inference scores
 	scores, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block,
 		reportedLosses,
 	)
