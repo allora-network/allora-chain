@@ -41,6 +41,9 @@ func GetTopicRewardFraction(
 	topicWeight *alloraMath.Dec,
 	totalWeight alloraMath.Dec,
 ) (alloraMath.Dec, error) {
+	if topicWeight == nil {
+		return alloraMath.ZeroDec(), types.ErrInvalidValue
+	}
 	return (*topicWeight).Quo(totalWeight)
 }
 

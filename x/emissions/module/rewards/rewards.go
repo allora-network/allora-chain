@@ -42,6 +42,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	// for every topic
 	for _, topicId := range sortedTopics {
 		topicReward := topicRewards[topicId]
+		if topicReward == nil {
+			ctx.Logger().Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
+			continue
+		}
 		// Get topic reward nonce/block height
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
@@ -52,11 +56,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
+			topicRewardString := "nil"
 			ctx.Logger().Warn(
 				fmt.Sprintf(
 					"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 					topicId,
-					topicReward.String(),
+					topicRewardString,
 					err.Error(),
 				),
 			)
@@ -333,6 +338,9 @@ func GenerateRewardsDistributionByTopicParticipant(
 	taskReputerReward alloraMath.Dec,
 	err error,
 ) {
+	if topicReward == nil {
+		return nil, alloraMath.Dec{}, types.ErrInvalidReward
+	}
 	bundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
