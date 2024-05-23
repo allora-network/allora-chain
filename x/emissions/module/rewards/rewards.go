@@ -339,7 +339,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 	err error,
 ) {
 	if topicReward == nil {
-		ctx.Logger().Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
 		return nil, alloraMath.Dec{}, types.ErrInvalidReward
 	}
 	bundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, blockHeight)
