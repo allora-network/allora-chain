@@ -2,13 +2,14 @@ package stress_test
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
+	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/stretchr/testify/require"
 )
 
 func CreateTopic(
-	m TestMetadata,
+	m testCommon.TestConfig,
 	epochLength int64,
 	creatorAddress string,
 	creatorAccount cosmosaccount.Account,
@@ -32,15 +33,15 @@ func CreateTopic(
 		AllowNegative:    true,
 	}
 
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, creatorAccount, createTopicRequest)
-	require.NoError(m.t, err)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, creatorAccount, createTopicRequest)
+	require.NoError(m.T, err)
 
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	require.NoError(m.T, err)
 
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
-	require.NoError(m.t, err)
+	require.NoError(m.T, err)
 
 	incrementCountTopics()
 

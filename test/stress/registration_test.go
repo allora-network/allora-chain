@@ -4,12 +4,13 @@ import (
 	"math/rand"
 	"strconv"
 
+	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 // register alice as a reputer in topic 1, then check success
-func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccount.Account, topicId uint64) error {
+func RegisterReputerForTopic(m testCommon.TestConfig, address string, account cosmosaccount.Account, topicId uint64) error {
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
 		Sender:       address,
@@ -19,11 +20,11 @@ func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccou
 		TopicId:      topicId,
 		IsReputer:    true,
 	}
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, account, registerReputerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, account, registerReputerRequest)
 	if err != nil {
 		return err
 	}
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}
@@ -37,7 +38,7 @@ func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccou
 }
 
 // register bob as worker in topic 1, then check sucess
-func RegisterWorkerForTopic(m TestMetadata, address string, account cosmosaccount.Account, topicId uint64) error {
+func RegisterWorkerForTopic(m testCommon.TestConfig, address string, account cosmosaccount.Account, topicId uint64) error {
 	registerWorkerRequest := &emissionstypes.MsgRegister{
 		Sender:       address,
 		Owner:        address,
@@ -46,11 +47,11 @@ func RegisterWorkerForTopic(m TestMetadata, address string, account cosmosaccoun
 		TopicId:      topicId,
 		IsReputer:    false,
 	}
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, account, registerWorkerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, account, registerWorkerRequest)
 	if err != nil {
 		return err
 	}
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}

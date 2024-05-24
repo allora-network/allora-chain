@@ -1,7 +1,6 @@
 package stress_test
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"runtime"
@@ -9,26 +8,6 @@ import (
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
 )
-
-type TestMetadata struct {
-	t   *testing.T
-	ctx context.Context
-	n   testCommon.NodeConfig
-}
-
-func Setup(t *testing.T) TestMetadata {
-	ret := TestMetadata{}
-	ret.t = t
-	ret.ctx = context.Background()
-	node := testCommon.NewNodeConfig(
-		t,
-		testCommon.SingleRpc,
-		[]string{"http://localhost:26657"},
-		"../devnet/genesis",
-	)
-	ret.n = node
-	return ret
-}
 
 func TestStressTestSuite(t *testing.T) {
 	if _, isIntegration := os.LookupEnv("STRESS_TEST"); isIntegration == false {
@@ -40,18 +19,25 @@ func TestStressTestSuite(t *testing.T) {
 	fmt.Printf("Number of logical CPUs: %d, GOMAXPROCS %d \n", numCPUs, gomaxprocs)
 
 	t.Log(">>> Setting up connection to local node <<<")
-	m := Setup(t)
+
+	testConfig := testCommon.NewTestConfig(
+		t,
+		testCommon.SingleRpc,
+		[]string{"http://localhost:26657"},
+		"../devnet/genesis",
+		0,
+	)
 
 	// Read env vars with defaults
-	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
-	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 100)
-	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
-	workersMax := lookupEnvInt(m, "WORKERS_MAX", 100)
-	topicsPerEpoch := lookupEnvInt(m, "TOPICS_PER_EPOCH", 0)
-	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
-	maxIterations := lookupEnvInt(m, "MAX_ITERATIONS", 1000)
-	epochLength := lookupEnvInt(m, "EPOCH_LENGTH", 5)
-	doFinalReport := lookupEnvBool(m, "FINAL_REPORT", false)
+	reputersPerEpoch := testCommon.LookupEnvInt(t, "REPUTERS_PER_EPOCH", 0)
+	reputersMax := testCommon.LookupEnvInt(t, "REPUTERS_MAX", 100)
+	workersPerEpoch := testCommon.LookupEnvInt(t, "WORKERS_PER_EPOCH", 0)
+	workersMax := testCommon.LookupEnvInt(t, "WORKERS_MAX", 100)
+	topicsPerEpoch := testCommon.LookupEnvInt(t, "TOPICS_PER_EPOCH", 0)
+	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
+	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
+	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 5)
+	doFinalReport := testCommon.LookupEnvBool(t, "FINAL_REPORT", false)
 
 	fmt.Println("Reputers per epoch: ", reputersPerEpoch)
 	fmt.Println("Reputers max: ", reputersMax)
@@ -65,7 +51,7 @@ func TestStressTestSuite(t *testing.T) {
 
 	t.Log(">>> Test Making Inference <<<")
 	WorkerReputerCoordinationLoop(
-		m,
+		testConfig,
 		reputersPerEpoch,
 		reputersMax,
 		workersPerEpoch,

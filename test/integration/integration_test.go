@@ -1,53 +1,40 @@
 package integration_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
 )
 
-type TestMetadata struct {
-	t   *testing.T
-	ctx context.Context
-	n   testCommon.NodeConfig
-}
-
-func Setup(t *testing.T) TestMetadata {
-	ret := TestMetadata{}
-	ret.t = t
-	ret.ctx = context.Background()
-	node := testCommon.NewNodeConfig(
-		t,
-		testCommon.SingleRpc,
-		[]string{"http://localhost:26657"},
-		"../devnet/genesis",
-	)
-	ret.n = node
-	return ret
-}
-
 func TestExternalTestSuite(t *testing.T) {
 	if _, isIntegration := os.LookupEnv("INTEGRATION"); isIntegration == false {
 		t.Skip("Skipping Integration Test Outside CI")
 	}
 	t.Log(">>> Setting up connection to local node <<<")
-	m := Setup(t)
+
+	nodeConfig := testCommon.NewTestConfig(
+		t,
+		testCommon.SingleRpc,
+		[]string{"http://localhost:26657"},
+		"../devnet/genesis",
+		0,
+	)
+
 	t.Log(">>> Test Getting Chain Params <<<")
-	GetParams(m)
+	GetParams(nodeConfig)
 	t.Log(">>> Test Topic Creation <<<")
-	CreateTopic(m)
+	CreateTopic(nodeConfig)
 	t.Log(">>> Test Distribution Checks <<<")
-	DistributionChecks(m)
+	DistributionChecks(nodeConfig)
 	t.Log(">>> Test Actor Registration <<<")
-	RegistrationChecks(m)
+	RegistrationChecks(nodeConfig)
 	t.Log(">>> Test Update Params <<<")
-	UpdateParamsChecks(m)
+	UpdateParamsChecks(nodeConfig)
 	t.Log(">>> Test Reputer Staking <<<")
-	StakingChecks(m)
+	StakingChecks(nodeConfig)
 	t.Log(">>> Test Topic Funding and Activation <<<")
-	TopicFundingChecks(m)
+	TopicFundingChecks(nodeConfig)
 	t.Log(">>> Test Making Inference <<<")
-	WorkerInferenceAndForecastChecks(m)
+	WorkerInferenceAndForecastChecks(nodeConfig)
 }

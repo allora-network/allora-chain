@@ -1,6 +1,7 @@
 package testcommon
 
 import (
+	"context"
 	"testing"
 
 	"github.com/allora-network/allora-chain/app/params"
@@ -16,7 +17,9 @@ import (
 )
 
 // handle to various node data
-type NodeConfig struct {
+type TestConfig struct {
+	T             *testing.T
+	Ctx           context.Context
 	Client        Client                // a testcommon.Client which holds several cosmosclient.Client instances
 	AlloraHomeDir string                // home directory for the allora keystore
 	FaucetAcc     cosmosaccount.Account // account info for the faucet
@@ -31,13 +34,14 @@ type NodeConfig struct {
 }
 
 // create a new config that we can use
-func NewNodeConfig(
+func NewTestConfig(
 	t *testing.T,
 	rpcConnectionType RpcConnectionType,
 	nodeRpcAddresses []string,
 	alloraHomeDir string,
-) NodeConfig {
-	nodeConfig := NodeConfig{}
+	seed int64,
+) TestConfig {
+	nodeConfig := TestConfig{}
 	var err error
 	if rpcConnectionType == SingleRpc {
 		require.Len(t, nodeRpcAddresses, 1, "must have exactly one rpc address")
@@ -49,6 +53,7 @@ func NewNodeConfig(
 		rpcConnectionType,
 		nodeRpcAddresses,
 		alloraHomeDir,
+		seed,
 	)
 	nodeConfig.Client = client
 	//// restore from mnemonic
