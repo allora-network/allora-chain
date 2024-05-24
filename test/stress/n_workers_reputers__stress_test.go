@@ -297,7 +297,7 @@ func lookupEnvBool(m TestMetadata, key string, defaultValue bool) bool {
 	return boolValue
 }
 
-const stakeToAdd uint64 = 90000
+const stakeToAdd = 90000
 const topicFunds int64 = 1000000
 
 func SetupTopic(m TestMetadata, topicFunderAddress string, topicFunderAccount cosmosaccount.Account, epochLength int64) uint64 {
@@ -738,6 +738,9 @@ func WorkerReputerLoop(
 	countWorkers := len(workerAddresses)
 	countReputers := len(reputerAddresses)
 
+	var rewardedReputersCount uint64 = 0
+	var rewardedWorkersCount uint64 = 0
+
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
 		balance, err := getAccountBalance(m.ctx, m.n.QueryBank, workerAddresses[getWorkerAccountName(workerIndex, topicId)])
 		if err != nil {
@@ -750,14 +753,15 @@ func WorkerReputerLoop(
 				}
 			}
 		} else {
-			if balance.Amount.Int64() <= initialWorkerReputerFundAmount {
+			if alloraMath.MustNewDecFromString(balance.Amount.String()).Lte(alloraMath.NewDecFromInt64(initialWorkerReputerFundAmount)) {
 				report("Worker ", workerIndex, " balance is not greater than initial amount: ", balance.Amount.Int64())
 				if makeReport {
 					saveWorkerError(topicId, getWorkerAccountName(workerIndex, topicId), fmt.Errorf("balancenotgreater"))
 					saveTopicError(topicId, err)
 				}
 			} else {
-				report("Worker ", workerIndex, " balance: ", balance.Amount.Int64())
+				report("Worker ", workerIndex, " balance: ", balance.Amount.String())
+				rewardedWorkersCount += 1
 			}
 		}
 	}
@@ -771,7 +775,7 @@ func WorkerReputerLoop(
 				saveTopicError(topicId, err)
 			}
 		} else {
-			if reputerStake <= stakeToAdd {
+			if reputerStake.Lte(alloraMath.NewDecFromInt64(stakeToAdd)) {
 				report("Reputer ", reputerIndex, " stake is not greater than initial amount: ", reputerStake)
 				if maxIterations > 20 && reputerIndex < 10 {
 					report("ERROR: Reputer", reputerIndex, "has insufficient stake:", reputerStake)
@@ -782,9 +786,14 @@ func WorkerReputerLoop(
 				}
 			} else {
 				report("Reputer ", reputerIndex, " stake: ", reputerStake)
+				rewardedReputersCount += 1
 			}
 		}
 	}
+
+	maxTopWorkersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
+	require.Less(m.t, rewardedWorkersCount, maxTopWorkersCount, "Only top workers can get reward")
+	require.Less(m.t, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")
 }
 
 func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, error) {
@@ -879,14 +888,21 @@ func getAccountBalance(ctx context.Context, queryClient banktypes.QueryClient, a
 	return nil, fmt.Errorf("no balance found for address: %s", address)
 }
 
-func getReputerStake(ctx context.Context, queryClient types.QueryClient, topicId uint64, reputerAddress string) (uint64, error) {
+func getReputerStake(ctx context.Context, queryClient types.QueryClient, topicId uint64, reputerAddress string) (alloraMath.Dec, error) {
 	req := &types.QueryReputerStakeInTopicRequest{
 		Address: reputerAddress,
 		TopicId: topicId,
 	}
 	res, err := queryClient.GetReputerStakeInTopic(ctx, req)
 	if err != nil {
-		return 0, err
+		return alloraMath.ZeroDec(), err
 	}
-	return res.Amount.Uint64(), nil
+	return alloraMath.MustNewDecFromString(res.Amount.String()), nil
+}
+
+func getMaxTopWorkersReputersToReward(m TestMetadata) (uint64, uint64, error) {
+	emissionsParams := GetEmissionsParams(m)
+	topWorkersCount := emissionsParams.GetMaxTopWorkersToReward()
+	topReputersCount := emissionsParams.GetMaxTopReputersToReward()
+	return topWorkersCount, topReputersCount, nil
 }
