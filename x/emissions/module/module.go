@@ -114,6 +114,5 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
-	fmt.Printf("\n ---------------- Emissions EndBlock ------------------- \n")
 	return EndBlocker(ctx, am)
 }

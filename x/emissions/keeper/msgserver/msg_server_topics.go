@@ -16,12 +16,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	creator, err := sdk.AccAddressFromBech32(msg.Creator)
-	if err != nil {
-		return nil, err
-	}
-
-	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, creator)
+	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, msg.Creator)
 	if !hasEnoughBal {
 		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
 	}
@@ -40,14 +35,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
 		return nil, err
 	}
 
 	topic := types.Topic{
 		Id:               id,
-		Creator:          creator.String(),
+		Creator:          msg.Creator,
 		Metadata:         msg.Metadata,
 		LossLogic:        msg.LossLogic,
 		LossMethod:       msg.LossMethod,
@@ -63,6 +58,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		PrewardInference: msg.PrewardInference,
 		PrewardForecast:  msg.PrewardForecast,
 		FTolerance:       msg.FTolerance,
+		AllowNegative:    msg.AllowNegative,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -77,12 +73,16 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address sdk.AccAddress) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address string) (bool, sdk.Coin, error) {
 	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
 	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
-	balance := ms.k.BankKeeper().GetBalance(ctx, address, fee.Denom)
+	accAddress, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		return false, sdk.Coin{}, err
+	}
+	balance := ms.k.BankKeeper().GetBalance(ctx, accAddress, fee.Denom)
 	return balance.IsGTE(fee), fee, nil
 }

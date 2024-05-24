@@ -12,7 +12,7 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
@@ -65,10 +65,10 @@ func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
 	topicId := s.CreateOneTopic()
 	topicId2 := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, sdk.AccAddress(PKS[1].Address()), cosmosMath.NewUint(500000))
+	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
 	var initialStake int64 = 1000
@@ -419,8 +419,8 @@ func (s *KeeperTestSuite) TestRequestInferenceInvalidBidAmountLessThanGlobalMini
 			Nonce:                0,
 			TopicId:              topicId,
 			Cadence:              0,
-			MaxPricePerInference: cosmosMath.ZeroUint(),
-			BidAmount:            cosmosMath.ZeroUint(),
+			MaxPricePerInference: cosmosMath.ZeroInt(),
+			BidAmount:            cosmosMath.ZeroInt(),
 			BlockValidUntil:      blockNow + 10,
 			ExtraData:            []byte("Test"),
 		},

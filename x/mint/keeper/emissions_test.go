@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
-
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -29,7 +27,7 @@ func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
 // negative aka zero when you don't have stakers
 func (s *IntegrationTestSuite) TestGetNumStakedTokensNonNegative() {
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(math.NewInt(0), nil)
-	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(math.NewUint(0), nil)
+	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(math.NewInt(0), nil)
 	nst, err := keeper.GetNumStakedTokens(s.ctx, s.mintKeeper)
 	s.NoError(err)
 	s.False(nst.IsNegative())
@@ -112,7 +110,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 	// using some random sample values
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
 
-	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
+	_, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		math.LegacyMustNewDecFromStr("0.015"),
 		math.NewInt(200000),
 		math.NewInt(400),
@@ -120,5 +118,4 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 		math.NewInt(12000000),
 	)
 	s.Require().NoError(err)
-	fmt.Println(result)
 }

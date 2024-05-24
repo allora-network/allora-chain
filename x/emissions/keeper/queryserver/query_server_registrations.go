@@ -44,12 +44,10 @@ func (qs queryServer) GetReputerAddressByP2PKey(ctx context.Context, req *types.
 }
 
 func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.QueryIsWorkerRegisteredInTopicIdRequest) (*types.QueryIsWorkerRegisteredInTopicIdResponse, error) {
-	address, err := sdk.AccAddressFromBech32(req.Address)
-	if err != nil {
+	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-
-	isRegistered, err := qs.k.IsWorkerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, address)
+	isRegistered, err := qs.k.IsWorkerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +56,10 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 }
 
 func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.QueryIsReputerRegisteredInTopicIdRequest) (*types.QueryIsReputerRegisteredInTopicIdResponse, error) {
-	address, err := sdk.AccAddressFromBech32(req.Address)
-	if err != nil {
+	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-
-	isRegistered, err := qs.k.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, address)
+	isRegistered, err := qs.k.IsReputerRegisteredInTopic(sdk.UnwrapSDKContext(ctx), req.TopicId, req.Address)
 	if err != nil {
 		return nil, err
 	}

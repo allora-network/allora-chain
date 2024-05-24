@@ -50,29 +50,29 @@ import (
 // }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Generate workers data for tests
-	reportedLosses, err := mockNetworkLosses(s, topidId, block)
+	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
 	// Get inference scores
 	scores, err := rewards.GenerateInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block,
 		reportedLosses,
 	)
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("-0.006859433456235635"),
-		alloraMath.MustNewDecFromString("-0.015119372088498012"),
-		alloraMath.MustNewDecFromString("0.0038085520495462163"),
-		alloraMath.MustNewDecFromString("0.043747287132323336"),
-		alloraMath.MustNewDecFromString("0.09712721396805202"),
+		alloraMath.MustNewDecFromString("-0.00021125601"),
+		alloraMath.MustNewDecFromString("-0.000461256018"),
+		alloraMath.MustNewDecFromString("0.0001187439"),
+		alloraMath.MustNewDecFromString("0.0014287439"),
+		alloraMath.MustNewDecFromString("0.00337874398"),
 	}
 	for i, reputerScore := range scores {
 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
@@ -85,30 +85,67 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
+// In this test we run two trials of generating inference scores, the first with lower one out losses
+// and the second with higher one out losses.
+// We then compare the resulting scores and check that the higher one out losses result in higher scores.
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
+	topicId := uint64(1)
+	block0 := int64(1003)
+	require := s.Require()
+
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
+	require.NoError(err)
+
+	scores0, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block0,
+		networkLosses0,
+	)
+	require.NoError(err)
+
+	block1 := block0 + 1
+
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
+	require.NoError(err)
+
+	scores1, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block1,
+		networkLosses1,
+	)
+	require.NoError(err)
+
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
+}
+
 func (s *RewardsTestSuite) TestGetForecastScores() {
-	topidId := uint64(1)
+	topicId := uint64(1)
 	block := int64(1003)
 
 	// Generate workers data for tests
-	reportedLosses, err := mockNetworkLosses(s, topidId, block)
+	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
 	// Get inference scores
 	scores, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topidId,
+		topicId,
 		block,
 		reportedLosses,
 	)
 	s.Require().NoError(err)
 
 	expectedScores := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.012463129004928653"),
-		alloraMath.MustNewDecFromString("-0.0053656225135989164"),
-		alloraMath.MustNewDecFromString("0.07992212136127204"),
-		alloraMath.MustNewDecFromString("-0.035977785673031996"),
-		alloraMath.MustNewDecFromString("-0.0031785253425987165"),
+		alloraMath.MustNewDecFromString("0.000389744278"),
+		alloraMath.MustNewDecFromString("-0.00017400572"),
+		alloraMath.MustNewDecFromString("0.0027597442"),
+		alloraMath.MustNewDecFromString("-0.001075880"),
+		alloraMath.MustNewDecFromString("-0.000099005721"),
 	}
 	for i, reputerScore := range scores {
 		delta, err := reputerScore.Score.Sub(expectedScores[i])
@@ -118,6 +155,45 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
 	}
+}
+
+// In this test we run two trials of generating forecast scores, the first with lower one out losses
+// and the second with higher one out losses.
+// We then compare the resulting forecaster scores and check that the higher one out losses result
+// in higher scores.
+func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
+	topicId := uint64(1)
+	block0 := int64(1003)
+	require := s.Require()
+
+	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
+	require.NoError(err)
+
+	scores0, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block0,
+		networkLosses0,
+	)
+	require.NoError(err)
+
+	block1 := block0 + 1
+
+	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
+	require.NoError(err)
+
+	// Get inference scores
+	scores1, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block1,
+		networkLosses1,
+	)
+	require.NoError(err)
+
+	require.True(scores0[0].Score.Lt(scores1[0].Score))
 }
 
 func (s *RewardsTestSuite) TestEnsureAllWorkersPresent() {
@@ -589,7 +665,7 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     worker.String(),
-				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -598,11 +674,11 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 					{
 						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000), 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
 					},
 				},
 			},
@@ -831,4 +907,289 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	inferences = append(inferences, worker5Bundle)
 
 	return inferences
+}
+
+func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+	var newInferences []*types.WorkerDataBundle
+	oldForecaster := s.addrs[5]
+	worker1Addr := s.addrs[10]
+	worker2Addr := s.addrs[11]
+
+	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker1Addr.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  oldForecaster.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[7].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[8].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, worker1Addr)
+	s.Require().NoError(err)
+	worker1Bundle := &types.WorkerDataBundle{
+		Worker:                             worker1Addr.String(),
+		InferenceForecastsBundle:           worker1InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker1Sig,
+		Pubkey:                             GetAccPubKey(s, worker1Addr),
+	}
+	newInferences = append(newInferences, worker1Bundle)
+
+	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     worker2Addr.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  oldForecaster.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[5].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[6].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, worker2Addr)
+	s.Require().NoError(err)
+	worker2Bundle := &types.WorkerDataBundle{
+		Worker:                             worker2Addr.String(),
+		InferenceForecastsBundle:           worker2InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker2Sig,
+		Pubkey:                             GetAccPubKey(s, worker2Addr),
+	}
+	newInferences = append(newInferences, worker2Bundle)
+
+	return newInferences
+}
+
+func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+	var newForecasts []*types.WorkerDataBundle
+	oldInferencer1 := s.addrs[5]
+	oldInferencer2 := s.addrs[6]
+	worker1Addr := s.addrs[10]
+	worker2Addr := s.addrs[11]
+
+	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     oldInferencer1.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  worker1Addr.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[7].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[8].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, oldInferencer1)
+	s.Require().NoError(err)
+	worker1Bundle := &types.WorkerDataBundle{
+		Worker:                             oldInferencer1.String(),
+		InferenceForecastsBundle:           worker1InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker1Sig,
+		Pubkey:                             GetAccPubKey(s, oldInferencer1),
+	}
+	newForecasts = append(newForecasts, worker1Bundle)
+
+	worker2InferenceForecastBundle := &types.InferenceForecastBundle{
+		Inference: &types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Inferer:     oldInferencer2.String(),
+			Value:       alloraMath.MustNewDecFromString("0.01251"),
+		},
+		Forecast: &types.Forecast{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Forecaster:  worker2Addr.String(),
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrs[5].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+				{
+					Inferer: s.addrs[6].String(),
+					Value:   alloraMath.MustNewDecFromString("0.01251"),
+				},
+			},
+		},
+	}
+	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, oldInferencer2)
+	s.Require().NoError(err)
+	worker2Bundle := &types.WorkerDataBundle{
+		Worker:                             oldInferencer2.String(),
+		InferenceForecastsBundle:           worker2InferenceForecastBundle,
+		InferencesForecastsBundleSignature: worker2Sig,
+		Pubkey:                             GetAccPubKey(s, oldInferencer2),
+	}
+	newForecasts = append(newForecasts, worker2Bundle)
+
+	return newForecasts
+}
+
+type TestWorkerValue struct {
+	Address sdk.AccAddress
+	Value   string
+}
+
+func GenerateSimpleWorkerDataBundles(
+	s *RewardsTestSuite,
+	topicId uint64,
+	blockHeight int64,
+	workerValues []TestWorkerValue,
+	infererAddrs []sdk.AccAddress,
+) []*types.WorkerDataBundle {
+	require := s.Require()
+	if len(workerValues) < 2 {
+		require.Fail("workerValues must have at least 2 elements")
+	}
+	if len(infererAddrs) < 2 {
+		require.Fail("infererAddrs must have at least 2 elements")
+	}
+
+	var inferences []*types.WorkerDataBundle
+
+	infererIndex := 0
+
+	getInfererIndex := func() int {
+		if infererIndex >= len(infererAddrs) {
+			infererIndex = 0
+		}
+		currentInfererIndex := infererIndex
+		infererIndex++
+		return currentInfererIndex
+	}
+
+	for i, workerValue := range workerValues {
+		newWorkerInferenceForecastBundle := &types.InferenceForecastBundle{
+			Inference: &types.Inference{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     workerValue.Address.String(),
+				Value:       alloraMath.MustNewDecFromString(workerValues[i].Value),
+			},
+			Forecast: &types.Forecast{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  workerValue.Address.String(),
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: infererAddrs[getInfererIndex()].String(),
+						Value:   alloraMath.MustNewDecFromString(workerValues[i].Value),
+					},
+					{
+						Inferer: infererAddrs[getInfererIndex()].String(),
+						Value:   alloraMath.MustNewDecFromString(workerValues[i].Value),
+					},
+				},
+			},
+		}
+		workerSig, err := GenerateWorkerSignature(s, newWorkerInferenceForecastBundle, workerValue.Address)
+		s.Require().NoError(err)
+		workerBundle := &types.WorkerDataBundle{
+			Worker:                             workerValue.Address.String(),
+			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
+			InferencesForecastsBundleSignature: workerSig,
+			Pubkey:                             GetAccPubKey(s, workerValue.Address),
+		}
+		inferences = append(inferences, workerBundle)
+	}
+
+	return inferences
+}
+
+func GenerateSimpleLossBundles(
+	s *RewardsTestSuite,
+	topicId uint64,
+	blockHeight int64,
+	workerValues []TestWorkerValue,
+	reputerValues []TestWorkerValue,
+	workerZeroAddress sdk.AccAddress,
+	workerZeroOneOutInfererValue string,
+	workerZeroInfererValue string,
+) types.ReputerValueBundles {
+
+	var reputerValueBundles types.ReputerValueBundles
+	for _, reputer := range reputerValues {
+		valueBundle := &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: blockHeight,
+				},
+				WorkerNonce: &types.Nonce{
+					BlockHeight: blockHeight,
+				},
+			},
+			Reputer:                reputer.Address.String(),
+			CombinedValue:          alloraMath.MustNewDecFromString(reputer.Value),
+			NaiveValue:             alloraMath.MustNewDecFromString(reputer.Value),
+			InfererValues:          make([]*types.WorkerAttributedValue, len(workerValues)),
+			ForecasterValues:       make([]*types.WorkerAttributedValue, len(workerValues)),
+			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
+			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
+			OneInForecasterValues:  make([]*types.WorkerAttributedValue, len(workerValues)),
+		}
+
+		for j, worker := range workerValues {
+			if worker.Address.Equals(workerZeroAddress) {
+				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroInfererValue)}
+			} else {
+				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			}
+			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			if worker.Address.Equals(workerZeroAddress) {
+				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue)}
+			} else {
+				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			}
+			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+		}
+
+		sig, err := GenerateReputerSignature(s, valueBundle, reputer.Address)
+		s.Require().NoError(err)
+
+		bundle := &types.ReputerValueBundle{
+			Pubkey:      GetAccPubKey(s, reputer.Address),
+			Signature:   sig,
+			ValueBundle: valueBundle,
+		}
+		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
+	}
+
+	return reputerValueBundles
 }

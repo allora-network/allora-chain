@@ -1,4 +1,4 @@
-package chain_test
+package testcommon
 
 import (
 	"context"
@@ -41,6 +41,10 @@ type Node struct {
 	FaucetAddr        string
 	UpshotAcc         cosmosaccount.Account
 	UpshotAddr        string
+	AliceAcc          cosmosaccount.Account
+	AliceAddr         string
+	BobAcc            cosmosaccount.Account
+	BobAddr           string
 	Cdc               codec.Codec
 }
 
@@ -67,9 +71,17 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 	require.NoError(t, err)
 	node.UpshotAcc, err = node.Client.AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
+	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("faucet")
+	require.NoError(t, err)
+	node.BobAcc, err = node.Client.AccountRegistry.GetByName("upshot")
+	require.NoError(t, err)
 	node.FaucetAddr, err = node.FaucetAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
 	node.UpshotAddr, err = node.UpshotAcc.Address(params.HumanCoinUnit)
+	require.NoError(t, err)
+	node.AliceAddr, err = node.AliceAcc.Address(params.HumanCoinUnit)
+	require.NoError(t, err)
+	node.BobAddr, err = node.BobAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
 
 	// Create query client

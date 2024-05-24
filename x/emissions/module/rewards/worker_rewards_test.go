@@ -8,6 +8,175 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameFractionsForEqualZeroScores() {
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Check with all scores being 0
+	lastScores := make([]types.Score, 0)
+	for _, workerAddr := range workerAddrs {
+		for j := 0; j < 3; j++ {
+			blockHeight := blockHeight - int64(j)
+			scoreToAdd := types.Score{
+				TopicId:     topicId,
+				BlockNumber: blockHeight,
+				Address:     workerAddr.String(),
+				Score:       alloraMath.MustNewDecFromString("0"),
+			}
+
+			// Persist worker inference score
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+
+			// Persist worker forecast score
+			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+		}
+
+		lastScores = append(lastScores, types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockHeight,
+			Address:     workerAddr.String(),
+			Score:       alloraMath.MustNewDecFromString("0"),
+		})
+	}
+
+	// Get worker rewards
+	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		lastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(inferersRewardFractions))
+
+	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		lastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(forecastersRewardFractions))
+
+	// Check if fractions are equal for all inferers
+	for i := 0; i < len(inferers); i++ {
+		infererRewardFraction := inferersRewardFractions[i]
+		for j := i + 1; j < len(inferers); j++ {
+			if !infererRewardFraction.Equal(inferersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for inferers")
+			}
+		}
+	}
+
+	// Check if fractions are equal for all forecasters
+	for i := 0; i < len(forecasters); i++ {
+		forecasterRewardFraction := forecastersRewardFractions[i]
+		for j := i + 1; j < len(forecasters); j++ {
+			if !forecasterRewardFraction.Equal(forecastersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for forecasters")
+			}
+		}
+	}
+}
+
+func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFractionsForEqualScores() {
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+		s.addrs[3],
+		s.addrs[4],
+	}
+
+	// Generate old scores - 3 equal past scores per worker
+	lastScores := make([]types.Score, 0)
+	for _, workerAddr := range workerAddrs {
+		for j := 0; j < 3; j++ {
+			blockHeight := blockHeight - int64(j)
+			scoreToAdd := types.Score{
+				TopicId:     topicId,
+				BlockNumber: blockHeight,
+				Address:     workerAddr.String(),
+				Score:       alloraMath.MustNewDecFromString("0.5"),
+			}
+
+			// Persist worker inference score
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+
+			// Persist worker forecast score
+			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+		}
+
+		lastScores = append(lastScores, types.Score{
+			TopicId:     topicId,
+			BlockNumber: blockHeight,
+			Address:     workerAddr.String(),
+			Score:       alloraMath.MustNewDecFromString("0.5"),
+		})
+	}
+
+	// Get worker rewards
+	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		lastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(inferersRewardFractions))
+	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		lastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(forecastersRewardFractions))
+
+	// Check if fractions are equal for all inferers
+	for i := 0; i < len(inferers); i++ {
+		infererRewardFraction := inferersRewardFractions[i]
+		for j := i + 1; j < len(inferers); j++ {
+			if !infererRewardFraction.Equal(inferersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for inferers")
+			}
+		}
+	}
+
+	// Check if fractions are equal for all forecasters
+	for i := 0; i < len(forecasters); i++ {
+		forecasterRewardFraction := forecastersRewardFractions[i]
+		for j := i + 1; j < len(forecasters); j++ {
+			if !forecasterRewardFraction.Equal(forecastersRewardFractions[j]) {
+				s.Require().Fail("Fractions are not equal for forecasters")
+			}
+		}
+	}
+}
+
 func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	topicId := uint64(1)
 	blockHeight := int64(1003)
@@ -146,6 +315,59 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	}
 
 	// Persist network losses
+	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
+	if err != nil {
+		return types.ValueBundle{}, err
+	}
+
+	return networkLosses, nil
+}
+
+func mockSimpleNetworkLosses(
+	s *RewardsTestSuite,
+	topicId uint64,
+	block int64,
+	worker0Value string,
+) (types.ValueBundle, error) {
+	genericLossesWithheld := []*types.WithheldWorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString(worker0Value),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
+
+	genericLosses := []*types.WorkerAttributedValue{
+		{
+			Worker: s.addrs[0].String(),
+			Value:  alloraMath.MustNewDecFromString(worker0Value),
+		},
+		{
+			Worker: s.addrs[1].String(),
+			Value:  alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			Worker: s.addrs[2].String(),
+			Value:  alloraMath.MustNewDecFromString("0.4"),
+		},
+	}
+
+	networkLosses := types.ValueBundle{
+		TopicId:                topicId,
+		CombinedValue:          alloraMath.MustNewDecFromString("0.05"),
+		NaiveValue:             alloraMath.MustNewDecFromString("0.05"),
+		OneOutInfererValues:    genericLossesWithheld,
+		OneOutForecasterValues: genericLossesWithheld,
+		OneInForecasterValues:  genericLosses,
+	}
+
 	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
 	if err != nil {
 		return types.ValueBundle{}, err

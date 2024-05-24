@@ -16,7 +16,7 @@ func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccou
 		Owner:        address,
 		LibP2PKey:    "reputerkey" + strconv.Itoa(rand.Intn(10000000000)),
 		MultiAddress: "reputermultiaddress",
-		TopicId:      1,
+		TopicId:      topicId,
 		IsReputer:    true,
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, account, registerReputerRequest)
@@ -32,6 +32,7 @@ func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccou
 	if err != nil {
 		return err
 	}
+	incrementCountReputers()
 	return nil
 }
 
@@ -58,5 +59,6 @@ func RegisterWorkerForTopic(m TestMetadata, address string, account cosmosaccoun
 	if err != nil {
 		return err
 	}
+	incrementCountWorkers()
 	return nil
 }

@@ -26,7 +26,7 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 	addStake := &emissionstypes.MsgAddStake{
 		Sender:  m.n.AliceAddr,
 		TopicId: 1,
-		Amount:  cosmosMath.NewUint(stakeToAdd),
+		Amount:  cosmosMath.NewInt(stakeToAdd),
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, addStake)
 	require.NoError(m.t, err)

@@ -11,7 +11,7 @@ func StakeReputer(m TestMetadata, topicId uint64, address string, account cosmos
 	addStake := &emissionstypes.MsgAddStake{
 		Sender:  address,
 		TopicId: topicId,
-		Amount:  cosmosMath.NewUint(stakeToAdd),
+		Amount:  cosmosMath.NewIntFromUint64(stakeToAdd),
 	}
 	txResp, err := m.n.Client.BroadcastTx(m.ctx, account, addStake)
 	if err != nil {

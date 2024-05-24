@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -49,10 +48,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
-		fmt.Println("Reputer's worker nonce not yet fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, errorsmod.Wrap(types.ErrNonceStillUnfulfilled, "worker nonce")
-	} else {
-		fmt.Println("OK - Reputer's worker nonce already fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
+		return nil, errorsmod.Wrapf(
+			types.ErrNonceStillUnfulfilled,
+			"Reputer's worker nonce not yet fulfilled: %v  for reputer block: %v",
+			msg.ReputerRequestNonce.WorkerNonce.BlockHeight,
+			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		)
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -62,8 +63,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
-		fmt.Println("Reputer nonce already fulfilled: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, errorsmod.Wrap(types.ErrNonceAlreadyFulfilled, "reputer nonce")
+		return nil, errorsmod.Wrapf(
+			types.ErrNonceAlreadyFulfilled,
+			"Reputer nonce already fulfilled: %v",
+			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		)
 	}
 
 	params, err := ms.k.GetParams(ctx)
@@ -78,14 +82,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	latestReputerScores := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
-			fmt.Println("Error validating reputer value bundle: ", err)
 			continue
 		}
 
-		reputer, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
-		if err != nil {
-			continue
-		}
+		reputer := bundle.ValueBundle.Reputer
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
 		if bundle.ValueBundle.TopicId != msg.TopicId {
@@ -147,15 +147,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
-	stakesByReputer := make(map[string]cosmosMath.Uint)
+	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
-		reputerAccAddress, err := sdk.AccAddressFromBech32(reputer)
-		if err != nil {
-			continue
-		}
-
-		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputerAccAddress)
+		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
 		if err != nil {
 			continue
 		}

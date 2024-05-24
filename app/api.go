@@ -2,14 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"strings"
-
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type BlocklessRequest struct {
@@ -47,28 +46,30 @@ type LossesPayload struct {
 }
 
 func generateLossesRequest(
+	ctx sdk.Context,
 	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
 	topicId uint64,
+	topicAllowsNegative bool,
 	blockHeight emissionstypes.Nonce,
 	blockHeightEval emissionstypes.Nonce,
 	blocktime uint64) {
 
 	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
+		ctx.Logger().Warn("Error marshalling JSON:", err)
 		return
 	}
 
-	params := string(inferencesPayloadJSON)
+	stdin := string(inferencesPayloadJSON)
 	topicIdStr := strconv.FormatUint(topicId, 10) + "/reputer"
 	calcWeightsReq := BlocklessRequest{
 		FunctionID: functionId,
 		Method:     functionMethod,
 		TopicID:    topicIdStr,
 		Config: Config{
-			Stdin: &params,
+			Stdin: &stdin,
 			Environment: []EnvVar{
 				{
 					Name:  "BLS_REQUEST_PATH",
@@ -86,6 +87,10 @@ func generateLossesRequest(
 					Name:  "ALLORA_BLOCK_HEIGHT_EVAL",
 					Value: strconv.FormatInt(blockHeightEval.BlockHeight, 10),
 				},
+				{
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
+				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
 			Timeout:            2,      // seconds to time out before rollcall complete
@@ -95,7 +100,7 @@ func generateLossesRequest(
 
 	payload, err := json.Marshal(calcWeightsReq)
 	if err != nil {
-		fmt.Println("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn("Error marshalling outer JSON:", err)
 		return
 	}
 	payloadStr := string(payload)
@@ -103,10 +108,12 @@ func generateLossesRequest(
 }
 
 func generateInferencesRequest(
+	ctx sdk.Context,
 	functionId string,
 	functionMethod string,
 	param string,
 	topicId uint64,
+	topicAllowsNegative bool,
 	nonce emissionstypes.Nonce) {
 
 	payloadJson := BlocklessRequest{
@@ -127,6 +134,10 @@ func generateInferencesRequest(
 					Name:  "ALLORA_BLOCK_HEIGHT_CURRENT",
 					Value: strconv.FormatInt(nonce.BlockHeight, 10),
 				},
+				{
+					Name:  "LOSS_FUNCTION_ALLOWS_NEGATIVE",
+					Value: strconv.FormatBool(topicAllowsNegative),
+				},
 			},
 			NodeCount:          -1,     // use all nodes that reported, no minimum / max
 			Timeout:            2,      // seconds to time out before rollcall complete
@@ -135,31 +146,34 @@ func generateInferencesRequest(
 	}
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
-		fmt.Println("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn("Error marshalling outer JSON:", err)
 	}
 	payloadStr := string(payload)
 
-	makeApiCall(payloadStr)
+	ctx.Logger().Debug("Making API call with payload: ", payloadStr)
+	err = makeApiCall(payloadStr)
+	if err != nil {
+		ctx.Logger().Warn("Error making API call:", err)
+	}
 }
 
-func makeApiCall(payload string) {
-	fmt.Println("Making Api Call, Payload: ", payload)
+func makeApiCall(payload string) error {
 	url := os.Getenv("BLOCKLESS_API_URL")
 	method := "POST"
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, strings.NewReader(payload))
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	req.Header.Add("Accept", "application/json, text/plain, */*")
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	defer res.Body.Close()
+
+	return nil
 }

@@ -32,10 +32,10 @@ func (m *MockEmissionsKeeper) EXPECT() *MockEmissionsKeeperMockRecorder {
 	return m.recorder
 }
 
-func (m *MockEmissionsKeeper) GetTotalStake(ctx context.Context) (math.Uint, error) {
+func (m *MockEmissionsKeeper) GetTotalStake(ctx context.Context) (math.Int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTotalStake", ctx)
-	ret0, _ := ret[0].(math.Uint)
+	ret0, _ := ret[0].(math.Int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

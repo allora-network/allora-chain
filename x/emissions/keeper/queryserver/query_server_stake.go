@@ -2,12 +2,12 @@ package queryserver
 
 import (
 	"context"
-	cosmosMath "cosmossdk.io/math"
+
+	"cosmossdk.io/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
@@ -23,12 +23,10 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 // including reputer's stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
-	address, err := sdk.AccAddressFromBech32(req.Address)
-	if err != nil {
+	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-
-	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
+	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, req.Address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -38,12 +36,10 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 
 // Retrieves total delegate stake on a given reputer address in a given topic
 func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
-	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
-	if err != nil {
+	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, err
 	}
-
-	stake, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, reputerAddress)
+	stake, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.ReputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -52,31 +48,25 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
-	reputerAddress, err := sdk.AccAddressFromBech32(req.ReputerAddress)
-	if err != nil {
-		return nil, err
+	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+		return nil, errors.Wrapf(err, "reputer address")
 	}
-
-	delegatorAddress, err := sdk.AccAddressFromBech32(req.DelegatorAddress)
-	if err != nil {
-		return nil, err
+	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
+		return nil, errors.Wrapf(err, "delegator address")
 	}
-
-	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, delegatorAddress, reputerAddress)
+	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.DelegatorAddress, req.ReputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: cosmosMath.NewUintFromString(stake.Amount.String())}, nil
+	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake.Amount.SdkIntTrim()}, nil
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
-	delegatorAddress, err := sdk.AccAddressFromBech32(req.DelegatorAddress)
-	if err != nil {
+	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, err
 	}
-
-	stake, err := qs.k.GetStakeFromDelegatorInTopic(ctx, req.TopicId, delegatorAddress)
+	stake, err := qs.k.GetStakeFromDelegatorInTopic(ctx, req.TopicId, req.DelegatorAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

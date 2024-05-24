@@ -1,10 +1,8 @@
 package inference_synthesis
 
 import (
-	"fmt"
-
+	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
-
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -102,13 +100,11 @@ func CalcForecastImpliedInferences(
 					if inferenceByWorker[inferer] != nil {
 						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[inferer].Value)
 						if err != nil {
-							fmt.Println("Error adding dot product: ", err)
-							return nil, err
+							return nil, errorsmod.Wrapf(err, "error adding dot product")
 						}
 						weightSum, err = weightSum.Add(alloraMath.OneDec())
 						if err != nil {
-							fmt.Println("Error adding weight: ", err)
-							return nil, err
+							return nil, errorsmod.Wrapf(err, "error adding weight")
 						}
 					}
 				}
@@ -128,15 +124,9 @@ func CalcForecastImpliedInferences(
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
-					networkLossPerValue, err := networkCombinedLoss.Quo(forecastElementsByInferer[j].Value)
+					R_ik[j], err = networkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
 					if err != nil {
-						fmt.Println("Error calculating network loss per value: ", err)
-						return nil, err
-					}
-					R_ik[j], err = alloraMath.Log10(networkLossPerValue) // forecasted regrets R_ijk = log10(L_i / L_ijk)
-					if err != nil {
-						fmt.Println("Error calculating forecasted regrets: ", err)
-						return nil, err
+						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
 					if first {
 						maxjRijk = R_ik[j]
@@ -154,13 +144,11 @@ func CalcForecastImpliedInferences(
 				for _, j := range sortedInferersInForecast {
 					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 					if err != nil {
-						fmt.Println("Error calculating normalized forecasted regrets: ", err)
-						return nil, err
+						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
 					w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 					if err != nil {
-						fmt.Println("Error calculating gradient: ", err)
-						return nil, err
+						return nil, errorsmod.Wrapf(err, "error calculating gradient")
 					}
 					w_ik[j] = w_ijk
 				}
@@ -171,18 +159,15 @@ func CalcForecastImpliedInferences(
 					if inferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := w_ijk.Mul(inferenceByWorker[j].Value)
 						if err != nil {
-							fmt.Println("Error calculating dot product: ", err)
-							return nil, err
+							return nil, errorsmod.Wrapf(err, "error calculating dot product")
 						}
 						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(thisDotProduct)
 						if err != nil {
-							fmt.Println("Error adding dot product: ", err)
-							return nil, err
+							return nil, errorsmod.Wrapf(err, "error adding dot product")
 						}
 						weightSum, err = weightSum.Add(w_ijk)
 						if err != nil {
-							fmt.Println("Error adding weight: ", err)
-							return nil, err
+							return nil, errorsmod.Wrapf(err, "error adding weight")
 						}
 					}
 				}
@@ -190,8 +175,7 @@ func CalcForecastImpliedInferences(
 
 			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
 			if err != nil {
-				fmt.Println("Error calculating forecast value: ", err)
-				return nil, err
+				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
 			}
 			forecastImpliedInference := emissions.Inference{
 				Inferer: forecast.Forecaster,

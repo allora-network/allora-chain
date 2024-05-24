@@ -80,12 +80,11 @@ func (s *KeeperTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                                  {"minter"},
-		"mint":                                           {"minter"},
-		types.AlloraStakingAccountName:                   {"burner", "minter", "staking"},
-		types.AlloraRequestsAccountName:                  {"burner", "minter", "staking"},
-		mintTypes.EcosystemModuleName:                    {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName:                   {"minter"},
+		"fee_collector":                {"minter"},
+		"mint":                         {"minter"},
+		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
+		mintTypes.EcosystemModuleName:  {"burner", "minter", "staking"},
+		types.AlloraRewardsAccountName: {"minter"},
 		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
 		"bonded_tokens_pool":                             {"burner", "staking"},
 		"not_bonded_tokens_pool":                         {"burner", "staking"},
@@ -142,7 +141,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
-	for _, addr := range addrs {
+	for _, addr := range addrsStr {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 	}
 }

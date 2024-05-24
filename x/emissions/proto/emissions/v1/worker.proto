@@ -59,8 +59,8 @@ message InferenceForecastBundle {
 message WorkerDataBundle {
   option (gogoproto.equal) = true;
   string worker = 1;
-  InferenceForecastBundle inferenceForecastsBundle = 2;
-  bytes inferencesForecastsBundleSignature = 3;
+  InferenceForecastBundle inference_forecasts_bundle = 2;
+  bytes inferences_forecasts_bundle_signature = 3;
   string pubkey = 4;
 }
 

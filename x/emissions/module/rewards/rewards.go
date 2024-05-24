@@ -1,13 +1,14 @@
 package rewards
 
 import (
+	"fmt"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -18,7 +19,9 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	}
 	if totalReward.IsZero() {
 		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero!")
+		return nil
 	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get module params")
@@ -39,6 +42,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 	// for every topic
 	for _, topicId := range sortedTopics {
 		topicReward := topicRewards[topicId]
+		if topicReward == nil {
+			ctx.Logger().Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
+			continue
+		}
 		// Get topic reward nonce/block height
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
@@ -49,11 +56,14 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
+			topicRewardString := "nil"
 			ctx.Logger().Warn(
-				"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-				topicId,
-				topicReward.String(),
-				err,
+				fmt.Sprintf(
+					"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+					topicId,
+					topicRewardString,
+					err.Error(),
+				),
 			)
 			continue
 		}
@@ -72,10 +82,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		if len(payoutErrors) > 0 {
 			for _, err := range payoutErrors {
 				ctx.Logger().Warn(
-					"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-					topicId,
-					topicReward.String(),
-					err,
+					fmt.Sprintf(
+						"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+						topicId,
+						topicReward.String(),
+						err.Error(),
+					),
 				)
 			}
 			continue
@@ -85,10 +97,12 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
 		if err != nil {
 			ctx.Logger().Warn(
-				"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
-				topicId,
-				topicReward.String(),
-				err,
+				fmt.Sprintf(
+					"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
+					topicId,
+					topicReward.String(),
+					err.Error(),
+				),
 			)
 			continue
 		}
@@ -130,13 +144,12 @@ func GenerateRewardsDistributionByTopic(
 	}
 	// Filter out topics that are not reward-ready, inactivate if needed
 	// Update sum weight and revenue
-	weightsOfActiveTopics, sumWeight, sumRevenue, err := FilterAndInactivateTopicsUpdatingSums(
+	weightsOfActiveTopics, sumWeight, err := FilterAndInactivateTopicsUpdatingSums(
 		ctx,
 		k,
 		weights,
 		sortedTopics,
 		sumWeight,
-		totalRevenue,
 		totalReward,
 		blockHeight,
 	)
@@ -168,28 +181,22 @@ func GenerateRewardsDistributionByTopic(
 				if err != nil {
 					return nil, errors.Wrapf(err, "failed to add weight to sum")
 				}
-			}
-
-			// This way we won't double count from this earlier epoch revenue the next epoch
-			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
-			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+			} else {
+				// For topics that are active and top, they will get their rewards paid out this block.
+				// Everybody else doesn't. Therefore, for topics that have topicFeeRevenue but havent received rewards,
+				// we don't reset their topic fee revenue, effectively "double counting" their topic fee revenue
+				//  giving them a chance to earn rewards in future blocks as they accumulate more fees.
+				//
+				// This call must come after GetTopicFeeRevenue() is last called per topic in
+				// GetAndOptionallyUpdateActiveTopicWeights -> GetCurrentTopicWeight
+				// because otherwise the returned revenue would be zero
+				err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
+				}
 			}
 		}
-	}
-
-	// Send remaining collected inference request fees to the Ecosystem module account
-	// They will be paid out to reputers, workers, and validators
-	// according to the formulas in the beginblock of the mint module
-	err = k.SendCoinsFromModuleToModule(
-		ctx,
-		types.AlloraRequestsAccountName,
-		mintTypes.EcosystemModuleName,
-		sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(sumRevenue.Sub(sumRevenueOfBottomTopics).BigInt().Int64()))))
-	if err != nil {
-		ctx.Logger().Error("Error sending coins from module to module: ", err)
-		return nil, err
+		ctx.Logger().Debug("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
 	}
 
 	sortedTopTopics := alloraMath.GetSortedKeys(weightsOfTopActiveTopics)
@@ -208,21 +215,17 @@ func GenerateRewardsDistributionByTopic(
 	return topicRewards, nil
 }
 
-func removeFromSumWeightAndRevenue(ctx sdk.Context, k keeper.Keeper, sumWeight alloraMath.Dec, sumRevenue cosmosMath.Int,
-	weight *alloraMath.Dec, topicId uint64) (alloraMath.Dec, cosmosMath.Int, error) {
+func removeFromSumWeightAndRevenue(
+	sumWeight alloraMath.Dec,
+	weight *alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
 	// i.e. we'll neither emit their worker/reputer requests or calculate rewards for its participants this epoch
 	sumWeight, err := sumWeight.Sub(*weight)
 	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to subtract weight from sum")
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to subtract weight from sum")
 	}
-	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
-	if err != nil {
-		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
-	}
-	sumRevenue = sumRevenue.Sub(topicFeeRevenue.Revenue)
-
-	return sumWeight, sumRevenue, nil
+	return sumWeight, nil
 }
 
 func FilterAndInactivateTopicsUpdatingSums(
@@ -231,19 +234,17 @@ func FilterAndInactivateTopicsUpdatingSums(
 	weights map[uint64]*alloraMath.Dec,
 	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
-	sumRevenue cosmosMath.Int,
 	totalReward alloraMath.Dec,
 	blockHeight BlockHeight,
 ) (
 	map[uint64]*alloraMath.Dec,
 	alloraMath.Dec,
-	cosmosMath.Int,
 	error,
 ) {
 
 	minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get min topic weight")
+		return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to get min topic weight")
 	}
 
 	weightsOfActiveTopics := make(map[TopicId]*alloraMath.Dec)
@@ -260,23 +261,24 @@ func FilterAndInactivateTopicsUpdatingSums(
 			filterOutErrorMessage = "failed to remove from sum weight and revenue"
 		}
 		if rewardNonce == 0 {
-			ctx.Logger().Warn("Reputer request nonces is nil")
+			ctx.Logger().Warn("Reward nonce is 0")
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove nil-reputer-nonce topic from sum weight and revenue"
 		}
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
+			ctx.Logger().Warn("Topic weight is below the minimum: ", topicId)
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
 
 			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
 			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
 			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
 
 			// Update sum weight and revenue -- We won't be deducting fees from inactive topics, as we won't be churning them
@@ -285,15 +287,15 @@ func FilterAndInactivateTopicsUpdatingSums(
 			filterOutErrorMessage = "failed to remove inactivated from sum weight and revenue"
 		}
 		if filterOutTopic {
-			sumWeight, sumRevenue, err = removeFromSumWeightAndRevenue(ctx, k, sumWeight, sumRevenue, weight, topicId)
+			sumWeight, err = removeFromSumWeightAndRevenue(sumWeight, weight)
 			if err != nil {
-				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, filterOutErrorMessage)
+				return nil, alloraMath.Dec{}, errors.Wrapf(err, filterOutErrorMessage)
 			}
 		} else {
 			weightsOfActiveTopics[topicId] = weight
 		}
 	}
-	return weightsOfActiveTopics, sumWeight, sumRevenue, nil
+	return weightsOfActiveTopics, sumWeight, nil
 }
 
 func CalcTopicRewards(
@@ -335,6 +337,9 @@ func GenerateRewardsDistributionByTopicParticipant(
 	taskReputerReward alloraMath.Dec,
 	err error,
 ) {
+	if topicReward == nil {
+		return nil, alloraMath.Dec{}, types.ErrInvalidReward
+	}
 	bundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
@@ -539,12 +544,6 @@ func payoutRewards(
 ) []error {
 	ret := make([]error, 0)
 	for _, reward := range rewards {
-		address, err := sdk.AccAddressFromBech32(reward.Address.String())
-		if err != nil {
-			ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address.String()))
-			continue
-		}
-
 		if reward.Reward.IsZero() {
 			continue
 		}
@@ -553,7 +552,7 @@ func payoutRewards(
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == ReputerRewardType {
-			err = k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
+			err := k.SendCoinsFromModuleToModule(ctx, types.AlloraRewardsAccountName, types.AlloraStakingAccountName, coins)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(
 					err,
@@ -562,16 +561,21 @@ func payoutRewards(
 				))
 				continue
 			}
-			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Uint(rewardInt))
+			err = k.AddStake(ctx, reward.TopicId, reward.Address, cosmosMath.Int(rewardInt))
 			if err != nil {
-				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address.String(), rewardInt.String()))
+				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
 				continue
 			}
 		} else {
+			accAddress, err := sdk.AccAddressFromBech32(reward.Address)
+			if err != nil {
+				ret = append(ret, errors.Wrapf(err, "failed to decode payout address: %s", reward.Address))
+				continue
+			}
 			err = k.BankKeeper().SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraRewardsAccountName,
-				address,
+				accAddress,
 				coins,
 			)
 			if err != nil {
@@ -579,7 +583,7 @@ func payoutRewards(
 					err,
 					"failed to send coins from rewards module to payout address %s, %s",
 					types.AlloraRewardsAccountName,
-					reward.Address.String(),
+					reward.Address,
 				))
 				continue
 			}

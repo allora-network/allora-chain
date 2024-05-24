@@ -17,7 +17,7 @@ const (
 )
 
 type TaskRewards struct {
-	Address sdk.AccAddress
+	Address string
 	Reward  alloraMath.Dec
 	TopicId TopicId
 	Type    TaskRewardType
@@ -33,7 +33,7 @@ func GetInferenceTaskRewardFractions(
 	blockHeight int64,
 	pRewardSpread alloraMath.Dec,
 	latestScores []types.Score,
-) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+) ([]string, []alloraMath.Dec, error) {
 	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, latestScores)
 }
 
@@ -44,7 +44,7 @@ func GetForecastingTaskRewardFractions(
 	blockHeight int64,
 	pRewardSpread alloraMath.Dec,
 	latestScores []types.Score,
-) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+) ([]string, []alloraMath.Dec, error) {
 	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, latestScores)
 }
 
@@ -56,27 +56,23 @@ func GetWorkersRewardFractions(
 	which bool,
 	pRewardSpread alloraMath.Dec,
 	latestScores []types.Score,
-) ([]sdk.AccAddress, []alloraMath.Dec, error) {
+) ([]string, []alloraMath.Dec, error) {
 	// Get all latest score for each worker and the scores from the latest time steps
 	// to be used in the standard deviantion
 	scores := make([][]alloraMath.Dec, 0)
 	latestWorkerScores := make([]alloraMath.Dec, 0)
-	workers := make([]sdk.AccAddress, 0)
+	workers := make([]string, 0)
 	if which == TASK_INFERENCE {
 		// Get latest score for each worker
 		for _, latestScore := range latestScores {
-			workerAddr, err := sdk.AccAddressFromBech32(latestScore.Address)
-			if err != nil {
-				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
-			}
-			workers = append(workers, workerAddr)
+			workers = append(workers, latestScore.Address)
 			latestWorkerScores = append(latestWorkerScores, latestScore.Score)
 		}
 
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -87,18 +83,14 @@ func GetWorkersRewardFractions(
 	} else { // TASK_FORECAST
 		// Get latest score for each worker
 		for _, latestScore := range latestScores {
-			workerAddr, err := sdk.AccAddressFromBech32(latestScore.Address)
-			if err != nil {
-				return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker address from bech32")
-			}
-			workers = append(workers, workerAddr)
+			workers = append(workers, latestScore.Address)
 			latestWorkerScores = append(latestWorkerScores, latestScore.Score)
 		}
 
 		// Get worker scores from the latest time steps
 		latestScoresFromLastestTimeSteps, err := k.GetForecastScoresUntilBlock(ctx, topicId, blockHeight)
 		if err != nil {
-			return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker forecast scores from the latest time steps")
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker forecast scores from the latest time steps")
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -107,9 +99,13 @@ func GetWorkersRewardFractions(
 		scores = append(scores, workerLastScoresDec)
 	}
 
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread)
+	epsilon, err := k.GetParamsEpsilon(ctx)
 	if err != nil {
-		return []sdk.AccAddress{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
+		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
+	}
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread, epsilon)
+	if err != nil {
+		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}
 
 	return workers, rewardFractions, nil
@@ -121,7 +117,7 @@ func GetInferenceTaskEntropy(
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	workers []sdk.AccAddress,
+	workers []string,
 	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
@@ -136,7 +132,7 @@ func GetForecastingTaskEntropy(
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	workers []sdk.AccAddress,
+	workers []string,
 	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
@@ -152,7 +148,7 @@ func getInferenceOrForecastTaskEntropy(
 	emaAlpha alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
 	which bool,
-	workers []sdk.AccAddress,
+	workers []string,
 	workersFractions []alloraMath.Dec,
 ) (
 	entropy alloraMath.Dec,
@@ -465,7 +461,7 @@ func GetRewardPerWorker(
 	topicId uint64,
 	taskRewardType TaskRewardType,
 	totalRewards alloraMath.Dec,
-	workerAddresses []sdk.AccAddress,
+	workerAddresses []string,
 	workerFractions []alloraMath.Dec,
 ) ([]TaskRewards, error) {
 	var rewards []TaskRewards

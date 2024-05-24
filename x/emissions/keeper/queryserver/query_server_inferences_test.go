@@ -119,12 +119,6 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	reputer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
 	reputer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
 
-	reputer0Acc := sdk.AccAddress(reputer0)
-	reputer1Acc := sdk.AccAddress(reputer1)
-	reputer2Acc := sdk.AccAddress(reputer2)
-	reputer3Acc := sdk.AccAddress(reputer3)
-	reputer4Acc := sdk.AccAddress(reputer4)
-
 	blockHeight := int64(10)
 
 	simpleNonce := types.Nonce{BlockHeight: blockHeight}
@@ -183,16 +177,25 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	require.NoError(err)
 
 	// Set Stake
-
-	err = keeper.AddStake(s.ctx, topicId, reputer0Acc, cosmosMath.NewUintFromString("210535101370326000000000"))
+	stake0, ok := cosmosMath.NewIntFromString("210535101370326000000000")
+	s.Require().True(ok)
+	stake1, ok := cosmosMath.NewIntFromString("216697093951021000000000")
+	s.Require().True(ok)
+	stake2, ok := cosmosMath.NewIntFromString("161740241803855000000000")
+	s.Require().True(ok)
+	stake3, ok := cosmosMath.NewIntFromString("394848305052250000000000")
+	s.Require().True(ok)
+	stake4, ok := cosmosMath.NewIntFromString("206169717590569000000000")
+	s.Require().True(ok)
+	err = keeper.AddStake(s.ctx, topicId, reputer0, stake0)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer1Acc, cosmosMath.NewUintFromString("216697093951021000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer1, stake1)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer2Acc, cosmosMath.NewUintFromString("161740241803855000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer2, stake2)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer3Acc, cosmosMath.NewUintFromString("394848305052250000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer3, stake3)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer4Acc, cosmosMath.NewUintFromString("206169717590569000000000"))
+	err = keeper.AddStake(s.ctx, topicId, reputer4, stake4)
 	require.NoError(err)
 
 	// Set Inferences

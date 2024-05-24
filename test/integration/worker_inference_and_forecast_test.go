@@ -9,7 +9,6 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
 )
@@ -18,17 +17,17 @@ const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
 const minWaitingNumberofEpochs = 3
 
-func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.QueryClient, topicID uint64, maxRetries int) (*emissionstypes.Topic, error) {
+func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := query.GetTopic(ctx, &emissionstypes.QueryTopicRequest{TopicId: topicID})
+		topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
-				sleepingTimeSeconds := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
-				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTimeSeconds)
-				time.Sleep(sleepingTimeSeconds)
+				sleepingTime := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
+				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
+				time.Sleep(sleepingTime)
 				fmt.Println(time.Now(), " Slept.")
 				return topicResponse.Topic, nil
 			}
@@ -47,7 +46,7 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query emissionstypes.Query
 func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	nonce := types.Nonce{BlockHeight: blockHeight}
 	// Define inferer address as Bob's address
 	InfererAddress1 := m.n.BobAddr
 
@@ -101,7 +100,7 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	// Latest inference
 	latestInference, err := m.n.QueryEmissions.GetWorkerLatestInferenceByTopicId(
 		m.ctx,
-		&emissionstypes.QueryWorkerLatestInferenceRequest{
+		&types.QueryWorkerLatestInferenceRequest{
 			TopicId:       1,
 			WorkerAddress: InfererAddress1,
 		},
@@ -115,7 +114,7 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 
 // Worker Bob inserts bulk inference and forecast
 func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
-	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &emissionstypes.QueryTopicRequest{TopicId: topic.Id})
+	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 	require.NoError(m.t, err)
 	freshTopic := topicResponse.Topic
 
@@ -222,7 +221,7 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 	require.NoError(m.t, err)
 
 	result, err := m.n.QueryEmissions.GetNetworkLossBundleAtBlock(m.ctx,
-		&emissionstypes.QueryNetworkLossBundleAtBlockRequest{
+		&types.QueryNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: BlockHeightCurrent,
 		},

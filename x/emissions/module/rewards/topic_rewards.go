@@ -2,9 +2,8 @@ package rewards
 
 import (
 	"context"
-	"fmt"
-
 	"cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -41,13 +40,16 @@ func GetTopicRewardFraction(
 	topicWeight *alloraMath.Dec,
 	totalWeight alloraMath.Dec,
 ) (alloraMath.Dec, error) {
+	if topicWeight == nil {
+		return alloraMath.ZeroDec(), types.ErrInvalidValue
+	}
 	return (*topicWeight).Quo(totalWeight)
 }
 
 // Active topics have more than a globally-set minimum weight, a function of revenue and stake
 // "Safe" because bounded by max number of pages and apply running, online operations
 func SafeApplyFuncOnAllActiveTopics(
-	ctx context.Context,
+	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
 	fn func(ctx context.Context, topic *types.Topic) error,
@@ -60,14 +62,14 @@ func SafeApplyFuncOnAllActiveTopics(
 		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
-			fmt.Println("Error getting ids of active topics: ", err)
+			ctx.Logger().Warn("Error getting ids of active topics: ", err)
 			continue
 		}
 
 		for _, topicId := range topicsActive {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				fmt.Println("Error getting topic: ", err)
+				ctx.Logger().Warn("Error getting topic: ", err)
 				continue
 			}
 
@@ -75,7 +77,7 @@ func SafeApplyFuncOnAllActiveTopics(
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
-					fmt.Println("Error applying function on topic: ", err)
+					ctx.Logger().Warn("Error applying function on topic: ", err)
 					continue
 				}
 			}
@@ -95,7 +97,7 @@ func SafeApplyFuncOnAllActiveTopics(
 // We iterate through active topics, fetch their weight, skim the top N by weight (these are the churnable topics)
 // then finally apply a function on each of these churnable topics.
 func IdentifyChurnableAmongActiveTopicsAndApplyFn(
-	ctx context.Context,
+	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
 	fn func(ctx context.Context, topic *types.Topic) error,
@@ -110,19 +112,19 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			fmt.Println("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			ctx.Logger().Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue
 		}
 		// Get the topic
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			fmt.Println("Error getting topic: ", err)
+			ctx.Logger().Debug("Error getting topic: ", err)
 			continue
 		}
 		// Execute the function
 		err = fn(ctx, &topic)
 		if err != nil {
-			fmt.Println("Error applying function on topic: ", err)
+			ctx.Logger().Debug("Error applying function on topic: ", err)
 			continue
 		}
 	}
@@ -134,7 +136,7 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 // Note that the outputted weights are not normalized => not dependent on pan-topic data.
 // updatePrevious is a flag to perform update of previous weight of the topic
 func GetAndOptionallyUpdateActiveTopicWeights(
-	ctx context.Context,
+	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
 	updatePreviousWeights bool,

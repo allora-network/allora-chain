@@ -6,22 +6,18 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
 func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
-
 	// ensure the module account exists
 	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraStakingAccountName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRequestsAccountName)
-	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
 	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
 	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
-	if err := k.SetTotalStake(ctx, cosmosMath.NewUint(0)); err != nil {
+	if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
 		return err
 	}
 	// reserve topic ID 0 for future use
@@ -57,11 +53,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 
 func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses []string) error {
 	for _, addr := range coreTeamAddresses {
-		accAddress, err := sdk.AccAddressFromBech32(addr)
-		if err != nil {
-			return err
-		}
-		k.AddWhitelistAdmin(ctx, accAddress)
+		k.AddWhitelistAdmin(ctx, addr)
 	}
 	return nil
 }

@@ -48,7 +48,10 @@ func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, bl
 	for topicId := range weights {
 		topicIds = append(topicIds, topicId)
 	}
-
+	// sort topicIds to ensure deterministic order
+	sort.Slice(topicIds, func(i, j int) bool {
+		return (*weights[topicIds[i]]).Gt(*weights[topicIds[j]])
+	})
 	sortedTopicIds := SortTopicsByWeightDescWithRandomTiebreaker(topicIds, weights, block)
 
 	numberToAdd := N
