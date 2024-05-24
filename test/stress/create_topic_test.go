@@ -42,5 +42,7 @@ func CreateTopic(
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.t, err)
 
+	incrementCountTopics()
+
 	return createTopicResponse.TopicId
 }
