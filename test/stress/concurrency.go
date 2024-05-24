@@ -6,7 +6,6 @@ import (
 )
 
 type TOPIC_ID = uint64
-type IS_REPUTER = bool // false = WORKER
 type NAME = string
 
 var (
