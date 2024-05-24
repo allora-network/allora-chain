@@ -162,7 +162,7 @@ func InsertLeaderWorkerBulk(
 		WorkerDataBundles: WorkerDataBundles,
 	}
 	// serialize workerMsg to json and print
-	LeaderAcc, err := m.n.Client.AccountRegistry.GetByName(leaderWorkerAccountName)
+	LeaderAcc, err := m.n.Client.AccountRegistryGetByName(leaderWorkerAccountName)
 	if err != nil {
 		fmt.Println("Error getting leader worker account: ", leaderWorkerAccountName, " - ", err)
 		return err
@@ -258,7 +258,7 @@ func InsertReputerBulk(m TestMetadata,
 	}
 
 	reputerValueBundleMsg := generateReputerValueBundleMsg(topicId, reputerValueBundles, leaderReputerAddress, reputerNonce, workerNonce)
-	LeaderAcc, err := m.n.Client.AccountRegistry.GetByName(leaderReputerAccountName)
+	LeaderAcc, err := m.n.Client.AccountRegistryGetByName(leaderReputerAccountName)
 	if err != nil {
 		fmt.Println("Error getting leader worker account: ", leaderReputerAccountName, " - ", err)
 		return err
@@ -354,7 +354,7 @@ func WorkerReputerCoordinationLoop(
 
 	for topicFunderIndex := 0; topicFunderIndex < topicsMax; topicFunderIndex++ {
 		topicFunderAccountName := getTopicFunderAccountName(topicFunderIndex)
-		topicFunderAccount, _, err := m.n.Client.AccountRegistry.Create(topicFunderAccountName)
+		topicFunderAccount, _, err := m.n.Client.AccountRegistryCreate(topicFunderAccountName)
 		if err != nil {
 			fmt.Println("Error creating funder address: ", topicFunderAccountName, " - ", err)
 			continue
@@ -377,7 +377,7 @@ func WorkerReputerCoordinationLoop(
 	getTopicFunder := func() (string, cosmosaccount.Account) {
 		topicFunderAccountName := getTopicFunderAccountName(topicFunderCount)
 		topicFunderCount++
-		topicFunderAccount, err := m.n.Client.AccountRegistry.GetByName(topicFunderAccountName)
+		topicFunderAccount, err := m.n.Client.AccountRegistryGetByName(topicFunderAccountName)
 		if err != nil {
 			fmt.Println("Error getting funder account: ", topicFunderAccountName, " - ", err)
 			return "", topicFunderAccount
@@ -488,7 +488,7 @@ func WorkerReputerLoop(
 
 	for workerIndex := 0; workerIndex < workersMax; workerIndex++ {
 		workerAccountName := getWorkerAccountName(workerIndex, topicId)
-		workerAccount, _, err := m.n.Client.AccountRegistry.Create(workerAccountName)
+		workerAccount, _, err := m.n.Client.AccountRegistryCreate(workerAccountName)
 		if err != nil {
 			fmt.Println("Error creating funder address: ", workerAccountName, " - ", err)
 			continue
@@ -512,7 +512,7 @@ func WorkerReputerLoop(
 
 	for reputerIndex := 0; reputerIndex < reputersMax; reputerIndex++ {
 		reputerAccountName := getReputerAccountName(reputerIndex, topicId)
-		workerAccount, _, err := m.n.Client.AccountRegistry.Create(reputerAccountName)
+		workerAccount, _, err := m.n.Client.AccountRegistryCreate(reputerAccountName)
 		if err != nil {
 			fmt.Println("Error creating funder address: ", reputerAccountName, " - ", err)
 			continue
@@ -533,7 +533,7 @@ func WorkerReputerLoop(
 	}
 
 	// Get fresh topic
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, topicId, 5, approximateSecondsBlockTime)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.Client.QueryEmissions(), topicId, 5, approximateSecondsBlockTime)
 	if err != nil {
 		report("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)
@@ -566,7 +566,7 @@ func WorkerReputerLoop(
 			// Generate new worker accounts
 			workerAccountName := getWorkerAccountName(len(workerAddresses), topicId)
 			report("Initializing worker address: ", workerAccountName)
-			workerAccount, err := m.n.Client.AccountRegistry.GetByName(workerAccountName)
+			workerAccount, err := m.n.Client.AccountRegistryGetByName(workerAccountName)
 			if err != nil {
 				report("Error getting worker address: ", workerAccountName, " - ", err)
 				if makeReport {
@@ -600,7 +600,7 @@ func WorkerReputerLoop(
 			// Generate new reputer account
 			reputerAccountName := getReputerAccountName(len(reputerAddresses), topicId)
 			report("Initializing reputer address: ", reputerAccountName)
-			reputerAccount, err := m.n.Client.AccountRegistry.GetByName(reputerAccountName)
+			reputerAccount, err := m.n.Client.AccountRegistryGetByName(reputerAccountName)
 			if err != nil {
 				report("Error getting reputer address: ", reputerAccountName, " - ", err)
 				if makeReport {
@@ -676,7 +676,7 @@ func WorkerReputerLoop(
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") {
 				// realign blockHeights before retrying
-				topic, err = getLastTopic(m.ctx, m.n.QueryEmissions, topicId)
+				topic, err = getLastTopic(m.ctx, m.n.Client.QueryEmissions(), topicId)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
@@ -709,7 +709,7 @@ func WorkerReputerLoop(
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") || strings.Contains(err.Error(), "nonce still unfulfilled") {
 				// realign blockHeights before retrying
-				topic, err = getLastTopic(m.ctx, m.n.QueryEmissions, topicId)
+				topic, err = getLastTopic(m.ctx, m.n.Client.QueryEmissions(), topicId)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
@@ -739,7 +739,7 @@ func WorkerReputerLoop(
 	countReputers := len(reputerAddresses)
 
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
-		balance, err := getAccountBalance(m.ctx, m.n.QueryBank, workerAddresses[getWorkerAccountName(workerIndex, topicId)])
+		balance, err := getAccountBalance(m.ctx, m.n.Client.QueryBank(), workerAddresses[getWorkerAccountName(workerIndex, topicId)])
 		if err != nil {
 			report("Error getting worker balance for worker: ", workerIndex, err)
 			if maxIterations > 20 && workerIndex < 10 {
@@ -763,7 +763,7 @@ func WorkerReputerLoop(
 	}
 
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
-		reputerStake, err := getReputerStake(m.ctx, m.n.QueryEmissions, topicId, reputerAddresses[getReputerAccountName(reputerIndex, topicId)])
+		reputerStake, err := getReputerStake(m.ctx, m.n.Client.QueryEmissions(), topicId, reputerAddresses[getReputerAccountName(reputerIndex, topicId)])
 		if err != nil {
 			report("Error getting reputer stake for reputer: ", reputerIndex, err)
 			if makeReport {

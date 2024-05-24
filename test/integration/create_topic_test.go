@@ -8,7 +8,7 @@ import (
 
 // test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m TestMetadata) (topicId uint64) {
-	topicIdStart, err := m.n.QueryEmissions.GetNextTopicId(
+	topicIdStart, err := m.n.Client.QueryEmissions().GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
@@ -42,14 +42,14 @@ func CreateTopic(m TestMetadata) (topicId uint64) {
 	require.NoError(m.t, err)
 	topicId = createTopicResponse.TopicId
 	require.Equal(m.t, topicIdStart.NextTopicId, topicId)
-	topicIdEnd, err := m.n.QueryEmissions.GetNextTopicId(
+	topicIdEnd, err := m.n.Client.QueryEmissions().GetNextTopicId(
 		m.ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.t, err)
 	require.Equal(m.t, topicIdEnd.NextTopicId, topicId+1)
 
-	storedTopicResponse, err := m.n.QueryEmissions.GetTopic(
+	storedTopicResponse, err := m.n.Client.QueryEmissions().GetTopic(
 		m.ctx,
 		&emissionstypes.QueryTopicRequest{
 			TopicId: topicId,

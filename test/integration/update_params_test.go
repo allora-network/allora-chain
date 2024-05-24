@@ -10,7 +10,7 @@ func checkIfAdmin(m TestMetadata, address string) bool {
 	paramsReq := &emissionstypes.QueryIsWhitelistAdminRequest{
 		Address: address,
 	}
-	p, err := m.n.QueryEmissions.IsWhitelistAdmin(
+	p, err := m.n.Client.QueryEmissions().IsWhitelistAdmin(
 		m.ctx,
 		paramsReq,
 	)

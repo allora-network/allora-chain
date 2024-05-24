@@ -31,7 +31,7 @@ func CheckTopic1Activated(m TestMetadata) {
 			Limit: 10,
 		},
 	}
-	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
+	activeTopics, err := m.n.Client.QueryEmissions().GetActiveTopics(
 		m.ctx,
 		pagi)
 	require.NoError(m.t, err, "Fetching active topics should not produce an error")

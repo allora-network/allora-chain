@@ -6,30 +6,24 @@ import (
 	"testing"
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
-	"github.com/stretchr/testify/require"
 )
 
 type TestMetadata struct {
 	t   *testing.T
 	ctx context.Context
-	n   testCommon.Node
+	n   testCommon.NodeConfig
 }
 
 func Setup(t *testing.T) TestMetadata {
 	ret := TestMetadata{}
 	ret.t = t
-	var err error
 	ret.ctx = context.Background()
-	// userHomeDir, _ := os.UserHomeDir()
-	// home := filepath.Join(userHomeDir, ".allorad")
-	node, err := testCommon.NewNode(
+	node := testCommon.NewNodeConfig(
 		t,
-		testCommon.NodeConfig{
-			NodeRPCAddress: "http://localhost:26657",
-			AlloraHomeDir:  "../devnet/genesis",
-		},
+		testCommon.SingleRpc,
+		[]string{"http://localhost:26657"},
+		"../devnet/genesis",
 	)
-	require.NoError(t, err)
 	ret.n = node
 	return ret
 }

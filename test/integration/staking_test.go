@@ -11,7 +11,7 @@ import (
 // register alice as a reputer in topic 1, then check success
 func StakeAliceAsReputerTopic1(m TestMetadata) {
 	// Record Alice stake before adding more
-	aliceStakedBefore, err := m.n.QueryEmissions.GetReputerStakeInTopic(
+	aliceStakedBefore, err := m.n.Client.QueryEmissions().GetReputerStakeInTopic(
 		m.ctx,
 		&emissionstypes.QueryReputerStakeInTopicRequest{
 			TopicId: 1,
@@ -34,7 +34,7 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 	require.NoError(m.t, err)
 
 	// Check Alice has stake on the topic
-	aliceStakedAfter, err := m.n.QueryEmissions.GetReputerStakeInTopic(
+	aliceStakedAfter, err := m.n.Client.QueryEmissions().GetReputerStakeInTopic(
 		m.ctx,
 		&emissionstypes.QueryReputerStakeInTopicRequest{
 			TopicId: 1,
@@ -52,7 +52,7 @@ func StakeAliceAsReputerTopic1(m TestMetadata) {
 // 			Limit: 10,
 // 		},
 // 	}
-// 	activeTopics, err := m.n.QueryEmissions.GetActiveTopics(
+// 	activeTopics, err := m.n.Client.QueryEmissions().GetActiveTopics(
 // 		m.ctx,
 // 		pagi)
 // 	require.NoError(m.t, err, "Fetching active topics should not produce an error")

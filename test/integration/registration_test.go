@@ -26,7 +26,7 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	require.Equal(m.t, "Node successfully registered", registerAliceResponse.Message)
 
 	// Check Alice registered as reputer
-	aliceRegistered, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
+	aliceRegistered, err := m.n.Client.QueryEmissions().IsReputerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
 			TopicId: 1,
@@ -37,7 +37,7 @@ func RegisterAliceAsReputerTopic1(m TestMetadata) {
 	require.True(m.t, aliceRegistered.IsRegistered)
 
 	// Check Alice not registered as worker
-	aliceNotRegisteredAsWorker, err := m.n.QueryEmissions.IsWorkerRegisteredInTopicId(
+	aliceNotRegisteredAsWorker, err := m.n.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
 			Address: m.n.AliceAddr,
@@ -67,7 +67,7 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	require.True(m.t, registerBobResponse.Success)
 	require.Equal(m.t, "Node successfully registered", registerBobResponse.Message)
 	// Check Bob registered as worker
-	bobRegistered, err := m.n.QueryEmissions.IsWorkerRegisteredInTopicId(
+	bobRegistered, err := m.n.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
 			TopicId: 1,
@@ -78,7 +78,7 @@ func RegisterBobAsWorkerTopic1(m TestMetadata) {
 	require.True(m.t, bobRegistered.IsRegistered)
 
 	// Check Bob not registered as reputer
-	bobNotRegisteredAsWorker, err := m.n.QueryEmissions.IsReputerRegisteredInTopicId(
+	bobNotRegisteredAsWorker, err := m.n.Client.QueryEmissions().IsReputerRegisteredInTopicId(
 		m.ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
 			Address: m.n.BobAddr,

@@ -98,7 +98,7 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	require.NoError(m.t, err)
 
 	// Latest inference
-	latestInference, err := m.n.QueryEmissions.GetWorkerLatestInferenceByTopicId(
+	latestInference, err := m.n.Client.QueryEmissions().GetWorkerLatestInferenceByTopicId(
 		m.ctx,
 		&types.QueryWorkerLatestInferenceRequest{
 			TopicId:       1,
@@ -114,7 +114,7 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 
 // Worker Bob inserts bulk inference and forecast
 func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
-	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+	topicResponse, err := m.n.Client.QueryEmissions().GetTopic(m.ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 	require.NoError(m.t, err)
 	freshTopic := topicResponse.Topic
 
@@ -220,7 +220,7 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
 	require.NoError(m.t, err)
 
-	result, err := m.n.QueryEmissions.GetNetworkLossBundleAtBlock(m.ctx,
+	result, err := m.n.Client.QueryEmissions().GetNetworkLossBundleAtBlock(m.ctx,
 		&types.QueryNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: BlockHeightCurrent,
@@ -235,7 +235,7 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 // Register two actors and check their registrations went through
 func WorkerInferenceAndForecastChecks(m TestMetadata) {
 	// Nonce: calculate from EpochLastRan + EpochLength
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5)
+	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.Client.QueryEmissions(), 1, 5)
 	if err != nil {
 		m.t.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.t, err)

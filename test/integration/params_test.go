@@ -9,7 +9,7 @@ import (
 // get the emissions params from outside the chain
 func GetEmissionsParams(m TestMetadata) emissionstypes.Params {
 	paramsReq := &emissionstypes.QueryParamsRequest{}
-	p, err := m.n.QueryEmissions.Params(
+	p, err := m.n.Client.QueryEmissions().Params(
 		m.ctx,
 		paramsReq,
 	)
@@ -21,7 +21,7 @@ func GetEmissionsParams(m TestMetadata) emissionstypes.Params {
 // get the mint params from outside the chain
 func GetMintParams(m TestMetadata) minttypes.Params {
 	paramsReq := &minttypes.QueryParamsRequest{}
-	p, err := m.n.QueryMint.Params(
+	p, err := m.n.Client.QueryMint().Params(
 		m.ctx,
 		paramsReq,
 	)

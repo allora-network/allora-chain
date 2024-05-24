@@ -17,7 +17,7 @@ import (
 // Get the validator address that is stored in the genesis file
 // didn't know of a better way to get a validator address to check with
 func GetValidatorAddressesFromGenesisFile(m TestMetadata) ([]string, error) {
-	home := m.n.Client.Context().HomeDir
+	home := m.n.AlloraHomeDir
 	genesisPath := home + "/config/genesis.json"
 
 	file, err := os.Open(genesisPath)
@@ -63,7 +63,7 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 	balancesBefore := make(map[string]*distributiontypes.QueryValidatorOutstandingRewardsResponse)
 
 	for _, addr := range validatorAddrs {
-		response, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
+		response, err := m.n.Client.QueryDistribution().ValidatorOutstandingRewards(
 			m.ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
@@ -79,7 +79,7 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 	balanceIncreased := false
 
 	for _, addr := range validatorAddrs {
-		balanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
+		balanceAfter, err := m.n.Client.QueryDistribution().ValidatorOutstandingRewards(
 			m.ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
@@ -106,7 +106,7 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 // the mint module pays the ecosystem module account
 // as new blocks are produced.
 func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
-	alloraRewardsModuleAccResponse, err := m.n.QueryAuth.ModuleAccountByName(
+	alloraRewardsModuleAccResponse, err := m.n.Client.QueryAuth().ModuleAccountByName(
 		m.ctx,
 		&authtypes.QueryModuleAccountByNameRequest{
 			Name: emissionstypes.AlloraRewardsAccountName,
@@ -120,7 +120,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
 	)
 	require.NoError(m.t, err)
 
-	alloraRewardsBalanceBefore, err := m.n.QueryBank.Balance(
+	alloraRewardsBalanceBefore, err := m.n.Client.QueryBank().Balance(
 		m.ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,
@@ -132,7 +132,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
 	err = m.n.Client.WaitForNextBlock(m.ctx)
 	require.NoError(m.t, err)
 
-	alloraRewardsBalanceAfter, err := m.n.QueryBank.Balance(
+	alloraRewardsBalanceAfter, err := m.n.Client.QueryBank().Balance(
 		m.ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,

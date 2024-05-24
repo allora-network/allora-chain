@@ -1,95 +1,73 @@
 package testcommon
 
 import (
-	"context"
 	"testing"
 
 	"github.com/allora-network/allora-chain/app/params"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
-	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	auth "github.com/cosmos/cosmos-sdk/x/auth"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bank "github.com/cosmos/cosmos-sdk/x/bank"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distribution "github.com/cosmos/cosmos-sdk/x/distribution"
-	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosclient"
 	"github.com/stretchr/testify/require"
 )
 
-// where to get ahold of a node
-type NodeConfig struct {
-	NodeRPCAddress string // rpc node to attach to
-	AlloraHomeDir  string // home directory for the allora keystore
-}
-
 // handle to various node data
-type Node struct {
-	NodeClient        NodeConfig
-	Client            cosmosclient.Client
-	QueryEmissions    emissionstypes.QueryClient
-	QueryAuth         authtypes.QueryClient
-	QueryDistribution distributiontypes.QueryClient
-	QueryBank         banktypes.QueryClient
-	QueryMint         minttypes.QueryClient
-	FaucetAcc         cosmosaccount.Account
-	FaucetAddr        string
-	UpshotAcc         cosmosaccount.Account
-	UpshotAddr        string
-	AliceAcc          cosmosaccount.Account
-	AliceAddr         string
-	BobAcc            cosmosaccount.Account
-	BobAddr           string
-	Cdc               codec.Codec
+type NodeConfig struct {
+	Client        Client                // a testcommon.Client which holds several cosmosclient.Client instances
+	AlloraHomeDir string                // home directory for the allora keystore
+	FaucetAcc     cosmosaccount.Account // account info for the faucet
+	FaucetAddr    string                // faucets address, string encoded bech32
+	UpshotAcc     cosmosaccount.Account // account info for the upshot account
+	UpshotAddr    string                // upshot address, string encoded bech32
+	AliceAcc      cosmosaccount.Account // account info for the alice test account
+	AliceAddr     string                // alice address, string encoded bech32
+	BobAcc        cosmosaccount.Account // account info for the bob test account
+	BobAddr       string                // bob address, string encoded bech32
+	Cdc           codec.Codec           // common codec for encoding/decoding
 }
 
-// create a new appchain client that we can use
-func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
-	node := Node{NodeClient: nc}
+// create a new config that we can use
+func NewNodeConfig(
+	t *testing.T,
+	rpcConnectionType RpcConnectionType,
+	nodeRpcAddresses []string,
+	alloraHomeDir string,
+) NodeConfig {
+	nodeConfig := NodeConfig{}
 	var err error
-
-	// create a allora client instance
-	ctx := context.Background()
-
-	node.Client, err = cosmosclient.New(
-		ctx,
-		cosmosclient.WithNodeAddress(nc.NodeRPCAddress),
-		cosmosclient.WithAddressPrefix(params.HumanCoinUnit),
-		cosmosclient.WithHome(nc.AlloraHomeDir),
-		cosmosclient.WithGas("auto"),
-		cosmosclient.WithGasAdjustment(1.2),
+	if rpcConnectionType == SingleRpc {
+		require.Len(t, nodeRpcAddresses, 1, "must have exactly one rpc address")
+	} else { // RoundRobin or RandomBasedOnDeterministicSeed
+		require.GreaterOrEqual(t, len(nodeRpcAddresses), 1, "must have at least one rpc address")
+	}
+	client := NewClient(
+		t,
+		rpcConnectionType,
+		nodeRpcAddresses,
+		alloraHomeDir,
 	)
-	require.NoError(t, err)
-
+	nodeConfig.Client = client
 	//// restore from mnemonic
-	node.FaucetAcc, err = node.Client.AccountRegistry.GetByName("faucet")
+	nodeConfig.FaucetAcc, err = client.Clients[0].AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
-	node.UpshotAcc, err = node.Client.AccountRegistry.GetByName("upshot")
+	nodeConfig.UpshotAcc, err = client.Clients[0].AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
-	node.AliceAcc, err = node.Client.AccountRegistry.GetByName("faucet")
+	nodeConfig.AliceAcc, err = client.Clients[0].AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
-	node.BobAcc, err = node.Client.AccountRegistry.GetByName("upshot")
+	nodeConfig.BobAcc, err = client.Clients[0].AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
-	node.FaucetAddr, err = node.FaucetAcc.Address(params.HumanCoinUnit)
+	nodeConfig.FaucetAddr, err = nodeConfig.FaucetAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	node.UpshotAddr, err = node.UpshotAcc.Address(params.HumanCoinUnit)
+	nodeConfig.UpshotAddr, err = nodeConfig.UpshotAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	node.AliceAddr, err = node.AliceAcc.Address(params.HumanCoinUnit)
+	nodeConfig.AliceAddr, err = nodeConfig.AliceAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	node.BobAddr, err = node.BobAcc.Address(params.HumanCoinUnit)
+	nodeConfig.BobAddr, err = nodeConfig.BobAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-
-	// Create query client
-	node.QueryEmissions = emissionstypes.NewQueryClient(node.Client.Context())
-	node.QueryAuth = authtypes.NewQueryClient(node.Client.Context())
-	node.QueryDistribution = distributiontypes.NewQueryClient(node.Client.Context())
-	node.QueryBank = banktypes.NewQueryClient(node.Client.Context())
-	node.QueryMint = minttypes.NewQueryClient(node.Client.Context())
 
 	encCfg := moduletestutil.MakeTestEncodingConfig(
 		mint.AppModuleBasic{},
@@ -98,9 +76,7 @@ func NewNode(t *testing.T, nc NodeConfig) (Node, error) {
 		bank.AppModule{},
 		distribution.AppModule{},
 	)
-	node.Cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
+	nodeConfig.Cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
 
-	// this is terrible, no isConnected as part of this code path
-	require.NotEqual(t, node.Client.Context().ChainID, "")
-	return node, nil
+	return nodeConfig
 }
