@@ -174,4 +174,6 @@ func makeApiCall(payload string) error {
 		return err
 	}
 	defer res.Body.Close()
+
+	return nil
 }
