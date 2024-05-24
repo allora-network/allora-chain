@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
@@ -112,7 +111,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 	// using some random sample values
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
 
-	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
+	_, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		math.LegacyMustNewDecFromStr("0.015"),
 		math.NewInt(200000),
 		math.NewInt(400),
@@ -120,5 +119,4 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 		math.NewInt(12000000),
 	)
 	s.Require().NoError(err)
-	fmt.Println(result)
 }

@@ -3,7 +3,6 @@ package msgserver
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -49,10 +48,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
-		fmt.Println("Reputer's worker nonce not yet fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, errorsmod.Wrap(types.ErrNonceStillUnfulfilled, "worker nonce")
-	} else {
-		fmt.Println("OK - Reputer's worker nonce already fulfilled: ", msg.ReputerRequestNonce.WorkerNonce, " for reputer block: ", msg.ReputerRequestNonce.ReputerNonce)
+		return nil, errorsmod.Wrapf(
+			types.ErrNonceStillUnfulfilled,
+			"Reputer's worker nonce not yet fulfilled: %v  for reputer block: %v",
+			msg.ReputerRequestNonce.WorkerNonce.BlockHeight,
+			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		)
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -62,8 +63,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
-		fmt.Println("Reputer nonce already fulfilled: ", msg.ReputerRequestNonce.ReputerNonce)
-		return nil, errorsmod.Wrap(types.ErrNonceAlreadyFulfilled, "reputer nonce")
+		return nil, errorsmod.Wrapf(
+			types.ErrNonceAlreadyFulfilled,
+			"Reputer nonce already fulfilled: %v",
+			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		)
 	}
 
 	params, err := ms.k.GetParams(ctx)
@@ -78,7 +82,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 	latestReputerScores := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
-			fmt.Println("Error validating reputer value bundle: ", err)
 			continue
 		}
 

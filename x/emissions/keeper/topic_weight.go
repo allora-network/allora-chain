@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/errors"
 
@@ -51,9 +50,8 @@ func (k *Keeper) GetCurrentTopicWeight(
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
-	} else {
-		fmt.Println("Topic stake: ", topicStake)
 	}
+
 	topicStakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
@@ -63,8 +61,6 @@ func (k *Keeper) GetCurrentTopicWeight(
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic fee revenue")
-	} else {
-		fmt.Println("Topic fee revenue: ", topicFeeRevenue)
 	}
 
 	// Calc target weight using fees, epoch length, stake, and params
@@ -72,9 +68,8 @@ func (k *Keeper) GetCurrentTopicWeight(
 	feeRevenue, err := alloraMath.NewDecFromSdkInt(newFeeRevenue)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
-	} else {
-		fmt.Println("Fee revenue: ", feeRevenue)
 	}
+
 	if !feeRevenue.Equal(alloraMath.ZeroDec()) {
 		targetWeight, err := k.GetTargetWeight(
 			topicStakeDec,
