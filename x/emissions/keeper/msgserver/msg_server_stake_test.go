@@ -364,7 +364,7 @@ func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
 	keeper := s.emissionsKeeper
 
 	delegatorAddr := sdk.AccAddress(PKS[1].Address())
-	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	reputerAddr := delegatorAddr
 	topicId := uint64(123)
 	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
