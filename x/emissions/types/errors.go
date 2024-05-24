@@ -58,5 +58,5 @@ var (
 	ErrFailedToSerializePayload                 = errors.Register(ModuleName, 54, "failed to serialize payload")
 	ErrNoValidBundles                           = errors.Register(ModuleName, 55, "no valid bundles found")
 	ErrInvalidReward                            = errors.Register(ModuleName, 56, "invalid reward")
-	ErrCantSelfDelegate                         = errors.Register(ModuleName, 57, "cant selg delegate")
+	ErrCantSelfDelegate                         = errors.Register(ModuleName, 57, "cant self delegate")
 )
