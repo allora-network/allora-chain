@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
