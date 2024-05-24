@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -71,11 +70,6 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 			latestInfererScores[inference.Inferer] = latestScore
 			inferencesByInferer[inference.Inferer] = inference
 		}
-	}
-
-	// iterate errors
-	for worker, err := range errors {
-		fmt.Println("Error for worker:", worker, "Error message:", err)
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here

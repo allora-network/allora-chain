@@ -358,6 +358,39 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
 }
 
+func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[1].Address())
+	reputerAddr := delegatorAddr
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	// Perform the stake delegation
+	_, err := s.msgServer.DelegateStake(ctx, msg)
+	require.Error(err, types.ErrCantSelfDelegate)
+}
+
 func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	ctx := s.ctx
 	require := s.Require()

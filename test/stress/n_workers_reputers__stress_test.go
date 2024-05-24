@@ -29,8 +29,8 @@ const secondsInAMonth = 2592000
 const defaultEpochLength = 10      // Default epoch length in blocks if none is found yet from chain
 const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait before inserting the first batch
 const iterationsInABatch = 1       // To control the number of epochs in each iteration of the loop (eg to manage insertions)
-const stakeToAdd uint64 = 90000
-const topicFunds int64 = 1000000
+const stakeToAdd = 90000
+const topicFunds = 1000000
 
 // This function gets the topic checking activity. After that it will sleep for a number of epoch to ensure nonces are available.
 func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int, approximateSecondsPerBlock time.Duration) (*types.Topic, error) {
@@ -275,8 +275,12 @@ func InsertReputerBulk(m testCommon.TestConfig,
 	return nil
 }
 
-func SetupTopic(m testCommon.TestConfig, topicFunderAddress string, topicFunderAccount cosmosaccount.Account, epochLength int64) uint64 {
-
+func SetupTopic(
+	m testCommon.TestConfig,
+	topicFunderAddress string,
+	topicFunderAccount cosmosaccount.Account,
+	epochLength int64,
+) uint64 {
 	m.T.Log("Creating new Topic")
 
 	topicId := CreateTopic(m, epochLength, topicFunderAddress, topicFunderAccount)
@@ -713,6 +717,9 @@ func WorkerReputerLoop(
 	countWorkers := len(workerAddresses)
 	countReputers := len(reputerAddresses)
 
+	var rewardedReputersCount uint64 = 0
+	var rewardedWorkersCount uint64 = 0
+
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
 		balance, err := getAccountBalance(m.Ctx, m.Client.QueryBank(), workerAddresses[getWorkerAccountName(workerIndex, topicId)])
 		if err != nil {
@@ -725,14 +732,15 @@ func WorkerReputerLoop(
 				}
 			}
 		} else {
-			if balance.Amount.Int64() <= initialWorkerReputerFundAmount {
+			if alloraMath.MustNewDecFromString(balance.Amount.String()).Lte(alloraMath.NewDecFromInt64(initialWorkerReputerFundAmount)) {
 				report("Worker ", workerIndex, " balance is not greater than initial amount: ", balance.Amount.Int64())
 				if makeReport {
 					saveWorkerError(topicId, getWorkerAccountName(workerIndex, topicId), fmt.Errorf("balancenotgreater"))
 					saveTopicError(topicId, err)
 				}
 			} else {
-				report("Worker ", workerIndex, " balance: ", balance.Amount.Int64())
+				report("Worker ", workerIndex, " balance: ", balance.Amount.String())
+				rewardedWorkersCount += 1
 			}
 		}
 	}
@@ -746,7 +754,7 @@ func WorkerReputerLoop(
 				saveTopicError(topicId, err)
 			}
 		} else {
-			if reputerStake <= stakeToAdd {
+			if reputerStake.Lte(alloraMath.NewDecFromInt64(stakeToAdd)) {
 				report("Reputer ", reputerIndex, " stake is not greater than initial amount: ", reputerStake)
 				if maxIterations > 20 && reputerIndex < 10 {
 					report("ERROR: Reputer", reputerIndex, "has insufficient stake:", reputerStake)
@@ -757,9 +765,14 @@ func WorkerReputerLoop(
 				}
 			} else {
 				report("Reputer ", reputerIndex, " stake: ", reputerStake)
+				rewardedReputersCount += 1
 			}
 		}
 	}
+
+	maxTopWorkersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
+	require.Less(m.T, rewardedWorkersCount, maxTopWorkersCount, "Only top workers can get reward")
+	require.Less(m.T, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")
 }
 
 func GetRandomMapEntryValue(workerAddresses map[string]string) (string, string, error) {
@@ -854,14 +867,21 @@ func getAccountBalance(ctx context.Context, queryClient banktypes.QueryClient, a
 	return nil, fmt.Errorf("no balance found for address: %s", address)
 }
 
-func getReputerStake(ctx context.Context, queryClient types.QueryClient, topicId uint64, reputerAddress string) (uint64, error) {
+func getReputerStake(ctx context.Context, queryClient types.QueryClient, topicId uint64, reputerAddress string) (alloraMath.Dec, error) {
 	req := &types.QueryReputerStakeInTopicRequest{
 		Address: reputerAddress,
 		TopicId: topicId,
 	}
 	res, err := queryClient.GetReputerStakeInTopic(ctx, req)
 	if err != nil {
-		return 0, err
+		return alloraMath.ZeroDec(), err
 	}
-	return res.Amount.Uint64(), nil
+	return alloraMath.MustNewDecFromString(res.Amount.String()), nil
+}
+
+func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, error) {
+	emissionsParams := GetEmissionsParams(m)
+	topWorkersCount := emissionsParams.GetMaxTopWorkersToReward()
+	topReputersCount := emissionsParams.GetMaxTopReputersToReward()
+	return topWorkersCount, topReputersCount, nil
 }
