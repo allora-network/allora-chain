@@ -366,7 +366,7 @@ func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
 	delegatorAddr := sdk.AccAddress(PKS[1].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
 	topicId := uint64(123)
-	stakeAmount := cosmosMath.NewUint(50)
+	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
@@ -377,7 +377,7 @@ func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
 		NodeId:       "reputer-node-id-sample",
 	}
 
-	keeper.InsertReputer(ctx, topicId, reputerAddr, reputerInfo)
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
 
 	msg := &types.MsgDelegateStake{
 		Sender:  delegatorAddr.String(),
