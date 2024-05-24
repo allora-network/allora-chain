@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -293,17 +292,12 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 		return false, err
 	}
 
-	if nonce == nil {
-		return false, errors.New("nil worker nonce provided")
-	}
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
 		if n == nil {
-			fmt.Println("warn: nil worker nonce stored")
 			continue
 		}
 		if n.BlockHeight == nonce.BlockHeight {
-			fmt.Println("ActorId nonce found", nonce)
 			return true, nil
 		}
 	}
@@ -318,20 +312,17 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 	if err != nil {
 		return false, err
 	}
-	if nonce == nil {
-		return false, errors.New("nil reputer nonce provided")
-	}
+
 	// Check if the nonce is present in the unfulfilled nonces
 	for _, n := range unfulfilledNonces.Nonces {
 		if n == nil {
-			fmt.Println("warn: nil reputer nonce stored")
 			continue
 		}
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
-			fmt.Println("ActorId nonce found", nonce)
 			return true, nil
 		}
 	}
+
 	return false, nil
 }
 
@@ -850,13 +841,11 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer ActorId,
 
 	// Set new sum topic stake for all topics
 	if err := k.topicStake.Set(ctx, topicId, topicStakeNew); err != nil {
-		fmt.Println("Setting topic stake failed -- rolling back reputer stake")
-		return err
+		return errorsmod.Wrapf(err, "Setting topic stake failed -- rolling back reputer stake")
 	}
 
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
-		fmt.Println("Setting total stake failed -- rolling back reputer and topic stake")
-		return err
+		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
 	}
 
 	return nil
@@ -1006,10 +995,9 @@ func (k *Keeper) RemoveStake(
 		err = k.stakeByReputerAndTopicId.Remove(ctx, topicReputerKey)
 	} else {
 		err = k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeNew)
-	}
-	if err != nil {
-		fmt.Println("Setting reputer stake in topic failed")
-		return err
+		if err != nil {
+			return errorsmod.Wrapf(err, "Setting reputer stake in topic failed")
+		}
 	}
 
 	// Set topic stake
@@ -1017,17 +1005,15 @@ func (k *Keeper) RemoveStake(
 		err = k.topicStake.Remove(ctx, topicId)
 	} else {
 		err = k.topicStake.Set(ctx, topicId, topicStakeNew)
-	}
-	if err != nil {
-		fmt.Println("Setting topic stake failed")
-		return err
+		if err != nil {
+			return errorsmod.Wrapf(err, "Setting topic stake failed")
+		}
 	}
 
 	// Set total stake
 	err = k.SetTotalStake(ctx, totalStake.Sub(stake))
 	if err != nil {
-		fmt.Println("Setting total stake failed")
-		return err
+		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
 
 	return nil
@@ -1123,20 +1109,17 @@ func (k *Keeper) RemoveDelegateStake(
 
 	// Set new stake from delegator
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
-		fmt.Println("Setting stake from delegator failed")
-		return err
+		return errorsmod.Wrapf(err, "Setting stake from delegator failed")
 	}
 
 	// Set new delegate stake placement
 	if err := k.SetDelegateStakePlacement(ctx, topicId, delegator, reputer, stakePlacementNew); err != nil {
-		fmt.Println("Setting delegate stake placement failed")
-		return err
+		return errorsmod.Wrapf(err, "Setting delegate stake placement failed")
 	}
 
 	// Set new delegate stake upon reputer
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
-		fmt.Println("Setting delegate stake upon reputer failed")
-		return err
+		return errorsmod.Wrapf(err, "Setting delegate stake upon reputer failed")
 	}
 
 	return nil
@@ -2153,7 +2136,6 @@ func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.P
 }
 
 func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	fmt.Println("Pruning network losses...")
 	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
 	if err != nil {
 		return err

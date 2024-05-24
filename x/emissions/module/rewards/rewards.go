@@ -195,9 +195,8 @@ func GenerateRewardsDistributionByTopic(
 					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
 				}
 			}
-		} else {
-			fmt.Println("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
 		}
+		ctx.Logger().Debug("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
 	}
 
 	sortedTopTopics := alloraMath.GetSortedKeys(weightsOfTopActiveTopics)
