@@ -142,6 +142,10 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 		return nil, types.ErrReceivedZeroAmount
 	}
 
+	if msg.Reputer == msg.Sender {
+		return nil, types.ErrCantSelfDelegate
+	}
+
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
