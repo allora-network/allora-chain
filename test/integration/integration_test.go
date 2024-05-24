@@ -13,28 +13,32 @@ func TestExternalTestSuite(t *testing.T) {
 	}
 	t.Log(">>> Setting up connection to local node <<<")
 
-	nodeConfig := testCommon.NewTestConfig(
+	seed := int64(testCommon.LookupEnvInt(t, "SEED", 0))
+	rpcMode := testCommon.LookupRpcMode(t, "RPC_MODE", testCommon.SingleRpc)
+	rpcEndpoints := testCommon.LookupEnvStringArray("RPC_URLS", []string{"http://localhost:26657"})
+
+	testConfig := testCommon.NewTestConfig(
 		t,
-		testCommon.SingleRpc,
-		[]string{"http://localhost:26657"},
+		rpcMode,
+		rpcEndpoints,
 		"../devnet/genesis",
-		0,
+		seed,
 	)
 
 	t.Log(">>> Test Getting Chain Params <<<")
-	GetParams(nodeConfig)
+	GetParams(testConfig)
 	t.Log(">>> Test Topic Creation <<<")
-	CreateTopic(nodeConfig)
+	CreateTopic(testConfig)
 	t.Log(">>> Test Distribution Checks <<<")
-	DistributionChecks(nodeConfig)
+	DistributionChecks(testConfig)
 	t.Log(">>> Test Actor Registration <<<")
-	RegistrationChecks(nodeConfig)
+	RegistrationChecks(testConfig)
 	t.Log(">>> Test Update Params <<<")
-	UpdateParamsChecks(nodeConfig)
+	UpdateParamsChecks(testConfig)
 	t.Log(">>> Test Reputer Staking <<<")
-	StakingChecks(nodeConfig)
+	StakingChecks(testConfig)
 	t.Log(">>> Test Topic Funding and Activation <<<")
-	TopicFundingChecks(nodeConfig)
+	TopicFundingChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
-	WorkerInferenceAndForecastChecks(nodeConfig)
+	WorkerInferenceAndForecastChecks(testConfig)
 }
