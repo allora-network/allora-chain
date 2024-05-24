@@ -321,19 +321,19 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 ) {
 	for i := 0; i < reputersCount; i++ {
 		rand.Seed(time.Now().UnixNano())
-		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
-		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
+		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		var infererLoesses = make([]alloraMath.Dec, 0)
 		var forecasterosses = make([]alloraMath.Dec, 0)
 		var infererOneOutLossess = make([]alloraMath.Dec, 0)
 		var forecasterOneOutLosses = make([]alloraMath.Dec, 0)
 		var oneInNaiveLosses = make([]alloraMath.Dec, 0)
 		for j := 0; j < workersCount; j++ {
-			infererLoesses = append(infererLoesses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
-			forecasterosses = append(forecasterosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
-			infererOneOutLossess = append(infererOneOutLossess, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
-			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
-			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Int63n(1000)+1), 'f', -1, 64)))
+			infererLoesses = append(infererLoesses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+			forecasterosses = append(forecasterosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+			infererOneOutLossess = append(infererOneOutLossess, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		}
 		reputersInfererLosses = append(reputersInfererLosses, infererLoesses)
 		reputersForecasterLosses = append(reputersForecasterLosses, forecasterosses)
@@ -665,7 +665,7 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     worker.String(),
-				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
+				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -674,11 +674,11 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
 					},
 					{
 						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(rand.Int63n(1000)+1, 10)),
+						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
 					},
 				},
 			},
