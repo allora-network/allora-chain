@@ -55,6 +55,8 @@ func TestStressTestSuite(t *testing.T) {
 	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
 	maxIterations := lookupEnvInt(m, "MAX_ITERATIONS", 1000)
 	epochLength := lookupEnvInt(m, "EPOCH_LENGTH", 5)
+	doFinalReport := lookupEnvBool(m, "FINAL_REPORT", false)
+
 	fmt.Println("Reputers per epoch: ", reputersPerEpoch)
 	fmt.Println("Reputers max: ", reputersMax)
 	fmt.Println("Workers per epoch: ", workersPerEpoch)
@@ -63,7 +65,19 @@ func TestStressTestSuite(t *testing.T) {
 	fmt.Println("Topics max: ", topicsMax)
 	fmt.Println("Max iterations: ", maxIterations)
 	fmt.Println("Epoch Length: ", epochLength)
+	fmt.Println("Using mutex to prepare final report: ", doFinalReport)
 
 	t.Log(">>> Test Making Inference <<<")
-	WorkerReputerCoordinationLoop(m, reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, topicsPerEpoch, topicsMax, maxIterations, epochLength)
+	WorkerReputerCoordinationLoop(
+		m,
+		reputersPerEpoch,
+		reputersMax,
+		workersPerEpoch,
+		workersMax,
+		topicsPerEpoch,
+		topicsMax,
+		maxIterations,
+		epochLength,
+		doFinalReport,
+	)
 }

@@ -32,6 +32,7 @@ func RegisterReputerForTopic(m TestMetadata, address string, account cosmosaccou
 	if err != nil {
 		return err
 	}
+	incrementCountReputers()
 	return nil
 }
 
@@ -58,5 +59,6 @@ func RegisterWorkerForTopic(m TestMetadata, address string, account cosmosaccoun
 	if err != nil {
 		return err
 	}
+	incrementCountWorkers()
 	return nil
 }
