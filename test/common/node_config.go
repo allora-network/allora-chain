@@ -43,6 +43,7 @@ func NewTestConfig(
 ) TestConfig {
 	nodeConfig := TestConfig{}
 	var err error
+	nodeConfig.T = t
 	if rpcConnectionType == SingleRpc {
 		require.Len(t, nodeRpcAddresses, 1, "must have exactly one rpc address")
 	} else { // RoundRobin or RandomBasedOnDeterministicSeed
