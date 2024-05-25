@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"testing"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -30,9 +31,9 @@ type AccountAndAddress struct {
 // maps of worker and reputer names to their account and address information
 type NameToAccountMap map[NAME]AccountAndAddress
 
-// simple wrapper around fmt.Println
-func topicLog(topicId uint64, a ...any) {
-	fmt.Println("[ TOPIC", topicId, "] ", a)
+// simple wrapper around topicLog
+func topicLog(t *testing.T, topicId uint64, a ...any) {
+	t.Log("[ TOPIC", topicId, "] ", a)
 }
 
 // return standardized account name for funders
@@ -122,32 +123,36 @@ func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, 
 // After that it will sleep for a number of epoch
 // to ensure nonces are available.
 func getNonZeroTopicEpochLastRan(
-	ctx context.Context,
-	query types.QueryClient,
-	topicID uint64,
+	m testCommon.TestConfig,
+	topicId uint64,
 	maxRetries int,
 	approximateSecondsPerBlock time.Duration,
 ) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
+		topicResponse, err := m.Client.QueryEmissions().GetTopic(
+			m.Ctx,
+			&types.QueryTopicRequest{TopicId: topicId},
+		)
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
 				nBlocks := storedTopic.EpochLength * minWaitingNumberofEpochs
 				sleepingTime := time.Duration(nBlocks) * approximateSecondsPerBlock
-				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
+				topicLog(m.T, topicId, time.Now(), " Topic found, sleeping...", sleepingTime)
 				time.Sleep(sleepingTime)
-				fmt.Println(time.Now(), " Looking for topic: Slept.")
+				topicLog(m.T, topicId, time.Now(), " Looking for topic: Slept.")
 				return topicResponse.Topic, nil
 			}
 			sleepingTimeBlocks = int(storedTopic.EpochLength)
 		} else {
-			fmt.Println("Error getting topic, retry...", err)
+			topicLog(m.T, topicId, "Error getting topic, retry...", err)
 		}
 		// Sleep for a while before retrying
-		fmt.Println(
+		topicLog(
+			m.T,
+			topicId,
 			"Retrying sleeping for a default epoch, retry ",
 			retries,
 			" for sleeping time ",

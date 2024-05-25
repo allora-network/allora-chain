@@ -1,7 +1,6 @@
 package stress_test
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -67,7 +66,7 @@ func workerReputerCoordinationLoop(
 	makeReport bool,
 ) {
 	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
-	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
+	m.T.Log("Approximate block time seconds: ", approximateSecondsPerBlock)
 	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
 
 	// 1. For every single topic that will be created over the duration of the test
@@ -76,9 +75,9 @@ func workerReputerCoordinationLoop(
 	faucet := AccountAndAddress{acc: m.FaucetAcc, addr: m.FaucetAddr}
 	err := fundAccounts(m, faucet, topicFunders, 1e9)
 	if err != nil {
-		fmt.Println("Error funding funder accounts: ", err)
+		m.T.Log("Error funding funder accounts: ", err)
 	} else {
-		fmt.Println("Funded", len(topicFunders), "funder accounts.")
+		m.T.Log("Funded", len(topicFunders), "funder accounts.")
 	}
 
 	// 2. Outer "Topic Iteration."
@@ -121,10 +120,10 @@ func workerReputerCoordinationLoop(
 		// 5. Sleep for enough time to let an epoch to complete before making the next topic
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		fmt.Println(time.Now(), "Main loop sleeping", sleepingTime)
+		topicLog(m.T, uint64(topicCount), time.Now(), "Main loop sleeping", sleepingTime)
 		time.Sleep(sleepingTime)
 	}
-	fmt.Println("All routines launched: waiting for running routines to end.")
+	m.T.Log("All routines launched: waiting for running routines to end.")
 	wg.Wait()
 
 	// 6. If applicable, generate a summary report of the test
@@ -169,9 +168,9 @@ func workerReputerLoop(
 		initialWorkerReputerFundAmount,
 	)
 	if err != nil {
-		fmt.Println("Error funding worker accounts: ", err)
+		topicLog(m.T, topicId, "Error funding worker accounts: ", err)
 	} else {
-		fmt.Println("Funded", len(workers), "worker accounts.")
+		topicLog(m.T, topicId, "Funded", len(workers), "worker accounts.")
 	}
 	err = fundAccounts(
 		m,
@@ -180,26 +179,23 @@ func workerReputerLoop(
 		initialWorkerReputerFundAmount,
 	)
 	if err != nil {
-		fmt.Println("Error funding reputer accounts: ", err)
+		topicLog(m.T, topicId, "Error funding reputer accounts: ", err)
 	} else {
-		fmt.Println("Funded", len(reputers), "reputer accounts.")
+		topicLog(m.T, topicId, "Funded", len(reputers), "reputer accounts.")
 	}
 
 	//  4. Wait until the topic has had minWaitingNumberofEpochs before starting to provide inferences for it
 	topic, err := getNonZeroTopicEpochLastRan(
-		m.Ctx,
-		m.Client.QueryEmissions(),
+		m,
 		topicId,
 		5,
 		approximateSecondsBlockTime,
 	)
 	if err != nil {
-		topicLog(topicId, "--- Failed getting a topic that was ran ---")
+		topicLog(m.T, topicId, "--- Failed getting a topic that was ran ---")
 		require.NoError(m.T, err)
 	}
 
-	blockHeightCurrent := topic.EpochLastEnded - topic.EpochLength
-	blockHeightEval := blockHeightCurrent + topic.EpochLength
 	// Translate the epoch length into time
 	iterationTime := time.Duration(topic.EpochLength) * approximateSecondsBlockTime * iterationsInABatch
 
@@ -210,16 +206,14 @@ func workerReputerLoop(
 		// 6. Fund the topic to give it money to make inferences
 		err := fundTopic(m, topicId, funder, topicFunds)
 		if err != nil {
-			topicLog(topicId, "Funding topic failed: ", err)
+			topicLog(m.T, topicId, "Funding topic failed: ", err)
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
 		}
-		blockHeightCurrent += topic.EpochLength * iterationsInABatch
-		blockHeightEval += topic.EpochLength * iterationsInABatch
 		startIteration := time.Now()
 
-		topicLog(topicId, "iteration: ", i, " / ", maxIterations)
+		topicLog(m.T, topicId, "iteration: ", i, " / ", maxIterations)
 
 		// 7. Register the newly created accounts for this iteration
 		countWorkers = registerWorkersForIteration(
@@ -244,33 +238,31 @@ func workerReputerLoop(
 		)
 
 		//  8. Generate and insert a worker bundle (adjust nonces if failure)
-		blockHeightCurrent, err = generateInsertWorkerBundle(
+		err = generateInsertWorkerBundle(
 			m,
 			topic,
 			workers,
-			blockHeightCurrent,
 			retryBundleUploadTimes,
 			makeReport,
 		)
 		if err != nil {
-			topicLog(topicId, "Error generate/inserting worker bundle: ", err)
+			topicLog(m.T, topicId, "Error generate/inserting worker bundle: ", err)
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
 		}
 
 		//  9. Generate and insert reputer bundle scoring workers
-		blockHeightCurrent, blockHeightEval, err = generateInsertReputerBulk(
+		err = generateInsertReputerBulk(
 			m,
 			topic,
-			blockHeightCurrent,
-			blockHeightEval,
 			reputers,
 			workers,
+			retryBundleUploadTimes,
 			makeReport,
 		)
 		if err != nil {
-			topicLog(topicId, "Error generate/inserting reputer bundle: ", err)
+			topicLog(m.T, topicId, "Error generate/inserting reputer bundle: ", err)
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
@@ -279,7 +271,7 @@ func workerReputerLoop(
 		//  10. Sleep for an epoch
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		topicLog(topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime)
+		topicLog(m.T, topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime)
 		time.Sleep(sleepingTime)
 	}
 
@@ -293,7 +285,7 @@ func workerReputerLoop(
 		makeReport,
 	)
 	if err != nil {
-		topicLog(topicId, "Error checking worker rewards: ", err)
+		topicLog(m.T, topicId, "Error checking worker rewards: ", err)
 		if makeReport {
 			saveTopicError(topicId, err)
 		}
@@ -309,7 +301,7 @@ func workerReputerLoop(
 		makeReport,
 	)
 	if err != nil {
-		topicLog(topicId, "Error checking reputer rewards: ", err)
+		topicLog(m.T, topicId, "Error checking reputer rewards: ", err)
 		if makeReport {
 			saveTopicError(topicId, err)
 		}

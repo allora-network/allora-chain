@@ -50,6 +50,7 @@ func createTopic(
 	return createTopicResponse.TopicId
 }
 
+// broadcast a tx to fund a topic
 func fundTopic(
 	m testCommon.TestConfig,
 	topicId uint64,

@@ -5,9 +5,11 @@ import (
 	"sync"
 )
 
+// convenience type aliases
 type TOPIC_ID = uint64
 type NAME = string
 
+// global variables for the final summary report
 var (
 	workerErrors = make(map[TOPIC_ID][]struct {
 		name NAME
@@ -30,6 +32,7 @@ var (
 	mutexCountReputers sync.Mutex
 )
 
+// save a worker error into the global map
 func saveWorkerError(topic TOPIC_ID, name NAME, err error) {
 	mutexWorkerErrors.Lock()
 	workerErrors[topic] = append(workerErrors[topic], struct {
@@ -39,6 +42,7 @@ func saveWorkerError(topic TOPIC_ID, name NAME, err error) {
 	mutexWorkerErrors.Unlock()
 }
 
+// save a reputer error into the global map
 func saveReputerError(topic TOPIC_ID, name NAME, err error) {
 	mutexReputerErrors.Lock()
 	workerErrors[topic] = append(reputerErrors[topic], struct {
@@ -48,30 +52,35 @@ func saveReputerError(topic TOPIC_ID, name NAME, err error) {
 	mutexReputerErrors.Unlock()
 }
 
+// save a topic error into the global map
 func saveTopicError(topic TOPIC_ID, err error) {
 	mutexTopicErrors.Lock()
 	topicErrors[topic] = err.Error()
 	mutexTopicErrors.Unlock()
 }
 
+// increment the number of topics
 func incrementCountTopics() {
 	mutexCountTopics.Lock()
 	countTopics = countTopics + 1
 	mutexCountTopics.Unlock()
 }
 
+// increment the total number of reputers
 func incrementCountReputers() {
 	mutexCountReputers.Lock()
 	countReputers = countReputers + 1
 	mutexCountReputers.Unlock()
 }
 
+// increment the total number of workers
 func incrementCountWorkers() {
 	mutexCountWorkers.Lock()
 	countWorkers = countWorkers + 1
 	mutexCountWorkers.Unlock()
 }
 
+// report the final summary statistics
 func reportSummaryStatistics() {
 	mutexTopicErrors.Lock()
 	countTopicErrors := len(topicErrors)

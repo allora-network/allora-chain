@@ -26,25 +26,27 @@ func createReputerAddresses(
 
 	for reputerIndex := 0; reputerIndex < reputersMax; reputerIndex++ {
 		reputerAccountName := getReputerAccountName(reputerIndex, topicId)
-		workerAccount, _, err := m.Client.AccountRegistryCreate(reputerAccountName)
+		reputerAccount, _, err := m.Client.AccountRegistryCreate(reputerAccountName)
 		if err != nil {
-			fmt.Println("Error creating funder address: ", reputerAccountName, " - ", err)
+			topicLog(m.T, topicId, "Error creating funder address: ", reputerAccountName, " - ", err)
 			continue
 		}
-		reputerAddressToFund, err := workerAccount.Address(params.HumanCoinUnit)
+		reputerAddressToFund, err := reputerAccount.Address(params.HumanCoinUnit)
 		if err != nil {
-			fmt.Println("Error creating funder address: ", reputerAccountName, " - ", err)
+			topicLog(m.T, topicId, "Error creating funder address: ", reputerAccountName, " - ", err)
 			continue
 		}
 		reputers[reputerAccountName] = AccountAndAddress{
-			acc:  workerAccount,
+			acc:  reputerAccount,
 			addr: reputerAddressToFund,
 		}
+		topicLog(m.T, topicId, "Created reputer address: ", reputerAccountName, " - ", reputerAddressToFund)
 	}
 
 	return reputers
 }
 
+// register all the created reputers for this iteration
 func registerReputersForIteration(
 	m testCommon.TestConfig,
 	topicId uint64,
@@ -60,7 +62,7 @@ func registerReputersForIteration(
 		reputer := reputers[reputerName]
 		err := RegisterReputerForTopic(m, reputer.addr, reputer.acc, topicId)
 		if err != nil {
-			topicLog(topicId, "Error registering reputer address: ", reputer.addr, " - ", err)
+			topicLog(m.T, topicId, "Error registering reputer address: ", reputer.addr, " - ", err)
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)
@@ -76,48 +78,62 @@ func registerReputersForIteration(
 func generateInsertReputerBulk(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
-	blockHeightCurrent int64,
-	blockHeightEval int64,
 	reputers NameToAccountMap,
 	workers NameToAccountMap,
+	retryTimes int,
 	makeReport bool,
-) (int64, int64, error) {
+) error {
 	leaderReputerAccountName, err := pickRandomKeyFromMap(reputers)
 	if err != nil {
-		topicLog(topic.Id, "Error getting random worker address: ", err)
+		topicLog(m.T, topic.Id, "Error getting random worker address: ", err)
 		if makeReport {
+			saveReputerError(topic.Id, leaderReputerAccountName, err)
 			saveTopicError(topic.Id, err)
 		}
-		return blockHeightCurrent, blockHeightEval, err
+		return err
 	}
+	blockHeightCurrent := topic.EpochLastEnded + topic.EpochLength
+	blockHeightEval := blockHeightCurrent - topic.EpochLength
 
 	startReputer := time.Now()
-	err = insertReputerBulk(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
-	if err != nil {
-		if strings.Contains(err.Error(), "nonce already fulfilled") ||
-			strings.Contains(err.Error(), "nonce still unfulfilled") {
-			// realign blockHeights before retrying
-			topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
-			if err == nil {
-				blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-				blockHeightEval = blockHeightCurrent - topic.EpochLength
-				topicLog(topic.Id, "Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+	for i := 0; i < retryTimes; i++ {
+		err = insertReputerBulk(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
+		if err != nil {
+			if strings.Contains(err.Error(), "nonce already fulfilled") ||
+				strings.Contains(err.Error(), "nonce still unfulfilled") {
+				// realign blockHeights before retrying
+				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
+				if err == nil {
+					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
+					blockHeightEval = blockHeightCurrent - topic.EpochLength
+					topicLog(m.T, topic.Id, "Reset ", leaderReputerAccountName, "blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+				} else {
+					topicLog(m.T, topic.Id, "Error getting topic!")
+					if makeReport {
+						saveReputerError(topic.Id, leaderReputerAccountName, err)
+						saveTopicError(topic.Id, err)
+					}
+					return err
+				}
 			} else {
-				topicLog(topic.Id, "Error getting topic!")
+				topicLog(m.T, topic.Id, "Error inserting reputer bulk: ", err)
 				if makeReport {
+					saveReputerError(topic.Id, leaderReputerAccountName, err)
 					saveTopicError(topic.Id, err)
 				}
+				return err
 			}
+		} else {
+			topicLog(m.T, topic.Id, "Inserted reputer bulk, blockHeight: ", blockHeightCurrent, " with ", len(reputers), " reputers")
+			elapsedBulk := time.Since(startReputer)
+			topicLog(m.T, topic.Id, "Insert Reputer ", leaderReputerAccountName, " Elapsed time:", elapsedBulk)
+			return nil
 		}
-		return blockHeightCurrent, blockHeightEval, err
-	} else {
-		topicLog(topic.Id, "Inserted reputer bulk, blockHeight: ", blockHeightCurrent, " with ", len(reputers), " reputers")
-		elapsedBulk := time.Since(startReputer)
-		topicLog(topic.Id, "Insert Reputer Elapsed time:", elapsedBulk)
 	}
-	return blockHeightCurrent, blockHeightEval, nil
+	return err
 }
 
+// for every worker, generate a worker attributed value
 func generateWorkerAttributedValueLosses(
 	workerAddresses NameToAccountMap,
 	lowLimit,
@@ -133,6 +149,7 @@ func generateWorkerAttributedValueLosses(
 	return values
 }
 
+// for every worker, generate a withheld worker attribute value
 func generateWithheldWorkerAttributedValueLosses(
 	workerAddresses NameToAccountMap,
 	lowLimit,
@@ -253,12 +270,12 @@ func insertReputerBulk(
 	)
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderReputerAccountName)
 	if err != nil {
-		fmt.Println("Error getting leader worker account: ", leaderReputerAccountName, " - ", err)
+		topicLog(m.T, topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err)
 		return err
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, reputerValueBundleMsg)
 	if err != nil {
-		fmt.Println("Error broadcasting reputer value bundle: ", err)
+		topicLog(m.T, topicId, "Error broadcasting reputer value bundle: ", err)
 		return err
 	}
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
@@ -266,6 +283,7 @@ func insertReputerBulk(
 	return nil
 }
 
+// check that reputers stake values went up after receiving rewards
 func checkReputersReceivedRewards(
 	m testCommon.TestConfig,
 	topicId uint64,
@@ -286,23 +304,23 @@ func checkReputersReceivedRewards(
 			reputer.addr,
 		)
 		if err != nil {
-			topicLog(topicId, "Error getting reputer stake for reputer: ", reputerName, err)
+			topicLog(m.T, topicId, "Error getting reputer stake for reputer: ", reputerName, err)
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)
 			}
 		} else {
 			if reputerStake.Lte(alloraMath.NewDecFromInt64(stakeToAdd)) {
-				topicLog(topicId, "Reputer ", reputerName, " stake is not greater than initial amount: ", reputerStake)
+				topicLog(m.T, topicId, "Reputer ", reputerName, " stake is not greater than initial amount: ", reputerStake)
 				if maxIterations > 20 && reputerIndex < 10 {
-					topicLog(topicId, "ERROR: Reputer", reputerName, "has insufficient stake:", reputerStake)
+					topicLog(m.T, topicId, "ERROR: Reputer", reputerName, "has insufficient stake:", reputerStake)
 				}
 				if makeReport {
 					saveReputerError(topicId, reputerName, fmt.Errorf("Stake Not Greater"))
 					saveTopicError(topicId, fmt.Errorf("Stake Not Greater"))
 				}
 			} else {
-				topicLog(topicId, "Reputer ", reputerIndex, " stake: ", reputerStake)
+				topicLog(m.T, topicId, "Reputer ", reputerIndex, " stake: ", reputerStake)
 				rewardedReputersCount += 1
 			}
 		}
