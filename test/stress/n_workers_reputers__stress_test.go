@@ -422,6 +422,79 @@ func getReputerAccountName(reputerIndex int, topicId uint64) string {
 	return "stressReputer" + strconv.Itoa(reputerIndex) + "_topic" + strconv.Itoa(int(topicId))
 }
 
+func initializeNewWorkerAccount() {
+	// Generate new worker accounts
+	workerAccountName := getWorkerAccountName(len(workerAddresses), topicId)
+	report("Initializing worker address: ", workerAccountName)
+	workerAccount, err := m.Client.AccountRegistryGetByName(workerAccountName)
+	if err != nil {
+		report("Error getting worker address: ", workerAccountName, " - ", err)
+		// don't save the error because it's not real
+		// this error is a stop condition for the loop
+		return
+	}
+	workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		report("Error getting worker address: ", workerAccountName, " - ", err)
+		if makeReport {
+			saveWorkerError(topicId, workerAccountName, err)
+			saveTopicError(topicId, err)
+		}
+		return
+	}
+	err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
+	if err != nil {
+		report("Error registering worker address: ", workerAddress, " - ", err)
+		if makeReport {
+			saveWorkerError(topicId, workerAccountName, err)
+			saveTopicError(topicId, err)
+		}
+		return
+	}
+	workerAddresses[workerAccountName] = workerAddress
+}
+
+func initializeNewReputerAccount() {
+	// Generate new reputer account
+	reputerAccountName := getReputerAccountName(len(reputerAddresses), topicId)
+	report("Initializing reputer address: ", reputerAccountName)
+	reputerAccount, err := m.Client.AccountRegistryGetByName(reputerAccountName)
+	if err != nil {
+		report("Error getting reputer address: ", reputerAccountName, " - ", err)
+		// don't save the error because it's not real
+		// this error is a stop condition for the loop
+		return
+	}
+	reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		report("Error getting reputer address: ", reputerAccountName, " - ", err)
+		if makeReport {
+			saveReputerError(topicId, reputerAccountName, err)
+			saveTopicError(topicId, err)
+		}
+		return
+	}
+	err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
+	if err != nil {
+		report("Error registering reputer address: ", reputerAddress, " - ", err)
+		if makeReport {
+			saveReputerError(topicId, reputerAccountName, err)
+			saveTopicError(topicId, err)
+		}
+		return
+	}
+	err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
+	if err != nil {
+		report("Error staking reputer address: ", reputerAddress, " - ", err)
+		if makeReport {
+			saveReputerError(topicId, reputerAccountName, err)
+			saveTopicError(topicId, err)
+		}
+		return
+	}
+	reputerAddresses[reputerAccountName] = reputerAddress
+}
+
 // Main worker-reputer per-topic loop
 func WorkerReputerLoop(
 	wg *sync.WaitGroup,
@@ -541,83 +614,6 @@ func WorkerReputerLoop(
 
 		report("iteration: ", i, " / ", maxIterations)
 
-		initializeNewWorkerAccount := func() {
-			// Generate new worker accounts
-			workerAccountName := getWorkerAccountName(len(workerAddresses), topicId)
-			report("Initializing worker address: ", workerAccountName)
-			workerAccount, err := m.Client.AccountRegistryGetByName(workerAccountName)
-			if err != nil {
-				report("Error getting worker address: ", workerAccountName, " - ", err)
-				if makeReport {
-					saveWorkerError(topicId, workerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
-			if err != nil {
-				report("Error getting worker address: ", workerAccountName, " - ", err)
-				if makeReport {
-					saveWorkerError(topicId, workerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			err = RegisterWorkerForTopic(m, workerAddress, workerAccount, topicId)
-			if err != nil {
-				report("Error registering worker address: ", workerAddress, " - ", err)
-				if makeReport {
-					saveWorkerError(topicId, workerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			workerAddresses[workerAccountName] = workerAddress
-		}
-
-		initializeNewReputerAccount := func() {
-			// Generate new reputer account
-			reputerAccountName := getReputerAccountName(len(reputerAddresses), topicId)
-			report("Initializing reputer address: ", reputerAccountName)
-			reputerAccount, err := m.Client.AccountRegistryGetByName(reputerAccountName)
-			if err != nil {
-				report("Error getting reputer address: ", reputerAccountName, " - ", err)
-				if makeReport {
-					saveReputerError(topicId, reputerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			reputerAddress, err := reputerAccount.Address(params.HumanCoinUnit)
-			if err != nil {
-				report("Error getting reputer address: ", reputerAccountName, " - ", err)
-				if makeReport {
-					saveReputerError(topicId, reputerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			err = RegisterReputerForTopic(m, reputerAddress, reputerAccount, topicId)
-			if err != nil {
-				report("Error registering reputer address: ", reputerAddress, " - ", err)
-				if makeReport {
-					saveReputerError(topicId, reputerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			err = StakeReputer(m, topicId, reputerAddress, reputerAccount, stakeToAdd)
-			if err != nil {
-				report("Error staking reputer address: ", reputerAddress, " - ", err)
-				if makeReport {
-					saveReputerError(topicId, reputerAccountName, err)
-					saveTopicError(topicId, err)
-				}
-				return
-			}
-			reputerAddresses[reputerAccountName] = reputerAddress
-		}
-
 		if i == 0 {
 			for j := 0; j < initialWorkerCount; j++ {
 				initializeNewWorkerAccount()
@@ -735,8 +731,8 @@ func WorkerReputerLoop(
 			if alloraMath.MustNewDecFromString(balance.Amount.String()).Lte(alloraMath.NewDecFromInt64(initialWorkerReputerFundAmount)) {
 				report("Worker ", workerIndex, " balance is not greater than initial amount: ", balance.Amount.Int64())
 				if makeReport {
-					saveWorkerError(topicId, getWorkerAccountName(workerIndex, topicId), fmt.Errorf("balancenotgreater"))
-					saveTopicError(topicId, err)
+					saveWorkerError(topicId, getWorkerAccountName(workerIndex, topicId), fmt.Errorf("Balance Not Greater"))
+					saveTopicError(topicId, fmt.Errorf("Balance Not Greater"))
 				}
 			} else {
 				report("Worker ", workerIndex, " balance: ", balance.Amount.String())
@@ -760,8 +756,8 @@ func WorkerReputerLoop(
 					report("ERROR: Reputer", reputerIndex, "has insufficient stake:", reputerStake)
 				}
 				if makeReport {
-					saveReputerError(topicId, getReputerAccountName(reputerIndex, topicId), fmt.Errorf("stakenotgreater"))
-					saveTopicError(topicId, err)
+					saveReputerError(topicId, getReputerAccountName(reputerIndex, topicId), fmt.Errorf("Stake Not Greater"))
+					saveTopicError(topicId, fmt.Errorf("Stake Not Greater"))
 				}
 			} else {
 				report("Reputer ", reputerIndex, " stake: ", reputerStake)

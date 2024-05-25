@@ -11,13 +11,13 @@ type NAME = string
 var (
 	workerErrors = make(map[TOPIC_ID][]struct {
 		name NAME
-		err  error
+		err  string
 	})
 	reputerErrors = make(map[TOPIC_ID][]struct {
 		name NAME
-		err  error
+		err  string
 	})
-	topicErrors   = make(map[TOPIC_ID]error)
+	topicErrors   = make(map[TOPIC_ID]string)
 	countTopics   = 0
 	countWorkers  = 0
 	countReputers = 0
@@ -34,8 +34,8 @@ func saveWorkerError(topic TOPIC_ID, name NAME, err error) {
 	mutexWorkerErrors.Lock()
 	workerErrors[topic] = append(workerErrors[topic], struct {
 		name NAME
-		err  error
-	}{name, err})
+		err  string
+	}{name, err.Error()})
 	mutexWorkerErrors.Unlock()
 }
 
@@ -43,14 +43,14 @@ func saveReputerError(topic TOPIC_ID, name NAME, err error) {
 	mutexReputerErrors.Lock()
 	workerErrors[topic] = append(reputerErrors[topic], struct {
 		name NAME
-		err  error
-	}{name, err})
+		err  string
+	}{name, err.Error()})
 	mutexReputerErrors.Unlock()
 }
 
 func saveTopicError(topic TOPIC_ID, err error) {
 	mutexTopicErrors.Lock()
-	topicErrors[topic] = err
+	topicErrors[topic] = err.Error()
 	mutexTopicErrors.Unlock()
 }
 

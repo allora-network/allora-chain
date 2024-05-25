@@ -40,6 +40,9 @@ type Client struct {
 	RpcCounterSeed     int64                           // if round-robin which RPC to use next, if random, seed to use
 	RpcCounterMutex    *sync.Mutex                     // mutex for the counter
 	Rand               *rand.Rand                      // random number generator
+
+	accountRegistry      cosmosaccount.Registry // registry for accounts
+	accountRegistryMutex *sync.Mutex            // mutex for the registry
 }
 
 // create a new appchain client that we can use
@@ -60,6 +63,7 @@ func NewClient(
 	client.QueryEmissionses = make([]emissionstypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryMints = make([]minttypes.QueryClient, len(nodeRpcAddresses))
 	client.RpcCounterMutex = &sync.Mutex{}
+	client.accountRegistryMutex = &sync.Mutex{}
 	client.RpcCounterSeed = 0
 	if rpcConnectionType == RandomBasedOnDeterministicSeed {
 		client.RpcCounterSeed = seed
@@ -88,6 +92,14 @@ func NewClient(
 		// this is terrible, no isConnected as part of this code path
 		require.NotEqual(t, ccCtx.ChainID, "")
 	}
+
+	var err error
+	client.accountRegistry, err = cosmosaccount.New(
+		cosmosaccount.WithKeyringServiceName(sdktypes.KeyringServiceName()),
+		cosmosaccount.WithKeyringBackend(cosmosaccount.KeyringTest),
+		cosmosaccount.WithHome(alloraHomeDir),
+	)
+	require.NoError(t, err)
 	return client
 }
 
@@ -156,24 +168,16 @@ func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultT
 	return c.Clients[c.getNextClientNumber()].WaitForTx(ctx, hash)
 }
 
-// For the account client functions,
-// because they are have to do with
-// being able to take actions on behalf of different
-// private keys, for the sake of the round robin code
-// we just always make sure every node has a copy of every
-// private key account.
+// account code has to be concurrency aware
 
 func (c *Client) AccountRegistryCreate(name string) (
 	acc cosmosaccount.Account,
 	mnemonic string,
 	err error,
 ) {
-	for _, client := range c.Clients {
-		acc, mnemonic, err = client.AccountRegistry.Create(name)
-		if err != nil {
-			return acc, mnemonic, err
-		}
-	}
+	c.accountRegistryMutex.Lock()
+	acc, mnemonic, err = c.accountRegistry.Create(name)
+	c.accountRegistryMutex.Unlock()
 	return acc, mnemonic, err
 }
 
@@ -181,5 +185,8 @@ func (c *Client) AccountRegistryGetByName(name string) (
 	cosmosaccount.Account,
 	error,
 ) {
-	return c.Clients[c.getNextClientNumber()].AccountRegistry.GetByName(name)
+	c.accountRegistryMutex.Lock()
+	acc, err := c.accountRegistry.GetByName(name)
+	c.accountRegistryMutex.Unlock()
+	return acc, err
 }
