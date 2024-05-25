@@ -2,6 +2,7 @@ package testcommon
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 	"sync"
 	"testing"
@@ -175,6 +176,7 @@ func (c *Client) AccountRegistryCreate(name string) (
 	mnemonic string,
 	err error,
 ) {
+	fmt.Println("CREATE ACCOUNT: ", name)
 	c.accountRegistryMutex.Lock()
 	acc, mnemonic, err = c.accountRegistry.Create(name)
 	c.accountRegistryMutex.Unlock()
@@ -185,6 +187,7 @@ func (c *Client) AccountRegistryGetByName(name string) (
 	cosmosaccount.Account,
 	error,
 ) {
+	fmt.Println("GET ACCOUNT: ", name)
 	c.accountRegistryMutex.Lock()
 	acc, err := c.accountRegistry.GetByName(name)
 	c.accountRegistryMutex.Unlock()

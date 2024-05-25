@@ -1,6 +1,7 @@
 package stress_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -8,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func CreateTopic(
+// Broadcast the tx to create a new topic
+func createTopic(
 	m testCommon.TestConfig,
 	epochLength int64,
 	creatorAddress string,
@@ -46,4 +48,34 @@ func CreateTopic(
 	incrementCountTopics()
 
 	return createTopicResponse.TopicId
+}
+
+func fundTopic(
+	m testCommon.TestConfig,
+	topicId uint64,
+	sender AccountAndAddress,
+	amount int64,
+) error {
+	txResp, err := m.Client.BroadcastTx(
+		m.Ctx,
+		sender.acc,
+		&emissionstypes.MsgFundTopic{
+			Sender:  sender.addr,
+			TopicId: topicId,
+			Amount:  cosmosMath.NewInt(amount),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	if err != nil {
+		return err
+	}
+	resp := &emissionstypes.MsgFundTopicResponse{}
+	err = txResp.Decode(resp)
+	if err != nil {
+		return err
+	}
+	return nil
 }

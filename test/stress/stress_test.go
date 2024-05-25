@@ -33,34 +33,34 @@ func TestStressTestSuite(t *testing.T) {
 	)
 
 	// Read env vars with defaults
-	reputersPerEpoch := testCommon.LookupEnvInt(t, "REPUTERS_PER_EPOCH", 1)
-	reputersMax := testCommon.LookupEnvInt(t, "REPUTERS_MAX", 100)
-	workersPerEpoch := testCommon.LookupEnvInt(t, "WORKERS_PER_EPOCH", 1)
-	workersMax := testCommon.LookupEnvInt(t, "WORKERS_MAX", 100)
-	topicsPerEpoch := testCommon.LookupEnvInt(t, "TOPICS_PER_EPOCH", 1)
+	reputersPerIteration := testCommon.LookupEnvInt(t, "REPUTERS_PER_ITERATION", 1)
+	maxReputersPerTopic := testCommon.LookupEnvInt(t, "MAX_REPUTERS_PER_TOPIC", 100)
+	workersPerIteration := testCommon.LookupEnvInt(t, "WORKERS_PER_ITERATION", 1)
+	maxWorkersPerTopic := testCommon.LookupEnvInt(t, "MAX_WORKERS_PER_TOPIC", 100)
+	topicsPerIteration := testCommon.LookupEnvInt(t, "TOPICS_PER_ITERATION", 1)
 	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
 	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
 	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 5)
 	doFinalReport := testCommon.LookupEnvBool(t, "FINAL_REPORT", false)
 
-	fmt.Println("Reputers per epoch: ", reputersPerEpoch)
-	fmt.Println("Reputers max: ", reputersMax)
-	fmt.Println("Workers per epoch: ", workersPerEpoch)
-	fmt.Println("Workers max: ", workersMax)
-	fmt.Println("Topics per epoch: ", topicsPerEpoch)
-	fmt.Println("Topics max: ", topicsMax)
-	fmt.Println("Max iterations: ", maxIterations)
+	fmt.Println("Reputers per iteration: ", reputersPerIteration)
+	fmt.Println("Max Reputers per topic: ", maxReputersPerTopic)
+	fmt.Println("Workers per iteration: ", workersPerIteration)
+	fmt.Println("Max Workers per topic: ", maxWorkersPerTopic)
+	fmt.Println("Topics per iteration of topics: ", topicsPerIteration)
+	fmt.Println("Topics global max: ", topicsMax)
+	fmt.Println("Max worker+reputer iterations: ", maxIterations)
 	fmt.Println("Epoch Length: ", epochLength)
-	fmt.Println("Using mutex to prepare final report: ", doFinalReport)
+	fmt.Println("Use mutex to prepare final report: ", doFinalReport)
 
 	t.Log(">>> Test Making Inference <<<")
-	WorkerReputerCoordinationLoop(
+	workerReputerCoordinationLoop(
 		testConfig,
-		reputersPerEpoch,
-		reputersMax,
-		workersPerEpoch,
-		workersMax,
-		topicsPerEpoch,
+		reputersPerIteration,
+		maxReputersPerTopic,
+		workersPerIteration,
+		maxWorkersPerTopic,
+		topicsPerIteration,
 		topicsMax,
 		maxIterations,
 		epochLength,

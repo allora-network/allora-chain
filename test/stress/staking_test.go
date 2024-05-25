@@ -8,7 +8,13 @@ import (
 )
 
 // register alice as a reputer in topic 1, then check success
-func StakeReputer(m testCommon.TestConfig, topicId uint64, address string, account cosmosaccount.Account, stakeToAdd uint64) error {
+func StakeReputer(
+	m testCommon.TestConfig,
+	topicId uint64,
+	address string,
+	account cosmosaccount.Account,
+	stakeToAdd uint64,
+) error {
 	addStake := &emissionstypes.MsgAddStake{
 		Sender:  address,
 		TopicId: topicId,

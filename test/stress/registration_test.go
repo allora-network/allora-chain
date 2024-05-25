@@ -10,7 +10,12 @@ import (
 )
 
 // register alice as a reputer in topic 1, then check success
-func RegisterReputerForTopic(m testCommon.TestConfig, address string, account cosmosaccount.Account, topicId uint64) error {
+func RegisterReputerForTopic(
+	m testCommon.TestConfig,
+	address string,
+	account cosmosaccount.Account,
+	topicId uint64,
+) error {
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
 		Sender:       address,
@@ -38,7 +43,12 @@ func RegisterReputerForTopic(m testCommon.TestConfig, address string, account co
 }
 
 // register bob as worker in topic 1, then check sucess
-func RegisterWorkerForTopic(m testCommon.TestConfig, address string, account cosmosaccount.Account, topicId uint64) error {
+func RegisterWorkerForTopic(
+	m testCommon.TestConfig,
+	address string,
+	account cosmosaccount.Account,
+	topicId uint64,
+) error {
 	registerWorkerRequest := &emissionstypes.MsgRegister{
 		Sender:       address,
 		Owner:        address,
