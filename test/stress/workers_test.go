@@ -229,7 +229,7 @@ func checkWorkersReceivedRewards(
 	countWorkers int,
 	maxIterations int,
 	makeReport bool,
-) (rewardedWorkersCount int, err error) {
+) (rewardedWorkersCount uint64, err error) {
 	rewardedWorkersCount = 0
 	err = nil
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {

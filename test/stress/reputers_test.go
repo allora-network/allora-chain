@@ -273,7 +273,7 @@ func checkReputersReceivedRewards(
 	countReputers int,
 	maxIterations int,
 	makeReport bool,
-) (rewardedReputersCount int, err error) {
+) (rewardedReputersCount uint64, err error) {
 	rewardedReputersCount = 0
 	err = nil
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {

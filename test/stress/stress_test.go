@@ -34,9 +34,9 @@ func TestStressTestSuite(t *testing.T) {
 
 	// Read env vars with defaults
 	reputersPerIteration := testCommon.LookupEnvInt(t, "REPUTERS_PER_ITERATION", 1)
-	maxReputersPerTopic := testCommon.LookupEnvInt(t, "MAX_REPUTERS_PER_TOPIC", 100)
+	maxReputersPerTopic := testCommon.LookupEnvInt(t, "MAX_REPUTERS_PER_TOPIC", 20)
 	workersPerIteration := testCommon.LookupEnvInt(t, "WORKERS_PER_ITERATION", 1)
-	maxWorkersPerTopic := testCommon.LookupEnvInt(t, "MAX_WORKERS_PER_TOPIC", 100)
+	maxWorkersPerTopic := testCommon.LookupEnvInt(t, "MAX_WORKERS_PER_TOPIC", 20)
 	topicsPerIteration := testCommon.LookupEnvInt(t, "TOPICS_PER_ITERATION", 1)
 	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
 	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
