@@ -120,7 +120,7 @@ func workerReputerCoordinationLoop(
 		// 5. Sleep for enough time to let an epoch to complete before making the next topic
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		topicLog(m.T, uint64(topicCount), time.Now(), "Main loop sleeping", sleepingTime)
+		m.T.Log(topicLog(uint64(topicCount), time.Now(), "Main loop sleeping", sleepingTime))
 		time.Sleep(sleepingTime)
 	}
 	m.T.Log("All routines launched: waiting for running routines to end.")
@@ -168,9 +168,9 @@ func workerReputerLoop(
 		initialWorkerReputerFundAmount,
 	)
 	if err != nil {
-		topicLog(m.T, topicId, "Error funding worker accounts: ", err)
+		m.T.Log(topicLog(topicId, "Error funding worker accounts: ", err))
 	} else {
-		topicLog(m.T, topicId, "Funded", len(workers), "worker accounts.")
+		m.T.Log(topicLog(topicId, "Funded", len(workers), "worker accounts."))
 	}
 	err = fundAccounts(
 		m,
@@ -179,9 +179,9 @@ func workerReputerLoop(
 		initialWorkerReputerFundAmount,
 	)
 	if err != nil {
-		topicLog(m.T, topicId, "Error funding reputer accounts: ", err)
+		m.T.Log(topicLog(topicId, "Error funding reputer accounts: ", err))
 	} else {
-		topicLog(m.T, topicId, "Funded", len(reputers), "reputer accounts.")
+		m.T.Log(topicLog(topicId, "Funded", len(reputers), "reputer accounts."))
 	}
 
 	//  4. Wait until the topic has had minWaitingNumberofEpochs before starting to provide inferences for it
@@ -192,7 +192,7 @@ func workerReputerLoop(
 		approximateSecondsBlockTime,
 	)
 	if err != nil {
-		topicLog(m.T, topicId, "--- Failed getting a topic that was ran ---")
+		m.T.Log(topicLog(topicId, "--- Failed getting a topic that was ran ---"))
 		require.NoError(m.T, err)
 	}
 
@@ -206,14 +206,14 @@ func workerReputerLoop(
 		// 6. Fund the topic to give it money to make inferences
 		err := fundTopic(m, topicId, funder, topicFunds)
 		if err != nil {
-			topicLog(m.T, topicId, "Funding topic failed: ", err)
+			m.T.Log(topicLog(topicId, "Funding topic failed: ", err))
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
 		}
 		startIteration := time.Now()
 
-		topicLog(m.T, topicId, "iteration: ", i, " / ", maxIterations)
+		m.T.Log(topicLog(topicId, "iteration: ", i, " / ", maxIterations))
 
 		// 7. Register the newly created accounts for this iteration
 		countWorkers = registerWorkersForIteration(
@@ -246,7 +246,7 @@ func workerReputerLoop(
 			makeReport,
 		)
 		if err != nil {
-			topicLog(m.T, topicId, "Error generate/inserting worker bundle: ", err)
+			m.T.Log(topicLog(topicId, "Error generate/inserting worker bundle: ", err))
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
@@ -262,7 +262,7 @@ func workerReputerLoop(
 			makeReport,
 		)
 		if err != nil {
-			topicLog(m.T, topicId, "Error generate/inserting reputer bundle: ", err)
+			m.T.Log(topicLog(topicId, "Error generate/inserting reputer bundle: ", err))
 			if makeReport {
 				saveTopicError(topicId, err)
 			}
@@ -271,7 +271,7 @@ func workerReputerLoop(
 		//  10. Sleep for an epoch
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		topicLog(m.T, topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime)
+		m.T.Log(topicLog(topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime))
 		time.Sleep(sleepingTime)
 	}
 
@@ -285,7 +285,7 @@ func workerReputerLoop(
 		makeReport,
 	)
 	if err != nil {
-		topicLog(m.T, topicId, "Error checking worker rewards: ", err)
+		m.T.Log(topicLog(topicId, "Error checking worker rewards: ", err))
 		if makeReport {
 			saveTopicError(topicId, err)
 		}
@@ -301,7 +301,7 @@ func workerReputerLoop(
 		makeReport,
 	)
 	if err != nil {
-		topicLog(m.T, topicId, "Error checking reputer rewards: ", err)
+		m.T.Log(topicLog(topicId, "Error checking reputer rewards: ", err))
 		if makeReport {
 			saveTopicError(topicId, err)
 		}

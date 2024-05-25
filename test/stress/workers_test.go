@@ -28,19 +28,19 @@ func createWorkerAddresses(
 		workerAccountName := getWorkerAccountName(workerIndex, topicId)
 		workerAccount, _, err := m.Client.AccountRegistryCreate(workerAccountName)
 		if err != nil {
-			topicLog(m.T, topicId, "Error creating funder address: ", workerAccountName, " - ", err)
+			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
 			continue
 		}
 		workerAddressToFund, err := workerAccount.Address(params.HumanCoinUnit)
 		if err != nil {
-			topicLog(m.T, topicId, "Error creating funder address: ", workerAccountName, " - ", err)
+			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
 			continue
 		}
 		workers[workerAccountName] = AccountAndAddress{
 			acc:  workerAccount,
 			addr: workerAddressToFund,
 		}
-		topicLog(m.T, topicId, "Created worker address: ", workerAccountName, " - ", workerAddressToFund)
+		m.T.Log(topicLog(topicId, "Created worker address: ", workerAccountName, " - ", workerAddressToFund))
 	}
 	return workers
 }
@@ -61,7 +61,7 @@ func registerWorkersForIteration(
 		worker := workers[workerName]
 		err := RegisterWorkerForTopic(m, worker.addr, worker.acc, topicId)
 		if err != nil {
-			topicLog(m.T, topicId, "Error registering worker address: ", worker.addr, " - ", err)
+			m.T.Log(topicLog(topicId, "Error registering worker address: ", worker.addr, " - ", err))
 			if makeReport {
 				saveWorkerError(topicId, workerName, err)
 				saveTopicError(topicId, err)
@@ -85,7 +85,7 @@ func generateInsertWorkerBundle(
 ) error {
 	leaderWorkerAccountName, err := pickRandomKeyFromMap(workers)
 	if err != nil {
-		topicLog(m.T, topic.Id, "Error getting random worker address: ", err)
+		m.T.Log(topicLog(topic.Id, "Error getting random worker address: ", err))
 		if makeReport {
 			saveReputerError(topic.Id, leaderWorkerAccountName, err)
 			saveTopicError(topic.Id, err)
@@ -105,9 +105,9 @@ func generateInsertWorkerBundle(
 				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-					topicLog(m.T, topic.Id, "Reset ", leaderWorkerAccountName, "blockHeight to (", blockHeightCurrent, ")")
+					m.T.Log(topicLog(topic.Id, "Reset ", leaderWorkerAccountName, "blockHeight to (", blockHeightCurrent, ")"))
 				} else {
-					topicLog(m.T, topic.Id, "Error getting topic!")
+					m.T.Log(topicLog(topic.Id, "Error getting topic!"))
 					if makeReport {
 						saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 						saveTopicError(topic.Id, err)
@@ -115,7 +115,7 @@ func generateInsertWorkerBundle(
 					return err
 				}
 			} else {
-				topicLog(m.T, topic.Id, "Error inserting worker bulk: ", err)
+				m.T.Log(topicLog(topic.Id, "Error inserting worker bulk: ", err))
 				if makeReport {
 					saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 					saveTopicError(topic.Id, err)
@@ -123,9 +123,9 @@ func generateInsertWorkerBundle(
 				return err
 			}
 		} else {
-			topicLog(m.T, topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers")
+			m.T.Log(topicLog(topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers"))
 			elapsedBulk := time.Since(startWorker)
-			topicLog(m.T, topic.Id, "Insert Worker ", leaderWorkerAccountName, " ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
+			m.T.Log(topicLog(topic.Id, "Insert Worker ", leaderWorkerAccountName, " ", blockHeightCurrent, " Elapsed time:", elapsedBulk))
 			return nil
 		}
 	}
@@ -222,17 +222,17 @@ func insertLeaderWorkerBulk(
 	// serialize workerMsg to json and print
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderWorkerAccountName)
 	if err != nil {
-		topicLog(m.T, topicId, "Error getting leader worker account: ", leaderWorkerAccountName, " - ", err)
+		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderWorkerAccountName, " - ", err))
 		return err
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, workerMsg)
 	if err != nil {
-		topicLog(m.T, topicId, "Error broadcasting worker bulk: ", err)
+		m.T.Log(topicLog(topicId, "Error broadcasting worker bulk: ", err))
 		return err
 	}
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	if err != nil {
-		topicLog(m.T, topicId, "Error waiting for worker bulk: ", err)
+		m.T.Log(topicLog(topicId, "Error waiting for worker bulk: ", err))
 		return err
 	}
 	return nil
@@ -257,9 +257,9 @@ func checkWorkersReceivedRewards(
 			workers[workerName].addr,
 		)
 		if err != nil {
-			topicLog(m.T, topicId, "Error getting worker balance for worker: ", workerName, err)
+			m.T.Log(topicLog(topicId, "Error getting worker balance for worker: ", workerName, err))
 			if maxIterations > 20 && workerIndex < 10 {
-				topicLog(m.T, topicId, "ERROR: Worker", workerName, "has insufficient stake:", balance)
+				m.T.Log(topicLog(topicId, "ERROR: Worker", workerName, "has insufficient stake:", balance))
 			}
 			if makeReport {
 				saveWorkerError(topicId, workerName, err)
@@ -267,13 +267,13 @@ func checkWorkersReceivedRewards(
 			}
 		} else {
 			if balance.Amount.LTE(cosmosMath.NewInt(initialWorkerReputerFundAmount)) {
-				topicLog(m.T, topicId, "Worker ", workerName, " balance is not greater than initial amount: ", balance.Amount.String())
+				m.T.Log(topicLog(topicId, "Worker ", workerName, " balance is not greater than initial amount: ", balance.Amount.String()))
 				if makeReport {
 					saveWorkerError(topicId, workerName, fmt.Errorf("Balance Not Greater"))
 					saveTopicError(topicId, fmt.Errorf("Balance Not Greater"))
 				}
 			} else {
-				topicLog(m.T, topicId, "Worker ", workerName, " balance: ", balance.Amount.String())
+				m.T.Log(topicLog(topicId, "Worker ", workerName, " balance: ", balance.Amount.String()))
 				rewardedWorkersCount += 1
 			}
 		}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
-	"testing"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -32,8 +31,8 @@ type AccountAndAddress struct {
 type NameToAccountMap map[NAME]AccountAndAddress
 
 // simple wrapper around topicLog
-func topicLog(t *testing.T, topicId uint64, a ...any) {
-	t.Log("[ TOPIC", topicId, "] ", a)
+func topicLog(topicId uint64, a ...any) string {
+	return fmt.Sprint("[TOPIC", topicId, "] ", a)
 }
 
 // return standardized account name for funders
@@ -43,12 +42,12 @@ func getTopicFunderAccountName(topicFunderIndex int) string {
 
 // return standardized account name for workers
 func getWorkerAccountName(workerIndex int, topicId uint64) string {
-	return "stressWorker" + strconv.Itoa(workerIndex) + "_topic" + strconv.Itoa(int(topicId))
+	return "stressTopic" + strconv.Itoa(int(topicId)) + "_worker" + strconv.Itoa(workerIndex)
 }
 
 // return standardized account name for reputers
 func getReputerAccountName(reputerIndex int, topicId uint64) string {
-	return "stressReputer" + strconv.Itoa(reputerIndex) + "_topic" + strconv.Itoa(int(topicId))
+	return "stressTopic" + strconv.Itoa(int(topicId)) + "_reputer" + strconv.Itoa(reputerIndex)
 }
 
 // return the approximate block time in seconds
@@ -140,24 +139,17 @@ func getNonZeroTopicEpochLastRan(
 			if storedTopic.EpochLastEnded != 0 {
 				nBlocks := storedTopic.EpochLength * minWaitingNumberofEpochs
 				sleepingTime := time.Duration(nBlocks) * approximateSecondsPerBlock
-				topicLog(m.T, topicId, time.Now(), " Topic found, sleeping...", sleepingTime)
+				m.T.Log(topicLog(topicId, time.Now(), " Topic found, sleeping...", sleepingTime))
 				time.Sleep(sleepingTime)
-				topicLog(m.T, topicId, time.Now(), " Looking for topic: Slept.")
+				m.T.Log(topicLog(topicId, time.Now(), " Looking for topic: Slept."))
 				return topicResponse.Topic, nil
 			}
 			sleepingTimeBlocks = int(storedTopic.EpochLength)
 		} else {
-			topicLog(m.T, topicId, "Error getting topic, retry...", err)
+			m.T.Log(topicLog(topicId, "Error getting topic, retry...", err))
 		}
 		// Sleep for a while before retrying
-		topicLog(
-			m.T,
-			topicId,
-			"Retrying sleeping for a default epoch, retry ",
-			retries,
-			" for sleeping time ",
-			sleepingTimeBlocks,
-		)
+		m.T.Log(topicLog(topicId, "Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks))
 		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock * time.Second)
 	}
 
