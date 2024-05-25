@@ -310,26 +310,11 @@ func SetupTopic(
 	return topicId
 }
 
-func WorkerReputerCoordinationLoop(
+func createTopicFunderAddresses(
 	m testCommon.TestConfig,
-	reputersPerEpoch,
-	reputersMax,
-	workersPerEpoch,
-	workersMax,
-	topicsPerEpoch,
-	topicsMax,
-	maxIterations,
-	epochLength int,
-	makeReport bool,
-) {
-	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
-	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
-
-	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
-	topicCount := 0
-	topicFunderCount := 0
-
-	topicFunderAddresses := make([]string, 0)
+	topicsMax int,
+) (topicFunderAddresses []string) {
+	topicFunderAddresses = make([]string, 0)
 
 	for topicFunderIndex := 0; topicFunderIndex < topicsMax; topicFunderIndex++ {
 		topicFunderAccountName := getTopicFunderAccountName(topicFunderIndex)
@@ -345,7 +330,41 @@ func WorkerReputerCoordinationLoop(
 		}
 		topicFunderAddresses = append(topicFunderAddresses, topicFunderAddress)
 	}
+	return topicFunderAddresses
+}
 
+func getTopicFunder(m testCommon.TestConfig, topicFunderCount int) (string, cosmosaccount.Account) {
+	topicFunderAccountName := getTopicFunderAccountName(topicFunderCount)
+	topicFunderAccount, err := m.Client.AccountRegistryGetByName(topicFunderAccountName)
+	if err != nil {
+		fmt.Println("Error getting funder account: ", topicFunderAccountName, " - ", err)
+		return "", topicFunderAccount
+	}
+	topicFunderAddress, err := topicFunderAccount.Address(params.HumanCoinUnit)
+	if err != nil {
+		fmt.Println("Error getting funder address: ", topicFunderAccountName, " - ", err)
+		return topicFunderAddress, topicFunderAccount
+	}
+	return topicFunderAddress, topicFunderAccount
+}
+
+func WorkerReputerCoordinationLoop(
+	m testCommon.TestConfig,
+	reputersPerEpoch,
+	reputersMax,
+	workersPerEpoch,
+	workersMax,
+	topicsPerEpoch,
+	topicsMax,
+	maxIterations,
+	epochLength int,
+	makeReport bool,
+) {
+	approximateSecondsPerBlock := getApproximateBlockTimeSeconds(m)
+	fmt.Println("Approximate block time seconds: ", approximateSecondsPerBlock)
+	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
+
+	topicFunderAddresses := createTopicFunderAddresses(m, topicsMax)
 	err := fundAccounts(m, m.FaucetAcc, m.FaucetAddr, topicFunderAddresses, 1e9)
 	if err != nil {
 		fmt.Println("Error funding funder accounts: ", err)
@@ -353,54 +372,31 @@ func WorkerReputerCoordinationLoop(
 		fmt.Println("Funded", len(topicFunderAddresses), "funder accounts.")
 	}
 
-	getTopicFunder := func() (string, cosmosaccount.Account) {
-		topicFunderAccountName := getTopicFunderAccountName(topicFunderCount)
-		topicFunderCount++
-		topicFunderAccount, err := m.Client.AccountRegistryGetByName(topicFunderAccountName)
-		if err != nil {
-			fmt.Println("Error getting funder account: ", topicFunderAccountName, " - ", err)
-			return "", topicFunderAccount
-		}
-		topicFunderAddress, err := topicFunderAccount.Address(params.HumanCoinUnit)
-		if err != nil {
-			fmt.Println("Error getting funder address: ", topicFunderAccountName, " - ", err)
-			return topicFunderAddress, topicFunderAccount
-		}
-		return topicFunderAddress, topicFunderAccount
-	}
-
-	workerCount := 1
-	reputerCount := 1
+	workerCount := 0
+	reputerCount := 0
+	topicsThisEpoch := topicsPerEpoch
 
 	var wg sync.WaitGroup
-	if topicsPerEpoch == 0 {
-		topicFunderAddress, topicFunderAccount := getTopicFunder()
-		wg.Add(1)
-		go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
-			reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength, makeReport)
-		topicCount++
-	} else {
-		for {
-			startIteration := time.Now()
+	for topicCount := 0; topicCount < topicsMax; {
+		startIteration := time.Now()
 
-			for j := 0; j < topicsPerEpoch && topicCount < topicsMax; j++ {
-				topicFunderAddress, topicFunderAccount := getTopicFunder()
-				wg.Add(1)
-				go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
-					reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength, makeReport)
-				topicCount++
-			}
-			if topicCount >= topicsMax {
-				break
-			}
-			workerCount += workersPerEpoch
-			reputerCount += reputersPerEpoch
-
-			elapsedIteration := time.Since(startIteration)
-			sleepingTime := iterationTime - elapsedIteration
-			fmt.Println(time.Now(), "Main loop sleeping", sleepingTime)
-			time.Sleep(sleepingTime)
+		if topicCount+topicsPerEpoch > topicsMax {
+			topicsThisEpoch = topicsMax - topicCount
 		}
+		for j := 0; j < topicsThisEpoch; j++ {
+			topicFunderAddress, topicFunderAccount := getTopicFunder(m, topicCount)
+			wg.Add(1)
+			go WorkerReputerLoop(&wg, m, topicFunderAddress, topicFunderAccount, workerCount, reputerCount,
+				reputersPerEpoch, reputersMax, workersPerEpoch, workersMax, maxIterations, epochLength, makeReport)
+			topicCount++
+		}
+		workerCount += workersPerEpoch
+		reputerCount += reputersPerEpoch
+
+		elapsedIteration := time.Since(startIteration)
+		sleepingTime := iterationTime - elapsedIteration
+		fmt.Println(time.Now(), "Main loop sleeping", sleepingTime)
+		time.Sleep(sleepingTime)
 	}
 	fmt.Println("All routines launched: waiting for running routines to end.")
 	wg.Wait()
