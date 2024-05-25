@@ -2,14 +2,13 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"strings"
-
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 type BlocklessRequest struct {
@@ -47,6 +46,7 @@ type LossesPayload struct {
 }
 
 func generateLossesRequest(
+	ctx sdk.Context,
 	inferences *emissionstypes.ValueBundle,
 	functionId string,
 	functionMethod string,
@@ -58,7 +58,7 @@ func generateLossesRequest(
 
 	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
+		ctx.Logger().Warn("Error marshalling JSON:", err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func generateLossesRequest(
 
 	payload, err := json.Marshal(calcWeightsReq)
 	if err != nil {
-		fmt.Println("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn("Error marshalling outer JSON:", err)
 		return
 	}
 	payloadStr := string(payload)
@@ -108,6 +108,7 @@ func generateLossesRequest(
 }
 
 func generateInferencesRequest(
+	ctx sdk.Context,
 	functionId string,
 	functionMethod string,
 	param string,
@@ -145,31 +146,34 @@ func generateInferencesRequest(
 	}
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
-		fmt.Println("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn("Error marshalling outer JSON:", err)
 	}
 	payloadStr := string(payload)
 
-	makeApiCall(payloadStr)
+	ctx.Logger().Debug("Making API call with payload: ", payloadStr)
+	err = makeApiCall(payloadStr)
+	if err != nil {
+		ctx.Logger().Warn("Error making API call:", err)
+	}
 }
 
-func makeApiCall(payload string) {
-	fmt.Println("Making Api Call, Payload: ", payload)
+func makeApiCall(payload string) error {
 	url := os.Getenv("BLOCKLESS_API_URL")
 	method := "POST"
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, strings.NewReader(payload))
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	req.Header.Add("Accept", "application/json, text/plain, */*")
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	defer res.Body.Close()
+
+	return nil
 }

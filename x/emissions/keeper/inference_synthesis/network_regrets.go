@@ -1,9 +1,9 @@
 package inference_synthesis
 
 import (
-	"fmt"
 	"sort"
 
+	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
@@ -104,8 +104,7 @@ func GetCalcSetNetworkRegrets(
 	for _, infererLoss := range networkLosses.InfererValues {
 		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
 		if err != nil {
-			fmt.Println("Error getting inferer regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
 		newInfererRegret, err := ComputeAndBuildEMRegret(
 			networkLosses.CombinedValue,
@@ -116,8 +115,7 @@ func GetCalcSetNetworkRegrets(
 			noPriorRegret,
 		)
 		if err != nil {
-			fmt.Println("Error computing and building inferer regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "Error computing and building inferer regret")
 		}
 		k.SetInfererNetworkRegret(ctx, topicId, infererLoss.Worker, newInfererRegret)
 	}
@@ -129,8 +127,7 @@ func GetCalcSetNetworkRegrets(
 	for _, forecasterLoss := range networkLosses.ForecasterValues {
 		lastRegret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
 		if err != nil {
-			fmt.Println("Error getting forecaster regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 		newForecasterRegret, err := ComputeAndBuildEMRegret(
 			networkLosses.CombinedValue,
@@ -141,8 +138,7 @@ func GetCalcSetNetworkRegrets(
 			noPriorRegret,
 		)
 		if err != nil {
-			fmt.Println("Error computing and building forecaster regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "Error computing and building forecaster regret")
 		}
 		k.SetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker, newForecasterRegret)
 	}
@@ -159,8 +155,7 @@ func GetCalcSetNetworkRegrets(
 			}
 			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
-				fmt.Println("Error getting one-in forecaster regret: ", err)
-				return err
+				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
 			newOneInForecasterRegret, err := ComputeAndBuildEMRegret(
 				networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker],
@@ -171,16 +166,14 @@ func GetCalcSetNetworkRegrets(
 				noPriorRegret,
 			)
 			if err != nil {
-				fmt.Println("Error computing and building one-in forecaster regret: ", err)
-				return err
+				return errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
 			}
 			k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 		}
 		// Self-regret for the forecaster given their own regret
 		lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker)
 		if err != nil {
-			fmt.Println("Error getting one-in forecaster self regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "Error getting one-in forecaster self regret")
 		}
 		oneInForecasterSelfRegret, err := ComputeAndBuildEMRegret(
 			networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker],
@@ -191,8 +184,7 @@ func GetCalcSetNetworkRegrets(
 			noPriorRegret,
 		)
 		if err != nil {
-			fmt.Println("Error computing and building one-in forecaster self regret: ", err)
-			return err
+			return errorsmod.Wrapf(err, "Error computing and building one-in forecaster self regret")
 		}
 		k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker, oneInForecasterSelfRegret)
 	}
