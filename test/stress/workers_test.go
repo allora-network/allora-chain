@@ -44,37 +44,6 @@ func createWorkerAddresses(
 	return workers
 }
 
-func initializeNewWorkerAccount(
-	m testCommon.TestConfig,
-	topicId uint64,
-	makeReport bool,
-	workerAddresses *map[string]string, // pointer mutate map itself not a copy
-) {
-	// Generate new worker accounts
-	workerAccountName := getWorkerAccountName(len(*workerAddresses), topicId)
-	topicLog(topicId, "Initializing worker address: ", workerAccountName)
-	workerAccount, err := m.Client.AccountRegistryGetByName(workerAccountName)
-	if err != nil {
-		topicLog(topicId, "Error getting worker address: ", workerAccountName, " - ", err)
-		if makeReport {
-			saveWorkerError(topicId, workerAccountName, err)
-			saveTopicError(topicId, err)
-		}
-		return
-	}
-	workerAddress, err := workerAccount.Address(params.HumanCoinUnit)
-	if err != nil {
-		topicLog(topicId, "Error getting worker address: ", workerAccountName, " - ", err)
-		if makeReport {
-			saveWorkerError(topicId, workerAccountName, err)
-			saveTopicError(topicId, err)
-		}
-		return
-	}
-
-	(*workerAddresses)[workerAccountName] = workerAddress
-}
-
 // register all the created workers for this iteration
 func registerWorkersForIteration(
 	m testCommon.TestConfig,
@@ -119,30 +88,32 @@ func generateInsertWorkerBundle(
 		topicLog(topic.Id, "Error getting random worker address: ", err)
 		return blockHeightCurrent, err
 	}
-	startWorker := time.Now()
-	err = insertWorkerBulk(m, topic, leaderWorkerAccountName, workers, blockHeightCurrent)
-	if err != nil {
-		if strings.Contains(err.Error(), "nonce already fulfilled") {
-			// realign blockHeights before retrying
-			topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
-			if err == nil {
-				blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-				blockHeightEval = blockHeightCurrent - topic.EpochLength
-				topicLog(topic.Id, "Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
-			} else {
-				topicLog(topic.Id, "Error getting topic!")
-				if makeReport {
-					saveTopicError(topic.Id, err)
+	for i := 0; i < retryTimes; i++ {
+		startWorker := time.Now()
+		err = insertWorkerBulk(m, topic, leaderWorkerAccountName, workers, blockHeightCurrent)
+		if err != nil {
+			if strings.Contains(err.Error(), "nonce already fulfilled") {
+				// realign blockHeights before retrying
+				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
+				if err == nil {
+					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
+					blockHeightEval = blockHeightCurrent - topic.EpochLength
+					topicLog(topic.Id, "Reset blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")")
+				} else {
+					topicLog(topic.Id, "Error getting topic!")
+					if makeReport {
+						saveTopicError(topic.Id, err)
+					}
 				}
 			}
+		} else {
+			topicLog(topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers")
+			elapsedBulk := time.Since(startWorker)
+			topicLog(topic.Id, "Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
+			return blockHeightCurrent, nil
 		}
-		return blockHeightEval, err
-	} else {
-		topicLog(topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers")
-		elapsedBulk := time.Since(startWorker)
-		topicLog(topic.Id, "Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedBulk)
 	}
-	return blockHeightCurrent, nil
+	return blockHeightCurrent, err
 }
 
 // Inserts bulk inference and forecast data for a worker
