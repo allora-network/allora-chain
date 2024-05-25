@@ -84,8 +84,6 @@ func workerReputerCoordinationLoop(
 	// 2. Outer "Topic Iteration."
 	//    Every iteration of this loop, topicsPerTopicIteration topics are created
 	//    up until the topicsMax is hit.
-	workerCount := 0
-	reputerCount := 0
 	topicsThisEpoch := topicsPerTopicIteration
 	var wg sync.WaitGroup
 	for topicCount := 0; topicCount < topicsMax; {
@@ -109,8 +107,6 @@ func workerReputerCoordinationLoop(
 				&wg,
 				m,
 				funder,
-				workerCount,
-				reputerCount,
 				reputersPerIteration,
 				maxReputersPerTopic,
 				workersPerIteration,
@@ -121,8 +117,6 @@ func workerReputerCoordinationLoop(
 			)
 			topicCount++
 		}
-		workerCount += maxWorkerReputerIterations * workersPerIteration
-		reputerCount += maxWorkerReputerIterations * reputersPerIteration
 
 		// 5. Sleep for enough time to let an epoch to complete before making the next topic
 		elapsedIteration := time.Since(startIteration)
@@ -146,8 +140,6 @@ func workerReputerLoop(
 	wg *sync.WaitGroup,
 	m testCommon.TestConfig,
 	funder AccountAndAddress,
-	initialWorkerCount,
-	initialReputerCount,
 	reputersPerIteration,
 	maxReputersPerTopic,
 	workersPerIteration,
@@ -240,7 +232,7 @@ func workerReputerLoop(
 			workers,
 			makeReport,
 		)
-		countWorkers = registerReputersForIteration(
+		countReputers = registerReputersForIteration(
 			m,
 			topicId,
 			i,

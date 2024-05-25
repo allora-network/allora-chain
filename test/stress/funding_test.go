@@ -8,7 +8,6 @@ import (
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 func createTopicFunderAddresses(
@@ -77,19 +76,4 @@ func fundAccounts(
 		return err
 	}
 	return nil
-}
-
-func getTopicFunder(m testCommon.TestConfig, topicFunderCount int) (string, cosmosaccount.Account) {
-	topicFunderAccountName := getTopicFunderAccountName(topicFunderCount)
-	topicFunderAccount, err := m.Client.AccountRegistryGetByName(topicFunderAccountName)
-	if err != nil {
-		fmt.Println("Error getting funder account: ", topicFunderAccountName, " - ", err)
-		return "", topicFunderAccount
-	}
-	topicFunderAddress, err := topicFunderAccount.Address(params.HumanCoinUnit)
-	if err != nil {
-		fmt.Println("Error getting funder address: ", topicFunderAccountName, " - ", err)
-		return topicFunderAddress, topicFunderAccount
-	}
-	return topicFunderAddress, topicFunderAccount
 }
