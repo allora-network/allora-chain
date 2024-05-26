@@ -15,6 +15,7 @@ import "emissions/v1/node.proto";
 import "emissions/v1/worker.proto";
 import "emissions/v1/reputer.proto";
 import "emissions/v1/topic.proto";
+import "emissions/v1/stake.proto";
 
 // Msg defines the module Msg service.
 service Query {
@@ -69,6 +70,12 @@ service Query {
   rpc GetReputerStakeInTopic(QueryReputerStakeInTopicRequest) returns (QueryReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/reputer_stake/{address}/{topic_id}";
+  }
+
+  rpc GetMultiReputerStakeInTopic(QueryMultiReputerStakeInTopicRequest)
+      returns (QueryMultiReputerStakeInTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputers_stakes/{topic_id}";
   }
 
   rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
@@ -177,6 +184,15 @@ message QueryReputerStakeInTopicResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message QueryMultiReputerStakeInTopicRequest {
+  repeated string addresses = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryMultiReputerStakeInTopicResponse {
+  repeated StakePlacement amounts = 1;
 }
 
 message QueryDelegateStakeInTopicInReputerRequest {
