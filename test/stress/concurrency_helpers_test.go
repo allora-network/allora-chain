@@ -45,7 +45,7 @@ func saveWorkerError(topic TOPIC_ID, name NAME, err error) {
 // save a reputer error into the global map
 func saveReputerError(topic TOPIC_ID, name NAME, err error) {
 	mutexReputerErrors.Lock()
-	workerErrors[topic] = append(reputerErrors[topic], struct {
+	reputerErrors[topic] = append(reputerErrors[topic], struct {
 		name NAME
 		err  string
 	}{name, err.Error()})
