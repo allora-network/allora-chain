@@ -8,7 +8,7 @@ import (
 )
 
 // register alice as a reputer in topic 1, then check success
-func StakeReputer(
+func stakeReputer(
 	m testCommon.TestConfig,
 	topicId uint64,
 	address string,

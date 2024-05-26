@@ -41,7 +41,7 @@ func setupTopic(
 		m.T.Fatal(err)
 	}
 
-	err = StakeReputer(m, topicId, funder.addr, funder.acc, stakeToAdd)
+	err = stakeReputer(m, topicId, funder.addr, funder.acc, stakeToAdd)
 	if err != nil {
 		m.T.Fatal(err)
 	}
@@ -216,6 +216,7 @@ func workerReputerLoop(
 			workers,
 			makeReport,
 		)
+		// Register the reputers, and additionally stake some tokens
 		countReputers = registerReputersForIteration(
 			m,
 			topicId,

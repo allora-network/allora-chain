@@ -69,6 +69,15 @@ func registerReputersForIteration(
 			}
 			return countReputers
 		}
+		err = stakeReputer(m, topicId, reputer.addr, reputer.acc, stakeToAdd)
+		if err != nil {
+			m.T.Log(topicLog(topicId, "Error staking reputer address: ", reputer.addr, " - ", err))
+			if makeReport {
+				saveReputerError(topicId, reputerName, err)
+				saveTopicError(topicId, err)
+			}
+			return countReputers
+		}
 		countReputers++
 	}
 	return countReputers
