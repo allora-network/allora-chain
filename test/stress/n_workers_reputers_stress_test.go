@@ -120,7 +120,7 @@ func workerReputerCoordinationLoop(
 		// 5. Sleep for enough time to let an epoch to complete before making the next topic
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		m.T.Log(topicLog(uint64(topicCount), time.Now(), "Main loop sleeping", sleepingTime))
+		m.T.Log("Topics created ", topicCount, " ", time.Now(), "Main loop sleeping", sleepingTime))
 		time.Sleep(sleepingTime)
 	}
 	m.T.Log("All routines launched: waiting for running routines to end.")

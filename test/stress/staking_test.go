@@ -7,7 +7,7 @@ import (
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
-// register alice as a reputer in topic 1, then check success
+// broadcast tx to register reputer in topic, then check success
 func stakeReputer(
 	m testCommon.TestConfig,
 	topicId uint64,

@@ -90,7 +90,7 @@ func reportSummaryStatistics() {
 	countReputersWithErrors := 0
 	mutexReputerErrors.Lock()
 	for topicId, topicReputerList := range reputerErrors {
-		countReputersWithErrors += len(topicReputerList)
+		countReputersWithErrors++
 		fmt.Print("Reputer Errors: Topic: ", topicId, " ")
 		fmt.Println(topicReputerList)
 	}
@@ -98,7 +98,7 @@ func reportSummaryStatistics() {
 	mutexWorkerErrors.Lock()
 	countWorkersWithErrors := 0
 	for topicId, topicWorkerList := range workerErrors {
-		countWorkersWithErrors += len(topicWorkerList)
+		countWorkersWithErrors++
 		fmt.Print("Worker Errors: Topic: ", topicId, " ")
 		fmt.Println(topicWorkerList)
 	}
@@ -110,15 +110,11 @@ func reportSummaryStatistics() {
 	percentTopicsWithErrors := float64(countTopicErrors) / float64(countTopics) * 100
 	percentReputersWithErrors := float64(countReputersWithErrors) / float64(countReputers) * 100
 	percentWorkersWithErrors := float64(countWorkersWithErrors) / float64(countWorkers) * 100
-	fmt.Printf("Count of topics with errors: %d\n", countTopicErrors)
-	fmt.Printf("Count of reputers with errors: %d\n", countReputersWithErrors)
-	fmt.Printf("Count of workers with errors: %d\n", countWorkersWithErrors)
+	fmt.Printf("\n\nSummary Statistics:")
+	fmt.Printf("Topics with errors: %d/%d | %.2f%%\n", countTopicErrors, countTopics, percentTopicsWithErrors)
+	fmt.Printf("Reputers with errors: %d/%d | %.2f%%\n", countReputersWithErrors, countReputers, percentReputersWithErrors)
+	fmt.Printf("Workers with errors: %d/%d  | %.2f%%\n", countWorkersWithErrors, countWorkers, percentWorkersWithErrors)
 	mutexCountTopics.Unlock()
 	mutexCountWorkers.Unlock()
 	mutexCountReputers.Unlock()
-
-	fmt.Printf("\n\nSummary Statistics:")
-	fmt.Printf("Percent of topics with some error: %.2f%%\n", percentTopicsWithErrors)
-	fmt.Printf("Percent of reputers with some error: %.2f%%\n", percentReputersWithErrors)
-	fmt.Printf("Percent of workers with some error: %.2f%%\n", percentWorkersWithErrors)
 }
