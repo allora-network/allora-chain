@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -45,7 +46,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 	}
 
 	if uint64(len(req.Addresses)) > maxLimit {
-		return nil, status.Error(codes.InvalidArgument, "cannot query more than 100 addresses at once")
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d addresses at once", maxLimit))
 	}
 
 	stakes := make([]*types.StakePlacement, len(req.Addresses))
