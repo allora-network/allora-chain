@@ -31,6 +31,7 @@ type TestConfig struct {
 	BobAcc        cosmosaccount.Account // account info for the bob test account
 	BobAddr       string                // bob address, string encoded bech32
 	Cdc           codec.Codec           // common codec for encoding/decoding
+	Seed          int                   // global non-mutable seed used for naming the test run
 }
 
 // create a new config that we can use
@@ -39,13 +40,14 @@ func NewTestConfig(
 	rpcConnectionType RpcConnectionType,
 	nodeRpcAddresses []string,
 	alloraHomeDir string,
-	seed int64,
+	seed int,
 ) TestConfig {
 	nodeConfig := TestConfig{}
 	var err error
 	nodeConfig.T = t
 	nodeConfig.Ctx = context.Background()
 	nodeConfig.AlloraHomeDir = alloraHomeDir
+	nodeConfig.Seed = seed
 	if rpcConnectionType == SingleRpc {
 		require.Len(t, nodeRpcAddresses, 1, "must have exactly one rpc address")
 	} else { // RoundRobin or RandomBasedOnDeterministicSeed
@@ -56,7 +58,7 @@ func NewTestConfig(
 		rpcConnectionType,
 		nodeRpcAddresses,
 		alloraHomeDir,
-		seed,
+		int64(seed),
 	)
 	nodeConfig.Client = client
 	//// restore from mnemonic

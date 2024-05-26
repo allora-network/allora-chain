@@ -25,7 +25,7 @@ func createWorkerAddresses(
 	workers = make(map[string]AccountAndAddress)
 
 	for workerIndex := 0; workerIndex < workersMax; workerIndex++ {
-		workerAccountName := getWorkerAccountName(workerIndex, topicId)
+		workerAccountName := getWorkerAccountName(m.Seed, workerIndex, topicId)
 		workerAccount, _, err := m.Client.AccountRegistryCreate(workerAccountName)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
@@ -57,7 +57,7 @@ func registerWorkersForIteration(
 	makeReport bool,
 ) int {
 	for j := 0; j < workersPerIteration && countWorkers < maxWorkersPerTopic; j++ {
-		workerName := getWorkerAccountName(iteration*j, topicId)
+		workerName := getWorkerAccountName(m.Seed, iteration*j, topicId)
 		worker := workers[workerName]
 		err := RegisterWorkerForTopic(m, worker.addr, worker.acc, topicId)
 		if err != nil {
@@ -250,7 +250,7 @@ func checkWorkersReceivedRewards(
 	rewardedWorkersCount = 0
 	err = nil
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
-		workerName := getWorkerAccountName(workerIndex, topicId)
+		workerName := getWorkerAccountName(m.Seed, workerIndex, topicId)
 		balance, err := getAccountBalance(
 			m.Ctx,
 			m.Client.QueryBank(),

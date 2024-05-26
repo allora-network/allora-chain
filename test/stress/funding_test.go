@@ -16,7 +16,7 @@ func createTopicFunderAddresses(
 	topicFunders = make(map[string]AccountAndAddress)
 
 	for topicFunderIndex := 0; topicFunderIndex < topicsMax; topicFunderIndex++ {
-		topicFunderAccountName := getTopicFunderAccountName(topicFunderIndex)
+		topicFunderAccountName := getTopicFunderAccountName(m.Seed, topicFunderIndex)
 		topicFunderAccount, _, err := m.Client.AccountRegistryCreate(topicFunderAccountName)
 		if err != nil {
 			m.T.Log("Error creating funder address: ", topicFunderAccountName, " - ", err)

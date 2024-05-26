@@ -25,7 +25,7 @@ func createReputerAddresses(
 	reputers = make(map[string]AccountAndAddress)
 
 	for reputerIndex := 0; reputerIndex < reputersMax; reputerIndex++ {
-		reputerAccountName := getReputerAccountName(reputerIndex, topicId)
+		reputerAccountName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputerAccount, _, err := m.Client.AccountRegistryCreate(reputerAccountName)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error creating funder address: ", reputerAccountName, " - ", err))
@@ -58,7 +58,7 @@ func registerReputersForIteration(
 	makeReport bool,
 ) int {
 	for j := 0; j < reputersPerIteration && countReputers < maxReputersPerTopic; j++ {
-		reputerName := getReputerAccountName(iteration*j, topicId)
+		reputerName := getReputerAccountName(m.Seed, iteration*j, topicId)
 		reputer := reputers[reputerName]
 		err := RegisterReputerForTopic(m, reputer.addr, reputer.acc, topicId)
 		if err != nil {
@@ -304,7 +304,7 @@ func checkReputersReceivedRewards(
 	rewardedReputersCount = 0
 	err = nil
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
-		reputerName := getReputerAccountName(reputerIndex, topicId)
+		reputerName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputer := reputers[reputerName]
 		reputerStake, err := getReputerStake(
 			m.Ctx,

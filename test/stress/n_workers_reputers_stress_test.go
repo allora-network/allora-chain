@@ -95,7 +95,7 @@ func workerReputerCoordinationLoop(
 		}
 		for j := 0; j < topicsThisEpoch; j++ {
 			// 4. Get ahold of the funder for this topic
-			topicFunderAccountName := getTopicFunderAccountName(topicCount)
+			topicFunderAccountName := getTopicFunderAccountName(m.Seed, topicCount)
 			funder := topicFunders[topicFunderAccountName]
 
 			wg.Add(1)
