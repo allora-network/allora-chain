@@ -39,7 +39,12 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 // including their stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.QueryMultiReputerStakeInTopicRequest) (*types.QueryMultiReputerStakeInTopicResponse, error) {
-	if len(req.Addresses) > 100 {
+	maxLimit, err := qs.k.GetParamsMaxLimit(ctx)
+	if err != nil {
+		maxLimit = types.DefaultParamsMaxLimit()
+	}
+
+	if uint64(len(req.Addresses)) > maxLimit {
 		return nil, status.Error(codes.InvalidArgument, "cannot query more than 100 addresses at once")
 	}
 
