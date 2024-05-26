@@ -31,21 +31,6 @@ func setupTopic(
 		m.T.Fatal(err)
 	}
 
-	err = RegisterWorkerForTopic(m, funder.addr, funder.acc, topicId)
-	if err != nil {
-		m.T.Fatal(err)
-	}
-
-	err = RegisterReputerForTopic(m, funder.addr, funder.acc, topicId)
-	if err != nil {
-		m.T.Fatal(err)
-	}
-
-	err = stakeReputer(m, topicId, funder.addr, funder.acc, stakeToAdd)
-	if err != nil {
-		m.T.Fatal(err)
-	}
-
 	m.T.Log("Created new Topic with topicId", topicId)
 
 	return topicId
