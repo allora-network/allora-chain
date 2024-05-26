@@ -183,3 +183,18 @@ func pickRandomKeyFromMap(x map[string]AccountAndAddress) (string, error) {
 	// Return the value corresponding to the randomly selected key
 	return randomKey, nil
 }
+
+// copies two maps into a new combined map
+// O(n) over each map separately
+// if the maps contain the same keys, the first map
+// takes precedence for value
+func mapUnion(a NameToAccountMap, b NameToAccountMap) NameToAccountMap {
+	combined := make(NameToAccountMap)
+	for k, v := range b {
+		combined[k] = v
+	}
+	for k, v := range a {
+		combined[k] = v
+	}
+	return combined
+}

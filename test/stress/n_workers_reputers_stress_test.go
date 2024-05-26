@@ -150,41 +150,31 @@ func workerReputerLoop(
 	defer wg.Done()
 	approximateSecondsBlockTime := getApproximateBlockTimeSeconds(m)
 
-	//  1. Create and fund a new topic
-	//     Additionally register the topic funder as a worker and reputer for that topic
+	// Create and fund a new topic
+	// Additionally register the topic funder as a worker and reputer for that topic
 	topicId := setupTopic(m, funder, int64(epochLength))
 
-	//  2. Generate the worker and reputer bech32 accounts we will need for this new topic
+	// Generate the worker and reputer bech32 accounts we will need for this new topic
 	numWorkersInThisTopic := min(maxIterations*workersPerIteration, maxWorkersPerTopic)
 	numReputersInThisTopic := min(maxIterations*reputersPerIteration, maxReputersPerTopic)
 	workers := createWorkerAddresses(m, topicId, numWorkersInThisTopic)
 	reputers := createReputerAddresses(m, topicId, numReputersInThisTopic)
 
-	//  3. Fund the accounts
+	actors := mapUnion(workers, reputers)
+	// Fund the accounts
 	err := fundAccounts(
 		m,
 		funder,
-		workers,
+		actors,
 		initialWorkerReputerFundAmount,
 	)
 	if err != nil {
-		m.T.Log(topicLog(topicId, "Error funding worker accounts: ", err))
+		m.T.Log(topicLog(topicId, "Error funding reputer and worker accounts: ", err))
 	} else {
-		m.T.Log(topicLog(topicId, "Funded", len(workers), "worker accounts."))
-	}
-	err = fundAccounts(
-		m,
-		funder,
-		reputers,
-		initialWorkerReputerFundAmount,
-	)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error funding reputer accounts: ", err))
-	} else {
-		m.T.Log(topicLog(topicId, "Funded", len(reputers), "reputer accounts."))
+		m.T.Log(topicLog(topicId, "Funded", len(actors), "total actor accounts for this topic."))
 	}
 
-	//  4. Wait until the topic has had minWaitingNumberofEpochs before starting to provide inferences for it
+	// Wait until the topic has had minWaitingNumberofEpochs before starting to provide inferences for it
 	topic, err := getNonZeroTopicEpochLastRan(
 		m,
 		topicId,
@@ -201,9 +191,9 @@ func workerReputerLoop(
 
 	countWorkers := 0
 	countReputers := 0
-	//  5. Begin "iterations" inside the topic
+	// Begin "iterations" inside the topic
 	for i := 0; i < maxIterations; i++ {
-		// 6. Fund the topic to give it money to make inferences
+		// Fund the topic to give it money to make inferences
 		err := fundTopic(m, topicId, funder, topicFunds)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Funding topic failed: ", err))
@@ -215,7 +205,7 @@ func workerReputerLoop(
 
 		m.T.Log(topicLog(topicId, "iteration: ", i, " / ", maxIterations))
 
-		// 7. Register the newly created accounts for this iteration
+		// Register the newly created accounts for this iteration
 		countWorkers = registerWorkersForIteration(
 			m,
 			topicId,
@@ -237,7 +227,7 @@ func workerReputerLoop(
 			makeReport,
 		)
 
-		//  8. Generate and insert a worker bundle (adjust nonces if failure)
+		// Generate and insert a worker bundle (adjust nonces if failure)
 		err = generateInsertWorkerBundle(
 			m,
 			topic,
@@ -252,7 +242,7 @@ func workerReputerLoop(
 			}
 		}
 
-		//  9. Generate and insert reputer bundle scoring workers
+		// Generate and insert reputer bundle scoring workers
 		err = generateInsertReputerBulk(
 			m,
 			topic,
@@ -268,14 +258,14 @@ func workerReputerLoop(
 			}
 		}
 
-		//  10. Sleep for an epoch
+		// Sleep for an epoch
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
 		m.T.Log(topicLog(topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime))
 		time.Sleep(sleepingTime)
 	}
 
-	// 11. Check that the workers have been paid rewards
+	// Check that the workers have been paid rewards
 	rewardedWorkersCount, err := checkWorkersReceivedRewards(
 		m,
 		topicId,
@@ -291,7 +281,7 @@ func workerReputerLoop(
 		}
 	}
 
-	// 11. Check that the reputer have been paid rewards via a stake greater than the initial amount
+	// Check that the reputer have been paid rewards via a stake greater than the initial amount
 	rewardedReputersCount, err := checkReputersReceivedRewards(
 		m,
 		topicId,
@@ -307,7 +297,7 @@ func workerReputerLoop(
 		}
 	}
 
-	// 12. Check that only the top workers and reputers are rewarded
+	// Check that only the top workers and reputers are rewarded
 	maxTopWorkersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
 	require.Less(m.T, rewardedWorkersCount, maxTopWorkersCount, "Only top workers can get reward")
 	require.Less(m.T, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")
