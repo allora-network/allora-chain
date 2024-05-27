@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"strconv"
-	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -320,7 +319,7 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 	reputersOneInNaiveLosses [][]alloraMath.Dec,
 ) {
 	for i := 0; i < reputersCount; i++ {
-		rand.Seed(time.Now().UnixNano())
+		rand.Seed(20)
 		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		var infererLosses = make([]alloraMath.Dec, 0)
