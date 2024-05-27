@@ -318,8 +318,8 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 	reputersForecasterOneOutLosses [][]alloraMath.Dec,
 	reputersOneInNaiveLosses [][]alloraMath.Dec,
 ) {
+	rand.Seed(20)
 	for i := 0; i < reputersCount; i++ {
-		rand.Seed(20)
 		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
 		var infererLosses = make([]alloraMath.Dec, 0)
