@@ -14,15 +14,17 @@ import (
 
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug("\n ---------------- Emissions EndBlock ------------------- \n")
 	blockHeight := sdkCtx.BlockHeight()
+	sdkCtx.Logger().Debug(
+		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
+			blockHeight))
 
 	// Get unnormalized weights of active topics
 	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight, true)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker: Total Revenue: %v, Sum Weight: %v", totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -41,7 +43,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	fn := func(ctx context.Context, topic *types.Topic) error {
+	fn := func(sdkCtx sdk.Context, topic *types.Topic) error {
 		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
 		go func(topic types.Topic) {
@@ -66,6 +68,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					sdkCtx.Logger().Warn("Error adding worker nonce: ", err)
 					return
 				}
+				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
 				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
 				if err != nil {
