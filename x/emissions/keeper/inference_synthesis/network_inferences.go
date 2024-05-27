@@ -1,17 +1,17 @@
 package inference_synthesis
 
 import (
-	"errors"
-	"sort"
-	"fmt"
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	"errors"
+	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"sort"
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
@@ -112,7 +112,7 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of forecaster regrets")
 	}
 
-	stdDevOneInForecasterRegret := make(map[Worker]Regret)
+	stdDevOneInForecasterRegrets := make(map[Worker]Regret, 0)
 	for _, forecaster := range sortedForecasters {
 		oneInForecasterRegrets := make([]Regret, 0)
 		for _, inferer := range sortedInferers {
@@ -136,12 +136,13 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 		if err != nil {
 			return StdDevRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of forecaster regrets")
 		}
+		stdDevOneInForecasterRegrets[forecaster] = stdDevOneInForecasterRegret
 	}
 
 	return StdDevRegrets{
 		StdDevInferenceRegret:     stdDevInfererRegrets,
 		StdDevForecastRegret:      stdDevForecasterRegrets,
-		StdDevOneInForecastRegret: stdDevOneInForecasterRegret,
+		StdDevOneInForecastRegret: stdDevOneInForecasterRegrets,
 	}, nil
 }
 

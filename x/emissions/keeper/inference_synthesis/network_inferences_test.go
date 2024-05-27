@@ -80,8 +80,9 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() {
+func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWithLosses() {
 	k := s.emissionsKeeper
+	ctx := s.ctx
 	topicId := uint64(1)
 
 	worker1 := "worker1"
@@ -101,34 +102,31 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 
 	epsilon := alloraMath.MustNewDecFromString("0.001")
 
-	// Set inferer network regrets
-	err := k.SetInfererNetworkRegret(s.ctx, topicId, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
 	s.Require().NoError(err)
-	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-
-	// Set forecaster network regrets
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	err = k.SetInfererNetworkRegret(ctx, topicId, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
 	s.Require().NoError(err)
 
-	// Set one-in forecaster network regrets
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	err = k.SetForecasterNetworkRegret(ctx, topicId, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
 	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	err = k.SetForecasterNetworkRegret(ctx, topicId, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
 	s.Require().NoError(err)
 
-	maxRegrets, err := inference_synthesis.FindMaxRegretAmongWorkersWithLosses(
-		s.ctx,
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	s.Require().NoError(err)
+
+	stdDevRegrets, err := inference_synthesis.CalcTheStdDevOfRegretsAmongWorkersWithLosses(
+		ctx,
 		k,
 		topicId,
 		inferenceByWorker,
@@ -139,14 +137,19 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 	)
 	s.Require().NoError(err)
 
-	expectedMaxInfererRegret := alloraMath.MustNewDecFromString("0.3")
-	expectedMaxForecasterRegret := alloraMath.MustNewDecFromString("0.5")
+	expectedStdDevInferenceRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevForecastRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevOneInForecastRegretWorker3, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevOneInForecastRegretWorker4, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
+	s.Require().NoError(err)
 
-	s.Require().True(maxRegrets.MaxInferenceRegret.Equal(expectedMaxInfererRegret))
-	s.Require().True(maxRegrets.MaxForecastRegret.Equal(expectedMaxForecasterRegret))
-
-	s.Require().Equal(alloraMath.MustNewDecFromString("0.4"), maxRegrets.MaxOneInForecastRegret[worker3])
-	s.Require().Equal(alloraMath.MustNewDecFromString("0.6"), maxRegrets.MaxOneInForecastRegret[worker4])
+	s.Require().True(stdDevRegrets.StdDevInferenceRegret.Equal(expectedStdDevInferenceRegret), "StdDevInferenceRegret mismatch")
+	s.Require().True(stdDevRegrets.StdDevForecastRegret.Equal(expectedStdDevForecastRegret), "StdDevForecastRegret mismatch")
+	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker3].Equal(expectedStdDevOneInForecastRegretWorker3), "StdDevOneInForecastRegret[worker3] mismatch")
+	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
