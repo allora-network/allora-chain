@@ -86,7 +86,7 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 		}
 		infererRegrets = append(infererRegrets, infererRegret.Value)
 	}
-	stdDevInfererRegrets, err := rewards.StdDev(infererRegrets)
+	stdDevInfererRegrets, err := alloraMath.StdDev(infererRegrets)
 	if err != nil {
 		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
 	}
@@ -103,7 +103,7 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 		}
 		forecasterRegrets = append(forecasterRegrets, forecasterRegret.Value)
 	}
-	stdDevForecasterRegrets, err := rewards.StdDev(forecasterRegrets)
+	stdDevForecasterRegrets, err := alloraMath.StdDev(forecasterRegrets)
 	if err != nil {
 		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
 	}
@@ -128,7 +128,7 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 		}
 		oneInForecasterRegrets = append(oneInForecasterRegrets, oneInForecasterSelfRegret.Value)
 
-		stdDevOneInForecasterRegret, err := rewards.StdDev(oneInForecasterRegrets)
+		stdDevOneInForecasterRegret, err := alloraMath.StdDev(oneInForecasterRegrets)
 		if err != nil {
 			return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
 		}
