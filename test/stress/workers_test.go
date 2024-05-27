@@ -88,7 +88,7 @@ func generateInsertWorkerBundle(
 	workers NameToAccountMap,
 	retryTimes int,
 	makeReport bool,
-) error {
+) (insertedBlockHeight int64, err error) {
 	leaderWorkerAccountName, err := pickRandomKeyFromMap(workers)
 	if err != nil {
 		m.T.Log(topicLog(topic.Id, "Error getting random worker address: ", err))
@@ -96,7 +96,7 @@ func generateInsertWorkerBundle(
 			saveReputerError(topic.Id, leaderWorkerAccountName, err)
 			saveTopicError(topic.Id, err)
 		}
-		return err
+		return 0, err
 	}
 
 	blockHeightCurrent := topic.EpochLastEnded + topic.EpochLength
@@ -118,7 +118,7 @@ func generateInsertWorkerBundle(
 						saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 						saveTopicError(topic.Id, err)
 					}
-					return err
+					return blockHeightCurrent, err
 				}
 			} else {
 				m.T.Log(topicLog(topic.Id, "Error inserting worker bulk: ", err))
@@ -126,16 +126,16 @@ func generateInsertWorkerBundle(
 					saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 					saveTopicError(topic.Id, err)
 				}
-				return err
+				return blockHeightCurrent, err
 			}
 		} else {
 			m.T.Log(topicLog(topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers"))
 			elapsedBulk := time.Since(startWorker)
 			m.T.Log(topicLog(topic.Id, "Insert Worker ", leaderWorkerAccountName, " ", blockHeightCurrent, " Elapsed time:", elapsedBulk))
-			return nil
+			return blockHeightCurrent, nil
 		}
 	}
-	return err
+	return blockHeightCurrent, err
 }
 
 // Inserts bulk inference and forecast data for a worker

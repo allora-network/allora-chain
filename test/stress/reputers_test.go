@@ -103,6 +103,7 @@ func generateInsertReputerBulk(
 	topic *emissionstypes.Topic,
 	reputers NameToAccountMap,
 	workers NameToAccountMap,
+	insertedBlockHeight int64,
 	retryTimes int,
 	makeReport bool,
 ) error {
@@ -115,8 +116,9 @@ func generateInsertReputerBulk(
 		}
 		return err
 	}
-	blockHeightCurrent := topic.EpochLastEnded + topic.EpochLength
-	blockHeightEval := blockHeightCurrent - topic.EpochLength
+	// ground truth lag is 10 blocks
+	blockHeightCurrent := insertedBlockHeight + topic.EpochLength
+	blockHeightEval := insertedBlockHeight
 
 	startReputer := time.Now()
 	for i := 0; i < retryTimes; i++ {

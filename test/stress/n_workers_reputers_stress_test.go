@@ -250,7 +250,7 @@ func workerReputerLoop(
 		)
 
 		// Generate and insert a worker bundle (adjust nonces if failure)
-		err = generateInsertWorkerBundle(
+		insertedBlockHeight, err := generateInsertWorkerBundle(
 			m,
 			topic,
 			workers,
@@ -270,6 +270,7 @@ func workerReputerLoop(
 			topic,
 			reputers,
 			workers,
+			insertedBlockHeight,
 			retryBundleUploadTimes,
 			makeReport,
 		)
