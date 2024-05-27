@@ -2,8 +2,10 @@ package queryserver
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -32,6 +34,34 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 	}
 
 	return &types.QueryReputerStakeInTopicResponse{Amount: stake}, nil
+}
+
+// Retrieves all stake in a topic for a given set of reputer addresses,
+// including their stake in themselves and stake delegated to them.
+// Also includes stake that is queued for removal.
+func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.QueryMultiReputerStakeInTopicRequest) (*types.QueryMultiReputerStakeInTopicResponse, error) {
+	maxLimit, err := qs.k.GetParamsMaxLimit(ctx)
+	if err != nil {
+		maxLimit = types.DefaultParamsMaxLimit()
+	}
+
+	if uint64(len(req.Addresses)) > maxLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d addresses at once", maxLimit))
+	}
+
+	stakes := make([]*types.StakePlacement, len(req.Addresses))
+	for i, address := range req.Addresses {
+		stake := cosmosMath.ZeroInt()
+		if err := qs.k.ValidateStringIsBech32(address); err == nil {
+			stake, err = qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
+			if err != nil {
+				stake = cosmosMath.ZeroInt()
+			}
+		}
+		stakes[i] = &types.StakePlacement{TopicId: req.TopicId, Reputer: address, Amount: stake}
+	}
+
+	return &types.QueryMultiReputerStakeInTopicResponse{Amounts: stakes}, nil
 }
 
 // Retrieves total delegate stake on a given reputer address in a given topic

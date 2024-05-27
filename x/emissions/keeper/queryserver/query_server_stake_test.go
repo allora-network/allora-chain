@@ -46,6 +46,37 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	s.Require().Equal(initialStake, response.Amount, "The retrieved stake should match the initial stake set for the reputer in the topic")
 }
 
+func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer1, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	reputer2, err := sdk.AccAddressFromHexUnsafe(PKS[2].Address().String())
+	s.Require().NoError(err)
+	reputer1Addr := reputer1.String()
+	reputer2Addr := reputer2.String()
+	initialStake1 := cosmosMath.NewInt(250)
+	initialStake2 := cosmosMath.NewInt(251)
+
+	err = keeper.AddStake(ctx, topicId, reputer1Addr, initialStake1)
+	s.Require().NoError(err, "AddStake should not produce an error")
+	err = keeper.AddStake(ctx, topicId, reputer2Addr, initialStake2)
+	s.Require().NoError(err, "AddStake should not produce an error")
+
+	req := &types.QueryMultiReputerStakeInTopicRequest{
+		Addresses: []string{reputer1Addr, reputer2Addr},
+		TopicId:   topicId,
+	}
+
+	response, err := queryServer.GetMultiReputerStakeInTopic(ctx, req)
+	s.Require().NoError(err, "GetReputerStakeInTopic should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Len(response.Amounts, 2, "The retrieved set of stakes should have length equal to the number of reputers queried")
+	s.Require().Equal(initialStake1, response.Amounts[0].Amount, "The retrieved stake should match the initial stake set for the first reputer in the topic")
+	s.Require().Equal(initialStake2, response.Amounts[1].Amount, "The retrieved stake should match the initial stake set for the second reputer in the topic")
+}
+
 func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	ctx := s.ctx
 	queryServer := s.queryServer

@@ -29,6 +29,7 @@ const (
 	Query_GetNetworkLossBundleAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
 	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
 	Query_GetReputerStakeInTopic_FullMethodName                = "/emissions.v1.Query/GetReputerStakeInTopic"
+	Query_GetMultiReputerStakeInTopic_FullMethodName           = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
 	Query_GetDelegateStakeInTopicInReputer_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
 	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
 	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
@@ -58,6 +59,7 @@ type QueryClient interface {
 	GetNetworkLossBundleAtBlock(ctx context.Context, in *QueryNetworkLossBundleAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
 	GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error)
+	GetMultiReputerStakeInTopic(ctx context.Context, in *QueryMultiReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryMultiReputerStakeInTopicResponse, error)
 	GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
@@ -164,6 +166,15 @@ func (c *queryClient) GetTotalStake(ctx context.Context, in *QueryTotalStakeRequ
 func (c *queryClient) GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error) {
 	out := new(QueryReputerStakeInTopicResponse)
 	err := c.cc.Invoke(ctx, Query_GetReputerStakeInTopic_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetMultiReputerStakeInTopic(ctx context.Context, in *QueryMultiReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryMultiReputerStakeInTopicResponse, error) {
+	out := new(QueryMultiReputerStakeInTopicResponse)
+	err := c.cc.Invoke(ctx, Query_GetMultiReputerStakeInTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -293,6 +304,7 @@ type QueryServer interface {
 	GetNetworkLossBundleAtBlock(context.Context, *QueryNetworkLossBundleAtBlockRequest) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
 	GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error)
+	GetMultiReputerStakeInTopic(context.Context, *QueryMultiReputerStakeInTopicRequest) (*QueryMultiReputerStakeInTopicResponse, error)
 	GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
@@ -341,6 +353,9 @@ func (UnimplementedQueryServer) GetTotalStake(context.Context, *QueryTotalStakeR
 }
 func (UnimplementedQueryServer) GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerStakeInTopic not implemented")
+}
+func (UnimplementedQueryServer) GetMultiReputerStakeInTopic(context.Context, *QueryMultiReputerStakeInTopicRequest) (*QueryMultiReputerStakeInTopicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMultiReputerStakeInTopic not implemented")
 }
 func (UnimplementedQueryServer) GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeInTopicInReputer not implemented")
@@ -567,6 +582,24 @@ func _Query_GetReputerStakeInTopic_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetReputerStakeInTopic(ctx, req.(*QueryReputerStakeInTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetMultiReputerStakeInTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryMultiReputerStakeInTopicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetMultiReputerStakeInTopic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetMultiReputerStakeInTopic_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetMultiReputerStakeInTopic(ctx, req.(*QueryMultiReputerStakeInTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -833,6 +866,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReputerStakeInTopic",
 			Handler:    _Query_GetReputerStakeInTopic_Handler,
+		},
+		{
+			MethodName: "GetMultiReputerStakeInTopic",
+			Handler:    _Query_GetMultiReputerStakeInTopic_Handler,
 		},
 		{
 			MethodName: "GetDelegateStakeInTopicInReputer",
