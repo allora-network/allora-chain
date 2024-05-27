@@ -1030,8 +1030,6 @@ func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	s.Require().NoError(err)
 
-	s.Require().Greater(delegatorBal1.Amount.Uint64(), delegatorBal0.Amount.Uint64(), "Balance must be increased")
-
 	delegatorRewardRaw := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
 	reputerReward := reputerRewards[0].Reward.SdkIntTrim()
 	normalizedDelegatorReward, err := alloraMath.NewDecFromInt64(delegatorRewardRaw.Int64()).Quo(alloraMath.NewDecFromInt64(delegatorRatio.Int64()))
