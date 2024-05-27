@@ -928,3 +928,114 @@ func (s *KeeperTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 
 	s.Require().Equal(delegatorReward, reputerReward, "Delegator and reputer rewards must be equal")
 }
+
+func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	block := int64(1003)
+	// newBlock := int64(1004)
+	score := alloraMath.MustNewDecFromString("17.53436")
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	workerAddr := sdk.AccAddress(PKS[2].Address()) // target
+
+	registrationInitialBalance := cosmosMath.NewInt(10000)
+	reputerStakeAmount := cosmosMath.NewInt(1e2)
+	delegatorRatio := cosmosMath.NewInt(1e3)
+	delegatorStakeAmount := reputerStakeAmount.Mul(delegatorRatio)
+
+	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), registrationInitialBalance)
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
+	s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000000))))
+
+	addStakeMsg := &types.MsgAddStake{
+		Sender:  reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  reputerStakeAmount,
+	}
+
+	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
+	require.NoError(err, "AddStake should not return an error")
+	require.NotNil(response)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  delegatorStakeAmount,
+	}
+
+	// Perform the stake delegation
+	delegateResponse, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(delegateResponse, "Response should not be nil after successful delegation")
+
+	var reputerValueBundles types.ReputerValueBundles
+	scoreToAdd := types.Score{
+		TopicId:     topicId,
+		BlockNumber: block,
+		Address:     reputerAddr.String(),
+		Score:       score,
+	}
+	err = keeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
+	s.Require().NoError(err)
+
+	reputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			TopicId:       topicId,
+			Reputer:       reputerAddr.String(),
+			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
+			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
+		},
+	}
+	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
+	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
+
+	// Calculate and Set the reputer scores
+	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
+
+	// Generate rewards
+	reputers, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		keeper,
+		topicId,
+		alloraMath.OneDec(),
+		scores,
+	)
+	s.Require().NoError(err)
+	reputerRewards, err := rewards.GetRewardPerReputer(
+		s.ctx,
+		keeper,
+		topicId,
+		alloraMath.MustNewDecFromString("1017.5559072418691"),
+		reputers,
+		reputersRewardFractions,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(1, len(reputerRewards))
+
+	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	rewardMsg := &types.MsgRewardDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+	}
+	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
+
+	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	s.Require().NoError(err)
+
+	s.Require().Greater(delegatorBal1.Amount.Uint64(), delegatorBal0.Amount.Uint64(), "Balance must be increased")
+
+	delegatorRewardRaw := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
+	reputerReward := reputerRewards[0].Reward.SdkIntTrim()
+	normalizedDelegatorReward, err := alloraMath.NewDecFromInt64(delegatorRewardRaw.Int64()).Quo(alloraMath.NewDecFromInt64(delegatorRatio.Int64()))
+	s.Require().NoError(err)
+
+	s.Require().Equal(normalizedDelegatorReward.SdkIntTrim(), reputerReward, "Delegator and reputer rewards must be equal")
+}
