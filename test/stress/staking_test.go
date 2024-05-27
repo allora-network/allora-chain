@@ -4,23 +4,21 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 // broadcast tx to register reputer in topic, then check success
 func stakeReputer(
 	m testCommon.TestConfig,
 	topicId uint64,
-	address string,
-	account cosmosaccount.Account,
+	reputer NameAccountAndAddress,
 	stakeToAdd uint64,
 ) error {
 	addStake := &emissionstypes.MsgAddStake{
-		Sender:  address,
+		Sender:  reputer.aa.addr,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewIntFromUint64(stakeToAdd),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, account, addStake)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, addStake)
 	if err != nil {
 		return err
 	}

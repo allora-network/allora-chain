@@ -31,7 +31,7 @@ func createTopicFunderAddresses(
 			acc:  topicFunderAccount,
 			addr: topicFunderAddress,
 		}
-		m.T.Log("Created funder address: ", topicFunderAccountName, " - ", topicFunderAddress)
+		//m.T.Log("Created funder address: ", topicFunderAccountName, " - ", topicFunderAddress)
 	}
 	return topicFunders
 }
@@ -39,7 +39,8 @@ func createTopicFunderAddresses(
 // fund every target address from the sender in amount coins
 func fundAccounts(
 	m testCommon.TestConfig,
-	sender AccountAndAddress,
+	topicId uint64,
+	sender NameAccountAndAddress,
 	targets NameToAccountMap,
 	amount int64,
 ) error {
@@ -53,28 +54,43 @@ func fundAccounts(
 		sdktypes.NewCoin(params.BaseCoinUnit, cosmossdk_io_math.NewInt(amount)),
 	)
 
-	outputs := []banktypes.Output{}
-	for _, accountAndAddress := range targets {
-		outputs = append(outputs, banktypes.Output{
+	outputs := make([]banktypes.Output, len(targets))
+	names := make([]string, len(targets))
+	i := 0
+	for name, accountAndAddress := range targets {
+		names[i] = name
+		outputs[i] = banktypes.Output{
 			Address: accountAndAddress.addr,
 			Coins:   outputCoins,
-		})
+		}
+		i++
 	}
 
 	// Fund the accounts from faucet account in a single transaction
 	sendMsg := &banktypes.MsgMultiSend{
 		Inputs: []banktypes.Input{
 			{
-				Address: sender.addr,
+				Address: sender.aa.addr,
 				Coins:   inputCoins,
 			},
 		},
 		Outputs: outputs,
 	}
-	_, err := m.Client.BroadcastTx(m.Ctx, sender.acc, sendMsg)
+	_, err := m.Client.BroadcastTx(m.Ctx, sender.aa.acc, sendMsg)
 	if err != nil {
 		m.T.Log("Error worker address: ", err)
 		return err
+	}
+	// pass zero for topic id if we're funding the funders themselves
+	if topicId != 0 {
+		m.T.Log(topicLog(uint64(topicId),
+			"Funded ", len(targets), " accounts from ", sender.name,
+			" with ", amount, " coins:", " ", names,
+		))
+	} else {
+		m.T.Log("Funded ", len(targets), " accounts from ", sender.name,
+			" with ", amount, " coins:", " ", names,
+		)
 	}
 	return nil
 }

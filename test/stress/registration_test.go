@@ -6,26 +6,24 @@ import (
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 // register alice as a reputer in topic 1, then check success
 func RegisterReputerForTopic(
 	m testCommon.TestConfig,
-	address string,
-	account cosmosaccount.Account,
+	reputer NameAccountAndAddress,
 	topicId uint64,
 ) error {
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
-		Sender:       address,
-		Owner:        address,
+		Sender:       reputer.aa.addr,
+		Owner:        reputer.aa.addr,
 		LibP2PKey:    "reputerkey" + strconv.Itoa(rand.Intn(10000000000)),
 		MultiAddress: "reputermultiaddress",
 		TopicId:      topicId,
 		IsReputer:    true,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, account, registerReputerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, registerReputerRequest)
 	if err != nil {
 		return err
 	}
@@ -45,19 +43,18 @@ func RegisterReputerForTopic(
 // register bob as worker in topic 1, then check sucess
 func RegisterWorkerForTopic(
 	m testCommon.TestConfig,
-	address string,
-	account cosmosaccount.Account,
+	worker NameAccountAndAddress,
 	topicId uint64,
 ) error {
 	registerWorkerRequest := &emissionstypes.MsgRegister{
-		Sender:       address,
-		Owner:        address,
+		Sender:       worker.aa.addr,
+		Owner:        worker.aa.addr,
 		LibP2PKey:    "workerkey" + strconv.Itoa(rand.Intn(10000000000)),
 		MultiAddress: "workermultiaddress",
 		TopicId:      topicId,
 		IsReputer:    false,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, account, registerWorkerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, worker.aa.acc, registerWorkerRequest)
 	if err != nil {
 		return err
 	}

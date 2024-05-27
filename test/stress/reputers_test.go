@@ -40,7 +40,6 @@ func createReputerAddresses(
 			acc:  reputerAccount,
 			addr: reputerAddressToFund,
 		}
-		m.T.Log(topicLog(topicId, "Created reputer address: ", reputerAccountName, " - ", reputerAddressToFund))
 	}
 
 	return reputers
@@ -60,7 +59,14 @@ func registerReputersForIteration(
 	for j := 0; j < reputersPerIteration && countReputers < maxReputersPerTopic; j++ {
 		reputerName := getReputerAccountName(m.Seed, iteration*j, topicId)
 		reputer := reputers[reputerName]
-		err := RegisterReputerForTopic(m, reputer.addr, reputer.acc, topicId)
+		err := RegisterReputerForTopic(
+			m,
+			NameAccountAndAddress{
+				name: reputerName,
+				aa:   reputer,
+			},
+			topicId,
+		)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error registering reputer address: ", reputer.addr, " - ", err))
 			if makeReport {
@@ -69,7 +75,15 @@ func registerReputersForIteration(
 			}
 			return countReputers
 		}
-		err = stakeReputer(m, topicId, reputer.addr, reputer.acc, stakeToAdd)
+		err = stakeReputer(
+			m,
+			topicId,
+			NameAccountAndAddress{
+				name: reputerName,
+				aa:   reputer,
+			},
+			stakeToAdd,
+		)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error staking reputer address: ", reputer.addr, " - ", err))
 			if makeReport {
@@ -319,7 +333,7 @@ func checkReputersReceivedRewards(
 				saveTopicError(topicId, err)
 			}
 		} else {
-			if reputerStake.Lte(alloraMath.NewDecFromInt64(stakeToAdd)) {
+			if reputerStake.Lte(alloraMath.NewDecFromInt64(int64(stakeToAdd))) {
 				m.T.Log(topicLog(topicId, "Reputer ", reputerName, " stake is not greater than initial amount: ", reputerStake))
 				if maxIterations > 20 && reputerIndex < 10 {
 					m.T.Log(topicLog(topicId, "ERROR: Reputer", reputerName, "has insufficient stake:", reputerStake))

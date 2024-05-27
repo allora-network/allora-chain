@@ -9,39 +9,39 @@ import (
 )
 
 const iterationsInABatch = 1 // To control the number of epochs in each iteration of the loop (eg to manage insertions)
-const stakeToAdd = 90000
-const topicFunds = 1000000
-const initialWorkerReputerFundAmount = 1e5
-const retryBundleUploadTimes = 2
+const stakeToAdd uint64 = 9e4
+const topicFunds int64 = 1e6
+const initialWorkerReputerFundAmount int64 = 1e5
+const retryBundleUploadTimes int = 2
 
 // create a topic, fund the topic,
 // register the topic funder as a worker, reputer,
 // and then stake the topic funder as a reputer
 func setupTopic(
 	m testCommon.TestConfig,
-	funder AccountAndAddress,
+	funder NameAccountAndAddress,
 	epochLength int64,
 ) uint64 {
 	m.T.Log("Creating new Topic")
 
-	topicId := createTopic(m, epochLength, funder.addr, funder.acc)
+	topicId := createTopic(m, epochLength, funder)
 
 	err := fundTopic(m, topicId, funder, topicFunds)
 	if err != nil {
 		m.T.Fatal(err)
 	}
 
-	err = RegisterWorkerForTopic(m, funder.addr, funder.acc, topicId)
+	err = RegisterWorkerForTopic(m, funder, topicId)
 	if err != nil {
 		m.T.Fatal(err)
 	}
 
-	err = RegisterReputerForTopic(m, funder.addr, funder.acc, topicId)
+	err = RegisterReputerForTopic(m, funder, topicId)
 	if err != nil {
 		m.T.Fatal(err)
 	}
 
-	err = stakeReputer(m, topicId, funder.addr, funder.acc, stakeToAdd)
+	err = stakeReputer(m, topicId, funder, stakeToAdd)
 	if err != nil {
 		m.T.Fatal(err)
 	}
@@ -69,11 +69,30 @@ func workerReputerCoordinationLoop(
 	m.T.Log("Approximate block time seconds: ", approximateSecondsPerBlock)
 	iterationTime := time.Duration(epochLength) * approximateSecondsPerBlock * iterationsInABatch
 
+	// make sure topicFunder is rich enough to send funds to all workers and reputers
+	// once for staking from the funder
+	// every iteration for funding the topic
+	// every iteration for each worker funding
+	initialFunderAccountAmount := int64(stakeToAdd) +
+		int64(topicsPerTopicIteration)*int64(maxWorkerReputerIterations+1)*topicFunds +
+		int64(maxWorkerReputerIterations+1)*initialWorkerReputerFundAmount*int64(maxReputersPerTopic+maxWorkersPerTopic)
+
 	// 1. For every single topic that will be created over the duration of the test
 	//    create a topic funder that will create and fund the topic
 	topicFunders := createTopicFunderAddresses(m, topicsMax)
-	faucet := AccountAndAddress{acc: m.FaucetAcc, addr: m.FaucetAddr}
-	err := fundAccounts(m, faucet, topicFunders, 1e9)
+	err := fundAccounts(
+		m,
+		0,
+		NameAccountAndAddress{
+			name: "faucet",
+			aa: AccountAndAddress{
+				acc:  m.FaucetAcc,
+				addr: m.FaucetAddr,
+			},
+		},
+		topicFunders,
+		initialFunderAccountAmount,
+	)
 	if err != nil {
 		m.T.Log("Error funding funder accounts: ", err)
 	} else {
@@ -83,7 +102,7 @@ func workerReputerCoordinationLoop(
 	// 2. Outer "Topic Iteration."
 	//    Every iteration of this loop, topicsPerTopicIteration topics are created
 	//    up until the topicsMax is hit.
-	topicsThisEpoch := topicsPerTopicIteration
+	numTopicsThisIteration := topicsPerTopicIteration
 	var wg sync.WaitGroup
 	for topicCount := 0; topicCount < topicsMax; {
 		startIteration := time.Now()
@@ -91,9 +110,9 @@ func workerReputerCoordinationLoop(
 		// 3. the last time through the loop, we may not have enough
 		//    topics left before the max to reach topicsPerTopicIteration
 		if topicCount+topicsPerTopicIteration > topicsMax {
-			topicsThisEpoch = topicsMax - topicCount
+			numTopicsThisIteration = topicsMax - topicCount
 		}
-		for j := 0; j < topicsThisEpoch; j++ {
+		for j := 0; j < numTopicsThisIteration; j++ {
 			// 4. Get ahold of the funder for this topic
 			topicFunderAccountName := getTopicFunderAccountName(m.Seed, topicCount)
 			funder := topicFunders[topicFunderAccountName]
@@ -105,7 +124,10 @@ func workerReputerCoordinationLoop(
 			go workerReputerLoop(
 				&wg,
 				m,
-				funder,
+				NameAccountAndAddress{
+					name: topicFunderAccountName,
+					aa:   funder,
+				},
 				reputersPerIteration,
 				maxReputersPerTopic,
 				workersPerIteration,
@@ -138,7 +160,7 @@ func workerReputerCoordinationLoop(
 func workerReputerLoop(
 	wg *sync.WaitGroup,
 	m testCommon.TestConfig,
-	funder AccountAndAddress,
+	funder NameAccountAndAddress,
 	reputersPerIteration,
 	maxReputersPerTopic,
 	workersPerIteration,
@@ -164,14 +186,13 @@ func workerReputerLoop(
 	// Fund the accounts
 	err := fundAccounts(
 		m,
+		topicId,
 		funder,
 		actors,
-		initialWorkerReputerFundAmount,
+		initialWorkerReputerFundAmount*int64(maxIterations),
 	)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error funding reputer and worker accounts: ", err))
-	} else {
-		m.T.Log(topicLog(topicId, "Funded", len(actors), "total actor accounts for this topic."))
 	}
 
 	// Wait until the topic has had minWaitingNumberofEpochs before starting to provide inferences for it
@@ -203,7 +224,7 @@ func workerReputerLoop(
 		}
 		startIteration := time.Now()
 
-		m.T.Log(topicLog(topicId, "iteration: ", i, " / ", maxIterations))
+		m.T.Log(topicLog(topicId, "iteration: ", i, " / ", maxIterations-1))
 
 		// Register the newly created accounts for this iteration
 		countWorkers = registerWorkersForIteration(

@@ -40,7 +40,6 @@ func createWorkerAddresses(
 			acc:  workerAccount,
 			addr: workerAddressToFund,
 		}
-		m.T.Log(topicLog(topicId, "Created worker address: ", workerAccountName, " - ", workerAddressToFund))
 	}
 	return workers
 }
@@ -59,7 +58,14 @@ func registerWorkersForIteration(
 	for j := 0; j < workersPerIteration && countWorkers < maxWorkersPerTopic; j++ {
 		workerName := getWorkerAccountName(m.Seed, iteration*j, topicId)
 		worker := workers[workerName]
-		err := RegisterWorkerForTopic(m, worker.addr, worker.acc, topicId)
+		err := RegisterWorkerForTopic(
+			m,
+			NameAccountAndAddress{
+				name: workerName,
+				aa:   worker,
+			},
+			topicId,
+		)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error registering worker address: ", worker.addr, " - ", err))
 			if makeReport {

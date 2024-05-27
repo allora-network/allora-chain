@@ -5,7 +5,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,11 +12,10 @@ import (
 func createTopic(
 	m testCommon.TestConfig,
 	epochLength int64,
-	creatorAddress string,
-	creatorAccount cosmosaccount.Account,
+	creator NameAccountAndAddress,
 ) (topicId uint64) {
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:          creatorAddress,
+		Creator:          creator.aa.addr,
 		Metadata:         "ETH 24h Prediction",
 		LossLogic:        "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
 		LossMethod:       "loss-calculation-eth.wasm",
@@ -35,7 +33,7 @@ func createTopic(
 		AllowNegative:    true,
 	}
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, creatorAccount, createTopicRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, creator.aa.acc, createTopicRequest)
 	require.NoError(m.T, err)
 
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
@@ -47,6 +45,8 @@ func createTopic(
 
 	incrementCountTopics()
 
+	m.T.Log(topicLog(createTopicResponse.TopicId, "creator", creator.name, "created topic"))
+
 	return createTopicResponse.TopicId
 }
 
@@ -54,14 +54,15 @@ func createTopic(
 func fundTopic(
 	m testCommon.TestConfig,
 	topicId uint64,
-	sender AccountAndAddress,
+	sender NameAccountAndAddress,
 	amount int64,
 ) error {
+	m.T.Log(topicLog(topicId, "funded topic with ", amount, "from", sender.name))
 	txResp, err := m.Client.BroadcastTx(
 		m.Ctx,
-		sender.acc,
+		sender.aa.acc,
 		&emissionstypes.MsgFundTopic{
-			Sender:  sender.addr,
+			Sender:  sender.aa.addr,
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
 		},

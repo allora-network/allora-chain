@@ -21,6 +21,11 @@ const secondsInAMonth = 2592000
 const defaultEpochLength = 10      // Default epoch length in blocks if none is found yet from chain
 const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait before inserting the first batch
 
+type NameAccountAndAddress struct {
+	name string
+	aa   AccountAndAddress
+}
+
 // holder for account and address
 type AccountAndAddress struct {
 	acc  cosmosaccount.Account
