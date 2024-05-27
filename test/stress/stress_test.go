@@ -1,38 +1,13 @@
 package stress_test
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"runtime"
 	"testing"
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
-	"github.com/stretchr/testify/require"
 )
-
-type TestMetadata struct {
-	t   *testing.T
-	ctx context.Context
-	n   testCommon.Node
-}
-
-func Setup(t *testing.T) TestMetadata {
-	ret := TestMetadata{}
-	ret.t = t
-	var err error
-	ret.ctx = context.Background()
-	node, err := testCommon.NewNode(
-		t,
-		testCommon.NodeConfig{
-			NodeRPCAddress: "http://localhost:26657",
-			AlloraHomeDir:  "../devnet/genesis",
-		},
-	)
-	require.NoError(t, err)
-	ret.n = node
-	return ret
-}
 
 func TestStressTestSuite(t *testing.T) {
 	if _, isIntegration := os.LookupEnv("STRESS_TEST"); isIntegration == false {
@@ -44,37 +19,48 @@ func TestStressTestSuite(t *testing.T) {
 	fmt.Printf("Number of logical CPUs: %d, GOMAXPROCS %d \n", numCPUs, gomaxprocs)
 
 	t.Log(">>> Setting up connection to local node <<<")
-	m := Setup(t)
+
+	seed := testCommon.LookupEnvInt(t, "SEED", 0)
+	rpcMode := testCommon.LookupRpcMode(t, "RPC_MODE", testCommon.SingleRpc)
+	rpcEndpoints := testCommon.LookupEnvStringArray("RPC_URLS", []string{"http://localhost:26657"})
+
+	testConfig := testCommon.NewTestConfig(
+		t,
+		rpcMode,
+		rpcEndpoints,
+		"../devnet/genesis",
+		seed,
+	)
 
 	// Read env vars with defaults
-	reputersPerEpoch := lookupEnvInt(m, "REPUTERS_PER_EPOCH", 0)
-	reputersMax := lookupEnvInt(m, "REPUTERS_MAX", 100)
-	workersPerEpoch := lookupEnvInt(m, "WORKERS_PER_EPOCH", 0)
-	workersMax := lookupEnvInt(m, "WORKERS_MAX", 100)
-	topicsPerEpoch := lookupEnvInt(m, "TOPICS_PER_EPOCH", 0)
-	topicsMax := lookupEnvInt(m, "TOPICS_MAX", 100)
-	maxIterations := lookupEnvInt(m, "MAX_ITERATIONS", 1000)
-	epochLength := lookupEnvInt(m, "EPOCH_LENGTH", 5)
-	doFinalReport := lookupEnvBool(m, "FINAL_REPORT", false)
+	reputersPerIteration := testCommon.LookupEnvInt(t, "REPUTERS_PER_ITERATION", 1)
+	maxReputersPerTopic := testCommon.LookupEnvInt(t, "MAX_REPUTERS_PER_TOPIC", 20)
+	workersPerIteration := testCommon.LookupEnvInt(t, "WORKERS_PER_ITERATION", 1)
+	maxWorkersPerTopic := testCommon.LookupEnvInt(t, "MAX_WORKERS_PER_TOPIC", 20)
+	topicsPerIteration := testCommon.LookupEnvInt(t, "TOPICS_PER_ITERATION", 1)
+	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
+	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
+	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 5)
+	doFinalReport := testCommon.LookupEnvBool(t, "FINAL_REPORT", false)
 
-	fmt.Println("Reputers per epoch: ", reputersPerEpoch)
-	fmt.Println("Reputers max: ", reputersMax)
-	fmt.Println("Workers per epoch: ", workersPerEpoch)
-	fmt.Println("Workers max: ", workersMax)
-	fmt.Println("Topics per epoch: ", topicsPerEpoch)
-	fmt.Println("Topics max: ", topicsMax)
-	fmt.Println("Max iterations: ", maxIterations)
-	fmt.Println("Epoch Length: ", epochLength)
-	fmt.Println("Using mutex to prepare final report: ", doFinalReport)
+	t.Log("Reputers per iteration: ", reputersPerIteration)
+	t.Log("Max Reputers per topic: ", maxReputersPerTopic)
+	t.Log("Workers per iteration: ", workersPerIteration)
+	t.Log("Max Workers per topic: ", maxWorkersPerTopic)
+	t.Log("Topics per iteration of topics: ", topicsPerIteration)
+	t.Log("Topics global max: ", topicsMax)
+	t.Log("Max worker+reputer iterations: ", maxIterations)
+	t.Log("Epoch Length: ", epochLength)
+	t.Log("Use mutex to prepare final report: ", doFinalReport)
 
 	t.Log(">>> Test Making Inference <<<")
-	WorkerReputerCoordinationLoop(
-		m,
-		reputersPerEpoch,
-		reputersMax,
-		workersPerEpoch,
-		workersMax,
-		topicsPerEpoch,
+	workerReputerCoordinationLoop(
+		testConfig,
+		reputersPerIteration,
+		maxReputersPerTopic,
+		workersPerIteration,
+		maxWorkersPerTopic,
+		topicsPerIteration,
 		topicsMax,
 		maxIterations,
 		epochLength,
