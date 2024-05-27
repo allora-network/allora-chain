@@ -63,7 +63,7 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	maxRetriesToFulfilNoncesWorker, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
 	if err != nil {
 		maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
-		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 	}
 	sortedWorkerNonces := synth.SelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
 	ctx.Logger().Debug("Iterating Top N Worker Nonces: ", len(sortedWorkerNonces))
@@ -87,15 +87,15 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	// No filtering - reputation of previous rounds can still be retried if work has been done.
 	maxRetriesToFulfilNoncesReputer, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
 	if err != nil {
-		ctx.Logger().Warn("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 		maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 	}
 	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
-	ctx.Logger().Debug("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
+	ctx.Logger().Warn(fmt.Sprintf("Iterating Top N Reputer Nonces: %v", len(topNReputerNonces)))
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
-		ctx.Logger().Debug("Reputer block height found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
+		ctx.Logger().Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v",  nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
 		reputerValueBundle, err := synth.GetNetworkInferencesAtBlock(
 			ctx,
 			th.emissionsKeeper,
