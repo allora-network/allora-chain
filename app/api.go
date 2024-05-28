@@ -2,13 +2,15 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"os"
 	"strings"
+
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type BlocklessRequest struct {
@@ -58,7 +60,7 @@ func generateLossesRequest(
 
 	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
-		ctx.Logger().Warn("Error marshalling JSON:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error marshalling JSON: %s", err.Error()))
 		return
 	}
 
@@ -100,11 +102,15 @@ func generateLossesRequest(
 
 	payload, err := json.Marshal(calcWeightsReq)
 	if err != nil {
-		ctx.Logger().Warn("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
 		return
 	}
 	payloadStr := string(payload)
-	makeApiCall(payloadStr)
+	ctx.Logger().Debug(fmt.Sprintf("Making API call - losses, with payload: %s", payloadStr))
+	err = makeApiCall(payloadStr)
+	if err != nil {
+		ctx.Logger().Warn("Error making API call - losses: " + err.Error())
+	}
 }
 
 func generateInferencesRequest(
@@ -146,14 +152,14 @@ func generateInferencesRequest(
 	}
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
-		ctx.Logger().Warn("Error marshalling outer JSON:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
 	}
 	payloadStr := string(payload)
 
-	ctx.Logger().Debug("Making API call with payload: ", payloadStr)
+	ctx.Logger().Debug(fmt.Sprintf("Making API call - inferences, with payload: %s", payloadStr))
 	err = makeApiCall(payloadStr)
 	if err != nil {
-		ctx.Logger().Warn("Error making API call:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error making API call: %s", err.Error()))
 	}
 }
 

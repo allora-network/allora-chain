@@ -80,8 +80,9 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() {
+func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWithLosses() {
 	k := s.emissionsKeeper
+	ctx := s.ctx
 	topicId := uint64(1)
 
 	worker1 := "worker1"
@@ -101,34 +102,31 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 
 	epsilon := alloraMath.MustNewDecFromString("0.001")
 
-	// Set inferer network regrets
-	err := k.SetInfererNetworkRegret(s.ctx, topicId, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
 	s.Require().NoError(err)
-	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-
-	// Set forecaster network regrets
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	err = k.SetInfererNetworkRegret(ctx, topicId, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
 	s.Require().NoError(err)
 
-	// Set one-in forecaster network regrets
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	err = k.SetForecasterNetworkRegret(ctx, topicId, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
 	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker4, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	err = k.SetForecasterNetworkRegret(ctx, topicId, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
 	s.Require().NoError(err)
 
-	maxRegrets, err := inference_synthesis.FindMaxRegretAmongWorkersWithLosses(
-		s.ctx,
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker3, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker1, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker2, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker4, emissions.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
+	s.Require().NoError(err)
+
+	stdDevRegrets, err := inference_synthesis.CalcTheStdDevOfRegretsAmongWorkersWithLosses(
+		ctx,
 		k,
 		topicId,
 		inferenceByWorker,
@@ -139,14 +137,19 @@ func (s *InferenceSynthesisTestSuite) TestFindMaxRegretAmongWorkersWithLosses() 
 	)
 	s.Require().NoError(err)
 
-	expectedMaxInfererRegret := alloraMath.MustNewDecFromString("0.3")
-	expectedMaxForecasterRegret := alloraMath.MustNewDecFromString("0.5")
+	expectedStdDevInferenceRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevForecastRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevOneInForecastRegretWorker3, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
+	s.Require().NoError(err)
+	expectedStdDevOneInForecastRegretWorker4, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
+	s.Require().NoError(err)
 
-	s.Require().True(maxRegrets.MaxInferenceRegret.Equal(expectedMaxInfererRegret))
-	s.Require().True(maxRegrets.MaxForecastRegret.Equal(expectedMaxForecasterRegret))
-
-	s.Require().Equal(alloraMath.MustNewDecFromString("0.4"), maxRegrets.MaxOneInForecastRegret[worker3])
-	s.Require().Equal(alloraMath.MustNewDecFromString("0.6"), maxRegrets.MaxOneInForecastRegret[worker4])
+	s.Require().True(stdDevRegrets.StdDevInferenceRegret.Equal(expectedStdDevInferenceRegret), "StdDevInferenceRegret mismatch")
+	s.Require().True(stdDevRegrets.StdDevForecastRegret.Equal(expectedStdDevForecastRegret), "StdDevForecastRegret mismatch")
+	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker3].Equal(expectedStdDevOneInForecastRegretWorker3), "StdDevOneInForecastRegret[worker3] mismatch")
+	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
@@ -1187,8 +1190,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 
-	s.inEpsilon5(valueBundle.CombinedValue, "-0.0835509915082")
-	s.inEpsilon3(valueBundle.NaiveValue, "-0.09178283369953")
+	s.inEpsilon5(valueBundle.CombinedValue, "-0.08185516761117273158873135062469833")
+	s.inEpsilon3(valueBundle.NaiveValue, "-0.09122179696704032438648277420392574")
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -1216,13 +1219,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case reputer0:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.08839927050327")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08523931114876")
 		case reputer1:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.08383487919316")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08168367445715")
 		case reputer2:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.075812337762109")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.07667553096912")
 		case reputer3:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.077327729766061")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.075308069104633")
 		case reputer4:
 			s.inEpsilon2(oneOutInfererValue.Value, "-0.097732445271841")
 		default:
@@ -1235,9 +1238,9 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		case forecaster0:
 			s.inEpsilon2(oneInForecasterValue.Value, "-0.0890116077959635")
 		case forecaster1:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.0868036533808")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.0857186447720307")
 		case forecaster2:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.08652964850346")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.0853937827718047")
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
@@ -1246,11 +1249,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0839644182821")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0819388711153114")
 		case forecaster1:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08565074735881")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0840146662995497")
 		case forecaster2:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0858512590073140")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0842609498557423")
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
