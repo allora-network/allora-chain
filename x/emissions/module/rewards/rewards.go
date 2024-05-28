@@ -14,6 +14,7 @@ import (
 
 func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight alloraMath.Dec, totalRevenue cosmosMath.Int) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
+	ctx.Logger().Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
 	}
@@ -107,6 +108,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 			continue
 		}
 	}
+	ctx.Logger().Debug(
+		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
+			totalRewardToStakedReputers.String(),
+			len(topicRewards)))
 	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get blocks per month")
@@ -162,7 +167,7 @@ func GenerateRewardsDistributionByTopic(
 	}
 
 	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-	weightsOfTopActiveTopics, _ := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
+	weightsOfTopActiveTopics, _ := SkimTopTopicsByWeightDesc(ctx, weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
 
 	// Return the revenue to those topics that didn't make the cut
 	// Loop though sortedTopics and if the topic is not in sortedTopics, add to running revenue sum
@@ -256,7 +261,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 		filterOutTopic := false
 		filterOutErrorMessage := ""
 		if err != nil {
-			ctx.Logger().Warn("Error getting reputer request nonces: ", err)
+			ctx.Logger().Warn(fmt.Sprintf("Error getting reputer request nonces: %s", err.Error()))
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove from sum weight and revenue"
 		}
@@ -268,7 +273,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
-			ctx.Logger().Warn("Topic weight is below the minimum: ", topicId)
+			ctx.Logger().Warn(fmt.Sprintf("Topic weight is below the minimum: %d", topicId))
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")

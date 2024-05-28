@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"strconv"
-	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -319,21 +318,21 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 	reputersForecasterOneOutLosses [][]alloraMath.Dec,
 	reputersOneInNaiveLosses [][]alloraMath.Dec,
 ) {
+	rnd := rand.New(rand.NewSource(20))
 	for i := 0; i < reputersCount; i++ {
-		rand.Seed(time.Now().UnixNano())
-		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
-		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
 		var infererLosses = make([]alloraMath.Dec, 0)
 		var forecasterLosses = make([]alloraMath.Dec, 0)
 		var infererOneOutLosses = make([]alloraMath.Dec, 0)
 		var forecasterOneOutLosses = make([]alloraMath.Dec, 0)
 		var oneInNaiveLosses = make([]alloraMath.Dec, 0)
 		for j := 0; j < workersCount; j++ {
-			infererLosses = append(infererLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
-			forecasterLosses = append(forecasterLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
-			infererOneOutLosses = append(infererOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
-			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
-			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rand.Intn(1000)+1), 'f', -1, 64)))
+			infererLosses = append(infererLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+			forecasterLosses = append(forecasterLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+			infererOneOutLosses = append(infererOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
 		}
 		reputersInfererLosses = append(reputersInfererLosses, infererLosses)
 		reputersForecasterLosses = append(reputersForecasterLosses, forecasterLosses)

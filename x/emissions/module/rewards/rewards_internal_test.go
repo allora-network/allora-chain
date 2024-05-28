@@ -329,39 +329,6 @@ func (s *MathTestSuite) TestNormalizationFactorSimple() {
 	s.Require().True(alloraMath.InDelta(alloraMath.NewDecFromInt64(2), result, alloraMath.MustNewDecFromString("0.0001")))
 }
 
-func TestStdDev(t *testing.T) {
-	tests := []struct {
-		name string
-		data []alloraMath.Dec
-		want alloraMath.Dec
-	}{
-		{
-			name: "basic",
-			data: []alloraMath.Dec{
-				alloraMath.MustNewDecFromString("-0.00675"),
-				alloraMath.MustNewDecFromString("-0.00622"),
-				alloraMath.MustNewDecFromString("-0.01502"),
-				alloraMath.MustNewDecFromString("-0.01214"),
-				alloraMath.MustNewDecFromString("0.00392"),
-				alloraMath.MustNewDecFromString("0.00559"),
-				alloraMath.MustNewDecFromString("0.0438"),
-				alloraMath.MustNewDecFromString("0.04304"),
-				alloraMath.MustNewDecFromString("0.09719"),
-				alloraMath.MustNewDecFromString("0.09675"),
-			},
-			want: alloraMath.MustNewDecFromString("0.041014924273483966"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.StdDev(tt.data)
-			require.NoError(t, err)
-			require.True(t, alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001")))
-		})
-	}
-}
-
 func TestGetScoreFractions(t *testing.T) {
 	tests := []struct {
 		name                  string

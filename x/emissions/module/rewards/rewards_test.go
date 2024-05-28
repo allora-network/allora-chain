@@ -2479,36 +2479,32 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	totalInferrersReward := alloraMath.ZeroDec()
+	totalInferersReward := alloraMath.ZeroDec()
 	totalForecastersReward := alloraMath.ZeroDec()
 	totalReputersReward := alloraMath.ZeroDec()
-	totalForecasterReputersReward := alloraMath.ZeroDec()
-	totalInferrerRputersReward := alloraMath.ZeroDec()
-	firstInferrerFraction := alloraMath.ZeroDec()
-	firstForecasterFraction := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
 		if reward.Type == rewards.WorkerInferenceRewardType {
-			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
+			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
 		} else if reward.Type == rewards.WorkerForecastRewardType {
 			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
 		} else if reward.Type == rewards.ReputerRewardType {
 			totalReputersReward, _ = totalReputersReward.Add(reward.Reward)
 		}
 	}
-	totalForecasterReputersReward, err = totalForecastersReward.Add(totalReputersReward)
+	totalNonInfererReward, err := totalForecastersReward.Add(totalReputersReward)
 	s.Require().NoError(err)
-	totalInferrerRputersReward, err = totalInferrerRputersReward.Add(totalReputersReward)
+	totalReward, err := totalNonInfererReward.Add(totalInferersReward)
 	s.Require().NoError(err)
 
-	firstInferrerFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	firstInfererFraction, err := totalInferersReward.Quo(totalReward)
 	s.Require().NoError(err)
-	firstForecasterFraction, err = totalForecastersReward.Quo(totalInferrerRputersReward)
+	firstForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	// Add new worker(inferencer) and stakes
+	// Add new worker(inferer) and stakes
 	newSecondWorkersAddrs := []sdk.AccAddress{
 		s.addrs[10],
 		s.addrs[11],
@@ -2537,7 +2533,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Get Topic Id
 	topicId = res.TopicId
 
-	// Register 7 workers with 2 new inferencers
+	// Register 7 workers with 2 new inferers
 	for _, addr := range newSecondWorkersAddrs {
 		workerRegMsg := &types.MsgRegister{
 			Sender:       addr.String(),
@@ -2598,7 +2594,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Insert inference from workers
 	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newSecondWorkersAddrs)
-	// Add more inferencer
+	// Add more inferer
 	newInferenceBundles := GenerateMoreInferencesDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
@@ -2631,22 +2627,21 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	totalInferrersReward = alloraMath.ZeroDec()
-	totalForecasterReputersReward = alloraMath.ZeroDec()
-	secondInferrerFraction := alloraMath.ZeroDec()
+	totalInferersReward = alloraMath.ZeroDec()
+	totalReward = alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
 		if reward.Type == rewards.WorkerInferenceRewardType {
-			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
-		} else if reward.Type == rewards.WorkerForecastRewardType || reward.Type == rewards.ReputerRewardType {
-			totalForecasterReputersReward, _ = totalForecasterReputersReward.Add(reward.Reward)
+			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
 		}
+		totalReward, _ = totalReward.Add(reward.Reward)
 	}
-	secondInferrerFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	secondInfererFraction, err := totalInferersReward.Quo(totalReward)
+	s.Require().NoError(err)
 	s.Require().True(
-		firstInferrerFraction.Lt(secondInferrerFraction),
+		firstInfererFraction.Lt(secondInfererFraction),
 		"Second inference fraction must be bigger than first fraction %s < %s",
-		firstInferrerFraction,
-		secondInferrerFraction,
+		firstInfererFraction,
+		secondInfererFraction,
 	)
 
 	// Add new worker(forecsater) and stakes
@@ -2739,7 +2734,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Insert inference from workers
 	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newThirdWorkersAddrs)
-	// Add more inferencer
+	// Add more inferer
 	newInferenceBundles = GenerateMoreForecastersDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
@@ -2772,16 +2767,15 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
 
-	totalInferrersReward = alloraMath.ZeroDec()
-	totalForecasterReputersReward = alloraMath.ZeroDec()
-	thirdForecasterFraction := alloraMath.ZeroDec()
+	totalForecastersReward = alloraMath.ZeroDec()
+	totalReward = alloraMath.ZeroDec()
 	for _, reward := range thirdRewardsDistribution {
-		if reward.Type == rewards.WorkerInferenceRewardType {
-			totalInferrersReward, _ = totalInferrersReward.Add(reward.Reward)
-		} else if reward.Type == rewards.WorkerForecastRewardType || reward.Type == rewards.ReputerRewardType {
-			totalForecasterReputersReward, _ = totalForecasterReputersReward.Add(reward.Reward)
+		if reward.Type == rewards.WorkerForecastRewardType {
+			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
 		}
+		totalReward, _ = totalReward.Add(reward.Reward)
 	}
-	thirdForecasterFraction, err = totalInferrersReward.Quo(totalForecasterReputersReward)
+	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
+	s.Require().NoError(err)
 	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
 }

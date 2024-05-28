@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -184,13 +185,15 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if err != nil {
 		return nil, err
 	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
 
 	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
 	}
 
-	err = synth.GetCalcSetNetworkRegrets(sdk.UnwrapSDKContext(ctx), ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
 	if err != nil {
 		return nil, err
 	}
