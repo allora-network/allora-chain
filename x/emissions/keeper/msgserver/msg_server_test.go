@@ -263,3 +263,44 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+2, result)
 }
+
+func (s *KeeperTestSuite) inEpsilon(value alloraMath.Dec, target string, epsilon string) {
+	require := s.Require()
+	epsilonDec := alloraMath.MustNewDecFromString(epsilon)
+	targetDec := alloraMath.MustNewDecFromString(target)
+	one := alloraMath.MustNewDecFromString("1")
+
+	lowerMultiplier, err := one.Sub(epsilonDec)
+	require.NoError(err)
+	lowerBound, err := targetDec.Mul(lowerMultiplier)
+	require.NoError(err)
+
+	upperMultiplier, err := one.Add(epsilonDec)
+	require.NoError(err)
+	upperBound, err := targetDec.Mul(upperMultiplier)
+	require.NoError(err)
+
+	if lowerBound.Lt(upperBound) {
+		require.True(value.Gte(lowerBound))
+		require.True(value.Lte(upperBound))
+	} else {
+		require.True(value.Lte(lowerBound))
+		require.True(value.Gte(upperBound))
+	}
+}
+
+func (s *KeeperTestSuite) inEpsilon2(value alloraMath.Dec, target string) {
+	s.inEpsilon(value, target, "0.01")
+}
+
+func (s *KeeperTestSuite) inEpsilon3(value alloraMath.Dec, target string) {
+	s.inEpsilon(value, target, "0.001")
+}
+
+func (s *KeeperTestSuite) inEpsilon4(value alloraMath.Dec, target string) {
+	s.inEpsilon(value, target, "0.0001")
+}
+
+func (s *KeeperTestSuite) inEpsilon5(value alloraMath.Dec, target string) {
+	s.inEpsilon(value, target, "0.00001")
+}
