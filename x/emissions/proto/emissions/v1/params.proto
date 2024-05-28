@@ -48,14 +48,6 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // small number to prevent division by zero
-  string p_inference_synthesis = 14 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];  // fiducial value of exponent for Inference Synthesis gradient function
-  string p_reward_spread = 15 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];  // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
   string alpha_regret = 16 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
@@ -119,4 +111,28 @@ message Params {
       38;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
   // block emission rate in number of blocks expected per month
   uint64 blocks_per_month = 39;
+  string p_reward_inference = 40 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+   string p_reward_forecast = 41 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string p_reward_reputer = 42 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string c_reward_inference = 43 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+   string c_reward_forecast = 44 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string f_tolerance = 45 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }

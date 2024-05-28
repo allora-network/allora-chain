@@ -16,25 +16,21 @@ import (
 )
 
 var (
-	md_Topic                   protoreflect.MessageDescriptor
-	fd_Topic_id                protoreflect.FieldDescriptor
-	fd_Topic_creator           protoreflect.FieldDescriptor
-	fd_Topic_metadata          protoreflect.FieldDescriptor
-	fd_Topic_loss_logic        protoreflect.FieldDescriptor
-	fd_Topic_loss_method       protoreflect.FieldDescriptor
-	fd_Topic_inference_logic   protoreflect.FieldDescriptor
-	fd_Topic_inference_method  protoreflect.FieldDescriptor
-	fd_Topic_epoch_last_ended  protoreflect.FieldDescriptor
-	fd_Topic_epoch_length      protoreflect.FieldDescriptor
-	fd_Topic_ground_truth_lag  protoreflect.FieldDescriptor
-	fd_Topic_default_arg       protoreflect.FieldDescriptor
-	fd_Topic_pnorm             protoreflect.FieldDescriptor
-	fd_Topic_alpha_regret      protoreflect.FieldDescriptor
-	fd_Topic_preward_reputer   protoreflect.FieldDescriptor
-	fd_Topic_preward_inference protoreflect.FieldDescriptor
-	fd_Topic_preward_forecast  protoreflect.FieldDescriptor
-	fd_Topic_f_tolerance       protoreflect.FieldDescriptor
-	fd_Topic_allow_negative    protoreflect.FieldDescriptor
+	md_Topic                  protoreflect.MessageDescriptor
+	fd_Topic_id               protoreflect.FieldDescriptor
+	fd_Topic_creator          protoreflect.FieldDescriptor
+	fd_Topic_metadata         protoreflect.FieldDescriptor
+	fd_Topic_loss_logic       protoreflect.FieldDescriptor
+	fd_Topic_loss_method      protoreflect.FieldDescriptor
+	fd_Topic_inference_logic  protoreflect.FieldDescriptor
+	fd_Topic_inference_method protoreflect.FieldDescriptor
+	fd_Topic_epoch_last_ended protoreflect.FieldDescriptor
+	fd_Topic_epoch_length     protoreflect.FieldDescriptor
+	fd_Topic_ground_truth_lag protoreflect.FieldDescriptor
+	fd_Topic_default_arg      protoreflect.FieldDescriptor
+	fd_Topic_pnorm            protoreflect.FieldDescriptor
+	fd_Topic_alpha_regret     protoreflect.FieldDescriptor
+	fd_Topic_allow_negative   protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -53,10 +49,6 @@ func init() {
 	fd_Topic_default_arg = md_Topic.Fields().ByName("default_arg")
 	fd_Topic_pnorm = md_Topic.Fields().ByName("pnorm")
 	fd_Topic_alpha_regret = md_Topic.Fields().ByName("alpha_regret")
-	fd_Topic_preward_reputer = md_Topic.Fields().ByName("preward_reputer")
-	fd_Topic_preward_inference = md_Topic.Fields().ByName("preward_inference")
-	fd_Topic_preward_forecast = md_Topic.Fields().ByName("preward_forecast")
-	fd_Topic_f_tolerance = md_Topic.Fields().ByName("f_tolerance")
 	fd_Topic_allow_negative = md_Topic.Fields().ByName("allow_negative")
 }
 
@@ -203,30 +195,6 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
-	if x.PrewardReputer != "" {
-		value := protoreflect.ValueOfString(x.PrewardReputer)
-		if !f(fd_Topic_preward_reputer, value) {
-			return
-		}
-	}
-	if x.PrewardInference != "" {
-		value := protoreflect.ValueOfString(x.PrewardInference)
-		if !f(fd_Topic_preward_inference, value) {
-			return
-		}
-	}
-	if x.PrewardForecast != "" {
-		value := protoreflect.ValueOfString(x.PrewardForecast)
-		if !f(fd_Topic_preward_forecast, value) {
-			return
-		}
-	}
-	if x.FTolerance != "" {
-		value := protoreflect.ValueOfString(x.FTolerance)
-		if !f(fd_Topic_f_tolerance, value) {
-			return
-		}
-	}
 	if x.AllowNegative != false {
 		value := protoreflect.ValueOfBool(x.AllowNegative)
 		if !f(fd_Topic_allow_negative, value) {
@@ -274,14 +242,6 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.Pnorm != uint64(0)
 	case "emissions.v1.Topic.alpha_regret":
 		return x.AlphaRegret != ""
-	case "emissions.v1.Topic.preward_reputer":
-		return x.PrewardReputer != ""
-	case "emissions.v1.Topic.preward_inference":
-		return x.PrewardInference != ""
-	case "emissions.v1.Topic.preward_forecast":
-		return x.PrewardForecast != ""
-	case "emissions.v1.Topic.f_tolerance":
-		return x.FTolerance != ""
 	case "emissions.v1.Topic.allow_negative":
 		return x.AllowNegative != false
 	default:
@@ -326,14 +286,6 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 		x.Pnorm = uint64(0)
 	case "emissions.v1.Topic.alpha_regret":
 		x.AlphaRegret = ""
-	case "emissions.v1.Topic.preward_reputer":
-		x.PrewardReputer = ""
-	case "emissions.v1.Topic.preward_inference":
-		x.PrewardInference = ""
-	case "emissions.v1.Topic.preward_forecast":
-		x.PrewardForecast = ""
-	case "emissions.v1.Topic.f_tolerance":
-		x.FTolerance = ""
 	case "emissions.v1.Topic.allow_negative":
 		x.AllowNegative = false
 	default:
@@ -391,18 +343,6 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 	case "emissions.v1.Topic.alpha_regret":
 		value := x.AlphaRegret
 		return protoreflect.ValueOfString(value)
-	case "emissions.v1.Topic.preward_reputer":
-		value := x.PrewardReputer
-		return protoreflect.ValueOfString(value)
-	case "emissions.v1.Topic.preward_inference":
-		value := x.PrewardInference
-		return protoreflect.ValueOfString(value)
-	case "emissions.v1.Topic.preward_forecast":
-		value := x.PrewardForecast
-		return protoreflect.ValueOfString(value)
-	case "emissions.v1.Topic.f_tolerance":
-		value := x.FTolerance
-		return protoreflect.ValueOfString(value)
 	case "emissions.v1.Topic.allow_negative":
 		value := x.AllowNegative
 		return protoreflect.ValueOfBool(value)
@@ -452,14 +392,6 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 		x.Pnorm = value.Uint()
 	case "emissions.v1.Topic.alpha_regret":
 		x.AlphaRegret = value.Interface().(string)
-	case "emissions.v1.Topic.preward_reputer":
-		x.PrewardReputer = value.Interface().(string)
-	case "emissions.v1.Topic.preward_inference":
-		x.PrewardInference = value.Interface().(string)
-	case "emissions.v1.Topic.preward_forecast":
-		x.PrewardForecast = value.Interface().(string)
-	case "emissions.v1.Topic.f_tolerance":
-		x.FTolerance = value.Interface().(string)
 	case "emissions.v1.Topic.allow_negative":
 		x.AllowNegative = value.Bool()
 	default:
@@ -508,14 +440,6 @@ func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoref
 		panic(fmt.Errorf("field pnorm of message emissions.v1.Topic is not mutable"))
 	case "emissions.v1.Topic.alpha_regret":
 		panic(fmt.Errorf("field alpha_regret of message emissions.v1.Topic is not mutable"))
-	case "emissions.v1.Topic.preward_reputer":
-		panic(fmt.Errorf("field preward_reputer of message emissions.v1.Topic is not mutable"))
-	case "emissions.v1.Topic.preward_inference":
-		panic(fmt.Errorf("field preward_inference of message emissions.v1.Topic is not mutable"))
-	case "emissions.v1.Topic.preward_forecast":
-		panic(fmt.Errorf("field preward_forecast of message emissions.v1.Topic is not mutable"))
-	case "emissions.v1.Topic.f_tolerance":
-		panic(fmt.Errorf("field f_tolerance of message emissions.v1.Topic is not mutable"))
 	case "emissions.v1.Topic.allow_negative":
 		panic(fmt.Errorf("field allow_negative of message emissions.v1.Topic is not mutable"))
 	default:
@@ -556,14 +480,6 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 	case "emissions.v1.Topic.pnorm":
 		return protoreflect.ValueOfUint64(uint64(0))
 	case "emissions.v1.Topic.alpha_regret":
-		return protoreflect.ValueOfString("")
-	case "emissions.v1.Topic.preward_reputer":
-		return protoreflect.ValueOfString("")
-	case "emissions.v1.Topic.preward_inference":
-		return protoreflect.ValueOfString("")
-	case "emissions.v1.Topic.preward_forecast":
-		return protoreflect.ValueOfString("")
-	case "emissions.v1.Topic.f_tolerance":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Topic.allow_negative":
 		return protoreflect.ValueOfBool(false)
@@ -683,24 +599,8 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.PrewardReputer)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.PrewardInference)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.PrewardForecast)
-		if l > 0 {
-			n += 2 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.FTolerance)
-		if l > 0 {
-			n += 2 + l + runtime.Sov(uint64(l))
-		}
 		if x.AllowNegative {
-			n += 3
+			n += 2
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -739,41 +639,7 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 				dAtA[i] = 0
 			}
 			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x90
-		}
-		if len(x.FTolerance) > 0 {
-			i -= len(x.FTolerance)
-			copy(dAtA[i:], x.FTolerance)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.FTolerance)))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x8a
-		}
-		if len(x.PrewardForecast) > 0 {
-			i -= len(x.PrewardForecast)
-			copy(dAtA[i:], x.PrewardForecast)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardForecast)))
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x82
-		}
-		if len(x.PrewardInference) > 0 {
-			i -= len(x.PrewardInference)
-			copy(dAtA[i:], x.PrewardInference)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardInference)))
-			i--
-			dAtA[i] = 0x7a
-		}
-		if len(x.PrewardReputer) > 0 {
-			i -= len(x.PrewardReputer)
-			copy(dAtA[i:], x.PrewardReputer)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PrewardReputer)))
-			i--
-			dAtA[i] = 0x72
+			dAtA[i] = 0x70
 		}
 		if len(x.AlphaRegret) > 0 {
 			i -= len(x.AlphaRegret)
@@ -1257,134 +1123,6 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 				x.AlphaRegret = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 14:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardReputer", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PrewardReputer = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 15:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardInference", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PrewardInference = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 16:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PrewardForecast", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.PrewardForecast = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 17:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field FTolerance", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.FTolerance = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 18:
 				if wireType != 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AllowNegative", wireType)
 				}
@@ -2419,24 +2157,20 @@ type Topic struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id               uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Creator          string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
-	Metadata         string `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	LossLogic        string `protobuf:"bytes,4,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
-	LossMethod       string `protobuf:"bytes,5,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
-	InferenceLogic   string `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
-	InferenceMethod  string `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
-	EpochLastEnded   int64  `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
-	EpochLength      int64  `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	GroundTruthLag   int64  `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
-	DefaultArg       string `protobuf:"bytes,11,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
-	Pnorm            uint64 `protobuf:"varint,12,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
-	AlphaRegret      string `protobuf:"bytes,13,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
-	PrewardReputer   string `protobuf:"bytes,14,opt,name=preward_reputer,json=prewardReputer,proto3" json:"preward_reputer,omitempty"`
-	PrewardInference string `protobuf:"bytes,15,opt,name=preward_inference,json=prewardInference,proto3" json:"preward_inference,omitempty"`
-	PrewardForecast  string `protobuf:"bytes,16,opt,name=preward_forecast,json=prewardForecast,proto3" json:"preward_forecast,omitempty"`
-	FTolerance       string `protobuf:"bytes,17,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
-	AllowNegative    bool   `protobuf:"varint,18,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
+	Id              uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Creator         string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
+	Metadata        string `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	LossLogic       string `protobuf:"bytes,4,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
+	LossMethod      string `protobuf:"bytes,5,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	InferenceLogic  string `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
+	InferenceMethod string `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
+	EpochLastEnded  int64  `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
+	EpochLength     int64  `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	GroundTruthLag  int64  `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
+	DefaultArg      string `protobuf:"bytes,11,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
+	Pnorm           uint64 `protobuf:"varint,12,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
+	AlphaRegret     string `protobuf:"bytes,13,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
+	AllowNegative   bool   `protobuf:"varint,14,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
 }
 
 func (x *Topic) Reset() {
@@ -2550,34 +2284,6 @@ func (x *Topic) GetAlphaRegret() string {
 	return ""
 }
 
-func (x *Topic) GetPrewardReputer() string {
-	if x != nil {
-		return x.PrewardReputer
-	}
-	return ""
-}
-
-func (x *Topic) GetPrewardInference() string {
-	if x != nil {
-		return x.PrewardInference
-	}
-	return ""
-}
-
-func (x *Topic) GetPrewardForecast() string {
-	if x != nil {
-		return x.PrewardForecast
-	}
-	return ""
-}
-
-func (x *Topic) GetFTolerance() string {
-	if x != nil {
-		return x.FTolerance
-	}
-	return ""
-}
-
 func (x *Topic) GetAllowNegative() bool {
 	if x != nil {
 		return x.AllowNegative
@@ -2673,7 +2379,7 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x98, 0x07, 0x0a,
+	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x92, 0x04, 0x0a,
 	0x05, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f,
 	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72,
@@ -2704,58 +2410,33 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
 	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
 	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0b, 0x61,
-	0x6c, 0x70, 0x68, 0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x60, 0x0a, 0x0f, 0x70, 0x72,
-	0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x0e, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68,
-	0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0e, 0x70, 0x72,
-	0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x64, 0x0a, 0x11,
-	0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
-	0x65, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f,
-	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
-	0x52, 0x10, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e,
-	0x63, 0x65, 0x12, 0x62, 0x0a, 0x10, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x66, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
-	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
-	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0f, 0x70, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x46, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x58, 0x0a, 0x0b, 0x66, 0x5f, 0x74, 0x6f, 0x6c, 0x65,
-	0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x11, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f,
-	0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x6c, 0x70, 0x68, 0x61, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x61, 0x6c,
+	0x6c, 0x6f, 0x77, 0x5f, 0x6e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65, 0x18, 0x0e, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x0d, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x4e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76,
+	0x65, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b,
+	0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f,
+	0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x22, 0x73, 0x0a, 0x0f, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x12, 0x14,
+	0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x65,
+	0x70, 0x6f, 0x63, 0x68, 0x12, 0x4a, 0x0a, 0x07, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68,
+	0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49,
+	0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65,
+	0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68,
-	0x2e, 0x44, 0x65, 0x63, 0x52, 0x0a, 0x66, 0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65,
-	0x12, 0x25, 0x0a, 0x0e, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x5f, 0x6e, 0x65, 0x67, 0x61, 0x74, 0x69,
-	0x76, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0d, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x4e,
-	0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x73, 0x22, 0x73, 0x0a, 0x0f, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x46, 0x65, 0x65, 0x52, 0x65, 0x76,
-	0x65, 0x6e, 0x75, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x05, 0x65, 0x70, 0x6f, 0x63, 0x68, 0x12, 0x4a, 0x0a, 0x07, 0x72, 0x65,
-	0x76, 0x65, 0x6e, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f,
-	0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69,
-	0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x72,
-	0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x6f, 0x70,
-	0x69, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
-	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
-	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
-	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
-	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
-	0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca,
-	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02,
-	0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50,
-	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a,
+	0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
