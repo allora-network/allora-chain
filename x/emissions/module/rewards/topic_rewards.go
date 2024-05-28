@@ -1,7 +1,6 @@
 package rewards
 
 import (
-	"context"
 	"fmt"
 
 	"cosmossdk.io/errors"
@@ -54,7 +53,7 @@ func SafeApplyFuncOnAllActiveTopics(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
-	fn func(ctx context.Context, topic *types.Topic) error,
+	fn func(sdkCtx sdk.Context, topic *types.Topic) error,
 	topicPageLimit uint64,
 	maxTopicPages uint64,
 ) error {
@@ -99,34 +98,34 @@ func SafeApplyFuncOnAllActiveTopics(
 // We iterate through active topics, fetch their weight, skim the top N by weight (these are the churnable topics)
 // then finally apply a function on each of these churnable topics.
 func IdentifyChurnableAmongActiveTopicsAndApplyFn(
-	ctx sdk.Context,
+	sdkCtx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
-	fn func(ctx context.Context, topic *types.Topic) error,
+	fn func(ctx sdk.Context, topic *types.Topic) error,
 	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
+	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(sdkCtx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
+	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(sdkCtx, weights, maxTopicsPerBlock, block)
 
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			ctx.Logger().Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			sdkCtx.Logger().Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue
 		}
 		// Get the topic
-		topic, err := k.GetTopic(ctx, topicId)
+		topic, err := k.GetTopic(sdkCtx, topicId)
 		if err != nil {
-			ctx.Logger().Debug("Error getting topic: ", err)
+			sdkCtx.Logger().Debug("Error getting topic: ", err)
 			continue
 		}
 		// Execute the function
-		err = fn(ctx, &topic)
+		err = fn(sdkCtx, &topic)
 		if err != nil {
-			ctx.Logger().Debug("Error applying function on topic: ", err)
+			sdkCtx.Logger().Debug("Error applying function on topic: ", err)
 			continue
 		}
 	}
@@ -156,7 +155,7 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
-	fn := func(ctx context.Context, topic *types.Topic) error {
+	fn := func(ctx sdk.Context, topic *types.Topic) error {
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
 			ctx,
