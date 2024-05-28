@@ -66,3 +66,72 @@ func TestStdDev(t *testing.T) {
 		})
 	}
 }
+
+func TestPhiSimple(t *testing.T) {
+	x := alloraMath.MustNewDecFromString("7.9997")
+	p := alloraMath.NewDecFromInt64(3)
+	c := alloraMath.MustNewDecFromString("0.75")
+	// we expect a value very very close to 64
+	result, err := alloraMath.Phi(p, c, x)
+	require.NoError(t, err)
+	require.False(t, alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001")))
+}
+
+func TestGradient(t *testing.T) {
+	tests := []struct {
+		name        string
+		c 		    alloraMath.Dec
+		p           alloraMath.Dec
+		x           alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			name:        "normal operation 1",
+			c:           alloraMath.MustNewDecFromString("0.75"),
+			p:           alloraMath.MustNewDecFromString("2"),
+			x:           alloraMath.MustNewDecFromString("1"),
+			expected:    alloraMath.MustNewDecFromString("1.92014"),
+			expectedErr: nil,
+		},
+		{
+			name:        "normal operation 2",
+			c:           alloraMath.MustNewDecFromString("0.75"),
+			p:           alloraMath.MustNewDecFromString("10"),
+			x:           alloraMath.MustNewDecFromString("3"),
+			expected:    alloraMath.MustNewDecFromString("216663.907950817"),
+			expectedErr: nil,
+		},
+		{
+			name:        "normal operation 3",
+			c:           alloraMath.MustNewDecFromString("0.75"),
+			p:           alloraMath.MustNewDecFromString("9.2"),
+			x:           alloraMath.MustNewDecFromString("3.4"),
+			expected:    alloraMath.MustNewDecFromString("219724.179615500"),
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.Gradient(tc.p, tc.c, tc.x)
+
+			if tc.expectedErr != nil {
+				require.ErrorIs(t, err, tc.expectedErr)
+			} else {
+				require.NoError(t, err)
+				require.True(
+					t,
+					alloraMath.InDelta(
+						tc.expected,
+						result,
+						alloraMath.MustNewDecFromString("0.00001")),
+					"result should match expected value within epsilon",
+					tc.expected.String(),
+					result.String(),
+				)
+			}
+		})
+	}
+}
+
