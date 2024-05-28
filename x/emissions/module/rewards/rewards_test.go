@@ -2482,10 +2482,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	totalInferersReward := alloraMath.ZeroDec()
 	totalForecastersReward := alloraMath.ZeroDec()
 	totalReputersReward := alloraMath.ZeroDec()
-	totalReward := alloraMath.ZeroDec()
-	totalInfererRputersReward := alloraMath.ZeroDec()
-	firstInfererFraction := alloraMath.ZeroDec()
-	firstForecasterFraction := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
 		if reward.Type == rewards.WorkerInferenceRewardType {
 			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
@@ -2497,14 +2493,12 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	}
 	totalNonInfererReward, err := totalForecastersReward.Add(totalReputersReward)
 	s.Require().NoError(err)
-	totalReward, err = totalNonInfererReward.Add(totalInferersReward)
-	s.Require().NoError(err)
-	totalInfererRputersReward, err = totalInfererRputersReward.Add(totalReputersReward)
+	totalReward, err := totalNonInfererReward.Add(totalInferersReward)
 	s.Require().NoError(err)
 
-	firstInfererFraction, err = totalInferersReward.Quo(totalReward)
+	firstInfererFraction, err := totalInferersReward.Quo(totalReward)
 	s.Require().NoError(err)
-	firstForecasterFraction, err = totalForecastersReward.Quo(totalReward)
+	firstForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
 
 	block += 1
@@ -2635,14 +2629,14 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	totalInferersReward = alloraMath.ZeroDec()
 	totalReward = alloraMath.ZeroDec()
-	secondInfererFraction := alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
 		if reward.Type == rewards.WorkerInferenceRewardType {
 			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
 		}
 		totalReward, _ = totalReward.Add(reward.Reward)
 	}
-	secondInfererFraction, err = totalInferersReward.Quo(totalReward)
+	secondInfererFraction, err := totalInferersReward.Quo(totalReward)
+	s.Require().NoError(err)
 	s.Require().True(
 		firstInfererFraction.Lt(secondInfererFraction),
 		"Second inference fraction must be bigger than first fraction %s < %s",
@@ -2782,5 +2776,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		totalReward, _ = totalReward.Add(reward.Reward)
 	}
 	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
+	s.Require().NoError(err)
 	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
 }

@@ -9,49 +9,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// StdDev calculates the standard deviation of a slice of `alloraMath.Dec`
-// stdDev = sqrt((Σ(x - μ))^2/ N)
-// where μ is mean and N is number of elements
-func StdDev(data []alloraMath.Dec) (alloraMath.Dec, error) {
-	mean := alloraMath.ZeroDec()
-	var err error = nil
-	for _, v := range data {
-		mean, err = mean.Add(v)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-	}
-	lenData := alloraMath.NewDecFromInt64(int64(len(data)))
-	mean, err = mean.Quo(lenData)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	sd := alloraMath.ZeroDec()
-	for _, v := range data {
-		vMinusMean, err := v.Sub(mean)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-		vMinusMeanSquared, err := vMinusMean.Mul(vMinusMean)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-		sd, err = sd.Add(vMinusMeanSquared)
-		if err != nil {
-			return alloraMath.Dec{}, err
-		}
-	}
-	sdOverLen, err := sd.Quo(lenData)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	sqrtSdOverLen, err := sdOverLen.Sqrt()
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return sqrtSdOverLen, nil
-}
-
 // flatten converts a double slice of alloraMath.Dec to a single slice of alloraMath.Dec
 func flatten(arr [][]alloraMath.Dec) []alloraMath.Dec {
 	var flat []alloraMath.Dec
@@ -102,7 +59,7 @@ func GetMappingFunctionValues(
 	stdDev := alloraMath.OneDec()
 	if len(latestTimeStepsScores) > 1 {
 		var err error
-		stdDev, err = StdDev(latestTimeStepsScores)
+		stdDev, err = alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
 		}

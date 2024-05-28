@@ -14,15 +14,17 @@ import (
 
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug("\n ---------------- Emissions EndBlock ------------------- \n")
 	blockHeight := sdkCtx.BlockHeight()
+	sdkCtx.Logger().Debug(
+		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
+			blockHeight))
 
 	// Get unnormalized weights of active topics
 	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight, true)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker: Total Revenue: %v, Sum Weight: %v", totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -41,7 +43,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	// NONCE MGMT with churnReady weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
-	fn := func(ctx context.Context, topic *types.Topic) error {
+	fn := func(sdkCtx sdk.Context, topic *types.Topic) error {
 		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
 		go func(topic types.Topic) {
@@ -57,30 +59,31 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				// Update the last inference ran
 				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockHeight)
 				if err != nil {
-					sdkCtx.Logger().Warn("Error updating last inference ran: ", err)
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
 				}
 				// Add Worker Nonces
 				nextNonce := types.Nonce{BlockHeight: blockHeight + topic.EpochLength}
 				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
 				if err != nil {
-					sdkCtx.Logger().Warn("Error adding worker nonce: ", err)
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error adding worker nonce: %s", err.Error()))
 					return
 				}
+				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
 				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
 				if err != nil {
-					sdkCtx.Logger().Warn("Error setting churn ready topic: ", err)
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
 					return
 				}
 
 				MaxUnfulfilledReputerRequests, err := am.keeper.GetParamsMaxUnfulfilledReputerRequests(ctx)
 				if err != nil {
 					MaxUnfulfilledReputerRequests = types.DefaultParams().MaxUnfulfilledReputerRequests
-					sdkCtx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 				}
 				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
-					sdkCtx.Logger().Warn("Pruning reputer nonces before block: ", reputerPruningBlock, " for topic: ", topic.Id, " on block: ", blockHeight)
+					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
 					am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
 
 					workerPruningBlock := reputerPruningBlock - topic.EpochLength

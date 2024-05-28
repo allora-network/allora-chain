@@ -53,7 +53,7 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 
 	workerNonces, err := th.emissionsKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
 	if err != nil {
-		ctx.Logger().Error("Error getting worker nonces: ", err)
+		ctx.Logger().Error("Error getting worker nonces: " + err.Error())
 		return
 	}
 	// Filter workerNonces to only include those that are within the epoch length
@@ -63,14 +63,14 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	maxRetriesToFulfilNoncesWorker, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
 	if err != nil {
 		maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
-		ctx.Logger().Warn("Error getting max retries to fulfil nonces for worker requests (using default), err:", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 	}
 	sortedWorkerNonces := synth.SelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
-	ctx.Logger().Debug("Iterating Top N Worker Nonces: ", len(sortedWorkerNonces))
+	ctx.Logger().Debug(fmt.Sprintf("Iterating Top N Worker Nonces: %d", len(sortedWorkerNonces)))
 	// iterate over all the worker nonces to find if this is unfulfilled
 	for _, nonce := range sortedWorkerNonces {
 		nonceCopy := nonce
-		ctx.Logger().Debug("Current Worker block height has been found unfulfilled, requesting inferences ", nonceCopy)
+		ctx.Logger().Debug(fmt.Sprintf("Current Worker block height has been found unfulfilled, requesting inferences %v", nonceCopy))
 		go generateInferencesRequest(ctx, topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, topic.AllowNegative, *nonceCopy)
 	}
 }
@@ -81,21 +81,21 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		topic.Id, topic.Metadata, topic.DefaultArg))
 	reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
 	if err != nil {
-		ctx.Logger().Error("Error getting reputer nonces: ", err)
+		ctx.Logger().Error("Error getting reputer nonces: " + err.Error())
 		return
 	}
 	// No filtering - reputation of previous rounds can still be retried if work has been done.
 	maxRetriesToFulfilNoncesReputer, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
 	if err != nil {
-		ctx.Logger().Warn("Error getting max num of retries to fulfil nonces for worker requests (using default), err: ", err)
+		ctx.Logger().Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 		maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 	}
 	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
-	ctx.Logger().Debug("Iterating Top N Reputer Nonces: ", len(topNReputerNonces))
+	ctx.Logger().Warn(fmt.Sprintf("Iterating Top N Reputer Nonces: %v", len(topNReputerNonces)))
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
-		ctx.Logger().Debug("Reputer block height found unfulfilled, requesting reputers for block ", nonceCopy.ReputerNonce.BlockHeight, ", worker:", nonceCopy.WorkerNonce.BlockHeight)
+		ctx.Logger().Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v", nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
 		reputerValueBundle, err := synth.GetNetworkInferencesAtBlock(
 			ctx,
 			th.emissionsKeeper,
@@ -104,16 +104,21 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			nonceCopy.WorkerNonce.BlockHeight,
 		)
 		if err != nil {
-			ctx.Logger().Error("Error getting latest inferences at block: ", nonceCopy.ReputerNonce.BlockHeight, ", error: ", err)
+			ctx.Logger().Error(fmt.Sprintf("Error getting latest inferences at block: %d  error: %s", nonceCopy.ReputerNonce.BlockHeight, err.Error()))
+			continue
+		}
+		if reputerValueBundle == nil || len(reputerValueBundle.InfererValues) == 0 {
+			ctx.Logger().Error("ReputerValueBundle cannot be nil")
 			continue
 		}
 
 		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
 		if err != nil {
-			ctx.Logger().Error("Error calculating previous block approx time: ", err)
+			ctx.Logger().Error("Error calculating previous block approx time: " + err.Error())
 			continue
 		}
-		ctx.Logger().Debug("Requesting losses for topic: ", topic.Id, "reputer nonce: ", nonceCopy.ReputerNonce, "worker nonce: ", nonceCopy.WorkerNonce, "previous block approx time: ", previousBlockApproxTime)
+		ctx.Logger().Debug(fmt.Sprintf("Requesting losses for topic: %d reputer nonce: %d worker nonce: %d previous block approx time: %d",
+			topic.Id, nonceCopy.ReputerNonce, nonceCopy.WorkerNonce, previousBlockApproxTime))
 		go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
 	}
 }
@@ -123,7 +128,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		ctx.Logger().Debug("\n ---------------- TopicsHandler ------------------- \n")
 		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
 		if err != nil {
-			ctx.Logger().Error("Error getting max number of topics per block: ", err)
+			ctx.Logger().Error("Error getting max number of topics per block: " + err.Error())
 			return nil, err
 		}
 
@@ -136,7 +141,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				defer wg.Done()
 				topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
 				if err != nil {
-					ctx.Logger().Error("Error getting topic: ", err)
+					ctx.Logger().Error("Error getting topic: " + err.Error())
 					return
 				}
 				th.requestTopicWorkers(ctx, topic)
