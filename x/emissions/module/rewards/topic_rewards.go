@@ -2,6 +2,8 @@ package rewards
 
 import (
 	"context"
+	"fmt"
+
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -62,14 +64,14 @@ func SafeApplyFuncOnAllActiveTopics(
 		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
-			ctx.Logger().Warn("Error getting ids of active topics: ", err)
+			ctx.Logger().Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
 			continue
 		}
 
 		for _, topicId := range topicsActive {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				ctx.Logger().Warn("Error getting topic: ", err)
+				ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 				continue
 			}
 
@@ -77,7 +79,7 @@ func SafeApplyFuncOnAllActiveTopics(
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
-					ctx.Logger().Warn("Error applying function on topic: ", err)
+					ctx.Logger().Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
 					continue
 				}
 			}

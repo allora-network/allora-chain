@@ -256,7 +256,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 		filterOutTopic := false
 		filterOutErrorMessage := ""
 		if err != nil {
-			ctx.Logger().Warn("Error getting reputer request nonces: ", err)
+			ctx.Logger().Warn(fmt.Sprintf("Error getting reputer request nonces: %s", err.Error()))
 			filterOutTopic = true
 			filterOutErrorMessage = "failed to remove from sum weight and revenue"
 		}
@@ -268,7 +268,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
 		if weight.Lt(minTopicWeight) {
-			ctx.Logger().Warn("Topic weight is below the minimum: ", topicId)
+			ctx.Logger().Warn(fmt.Sprintf("Topic weight is below the minimum: %d", topicId))
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
