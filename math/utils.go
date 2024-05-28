@@ -3,7 +3,6 @@ package math
 import (
 	"cmp"
 	"sort"
-
 )
 
 // all exponential moving average functions take the form
