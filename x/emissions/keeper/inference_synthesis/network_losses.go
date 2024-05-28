@@ -206,6 +206,7 @@ func CalcNetworkLosses(
 		OneOutForecasterValues: oneOutForecasterLosses,
 		OneInForecasterValues:  oneInForecasterLosses,
 	}
+	
 
 	return output, nil
 }
