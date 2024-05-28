@@ -8,6 +8,7 @@ import (
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	testCommon "github.com/allora-network/allora-chain/test/common"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
@@ -43,12 +44,12 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, t
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
 }
 
-func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int64) {
+func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	// Define inferer address as Bob's address
-	InfererAddress1 := m.n.BobAddr
+	InfererAddress1 := m.BobAddr
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertBulkWorkerPayload{
@@ -83,39 +84,39 @@ func InsertSingleWorkerBulk(m TestMetadata, topic *types.Topic, blockHeight int6
 	// Sign
 	src := make([]byte, 0)
 	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
-	require.NoError(m.t, err, "Marshall reputer value bundle should not return an error")
+	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	sig, pubKey, err := m.n.Client.Context().Keyring.Sign(m.n.BobAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.t, err, "Sign should not return an error")
+	sig, pubKey, err := m.Client.Context().Keyring.Sign(m.BobAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	require.NoError(m.T, err, "Sign should not return an error")
 	workerPublicKeyBytes := pubKey.Bytes()
 	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.BobAcc, workerMsg)
-	require.NoError(m.t, err)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, m.BobAcc, workerMsg)
+	require.NoError(m.T, err)
 
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	require.NoError(m.T, err)
 
 	// Latest inference
-	latestInference, err := m.n.QueryEmissions.GetWorkerLatestInferenceByTopicId(
-		m.ctx,
+	latestInference, err := m.Client.QueryEmissions().GetWorkerLatestInferenceByTopicId(
+		m.Ctx,
 		&types.QueryWorkerLatestInferenceRequest{
 			TopicId:       1,
 			WorkerAddress: InfererAddress1,
 		},
 	)
-	require.NoError(m.t, err)
-	require.Equal(m.t, latestInference.LatestInference.Value, alloraMath.MustNewDecFromString("100"))
-	require.Equal(m.t, latestInference.LatestInference.BlockHeight, blockHeight)
-	require.Equal(m.t, latestInference.LatestInference.TopicId, topicId)
-	require.Equal(m.t, latestInference.LatestInference.Inferer, InfererAddress1)
+	require.NoError(m.T, err)
+	require.Equal(m.T, latestInference.LatestInference.Value, alloraMath.MustNewDecFromString("100"))
+	require.Equal(m.T, latestInference.LatestInference.BlockHeight, blockHeight)
+	require.Equal(m.T, latestInference.LatestInference.TopicId, topicId)
+	require.Equal(m.T, latestInference.LatestInference.Inferer, InfererAddress1)
 }
 
 // Worker Bob inserts bulk inference and forecast
-func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
-	topicResponse, err := m.n.QueryEmissions.GetTopic(m.ctx, &types.QueryTopicRequest{TopicId: topic.Id})
-	require.NoError(m.t, err)
+func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64) {
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+	require.NoError(m.T, err)
 	freshTopic := topicResponse.Topic
 
 	// Insert and fulfill nonces for the last two epochs
@@ -130,12 +131,12 @@ func InsertWorkerBulk(m TestMetadata, topic *types.Topic) (int64, int64) {
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
-	workerAddr := m.n.BobAddr
-	reputerAddr := m.n.AliceAddr
+	workerAddr := m.BobAddr
+	reputerAddr := m.AliceAddr
 	// Nonces are last two blockHeights
 	reputerNonce := &types.Nonce{
 		BlockHeight: BlockHeightCurrent,
@@ -192,10 +193,10 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 	// Sign
 	src := make([]byte, 0)
 	src, err := reputerValueBundle.XXX_Marshal(src, true)
-	require.NoError(m.t, err, "Marshall reputer value bundle should not return an error")
+	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	valueBundleSignature, pubKey, err := m.n.Client.Context().Keyring.Sign(m.n.AliceAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
-	require.NoError(m.t, err, "Sign should not return an error")
+	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(m.AliceAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
 	// Create a MsgInsertBulkReputerPayload message
@@ -215,33 +216,33 @@ func InsertReputerBulk(m TestMetadata, topic *types.Topic, BlockHeightCurrent, B
 		},
 	}
 
-	txResp, err := m.n.Client.BroadcastTx(m.ctx, m.n.AliceAcc, lossesMsg)
-	require.NoError(m.t, err)
-	_, err = m.n.Client.WaitForTx(m.ctx, txResp.TxHash)
-	require.NoError(m.t, err)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, lossesMsg)
+	require.NoError(m.T, err)
+	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	require.NoError(m.T, err)
 
-	result, err := m.n.QueryEmissions.GetNetworkLossBundleAtBlock(m.ctx,
+	result, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(m.Ctx,
 		&types.QueryNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: BlockHeightCurrent,
 		},
 	)
-	require.NoError(m.t, err)
-	require.NotNil(m.t, result)
-	require.NotNil(m.t, result.LossBundle, "Retrieved data should match inserted data")
+	require.NoError(m.T, err)
+	require.NotNil(m.T, result)
+	require.NotNil(m.T, result.LossBundle, "Retrieved data should match inserted data")
 
 }
 
 // Register two actors and check their registrations went through
-func WorkerInferenceAndForecastChecks(m TestMetadata) {
+func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	// Nonce: calculate from EpochLastRan + EpochLength
-	topic, err := getNonZeroTopicEpochLastRan(m.ctx, m.n.QueryEmissions, 1, 5)
+	topic, err := getNonZeroTopicEpochLastRan(m.Ctx, m.Client.QueryEmissions(), 1, 5)
 	if err != nil {
-		m.t.Log("--- Failed getting a topic that was ran ---")
-		require.NoError(m.t, err)
+		m.T.Log("--- Failed getting a topic that was ran ---")
+		require.NoError(m.T, err)
 	}
-	m.t.Log("--- Insert Worker Bulk ---")
+	m.T.Log("--- Insert Worker Bulk ---")
 	blockHeightCurrent, blockHeightEval := InsertWorkerBulk(m, topic)
-	m.t.Log("--- Insert Reputer Bulk ---")
+	m.T.Log("--- Insert Reputer Bulk ---")
 	InsertReputerBulk(m, topic, blockHeightCurrent, blockHeightEval)
 }

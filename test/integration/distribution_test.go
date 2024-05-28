@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/allora-network/allora-chain/app/params"
+	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -16,8 +17,8 @@ import (
 
 // Get the validator address that is stored in the genesis file
 // didn't know of a better way to get a validator address to check with
-func GetValidatorAddressesFromGenesisFile(m TestMetadata) ([]string, error) {
-	home := m.n.Client.Context().HomeDir
+func GetValidatorAddressesFromGenesisFile(m testCommon.TestConfig) ([]string, error) {
+	home := m.AlloraHomeDir
 	genesisPath := home + "/config/genesis.json"
 
 	file, err := os.Open(genesisPath)
@@ -32,7 +33,7 @@ func GetValidatorAddressesFromGenesisFile(m TestMetadata) ([]string, error) {
 		line := scanner.Text()
 		if strings.Contains(line, "\"validator_address\":") {
 			splitted := strings.Split(line, ":")
-			require.Equal(m.t, len(splitted), 2)
+			require.Equal(m.T, len(splitted), 2)
 			trimmed := strings.TrimSpace(splitted[1])
 			trimmed = strings.Trim(trimmed, ",")
 			trimmed = strings.Trim(trimmed, "\"")
@@ -55,37 +56,37 @@ func GetValidatorAddressesFromGenesisFile(m TestMetadata) ([]string, error) {
 	return addresses, nil
 }
 
-func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
+func CheckValidatorBalancesIncreaseOnNewBlock(m testCommon.TestConfig) {
 	validatorAddrs, err := GetValidatorAddressesFromGenesisFile(m)
-	require.NoError(m.t, err)
-	require.Len(m.t, validatorAddrs, 3, "Expected exactly three validator addresses")
+	require.NoError(m.T, err)
+	require.Len(m.T, validatorAddrs, 3, "Expected exactly three validator addresses")
 
 	balancesBefore := make(map[string]*distributiontypes.QueryValidatorOutstandingRewardsResponse)
 
 	for _, addr := range validatorAddrs {
-		response, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
-			m.ctx,
+		response, err := m.Client.QueryDistribution().ValidatorOutstandingRewards(
+			m.Ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
 			},
 		)
-		require.NoError(m.t, err)
+		require.NoError(m.T, err)
 		balancesBefore[addr] = response
 	}
 
-	err = m.n.Client.WaitForNextBlock(m.ctx)
-	require.NoError(m.t, err)
+	err = m.Client.WaitForNextBlock(m.Ctx)
+	require.NoError(m.T, err)
 
 	balanceIncreased := false
 
 	for _, addr := range validatorAddrs {
-		balanceAfter, err := m.n.QueryDistribution.ValidatorOutstandingRewards(
-			m.ctx,
+		balanceAfter, err := m.Client.QueryDistribution().ValidatorOutstandingRewards(
+			m.Ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
 			},
 		)
-		require.NoError(m.t, err)
+		require.NoError(m.T, err)
 
 		vba := balanceAfter.Rewards.Rewards.AmountOf(params.BaseCoinUnit)
 		vbb := balancesBefore[addr].Rewards.Rewards.AmountOf(params.BaseCoinUnit)
@@ -97,7 +98,7 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 	}
 
 	require.True(
-		m.t,
+		m.T,
 		balanceIncreased,
 		"None of the validator balances increased after a new block",
 	)
@@ -105,46 +106,46 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m TestMetadata) {
 
 // the mint module pays the ecosystem module account
 // as new blocks are produced.
-func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
-	alloraRewardsModuleAccResponse, err := m.n.QueryAuth.ModuleAccountByName(
-		m.ctx,
+func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
+	alloraRewardsModuleAccResponse, err := m.Client.QueryAuth().ModuleAccountByName(
+		m.Ctx,
 		&authtypes.QueryModuleAccountByNameRequest{
 			Name: emissionstypes.AlloraRewardsAccountName,
 		},
 	)
-	require.NoError(m.t, err)
+	require.NoError(m.T, err)
 	var alloraRewardsModuleAcc authtypes.ModuleAccount
-	err = m.n.Cdc.Unmarshal(
+	err = m.Cdc.Unmarshal(
 		alloraRewardsModuleAccResponse.Account.Value,
 		&alloraRewardsModuleAcc,
 	)
-	require.NoError(m.t, err)
+	require.NoError(m.T, err)
 
-	alloraRewardsBalanceBefore, err := m.n.QueryBank.Balance(
-		m.ctx,
+	alloraRewardsBalanceBefore, err := m.Client.QueryBank().Balance(
+		m.Ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,
 			Denom:   params.BaseCoinUnit,
 		},
 	)
-	require.NoError(m.t, err)
+	require.NoError(m.T, err)
 
-	err = m.n.Client.WaitForNextBlock(m.ctx)
-	require.NoError(m.t, err)
+	err = m.Client.WaitForNextBlock(m.Ctx)
+	require.NoError(m.T, err)
 
-	alloraRewardsBalanceAfter, err := m.n.QueryBank.Balance(
-		m.ctx,
+	alloraRewardsBalanceAfter, err := m.Client.QueryBank().Balance(
+		m.Ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,
 			Denom:   params.BaseCoinUnit,
 		},
 	)
-	require.NoError(m.t, err)
+	require.NoError(m.T, err)
 
 	arba := alloraRewardsBalanceAfter.Balance.Amount
 	arbb := alloraRewardsBalanceBefore.Balance.Amount
 	require.True(
-		m.t,
+		m.T,
 		arba.GT(arbb),
 		"Allora Rewards module account balance did not increase after a block %s %s",
 		arba.String(),
@@ -155,7 +156,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m TestMetadata) {
 // this file tests that the distribution of funds to validators
 // and rewards accounts is working as expected
 // basically testing the forked mint module that we use
-func DistributionChecks(m TestMetadata) {
+func DistributionChecks(m testCommon.TestConfig) {
 	// TODO
 	// * Fund a topic
 	// * Make inferences + forecasts
@@ -165,8 +166,8 @@ func DistributionChecks(m TestMetadata) {
 	// * Check validator balances increase
 	// Bad form to have a test that depends on another test, but might be most expedient to rely
 	// on the existing tests to do each of the above.
-	m.t.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
+	m.T.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
 	CheckValidatorBalancesIncreaseOnNewBlock(m)
-	m.t.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
+	m.T.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
 	CheckAlloraRewardsBalanceGoesUpOnNewBlock(m)
 }

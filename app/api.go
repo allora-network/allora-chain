@@ -106,7 +106,11 @@ func generateLossesRequest(
 		return
 	}
 	payloadStr := string(payload)
-	makeApiCall(payloadStr)
+	ctx.Logger().Debug(fmt.Sprintf("Making API call - losses, with payload: %s", payloadStr))
+	err = makeApiCall(payloadStr)
+	if err != nil {
+		ctx.Logger().Warn("Error making API call - losses: " + err.Error())
+	}
 }
 
 func generateInferencesRequest(
@@ -152,7 +156,7 @@ func generateInferencesRequest(
 	}
 	payloadStr := string(payload)
 
-	ctx.Logger().Debug("Making API call with payload: ", payloadStr)
+	ctx.Logger().Debug(fmt.Sprintf("Making API call - inferences, with payload: %s", payloadStr))
 	err = makeApiCall(payloadStr)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error making API call: %s", err.Error()))
