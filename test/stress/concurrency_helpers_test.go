@@ -1,8 +1,8 @@
 package stress_test
 
 import (
-	"fmt"
 	"sync"
+	"testing"
 )
 
 // convenience type aliases
@@ -80,27 +80,51 @@ func incrementCountWorkers() {
 	mutexCountWorkers.Unlock()
 }
 
-// report the final summary statistics
-func reportSummaryStatistics() {
+// todo examine if we need to lock the global variables
+// if we're only doing read operations
+func reportShortStatistics(t *testing.T) {
 	mutexTopicErrors.Lock()
 	countTopicErrors := len(topicErrors)
-	fmt.Print("Total topics with errors: ", countTopicErrors, " ")
-	fmt.Println(topicErrors)
+	mutexTopicErrors.Unlock()
+	mutexReputerErrors.Lock()
+	countReputersWithErrors := len(reputerErrors)
+	mutexReputerErrors.Unlock()
+	mutexWorkerErrors.Lock()
+	countWorkersWithErrors := len(workerErrors)
+	mutexWorkerErrors.Unlock()
+	mutexCountTopics.Lock()
+	countTopicsLocal := countTopics
+	mutexCountTopics.Unlock()
+	mutexCountReputers.Lock()
+	countReputersLocal := countReputers
+	mutexCountReputers.Unlock()
+	mutexCountWorkers.Lock()
+	countWorkersLocal := countWorkers
+	mutexCountWorkers.Unlock()
+
+	t.Logf("Topics with errors: %d/%d\n", countTopicErrors, countTopicsLocal)
+	t.Logf("Reputers with errors: %d/%d\n", countReputersWithErrors, countReputersLocal)
+	t.Logf("Workers with errors: %d/%d\n", countWorkersWithErrors, countWorkersLocal)
+}
+
+// report the final summary statistics
+func reportSummaryStatistics(t *testing.T) {
+	mutexTopicErrors.Lock()
+	countTopicErrors := len(topicErrors)
+	t.Logf("Total topics with errors: %d %v", countTopicErrors, topicErrors)
 	mutexTopicErrors.Unlock()
 	countReputersWithErrors := 0
 	mutexReputerErrors.Lock()
 	for topicId, topicReputerList := range reputerErrors {
 		countReputersWithErrors++
-		fmt.Print("Reputer Errors: Topic: ", topicId, " ")
-		fmt.Println(topicReputerList)
+		t.Logf("Reputer Errors: Topic: %d %v", topicId, topicReputerList)
 	}
 	mutexReputerErrors.Unlock()
 	mutexWorkerErrors.Lock()
 	countWorkersWithErrors := 0
 	for topicId, topicWorkerList := range workerErrors {
 		countWorkersWithErrors++
-		fmt.Print("Worker Errors: Topic: ", topicId, " ")
-		fmt.Println(topicWorkerList)
+		t.Logf("Worker Errors: Topic: %d %v", topicId, topicWorkerList)
 	}
 	mutexWorkerErrors.Unlock()
 
@@ -110,10 +134,10 @@ func reportSummaryStatistics() {
 	percentTopicsWithErrors := float64(countTopicErrors) / float64(countTopics) * 100
 	percentReputersWithErrors := float64(countReputersWithErrors) / float64(countReputers) * 100
 	percentWorkersWithErrors := float64(countWorkersWithErrors) / float64(countWorkers) * 100
-	fmt.Printf("\n\nSummary Statistics:")
-	fmt.Printf("Topics with errors: %d/%d | %.2f%%\n", countTopicErrors, countTopics, percentTopicsWithErrors)
-	fmt.Printf("Reputers with errors: %d/%d | %.2f%%\n", countReputersWithErrors, countReputers, percentReputersWithErrors)
-	fmt.Printf("Workers with errors: %d/%d  | %.2f%%\n", countWorkersWithErrors, countWorkers, percentWorkersWithErrors)
+	t.Logf("\n\nSummary Statistics:")
+	t.Logf("Topics with errors: %d/%d | %.2f%%\n", countTopicErrors, countTopics, percentTopicsWithErrors)
+	t.Logf("Reputers with errors: %d/%d | %.2f%%\n", countReputersWithErrors, countReputers, percentReputersWithErrors)
+	t.Logf("Workers with errors: %d/%d  | %.2f%%\n", countWorkersWithErrors, countWorkers, percentWorkersWithErrors)
 	mutexCountTopics.Unlock()
 	mutexCountWorkers.Unlock()
 	mutexCountReputers.Unlock()

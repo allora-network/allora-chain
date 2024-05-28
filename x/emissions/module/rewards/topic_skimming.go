@@ -1,10 +1,12 @@
 package rewards
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // A structure to hold the original value and a random tiebreaker
@@ -43,7 +45,7 @@ func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[
 
 // Returns a map of topicId to weights of the top N topics by weight in descending order
 // It is assumed that topicIds is of a reasonable size, throttled by perhaps MaxTopicsPerBlock global param
-func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
+func SkimTopTopicsByWeightDesc(sdkCtx sdk.Context, weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
 	topicIds := make([]TopicId, 0, len(weights))
 	for topicId := range weights {
 		topicIds = append(topicIds, topicId)
@@ -65,6 +67,10 @@ func SkimTopTopicsByWeightDesc(weights map[TopicId]*alloraMath.Dec, N uint64, bl
 		weightsOfTopN[sortedTopicIds[i]] = weights[sortedTopicIds[i]]
 		listOfTopN[i] = sortedTopicIds[i]
 	}
+
+	sdkCtx.Logger().Debug(
+		fmt.Sprintf("SkimTopTopicsByWeightDesc took top %d topics out of %d",
+			numberToAdd, len(sortedTopicIds)))
 
 	return weightsOfTopN, listOfTopN
 }

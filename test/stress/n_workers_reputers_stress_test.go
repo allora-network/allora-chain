@@ -144,13 +144,16 @@ func workerReputerCoordinationLoop(
 		sleepingTime := iterationTime - elapsedIteration
 		m.T.Log("Topics created ", topicCount, " ", time.Now(), "Main loop sleeping", sleepingTime)
 		time.Sleep(sleepingTime)
+		if makeReport {
+			reportShortStatistics(m.T)
+		}
 	}
 	m.T.Log("All routines launched: waiting for running routines to end.")
 	wg.Wait()
 
 	// 6. If applicable, generate a summary report of the test
 	if makeReport {
-		reportSummaryStatistics()
+		reportSummaryStatistics(m.T)
 	}
 }
 
@@ -286,6 +289,9 @@ func workerReputerLoop(
 		sleepingTime := iterationTime - elapsedIteration
 		m.T.Log(topicLog(topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime))
 		time.Sleep(sleepingTime)
+		if makeReport {
+			reportShortStatistics(m.T)
+		}
 	}
 
 	// Check that the workers have been paid rewards
