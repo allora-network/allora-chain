@@ -102,33 +102,34 @@ message OptionalParams {
   repeated string validators_vs_allora_percent_reward = 23
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 max_samples_to_scale_scores = 24;
-  repeated uint64 max_top_workers_to_reward = 25;
-  repeated uint64 max_top_reputers_to_reward = 26;
-  repeated string create_topic_fee = 27 [
+  repeated uint64 max_top_inferers_to_reward = 25;
+  repeated uint64 max_top_forecasters_to_reward = 26;
+  repeated uint64 max_top_reputers_to_reward = 27;
+  repeated string create_topic_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string sigmoid_a = 28
+  repeated string sigmoid_a = 29
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 29
+  repeated string sigmoid_b = 30
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 gradient_descent_max_iters = 30;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 31;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 32;
-  repeated uint64 topic_page_limit = 33;
-  repeated uint64 max_topic_pages = 34;
-  repeated string registration_fee = 35 [
+  repeated uint64 gradient_descent_max_iters = 31;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 32;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 33;
+  repeated uint64 topic_page_limit = 34;
+  repeated uint64 max_topic_pages = 35;
+  repeated string registration_fee = 36 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 default_limit = 36;
-  repeated uint64 max_limit = 37;
-  repeated int64 min_epoch_length_record_limit = 38;
-  repeated uint64 blocks_per_month = 39;
+  repeated uint64 default_limit = 37;
+  repeated uint64 max_limit = 38;
+  repeated int64 min_epoch_length_record_limit = 39;
+  repeated uint64 blocks_per_month = 40;
 }
 
 message MsgUpdateParams {

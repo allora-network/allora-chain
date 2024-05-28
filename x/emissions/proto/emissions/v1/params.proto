@@ -86,37 +86,38 @@ message Params {
   ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
   uint64 max_samples_to_scale_scores = 24;  // number of scores to use for standard deviation calculation
   // max this many inferences from unique workers and forecasts thereof are accepted per payload
-  uint64 max_top_workers_to_reward = 25;   // max number of top workers by score to reward
-  uint64 max_top_reputers_to_reward = 26;  // max number of top reputers by score to reward
-  string create_topic_fee = 27 [
+  uint64 max_top_inferers_to_reward = 25;     // max number of top inferers by score to reward
+  uint64 max_top_forecasters_to_reward = 26;  // max number of top forecasters by score to reward
+  uint64 max_top_reputers_to_reward = 27;     // max number of top reputers by score to reward
+  string create_topic_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];  // topic registration fee
-  string sigmoid_a = 28 [
+  string sigmoid_a = 29 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // parameter a for sigmoid function, fiducial value = 8
-  string sigmoid_b = 29 [
+  string sigmoid_b = 30 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];                                                // parameter b for sigmoid function, fiducial value = 0.5
-  uint64 gradient_descent_max_iters = 30;           // max number of gradient descent iterations
-  int64 max_retries_to_fulfil_nonces_worker = 31;   // max number of retries to unfulfilled nonces (worker)
-  int64 max_retries_to_fulfil_nonces_reputer = 32;  // max number of retries to unfulfilled nonces (reputer)
-  uint64 topic_page_limit = 33;
-  uint64 max_topic_pages = 34;
-  string registration_fee = 35 [
+  uint64 gradient_descent_max_iters = 31;           // max number of gradient descent iterations
+  int64 max_retries_to_fulfil_nonces_worker = 32;   // max number of retries to unfulfilled nonces (worker)
+  int64 max_retries_to_fulfil_nonces_reputer = 33;  // max number of retries to unfulfilled nonces (reputer)
+  uint64 topic_page_limit = 34;
+  uint64 max_topic_pages = 35;
+  string registration_fee = 36 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];                          // registration fee for workers and reputers
-  uint64 default_limit = 36;  // default limit for pagination
-  uint64 max_limit = 37;      // max limit for pagination
+  uint64 default_limit = 37;  // default limit for pagination
+  uint64 max_limit = 38;      // max limit for pagination
   int64 min_epoch_length_record_limit =
-      38;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
+      39;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
   // block emission rate in number of blocks expected per month
-  uint64 blocks_per_month = 39;
+  uint64 blocks_per_month = 40;
 }

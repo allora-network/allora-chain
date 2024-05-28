@@ -599,12 +599,20 @@ func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, 
 	return params.MaxSamplesToScaleScores, nil
 }
 
-func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxTopInferersToReward(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	return params.MaxTopWorkersToReward, nil
+	return params.MaxTopInferersToReward, nil
+}
+
+func (k *Keeper) GetParamsMaxTopForecastersToReward(ctx context.Context) (uint64, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return params.MaxTopForecastersToReward, nil
 }
 
 func (k *Keeper) GetParamsTopicCreationFee(ctx context.Context) (cosmosMath.Int, error) {
