@@ -108,6 +108,10 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			ctx.Logger().Error(fmt.Sprintf("Error getting latest inferences at block: %d  error: %s", nonceCopy.ReputerNonce.BlockHeight, err.Error()))
 			continue
 		}
+		if reputerValueBundle == nil || len(reputerValueBundle.InfererValues) == 0 {
+			ctx.Logger().Error("ReputerValueBundle cannot be nil")
+			continue
+		}
 
 		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
 		if err != nil {
