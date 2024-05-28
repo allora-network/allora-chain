@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	"fmt"
+	stdLog "log"
 	"testing"
 	"time"
 
@@ -803,6 +804,111 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRew
 	return true
 }
 
+func (s *RewardsTestSuite) TestReputerCloserToConsensusGetsMoreRewards() {
+
+	/// STEP 1 setup
+	require := s.Require()
+
+	blockHeight := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	reputerAddrs := []sdk.AccAddress{
+		s.addrs[3],
+		s.addrs[4],
+		s.addrs[5],
+	}
+
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
+
+	topicId := s.setUpTopic(blockHeight, workerAddrs, reputerAddrs, stake)
+
+	getReputerReward := func(reputerAddr sdk.AccAddress, rewardsDistribution []rewards.TaskRewards) alloraMath.Dec {
+		for _, taskReward := range rewardsDistribution {
+			if taskReward.Address == reputerAddr.String() {
+				return taskReward.Reward
+			}
+		}
+		require.Fail("Reputer %v not found", reputerAddr.String())
+		return alloraMath.ZeroDec()
+	}
+
+	/// STEP 2 Test out of consensus in one direction
+	workerValues0 := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.2"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.2"},
+	}
+
+	reputerValues0 := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.2"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
+
+	rewardsDistribution0 := s.getRewardsDistribution(
+		topicId,
+		blockHeight,
+		workerValues0,
+		reputerValues0,
+		workerAddrs[0],
+		"0.2",
+		"0.2",
+	)
+
+	for i, reputerAddress := range reputerAddrs {
+		stdLog.Printf("reputerAddrs[%v]: %v", i, reputerAddress.String())
+	}
+	stdLog.Printf("rewardsDistribution0: %v", rewardsDistribution0)
+
+	reputer0Reward0 := getReputerReward(reputerAddrs[0], rewardsDistribution0)
+	reputer1Reward0 := getReputerReward(reputerAddrs[1], rewardsDistribution0)
+	reputer2Reward0 := getReputerReward(reputerAddrs[2], rewardsDistribution0)
+
+	s.True(alloraMath.InDelta(reputer0Reward0, reputer1Reward0, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(reputer2Reward0.Lt(reputer0Reward0))
+
+	blockHeight++
+	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+
+	/// STEP 3 Test out of consensus in the other direction
+	workerValues1 := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.2"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.2"},
+	}
+
+	reputerValues1 := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.2"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.1"},
+	}
+
+	rewardsDistribution1 := s.getRewardsDistribution(
+		topicId,
+		blockHeight,
+		workerValues1,
+		reputerValues1,
+		workerAddrs[0],
+		"0.2",
+		"0.2",
+	)
+
+	stdLog.Printf("rewardsDistribution1: %v", rewardsDistribution1)
+
+	reputer0Reward1 := getReputerReward(reputerAddrs[0], rewardsDistribution1)
+	reputer1Reward1 := getReputerReward(reputerAddrs[1], rewardsDistribution1)
+	reputer2Reward1 := getReputerReward(reputerAddrs[2], rewardsDistribution1)
+
+	s.True(alloraMath.InDelta(reputer0Reward1, reputer1Reward1, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(reputer2Reward1.Lt(reputer0Reward1))
+}
+
 // We have 2 trials with 2 epochs each, and the first worker does better in the 2nd epoch in both trials.
 // We show that keeping the TaskRewardAlpha the same means that the worker is rewarded the same amount
 // in both cases.
@@ -909,6 +1015,9 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		"0.2",
 		"0.1",
 	)
+
+	stdLog.Printf("rewardsDistribution0_0: %v", rewardsDistribution0_0)
+	stdLog.Printf("rewardsDistribution1_0: %v", rewardsDistribution1_0)
 
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
