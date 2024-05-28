@@ -475,7 +475,7 @@ func CalcNetworkInferences(
 		pInferenceSynthesis,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error calculating forecast-implied inferences: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error calculating forecast-implied inferences: %s", err.Error()))
 	}
 	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
 
@@ -491,8 +491,9 @@ func CalcNetworkInferences(
 		epsilon,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error finding max regret among workers with losses: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error finding max regret among workers with losses: %s", err.Error()))
 	}
+	maxStdDevCombinedRegret := alloraMath.Max(stdDevRegrets.StdDevInferenceRegret, stdDevRegrets.StdDevForecastRegret)
 
 	// Calculate the combined network inference I_i
 	combinedNetworkInference, err := CalcWeightedInference(
@@ -504,12 +505,12 @@ func CalcNetworkInferences(
 		forecastImpliedInferenceByWorker,
 		sortedForecasters,
 		allWorkersAreNew,
-		stdDevRegrets.StdDevInferenceRegret,
+		maxStdDevCombinedRegret,
 		epsilon,
 		pInferenceSynthesis,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error calculating network combined inference: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined inference: %s", err.Error()))
 	}
 
 	// Calculate the naive inference I^-_i
@@ -527,7 +528,7 @@ func CalcNetworkInferences(
 		pInferenceSynthesis,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error calculating naive inference: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error calculating naive inference: %s", err.Error()))
 	}
 
 	// Calculate the one-out inference I^-_li
@@ -541,13 +542,13 @@ func CalcNetworkInferences(
 		sortedForecasters,
 		forecasts,
 		allWorkersAreNew,
-		stdDevRegrets.StdDevInferenceRegret,
+		maxStdDevCombinedRegret,
 		networkCombinedLoss,
 		epsilon,
 		pInferenceSynthesis,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error calculating one-out inferences: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out inferences: %s", err.Error()))
 		oneOutInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 		oneOutImpliedInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 	}
@@ -565,7 +566,7 @@ func CalcNetworkInferences(
 		pInferenceSynthesis,
 	)
 	if err != nil {
-		ctx.Logger().Warn("Error calculating one-in inferences: ", err.Error())
+		ctx.Logger().Warn(fmt.Sprintf("Error calculating one-in inferences: %s", err.Error()))
 		oneInInferences = make([]*emissions.WorkerAttributedValue, 0)
 	}
 

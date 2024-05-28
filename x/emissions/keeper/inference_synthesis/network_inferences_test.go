@@ -1190,8 +1190,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 
-	s.inEpsilon5(valueBundle.CombinedValue, "-0.0835509915082")
-	s.inEpsilon3(valueBundle.NaiveValue, "-0.09178283369953")
+	s.inEpsilon5(valueBundle.CombinedValue, "-0.08185516761117273158873135062469833")
+	s.inEpsilon3(valueBundle.NaiveValue, "-0.09122179696704032438648277420392574")
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -1219,13 +1219,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case reputer0:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.08839927050327")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08523931114876")
 		case reputer1:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.08383487919316")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08168367445715")
 		case reputer2:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.075812337762109")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.07667553096912")
 		case reputer3:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.077327729766061")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.075308069104633")
 		case reputer4:
 			s.inEpsilon2(oneOutInfererValue.Value, "-0.097732445271841")
 		default:
@@ -1238,9 +1238,9 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		case forecaster0:
 			s.inEpsilon2(oneInForecasterValue.Value, "-0.0890116077959635")
 		case forecaster1:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.0868036533808")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.0857186447720307")
 		case forecaster2:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.08652964850346")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.0853937827718047")
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
@@ -1249,11 +1249,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0839644182821")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0819388711153114")
 		case forecaster1:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08565074735881")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0840146662995497")
 		case forecaster2:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0858512590073140")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0842609498557423")
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
