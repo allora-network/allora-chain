@@ -25,7 +25,6 @@ func DefaultParams() Params {
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
-		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
@@ -110,10 +109,6 @@ func DefaultParamsMinStakeFraction() alloraMath.Dec {
 
 func DefaultParamsEpsilon() alloraMath.Dec {
 	return DefaultParams().Epsilon
-}
-
-func DefaultParamsAlphaRegret() alloraMath.Dec {
-	return DefaultParams().AlphaRegret
 }
 
 func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {

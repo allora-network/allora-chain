@@ -99,7 +99,7 @@ func StdDev(data []Dec) (Dec, error) {
 
 // Implements the new gradient function phi prime
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
-func Gradient(p, x, c Dec) (Dec, error) {
+func Gradient(p, c, x Dec) (Dec, error) {
 	// Calculate c - x
 	cMinusX, err := c.Sub(x)
 	if err != nil {
