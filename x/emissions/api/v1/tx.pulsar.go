@@ -1215,7 +1215,7 @@ func (x *_OptionalParams_26_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_27_list)(nil)
 
 type _OptionalParams_27_list struct {
-	list *[]uint64
+	list *[]string
 }
 
 func (x *_OptionalParams_27_list) Len() int {
@@ -1226,17 +1226,17 @@ func (x *_OptionalParams_27_list) Len() int {
 }
 
 func (x *_OptionalParams_27_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfString((*x.list)[i])
 }
 
 func (x *_OptionalParams_27_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_27_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1250,8 +1250,8 @@ func (x *_OptionalParams_27_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_27_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := ""
+	return protoreflect.ValueOfString(v)
 }
 
 func (x *_OptionalParams_27_list) IsValid() bool {
@@ -1399,7 +1399,7 @@ func (x *_OptionalParams_30_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_31_list)(nil)
 
 type _OptionalParams_31_list struct {
-	list *[]uint64
+	list *[]int64
 }
 
 func (x *_OptionalParams_31_list) Len() int {
@@ -1410,17 +1410,17 @@ func (x *_OptionalParams_31_list) Len() int {
 }
 
 func (x *_OptionalParams_31_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfInt64((*x.list)[i])
 }
 
 func (x *_OptionalParams_31_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_31_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.Int()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1434,8 +1434,8 @@ func (x *_OptionalParams_31_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_31_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := int64(0)
+	return protoreflect.ValueOfInt64(v)
 }
 
 func (x *_OptionalParams_31_list) IsValid() bool {
@@ -1491,7 +1491,7 @@ func (x *_OptionalParams_32_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_33_list)(nil)
 
 type _OptionalParams_33_list struct {
-	list *[]int64
+	list *[]uint64
 }
 
 func (x *_OptionalParams_33_list) Len() int {
@@ -1502,17 +1502,17 @@ func (x *_OptionalParams_33_list) Len() int {
 }
 
 func (x *_OptionalParams_33_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfInt64((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_33_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Int()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_33_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Int()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1526,8 +1526,8 @@ func (x *_OptionalParams_33_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_33_list) NewElement() protoreflect.Value {
-	v := int64(0)
-	return protoreflect.ValueOfInt64(v)
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
 }
 
 func (x *_OptionalParams_33_list) IsValid() bool {
@@ -1629,7 +1629,7 @@ func (x *_OptionalParams_35_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_36_list)(nil)
 
 type _OptionalParams_36_list struct {
-	list *[]string
+	list *[]uint64
 }
 
 func (x *_OptionalParams_36_list) Len() int {
@@ -1640,17 +1640,17 @@ func (x *_OptionalParams_36_list) Len() int {
 }
 
 func (x *_OptionalParams_36_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_36_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_36_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1664,8 +1664,8 @@ func (x *_OptionalParams_36_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_36_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
 }
 
 func (x *_OptionalParams_36_list) IsValid() bool {
@@ -1806,7 +1806,7 @@ func (x *_OptionalParams_39_list) NewElement() protoreflect.Value {
 	return protoreflect.ValueOfString(v)
 }
 
-func (x *_OptionalParams_40_list) IsValid() bool {
+func (x *_OptionalParams_39_list) IsValid() bool {
 	return x.list != nil
 }
 
@@ -4211,7 +4211,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			}
 			i = runtime.EncodeVarint(dAtA, i, uint64(pksize16))
 			i--
-			dAtA[i] = 0x2
+			dAtA[i] = 0x1
 			i--
 			dAtA[i] = 0xf2
 		}

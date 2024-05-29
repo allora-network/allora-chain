@@ -1483,7 +1483,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.MaxRetriesToFulfilNoncesWorker != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxRetriesToFulfilNoncesWorker))
 			i--
-			dAtA[i] = 0x2
+			dAtA[i] = 0x1
 			i--
 			dAtA[i] = 0xf0
 		}

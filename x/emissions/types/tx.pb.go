@@ -2998,7 +2998,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA16[:j15])
 		i = encodeVarintTx(dAtA, i, uint64(j15))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
 		dAtA[i] = 0xf2
 	}
