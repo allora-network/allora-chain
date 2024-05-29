@@ -61,6 +61,7 @@ var (
 	fd_Params_c_reward_inference                   protoreflect.FieldDescriptor
 	fd_Params_c_reward_forecast                    protoreflect.FieldDescriptor
 	fd_Params_f_tolerance                          protoreflect.FieldDescriptor
+	fd_Params_c_norm                               protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -110,6 +111,7 @@ func init() {
 	fd_Params_c_reward_inference = md_Params.Fields().ByName("c_reward_inference")
 	fd_Params_c_reward_forecast = md_Params.Fields().ByName("c_reward_forecast")
 	fd_Params_f_tolerance = md_Params.Fields().ByName("f_tolerance")
+	fd_Params_c_norm = md_Params.Fields().ByName("c_norm")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -441,6 +443,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.CNorm != "" {
+		value := protoreflect.ValueOfString(x.CNorm)
+		if !f(fd_Params_c_norm, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -544,6 +552,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.CRewardForecast != ""
 	case "emissions.v1.Params.f_tolerance":
 		return x.FTolerance != ""
+	case "emissions.v1.Params.c_norm":
+		return x.CNorm != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -648,6 +658,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.CRewardForecast = ""
 	case "emissions.v1.Params.f_tolerance":
 		x.FTolerance = ""
+	case "emissions.v1.Params.c_norm":
+		x.CNorm = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -796,6 +808,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.f_tolerance":
 		value := x.FTolerance
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.c_norm":
+		value := x.CNorm
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -904,6 +919,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.CRewardForecast = value.Interface().(string)
 	case "emissions.v1.Params.f_tolerance":
 		x.FTolerance = value.Interface().(string)
+	case "emissions.v1.Params.c_norm":
+		x.CNorm = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -1012,6 +1029,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field c_reward_forecast of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.f_tolerance":
 		panic(fmt.Errorf("field f_tolerance of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.c_norm":
+		panic(fmt.Errorf("field c_norm of message emissions.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -1112,6 +1131,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.c_reward_forecast":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.f_tolerance":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.c_norm":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -1339,6 +1360,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.CNorm)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1367,6 +1392,15 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.CNorm) > 0 {
+			i -= len(x.CNorm)
+			copy(dAtA[i:], x.CNorm)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CNorm)))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xea
 		}
 		if len(x.FTolerance) > 0 {
 			i -= len(x.FTolerance)
@@ -2906,6 +2940,38 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.FTolerance = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 45:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.CNorm = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -3007,6 +3073,7 @@ type Params struct {
 	CRewardInference string `protobuf:"bytes,42,opt,name=c_reward_inference,json=cRewardInference,proto3" json:"c_reward_inference,omitempty"`
 	CRewardForecast  string `protobuf:"bytes,43,opt,name=c_reward_forecast,json=cRewardForecast,proto3" json:"c_reward_forecast,omitempty"`
 	FTolerance       string `protobuf:"bytes,44,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
+	CNorm            string `protobuf:"bytes,45,opt,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -3337,6 +3404,13 @@ func (x *Params) GetFTolerance() string {
 	return ""
 }
 
+func (x *Params) GetCNorm() string {
+	if x != nil {
+		return x.CNorm
+	}
+	return ""
+}
+
 var File_emissions_v1_params_proto protoreflect.FileDescriptor
 
 var file_emissions_v1_params_proto_rawDesc = []byte{
@@ -3346,7 +3420,7 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e,
 	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xec, 0x1b,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xbc, 0x1c,
 	0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73,
 	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x19, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
@@ -3569,7 +3643,12 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
 	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
 	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63,
-	0x52, 0x0a, 0x66, 0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x42, 0xc1, 0x01, 0x0a,
+	0x52, 0x0a, 0x66, 0x54, 0x6f, 0x6c, 0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x4e, 0x0a, 0x06,
+	0x63, 0x5f, 0x6e, 0x6f, 0x72, 0x6d, 0x18, 0x2d, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
+	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x05, 0x63, 0x4e, 0x6f, 0x72, 0x6d, 0x42, 0xc1, 0x01, 0x0a,
 	0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
 	0x31, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
 	0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
