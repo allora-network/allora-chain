@@ -9,17 +9,21 @@ import "emissions/v1/nonce.proto";
 message WorkerAttributedValue {
   option (gogoproto.equal) = true;
 
-  string worker = 1;  // worker who created the value
-  string value = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string worker = 1; // worker who created the value
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message WithheldWorkerAttributedValue {
   option (gogoproto.equal) = true;
 
   string worker = 1;
-  string value = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // These losses and inferences are calculated per reputer or by the network
@@ -33,26 +37,33 @@ message ValueBundle {
   string reputer = 3;
   bytes extra_data = 4;
   // R_im || log10 L_im || I_i
-  string combined_value = 5
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string combined_value = 5 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   // R_ijm || log10 L_ijm || I_ij
   repeated WorkerAttributedValue inferer_values = 6;
   // R_ikm || log10 L_ikm || I_ik
   repeated WorkerAttributedValue forecaster_values = 7;
   // R^-_im  || log10 L^-_im || I^-_i
-  string naive_value = 8
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string naive_value = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
-  // Note: forecast-implied inferences are recomputed for each left-out inference
+  // Note: forecast-implied inferences are recomputed for each left-out
+  // inference
   repeated WithheldWorkerAttributedValue one_out_inferer_values = 9;
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
   repeated WithheldWorkerAttributedValue one_out_forecaster_values = 10;
   // R^+_ikm || log10 L^+_ikm || I^+_ik
-  // aka one_in_forecaster_values because equivalent to using only one forecast-implied inference
+  // aka one_in_forecaster_values because equivalent to using only one
+  // forecast-implied inference
   repeated WorkerAttributedValue one_in_forecaster_values = 11;
 }
 
-// For when the bundle is computed on a per-reputer basis (ie.. if there is an index `m` in the above)
+// For when the bundle is computed on a per-reputer basis (ie.. if there is an
+// index `m` in the above)
 message ReputerValueBundle {
   option (gogoproto.equal) = true;
 

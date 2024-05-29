@@ -24,7 +24,8 @@ service Query {
     option (google.api.http).get = "/emissions/v1/params";
   }
 
-  rpc GetNextTopicId(QueryNextTopicIdRequest) returns (QueryNextTopicIdResponse) {
+  rpc GetNextTopicId(QueryNextTopicIdRequest)
+      returns (QueryNextTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/next_topic_id";
   }
@@ -34,7 +35,8 @@ service Query {
     option (google.api.http).get = "/emissions/v1/topics/{topic_id}";
   }
 
-  rpc GetActiveTopics(QueryActiveTopicsRequest) returns (QueryActiveTopicsResponse) {
+  rpc GetActiveTopics(QueryActiveTopicsRequest)
+      returns (QueryActiveTopicsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/active_topics";
   }
@@ -46,20 +48,25 @@ service Query {
                                    "workers/{worker_address}/latest_inference";
   }
 
-  rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest) returns (QueryInferencesAtBlockResponse) {
+  rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest)
+      returns (QueryInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{block_height}";
+    option (google.api.http).get =
+        "/emissions/v1/inferences/{topic_id}/{block_height}";
   }
 
-  rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest) returns (QueryForecastsAtBlockResponse) {
+  rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest)
+      returns (QueryForecastsAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}/{block_height}";
+    option (google.api.http).get =
+        "/emissions/v1/forecasts/{topic_id}/{block_height}";
   }
 
   rpc GetNetworkLossBundleAtBlock(QueryNetworkLossBundleAtBlockRequest)
       returns (QueryNetworkLossBundleAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/network_loss/{topic_id}/{block_height}";
+    option (google.api.http).get =
+        "/emissions/v1/network_loss/{topic_id}/{block_height}";
   }
 
   rpc GetTotalStake(QueryTotalStakeRequest) returns (QueryTotalStakeResponse) {
@@ -67,9 +74,11 @@ service Query {
     option (google.api.http).get = "/emissions/v1/total_stake";
   }
 
-  rpc GetReputerStakeInTopic(QueryReputerStakeInTopicRequest) returns (QueryReputerStakeInTopicResponse) {
+  rpc GetReputerStakeInTopic(QueryReputerStakeInTopicRequest)
+      returns (QueryReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/reputer_stake/{address}/{topic_id}";
+    option (google.api.http).get =
+        "/emissions/v1/reputer_stake/{address}/{topic_id}";
   }
 
   rpc GetMultiReputerStakeInTopic(QueryMultiReputerStakeInTopicRequest)
@@ -78,22 +87,28 @@ service Query {
     option (google.api.http).get = "/emissions/v1/reputers_stakes/{topic_id}";
   }
 
-  rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
+  rpc GetDelegateStakeInTopicInReputer(
+      QueryDelegateStakeInTopicInReputerRequest)
       returns (QueryDelegateStakeInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/reputer_delegate_stake/{reputer_address}/{topic_id}";
+    option (google.api.http).get =
+        "/emissions/v1/reputer_delegate_stake/{reputer_address}/{topic_id}";
   }
 
-  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest)
+  rpc GetStakeFromDelegatorInTopicInReputer(
+      QueryStakeFromDelegatorInTopicInReputerRequest)
       returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
+    option (google.api.http).get =
+        "/emissions/v1/delegate_stake/{delegator_address}/{reputer_address}/"
+        "{topic_id}";
   }
 
   rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest)
       returns (QueryStakeFromDelegatorInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{topic_id}";
+    option (google.api.http).get =
+        "/emissions/v1/delegate_stake/{delegator_address}/{topic_id}";
   }
 
   rpc GetTopicStake(QueryTopicStakeRequest) returns (QueryTopicStakeResponse) {
@@ -101,22 +116,26 @@ service Query {
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
   }
 
-  rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
+  rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest)
+      returns (QueryWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
   }
 
-  rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest) returns (QueryReputerNodeInfoResponse) {
+  rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest)
+      returns (QueryReputerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/reputer/{libp2p_key}";
   }
 
-  rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
+  rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest)
+      returns (QueryWorkerAddressByP2PKeyResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/worker_address/{libp2p_key}";
   }
 
-  rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest) returns (QueryReputerAddressByP2PKeyResponse) {
+  rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest)
+      returns (QueryReputerAddressByP2PKeyResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/reputer_address/{libp2p_key}";
   }
@@ -124,23 +143,27 @@ service Query {
   rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest)
       returns (QueryIsWorkerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_registered/{topic_id}/{address}";
+    option (google.api.http).get =
+        "/emissions/v1/worker_registered/{topic_id}/{address}";
   }
 
   rpc IsReputerRegisteredInTopicId(QueryIsReputerRegisteredInTopicIdRequest)
       returns (QueryIsReputerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/reputer_registered/{topic_id}/{address}";
+    option (google.api.http).get =
+        "/emissions/v1/reputer_registered/{topic_id}/{address}";
   }
 
   rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest)
       returns (QueryNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
-        "/emissions/v1/network_inferences/{topic_id}/last_inference/{block_height_last_inference}/last_reward/{block_height_last_reward}";
+        "/emissions/v1/network_inferences/{topic_id}/last_inference/"
+        "{block_height_last_inference}/last_reward/{block_height_last_reward}";
   }
 
-  rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
+  rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest)
+      returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
 }
@@ -151,7 +174,8 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params defines the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
 }
 
 // Total Stake returns the total amount of stake in the system
@@ -241,9 +265,7 @@ message QueryStakeFromDelegatorInTopicResponse {
   ];
 }
 
-message QueryTopicStakeRequest {
-  uint64 topic_id = 1;
-}
+message QueryTopicStakeRequest { uint64 topic_id = 1; }
 
 message QueryTopicStakeResponse {
   option (gogoproto.equal) = true;
@@ -260,23 +282,15 @@ message QueryNetworkLossBundleAtBlockRequest {
   int64 block_height = 2;
 }
 
-message QueryNetworkLossBundleAtBlockResponse {
-  ValueBundle loss_bundle = 1;
-}
+message QueryNetworkLossBundleAtBlockResponse { ValueBundle loss_bundle = 1; }
 
 message QueryNextTopicIdRequest {}
 
-message QueryNextTopicIdResponse {
-  uint64 next_topic_id = 1;
-}
+message QueryNextTopicIdResponse { uint64 next_topic_id = 1; }
 
-message QueryTopicRequest {
-  uint64 topic_id = 1;
-}
+message QueryTopicRequest { uint64 topic_id = 1; }
 
-message QueryTopicResponse {
-  Topic topic = 1;
-}
+message QueryTopicResponse { Topic topic = 1; }
 
 message QueryActiveTopicsRequest {
   SimpleCursorPaginationRequest pagination = 1;
@@ -297,9 +311,7 @@ message QueryInferencesAtBlockRequest {
 //
 // NOTE: The amount field is a Uint which implements the custom method
 // signatures required by gogoproto.
-message QueryInferencesAtBlockResponse {
-  Inferences inferences = 1;
-}
+message QueryInferencesAtBlockResponse { Inferences inferences = 1; }
 
 // Returns the forecasts on a topic posted at a block height
 message QueryForecastsAtBlockRequest {
@@ -311,50 +323,30 @@ message QueryForecastsAtBlockRequest {
 //
 // NOTE: The amount field is a Uint which implements the custom method
 // signatures required by gogoproto.
-message QueryForecastsAtBlockResponse {
-  Forecasts forecasts = 1;
-}
+message QueryForecastsAtBlockResponse { Forecasts forecasts = 1; }
 
 message QueryWorkerLatestInferenceRequest {
   uint64 topic_id = 1;
   string worker_address = 2;
 }
 
-message QueryWorkerLatestInferenceResponse {
-  Inference latest_inference = 1;
-}
+message QueryWorkerLatestInferenceResponse { Inference latest_inference = 1; }
 
-message QueryWorkerNodeInfoRequest {
-  string libp2p_key = 1;
-}
+message QueryWorkerNodeInfoRequest { string libp2p_key = 1; }
 
-message QueryWorkerNodeInfoResponse {
-  OffchainNode node_info = 1;
-}
+message QueryWorkerNodeInfoResponse { OffchainNode node_info = 1; }
 
-message QueryReputerNodeInfoRequest {
-  string libp2p_key = 1;
-}
+message QueryReputerNodeInfoRequest { string libp2p_key = 1; }
 
-message QueryReputerNodeInfoResponse {
-  OffchainNode node_info = 1;
-}
+message QueryReputerNodeInfoResponse { OffchainNode node_info = 1; }
 
-message QueryWorkerAddressByP2PKeyRequest {
-  string libp2p_key = 1;
-}
+message QueryWorkerAddressByP2PKeyRequest { string libp2p_key = 1; }
 
-message QueryWorkerAddressByP2PKeyResponse {
-  string address = 1;
-}
+message QueryWorkerAddressByP2PKeyResponse { string address = 1; }
 
-message QueryReputerAddressByP2PKeyRequest {
-  string libp2p_key = 1;
-}
+message QueryReputerAddressByP2PKeyRequest { string libp2p_key = 1; }
 
-message QueryReputerAddressByP2PKeyResponse {
-  string address = 1;
-}
+message QueryReputerAddressByP2PKeyResponse { string address = 1; }
 
 message QueryNetworkInferencesAtBlockRequest {
   uint64 topic_id = 1;
@@ -371,23 +363,15 @@ message QueryIsWorkerRegisteredInTopicIdRequest {
   string address = 2;
 }
 
-message QueryIsWorkerRegisteredInTopicIdResponse {
-  bool is_registered = 1;
-}
+message QueryIsWorkerRegisteredInTopicIdResponse { bool is_registered = 1; }
 
 message QueryIsReputerRegisteredInTopicIdRequest {
   uint64 topic_id = 1;
   string address = 2;
 }
 
-message QueryIsReputerRegisteredInTopicIdResponse {
-  bool is_registered = 1;
-}
+message QueryIsReputerRegisteredInTopicIdResponse { bool is_registered = 1; }
 
-message QueryIsWhitelistAdminRequest {
-  string address = 1;
-}
+message QueryIsWhitelistAdminRequest { string address = 1; }
 
-message QueryIsWhitelistAdminResponse {
-  bool is_admin = 1;
-}
+message QueryIsWhitelistAdminResponse { bool is_admin = 1; }

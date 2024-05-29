@@ -10,6 +10,6 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 // GenesisState is the state that must be provided at genesis.
 message GenesisState {
   // params defines all the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
   repeated string core_team_addresses = 2;
 }

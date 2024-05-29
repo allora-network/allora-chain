@@ -8,7 +8,7 @@ import "cosmos/app/v1alpha1/module.proto";
 // Learn more: https://docs.cosmos.network/main/building-modules/depinject
 message Module {
   option (cosmos.app.v1alpha1.module) = {
-    go_import: "github.com/allora-network/allora-chain/x/emissions"
+    go_import : "github.com/allora-network/allora-chain/x/emissions"
   };
 
   string fee_collector_name = 1;

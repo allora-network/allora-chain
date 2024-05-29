@@ -18,35 +18,45 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload) returns (MsgInsertBulkWorkerPayloadResponse);
+  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload)
+      returns (MsgInsertBulkWorkerPayloadResponse);
 
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
-  rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
+  rpc RemoveRegistration(MsgRemoveRegistration)
+      returns (MsgRemoveRegistrationResponse);
 
-  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
+  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload)
+      returns (MsgInsertBulkReputerPayloadResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
-  rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
+  rpc StartRemoveStake(MsgStartRemoveStake)
+      returns (MsgStartRemoveStakeResponse);
 
-  rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
+  rpc ConfirmRemoveStake(MsgConfirmRemoveStake)
+      returns (MsgConfirmRemoveStakeResponse);
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
-  rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);
+  rpc RewardDelegateStake(MsgRewardDelegateStake)
+      returns (MsgRewardDelegateStakeResponse);
 
-  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
+  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake)
+      returns (MsgStartRemoveDelegateStakeResponse);
 
-  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
+  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake)
+      returns (MsgConfirmRemoveDelegateStakeResponse);
 
   rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
 
-  rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
+  rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin)
+      returns (MsgAddToWhitelistAdminResponse);
 
-  rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+  rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin)
+      returns (MsgRemoveFromWhitelistAdminResponse);
 }
 
 /// PARAMS
@@ -60,8 +70,10 @@ service Msg {
 message OptionalParams {
   repeated string version = 1;
   repeated int64 max_serialized_msg_length = 2;
-  repeated string min_topic_weight = 3
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string min_topic_weight = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   repeated uint64 max_topics_per_block = 4;
   repeated string required_minimum_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -71,30 +83,52 @@ message OptionalParams {
   ];
   repeated int64 remove_stake_delay_window = 6;
   repeated int64 min_epoch_length = 7;
-  repeated string beta_entropy = 8
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string learning_rate = 9
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string max_gradient_threshold = 10
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string min_stake_fraction = 11
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string epsilon = 12
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_spread = 13
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string beta_entropy = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string learning_rate = 9 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string max_gradient_threshold = 10 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string min_stake_fraction = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string epsilon = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string p_reward_spread = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   repeated uint64 max_unfulfilled_worker_requests = 14;
   repeated uint64 max_unfulfilled_reputer_requests = 15;
-  repeated string topic_reward_stake_importance = 16
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_fee_revenue_importance = 17
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_alpha = 18
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string task_reward_alpha = 19
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 20
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string topic_reward_stake_importance = 16 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string topic_reward_fee_revenue_importance = 17 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string topic_reward_alpha = 18 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string task_reward_alpha = 19 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string validators_vs_allora_percent_reward = 20 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   repeated uint64 max_samples_to_scale_scores = 21;
   repeated uint64 max_top_inferers_to_reward = 22;
   repeated uint64 max_top_forecasters_to_reward = 23;
@@ -105,10 +139,14 @@ message OptionalParams {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string sigmoid_a = 26
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 27
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string sigmoid_a = 26 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string sigmoid_b = 27 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   repeated uint64 gradient_descent_max_iters = 28;
   repeated int64 max_retries_to_fulfil_nonces_worker = 29;
   repeated int64 max_retries_to_fulfil_nonces_reputer = 30;
@@ -122,9 +160,10 @@ message OptionalParams {
   repeated uint64 max_page_limit = 33;
   repeated int64 min_epoch_length_record_limit = 34;
   repeated uint64 blocks_per_month = 35;
-  repeated string topic_fee_revenue_decay_rate = 36
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  
+  repeated string topic_fee_revenue_decay_rate = 36 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message MsgUpdateParams {
@@ -152,22 +191,30 @@ message MsgCreateNewTopic {
   int64 ground_truth_lag = 8;
   string default_arg = 9;
   uint64 pnorm = 10;
-  string alpha_regret = 11
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_reputer = 12
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_inference = 13
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_forecast = 14
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string f_tolerance = 15
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string alpha_regret = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string preward_reputer = 12 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string preward_inference = 13 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string preward_forecast = 14 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string f_tolerance = 15 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bool allow_negative = 16;
 }
 
-message MsgCreateNewTopicResponse {
-  uint64 topic_id = 1;
-}
+message MsgCreateNewTopicResponse { uint64 topic_id = 1; }
 
 /// Worker and Reputer Interface
 
@@ -303,7 +350,8 @@ message MsgConfirmDelegateRemoveStake {
 
 message MsgConfirmRemoveDelegateStakeResponse {}
 
-// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+// Inferences are requested by consumers who fund topics by sending ALLO to
+// ecosystem account via TopicFund messages
 message MsgFundTopic {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
@@ -313,7 +361,7 @@ message MsgFundTopic {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // how many funds to send from alice with this Inference Request
+  ]; // how many funds to send from alice with this Inference Request
 }
 
 message MsgFundTopicResponse {}
