@@ -106,4 +106,8 @@ message Params {
       34;  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
   // block emission rate in number of blocks expected per month
   uint64 blocks_per_month = 35;
+  string topic_fee_revenue_decay_rate = 36 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // decay rate for topic fee revenue
 }
