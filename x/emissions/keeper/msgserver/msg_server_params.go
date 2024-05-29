@@ -62,9 +62,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.PRewardSpread) == 1 {
 		existingParams.PRewardSpread = newParams.PRewardSpread[0]
 	}
-	if len(newParams.AlphaRegret) == 1 {
-		existingParams.AlphaRegret = newParams.AlphaRegret[0]
-	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
 	}

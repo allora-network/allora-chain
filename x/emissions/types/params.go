@@ -25,7 +25,6 @@ func DefaultParams() Params {
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
-		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
@@ -90,9 +89,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validatePRewardSpread(p.PRewardSpread); err != nil {
-		return err
-	}
-	if err := validateAlphaRegret(p.AlphaRegret); err != nil {
 		return err
 	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
@@ -275,14 +271,11 @@ func validateEpsilon(i alloraMath.Dec) error {
 }
 
 // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
-// should be ??? (positive number?)
+// should be x > 0
 func validatePRewardSpread(i alloraMath.Dec) error {
-	return nil
-}
-
-// how much to weight the most recent log-loss differences in regret EMA update
-// should be ??? (between zero and one always?)
-func validateAlphaRegret(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
@@ -317,14 +310,21 @@ func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
 }
 
 // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
-// should be ??? (between zero and one always?)
+// should be 0 < x < 1
 func validateTopicRewardAlpha(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
 	return nil
 }
 
 // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
-// should be ??? (between zero and one always?)
+// should be 0 < x <= 1 (note the difference on both sides!)
 func validateTaskRewardAlpha(i alloraMath.Dec) error {
+
+	if i.Lte(alloraMath.ZeroDec()) || i.Gt(alloraMath.OneDec()) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
 	return nil
 }
 

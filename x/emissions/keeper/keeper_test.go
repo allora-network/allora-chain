@@ -1486,7 +1486,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
 		Epsilon:                         alloraMath.NewDecFromInt64(0),
 		PRewardSpread:                   alloraMath.NewDecFromInt64(0),
-		AlphaRegret:                     alloraMath.NewDecFromInt64(0),
 		MaxUnfulfilledWorkerRequests:    0,
 		MaxUnfulfilledReputerRequests:   0,
 		TopicRewardStakeImportance:      alloraMath.NewDecFromInt64(0),
