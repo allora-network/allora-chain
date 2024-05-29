@@ -182,19 +182,14 @@ func GenerateRewardsDistributionByTopic(
 				if err != nil {
 					return nil, errors.Wrapf(err, "failed to add weight to sum")
 				}
-			} else {
-				// For topics that are active and top, they will get their rewards paid out this block.
-				// Everybody else doesn't. Therefore, for topics that have topicFeeRevenue but havent received rewards,
-				// we don't reset their topic fee revenue, effectively "double counting" their topic fee revenue
-				//  giving them a chance to earn rewards in future blocks as they accumulate more fees.
-				//
-				// This call must come after GetTopicFeeRevenue() is last called per topic in
-				// GetAndOptionallyUpdateActiveTopicWeights -> GetCurrentTopicWeight
-				// because otherwise the returned revenue would be zero
-				err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
-				}
+			}
+			// Applies an exponential decay to the topic's revenue, regardless it's top or not
+			// This call must come after GetTopicFeeRevenue() is last called per topic in
+			// GetAndOptionallyUpdateActiveTopicWeights -> GetCurrentTopicWeight
+			// because otherwise the returned revenue would be zero
+			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
 		}
 		ctx.Logger().Debug("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
@@ -274,7 +269,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
 
-			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
+			// Applies an exponential decay to the topic's revenue
 			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
 			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 			if err != nil {
