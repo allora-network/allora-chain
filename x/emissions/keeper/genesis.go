@@ -41,13 +41,13 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 
 // ExportGenesis exports the module state to a genesis state.
 func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.GenesisState{
-		Params: params,
+		Params: moduleParams,
 	}, nil
 }
 

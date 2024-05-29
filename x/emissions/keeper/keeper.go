@@ -342,11 +342,11 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 	}
 	nonces.Nonces = append([]*types.Nonce{nonce}, nonces.Nonces...)
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	maxUnfulfilledRequests := params.MaxUnfulfilledWorkerRequests
+	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledWorkerRequests
 
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
@@ -391,11 +391,11 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	maxUnfulfilledRequests := params.MaxUnfulfilledReputerRequests
+	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
 		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
@@ -1529,11 +1529,11 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	maxNumScores := params.MaxSamplesToScaleScores
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -1558,11 +1558,11 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	}
 
 	// Get max number of time steps that should be retrieved
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := params.MaxSamplesToScaleScores
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	count := 0
 	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
@@ -1598,11 +1598,11 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	maxNumScores := params.MaxSamplesToScaleScores
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -1627,11 +1627,11 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	}
 
 	// Get max number of time steps that should be retrieved
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := params.MaxSamplesToScaleScores
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	count := 0
 	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
@@ -1667,11 +1667,11 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	maxNumScores := params.MaxSamplesToScaleScores
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
 		diff := lenScores - maxNumScores
@@ -1852,11 +1852,11 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return uint64(0), uint64(0), err
 	}
-	limit := params.DefaultPageLimit
+	limit := moduleParams.DefaultPageLimit
 	cursor := uint64(0)
 
 	if pagination != nil {
@@ -1866,8 +1866,8 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 		if pagination.Limit > 0 {
 			limit = pagination.Limit
 		}
-		if limit > params.MaxPageLimit {
-			limit = params.MaxPageLimit
+		if limit > moduleParams.MaxPageLimit {
+			limit = moduleParams.MaxPageLimit
 		}
 	}
 
