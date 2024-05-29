@@ -22979,7 +22979,8 @@ func (*MsgConfirmRemoveDelegateStakeResponse) Descriptor() ([]byte, []int) {
 	return file_emissions_v1_tx_proto_rawDescGZIP(), []int{24}
 }
 
-// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+// Inferences are requested by consumers who fund topics by sending ALLO to
+// ecosystem account via TopicFund messages
 type MsgFundTopic struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

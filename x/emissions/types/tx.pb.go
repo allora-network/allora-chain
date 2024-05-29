@@ -1511,7 +1511,8 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgConfirmRemoveDelegateStakeResponse proto.InternalMessageInfo
 
-// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+// Inferences are requested by consumers who fund topics by sending ALLO to
+// ecosystem account via TopicFund messages
 type MsgFundTopic struct {
 	Sender  string                `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	TopicId uint64                `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`

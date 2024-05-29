@@ -29,30 +29,39 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters of the module.
 type Params struct {
-	Version                         string                                          `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	MaxSerializedMsgLength          int64                                           `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"`
-	MinTopicWeight                  github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_topic_weight"`
-	MaxTopicsPerBlock               uint64                                          `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
-	RequiredMinimumStake            cosmossdk_io_math.Int                           `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Int" json:"required_minimum_stake"`
-	RemoveStakeDelayWindow          int64                                           `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
-	MinEpochLength                  int64                                           `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
-	BetaEntropy                     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
-	LearningRate                    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
-	MaxGradientThreshold            github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
-	MinStakeFraction                github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
-	Epsilon                         github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,opt,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
-	PRewardSpread                   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,opt,name=p_reward_spread,json=pRewardSpread,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_spread"`
-	MaxUnfulfilledWorkerRequests    uint64                                          `protobuf:"varint,14,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
-	MaxUnfulfilledReputerRequests   uint64                                          `protobuf:"varint,15,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
-	TopicRewardStakeImportance      github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	// github release tag version
+	MaxSerializedMsgLength int64                                           `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"`
+	MinTopicWeight         github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_topic_weight"`
+	// solicatation or weight-adjustment
+	MaxTopicsPerBlock      uint64                `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
+	RequiredMinimumStake   cosmossdk_io_math.Int `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Int" json:"required_minimum_stake"`
+	RemoveStakeDelayWindow int64                 `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
+	MinEpochLength         int64                 `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
+	// repeating inference request
+	BetaEntropy          github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
+	LearningRate         github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
+	MaxGradientThreshold github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
+	MinStakeFraction     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
+	// coefficients
+	Epsilon       github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,opt,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
+	PRewardSpread github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,opt,name=p_reward_spread,json=pRewardSpread,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_spread"`
+	// per timestep
+	MaxUnfulfilledWorkerRequests  uint64                                          `protobuf:"varint,14,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
+	MaxUnfulfilledReputerRequests uint64                                          `protobuf:"varint,15,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
+	TopicRewardStakeImportance    github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
+	// topic and has a fiducial value of 0.5
 	TopicRewardFeeRevenueImportance github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,17,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_fee_revenue_importance"`
-	// 0.5
+	// a topic and has a fiducial value of 0.5
 	TopicRewardAlpha github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,18,opt,name=topic_reward_alpha,json=topicRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_alpha"`
-	// updates
-	TaskRewardAlpha                 github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
+	// a monthly timescale, 0.5 for weekly updates
+	TaskRewardAlpha github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
+	// to calculate ~U_ij, ~V_ik, ~W_im
 	ValidatorsVsAlloraPercentReward github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,20,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"validators_vs_allora_percent_reward"`
-	MaxSamplesToScaleScores         uint64                                          `protobuf:"varint,21,opt,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
-	// max this many inferences from unique workers and forecasts thereof are accepted per payload
+	// to allora reputers workers etc
+	MaxSamplesToScaleScores uint64 `protobuf:"varint,21,opt,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
+	// max this many inferences from unique workers and forecasts thereof are
+	// accepted per payload
 	MaxTopInferersToReward          uint64                                          `protobuf:"varint,22,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`
 	MaxTopForecastersToReward       uint64                                          `protobuf:"varint,23,opt,name=max_top_forecasters_to_reward,json=maxTopForecastersToReward,proto3" json:"max_top_forecasters_to_reward,omitempty"`
 	MaxTopReputersToReward          uint64                                          `protobuf:"varint,24,opt,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`
@@ -66,6 +75,7 @@ type Params struct {
 	DefaultPageLimit                uint64                                          `protobuf:"varint,32,opt,name=default_page_limit,json=defaultPageLimit,proto3" json:"default_page_limit,omitempty"`
 	MaxPageLimit                    uint64                                          `protobuf:"varint,33,opt,name=max_page_limit,json=maxPageLimit,proto3" json:"max_page_limit,omitempty"`
 	MinEpochLengthRecordLimit       int64                                           `protobuf:"varint,34,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
+	// inferences, forecasts
 	// block emission rate in number of blocks expected per month
 	BlocksPerMonth           uint64                                          `protobuf:"varint,35,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
 	TopicFeeRevenueDecayRate github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,36,opt,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_fee_revenue_decay_rate"`

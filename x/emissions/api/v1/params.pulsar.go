@@ -2464,30 +2464,39 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version                         string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                               // version of the protocol should be in lockstep with github release tag version
-	MaxSerializedMsgLength          int64  `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"`                              // max length of input data for msg and query server calls
-	MinTopicWeight                  string `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3" json:"min_topic_weight,omitempty"`                                                         // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-	MaxTopicsPerBlock               uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                             // max number of topics to run cadence for per block
-	RequiredMinimumStake            string `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                       // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow          int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                              // how long to wait before allowed to remove stake
-	MinEpochLength                  int64  `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                        // fastest allowable topic epoch and cadence of a repeating inference request
-	BetaEntropy                     string `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                                                                    // controls resilience of reward payouts against copycat workers
-	LearningRate                    string `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                                                                 // speed of gradient descent
-	MaxGradientThreshold            string `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`                                      // gradient descent stops when gradient falls below this
-	MinStakeFraction                string `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`                                                  // minimum fraction of stake to listen to when setting consensus listening coefficients
-	Epsilon                         string `protobuf:"bytes,12,opt,name=epsilon,proto3" json:"epsilon,omitempty"`                                                                                              // small number to prevent division by zero
-	PRewardSpread                   string `protobuf:"bytes,13,opt,name=p_reward_spread,json=pRewardSpread,proto3" json:"p_reward_spread,omitempty"`                                                           // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
-	MaxUnfulfilledWorkerRequests    uint64 `protobuf:"varint,14,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`           // max num worker request nonces to keep track of per topic
-	MaxUnfulfilledReputerRequests   uint64 `protobuf:"varint,15,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`        // max num reputer request nonces to keep track of per topic
-	TopicRewardStakeImportance      string `protobuf:"bytes,16,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`                  // The exponent μ represents the importance of stake in the reward of a topic and has a fiducial value of 0.5
-	TopicRewardFeeRevenueImportance string `protobuf:"bytes,17,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiducial value of
-	// 0.5
-	TopicRewardAlpha string `protobuf:"bytes,18,opt,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.9375 on a monthly timescale, 0.5 for weekly
-	// updates
-	TaskRewardAlpha                 string `protobuf:"bytes,19,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3" json:"task_reward_alpha,omitempty"`                                                     // global exponential moving average parameter. Fiducial value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
-	ValidatorsVsAlloraPercentReward string `protobuf:"bytes,20,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"` // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
-	MaxSamplesToScaleScores         uint64 `protobuf:"varint,21,opt,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`                        // number of scores to use for standard deviation calculation
-	// max this many inferences from unique workers and forecasts thereof are accepted per payload
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"` // version of the protocol should be in lockstep with
+	// github release tag version
+	MaxSerializedMsgLength int64  `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"` // max length of input data for msg and query server calls
+	MinTopicWeight         string `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3" json:"min_topic_weight,omitempty"`                            // total unmet demand for a topic < this => don't run inference
+	// solicatation or weight-adjustment
+	MaxTopicsPerBlock      uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                // max number of topics to run cadence for per block
+	RequiredMinimumStake   string `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`          // minimum amount of tokens to send to stake as a reputer or worker
+	RemoveStakeDelayWindow int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"` // how long to wait before allowed to remove stake
+	MinEpochLength         int64  `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                           // fastest allowable topic epoch and cadence of a
+	// repeating inference request
+	BetaEntropy          string `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                               // controls resilience of reward payouts against copycat workers
+	LearningRate         string `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                            // speed of gradient descent
+	MaxGradientThreshold string `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"` // gradient descent stops when gradient falls below this
+	MinStakeFraction     string `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`             // minimum fraction of stake to listen to when setting consensus listening
+	// coefficients
+	Epsilon       string `protobuf:"bytes,12,opt,name=epsilon,proto3" json:"epsilon,omitempty"`                                    // small number to prevent division by zero
+	PRewardSpread string `protobuf:"bytes,13,opt,name=p_reward_spread,json=pRewardSpread,proto3" json:"p_reward_spread,omitempty"` // fiducial value = 1; Exponent for W_i total reward allocated to reputers
+	// per timestep
+	MaxUnfulfilledWorkerRequests  uint64 `protobuf:"varint,14,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`    // max num worker request nonces to keep track of per topic
+	MaxUnfulfilledReputerRequests uint64 `protobuf:"varint,15,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"` // max num reputer request nonces to keep track of per topic
+	TopicRewardStakeImportance    string `protobuf:"bytes,16,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`           // The exponent μ represents the importance of stake in the reward of a
+	// topic and has a fiducial value of 0.5
+	TopicRewardFeeRevenueImportance string `protobuf:"bytes,17,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the reward of
+	// a topic and has a fiducial value of 0.5
+	TopicRewardAlpha string `protobuf:"bytes,18,opt,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.9375 on
+	// a monthly timescale, 0.5 for weekly updates
+	TaskRewardAlpha string `protobuf:"bytes,19,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3" json:"task_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.1 used
+	// to calculate ~U_ij, ~V_ik, ~W_im
+	ValidatorsVsAlloraPercentReward string `protobuf:"bytes,20,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"` // percent of total supply rewarded to cosmos network validators, rest goes
+	// to allora reputers workers etc
+	MaxSamplesToScaleScores uint64 `protobuf:"varint,21,opt,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"` // number of scores to use for standard deviation calculation
+	// max this many inferences from unique workers and forecasts thereof are
+	// accepted per payload
 	MaxTopInferersToReward          uint64 `protobuf:"varint,22,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`                              // max number of top inferers by score to reward
 	MaxTopForecastersToReward       uint64 `protobuf:"varint,23,opt,name=max_top_forecasters_to_reward,json=maxTopForecastersToReward,proto3" json:"max_top_forecasters_to_reward,omitempty"`                     // max number of top forecasters by score to reward
 	MaxTopReputersToReward          uint64 `protobuf:"varint,24,opt,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`                              // max number of top reputers by score to reward
@@ -2500,7 +2509,8 @@ type Params struct {
 	RegistrationFee                 string `protobuf:"bytes,31,opt,name=registration_fee,json=registrationFee,proto3" json:"registration_fee,omitempty"`                                                          // registration fee for workers and reputers
 	DefaultPageLimit                uint64 `protobuf:"varint,32,opt,name=default_page_limit,json=defaultPageLimit,proto3" json:"default_page_limit,omitempty"`                                                    // default limit for pagination
 	MaxPageLimit                    uint64 `protobuf:"varint,33,opt,name=max_page_limit,json=maxPageLimit,proto3" json:"max_page_limit,omitempty"`                                                                // max limit for pagination
-	MinEpochLengthRecordLimit       int64  `protobuf:"varint,34,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`                     // min number of epochs to keep network losses, reputer losses, inferences, forecasts
+	MinEpochLengthRecordLimit       int64  `protobuf:"varint,34,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`                     // min number of epochs to keep network losses, reputer losses,
+	// inferences, forecasts
 	// block emission rate in number of blocks expected per month
 	BlocksPerMonth           uint64 `protobuf:"varint,35,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
 	TopicFeeRevenueDecayRate string `protobuf:"bytes,36,opt,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3" json:"topic_fee_revenue_decay_rate,omitempty"` // decay rate for topic fee revenue
