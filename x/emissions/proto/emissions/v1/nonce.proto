@@ -7,10 +7,12 @@ import "gogoproto/gogo.proto";
 
 message Nonce {
   option (gogoproto.equal) = true;
-  int64 block_height = 1; // block height of the request
+  int64 block_height = 1;  // block height of the request
 }
 
-message Nonces { repeated Nonce nonces = 1; }
+message Nonces {
+  repeated Nonce nonces = 1;
+}
 
 message ReputerRequestNonce {
   option (gogoproto.equal) = true;
@@ -21,4 +23,6 @@ message ReputerRequestNonce {
   Nonce worker_nonce = 2;
 }
 
-message ReputerRequestNonces { repeated ReputerRequestNonce nonces = 1; }
+message ReputerRequestNonces {
+  repeated ReputerRequestNonce nonces = 1;
+}

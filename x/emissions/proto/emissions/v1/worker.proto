@@ -8,11 +8,9 @@ import "gogoproto/gogo.proto";
 message TimestampedValue {
   option (gogoproto.equal) = true;
 
-  int64 block_height = 1; // height at which value calculated or received
-  string value = 2 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  int64 block_height = 1;  // height at which value calculated or received
+  string value = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message Inference {
@@ -21,24 +19,22 @@ message Inference {
   uint64 topic_id = 1;
   int64 block_height = 2;
   string inferer = 3;
-  string value = 4 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string value = 4
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bytes extra_data = 5;
   string proof = 6;
 }
 
-message Inferences { repeated Inference inferences = 1; }
+message Inferences {
+  repeated Inference inferences = 1;
+}
 
 message ForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 2;
-  string value = 3 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string value = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message Forecast {
@@ -50,7 +46,9 @@ message Forecast {
   bytes extra_data = 5;
 }
 
-message Forecasts { repeated Forecast forecasts = 1; }
+message Forecasts {
+  repeated Forecast forecasts = 1;
+}
 
 message InferenceForecastBundle {
   option (gogoproto.equal) = true;
@@ -66,7 +64,6 @@ message WorkerDataBundle {
   string pubkey = 4;
 }
 
-message
-WorkerDataBundles { // This will be in the incoming message, sent by leader
+message WorkerDataBundles {  // This will be in the incoming message, sent by leader
   repeated WorkerDataBundle worker_data_bundles = 1;
 }

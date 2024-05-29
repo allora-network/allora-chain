@@ -12,11 +12,11 @@ message SimpleCursorPaginationRequest {
   uint64 limit = 2;
 }
 
-message SimpleCursorPaginationResponse { bytes next_key = 1; }
+message SimpleCursorPaginationResponse {
+  bytes next_key = 1;
+}
 
 message ListeningCoefficient {
-  string coefficient = 3 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string coefficient = 3
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
