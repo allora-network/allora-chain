@@ -129,7 +129,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		existingParams.BlocksPerMonth = newParams.BlocksPerMonth[0]
 	}
 	err = existingParams.Validate()
-	if err == nil {
+	if err != nil {
 		return nil, err
 	}
 	err = ms.k.SetParams(ctx, existingParams)
