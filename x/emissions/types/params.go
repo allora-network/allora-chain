@@ -25,8 +25,6 @@ func DefaultParams() Params {
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
-		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
-		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain
@@ -51,6 +49,12 @@ func DefaultParams() Params {
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 		BlocksPerMonth:                  DefaultParamsBlocksPerMonth(),             // ~5 seconds block time, 6311520 per year, 525960 per month
+		PRewardInference:                alloraMath.MustNewDecFromString("1"),    //   
+		PRewardForecast:                 alloraMath.MustNewDecFromString("3"),     
+		PRewardReputer:                  alloraMath.MustNewDecFromString("3"),     
+		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),     
+		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),     
+		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),
 	}
 }
 
@@ -104,14 +108,6 @@ func DefaultParamsMinStakeFraction() alloraMath.Dec {
 
 func DefaultParamsEpsilon() alloraMath.Dec {
 	return DefaultParams().Epsilon
-}
-
-func DefaultParamsPInferenceSynthesis() alloraMath.Dec {
-	return DefaultParams().PInferenceSynthesis
-}
-
-func DefaultParamsPRewardSpread() alloraMath.Dec {
-	return DefaultParams().PRewardSpread
 }
 
 func DefaultParamsAlphaRegret() alloraMath.Dec {
@@ -201,6 +197,30 @@ func DefaultParamsMinEpochLengthRecordLimit() int64 {
 // ~5 seconds block time, 6311520 per year, 525960 per month
 func DefaultParamsBlocksPerMonth() uint64 {
 	return uint64(525960)
+}
+
+func DefaultParamsPRewardInference() alloraMath.Dec {
+	return DefaultParams().PRewardInference
+}
+
+func DefaultParamsPRewardForecast() alloraMath.Dec {
+	return DefaultParams().PRewardForecast
+}
+
+func DefaultParamsPRewardReputer() alloraMath.Dec {
+	return DefaultParams().PRewardReputer
+}
+
+func DefaultParamsCRewardInference() alloraMath.Dec {
+	return DefaultParams().CRewardInference
+}
+
+func DefaultParamsCRewardForecast() alloraMath.Dec {
+	return DefaultParams().CRewardForecast
+}
+
+func DefaultParamsFTolerance() alloraMath.Dec {
+	return DefaultParams().FTolerance
 }
 
 // Validate does the sanity check on the params.

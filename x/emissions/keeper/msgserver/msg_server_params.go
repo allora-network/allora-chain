@@ -62,12 +62,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
 	}
-	if len(newParams.PInferenceSynthesis) == 1 {
-		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
-	}
-	if len(newParams.PRewardSpread) == 1 {
-		existingParams.PRewardSpread = newParams.PRewardSpread[0]
-	}
 	if len(newParams.AlphaRegret) == 1 {
 		existingParams.AlphaRegret = newParams.AlphaRegret[0]
 	}
@@ -139,6 +133,24 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.BlocksPerMonth) == 1 {
 		existingParams.BlocksPerMonth = newParams.BlocksPerMonth[0]
+	}
+	if len(newParams.PRewardInference) == 1 {
+		existingParams.PRewardInference = newParams.PRewardInference[0]
+	}
+	if len(newParams.PRewardForecast) == 1 {
+		existingParams.PRewardForecast = newParams.PRewardForecast[0]
+	}
+	if len(newParams.PRewardReputer) == 1 {
+		existingParams.PRewardReputer = newParams.PRewardReputer[0]
+	}
+	if len(newParams.CRewardInference) == 1 {
+		existingParams.CRewardInference = newParams.CRewardInference[0]
+	}
+	if len(newParams.CRewardForecast) == 1 {
+		existingParams.CRewardForecast = newParams.CRewardForecast[0]
+	}
+	if len(newParams.FTolerance) == 1 {
+		existingParams.FTolerance = newParams.FTolerance[0]
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
