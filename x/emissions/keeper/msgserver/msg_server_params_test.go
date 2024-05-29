@@ -77,7 +77,8 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		TaskRewardAlpha:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		ValidatorsVsAlloraPercentReward: []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxSamplesToScaleScores:         []uint64{1234},
-		MaxTopWorkersToReward:           []uint64{1234},
+		MaxTopInferersToReward:          []uint64{1234},
+		MaxTopForecastersToReward:       []uint64{1234},
 		MaxTopReputersToReward:          []uint64{1234},
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		SigmoidA:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
@@ -126,7 +127,8 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.TaskRewardAlpha[0], updatedParams.TaskRewardAlpha)
 	require.Equal(newParams.ValidatorsVsAlloraPercentReward[0], updatedParams.ValidatorsVsAlloraPercentReward)
 	require.Equal(newParams.MaxSamplesToScaleScores[0], updatedParams.MaxSamplesToScaleScores)
-	require.Equal(newParams.MaxTopWorkersToReward[0], updatedParams.MaxTopWorkersToReward)
+	require.Equal(newParams.MaxTopInferersToReward[0], updatedParams.MaxTopInferersToReward)
+	require.Equal(newParams.MaxTopForecastersToReward[0], updatedParams.MaxTopForecastersToReward)
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
 	require.Equal(newParams.SigmoidA[0], updatedParams.SigmoidA)

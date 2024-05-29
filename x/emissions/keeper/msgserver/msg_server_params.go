@@ -92,8 +92,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxSamplesToScaleScores) == 1 {
 		existingParams.MaxSamplesToScaleScores = newParams.MaxSamplesToScaleScores[0]
 	}
-	if len(newParams.MaxTopWorkersToReward) == 1 {
-		existingParams.MaxTopWorkersToReward = newParams.MaxTopWorkersToReward[0]
+	if len(newParams.MaxTopInferersToReward) == 1 {
+		existingParams.MaxTopInferersToReward = newParams.MaxTopInferersToReward[0]
+	}
+	if len(newParams.MaxTopForecastersToReward) == 1 {
+		existingParams.MaxTopForecastersToReward = newParams.MaxTopForecastersToReward[0]
 	}
 	if len(newParams.MaxTopReputersToReward) == 1 {
 		existingParams.MaxTopReputersToReward = newParams.MaxTopReputersToReward[0]

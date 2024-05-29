@@ -812,21 +812,39 @@ func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	s.Require().Equal(expectedValue, actualValue)
 }
 
-func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
+func (s *KeeperTestSuite) TestGetParamsMaxTopInferersToReward() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	expectedValue := uint64(50) // Example expected value
 
 	// Set the parameter
-	params := types.Params{MaxTopWorkersToReward: expectedValue}
+	params := types.Params{MaxTopInferersToReward: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	actualValue := moduleParams.MaxTopWorkersToReward
+	actualValue := moduleParams.MaxTopInferersToReward
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetParamsMaxTopForecastersToReward() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(50) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxTopForecastersToReward: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	actualValue := moduleParams.MaxTopForecastersToReward
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecastersToReward should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
@@ -1478,7 +1496,8 @@ func (s *KeeperTestSuite) TestSetParams() {
 		TaskRewardAlpha:                 alloraMath.NewDecFromInt64(0),
 		ValidatorsVsAlloraPercentReward: alloraMath.NewDecFromInt64(0),
 		MaxSamplesToScaleScores:         0,
-		MaxTopWorkersToReward:           10,
+		MaxTopInferersToReward:          10,
+		MaxTopForecastersToReward:       10,
 		MaxTopReputersToReward:          10,
 		CreateTopicFee:                  cosmosMath.ZeroInt(),
 		SigmoidA:                        alloraMath.NewDecFromInt64(0),
@@ -1504,7 +1523,8 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
-	s.Require().Equal(params.MaxTopWorkersToReward, paramsFromKeeper.MaxTopWorkersToReward, "Params should be equal to the set params: MaxTopWorkersToReward")
+	s.Require().Equal(params.MaxTopInferersToReward, paramsFromKeeper.MaxTopInferersToReward, "Params should be equal to the set params: MaxTopInferersToReward")
+	s.Require().Equal(params.MaxTopForecastersToReward, paramsFromKeeper.MaxTopForecastersToReward, "Params should be equal to the set params: MaxTopForecastersToReward")
 	s.Require().Equal(params.MaxTopReputersToReward, paramsFromKeeper.MaxTopReputersToReward, "Params should be equal to the set params: MaxTopReputersToReward")
 }
 
