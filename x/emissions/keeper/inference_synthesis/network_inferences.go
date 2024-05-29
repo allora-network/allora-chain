@@ -670,6 +670,16 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
 			return networkInferences, nil
 		}
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+			return networkInferences, nil
+		}
+		pInferenceSynthesis, err := alloraMath.NewDecFromUint64(topic.Pnorm)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("Error converting pnorm to Dec: %s", err.Error()))
+			return networkInferences, nil
+		}
 		networkInferences, err = CalcNetworkInferences(
 			ctx,
 			k,
@@ -677,7 +687,7 @@ func GetNetworkInferencesAtBlock(
 			inferences,
 			forecasts, networkCombinedLoss,
 			moduleParams.Epsilon,
-			moduleParams.PInferenceSynthesis,
+			pInferenceSynthesis,
 		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))

@@ -59,9 +59,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
 	}
-	if len(newParams.PInferenceSynthesis) == 1 {
-		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
-	}
 	if len(newParams.PRewardSpread) == 1 {
 		existingParams.PRewardSpread = newParams.PRewardSpread[0]
 	}

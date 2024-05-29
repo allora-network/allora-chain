@@ -1485,7 +1485,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
 		Epsilon:                         alloraMath.NewDecFromInt64(0),
-		PInferenceSynthesis:             alloraMath.NewDecFromInt64(0),
 		PRewardSpread:                   alloraMath.NewDecFromInt64(0),
 		AlphaRegret:                     alloraMath.NewDecFromInt64(0),
 		MaxUnfulfilledWorkerRequests:    0,

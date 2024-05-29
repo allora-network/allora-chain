@@ -24,7 +24,6 @@ func DefaultParams() Params {
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
-		PInferenceSynthesis:             alloraMath.NewDecFromInt64(2),             // free parameter used in the gradient function phi' for inference synthesis
 		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
@@ -88,9 +87,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateEpsilon(p.Epsilon); err != nil {
-		return err
-	}
-	if err := validatePInferenceSynthesis(p.PInferenceSynthesis); err != nil {
 		return err
 	}
 	if err := validatePRewardSpread(p.PRewardSpread); err != nil {
@@ -225,50 +221,56 @@ func validateMinEpochLength(i BlockHeight) error {
 }
 
 // controls resilience of reward payouts against copycat workers
-// Should be ??? (between zero and one always?)
+// Should be 0 <= i <= 1
 func validateBetaEntropy(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
 	return nil
 }
 
 // Speed of gradient descent.
-// Should be ?? (between zero and one always?)
+// Should be 0 < x < 1
 func validateLearningRate(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
 	return nil
 }
 
 // Max iterations on gradient descent.
-// Should be ?? (positive non zero number? positive or zero?)
+// Should be positive non zero number, i > 0
 func validateGradientDescentMaxIters(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
 // Gradient descent stops when gradient falls below this.
-// Should be ??? (between zero and one always?)
+// Should be 0 < i < 1
 func validateMaxGradientThreshold(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
 	return nil
 }
 
 // minimum fraction of stake that should be listened to when setting consensus listening coefficients.
 // Should be between 0 and 1.
 func validateMinStakeFraction(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOne(i) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
 }
 
 // 0 threshold to prevent div by 0 and 0-approximation errors.
-// Should be close to zero, but not zero.
+// Should be close to zero, but not zero. i > 0
 func validateEpsilon(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
-	return nil
-}
-
-// free parameter used in the gradient function phi' for inference synthesis
-// should be ??? (positive number?)
-func validatePInferenceSynthesis(i alloraMath.Dec) error {
 	return nil
 }
 
@@ -299,7 +301,7 @@ func validateMaxUnfulfilledReputerRequests(_ uint64) error {
 // importance of stake in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOne(i) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -308,7 +310,7 @@ func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
 // importance of fee revenue in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOne(i) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -329,7 +331,7 @@ func validateTaskRewardAlpha(i alloraMath.Dec) error {
 // percent reward to go to cosmos network validators.
 // Should be a value between 0 and 1.
 func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOne(i) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -447,6 +449,11 @@ func validateBlocksPerMonth(i uint64) error {
 }
 
 // Whether an alloraDec is between the value of [0, 1] inclusive
-func isAlloraDecBetweenZeroAndOne(a alloraMath.Dec) bool {
+func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
+}
+
+// Whether an alloraDec is between the value of (0, 1) exclusive
+func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
+	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
 }

@@ -66,7 +66,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MinStakeFraction:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		Epsilon:                         []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		PInferenceSynthesis:             []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		PRewardSpread:                   []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		AlphaRegret:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxUnfulfilledWorkerRequests:    []uint64{1234},
@@ -116,7 +115,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
 	require.Equal(newParams.MinStakeFraction[0], updatedParams.MinStakeFraction)
 	require.Equal(newParams.Epsilon[0], updatedParams.Epsilon)
-	require.Equal(newParams.PInferenceSynthesis[0], updatedParams.PInferenceSynthesis)
 	require.Equal(newParams.PRewardSpread[0], updatedParams.PRewardSpread)
 	require.Equal(newParams.AlphaRegret[0], updatedParams.AlphaRegret)
 	require.Equal(newParams.MaxUnfulfilledWorkerRequests[0], updatedParams.MaxUnfulfilledWorkerRequests)
