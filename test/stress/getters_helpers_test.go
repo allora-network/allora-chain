@@ -116,11 +116,12 @@ func getReputerStake(
 }
 
 // return from the emissions module what the maximum amount of rewarded workers and reporters should be
-func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, error) {
+func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, uint64, error) {
 	emissionsParams := GetEmissionsParams(m)
-	topWorkersCount := emissionsParams.GetMaxTopWorkersToReward()
+	topInferersCount := emissionsParams.GetMaxTopInferersToReward()
+	topForecastersCount := emissionsParams.GetMaxTopForecastersToReward()
 	topReputersCount := emissionsParams.GetMaxTopReputersToReward()
-	return topWorkersCount, topReputersCount, nil
+	return topInferersCount, topForecastersCount, topReputersCount, nil
 }
 
 // This function gets the topic checking activity.
