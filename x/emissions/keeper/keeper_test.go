@@ -1462,7 +1462,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		Version:                         "v1.0.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:               1000,
-		MaxMissingInferencePercent:      alloraMath.NewDecFromInt64(10),
 		RequiredMinimumStake:            cosmosMath.NewInt(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
@@ -1488,11 +1487,9 @@ func (s *KeeperTestSuite) TestSetParams() {
 		GradientDescentMaxIters:         0,
 		MaxRetriesToFulfilNoncesWorker:  0,
 		MaxRetriesToFulfilNoncesReputer: 0,
-		TopicPageLimit:                  0,
-		MaxTopicPages:                   0,
 		RegistrationFee:                 cosmosMath.ZeroInt(),
-		DefaultLimit:                    0,
-		MaxLimit:                        0,
+		DefaultPageLimit:                    0,
+		MaxPageLimit:                        0,
 		PRewardInference:                alloraMath.NewDecFromInt64(0),
 		PRewardForecast:                 alloraMath.NewDecFromInt64(0),
 		PRewardReputer:                  alloraMath.NewDecFromInt64(0),
@@ -1512,7 +1509,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
 	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
-	s.Require().Equal(params.MaxMissingInferencePercent, paramsFromKeeper.MaxMissingInferencePercent, "Params should be equal to the set params: MaxMissingInferencePercent")
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
@@ -2541,8 +2537,8 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 	maxLimit := uint64(50)
 
 	params := types.Params{
-		DefaultLimit: defaultLimit,
-		MaxLimit:     maxLimit,
+		DefaultPageLimit: defaultLimit,
+		MaxPageLimit:     maxLimit,
 	}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting default and max limit parameters should not fail")

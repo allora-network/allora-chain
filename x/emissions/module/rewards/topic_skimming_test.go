@@ -13,7 +13,6 @@ func (s *RewardsTestSuite) UtilSetParams() {
 		Version:                    "0.0.3",
 		MinTopicWeight:             alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:          uint64(1000),
-		MaxMissingInferencePercent: alloraMath.MustNewDecFromString("0.1"),
 		RequiredMinimumStake:       cosmosMath.OneInt(),
 		RemoveStakeDelayWindow:     int64(172800),
 		MinEpochLength:             int64(60),

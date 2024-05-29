@@ -474,8 +474,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		moduleParams.SigmoidA,
-		moduleParams.SigmoidB,
 	)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -489,8 +487,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		moduleParams.SigmoidA,
-		moduleParams.SigmoidB,
 	)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")

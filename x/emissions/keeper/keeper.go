@@ -655,20 +655,20 @@ func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
 	return params.BlocksPerMonth, nil
 }
 
-func (k *Keeper) GetParamsDefaultLimit(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsDefaultPageLimit(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return uint64(0), err
 	}
-	return params.DefaultLimit, nil
+	return params.DefaultPageLimit, nil
 }
 
-func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
+func (k *Keeper) GetParamsMaxPageLimit(ctx context.Context) (uint64, error) {
 	params, err := k.GetParams(ctx)
 	if err != nil {
 		return uint64(0), err
 	}
-	return params.MaxLimit, nil
+	return params.MaxPageLimit, nil
 }
 
 func (k *Keeper) GetMinEpochLengthRecordLimit(ctx context.Context) (int64, error) {

@@ -82,23 +82,21 @@ message OptionalParams {
   repeated uint64 max_top_forecasters_to_reward = 22;
   repeated uint64 max_top_reputers_to_reward = 23;
   repeated string create_topic_fee = 24 [(cosmos_proto.scalar) = "cosmos.Int",(gogoproto.customtype) = "cosmossdk.io/math.Int",(gogoproto.nullable) = false,(amino.dont_omitempty) = true];
-  repeated string sigmoid_a = 25 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string sigmoid_b = 26 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated uint64 gradient_descent_max_iters = 27;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 28;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 29;
-  repeated string registration_fee = 30 [(cosmos_proto.scalar) = "cosmos.Int",(gogoproto.customtype) = "cosmossdk.io/math.Int",(gogoproto.nullable) = false,(amino.dont_omitempty) = true];
-  repeated uint64 default_page_limit = 31;
-  repeated uint64 max_page_limit = 32;
-  repeated int64 min_epoch_length_record_limit = 33;
-  repeated uint64 blocks_per_month = 34;
-  repeated string p_reward_inference = 35 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string p_reward_forecast = 36 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string p_reward_reputer = 37 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string c_reward_inference = 38 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string c_reward_forecast = 39 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string f_tolerance = 40 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
-  repeated string c_norm = 41 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated uint64 gradient_descent_max_iters = 25;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 26;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 27;
+  repeated string registration_fee = 28 [(cosmos_proto.scalar) = "cosmos.Int",(gogoproto.customtype) = "cosmossdk.io/math.Int",(gogoproto.nullable) = false,(amino.dont_omitempty) = true];
+  repeated uint64 default_page_limit = 29;
+  repeated uint64 max_page_limit = 30;
+  repeated int64 min_epoch_length_record_limit = 31;
+  repeated uint64 blocks_per_month = 32;
+  repeated string p_reward_inference = 33 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string p_reward_forecast = 34 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string p_reward_reputer = 35 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string c_reward_inference = 36 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string c_reward_forecast = 37 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string f_tolerance = 38 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
+  repeated string c_norm = 39 [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",(gogoproto.nullable) = false];
 }
 
 message MsgUpdateParams {

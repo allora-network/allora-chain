@@ -36,8 +36,6 @@ func DefaultParams() Params {
 		MaxTopForecastersToReward:       uint64(6),                                 // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:          uint64(12),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
-		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
-		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
@@ -146,14 +144,6 @@ func DefaultParamsMaxTopForecastersToReward() uint64 {
 
 func DefaultParamsMaxTopReputersToReward() uint64 {
 	return DefaultParams().MaxTopReputersToReward
-}
-
-func DefaultParamsSigmoidA() alloraMath.Dec {
-	return DefaultParams().SigmoidA
-}
-
-func DefaultParamsSigmoidB() alloraMath.Dec {
-	return DefaultParams().SigmoidB
 }
 
 func DefaultParamsMaxRetriesToFulfilNoncesWorker() int64 {
