@@ -23,7 +23,6 @@ func (s *RewardsTestSuite) UtilSetParams() {
 		MaxGradientThreshold:       alloraMath.MustNewDecFromString("0.0"),
 		MinStakeFraction:           alloraMath.MustNewDecFromString("0.0"),
 		Epsilon:                    alloraMath.MustNewDecFromString("0.1"),
-		PInferenceSynthesis:        alloraMath.MustNewDecFromString("0.1"),
 	})
 }
 

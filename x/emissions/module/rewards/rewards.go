@@ -374,7 +374,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
-	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, reputerScores)
+	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardReputer, reputerScores)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
@@ -399,7 +399,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		k,
 		topicId,
 		blockHeight,
-		moduleParams.PRewardSpread,
+		moduleParams.PRewardInference,
+		moduleParams.CRewardInference,
 		infererScores,
 	)
 	if err != nil {
@@ -426,7 +427,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		k,
 		topicId,
 		blockHeight,
-		moduleParams.PRewardSpread,
+		moduleParams.PRewardForecast,
+		moduleParams.CRewardForecast,
 		forecasterScores,
 	)
 	if err != nil {

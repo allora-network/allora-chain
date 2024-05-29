@@ -62,9 +62,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
 	}
-	if len(newParams.AlphaRegret) == 1 {
-		existingParams.AlphaRegret = newParams.AlphaRegret[0]
-	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
 	}

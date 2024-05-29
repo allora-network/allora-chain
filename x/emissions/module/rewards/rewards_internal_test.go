@@ -21,15 +21,6 @@ func TestMathTestSuite(t *testing.T) {
 	suite.Run(t, new(MathTestSuite))
 }
 
-func (s *MathTestSuite) TestPhiSimple() {
-	x := alloraMath.MustNewDecFromString("7.9997")
-	p := alloraMath.NewDecFromInt64(2)
-	// we expect a value very very close to 64
-	result, err := rewards.Phi(p, x)
-	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001")))
-}
-
 func (s *MathTestSuite) TestAdjustedStakeSimple() {
 	// for this example we use
 	// 3 reputers with stakes of 50_000, 100_000, 150_000
@@ -335,6 +326,7 @@ func TestGetScoreFractions(t *testing.T) {
 		latestWorkerScores    []alloraMath.Dec
 		latestTimeStepsScores []alloraMath.Dec
 		pReward               alloraMath.Dec
+		cReward               alloraMath.Dec
 		epsilon               alloraMath.Dec
 		want                  []alloraMath.Dec
 		wantErr               bool
@@ -352,6 +344,7 @@ func TestGetScoreFractions(t *testing.T) {
 				alloraMath.MustNewDecFromString("0.09719"), alloraMath.MustNewDecFromString("0.09675"), alloraMath.MustNewDecFromString("0.09418"),
 			},
 			pReward: alloraMath.MustNewDecFromString("1.5"),
+			cReward: alloraMath.MustNewDecFromString("0.75"),
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			want:    []alloraMath.Dec{alloraMath.MustNewDecFromString("0.07671471224853309"), alloraMath.MustNewDecFromString("0.055310145462117234"), alloraMath.MustNewDecFromString("0.09829388639227018"), alloraMath.MustNewDecFromString("0.21538198445289035"), alloraMath.MustNewDecFromString("0.5542992714441891")},
 			wantErr: false,
@@ -360,7 +353,7 @@ func TestGetScoreFractions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetScoreFractions(tt.latestWorkerScores, tt.latestTimeStepsScores, tt.pReward, tt.epsilon)
+			got, err := rewards.GetScoreFractions(tt.latestWorkerScores, tt.latestTimeStepsScores, tt.pReward, tt.cReward, tt.epsilon)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetWorkerPortionOfRewards() error = %v, wantErr %v", err, tt.wantErr)
 				return

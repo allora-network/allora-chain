@@ -505,10 +505,6 @@ func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string)
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
 		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.MustNewDecFromString("0.01"),
 	}
 	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	if err != nil {

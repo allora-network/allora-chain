@@ -31,12 +31,9 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
-		return nil, types.ErrTopicDoesNotExist
 	}
 
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
@@ -193,7 +190,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, params.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
 	if err != nil {
 		return nil, err
 	}

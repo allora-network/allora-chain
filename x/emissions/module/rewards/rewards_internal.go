@@ -26,9 +26,10 @@ func GetScoreFractions(
 	latestWorkerScores []alloraMath.Dec,
 	latestTimeStepsScores []alloraMath.Dec,
 	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward, epsilon)
+	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward, cReward, epsilon)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
@@ -54,6 +55,7 @@ func GetMappingFunctionValues(
 	latestWorkerScores []alloraMath.Dec, // T - latest scores from workers
 	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
+	cReward alloraMath.Dec, // c
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	stdDev := alloraMath.OneDec()
@@ -77,7 +79,7 @@ func GetMappingFunctionValues(
 			if err != nil {
 				return nil, err
 			}
-			ret[i], err = Phi(pReward, frac)
+			ret[i], err = alloraMath.Phi(pReward, cReward, frac)
 			if err != nil {
 				return nil, errors.Wrapf(err, "err calculating phi")
 			}
@@ -609,29 +611,6 @@ func maxAbsDifference(a, b []alloraMath.Dec) (alloraMath.Dec, error) {
 		}
 	}
 	return maxDiff, nil
-}
-
-// Implements the potential function phi for the module
-// this is equation 6 from the litepaper:
-// ϕ_p(x) = (ln(1 + e^x))^p
-func Phi(p, x alloraMath.Dec) (alloraMath.Dec, error) {
-	eToTheX, err := alloraMath.Exp(x)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	onePlusEToTheX, err := alloraMath.OneDec().Add(eToTheX)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	naturalLog, err := alloraMath.Ln(onePlusEToTheX)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	result, err := alloraMath.Pow(naturalLog, p)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return result, nil
 }
 
 // Adjusted stake for calculating consensus S hat

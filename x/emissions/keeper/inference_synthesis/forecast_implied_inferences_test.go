@@ -6,59 +6,6 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *InferenceSynthesisTestSuite) TestGradient() {
-	tests := []struct {
-		name        string
-		p           alloraMath.Dec
-		x           alloraMath.Dec
-		expected    alloraMath.Dec
-		expectedErr error
-	}{
-		{
-			name:        "normal operation 1",
-			p:           alloraMath.MustNewDecFromString("2"),
-			x:           alloraMath.MustNewDecFromString("1"),
-			expected:    alloraMath.MustNewDecFromString("1.92014"),
-			expectedErr: nil,
-		},
-		{
-			name:        "normal operation 2",
-			p:           alloraMath.MustNewDecFromString("10"),
-			x:           alloraMath.MustNewDecFromString("3"),
-			expected:    alloraMath.MustNewDecFromString("216663.907950817"),
-			expectedErr: nil,
-		},
-		{
-			name:        "normal operation 3",
-			p:           alloraMath.MustNewDecFromString("9.2"),
-			x:           alloraMath.MustNewDecFromString("3.4"),
-			expected:    alloraMath.MustNewDecFromString("219724.179615500"),
-			expectedErr: nil,
-		},
-	}
-
-	for _, tc := range tests {
-		s.Run(tc.name, func() {
-			result, err := inference_synthesis.Gradient(tc.p, tc.x)
-
-			if tc.expectedErr != nil {
-				s.Require().ErrorIs(err, tc.expectedErr)
-			} else {
-				s.Require().NoError(err)
-				s.Require().True(
-					alloraMath.InDelta(
-						tc.expected,
-						result,
-						alloraMath.MustNewDecFromString("0.00001")),
-					"result should match expected value within epsilon",
-					tc.expected.String(),
-					result.String(),
-				)
-			}
-		})
-	}
-}
-
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 	tests := []struct {
 		name                string
@@ -66,7 +13,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 		forecasts           *emissions.Forecasts
 		networkCombinedLoss alloraMath.Dec
 		epsilon             alloraMath.Dec
-		pInferenceSynthesis alloraMath.Dec
+		pNorm               alloraMath.Dec
+		cNorm               alloraMath.Dec
 		expected            map[string]*emissions.Inference
 		expectedErr         error
 	}{
@@ -90,7 +38,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			},
 			networkCombinedLoss: alloraMath.MustNewDecFromString("0.5"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
+			pNorm:               alloraMath.MustNewDecFromString("2.0"),
+			cNorm:               alloraMath.MustNewDecFromString("0.75"),
 			expected: map[string]*emissions.Inference{
 				"forecaster0": {Value: alloraMath.MustNewDecFromString("1.34103809")},
 			},
@@ -117,7 +66,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			},
 			networkCombinedLoss: alloraMath.MustNewDecFromString("0.018593036157667700"), // <- from Row 1
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
+			pNorm:               alloraMath.MustNewDecFromString("2.0"),
+			cNorm:               alloraMath.MustNewDecFromString("0.75"),
 			expected: map[string]*emissions.Inference{
 				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.06298087")},
 			},
@@ -144,7 +94,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 			},
 			networkCombinedLoss: alloraMath.MustNewDecFromString("0.01569376583279220"),
 			epsilon:             alloraMath.MustNewDecFromString("1e-4"),
-			pInferenceSynthesis: alloraMath.MustNewDecFromString("2.0"),
+			pNorm:               alloraMath.MustNewDecFromString("2.0"),
+			cNorm:               alloraMath.MustNewDecFromString("0.75"),
 			expected: map[string]*emissions.Inference{
 				"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.068680221617")},
 			},
@@ -161,7 +112,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferences() {
 				tc.networkCombinedLoss,
 				false,
 				tc.epsilon,
-				tc.pInferenceSynthesis,
+				tc.pNorm,
+				tc.cNorm,
 			)
 
 			if tc.expectedErr != nil {

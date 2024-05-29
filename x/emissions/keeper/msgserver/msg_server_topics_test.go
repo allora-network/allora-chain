@@ -17,15 +17,15 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          sender,
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		Creator:         sender,
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(10),
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParamsCreateTopicFee())

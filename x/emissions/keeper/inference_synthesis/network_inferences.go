@@ -152,7 +152,8 @@ func accumulateNormalizedI_iAndSumWeights(
 	noPriorRegret bool,
 	allWorkersAreNew bool,
 	maxRegret Regret,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 	unnormalizedI_i alloraMath.Dec,
 	sumWeights alloraMath.Dec,
 ) (alloraMath.Dec, alloraMath.Dec, error) {
@@ -182,7 +183,7 @@ func accumulateNormalizedI_iAndSumWeights(
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
-		weight, err := Gradient(pInferenceSynthesis, regretFrac)
+		weight, err := alloraMath.Gradient(pNorm, cNorm, regretFrac)
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating gradient")
 		}
@@ -221,14 +222,15 @@ func CalcWeightedInference(
 	allWorkersAreNew AllWorkersAreNew,
 	maxRegret Regret,
 	epsilon alloraMath.Dec,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 ) (InferenceValue, error) {
 	if maxRegret.Lt(epsilon) {
 		maxRegret = epsilon
 	}
 
 	// Calculate the network combined inference and network worker regrets
-	unnormalizedI_i := alloraMath.ZeroDec()
+	unnormalizedNetworkInferece := alloraMath.ZeroDec()
 	sumWeights := alloraMath.ZeroDec()
 
 	for _, inferer := range sortedInferers {
@@ -237,14 +239,15 @@ func CalcWeightedInference(
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
-		unnormalizedI_i, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
+		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			inferenceByWorker[inferer],
 			regret,
 			noPriorRegret,
 			allWorkersAreNew.AllInferersAreNew,
 			maxRegret,
-			pInferenceSynthesis,
-			unnormalizedI_i,
+			pNorm,
+			cNorm,
+			unnormalizedNetworkInferece,
 			sumWeights,
 		)
 		if err != nil {
@@ -258,14 +261,15 @@ func CalcWeightedInference(
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
-		unnormalizedI_i, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
+		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			forecastImpliedInferenceByWorker[forecaster],
 			regret,
 			noPriorRegret,
 			allWorkersAreNew.AllForecastersAreNew,
 			maxRegret,
-			pInferenceSynthesis,
-			unnormalizedI_i,
+			pNorm,
+			cNorm,
+			unnormalizedNetworkInferece,
 			sumWeights,
 		)
 		if err != nil {
@@ -277,7 +281,7 @@ func CalcWeightedInference(
 	if sumWeights.Lt(epsilon) {
 		return InferenceValue{}, emissions.ErrSumWeightsLessThanEta
 	}
-	ret, err := unnormalizedI_i.Quo(sumWeights)
+	ret, err := unnormalizedNetworkInferece.Quo(sumWeights)
 	if err != nil {
 		return InferenceValue{}, errorsmod.Wrapf(err, "Error calculating network combined inference")
 	}
@@ -301,7 +305,8 @@ func CalcOneOutInferences(
 	maxRegret Regret,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
@@ -325,7 +330,8 @@ func CalcOneOutInferences(
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
 			epsilon,
-			pInferenceSynthesis,
+			pNorm,
+			cNorm,
 		)
 
 		if err != nil {
@@ -343,7 +349,8 @@ func CalcOneOutInferences(
 			allWorkersAreNew,
 			maxRegret,
 			epsilon,
-			pInferenceSynthesis,
+			pNorm,
+			cNorm,
 		)
 		if err != nil {
 			return nil, nil, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
@@ -381,7 +388,8 @@ func CalcOneOutInferences(
 			allWorkersAreNew,
 			maxRegret,
 			epsilon,
-			pInferenceSynthesis,
+			pNorm,
+			cNorm,
 		)
 		if err != nil {
 			return nil, nil, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
@@ -408,7 +416,8 @@ func CalcOneInInferences(
 	allWorkersAreNew AllWorkersAreNew,
 	maxRegretsByOneInForecaster map[Worker]Regret,
 	epsilon alloraMath.Dec,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 ) ([]*emissions.WorkerAttributedValue, error) {
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
@@ -430,7 +439,8 @@ func CalcOneInInferences(
 			allWorkersAreNew,
 			maxRegretsByOneInForecaster[oneInForecaster],
 			epsilon,
-			pInferenceSynthesis,
+			pNorm,
+			cNorm,
 		)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error calculating one-in inference")
@@ -453,7 +463,8 @@ func CalcNetworkInferences(
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 ) (*emissions.ValueBundle, error) {
 	// Map each worker to their inference
 	inferenceByWorker := MakeMapFromWorkerToTheirWork(inferences.Inferences)
@@ -472,7 +483,8 @@ func CalcNetworkInferences(
 		networkCombinedLoss,
 		allWorkersAreNew.AllInferersAreNew,
 		epsilon,
-		pInferenceSynthesis,
+		pNorm,
+		cNorm,
 	)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error calculating forecast-implied inferences: %s", err.Error()))
@@ -507,7 +519,8 @@ func CalcNetworkInferences(
 		allWorkersAreNew,
 		maxStdDevCombinedRegret,
 		epsilon,
-		pInferenceSynthesis,
+		pNorm,
+		cNorm,
 	)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined inference: %s", err.Error()))
@@ -525,7 +538,8 @@ func CalcNetworkInferences(
 		allWorkersAreNew,
 		stdDevRegrets.StdDevInferenceRegret,
 		epsilon,
-		pInferenceSynthesis,
+		pNorm,
+		cNorm,
 	)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error calculating naive inference: %s", err.Error()))
@@ -545,7 +559,8 @@ func CalcNetworkInferences(
 		maxStdDevCombinedRegret,
 		networkCombinedLoss,
 		epsilon,
-		pInferenceSynthesis,
+		pNorm,
+		cNorm,
 	)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out inferences: %s", err.Error()))
@@ -563,7 +578,8 @@ func CalcNetworkInferences(
 		allWorkersAreNew,
 		stdDevRegrets.StdDevOneInForecastRegret,
 		epsilon,
-		pInferenceSynthesis,
+		pNorm,
+		cNorm,
 	)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error calculating one-in inferences: %s", err.Error()))
@@ -665,7 +681,12 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+			return networkInferences, nil
+		}
+		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, topic.PNorm, params.CNorm)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
 			return networkInferences, nil

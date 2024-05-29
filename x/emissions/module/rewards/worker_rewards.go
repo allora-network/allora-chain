@@ -31,10 +31,11 @@ func GetInferenceTaskRewardFractions(
 	k keeper.Keeper,
 	topicId uint64,
 	blockHeight int64,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, latestScores)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pReward, cReward, latestScores)
 }
 
 func GetForecastingTaskRewardFractions(
@@ -42,10 +43,11 @@ func GetForecastingTaskRewardFractions(
 	k keeper.Keeper,
 	topicId uint64,
 	blockHeight int64,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, latestScores)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pReward, cReward, latestScores)
 }
 
 func GetWorkersRewardFractions(
@@ -54,7 +56,8 @@ func GetWorkersRewardFractions(
 	topicId uint64,
 	blockHeight int64,
 	which bool,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
 	// Get all latest score for each worker and the scores from the latest time steps
@@ -103,7 +106,7 @@ func GetWorkersRewardFractions(
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
 	}
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread, epsilon)
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pReward, cReward, epsilon)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}

@@ -186,10 +186,6 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
 		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
@@ -219,10 +215,6 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
 		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	creatorInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(3))
