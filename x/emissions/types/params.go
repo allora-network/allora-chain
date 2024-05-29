@@ -16,11 +16,11 @@ func DefaultParams() Params {
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds
-		MinEpochLength:                  1,                                         // 1 block
+		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds, number of seconds to wait before finalizing a stake withdrawal
+		MinEpochLength:                  1,                                         // 1 block, the shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
-		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient desc
+		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient descent
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
@@ -54,104 +54,291 @@ func DefaultParams() Params {
 	}
 }
 
-func DefaultParamsVersion() string {
-	return DefaultParams().Version
+// Validate does the sanity check on the params.
+func (p Params) Validate() error {
+	if err := validateVersion(p.Version); err != nil {
+		return err
+	}
+	if err := validateMinTopicWeight(p.MinTopicWeight); err != nil {
+		return err
+	}
+	if err := validateMaxTopicsPerBlock(p.MaxTopicsPerBlock); err != nil {
+		return err
+	}
+	if err := validateRequiredMinimumStake(p.RequiredMinimumStake); err != nil {
+		return err
+	}
+	if err := validateRemoveStakeDelayWindow(p.RemoveStakeDelayWindow); err != nil {
+		return err
+	}
+	if err := validateMinEpochLength(p.MinEpochLength); err != nil {
+		return err
+	}
+	if err := validateBetaEntropy(p.BetaEntropy); err != nil {
+		return err
+	}
+	if err := validateLearningRate(p.LearningRate); err != nil {
+		return err
+	}
+	if err := validateGradientDescentMaxIters(p.GradientDescentMaxIters); err != nil {
+		return err
+	}
+	if err := validateMaxGradientThreshold(p.MaxGradientThreshold); err != nil {
+		return err
+	}
+	if err := validateMinStakeFraction(p.MinStakeFraction); err != nil {
+		return err
+	}
+	if err := validateEpsilon(p.Epsilon); err != nil {
+		return err
+	}
+	if err := validatePRewardSpread(p.PRewardSpread); err != nil {
+		return err
+	}
+	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
+		return err
+	}
+	if err := validateMaxUnfulfilledReputerRequests(p.MaxUnfulfilledReputerRequests); err != nil {
+		return err
+	}
+	if err := validateTopicRewardStakeImportance(p.TopicRewardStakeImportance); err != nil {
+		return err
+	}
+	if err := validateTopicRewardFeeRevenueImportance(p.TopicRewardFeeRevenueImportance); err != nil {
+		return err
+	}
+	if err := validateTopicRewardAlpha(p.TopicRewardAlpha); err != nil {
+		return err
+	}
+	if err := validateTaskRewardAlpha(p.TaskRewardAlpha); err != nil {
+		return err
+	}
+	if err := validateValidatorsVsAlloraPercentReward(p.ValidatorsVsAlloraPercentReward); err != nil {
+		return err
+	}
+	if err := validateMaxSamplesToScaleScores(p.MaxSamplesToScaleScores); err != nil {
+		return err
+	}
+	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward); err != nil {
+		return err
+	}
+	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward); err != nil {
+		return err
+	}
+	if err := validateMaxTopReputersToReward(p.MaxTopReputersToReward); err != nil {
+		return err
+	}
+	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
+		return err
+	}
+	if err := validateSigmoidA(p.SigmoidA); err != nil {
+		return err
+	}
+	if err := validateSigmoidB(p.SigmoidB); err != nil {
+		return err
+	}
+	if err := validateMaxRetriesToFulfilNoncesWorker(p.MaxRetriesToFulfilNoncesWorker); err != nil {
+		return err
+	}
+	if err := validateMaxRetriesToFulfilNoncesReputer(p.MaxRetriesToFulfilNoncesReputer); err != nil {
+		return err
+	}
+	if err := validateRegistrationFee(p.RegistrationFee); err != nil {
+		return err
+	}
+	if err := validateDefaultPageLimit(p.DefaultPageLimit); err != nil {
+		return err
+	}
+	if err := validateMaxPageLimit(p.MaxPageLimit); err != nil {
+		return err
+	}
+	if err := validateMinEpochLengthRecordLimit(p.MinEpochLengthRecordLimit); err != nil {
+		return err
+	}
+	if err := validateMaxSerializedMsgLength(p.MaxSerializedMsgLength); err != nil {
+		return err
+	}
+	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func DefaultParamsMinTopicUnmetDemand() alloraMath.Dec {
-	return DefaultParams().MinTopicWeight
-}
-
-func DefaultParamsMaxTopicsPerBlock() uint64 {
-	return DefaultParams().MaxTopicsPerBlock
+// Version of the protocol should be in lockstep with github release tag version.
+// Should be between 1 and 32 characters. We do not enforce semver or a specific format.
+func validateVersion(v string) error {
+	lenV := len(v)
+	if v == "" || lenV == 0 {
+		return ErrValidationVersionEmpty
+	}
+	if lenV > 32 {
+		return ErrValidationVersionTooLong
+	}
+	return nil
 }
 
 func DefaultParamsRequiredMinimumStake() cosmosMath.Int {
 	return DefaultParams().RequiredMinimumStake
 }
 
-func DefaultParamsRemoveStakeDelayWindow() BlockHeight {
-	return DefaultParams().RemoveStakeDelayWindow
+// Minimum stake required to be a worker or reputer.
+// Should be >= 0.
+func validateRequiredMinimumStake(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
-func DefaultParamsMinEpochLength() BlockHeight {
-	return DefaultParams().MinEpochLength
+// Number of seconds to enforce stake withdrawal delay.
+// Should be >= 0.
+func validateRemoveStakeDelayWindow(i int64) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
-func DefaultParamsBetaEntropy() alloraMath.Dec {
-	return DefaultParams().BetaEntropy
+// Minumum number of blocks per epoch a topic can set.
+// Should be >= 0.
+func validateMinEpochLength(i BlockHeight) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
-func DefaultParamsLearningRate() alloraMath.Dec {
-	return DefaultParams().LearningRate
+// controls resilience of reward payouts against copycat workers
+// Should be 0 <= i <= 1
+func validateBetaEntropy(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsGradientDescentMaxIters() uint64 {
-	return DefaultParams().GradientDescentMaxIters
+// Speed of gradient descent.
+// Should be 0 < x < 1
+func validateLearningRate(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsMaxGradientThreshold() alloraMath.Dec {
-	return DefaultParams().MaxGradientThreshold
+// Max iterations on gradient descent.
+// Should be positive non zero number, i > 0
+func validateGradientDescentMaxIters(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
 }
 
-func DefaultParamsMinStakeFraction() alloraMath.Dec {
-	return DefaultParams().MinStakeFraction
+// Gradient descent stops when gradient falls below this.
+// Should be 0 < i < 1
+func validateMaxGradientThreshold(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsEpsilon() alloraMath.Dec {
-	return DefaultParams().Epsilon
+// minimum fraction of stake that should be listened to when setting consensus listening coefficients.
+// Should be between 0 and 1.
+func validateMinStakeFraction(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
 func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {
 	return DefaultParams().MaxUnfulfilledWorkerRequests
 }
 
-func DefaultParamsMaxUnfulfilledReputerRequestNonces() uint64 {
-	return DefaultParams().MaxUnfulfilledReputerRequests
+// importance of stake in determining rewards for a topic.
+// should be between 0 and 1.
+func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsTopicRewardStakeImportance() alloraMath.Dec {
-	return DefaultParams().TopicRewardStakeImportance
+// importance of fee revenue in determining rewards for a topic.
+// should be between 0 and 1.
+func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsTopicRewardFeeRevenueImportance() alloraMath.Dec {
-	return DefaultParams().TopicRewardFeeRevenueImportance
+// alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
+// should be 0 < x < 1
+func validateTopicRewardAlpha(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsTopicRewardAlpha() alloraMath.Dec {
-	return DefaultParams().TopicRewardAlpha
+// alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
+// should be 0 < x <= 1 (note the difference on both sides!)
+func validateTaskRewardAlpha(i alloraMath.Dec) error {
+
+	if i.Lte(alloraMath.ZeroDec()) || i.Gt(alloraMath.OneDec()) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsValidatorsVsAlloraPercentReward() alloraMath.Dec {
-	return DefaultParams().ValidatorsVsAlloraPercentReward
+// percent reward to go to cosmos network validators.
+// Should be a value between 0 and 1.
+func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
 }
 
-func DefaultParamsMaxSamplesToScaleScores() uint64 {
-	return DefaultParams().MaxSamplesToScaleScores
+// maximum number of previous scores to store and use for standard deviation calculation
+// Should be zero or positive. Enforced by uint type
+func validateMaxSamplesToScaleScores(_ uint64) error {
+	return nil
 }
 
-func DefaultParamsCreateTopicFee() cosmosMath.Int {
-	return DefaultParams().CreateTopicFee
+// max this many top workers by score are rewarded for a topic
+// Should be zero or positive. Enforced by uint type
+func validateMaxTopInferersToReward(_ uint64) error {
+	return nil
 }
 
-func DefaultParamsMaxTopInferersToReward() uint64 {
-	return DefaultParams().MaxTopInferersToReward
+// max this many top workers by score are rewarded for a topic
+// Should be zero or positive. Enforced by uint type
+func validateMaxTopForecastersToReward(_ uint64) error {
+	return nil
 }
 
-func DefaultParamsMaxTopForecastersToReward() uint64 {
-	return DefaultParams().MaxTopForecastersToReward
-}
-
-func DefaultParamsMaxTopReputersToReward() uint64 {
-	return DefaultParams().MaxTopReputersToReward
+// max this many top reputers by score are rewarded for a topic
+// Should be zero or positive. Enforced by uint type
+func validateMaxTopReputersToReward(_ uint64) error {
+	return nil
 }
 
 func DefaultParamsMaxRetriesToFulfilNoncesWorker() int64 {
 	return DefaultParams().MaxRetriesToFulfilNoncesWorker
 }
 
-func DefaultParamsMaxRetriesToFulfilNoncesReputer() int64 {
-	return DefaultParams().MaxRetriesToFulfilNoncesReputer
+// max throttle of simultaneous unfulfilled worker requests.
+// Should be non negative.
+func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
 func DefaultParamsRegistrationFee() cosmosMath.Int {
@@ -166,8 +353,13 @@ func DefaultParamsMaxLimit() uint64 {
 	return DefaultParams().MaxPageLimit
 }
 
-func DefaultParamsMinEpochLengthRecordLimit() int64 {
-	return DefaultParams().MinEpochLengthRecordLimit
+// maximum size of data to msg and query server in bytes
+// Should be non-negative.
+func validateMaxSerializedMsgLength(i int64) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
 // ~5 seconds block time, 6311520 per year, 525960 per month
@@ -211,15 +403,12 @@ func (p Params) Validate() error {
 	return nil
 }
 
-func validateBlocksPerMonth(i interface{}) error {
-	v, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
+// Whether an alloraDec is between the value of [0, 1] inclusive
+func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
+	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
+}
 
-	if v == 0 {
-		return fmt.Errorf("blocks per month must be positive: %d", v)
-	}
-
-	return nil
+// Whether an alloraDec is between the value of (0, 1) exclusive
+func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
+	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
 }

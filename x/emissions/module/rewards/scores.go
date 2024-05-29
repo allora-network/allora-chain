@@ -74,6 +74,8 @@ func GenerateReputerScores(
 		params.GradientDescentMaxIters,
 		params.FTolerance,
 		params.Epsilon,
+		params.MinStakeFraction,
+		params.MaxGradientThreshold,
 	)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetAllReputersOutput")

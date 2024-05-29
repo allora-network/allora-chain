@@ -194,6 +194,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if err != nil {
 		return nil, err
 	}
+	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update the unfulfilled nonces
 	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)

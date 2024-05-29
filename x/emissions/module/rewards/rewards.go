@@ -112,11 +112,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
 			totalRewardToStakedReputers.String(),
 			len(topicRewards)))
-	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get blocks per month")
-	}
-	if !totalReward.IsZero() && uint64(blockHeight)%blocksPerMonth == 0 {
+	if !totalReward.IsZero() && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
 		// set the previous percentage reward to staked reputers
 		// for the mint module to be able to control the inflation rate to that actor
 		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
@@ -246,8 +242,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 	alloraMath.Dec,
 	error,
 ) {
-
-	minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to get min topic weight")
 	}
@@ -272,7 +267,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 		}
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
-		if weight.Lt(minTopicWeight) {
+		if weight.Lt(moduleParams.MinTopicWeight) {
 			ctx.Logger().Warn(fmt.Sprintf("Topic weight is below the minimum: %d", topicId))
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {

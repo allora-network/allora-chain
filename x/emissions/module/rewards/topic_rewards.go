@@ -104,11 +104,16 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	fn func(ctx sdk.Context, topic *types.Topic) error,
 	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(sdkCtx)
+	moduleParams, err := k.GetParams(sdkCtx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(sdkCtx, weights, maxTopicsPerBlock, block)
+	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(
+		sdkCtx,
+		weights,
+		moduleParams.MaxTopicsPerBlock,
+		block,
+	)
 
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
@@ -147,7 +152,7 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	totalRevenue cosmosMath.Int,
 	err error,
 ) {
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
@@ -161,9 +166,9 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 			ctx,
 			topic.Id,
 			topic.EpochLength,
-			params.TopicRewardAlpha,
-			params.TopicRewardStakeImportance,
-			params.TopicRewardFeeRevenueImportance,
+			moduleParams.TopicRewardAlpha,
+			moduleParams.TopicRewardStakeImportance,
+			moduleParams.TopicRewardFeeRevenueImportance,
 			cosmosMath.ZeroInt(),
 		)
 		if err != nil {
@@ -186,7 +191,9 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 		return nil
 	}
 
-	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
+	// default page limit for the max because default is 100 and max is 1000
+	// 1000 is excessive for the topic query
+	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
 	}

@@ -598,6 +598,7 @@ func (s *RewardsTestSuite) setUpTopic(
 	workerAddrs []sdk.AccAddress,
 	reputerAddrs []sdk.AccAddress,
 	stake cosmosMath.Int,
+	alphaRegret alloraMath.Dec,
 ) uint64 {
 	require := s.Require()
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
@@ -817,7 +818,8 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 
 	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
+	alphaRegret := alloraMath.NewDecFromInt64(10)
+	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	workerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -867,7 +869,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
-	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
+	topicId1 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(
 		topicId1,
@@ -927,7 +929,8 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 
 	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
+	alphaRegret := alloraMath.NewDecFromInt64(10)
+	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	workerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -983,7 +986,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
-	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
+	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	rewardsDistribution1_0 := s.getRewardsDistribution(
 		topicId1,
@@ -1073,7 +1076,8 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake)
+	alphaRegret := alloraMath.NewDecFromInt64(10)
+	topicId0 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	workerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -1087,7 +1091,10 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		{Address: s.addrs[5], Value: "0.3"},
 	}
 
-	err = k.SetParams(s.ctx, currentParams)
+	topic, err := k.GetTopic(s.ctx, topicId0)
+	s.Require().NoError(err)
+	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.1")
+	err = k.SetTopic(s.ctx, topicId0, topic)
 	require.NoError(err)
 
 	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
@@ -1143,7 +1150,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 	/// INCREASE ALPHA REGRET
 
-	// currentParams.AlphaRegret = alloraMath.MustNewDecFromString(("0.2"))
+	alphaRegret = alloraMath.MustNewDecFromString(("0.2"))
 	err = k.SetParams(s.ctx, currentParams)
 	require.NoError(err)
 
@@ -1152,7 +1159,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	blockHeight2 := blockHeight1 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight2)
 
-	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake)
+	topicId1 := s.setUpTopic(blockHeight2, workerAddrs, reputerAddrs, stake, alphaRegret)
 
 	s.getRewardsDistribution(
 		topicId1,

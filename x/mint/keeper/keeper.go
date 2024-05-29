@@ -188,7 +188,11 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 // What split of the rewards should be given to cosmos validators vs
 // allora participants (reputers, forecaster workers, inferrer workers)
 func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
-	return k.emissionsKeeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return emissionsParams.ValidatorsVsAlloraPercentReward, nil
 }
 
 // The last time we paid out rewards, what was the percentage of those rewards that went to staked reputers
@@ -203,5 +207,9 @@ func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context)
 
 // wrapper around emissions keeper call to get the number of blocks expected in a month
 func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
-	return k.emissionsKeeper.GetParamsBlocksPerMonth(ctx)
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return emissionsParams.BlocksPerMonth, nil
 }

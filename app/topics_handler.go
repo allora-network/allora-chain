@@ -29,11 +29,11 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
 
 // Calculate approximate time for the previous block as epoch timestamp
 func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
-	blocksPerMonth, err := th.emissionsKeeper.GetParamsBlocksPerMonth(ctx)
+	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
-	approximateTimePerBlockSeconds := secondsInAMonth / blocksPerMonth
+	approximateTimePerBlockSeconds := secondsInAMonth / emissionsParams.BlocksPerMonth
 	timeDifferenceInBlocks := ctx.BlockHeight() - inferenceBlockHeight
 	// Ensure no time in the future is calculated because of ground truth lag
 	if groundTruthLag > timeDifferenceInBlocks {
@@ -60,10 +60,12 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	// This is to avoid requesting inferences for epochs that have already ended
 	workerNonces = synth.FilterNoncesWithinEpochLength(workerNonces, ctx.BlockHeight(), topic.EpochLength)
 
-	maxRetriesToFulfilNoncesWorker, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+	maxRetriesToFulfilNoncesWorker := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
+	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
-		maxRetriesToFulfilNoncesWorker = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
 		ctx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
+	} else {
+		maxRetriesToFulfilNoncesWorker = emissionsParams.MaxRetriesToFulfilNoncesWorker
 	}
 	sortedWorkerNonces := synth.SelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
 	ctx.Logger().Debug(fmt.Sprintf("Iterating Top N Worker Nonces: %d", len(sortedWorkerNonces)))
@@ -85,10 +87,12 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		return
 	}
 	// No filtering - reputation of previous rounds can still be retried if work has been done.
-	maxRetriesToFulfilNoncesReputer, err := th.emissionsKeeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+	maxRetriesToFulfilNoncesReputer := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
+	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		ctx.Logger().Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
-		maxRetriesToFulfilNoncesReputer = emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
+	} else {
+		maxRetriesToFulfilNoncesReputer = emissionsParams.MaxRetriesToFulfilNoncesReputer
 	}
 	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
 	ctx.Logger().Warn(fmt.Sprintf("Iterating Top N Reputer Nonces: %v", len(topNReputerNonces)))

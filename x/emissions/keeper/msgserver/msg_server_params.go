@@ -47,11 +47,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.LearningRate) == 1 {
 		existingParams.LearningRate = newParams.LearningRate[0]
 	}
-	if len(newParams.GradientDescentMaxIters) == 1 {
-		existingParams.GradientDescentMaxIters = newParams.GradientDescentMaxIters[0]
-	}
 	if len(newParams.MaxGradientThreshold) == 1 {
 		existingParams.MaxGradientThreshold = newParams.MaxGradientThreshold[0]
+	}
+	if len(newParams.GradientDescentMaxIters) == 1 {
+		existingParams.GradientDescentMaxIters = newParams.GradientDescentMaxIters[0]
 	}
 	if len(newParams.MinStakeFraction) == 1 {
 		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
@@ -145,6 +145,10 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.CNorm) == 1 {
 		existingParams.CNorm = newParams.CNorm[0]
+	}
+	err = existingParams.Validate()
+	if err != nil {
+		return nil, err
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

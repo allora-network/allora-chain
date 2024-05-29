@@ -4,6 +4,7 @@ import (
 	context "context"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
@@ -38,7 +39,6 @@ type BankKeeper interface {
 
 type EmissionsKeeper interface {
 	GetTotalStake(ctx context.Context) (math.Int, error)
-	GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error)
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error)
-	GetParamsBlocksPerMonth(ctx context.Context) (uint64, error)
+	GetParams(ctx context.Context) (emissionstypes.Params, error)
 }

@@ -635,6 +635,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		1,
 		fTolerance,
 		params.Epsilon,
+		params.MinStakeFraction,
+		params.MaxGradientThreshold,
 	)
 	require.NoError(err)
 
@@ -647,6 +649,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		2,
 		fTolerance,
 		params.Epsilon,
+		params.MinStakeFraction,
+		params.MaxGradientThreshold,
 	)
 	require.NoError(err)
 
@@ -659,6 +663,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		3,
 		fTolerance,
 		params.Epsilon,
+		params.MinStakeFraction,
+		params.MaxGradientThreshold,
 	)
 	require.NoError(err)
 

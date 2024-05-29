@@ -14,17 +14,8 @@ type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
 type Stake = cosmosMath.Int
 
-const (
-	oneE18 = "1000000000000000000"
-)
-
-func AlloraOneE18() (alloraMath.Dec, error) {
-	oneE18, err := alloraMath.NewDecFromString(oneE18)
-	return oneE18, err
-}
-
 func CosmosIntOneE18() cosmosMath.Int {
-	ret, ok := cosmosMath.NewIntFromString(oneE18)
+	ret, ok := cosmosMath.NewIntFromString("1000000000000000000")
 	if !ok {
 		panic("1*10^18 is not a valid cosmos int")
 	}
