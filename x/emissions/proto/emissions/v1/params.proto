@@ -106,7 +106,7 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];                          // registration fee for workers and reputers
+  ];                               // registration fee for workers and reputers
   uint64 default_page_limit = 36;  // default limit for pagination
   uint64 max_page_limit = 37;      // max limit for pagination
   int64 min_epoch_length_record_limit =
