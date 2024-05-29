@@ -15,7 +15,6 @@ func DefaultParams() Params {
 		Version:                         "0.0.3",                                   // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
-		MaxMissingInferencePercent:      alloraMath.MustNewDecFromString("0.2"),    // if a worker has this percentage of inferences missing, they are penalized
 		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds
 		MinEpochLength:                  1,                                         // 1 block
@@ -41,11 +40,9 @@ func DefaultParams() Params {
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
-		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
-		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
-		DefaultLimit:                    uint64(100),                               // default limit for pagination
-		MaxLimit:                        uint64(1000),                              // max limit for pagination
+		DefaultPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
+		MaxPageLimit:                        uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 		BlocksPerMonth:                  DefaultParamsBlocksPerMonth(),             // ~5 seconds block time, 6311520 per year, 525960 per month
@@ -69,10 +66,6 @@ func DefaultParamsMinTopicUnmetDemand() alloraMath.Dec {
 
 func DefaultParamsMaxTopicsPerBlock() uint64 {
 	return DefaultParams().MaxTopicsPerBlock
-}
-
-func DefaultParamsMaxMissingInferencePercent() alloraMath.Dec {
-	return DefaultParams().MaxMissingInferencePercent
 }
 
 func DefaultParamsRequiredMinimumStake() cosmosMath.Int {
@@ -171,24 +164,16 @@ func DefaultParamsMaxRetriesToFulfilNoncesReputer() int64 {
 	return DefaultParams().MaxRetriesToFulfilNoncesReputer
 }
 
-func DefaultParamsTopicPageLimit() uint64 {
-	return DefaultParams().TopicPageLimit
-}
-
-func DefaultParamsMaxTopicPages() uint64 {
-	return DefaultParams().MaxTopicPages
-}
-
 func DefaultParamsRegistrationFee() cosmosMath.Int {
 	return DefaultParams().RegistrationFee
 }
 
 func DefaultParamsDefaultLimit() uint64 {
-	return DefaultParams().DefaultLimit
+	return DefaultParams().DefaultPageLimit
 }
 
 func DefaultParamsMaxLimit() uint64 {
-	return DefaultParams().MaxLimit
+	return DefaultParams().MaxPageLimit
 }
 
 func DefaultParamsMinEpochLengthRecordLimit() int64 {
