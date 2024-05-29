@@ -2,9 +2,11 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Output a new set of inferences where only 1 inference per registerd inferer is kept,
@@ -269,6 +271,8 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	workerNonce := &types.Nonce{
 		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
 	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
 
 	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
 	if err != nil {

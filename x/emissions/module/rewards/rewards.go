@@ -14,6 +14,7 @@ import (
 
 func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weights map[uint64]*alloraMath.Dec, sumWeight alloraMath.Dec, totalRevenue cosmosMath.Int) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
+	ctx.Logger().Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
 	}
@@ -107,6 +108,10 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 			continue
 		}
 	}
+	ctx.Logger().Debug(
+		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
+			totalRewardToStakedReputers.String(),
+			len(topicRewards)))
 	if !totalReward.IsZero() && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
 		// set the previous percentage reward to staked reputers
 		// for the mint module to be able to control the inflation rate to that actor
@@ -158,7 +163,7 @@ func GenerateRewardsDistributionByTopic(
 	}
 
 	// Sort remaining active topics by weight desc and skim the top via SortTopicsByReturnDescWithRandomTiebreaker() and param MaxTopicsPerBlock
-	weightsOfTopActiveTopics, _ := SkimTopTopicsByWeightDesc(weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
+	weightsOfTopActiveTopics, _ := SkimTopTopicsByWeightDesc(ctx, weightsOfActiveTopics, maxTopicsPerBlock, blockHeight)
 
 	// Return the revenue to those topics that didn't make the cut
 	// Loop though sortedTopics and if the topic is not in sortedTopics, add to running revenue sum
