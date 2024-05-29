@@ -196,7 +196,8 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(10),
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
@@ -225,7 +226,8 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(10),
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))

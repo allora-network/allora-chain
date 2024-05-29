@@ -24,8 +24,8 @@ func createTopic(
 		EpochLength:      epochLength,
 		GroundTruthLag:   0,
 		DefaultArg:       "ETH",
-		PNorm:            alloraMath.NewDecFromInt64(2),
-		AlphaRegret:      alloraMath.MustNewDecFromString("3.14"),
+		PNorm:            alloraMath.NewDecFromInt64(3),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
 		AllowNegative:    true,
 	}
 

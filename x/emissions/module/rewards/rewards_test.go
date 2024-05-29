@@ -215,7 +215,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -350,7 +351,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -492,7 +494,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -613,7 +616,8 @@ func (s *RewardsTestSuite) setUpTopic(
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.MustNewDecFromString("0.1"),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	require.NoError(err)
@@ -1242,7 +1246,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1388,7 +1393,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1541,7 +1547,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1715,7 +1722,8 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1925,7 +1933,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2095,7 +2104,8 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2339,7 +2349,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2483,7 +2494,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2619,7 +2631,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
+		PNorm:            alloraMath.NewDecFromInt64(3),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

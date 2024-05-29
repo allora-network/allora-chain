@@ -33,7 +33,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Check if the topic exists
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
-		return nil, err
+		return nil, sdkerrors.ErrNotFound
 	}
 
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload

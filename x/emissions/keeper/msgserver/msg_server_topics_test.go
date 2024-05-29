@@ -25,7 +25,8 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(10),
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)

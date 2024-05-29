@@ -331,7 +331,8 @@ func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(10),
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

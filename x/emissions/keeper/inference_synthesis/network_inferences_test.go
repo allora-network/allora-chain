@@ -902,20 +902,20 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:               topicId,
-		Creator:          "creator",
-		Metadata:         "metadata",
-		LossLogic:        "losslogic",
-		LossMethod:       "lossmethod",
-		InferenceLogic:   "inferencelogic",
-		InferenceMethod:  "inferencemethod",
-		EpochLastEnded:   0,
-		EpochLength:      100,
-		GroundTruthLag:   10,
-		DefaultArg:       "defaultarg",
-		PNorm:            alloraMath.NewDecFromInt64(2),
-		AlphaRegret:      alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:    false,
+		Id:              topicId,
+		Creator:         "creator",
+		Metadata:        "metadata",
+		LossLogic:       "losslogic",
+		LossMethod:      "lossmethod",
+		InferenceLogic:  "inferencelogic",
+		InferenceMethod: "inferencemethod",
+		EpochLastEnded:  0,
+		EpochLength:     100,
+		GroundTruthLag:  10,
+		DefaultArg:      "defaultarg",
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:   false,
 	})
 	s.Require().NoError(err)
 

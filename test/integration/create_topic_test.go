@@ -27,7 +27,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		GroundTruthLag:   20,
 		DefaultArg:       "ETH",
 		PNorm:            alloraMath.NewDecFromInt64(2),
-		AlphaRegret:      alloraMath.MustNewDecFromString("3.14"),
+		AlphaRegret:      alloraMath.NewDecFromInt64(1),
 		AllowNegative:    true,
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
