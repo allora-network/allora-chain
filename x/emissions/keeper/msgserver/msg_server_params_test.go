@@ -67,8 +67,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MinStakeFraction:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		Epsilon:                         []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		PInferenceSynthesis:             []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		PRewardSpread:                   []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		AlphaRegret:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxUnfulfilledWorkerRequests:    []uint64{1234},
 		MaxUnfulfilledReputerRequests:   []uint64{1234},
@@ -93,6 +91,13 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxLimit:                        []uint64{1234},
 		MinEpochLengthRecordLimit:       []int64{1234},
 		MaxSerializedMsgLength:          []int64{1234},
+		PRewardInference:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		PRewardForecast:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		PRewardReputer:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		CRewardInference:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		CRewardForecast:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		FTolerance:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+	
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -119,8 +124,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
 	require.Equal(newParams.MinStakeFraction[0], updatedParams.MinStakeFraction)
 	require.Equal(newParams.Epsilon[0], updatedParams.Epsilon)
-	require.Equal(newParams.PInferenceSynthesis[0], updatedParams.PInferenceSynthesis)
-	require.Equal(newParams.PRewardSpread[0], updatedParams.PRewardSpread)
 	require.Equal(newParams.AlphaRegret[0], updatedParams.AlphaRegret)
 	require.Equal(newParams.MaxUnfulfilledWorkerRequests[0], updatedParams.MaxUnfulfilledWorkerRequests)
 	require.Equal(newParams.MaxUnfulfilledReputerRequests[0], updatedParams.MaxUnfulfilledReputerRequests)
@@ -145,6 +148,12 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxLimit[0], updatedParams.MaxLimit)
 	require.Equal(newParams.MinEpochLengthRecordLimit[0], updatedParams.MinEpochLengthRecordLimit)
 	require.Equal(newParams.MaxSerializedMsgLength[0], updatedParams.MaxSerializedMsgLength)
+	require.Equal(newParams.PRewardInference[0], updatedParams.PRewardInference)
+	require.Equal(newParams.PRewardForecast[0], updatedParams.PRewardForecast)
+	require.Equal(newParams.PRewardReputer[0], updatedParams.PRewardReputer)
+	require.Equal(newParams.CRewardInference[0], updatedParams.CRewardInference)
+	require.Equal(newParams.CRewardForecast[0], updatedParams.CRewardForecast)
+	require.Equal(newParams.FTolerance[0], updatedParams.FTolerance)
 }
 
 func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {
