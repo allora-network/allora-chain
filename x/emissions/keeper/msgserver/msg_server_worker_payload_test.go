@@ -110,12 +110,21 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, _ := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
 
 	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
 
+	blockHeight := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.BlockHeight
+
+	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
+
 	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+
+	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
+
+	require.Equal(forecastsCount0, 0)
+	require.Equal(forecastsCount1, 1)
 }
 
 func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
@@ -215,6 +224,40 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForec
 	require.NoError(err)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
+
+	require.Equal(forecastsCount0, 0)
+	require.Equal(forecastsCount1, 0)
+}
+
+func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredForecaster() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+
+	// BEGIN MODIFICATION
+	forecaster := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.Forecaster
+
+	unregisterMsg := &types.MsgRemoveRegistration{
+		Sender:    forecaster,
+		TopicId:   topicId,
+		IsReputer: false,
+	}
+
+	_, err := msgServer.RemoveRegistration(ctx, unregisterMsg)
+	require.NoError(err)
+
+	// END MODIFICATION
+
+	blockHeight := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.BlockHeight
+
+	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
+
+	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+
+	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
 	require.Equal(forecastsCount0, 0)
 	require.Equal(forecastsCount1, 0)
