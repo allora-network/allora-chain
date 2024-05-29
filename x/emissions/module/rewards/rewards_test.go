@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	"fmt"
+	stdlog "log"
 	"testing"
 	"time"
 
@@ -611,6 +612,16 @@ func (s *RewardsTestSuite) setUpTopic(
 	reputerAddrs []sdk.AccAddress,
 	stake cosmosMath.Int,
 ) uint64 {
+	return s.setUpTopicWithEpochLength(blockHeight, workerAddrs, reputerAddrs, stake, 10800)
+}
+
+func (s *RewardsTestSuite) setUpTopicWithEpochLength(
+	blockHeight int64,
+	workerAddrs []sdk.AccAddress,
+	reputerAddrs []sdk.AccAddress,
+	stake cosmosMath.Int,
+	epochLength int64,
+) uint64 {
 	require := s.Require()
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
 
@@ -620,7 +631,7 @@ func (s *RewardsTestSuite) setUpTopic(
 		Metadata:         "test",
 		LossLogic:        "logic",
 		LossMethod:       "method",
-		EpochLength:      10800,
+		EpochLength:      epochLength,
 		InferenceLogic:   "Ilogic",
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
@@ -2778,4 +2789,242 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
 	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
+}
+
+func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
+	/// SETUP
+	require := s.Require()
+
+	block := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	reputer0Addrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	reputer1Addrs := []sdk.AccAddress{
+		s.addrs[3],
+		s.addrs[4],
+		s.addrs[5],
+	}
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+	}
+
+	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, 1)
+	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, 1)
+
+	reputer0Values := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
+
+	reputer1Values := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
+
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[6], Value: "0.1"},
+		{Address: s.addrs[7], Value: "0.2"},
+		{Address: s.addrs[8], Value: "0.3"},
+	}
+
+	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	stdlog.Printf("reputer0_Stake0: %s", reputer0_Stake0)
+	stdlog.Printf("reputer1_Stake0: %s", reputer1_Stake0)
+	stdlog.Printf("reputer2_Stake0: %s", reputer2_Stake0)
+
+	reputer3_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	stdlog.Printf("reputer3_Stake0: %s", reputer3_Stake0)
+	stdlog.Printf("reputer4_Stake0: %s", reputer4_Stake0)
+	stdlog.Printf("reputer5_Stake0: %s", reputer5_Stake0)
+
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer0Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.getRewardsDistribution(
+		topicId1,
+		block,
+		workerValues,
+		reputer1Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	const topicFundAmount int64 = 1000
+
+	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {
+		s.MintTokensToAddress(funderAddr, cosmosMath.NewInt(amount))
+		fundTopicMessage := types.MsgFundTopic{
+			Sender:  funderAddr.String(),
+			TopicId: topicId,
+			Amount:  cosmosMath.NewInt(amount),
+		}
+		_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+		require.NoError(err)
+	}
+
+	fundTopic(topicId0, s.addrs[0], topicFundAmount)
+	fundTopic(topicId1, s.addrs[3], topicFundAmount)
+
+	reputer0_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	reputer3_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	stdlog.Printf("reputer0_Stake1: %s", reputer0_Stake1)
+	stdlog.Printf("reputer1_Stake1: %s", reputer1_Stake1)
+	stdlog.Printf("reputer2_Stake1: %s", reputer2_Stake1)
+	stdlog.Printf("reputer3_Stake1: %s", reputer3_Stake1)
+	stdlog.Printf("reputer4_Stake1: %s", reputer4_Stake1)
+	stdlog.Printf("reputer5_Stake1: %s", reputer5_Stake1)
+
+	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
+	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
+	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
+	reputer3_Reward0 := reputer3_Stake1.Sub(reputer3_Stake0)
+	reputer4_Reward0 := reputer4_Stake1.Sub(reputer4_Stake0)
+	reputer5_Reward0 := reputer5_Stake1.Sub(reputer5_Stake0)
+
+	stdlog.Printf("reputer0_Reward0: %s", reputer0_Reward0)
+	stdlog.Printf("reputer1_Reward0: %s", reputer1_Reward0)
+	stdlog.Printf("reputer2_Reward0: %s", reputer2_Reward0)
+	stdlog.Printf("reputer3_Reward0: %s", reputer3_Reward0)
+	stdlog.Printf("reputer4_Reward0: %s", reputer4_Reward0)
+	stdlog.Printf("reputer5_Reward0: %s", reputer5_Reward0)
+
+	topic0RewardTotal0 := reputer0_Reward0.Add(reputer1_Reward0).Add(reputer2_Reward0)
+	topic1RewardTotal0 := reputer3_Reward0.Add(reputer4_Reward0).Add(reputer5_Reward0)
+
+	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
+
+	stdlog.Printf("topic0RewardTotal0: %s", topic0RewardTotal0)
+	stdlog.Printf("topic1RewardTotal0: %s", topic1RewardTotal0)
+
+	s.MintTokensToAddress(s.addrs[3], stake)
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		Sender:  s.addrs[3].String(),
+		Amount:  stake,
+		TopicId: topicId1,
+	})
+	require.NoError(err)
+
+	reputer3_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer0Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.getRewardsDistribution(
+		topicId1,
+		block,
+		workerValues,
+		reputer1Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	reputer3_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	stdlog.Printf("reputer0_Stake2: %s", reputer0_Stake2)
+	stdlog.Printf("reputer1_Stake2: %s", reputer1_Stake2)
+	stdlog.Printf("reputer2_Stake2: %s", reputer2_Stake2)
+	stdlog.Printf("reputer3_Stake2: %s", reputer3_Stake2)
+	stdlog.Printf("reputer4_Stake2: %s", reputer4_Stake2)
+	stdlog.Printf("reputer5_Stake2: %s", reputer5_Stake2)
+
+	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
+	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
+	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
+	reputer3_Reward1 := reputer3_Stake2.Sub(reputer3_Stake1)
+	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
+	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
+
+	stdlog.Printf("reputer0_Reward1: %s", reputer0_Reward1)
+	stdlog.Printf("reputer1_Reward1: %s", reputer1_Reward1)
+	stdlog.Printf("reputer2_Reward1: %s", reputer2_Reward1)
+	stdlog.Printf("reputer3_Reward1: %s", reputer3_Reward1)
+	stdlog.Printf("reputer4_Reward1: %s", reputer4_Reward1)
+	stdlog.Printf("reputer5_Reward1: %s", reputer5_Reward1)
+
+	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
+	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
+
+	stdlog.Printf("topic0RewardTotal1: %s", topic0RewardTotal1)
+	stdlog.Printf("topic1RewardTotal1: %s", topic1RewardTotal1)
+
+	require.True(topic0RewardTotal1.LT(topic0RewardTotal0))
+	require.True(topic1RewardTotal1.GT(topic1RewardTotal0))
 }
