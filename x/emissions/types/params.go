@@ -152,6 +152,27 @@ func (p Params) Validate() error {
 	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
 	}
+	if err := validatePRewardInference(p.PRewardInference); err != nil {
+		return err
+	}
+	if err := validatePRewardForecast(p.PRewardForecast); err != nil {
+		return err
+	}
+	if err := validatePRewardReputer(p.PRewardReputer); err != nil {
+		return err
+	}
+	if err := validateCRewardInference(p.CRewardInference); err != nil {
+		return err
+	}
+	if err := validateCRewardForecast(p.CRewardForecast); err != nil {
+		return err
+	}
+	if err := validateFTolerance(p.FTolerance); err != nil {
+		return err
+	}
+	if err := validateCNorm(p.CNorm); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -265,9 +286,63 @@ func validateEpsilon(i alloraMath.Dec) error {
 	return nil
 }
 
-// fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
+// fiducial value for rewards calculation
 // should be x > 0
-func validatePRewardSpread(i alloraMath.Dec) error {
+func validatePRewardInference(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validatePRewardForecast(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validatePRewardReputer(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateCRewardInference(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateCRewardForecast(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateFTolerance(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for inference synthesis
+// should be x > 0
+func validateCNorm(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
