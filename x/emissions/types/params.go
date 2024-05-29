@@ -26,21 +26,22 @@ func DefaultParams() Params {
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
 		AlphaRegret:                     alloraMath.MustNewDecFromString("0.1"),    // how much to weight the most recent log-loss differences in regret EMA update
-		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain
-		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain
+		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
+		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
 		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),    // importance of fee revenue in determining rewards for a topic
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),    // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopWorkersToReward:           uint64(20),                                // max this many top workers by score are rewarded for a topic
-		MaxTopReputersToReward:          uint64(20),                                // max this many top reputers by score are rewarded for a topic
+		MaxTopInferersToReward:          uint64(24),                                // max this many top inferers by score are rewarded for a topic
+		MaxTopForecastersToReward:       uint64(6),                                 // max this many top forecasters by score are rewarded for a topic
+		MaxTopReputersToReward:          uint64(12),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
 		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
-		MaxRetriesToFulfilNoncesWorker:  int64(3),                                  // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(5),                                  // max throttle of simultaneous unfulfilled reputer requests
+		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
+		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 		TopicPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
 		MaxTopicPages:                   uint64(100),                               // max number of topics to return per page during churn of requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
@@ -49,12 +50,12 @@ func DefaultParams() Params {
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 		BlocksPerMonth:                  DefaultParamsBlocksPerMonth(),             // ~5 seconds block time, 6311520 per year, 525960 per month
-		PRewardInference:                alloraMath.MustNewDecFromString("1"),    //   
-		PRewardForecast:                 alloraMath.MustNewDecFromString("3"),     
-		PRewardReputer:                  alloraMath.MustNewDecFromString("3"),     
-		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),     
-		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),     
-		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),
+		PRewardInference:                alloraMath.NewDecFromInt64(1),             // fiducial value for rewards calculation
+		PRewardForecast:                 alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
+		PRewardReputer:                  alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
+		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
+		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
+		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),   // fiducial value for rewards calculation
 	}
 }
 
@@ -146,8 +147,12 @@ func DefaultParamsCreateTopicFee() cosmosMath.Int {
 	return DefaultParams().CreateTopicFee
 }
 
-func DefaultParamsMaxTopWorkersToReward() uint64 {
-	return DefaultParams().MaxTopWorkersToReward
+func DefaultParamsMaxTopInferersToReward() uint64 {
+	return DefaultParams().MaxTopInferersToReward
+}
+
+func DefaultParamsMaxTopForecastersToReward() uint64 {
+	return DefaultParams().MaxTopForecastersToReward
 }
 
 func DefaultParamsMaxTopReputersToReward() uint64 {
