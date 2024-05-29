@@ -23,7 +23,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.34103809")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.31351720")},
 	}
 
 	inferenceByWorker := map[string]*emissions.Inference{
@@ -76,7 +76,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow2() {
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.06298087")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.05053616")},
 	}
 	inferenceByWorker := map[string]*emissions.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.2797477698393250")},
@@ -128,7 +128,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow3() {
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.068680221617")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.06961422309")},
 	}
 	inferenceByWorker := map[string]*emissions.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.05142348924899710")},

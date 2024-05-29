@@ -141,11 +141,11 @@ func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target str
 	require.NoError(err)
 
 	if lowerBound.Lt(upperBound) {
-		require.True(value.Gte(lowerBound))
-		require.True(value.Lte(upperBound))
+		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
 	} else {
-		require.True(value.Lte(lowerBound))
-		require.True(value.Gte(upperBound))
+		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
 	}
 }
 

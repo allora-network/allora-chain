@@ -764,11 +764,8 @@ func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonce
 
 // Select the top N latest worker nonces
 func SelectTopNWorkerNonces(workerNonces emissions.Nonces, N int) []*emissions.Nonce {
-	topN := make([]*emissions.Nonce, 0)
 	if len(workerNonces.Nonces) <= N {
-		topN = workerNonces.Nonces
-	} else {
-		topN = workerNonces.Nonces[:N]
+		return workerNonces.Nonces
 	}
-	return topN
+	return workerNonces.Nonces[:N]
 }
