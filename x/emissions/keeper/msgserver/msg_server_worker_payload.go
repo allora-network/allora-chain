@@ -243,17 +243,22 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, types.ErrNonceAlreadyFulfilled
 	}
 
-	maxTopWorkersToReward, err := ms.k.GetParamsMaxTopWorkersToReward(ctx)
+	maxTopInferersToReward, err := ms.k.GetParamsMaxTopInferersToReward(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, maxTopWorkersToReward)
+	maxTopForecastersToReward, err := ms.k.GetParamsMaxTopForecastersToReward(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, acceptedInferers, maxTopWorkersToReward)
+	acceptedInferers, err := ms.VerifyAndInsertInferencesFromTopInferers(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, maxTopInferersToReward)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.VerifyAndInsertForecastsFromTopForecasters(ctx, msg.TopicId, *msg.Nonce, msg.WorkerDataBundles, acceptedInferers, maxTopForecastersToReward)
 	if err != nil {
 		return nil, err
 	}

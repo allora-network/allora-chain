@@ -2250,8 +2250,8 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		*networkLossBundles)
 	s.Require().NoError(err)
 
-	s.Require().Equal(len(infererScores), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
-	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopWorkersToReward()), "Only few Top workers can get reward")
+	s.Require().Equal(len(infererScores), int(params.GetMaxTopInferersToReward()), "Only few Top inferers can get reward")
+	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
 }
 
 func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
