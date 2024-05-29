@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
 func (msg *MsgCreateNewTopic) Validate() error {
@@ -36,17 +37,8 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.AlphaRegret.IsNegative() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret cannot negative")
 	}
-	if msg.PrewardReputer.IsNegative() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "preward for reputer cannot negative")
-	}
-	if msg.PrewardInference.IsNegative() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "preward for inference cannot negative")
-	}
-	if msg.PrewardForecast.IsNegative() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "preward for forecast cannot negative")
-	}
-	if msg.FTolerance.IsNegative() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "f tolerance cannot negative")
+	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) { 
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
 
 	return nil

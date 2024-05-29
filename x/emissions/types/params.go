@@ -56,6 +56,7 @@ func DefaultParams() Params {
 		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
 		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
 		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),   // fiducial value for rewards calculation
+		CNorm:                           alloraMath.MustNewDecFromString("0.75"),   // fiducial value for inference synthesis
 	}
 }
 
@@ -226,6 +227,10 @@ func DefaultParamsCRewardForecast() alloraMath.Dec {
 
 func DefaultParamsFTolerance() alloraMath.Dec {
 	return DefaultParams().FTolerance
+}
+
+func DefaultParamsCNorm() alloraMath.Dec {
+	return DefaultParams().CNorm
 }
 
 // Validate does the sanity check on the params.

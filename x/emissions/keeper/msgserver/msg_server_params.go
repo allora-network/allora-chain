@@ -155,6 +155,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.FTolerance) == 1 {
 		existingParams.FTolerance = newParams.FTolerance[0]
 	}
+	if len(newParams.CNorm) == 1 {
+		existingParams.CNorm = newParams.CNorm[0]
+	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err

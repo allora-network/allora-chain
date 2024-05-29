@@ -98,7 +98,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		CRewardInference:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		CRewardForecast:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		FTolerance:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-	
+		CNorm:                           []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -156,6 +156,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.CRewardInference[0], updatedParams.CRewardInference)
 	require.Equal(newParams.CRewardForecast[0], updatedParams.CRewardForecast)
 	require.Equal(newParams.FTolerance[0], updatedParams.FTolerance)
+	require.Equal(newParams.CNorm[0], updatedParams.CNorm)
 }
 
 func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {

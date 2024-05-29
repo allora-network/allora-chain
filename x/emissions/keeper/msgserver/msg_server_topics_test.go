@@ -26,10 +26,6 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		InferenceMethod:  "Imethod",
 		DefaultArg:       "ETH",
 		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParamsCreateTopicFee())

@@ -1471,8 +1471,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
 		Epsilon:                         alloraMath.NewDecFromInt64(0),
-		PInferenceSynthesis:             alloraMath.NewDecFromInt64(0),
-		PRewardSpread:                   alloraMath.NewDecFromInt64(0),
 		AlphaRegret:                     alloraMath.NewDecFromInt64(0),
 		MaxUnfulfilledWorkerRequests:    0,
 		MaxUnfulfilledReputerRequests:   0,
@@ -1496,6 +1494,13 @@ func (s *KeeperTestSuite) TestSetParams() {
 		RegistrationFee:                 cosmosMath.ZeroInt(),
 		DefaultLimit:                    0,
 		MaxLimit:                        0,
+		PRewardInference:                alloraMath.NewDecFromInt64(0),
+		PRewardForecast:                 alloraMath.NewDecFromInt64(0),
+		PRewardReputer:                  alloraMath.NewDecFromInt64(0),
+		CRewardInference:                alloraMath.NewDecFromInt64(0),
+		CRewardForecast:                 alloraMath.NewDecFromInt64(0),
+		FTolerance:                      alloraMath.NewDecFromInt64(0),
+		CNorm:                           alloraMath.NewDecFromInt64(0),
 	}
 
 	// Set params

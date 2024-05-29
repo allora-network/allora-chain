@@ -52,12 +52,8 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		EpochLength:      msg.EpochLength,
 		GroundTruthLag:   msg.GroundTruthLag,
 		DefaultArg:       msg.DefaultArg,
-		Pnorm:            msg.Pnorm,
+		PNorm:            msg.PNorm,
 		AlphaRegret:      msg.AlphaRegret,
-		PrewardReputer:   msg.PrewardReputer,
-		PrewardInference: msg.PrewardInference,
-		PrewardForecast:  msg.PrewardForecast,
-		FTolerance:       msg.FTolerance,
 		AllowNegative:    msg.AllowNegative,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
