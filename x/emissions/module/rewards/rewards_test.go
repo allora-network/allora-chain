@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"fmt"
-	stdlog "log"
 	"testing"
 	"time"
 
@@ -2846,20 +2845,12 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
 	require.NoError(err)
 
-	stdlog.Printf("reputer0_Stake0: %s", reputer0_Stake0)
-	stdlog.Printf("reputer1_Stake0: %s", reputer1_Stake0)
-	stdlog.Printf("reputer2_Stake0: %s", reputer2_Stake0)
-
 	reputer3_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
 	require.NoError(err)
 	reputer4_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
 	require.NoError(err)
 	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
-
-	stdlog.Printf("reputer3_Stake0: %s", reputer3_Stake0)
-	stdlog.Printf("reputer4_Stake0: %s", reputer4_Stake0)
-	stdlog.Printf("reputer5_Stake0: %s", reputer5_Stake0)
 
 	s.getRewardsDistribution(
 		topicId0,
@@ -2916,13 +2907,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
 
-	stdlog.Printf("reputer0_Stake1: %s", reputer0_Stake1)
-	stdlog.Printf("reputer1_Stake1: %s", reputer1_Stake1)
-	stdlog.Printf("reputer2_Stake1: %s", reputer2_Stake1)
-	stdlog.Printf("reputer3_Stake1: %s", reputer3_Stake1)
-	stdlog.Printf("reputer4_Stake1: %s", reputer4_Stake1)
-	stdlog.Printf("reputer5_Stake1: %s", reputer5_Stake1)
-
 	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
 	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
 	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
@@ -2930,20 +2914,10 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer4_Reward0 := reputer4_Stake1.Sub(reputer4_Stake0)
 	reputer5_Reward0 := reputer5_Stake1.Sub(reputer5_Stake0)
 
-	stdlog.Printf("reputer0_Reward0: %s", reputer0_Reward0)
-	stdlog.Printf("reputer1_Reward0: %s", reputer1_Reward0)
-	stdlog.Printf("reputer2_Reward0: %s", reputer2_Reward0)
-	stdlog.Printf("reputer3_Reward0: %s", reputer3_Reward0)
-	stdlog.Printf("reputer4_Reward0: %s", reputer4_Reward0)
-	stdlog.Printf("reputer5_Reward0: %s", reputer5_Reward0)
-
 	topic0RewardTotal0 := reputer0_Reward0.Add(reputer1_Reward0).Add(reputer2_Reward0)
 	topic1RewardTotal0 := reputer3_Reward0.Add(reputer4_Reward0).Add(reputer5_Reward0)
 
 	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
-
-	stdlog.Printf("topic0RewardTotal0: %s", topic0RewardTotal0)
-	stdlog.Printf("topic1RewardTotal0: %s", topic1RewardTotal0)
 
 	s.MintTokensToAddress(s.addrs[3], stake)
 	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
@@ -2998,13 +2972,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
 
-	stdlog.Printf("reputer0_Stake2: %s", reputer0_Stake2)
-	stdlog.Printf("reputer1_Stake2: %s", reputer1_Stake2)
-	stdlog.Printf("reputer2_Stake2: %s", reputer2_Stake2)
-	stdlog.Printf("reputer3_Stake2: %s", reputer3_Stake2)
-	stdlog.Printf("reputer4_Stake2: %s", reputer4_Stake2)
-	stdlog.Printf("reputer5_Stake2: %s", reputer5_Stake2)
-
 	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
 	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
 	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
@@ -3012,18 +2979,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
 	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
 
-	stdlog.Printf("reputer0_Reward1: %s", reputer0_Reward1)
-	stdlog.Printf("reputer1_Reward1: %s", reputer1_Reward1)
-	stdlog.Printf("reputer2_Reward1: %s", reputer2_Reward1)
-	stdlog.Printf("reputer3_Reward1: %s", reputer3_Reward1)
-	stdlog.Printf("reputer4_Reward1: %s", reputer4_Reward1)
-	stdlog.Printf("reputer5_Reward1: %s", reputer5_Reward1)
-
 	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
-
-	stdlog.Printf("topic0RewardTotal1: %s", topic0RewardTotal1)
-	stdlog.Printf("topic1RewardTotal1: %s", topic1RewardTotal1)
 
 	require.True(topic0RewardTotal1.LT(topic0RewardTotal0))
 	require.True(topic1RewardTotal1.GT(topic1RewardTotal0))
