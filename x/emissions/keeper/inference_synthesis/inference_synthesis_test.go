@@ -157,9 +157,10 @@ func (s *InferenceSynthesisTestSuite) inEpsilon3(value alloraMath.Dec, target st
 	s.inEpsilon(value, target, "0.001")
 }
 
+/*unused
 func (s *InferenceSynthesisTestSuite) inEpsilon4(value alloraMath.Dec, target string) {
 	s.inEpsilon(value, target, "0.0001")
-}
+}*/
 
 func (s *InferenceSynthesisTestSuite) inEpsilon5(value alloraMath.Dec, target string) {
 	s.inEpsilon(value, target, "0.00001")

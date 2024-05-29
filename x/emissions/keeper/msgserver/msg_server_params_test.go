@@ -58,25 +58,23 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		Version:                         []string{"1234"},
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxTopicsPerBlock:               []uint64{1234},
-		MaxMissingInferencePercent:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		RequiredMinimumStake:            []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
-		BetaEntropy:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		LearningRate:                    []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		MinStakeFraction:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		BetaEntropy:                     []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		LearningRate:                    []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		GradientDescentMaxIters:         []uint64{1234},
+		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		MinStakeFraction:                []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		Epsilon:                         []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		PInferenceSynthesis:             []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		PRewardSpread:                   []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		AlphaRegret:                     []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxUnfulfilledWorkerRequests:    []uint64{1234},
 		MaxUnfulfilledReputerRequests:   []uint64{1234},
-		TopicRewardStakeImportance:      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		TopicRewardFeeRevenueImportance: []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		TopicRewardAlpha:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		TaskRewardAlpha:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		ValidatorsVsAlloraPercentReward: []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		TopicRewardStakeImportance:      []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		TopicRewardFeeRevenueImportance: []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		TopicRewardAlpha:                []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		TaskRewardAlpha:                 []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
+		ValidatorsVsAlloraPercentReward: []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		MaxSamplesToScaleScores:         []uint64{1234},
 		MaxTopInferersToReward:          []uint64{1234},
 		MaxTopForecastersToReward:       []uint64{1234},
@@ -84,14 +82,11 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		SigmoidA:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		SigmoidB:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		GradientDescentMaxIters:         []uint64{1234},
 		MaxRetriesToFulfilNoncesWorker:  []int64{1234},
 		MaxRetriesToFulfilNoncesReputer: []int64{1234},
-		TopicPageLimit:                  []uint64{1234},
-		MaxTopicPages:                   []uint64{1234},
 		RegistrationFee:                 []cosmosMath.Int{cosmosMath.NewInt(1234)},
-		DefaultLimit:                    []uint64{1234},
-		MaxLimit:                        []uint64{1234},
+		DefaultPageLimit:                []uint64{1234},
+		MaxPageLimit:                    []uint64{1234},
 		MinEpochLengthRecordLimit:       []int64{1234},
 		MaxSerializedMsgLength:          []int64{1234},
 	}
@@ -111,7 +106,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.Version[0], updatedParams.Version)
 	require.Equal(newParams.MinTopicWeight[0], updatedParams.MinTopicWeight)
 	require.Equal(newParams.MaxTopicsPerBlock[0], updatedParams.MaxTopicsPerBlock)
-	require.Equal(newParams.MaxMissingInferencePercent[0], updatedParams.MaxMissingInferencePercent)
 	require.Equal(newParams.RequiredMinimumStake[0], updatedParams.RequiredMinimumStake)
 	require.Equal(newParams.RemoveStakeDelayWindow[0], updatedParams.RemoveStakeDelayWindow)
 	require.Equal(newParams.MinEpochLength[0], updatedParams.MinEpochLength)
@@ -120,9 +114,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
 	require.Equal(newParams.MinStakeFraction[0], updatedParams.MinStakeFraction)
 	require.Equal(newParams.Epsilon[0], updatedParams.Epsilon)
-	require.Equal(newParams.PInferenceSynthesis[0], updatedParams.PInferenceSynthesis)
 	require.Equal(newParams.PRewardSpread[0], updatedParams.PRewardSpread)
-	require.Equal(newParams.AlphaRegret[0], updatedParams.AlphaRegret)
 	require.Equal(newParams.MaxUnfulfilledWorkerRequests[0], updatedParams.MaxUnfulfilledWorkerRequests)
 	require.Equal(newParams.MaxUnfulfilledReputerRequests[0], updatedParams.MaxUnfulfilledReputerRequests)
 	require.Equal(newParams.TopicRewardStakeImportance[0], updatedParams.TopicRewardStakeImportance)
@@ -140,11 +132,9 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)
-	require.Equal(newParams.TopicPageLimit[0], updatedParams.TopicPageLimit)
-	require.Equal(newParams.MaxTopicPages[0], updatedParams.MaxTopicPages)
 	require.Equal(newParams.RegistrationFee[0], updatedParams.RegistrationFee)
-	require.Equal(newParams.DefaultLimit[0], updatedParams.DefaultLimit)
-	require.Equal(newParams.MaxLimit[0], updatedParams.MaxLimit)
+	require.Equal(newParams.DefaultPageLimit[0], updatedParams.DefaultPageLimit)
+	require.Equal(newParams.MaxPageLimit[0], updatedParams.MaxPageLimit)
 	require.Equal(newParams.MinEpochLengthRecordLimit[0], updatedParams.MinEpochLengthRecordLimit)
 	require.Equal(newParams.MaxSerializedMsgLength[0], updatedParams.MaxSerializedMsgLength)
 }

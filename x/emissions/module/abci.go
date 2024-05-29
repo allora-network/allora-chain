@@ -76,10 +76,12 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 
-				MaxUnfulfilledReputerRequests, err := am.keeper.GetParamsMaxUnfulfilledReputerRequests(ctx)
+				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
+				moduleParams, err := am.keeper.GetParams(ctx)
 				if err != nil {
-					MaxUnfulfilledReputerRequests = types.DefaultParams().MaxUnfulfilledReputerRequests
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
+				} else {
+					MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 				}
 				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {

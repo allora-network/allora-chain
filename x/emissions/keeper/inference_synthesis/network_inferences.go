@@ -1,17 +1,18 @@
 package inference_synthesis
 
 import (
+	"errors"
+	"fmt"
+	"sort"
+
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
-	"errors"
-	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"sort"
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
@@ -638,7 +639,7 @@ func GetNetworkInferencesAtBlock(
 	}
 
 	if len(inferences.Inferences) > 1 {
-		params, err := k.GetParams(ctx)
+		moduleParams, err := k.GetParams(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -660,12 +661,34 @@ func GetNetworkInferencesAtBlock(
 			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 		}
 
-		networkCombinedLoss, err := CalcCombinedNetworkLoss(stakesByReputer, reputerReportedLosses, params.Epsilon)
+		networkCombinedLoss, err := CalcCombinedNetworkLoss(
+			stakesByReputer,
+			reputerReportedLosses,
+			moduleParams.Epsilon,
+		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, params.PInferenceSynthesis)
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+			return networkInferences, nil
+		}
+		pInferenceSynthesis, err := alloraMath.NewDecFromUint64(topic.Pnorm)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("Error converting pnorm to Dec: %s", err.Error()))
+			return networkInferences, nil
+		}
+		networkInferences, err = CalcNetworkInferences(
+			ctx,
+			k,
+			topicId,
+			inferences,
+			forecasts, networkCombinedLoss,
+			moduleParams.Epsilon,
+			pInferenceSynthesis,
+		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
 			return networkInferences, nil

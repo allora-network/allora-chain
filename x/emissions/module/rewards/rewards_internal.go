@@ -428,13 +428,13 @@ func GetAllReputersOutput(
 	gradientDescentMaxIters uint64,
 	fTolerance alloraMath.Dec,
 	epsilon alloraMath.Dec,
+	minStakeFraction alloraMath.Dec,
+	maxGradientThreshold alloraMath.Dec,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
-	maxGradientThreshold := alloraMath.MustNewDecFromString("0.001")
-	minStakeFraction := alloraMath.MustNewDecFromString("0.5")
 	var i uint64 = 0
 	var maxGradient alloraMath.Dec = alloraMath.OneDec()
 	finalScores := make([]alloraMath.Dec, numReputers)

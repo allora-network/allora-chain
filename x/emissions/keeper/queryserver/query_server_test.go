@@ -192,7 +192,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
+	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
 
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
@@ -225,7 +225,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	creatorInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(3))
+	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, creatorInitialBalance))
 
 	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
