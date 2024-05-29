@@ -23,13 +23,13 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -155,14 +155,14 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -303,14 +303,14 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),

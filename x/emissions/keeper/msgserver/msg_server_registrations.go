@@ -114,11 +114,11 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 }
 
 func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (bool, sdk.Coin, error) {
-	amountInt, err := ms.k.GetParamsRegistrationFee(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	fee := sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee)
 	accAddress, err := sdk.AccAddressFromBech32(address)
 	if err != nil {
 		return false, fee, err

@@ -111,11 +111,11 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	}
 	// check the timestamp is valid
 	currentBlock := sdkCtx.BlockHeight()
-	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+delayWindow >= currentBlock {
+	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 	// Check the module has enough funds to send back to the sender
@@ -242,11 +242,11 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	}
 	// check the block it should start is valid
 	currentBlock := sdkCtx.BlockHeight()
-	delayWindow, err := ms.k.GetParamsRemoveStakeDelayWindow(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+delayWindow >= currentBlock {
+	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
 	}
 

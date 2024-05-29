@@ -105,11 +105,15 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	fn func(ctx context.Context, topic *types.Topic) error,
 	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	maxTopicsPerBlock, err := k.GetParamsMaxTopicsPerBlock(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(weights, maxTopicsPerBlock, block)
+	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(
+		weights,
+		moduleParams.MaxTopicsPerBlock,
+		block,
+	)
 
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
@@ -187,7 +191,9 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 		return nil
 	}
 
-	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.TopicPageLimit, params.MaxTopicPages)
+	// default page limit for the max because default is 100 and max is 1000
+	// 1000 is excessive for the topic query
+	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, params.DefaultPageLimit, params.DefaultPageLimit)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
 	}

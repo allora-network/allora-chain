@@ -640,8 +640,7 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
 
-/// PARAMS TESTS
-
+// / PARAMS TESTS
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -653,8 +652,9 @@ func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxTopicsPerBlock(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxTopicsPerBlock
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -669,8 +669,9 @@ func (s *KeeperTestSuite) TestSetGetRemoveStakeDelayWindow() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.RemoveStakeDelayWindow
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -685,8 +686,9 @@ func (s *KeeperTestSuite) TestSetGetValidatorsVsAlloraPercentReward() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsValidatorsVsAlloraPercentReward(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.ValidatorsVsAlloraPercentReward
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -701,8 +703,9 @@ func (s *KeeperTestSuite) TestGetParamsMinTopicUnmetDemand() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMinTopicWeight(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MinTopicWeight
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -718,8 +721,9 @@ func (s *KeeperTestSuite) TestGetParamsRequiredMinimumStake() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.RequiredMinimumStake
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -734,8 +738,9 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMinEpochLength(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MinEpochLength
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -750,8 +755,9 @@ func (s *KeeperTestSuite) TestGetParamsEpsilon() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsEpsilon(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.Epsilon
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
@@ -766,8 +772,9 @@ func (s *KeeperTestSuite) TestGetParamsTopicCreationFee() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsTopicCreationFee(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.CreateTopicFee
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
@@ -782,8 +789,9 @@ func (s *KeeperTestSuite) TestGetParamsRegistrationFee() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsRegistrationFee(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.RegistrationFee
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
@@ -798,8 +806,9 @@ func (s *KeeperTestSuite) TestGetParamsMaxSamplesToScaleScores() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxSamplesToScaleScores
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -814,8 +823,9 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopWorkersToReward() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxTopWorkersToReward(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxTopWorkersToReward
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopWorkersToReward should match the expected value")
 }
 
@@ -830,8 +840,9 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesWorker(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxRetriesToFulfilNoncesWorker
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesWorker should match the expected value")
 }
 
@@ -846,8 +857,9 @@ func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetParamsMaxRetriesToFulfilNoncesReputer(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxRetriesToFulfilNoncesReputer
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
 }
 
@@ -862,8 +874,9 @@ func (s *KeeperTestSuite) TestGetMinEpochLengthRecordLimit() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetMinEpochLengthRecordLimit(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MinEpochLengthRecordLimit
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MinEpochLengthRecordLimit should be equal to the expected value")
 }
 
@@ -878,8 +891,9 @@ func (s *KeeperTestSuite) TestGetMaxSerializedMsgLength() {
 	s.Require().NoError(err)
 
 	// Get the parameter
-	actualValue, err := keeper.GetMaxSerializedMsgLength(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
+	actualValue := moduleParams.MaxSerializedMsgLength
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxSerializedMsgLength should be equal to the expected value")
 }
 
@@ -1446,13 +1460,11 @@ func (s *KeeperTestSuite) TestSetParams() {
 		Version:                         "v1.0.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:               1000,
-		MaxMissingInferencePercent:      alloraMath.NewDecFromInt64(10),
 		RequiredMinimumStake:            cosmosMath.NewInt(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
 		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
-		MaxGradientThreshold:            alloraMath.NewDecFromInt64(0),
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
 		Epsilon:                         alloraMath.NewDecFromInt64(0),
 		PInferenceSynthesis:             alloraMath.NewDecFromInt64(0),
@@ -1474,11 +1486,9 @@ func (s *KeeperTestSuite) TestSetParams() {
 		GradientDescentMaxIters:         0,
 		MaxRetriesToFulfilNoncesWorker:  0,
 		MaxRetriesToFulfilNoncesReputer: 0,
-		TopicPageLimit:                  0,
-		MaxTopicPages:                   0,
 		RegistrationFee:                 cosmosMath.ZeroInt(),
-		DefaultLimit:                    0,
-		MaxLimit:                        0,
+		DefaultPageLimit:                0,
+		MaxPageLimit:                    0,
 	}
 
 	// Set params
@@ -1491,7 +1501,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
 	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
 	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
-	s.Require().Equal(params.MaxMissingInferencePercent, paramsFromKeeper.MaxMissingInferencePercent, "Params should be equal to the set params: MaxMissingInferencePercent")
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
@@ -2519,19 +2528,16 @@ func (s *KeeperTestSuite) TestCalcAppropriatePaginationForUint64Cursor() {
 	maxLimit := uint64(50)
 
 	params := types.Params{
-		DefaultLimit: defaultLimit,
-		MaxLimit:     maxLimit,
+		DefaultPageLimit: defaultLimit,
+		MaxPageLimit:     maxLimit,
 	}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting default and max limit parameters should not fail")
 
-	maxLimitActual, err := keeper.GetParamsMaxLimit(ctx)
+	paramsActual, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(maxLimit, maxLimitActual, "Max limit should be set correctly")
-
-	defaultLimitActual, err := keeper.GetParamsDefaultLimit(ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(defaultLimit, defaultLimitActual, "Default limit should be set correctly")
+	s.Require().Equal(maxLimit, paramsActual.MaxPageLimit, "Max limit should be set correctly")
+	s.Require().Equal(defaultLimit, paramsActual.DefaultPageLimit, "Default limit should be set correctly")
 
 	// Test 1: Pagination request is nil
 	limit, cursor, err := keeper.CalcAppropriatePaginationForUint64Cursor(ctx, nil)
@@ -2788,6 +2794,7 @@ func (s *KeeperTestSuite) TestGetTargetWeight() {
 	}
 
 	dec, err := alloraMath.NewDecFromString("22.36067977499789696409173668731276")
+	s.Require().NoError(err)
 
 	testCases := []struct {
 		name             string

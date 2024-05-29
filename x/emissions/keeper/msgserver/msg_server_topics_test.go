@@ -32,7 +32,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 		FTolerance:       alloraMath.NewDecFromInt64(14),
 	}
 
-	s.MintTokensToAddress(senderAddr, types.DefaultParamsCreateTopicFee())
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 
 	// s.PrepareForCreateTopic(newTopicMsg.Creator)
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
