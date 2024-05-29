@@ -913,12 +913,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		EpochLength:      100,
 		GroundTruthLag:   10,
 		DefaultArg:       "defaultarg",
-		Pnorm:            2,
+		PNorm:            alloraMath.NewDecFromInt64(2),
 		AlphaRegret:      alloraMath.MustNewDecFromString("0.1"),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(11),
-		PrewardForecast:  alloraMath.NewDecFromInt64(12),
-		FTolerance:       alloraMath.NewDecFromInt64(13),
 		AllowNegative:    false,
 	})
 	s.Require().NoError(err)

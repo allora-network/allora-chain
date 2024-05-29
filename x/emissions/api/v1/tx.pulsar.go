@@ -663,7 +663,7 @@ func (x *_OptionalParams_14_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_15_list)(nil)
 
 type _OptionalParams_15_list struct {
-	list *[]uint64
+	list *[]string
 }
 
 func (x *_OptionalParams_15_list) Len() int {
@@ -674,17 +674,17 @@ func (x *_OptionalParams_15_list) Len() int {
 }
 
 func (x *_OptionalParams_15_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfString((*x.list)[i])
 }
 
 func (x *_OptionalParams_15_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_15_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -698,8 +698,8 @@ func (x *_OptionalParams_15_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_15_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := ""
+	return protoreflect.ValueOfString(v)
 }
 
 func (x *_OptionalParams_15_list) IsValid() bool {
@@ -1123,7 +1123,7 @@ func (x *_OptionalParams_24_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_25_list)(nil)
 
 type _OptionalParams_25_list struct {
-	list *[]string
+	list *[]uint64
 }
 
 func (x *_OptionalParams_25_list) Len() int {
@@ -1134,17 +1134,17 @@ func (x *_OptionalParams_25_list) Len() int {
 }
 
 func (x *_OptionalParams_25_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfUint64((*x.list)[i])
 }
 
 func (x *_OptionalParams_25_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_25_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Uint()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1158,8 +1158,8 @@ func (x *_OptionalParams_25_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_25_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	v := uint64(0)
+	return protoreflect.ValueOfUint64(v)
 }
 
 func (x *_OptionalParams_25_list) IsValid() bool {
@@ -1261,7 +1261,7 @@ func (x *_OptionalParams_27_list) IsValid() bool {
 var _ protoreflect.List = (*_OptionalParams_28_list)(nil)
 
 type _OptionalParams_28_list struct {
-	list *[]uint64
+	list *[]string
 }
 
 func (x *_OptionalParams_28_list) Len() int {
@@ -1272,17 +1272,17 @@ func (x *_OptionalParams_28_list) Len() int {
 }
 
 func (x *_OptionalParams_28_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfUint64((*x.list)[i])
+	return protoreflect.ValueOfString((*x.list)[i])
 }
 
 func (x *_OptionalParams_28_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_OptionalParams_28_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Uint()
+	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
@@ -1296,8 +1296,8 @@ func (x *_OptionalParams_28_list) Truncate(n int) {
 }
 
 func (x *_OptionalParams_28_list) NewElement() protoreflect.Value {
-	v := uint64(0)
-	return protoreflect.ValueOfUint64(v)
+	v := ""
+	return protoreflect.ValueOfString(v)
 }
 
 func (x *_OptionalParams_28_list) IsValid() bool {
@@ -3851,14 +3851,14 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			j19 := i
 			for _, num := range x.MaxTopInferersToReward {
 				for num >= 1<<7 {
-					dAtA[j15] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j19] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j15++
+					j19++
 				}
-				dAtA[j15] = uint8(num)
-				j15++
+				dAtA[j19] = uint8(num)
+				j19++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize16))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize20))
 			i--
 			dAtA[i] = 0x1
 			i--
@@ -3873,14 +3873,14 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 			j21 := i
 			for _, num := range x.MaxSamplesToScaleScores {
 				for num >= 1<<7 {
-					dAtA[j17] = uint8(uint64(num)&0x7f | 0x80)
+					dAtA[j21] = uint8(uint64(num)&0x7f | 0x80)
 					num >>= 7
-					j17++
+					j21++
 				}
-				dAtA[j17] = uint8(num)
-				j17++
+				dAtA[j21] = uint8(num)
+				j21++
 			}
-			i = runtime.EncodeVarint(dAtA, i, uint64(pksize18))
+			i = runtime.EncodeVarint(dAtA, i, uint64(pksize22))
 			i--
 			dAtA[i] = 0x1
 			i--

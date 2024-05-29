@@ -106,7 +106,7 @@ func GetWorkersRewardFractions(
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
 	}
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pReward, cReward, epsilon)
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pReward, cReward, moduleParams.Epsilon)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}

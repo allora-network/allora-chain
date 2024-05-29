@@ -1497,8 +1497,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MaxTopForecastersToReward:       10,
 		MaxTopReputersToReward:          10,
 		CreateTopicFee:                  cosmosMath.ZeroInt(),
-		SigmoidA:                        alloraMath.NewDecFromInt64(0),
-		SigmoidB:                        alloraMath.NewDecFromInt64(0),
 		GradientDescentMaxIters:         0,
 		MaxRetriesToFulfilNoncesWorker:  0,
 		MaxRetriesToFulfilNoncesReputer: 0,

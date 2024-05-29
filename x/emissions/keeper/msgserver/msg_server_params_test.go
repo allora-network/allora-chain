@@ -79,8 +79,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxTopForecastersToReward:       []uint64{1234},
 		MaxTopReputersToReward:          []uint64{1234},
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
-		SigmoidA:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		SigmoidB:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxRetriesToFulfilNoncesWorker:  []int64{1234},
 		MaxRetriesToFulfilNoncesReputer: []int64{1234},
 		RegistrationFee:                 []cosmosMath.Int{cosmosMath.NewInt(1234)},
@@ -132,8 +130,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxTopForecastersToReward[0], updatedParams.MaxTopForecastersToReward)
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
-	require.Equal(newParams.SigmoidA[0], updatedParams.SigmoidA)
-	require.Equal(newParams.SigmoidB[0], updatedParams.SigmoidB)
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)

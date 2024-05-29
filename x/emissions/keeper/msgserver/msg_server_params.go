@@ -95,12 +95,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
-	if len(newParams.SigmoidA) == 1 {
-		existingParams.SigmoidA = newParams.SigmoidA[0]
-	}
-	if len(newParams.SigmoidB) == 1 {
-		existingParams.SigmoidB = newParams.SigmoidB[0]
-	}
 	if len(newParams.MaxRetriesToFulfilNoncesWorker) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesWorker = newParams.MaxRetriesToFulfilNoncesWorker[0]
 	}

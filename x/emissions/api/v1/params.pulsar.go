@@ -1304,23 +1304,23 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.PRewardInference)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PRewardInference)))
 			i--
-			dAtA[i] = 0x1
+			dAtA[i] = 0x2
 			i--
 			dAtA[i] = 0x8a
 		}
 		if x.BlocksPerMonth != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlocksPerMonth))
 			i--
-			dAtA[i] = 0x1
+			dAtA[i] = 0x2
 			i--
-			dAtA[i] = 0xe8
+			dAtA[i] = 0x80
 		}
 		if x.MinEpochLengthRecordLimit != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinEpochLengthRecordLimit))
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xe0
+			dAtA[i] = 0xf8
 		}
 		if x.MaxPageLimit != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxPageLimit))

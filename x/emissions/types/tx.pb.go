@@ -3028,16 +3028,16 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		var j19 int
 		for _, num := range m.MaxTopInferersToReward {
 			for num >= 1<<7 {
-				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j15++
+				j19++
 			}
-			dAtA16[j15] = uint8(num)
-			j15++
+			dAtA20[j19] = uint8(num)
+			j19++
 		}
-		i -= j15
-		copy(dAtA[i:], dAtA16[:j15])
-		i = encodeVarintTx(dAtA, i, uint64(j15))
+		i -= j19
+		copy(dAtA[i:], dAtA20[:j19])
+		i = encodeVarintTx(dAtA, i, uint64(j19))
 		i--
 		dAtA[i] = 0x1
 		i--
@@ -3048,16 +3048,16 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		var j21 int
 		for _, num := range m.MaxSamplesToScaleScores {
 			for num >= 1<<7 {
-				dAtA18[j17] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA22[j21] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j17++
+				j21++
 			}
-			dAtA18[j17] = uint8(num)
-			j17++
+			dAtA22[j21] = uint8(num)
+			j21++
 		}
-		i -= j17
-		copy(dAtA[i:], dAtA18[:j17])
-		i = encodeVarintTx(dAtA, i, uint64(j17))
+		i -= j21
+		copy(dAtA[i:], dAtA22[:j21])
+		i = encodeVarintTx(dAtA, i, uint64(j21))
 		i--
 		dAtA[i] = 0x1
 		i--

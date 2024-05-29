@@ -691,7 +691,7 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, params.Epsilon, topic.PNorm, params.CNorm)
+		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, moduleParams.Epsilon, topic.PNorm, moduleParams.CNorm)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
 			return networkInferences, nil

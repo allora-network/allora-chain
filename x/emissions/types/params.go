@@ -1,7 +1,7 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -39,11 +39,11 @@ func DefaultParams() Params {
 		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
-		DefaultPageLimit:                  uint64(100),                               // how many topics to return per page during churn of requests
-		MaxPageLimit:                        uint64(1000),                              // max limit for pagination
+		DefaultPageLimit:                uint64(100),                               // how many topics to return per page during churn of requests
+		MaxPageLimit:                    uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
-		BlocksPerMonth:                  DefaultParamsBlocksPerMonth(),             // ~5 seconds block time, 6311520 per year, 525960 per month
+		BlocksPerMonth:                  uint64(525960),                            // ~5 seconds block time, 6311520 per year, 525960 per month
 		PRewardInference:                alloraMath.NewDecFromInt64(1),             // fiducial value for rewards calculation
 		PRewardForecast:                 alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
 		PRewardReputer:                  alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
@@ -92,9 +92,6 @@ func (p Params) Validate() error {
 	if err := validateEpsilon(p.Epsilon); err != nil {
 		return err
 	}
-	if err := validatePRewardSpread(p.PRewardSpread); err != nil {
-		return err
-	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
 		return err
 	}
@@ -129,12 +126,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
-		return err
-	}
-	if err := validateSigmoidA(p.SigmoidA); err != nil {
-		return err
-	}
-	if err := validateSigmoidB(p.SigmoidB); err != nil {
 		return err
 	}
 	if err := validateMaxRetriesToFulfilNoncesWorker(p.MaxRetriesToFulfilNoncesWorker); err != nil {
@@ -178,8 +169,19 @@ func validateVersion(v string) error {
 	return nil
 }
 
-func DefaultParamsRequiredMinimumStake() cosmosMath.Int {
-	return DefaultParams().RequiredMinimumStake
+// Total weight for a topic < this => don't run inference solicatation or loss update.
+// Should be >= 0
+func validateMinTopicWeight(i alloraMath.Dec) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
+}
+
+// Max number of topics to run cadence for per block.
+// Should be >= 0, uint enforces this.
+func validateMaxTopicsPerBlock(_ uint64) error {
+	return nil
 }
 
 // Minimum stake required to be a worker or reputer.
@@ -254,8 +256,34 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 	return nil
 }
 
-func DefaultParamsMaxUnfulfilledWorkerRequestNonces() uint64 {
-	return DefaultParams().MaxUnfulfilledWorkerRequests
+// 0 threshold to prevent div by 0 and 0-approximation errors.
+// Should be close to zero, but not zero. i > 0
+func validateEpsilon(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
+// should be x > 0
+func validatePRewardSpread(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// maximum number of outstanding nonces for worker requests per topic from the chain
+// Should be zero or positive. Enforced by uint type
+func validateMaxUnfulfilledWorkerRequests(_ uint64) error {
+	return nil
+}
+
+// maximum number of outstanding nonces for reputer requests per topic from the chain
+// Should be zero or positive. Enforced by uint type
+func validateMaxUnfulfilledReputerRequests(_ uint64) error {
+	return nil
 }
 
 // importance of stake in determining rewards for a topic.
@@ -328,8 +356,13 @@ func validateMaxTopReputersToReward(_ uint64) error {
 	return nil
 }
 
-func DefaultParamsMaxRetriesToFulfilNoncesWorker() int64 {
-	return DefaultParams().MaxRetriesToFulfilNoncesWorker
+// topic registration fee
+// must be positive or zero
+func validateCreateTopicFee(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
 // max throttle of simultaneous unfulfilled worker requests.
@@ -341,16 +374,43 @@ func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
 	return nil
 }
 
-func DefaultParamsRegistrationFee() cosmosMath.Int {
-	return DefaultParams().RegistrationFee
+// max throttle of simultaneous unfulfilled reputer requests.
+// Should be non negative.
+func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
-func DefaultParamsDefaultLimit() uint64 {
-	return DefaultParams().DefaultPageLimit
+// How much workers and reputers must pay to register per topic.
+// Should be non-negative.
+func validateRegistrationFee(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
-func DefaultParamsMaxLimit() uint64 {
-	return DefaultParams().MaxPageLimit
+// default limit for pagination
+// should be non-negative, enforced by uint type
+func validateDefaultPageLimit(_ uint64) error {
+	return nil
+}
+
+// max limit for pagination
+// should be non-negative, enforced by uint type
+func validateMaxPageLimit(_ uint64) error {
+	return nil
+}
+
+// minimum number of epochs to keep records for a topic
+// Should be non-negative.
+func validateMinEpochLengthRecordLimit(i int64) error {
+	if i < 0 {
+		return ErrValidationMustBeNonNegative
+	}
+	return nil
 }
 
 // maximum size of data to msg and query server in bytes
@@ -362,43 +422,11 @@ func validateMaxSerializedMsgLength(i int64) error {
 	return nil
 }
 
-// ~5 seconds block time, 6311520 per year, 525960 per month
-func DefaultParamsBlocksPerMonth() uint64 {
-	return uint64(525960)
-}
-
-func DefaultParamsPRewardInference() alloraMath.Dec {
-	return DefaultParams().PRewardInference
-}
-
-func DefaultParamsPRewardForecast() alloraMath.Dec {
-	return DefaultParams().PRewardForecast
-}
-
-func DefaultParamsPRewardReputer() alloraMath.Dec {
-	return DefaultParams().PRewardReputer
-}
-
-func DefaultParamsCRewardInference() alloraMath.Dec {
-	return DefaultParams().CRewardInference
-}
-
-func DefaultParamsCRewardForecast() alloraMath.Dec {
-	return DefaultParams().CRewardForecast
-}
-
-func DefaultParamsFTolerance() alloraMath.Dec {
-	return DefaultParams().FTolerance
-}
-
-func DefaultParamsCNorm() alloraMath.Dec {
-	return DefaultParams().CNorm
-}
-
-// Validate does the sanity check on the params.
-func (p Params) Validate() error {
-	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
-		return err
+// Number of blocks in a month.
+// should be a number on the order of 525,960
+func validateBlocksPerMonth(i uint64) error {
+	if i == 0 {
+		return fmt.Errorf("blocks per month must be positive: %d", i)
 	}
 	return nil
 }
