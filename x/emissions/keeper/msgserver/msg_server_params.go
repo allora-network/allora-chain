@@ -47,6 +47,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.LearningRate) == 1 {
 		existingParams.LearningRate = newParams.LearningRate[0]
 	}
+	if len(newParams.MaxGradientThreshold) == 1 {
+		existingParams.MaxGradientThreshold = newParams.MaxGradientThreshold[0]
+	}
 	if len(newParams.GradientDescentMaxIters) == 1 {
 		existingParams.GradientDescentMaxIters = newParams.GradientDescentMaxIters[0]
 	}
