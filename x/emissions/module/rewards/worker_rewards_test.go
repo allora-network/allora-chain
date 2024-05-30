@@ -56,6 +56,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)
@@ -67,6 +68,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)
@@ -141,6 +143,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)
@@ -151,6 +154,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)
@@ -192,6 +196,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)
@@ -221,6 +226,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 		topicId,
 		blockHeight,
 		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
 		lastScores,
 	)
 	s.Require().NoError(err)

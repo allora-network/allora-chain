@@ -32,9 +32,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxTopicsPerBlock) == 1 {
 		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
 	}
-	if len(newParams.MaxMissingInferencePercent) == 1 {
-		existingParams.MaxMissingInferencePercent = newParams.MaxMissingInferencePercent[0]
-	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
 	}
@@ -50,26 +47,17 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.LearningRate) == 1 {
 		existingParams.LearningRate = newParams.LearningRate[0]
 	}
-	if len(newParams.GradientDescentMaxIters) == 1 {
-		existingParams.GradientDescentMaxIters = newParams.GradientDescentMaxIters[0]
-	}
 	if len(newParams.MaxGradientThreshold) == 1 {
 		existingParams.MaxGradientThreshold = newParams.MaxGradientThreshold[0]
+	}
+	if len(newParams.GradientDescentMaxIters) == 1 {
+		existingParams.GradientDescentMaxIters = newParams.GradientDescentMaxIters[0]
 	}
 	if len(newParams.MinStakeFraction) == 1 {
 		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
 	}
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
-	}
-	if len(newParams.PInferenceSynthesis) == 1 {
-		existingParams.PInferenceSynthesis = newParams.PInferenceSynthesis[0]
-	}
-	if len(newParams.PRewardSpread) == 1 {
-		existingParams.PRewardSpread = newParams.PRewardSpread[0]
-	}
-	if len(newParams.AlphaRegret) == 1 {
-		existingParams.AlphaRegret = newParams.AlphaRegret[0]
 	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
@@ -95,8 +83,11 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxSamplesToScaleScores) == 1 {
 		existingParams.MaxSamplesToScaleScores = newParams.MaxSamplesToScaleScores[0]
 	}
-	if len(newParams.MaxTopWorkersToReward) == 1 {
-		existingParams.MaxTopWorkersToReward = newParams.MaxTopWorkersToReward[0]
+	if len(newParams.MaxTopInferersToReward) == 1 {
+		existingParams.MaxTopInferersToReward = newParams.MaxTopInferersToReward[0]
+	}
+	if len(newParams.MaxTopForecastersToReward) == 1 {
+		existingParams.MaxTopForecastersToReward = newParams.MaxTopForecastersToReward[0]
 	}
 	if len(newParams.MaxTopReputersToReward) == 1 {
 		existingParams.MaxTopReputersToReward = newParams.MaxTopReputersToReward[0]
@@ -104,32 +95,20 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
-	if len(newParams.SigmoidA) == 1 {
-		existingParams.SigmoidA = newParams.SigmoidA[0]
-	}
-	if len(newParams.SigmoidB) == 1 {
-		existingParams.SigmoidB = newParams.SigmoidB[0]
-	}
 	if len(newParams.MaxRetriesToFulfilNoncesWorker) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesWorker = newParams.MaxRetriesToFulfilNoncesWorker[0]
 	}
 	if len(newParams.MaxRetriesToFulfilNoncesReputer) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesReputer = newParams.MaxRetriesToFulfilNoncesReputer[0]
 	}
-	if len(newParams.TopicPageLimit) == 1 {
-		existingParams.TopicPageLimit = newParams.TopicPageLimit[0]
-	}
-	if len(newParams.MaxTopicPages) == 1 {
-		existingParams.MaxTopicPages = newParams.MaxTopicPages[0]
-	}
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]
 	}
-	if len(newParams.DefaultLimit) == 1 {
-		existingParams.DefaultLimit = newParams.DefaultLimit[0]
+	if len(newParams.DefaultPageLimit) == 1 {
+		existingParams.DefaultPageLimit = newParams.DefaultPageLimit[0]
 	}
-	if len(newParams.MaxLimit) == 1 {
-		existingParams.MaxLimit = newParams.MaxLimit[0]
+	if len(newParams.MaxPageLimit) == 1 {
+		existingParams.MaxPageLimit = newParams.MaxPageLimit[0]
 	}
 	if len(newParams.MinEpochLengthRecordLimit) == 1 {
 		existingParams.MinEpochLengthRecordLimit = newParams.MinEpochLengthRecordLimit[0]
@@ -139,6 +118,34 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.BlocksPerMonth) == 1 {
 		existingParams.BlocksPerMonth = newParams.BlocksPerMonth[0]
+	}
+	if len(newParams.PRewardInference) == 1 {
+		existingParams.PRewardInference = newParams.PRewardInference[0]
+	}
+	if len(newParams.PRewardForecast) == 1 {
+		existingParams.PRewardForecast = newParams.PRewardForecast[0]
+	}
+	if len(newParams.PRewardReputer) == 1 {
+		existingParams.PRewardReputer = newParams.PRewardReputer[0]
+	}
+	if len(newParams.CRewardInference) == 1 {
+		existingParams.CRewardInference = newParams.CRewardInference[0]
+	}
+	if len(newParams.CRewardForecast) == 1 {
+		existingParams.CRewardForecast = newParams.CRewardForecast[0]
+	}
+	if len(newParams.FTolerance) == 1 {
+		existingParams.FTolerance = newParams.FTolerance[0]
+	}
+	if len(newParams.CNorm) == 1 {
+		existingParams.CNorm = newParams.CNorm[0]
+	}
+	if len(newParams.TopicFeeRevenueDecayRate) == 1 {
+		existingParams.TopicFeeRevenueDecayRate = newParams.TopicFeeRevenueDecayRate[0]
+	}
+	err = existingParams.Validate()
+	if err != nil {
+		return nil, err
 	}
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {

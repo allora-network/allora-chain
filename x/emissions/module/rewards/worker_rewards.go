@@ -31,10 +31,11 @@ func GetInferenceTaskRewardFractions(
 	k keeper.Keeper,
 	topicId uint64,
 	blockHeight int64,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pRewardSpread, latestScores)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pReward, cReward, latestScores)
 }
 
 func GetForecastingTaskRewardFractions(
@@ -42,10 +43,11 @@ func GetForecastingTaskRewardFractions(
 	k keeper.Keeper,
 	topicId uint64,
 	blockHeight int64,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pRewardSpread, latestScores)
+	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pReward, cReward, latestScores)
 }
 
 func GetWorkersRewardFractions(
@@ -54,7 +56,8 @@ func GetWorkersRewardFractions(
 	topicId uint64,
 	blockHeight int64,
 	which bool,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
+	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
 	// Get all latest score for each worker and the scores from the latest time steps
@@ -99,11 +102,11 @@ func GetWorkersRewardFractions(
 		scores = append(scores, workerLastScoresDec)
 	}
 
-	epsilon, err := k.GetParamsEpsilon(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
 	}
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pRewardSpread, epsilon)
+	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pReward, cReward, moduleParams.Epsilon)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}
@@ -243,39 +246,40 @@ func ForecastingPerformanceScore(
 	return naiveNetworkInferenceLoss.Sub(networkInferenceLoss)
 }
 
-// we apply a utility function to the forecasting performance score
-// to let the forecasting task utility range from the interval [0.1, 0.5]
-// χ = 0.1 + 0.4σ(a*T_i − b)
-// sigma is the sigmoid function
-// a has fiduciary value of 8
-// b has fiduciary value of 0.5
+// Implements the utility function for forecasting performance score
+// with the new specification:
+// χ = 0.1 for score < 0,
+// χ = 0.5 for score > 1,
+// χ = 0.4 * score + 0.1 in between
 func ForecastingUtility(
-	forecastingTaskUtilityScore,
-	a,
-	b alloraMath.Dec,
+	forecastingTaskUtilityScore alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	aTimesForecastigPerformanceScore, err := a.Mul(forecastingTaskUtilityScore)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	aTimesForecastigPerformanceScoreMinusB, err := aTimesForecastigPerformanceScore.Sub(b)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := Sigmoid(aTimesForecastigPerformanceScoreMinusB)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate sigmoid")
-	}
+	zero := alloraMath.ZeroDec()
+	one := alloraMath.OneDec()
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
-	ret, err = zeroPointFour.Mul(ret)
+	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
+
+	// If score < 0, return 0.1
+	if forecastingTaskUtilityScore.Lt(zero) {
+		return zeroPointOne, nil
+	}
+
+	// If score > 1, return 0.5
+	if forecastingTaskUtilityScore.Gt(one) {
+		return zeroPointFive, nil
+	}
+
+	// For 0 <= score <= 1, return 0.4 * score + 0.1
+	scoreTimesZeroPointFour, err := zeroPointFour.Mul(forecastingTaskUtilityScore)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	ret, err = zeroPointOne.Add(ret)
+	ret, err := scoreTimesZeroPointFour.Add(zeroPointOne)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
+
 	return ret, nil
 }
 
@@ -317,15 +321,13 @@ func NormalizationFactor(
 
 // helper function to get chi and gamma
 func getChiAndGamma(
-	niaveNetworkInferenceLoss alloraMath.Dec,
-	networkInferenceLoss alloraMath.Dec,
+	naiveNetworkInferenceLoss,
+	networkInferenceLoss,
 	entropyInference,
-	entropyForecasting,
-	a,
-	b alloraMath.Dec,
+	entropyForecasting alloraMath.Dec,
 ) (chi alloraMath.Dec, gamma alloraMath.Dec, err error) {
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
-		niaveNetworkInferenceLoss,
+		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 	)
 	if err != nil {
@@ -333,8 +335,6 @@ func getChiAndGamma(
 	}
 	chi, err = ForecastingUtility(
 		forecastingTaskUtilityScore,
-		a,
-		b,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
@@ -359,16 +359,12 @@ func GetRewardForInferenceTaskInTopic(
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
-	a alloraMath.Dec, // global param used for chi χ
-	b alloraMath.Dec, // global param used for chi χ
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
 		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,
-		a,
-		b,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
@@ -413,16 +409,12 @@ func GetRewardForForecastingTaskInTopic(
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
-	sigmoidA alloraMath.Dec, // a used for sigmoid
-	sigmoidB alloraMath.Dec, // b used for sigmoid
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
 		niaveNetworkInferenceLoss,
 		networkInferenceLoss,
 		entropyInference,
 		entropyForecasting,
-		sigmoidA,
-		sigmoidB,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")

@@ -44,41 +44,42 @@ type OptionalParams struct {
 	MaxSerializedMsgLength          []int64                                           `protobuf:"varint,2,rep,packed,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"`
 	MinTopicWeight                  []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,3,rep,name=min_topic_weight,json=minTopicWeight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_topic_weight"`
 	MaxTopicsPerBlock               []uint64                                          `protobuf:"varint,4,rep,packed,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`
-	MaxMissingInferencePercent      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,5,rep,name=max_missing_inference_percent,json=maxMissingInferencePercent,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_missing_inference_percent"`
-	RequiredMinimumStake            []cosmossdk_io_math.Int                           `protobuf:"bytes,6,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Int" json:"required_minimum_stake"`
-	RemoveStakeDelayWindow          []int64                                           `protobuf:"varint,7,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
-	MinEpochLength                  []int64                                           `protobuf:"varint,8,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
-	BetaEntropy                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,9,rep,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
-	LearningRate                    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,rep,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
-	MaxGradientThreshold            []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,rep,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
-	MinStakeFraction                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,rep,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
-	Epsilon                         []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,rep,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
-	PInferenceSynthesis             []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,14,rep,name=p_inference_synthesis,json=pInferenceSynthesis,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_inference_synthesis"`
-	PRewardSpread                   []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,15,rep,name=p_reward_spread,json=pRewardSpread,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_spread"`
-	AlphaRegret                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,rep,name=alpha_regret,json=alphaRegret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"alpha_regret"`
-	MaxUnfulfilledWorkerRequests    []uint64                                          `protobuf:"varint,17,rep,packed,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
-	MaxUnfulfilledReputerRequests   []uint64                                          `protobuf:"varint,18,rep,packed,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
-	TopicRewardStakeImportance      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
-	TopicRewardFeeRevenueImportance []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,20,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_fee_revenue_importance"`
-	TopicRewardAlpha                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,21,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_alpha"`
-	TaskRewardAlpha                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,22,rep,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
-	ValidatorsVsAlloraPercentReward []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,23,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"validators_vs_allora_percent_reward"`
-	MaxSamplesToScaleScores         []uint64                                          `protobuf:"varint,24,rep,packed,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
-	MaxTopWorkersToReward           []uint64                                          `protobuf:"varint,25,rep,packed,name=max_top_workers_to_reward,json=maxTopWorkersToReward,proto3" json:"max_top_workers_to_reward,omitempty"`
-	MaxTopReputersToReward          []uint64                                          `protobuf:"varint,26,rep,packed,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`
-	CreateTopicFee                  []cosmossdk_io_math.Int                           `protobuf:"bytes,27,rep,name=create_topic_fee,json=createTopicFee,proto3,customtype=cosmossdk.io/math.Int" json:"create_topic_fee"`
-	SigmoidA                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,28,rep,name=sigmoid_a,json=sigmoidA,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_a"`
-	SigmoidB                        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,29,rep,name=sigmoid_b,json=sigmoidB,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"sigmoid_b"`
-	GradientDescentMaxIters         []uint64                                          `protobuf:"varint,30,rep,packed,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"`
-	MaxRetriesToFulfilNoncesWorker  []int64                                           `protobuf:"varint,31,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`
-	MaxRetriesToFulfilNoncesReputer []int64                                           `protobuf:"varint,32,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"`
-	TopicPageLimit                  []uint64                                          `protobuf:"varint,33,rep,packed,name=topic_page_limit,json=topicPageLimit,proto3" json:"topic_page_limit,omitempty"`
-	MaxTopicPages                   []uint64                                          `protobuf:"varint,34,rep,packed,name=max_topic_pages,json=maxTopicPages,proto3" json:"max_topic_pages,omitempty"`
-	RegistrationFee                 []cosmossdk_io_math.Int                           `protobuf:"bytes,35,rep,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
-	DefaultLimit                    []uint64                                          `protobuf:"varint,36,rep,packed,name=default_limit,json=defaultLimit,proto3" json:"default_limit,omitempty"`
-	MaxLimit                        []uint64                                          `protobuf:"varint,37,rep,packed,name=max_limit,json=maxLimit,proto3" json:"max_limit,omitempty"`
-	MinEpochLengthRecordLimit       []int64                                           `protobuf:"varint,38,rep,packed,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
-	BlocksPerMonth                  []uint64                                          `protobuf:"varint,39,rep,packed,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+	RequiredMinimumStake            []cosmossdk_io_math.Int                           `protobuf:"bytes,5,rep,name=required_minimum_stake,json=requiredMinimumStake,proto3,customtype=cosmossdk.io/math.Int" json:"required_minimum_stake"`
+	RemoveStakeDelayWindow          []int64                                           `protobuf:"varint,6,rep,packed,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`
+	MinEpochLength                  []int64                                           `protobuf:"varint,7,rep,packed,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`
+	BetaEntropy                     []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,8,rep,name=beta_entropy,json=betaEntropy,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"beta_entropy"`
+	LearningRate                    []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,9,rep,name=learning_rate,json=learningRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"learning_rate"`
+	MaxGradientThreshold            []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,rep,name=max_gradient_threshold,json=maxGradientThreshold,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"max_gradient_threshold"`
+	MinStakeFraction                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,rep,name=min_stake_fraction,json=minStakeFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"min_stake_fraction"`
+	Epsilon                         []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,rep,name=epsilon,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"epsilon"`
+	MaxUnfulfilledWorkerRequests    []uint64                                          `protobuf:"varint,13,rep,packed,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`
+	MaxUnfulfilledReputerRequests   []uint64                                          `protobuf:"varint,14,rep,packed,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`
+	TopicRewardStakeImportance      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,15,rep,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_stake_importance"`
+	TopicRewardFeeRevenueImportance []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,16,rep,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_fee_revenue_importance"`
+	TopicRewardAlpha                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,17,rep,name=topic_reward_alpha,json=topicRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_reward_alpha"`
+	TaskRewardAlpha                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,18,rep,name=task_reward_alpha,json=taskRewardAlpha,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"task_reward_alpha"`
+	ValidatorsVsAlloraPercentReward []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,19,rep,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"validators_vs_allora_percent_reward"`
+	MaxSamplesToScaleScores         []uint64                                          `protobuf:"varint,20,rep,packed,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`
+	MaxTopInferersToReward          []uint64                                          `protobuf:"varint,21,rep,packed,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`
+	MaxTopForecastersToReward       []uint64                                          `protobuf:"varint,22,rep,packed,name=max_top_forecasters_to_reward,json=maxTopForecastersToReward,proto3" json:"max_top_forecasters_to_reward,omitempty"`
+	MaxTopReputersToReward          []uint64                                          `protobuf:"varint,23,rep,packed,name=max_top_reputers_to_reward,json=maxTopReputersToReward,proto3" json:"max_top_reputers_to_reward,omitempty"`
+	CreateTopicFee                  []cosmossdk_io_math.Int                           `protobuf:"bytes,24,rep,name=create_topic_fee,json=createTopicFee,proto3,customtype=cosmossdk.io/math.Int" json:"create_topic_fee"`
+	GradientDescentMaxIters         []uint64                                          `protobuf:"varint,25,rep,packed,name=gradient_descent_max_iters,json=gradientDescentMaxIters,proto3" json:"gradient_descent_max_iters,omitempty"`
+	MaxRetriesToFulfilNoncesWorker  []int64                                           `protobuf:"varint,26,rep,packed,name=max_retries_to_fulfil_nonces_worker,json=maxRetriesToFulfilNoncesWorker,proto3" json:"max_retries_to_fulfil_nonces_worker,omitempty"`
+	MaxRetriesToFulfilNoncesReputer []int64                                           `protobuf:"varint,27,rep,packed,name=max_retries_to_fulfil_nonces_reputer,json=maxRetriesToFulfilNoncesReputer,proto3" json:"max_retries_to_fulfil_nonces_reputer,omitempty"`
+	RegistrationFee                 []cosmossdk_io_math.Int                           `protobuf:"bytes,28,rep,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Int" json:"registration_fee"`
+	DefaultPageLimit                []uint64                                          `protobuf:"varint,29,rep,packed,name=default_page_limit,json=defaultPageLimit,proto3" json:"default_page_limit,omitempty"`
+	MaxPageLimit                    []uint64                                          `protobuf:"varint,30,rep,packed,name=max_page_limit,json=maxPageLimit,proto3" json:"max_page_limit,omitempty"`
+	MinEpochLengthRecordLimit       []int64                                           `protobuf:"varint,31,rep,packed,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
+	BlocksPerMonth                  []uint64                                          `protobuf:"varint,32,rep,packed,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+	PRewardInference                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,33,rep,name=p_reward_inference,json=pRewardInference,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_inference"`
+	PRewardForecast                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,34,rep,name=p_reward_forecast,json=pRewardForecast,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_forecast"`
+	PRewardReputer                  []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,35,rep,name=p_reward_reputer,json=pRewardReputer,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_reward_reputer"`
+	CRewardInference                []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,36,rep,name=c_reward_inference,json=cRewardInference,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_reward_inference"`
+	CRewardForecast                 []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,37,rep,name=c_reward_forecast,json=cRewardForecast,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_reward_forecast"`
+	FTolerance                      []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,38,rep,name=f_tolerance,json=fTolerance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"f_tolerance"`
+	CNorm                           []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,39,rep,name=c_norm,json=cNorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"c_norm"`
+	TopicFeeRevenueDecayRate        []github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,40,rep,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"topic_fee_revenue_decay_rate"`
 }
 
 func (m *OptionalParams) Reset()         { *m = OptionalParams{} }
@@ -170,9 +171,16 @@ func (m *OptionalParams) GetMaxSamplesToScaleScores() []uint64 {
 	return nil
 }
 
-func (m *OptionalParams) GetMaxTopWorkersToReward() []uint64 {
+func (m *OptionalParams) GetMaxTopInferersToReward() []uint64 {
 	if m != nil {
-		return m.MaxTopWorkersToReward
+		return m.MaxTopInferersToReward
+	}
+	return nil
+}
+
+func (m *OptionalParams) GetMaxTopForecastersToReward() []uint64 {
+	if m != nil {
+		return m.MaxTopForecastersToReward
 	}
 	return nil
 }
@@ -205,30 +213,16 @@ func (m *OptionalParams) GetMaxRetriesToFulfilNoncesReputer() []int64 {
 	return nil
 }
 
-func (m *OptionalParams) GetTopicPageLimit() []uint64 {
+func (m *OptionalParams) GetDefaultPageLimit() []uint64 {
 	if m != nil {
-		return m.TopicPageLimit
+		return m.DefaultPageLimit
 	}
 	return nil
 }
 
-func (m *OptionalParams) GetMaxTopicPages() []uint64 {
+func (m *OptionalParams) GetMaxPageLimit() []uint64 {
 	if m != nil {
-		return m.MaxTopicPages
-	}
-	return nil
-}
-
-func (m *OptionalParams) GetDefaultLimit() []uint64 {
-	if m != nil {
-		return m.DefaultLimit
-	}
-	return nil
-}
-
-func (m *OptionalParams) GetMaxLimit() []uint64 {
-	if m != nil {
-		return m.MaxLimit
+		return m.MaxPageLimit
 	}
 	return nil
 }
@@ -337,22 +331,18 @@ var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
 type MsgCreateNewTopic struct {
 	// creator is the message sender.
-	Creator          string                                          `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Metadata         string                                          `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	LossLogic        string                                          `protobuf:"bytes,3,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
-	LossMethod       string                                          `protobuf:"bytes,4,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
-	InferenceLogic   string                                          `protobuf:"bytes,5,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
-	InferenceMethod  string                                          `protobuf:"bytes,6,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
-	EpochLength      int64                                           `protobuf:"varint,7,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	GroundTruthLag   int64                                           `protobuf:"varint,8,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
-	DefaultArg       string                                          `protobuf:"bytes,9,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
-	Pnorm            uint64                                          `protobuf:"varint,10,opt,name=pnorm,proto3" json:"pnorm,omitempty"`
-	AlphaRegret      github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,opt,name=alpha_regret,json=alphaRegret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"alpha_regret"`
-	PrewardReputer   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,12,opt,name=preward_reputer,json=prewardReputer,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"preward_reputer"`
-	PrewardInference github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,13,opt,name=preward_inference,json=prewardInference,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"preward_inference"`
-	PrewardForecast  github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,14,opt,name=preward_forecast,json=prewardForecast,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"preward_forecast"`
-	FTolerance       github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,15,opt,name=f_tolerance,json=fTolerance,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"f_tolerance"`
-	AllowNegative    bool                                            `protobuf:"varint,16,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
+	Creator         string                                          `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Metadata        string                                          `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	LossLogic       string                                          `protobuf:"bytes,3,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
+	LossMethod      string                                          `protobuf:"bytes,4,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	InferenceLogic  string                                          `protobuf:"bytes,5,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
+	InferenceMethod string                                          `protobuf:"bytes,6,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
+	EpochLength     int64                                           `protobuf:"varint,7,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	GroundTruthLag  int64                                           `protobuf:"varint,8,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
+	DefaultArg      string                                          `protobuf:"bytes,9,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
+	PNorm           github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,10,opt,name=p_norm,json=pNorm,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"p_norm"`
+	AlphaRegret     github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,11,opt,name=alpha_regret,json=alphaRegret,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"alpha_regret"`
+	AllowNegative   bool                                            `protobuf:"varint,12,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
 }
 
 func (m *MsgCreateNewTopic) Reset()         { *m = MsgCreateNewTopic{} }
@@ -449,13 +439,6 @@ func (m *MsgCreateNewTopic) GetDefaultArg() string {
 		return m.DefaultArg
 	}
 	return ""
-}
-
-func (m *MsgCreateNewTopic) GetPnorm() uint64 {
-	if m != nil {
-		return m.Pnorm
-	}
-	return 0
 }
 
 func (m *MsgCreateNewTopic) GetAllowNegative() bool {
@@ -1521,7 +1504,8 @@ func (m *MsgConfirmRemoveDelegateStakeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgConfirmRemoveDelegateStakeResponse proto.InternalMessageInfo
 
-// Inferences are requested by consumers who fund topics by sending ALLO to ecosystem account via TopicFund messages
+// Inferences are requested by consumers who fund topics by sending ALLO to
+// ecosystem account via TopicFund messages
 type MsgFundTopic struct {
 	Sender  string                `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	TopicId uint64                `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
@@ -1922,161 +1906,158 @@ func init() {
 func init() { proto.RegisterFile("emissions/v1/tx.proto", fileDescriptor_8293ea1b0f4b608c) }
 
 var fileDescriptor_8293ea1b0f4b608c = []byte{
-	// 2463 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x5a, 0xc9, 0x6f, 0x1c, 0xc7,
-	0xd5, 0xd7, 0x88, 0xeb, 0x3c, 0x0e, 0xb7, 0xe6, 0xa2, 0x66, 0xcb, 0x1c, 0x8e, 0x48, 0xc9, 0x1a,
-	0xf9, 0xfb, 0x4c, 0x5a, 0x72, 0x90, 0x38, 0x4a, 0x0e, 0x21, 0x2d, 0xd1, 0x26, 0xa4, 0x51, 0x98,
-	0x26, 0x65, 0x06, 0x8a, 0x81, 0x76, 0x71, 0xba, 0xa6, 0xa7, 0xc1, 0xee, 0xae, 0x4e, 0x55, 0x0d,
-	0x17, 0x1d, 0x82, 0x20, 0x40, 0x2e, 0x39, 0xe5, 0x96, 0xdc, 0x72, 0x4d, 0x6e, 0x3e, 0x04, 0xb9,
-	0xe7, 0x14, 0x1f, 0x8d, 0x5c, 0x12, 0xe4, 0x60, 0x04, 0x12, 0x02, 0xff, 0x0b, 0x39, 0x06, 0xb5,
-	0x74, 0x4f, 0xf7, 0x6c, 0x22, 0x34, 0x32, 0xe0, 0x8b, 0xa0, 0x7a, 0xef, 0x57, 0xbf, 0xb7, 0x56,
-	0xd5, 0xeb, 0x01, 0x61, 0x09, 0x87, 0x3e, 0x63, 0x3e, 0x89, 0xd8, 0xd6, 0xe9, 0xdd, 0x2d, 0x7e,
-	0xbe, 0x19, 0x53, 0xc2, 0x89, 0x51, 0x4a, 0xc5, 0x9b, 0xa7, 0x77, 0xad, 0x6b, 0x75, 0xc2, 0x42,
-	0xc2, 0xb6, 0x42, 0xe6, 0x09, 0x54, 0xc8, 0x3c, 0x05, 0xb3, 0x16, 0x3d, 0xe2, 0x11, 0xf9, 0xdf,
-	0x2d, 0xf1, 0x3f, 0x2d, 0x9d, 0x47, 0xa1, 0x1f, 0x91, 0x2d, 0xf9, 0xaf, 0x16, 0x99, 0x79, 0x33,
-	0x17, 0x31, 0x66, 0x5a, 0xb3, 0xa2, 0xb8, 0x1d, 0xc5, 0xa2, 0x16, 0x3d, 0x37, 0x45, 0x24, 0xaa,
-	0x63, 0xad, 0xb1, 0x72, 0x1a, 0x8a, 0xe3, 0x16, 0xc7, 0x34, 0x21, 0xcc, 0xe9, 0xce, 0x08, 0x3d,
-	0x49, 0x54, 0xeb, 0x7f, 0x32, 0x61, 0xe6, 0xc7, 0x31, 0xf7, 0x49, 0x84, 0x82, 0x7d, 0x44, 0x51,
-	0xc8, 0x0c, 0x13, 0x26, 0x4e, 0x31, 0x15, 0x70, 0xb3, 0x50, 0x19, 0xa9, 0x16, 0xed, 0x64, 0x69,
-	0x7c, 0x1f, 0x56, 0x42, 0x74, 0xee, 0x30, 0x4c, 0x7d, 0x14, 0xf8, 0xcf, 0xb1, 0xeb, 0x84, 0xcc,
-	0x73, 0x02, 0x1c, 0x79, 0xbc, 0x69, 0x5e, 0xad, 0x8c, 0x54, 0x47, 0xec, 0xe5, 0x10, 0x9d, 0x1f,
-	0xa4, 0xfa, 0x1a, 0xf3, 0x1e, 0x4b, 0xad, 0x81, 0x60, 0x2e, 0xf4, 0x23, 0x87, 0x93, 0xd8, 0xaf,
-	0x3b, 0x67, 0xd8, 0xf7, 0x9a, 0xdc, 0x1c, 0x11, 0xec, 0x3b, 0xdf, 0xfb, 0xe2, 0xab, 0xb5, 0x2b,
-	0xff, 0xfa, 0x6a, 0x6d, 0xcb, 0xf3, 0x79, 0xb3, 0x75, 0xbc, 0x59, 0x27, 0xe1, 0x16, 0x0a, 0x02,
-	0x42, 0xd1, 0xbb, 0x11, 0xe6, 0xc2, 0xd9, 0x64, 0x59, 0x6f, 0x22, 0x3f, 0xda, 0x0a, 0x11, 0x6f,
-	0x6e, 0x3e, 0xc0, 0x75, 0x7b, 0x26, 0xf4, 0xa3, 0x43, 0xc1, 0x77, 0x24, 0xe9, 0x8c, 0x2d, 0x58,
-	0x14, 0xde, 0x49, 0x13, 0xcc, 0x89, 0x31, 0x75, 0x8e, 0x03, 0x52, 0x3f, 0x31, 0x47, 0x2b, 0x23,
-	0xd5, 0x51, 0x7b, 0x3e, 0x44, 0xe7, 0x12, 0xcd, 0xf6, 0x31, 0xdd, 0x11, 0x0a, 0xe3, 0x39, 0xac,
-	0x8a, 0x0d, 0x32, 0x37, 0x91, 0xe7, 0xf8, 0x51, 0x03, 0x53, 0x1c, 0xd5, 0xb1, 0xd8, 0x5b, 0xc7,
-	0x11, 0x37, 0xc7, 0x86, 0x73, 0xd0, 0x0a, 0xd1, 0x79, 0x4d, 0x91, 0xef, 0x25, 0xdc, 0xfb, 0x8a,
-	0xda, 0x68, 0xc0, 0x32, 0xc5, 0x3f, 0x6f, 0xf9, 0x54, 0x24, 0xd1, 0x8f, 0xfc, 0xb0, 0x15, 0x3a,
-	0x8c, 0xa3, 0x13, 0x6c, 0x8e, 0x4b, 0xa3, 0xef, 0x69, 0xa3, 0x4b, 0xaa, 0xfc, 0xcc, 0x3d, 0xd9,
-	0xf4, 0x89, 0xa2, 0xde, 0x8b, 0xf8, 0xdf, 0xff, 0xfc, 0x2e, 0xe8, 0xbe, 0xd8, 0x8b, 0xf8, 0x1f,
-	0xbf, 0xfe, 0xfc, 0x9d, 0x82, 0xbd, 0x98, 0xf0, 0xd5, 0x14, 0xdd, 0x81, 0x60, 0x13, 0x25, 0xa3,
-	0x38, 0x24, 0xa7, 0x58, 0xb1, 0x3b, 0x2e, 0x0e, 0xd0, 0x85, 0x73, 0xe6, 0x47, 0x2e, 0x39, 0x33,
-	0x27, 0x54, 0xc9, 0x14, 0x40, 0xe2, 0x1f, 0x08, 0xf5, 0x91, 0xd4, 0x1a, 0x55, 0x55, 0x32, 0x1c,
-	0x93, 0x7a, 0x33, 0x29, 0xf2, 0xa4, 0xdc, 0x21, 0x32, 0xff, 0x50, 0x88, 0x75, 0x71, 0x9f, 0x41,
-	0xe9, 0x18, 0x73, 0xe4, 0xe0, 0x88, 0x53, 0x12, 0x5f, 0x98, 0xc5, 0xe1, 0xf2, 0x36, 0x25, 0xc8,
-	0x1e, 0x2a, 0x2e, 0xe3, 0x53, 0x98, 0x0e, 0x30, 0xa2, 0x91, 0xa8, 0x10, 0x45, 0x1c, 0x9b, 0x30,
-	0x1c, 0x79, 0x29, 0x61, 0xb3, 0x11, 0xc7, 0x46, 0x08, 0xa2, 0x61, 0x1d, 0x8f, 0x22, 0xd7, 0xc7,
-	0x11, 0x77, 0x78, 0x93, 0x62, 0xd6, 0x24, 0x81, 0x6b, 0x4e, 0x0d, 0x67, 0x46, 0xb4, 0xe2, 0x47,
-	0x9a, 0xf5, 0x30, 0x21, 0x35, 0x30, 0x18, 0x22, 0xa5, 0xaa, 0x14, 0x0d, 0x8a, 0xea, 0xe2, 0xe0,
-	0x99, 0xa5, 0xe1, 0x4c, 0x89, 0x2a, 0xc9, 0xe2, 0xed, 0x6a, 0x42, 0xe3, 0x27, 0x30, 0x81, 0x63,
-	0xe6, 0x07, 0x24, 0x32, 0xa7, 0x87, 0xe3, 0x4e, 0x78, 0x8c, 0x13, 0x58, 0x8a, 0x33, 0x27, 0x84,
-	0x5d, 0x44, 0xbc, 0x89, 0x99, 0xcf, 0xcc, 0x99, 0xe1, 0x0c, 0x2c, 0xc4, 0xe9, 0xd1, 0x38, 0x48,
-	0x38, 0x0d, 0x07, 0x66, 0x63, 0x87, 0xe2, 0x33, 0x44, 0x5d, 0x87, 0xc5, 0x14, 0x23, 0xd7, 0x9c,
-	0x1d, 0xce, 0xcc, 0x74, 0x6c, 0x4b, 0xba, 0x03, 0xc9, 0x26, 0x1a, 0x16, 0x05, 0x71, 0x13, 0x39,
-	0x14, 0x7b, 0x14, 0x73, 0x73, 0x6e, 0xc8, 0x86, 0x95, 0x64, 0xb6, 0xe4, 0x32, 0x1e, 0xc2, 0x9a,
-	0x68, 0xa9, 0x56, 0xd4, 0x68, 0x05, 0x0d, 0x3f, 0x08, 0xb0, 0xeb, 0xa8, 0x1b, 0xd7, 0x11, 0x07,
-	0x14, 0x33, 0xce, 0xcc, 0x79, 0x79, 0x23, 0xbd, 0x15, 0xa2, 0xf3, 0xa7, 0x6d, 0xd4, 0x91, 0x04,
-	0xd9, 0x1a, 0x63, 0x7c, 0x04, 0x95, 0x4e, 0x1a, 0x7d, 0xa9, 0xb7, 0x79, 0x0c, 0xc9, 0xb3, 0x9a,
-	0xe7, 0xb1, 0x15, 0x2a, 0x25, 0x7a, 0x0e, 0xab, 0xea, 0xd6, 0x4d, 0x12, 0x2a, 0x9b, 0xcf, 0x0f,
-	0x63, 0x42, 0x39, 0x8a, 0xea, 0xd8, 0x5c, 0x18, 0xf2, 0x96, 0x93, 0xec, 0x3a, 0xbd, 0x82, 0x7b,
-	0x2f, 0xa5, 0x36, 0x7e, 0x5d, 0x80, 0x8d, 0x9c, 0xf1, 0x06, 0xc6, 0x0e, 0xc5, 0xa7, 0x38, 0x6a,
-	0xe5, 0x5c, 0x58, 0x1c, 0xce, 0x85, 0xb5, 0x8c, 0x0b, 0xbb, 0x18, 0xdb, 0xca, 0x40, 0xc6, 0x0f,
-	0x0c, 0x46, 0xce, 0x0d, 0x59, 0x2f, 0x73, 0x69, 0xc8, 0x73, 0x97, 0xb1, 0xba, 0x2d, 0x08, 0x8d,
-	0x3a, 0xcc, 0x73, 0xc4, 0x4e, 0xf2, 0x56, 0x96, 0x87, 0xb3, 0x32, 0x2b, 0x18, 0xb3, 0x46, 0x44,
-	0x4e, 0x4f, 0x51, 0xe0, 0xbb, 0x88, 0x13, 0xca, 0x9c, 0x53, 0xe6, 0xa8, 0x8d, 0xc9, 0xab, 0xa5,
-	0xad, 0x9b, 0xd7, 0x86, 0xcc, 0x69, 0xdb, 0xc6, 0x27, 0x6c, 0x5b, 0x42, 0xf4, 0xdb, 0xa5, 0x9c,
-	0x31, 0x7e, 0x08, 0xd7, 0xe5, 0x30, 0x80, 0xc2, 0x38, 0xc0, 0xcc, 0xe1, 0xc4, 0x61, 0x75, 0x14,
-	0x60, 0x87, 0xd5, 0x09, 0xc5, 0xcc, 0x34, 0x65, 0x6f, 0x5e, 0x13, 0xe3, 0x80, 0x42, 0x1c, 0x92,
-	0x03, 0xa1, 0x3f, 0x90, 0x6a, 0xe3, 0x03, 0x35, 0x4a, 0x70, 0x12, 0xeb, 0xd3, 0x21, 0x19, 0xb4,
-	0xeb, 0x2b, 0x72, 0xef, 0x92, 0x7a, 0xb1, 0xd5, 0xb9, 0x60, 0x87, 0x44, 0xdb, 0xbd, 0x0f, 0x56,
-	0xb2, 0x53, 0x1f, 0x88, 0xec, 0x56, 0x4b, 0x6e, 0x5d, 0x56, 0x5b, 0xf5, 0x51, 0x68, 0xef, 0x7d,
-	0x06, 0x73, 0x75, 0x8a, 0x11, 0xc7, 0x7a, 0x10, 0x69, 0x60, 0x6c, 0x5e, 0x7f, 0xcd, 0xf7, 0x76,
-	0x46, 0x31, 0xc9, 0x99, 0x62, 0x17, 0x63, 0xe3, 0x10, 0x8a, 0xcc, 0xf7, 0x42, 0xe2, 0xbb, 0x0e,
-	0x32, 0xdf, 0x1a, 0x2e, 0xf9, 0x93, 0x9a, 0x69, 0x3b, 0xcb, 0x7a, 0x6c, 0xae, 0xbe, 0x19, 0xd6,
-	0x1d, 0xe3, 0x07, 0x60, 0xa5, 0x4f, 0x9e, 0x8b, 0x99, 0x6c, 0x1b, 0x91, 0x54, 0x5f, 0x64, 0xcb,
-	0x2c, 0xab, 0xd2, 0x25, 0x88, 0x07, 0x0a, 0x50, 0x43, 0xe7, 0x7b, 0x42, 0x6d, 0x3c, 0x82, 0x0d,
-	0x81, 0xa5, 0x98, 0x53, 0x5f, 0x15, 0x5e, 0xdd, 0x3d, 0x8e, 0x1c, 0x47, 0x99, 0xae, 0xa7, 0xb9,
-	0x26, 0x47, 0x85, 0x72, 0x88, 0xce, 0x6d, 0x85, 0x3c, 0x24, 0xbb, 0x12, 0xf7, 0x44, 0xc2, 0x54,
-	0x59, 0x8d, 0x1a, 0xdc, 0x1c, 0x48, 0xa6, 0x4b, 0x6c, 0x56, 0x24, 0xdb, 0x5a, 0x3f, 0x36, 0x5d,
-	0x69, 0x31, 0xb3, 0xa8, 0xca, 0xc6, 0xc8, 0xc3, 0x4e, 0xe0, 0x87, 0x3e, 0x37, 0x6f, 0xc8, 0x70,
-	0x66, 0xa4, 0x7c, 0x1f, 0x79, 0xf8, 0xb1, 0x90, 0x1a, 0x6f, 0xc3, 0x6c, 0x3a, 0x2d, 0x4a, 0x34,
-	0x33, 0xd7, 0x25, 0x70, 0x3a, 0x19, 0x14, 0x05, 0x96, 0x19, 0x3f, 0x83, 0x39, 0x8a, 0x3d, 0x9f,
-	0x71, 0x8a, 0xc4, 0xdb, 0x2a, 0x5b, 0x66, 0xe3, 0x35, 0x5b, 0x66, 0x36, 0xcb, 0x24, 0x7a, 0x66,
-	0x03, 0xa6, 0x5d, 0xdc, 0x40, 0xad, 0x80, 0x6b, 0x5f, 0x6f, 0x4a, 0x17, 0x4a, 0x5a, 0xa8, 0x3c,
-	0xbd, 0x0e, 0x45, 0xe1, 0xa9, 0x02, 0xdc, 0x92, 0x80, 0xc9, 0x10, 0x9d, 0x2b, 0xe5, 0x8f, 0x60,
-	0xb5, 0x73, 0x48, 0x73, 0x28, 0xae, 0x13, 0xea, 0xea, 0x0d, 0x6f, 0xcb, 0xc4, 0xad, 0xe4, 0x27,
-	0x36, 0x5b, 0x22, 0x14, 0x43, 0x15, 0xe6, 0xe4, 0x9c, 0xac, 0x46, 0xe6, 0x90, 0x44, 0xbc, 0x69,
-	0xde, 0x56, 0x29, 0x53, 0xf2, 0x7d, 0x4c, 0x6b, 0x42, 0xba, 0x1e, 0xc0, 0x6c, 0x8d, 0x79, 0x4f,
-	0x63, 0x17, 0x71, 0xac, 0xbf, 0x15, 0x96, 0x61, 0x9c, 0xe1, 0xc8, 0xc5, 0xd4, 0x2c, 0x54, 0x0a,
-	0xd5, 0xa2, 0xad, 0x57, 0xc6, 0x77, 0x60, 0x3c, 0x96, 0x08, 0xf3, 0x6a, 0xa5, 0x50, 0x9d, 0xba,
-	0xf7, 0xd6, 0x66, 0xf6, 0xeb, 0x69, 0x33, 0xff, 0xc5, 0x61, 0x6b, 0xec, 0xfd, 0xa9, 0x5f, 0x7d,
-	0xfd, 0xf9, 0x3b, 0x9a, 0x62, 0x7d, 0x05, 0xae, 0x75, 0x58, 0xb3, 0x31, 0x8b, 0x49, 0xc4, 0xf0,
-	0xfa, 0x7f, 0xc7, 0x61, 0xbe, 0xc6, 0xbc, 0x0f, 0xe5, 0x01, 0x7c, 0x82, 0xcf, 0x64, 0xb9, 0xc4,
-	0x77, 0x8b, 0x3c, 0x92, 0x24, 0x71, 0x26, 0x59, 0x1a, 0x16, 0x4c, 0x86, 0x98, 0x23, 0x17, 0x71,
-	0x24, 0xfd, 0x29, 0xda, 0xe9, 0xda, 0x58, 0x05, 0x08, 0x08, 0x63, 0x4e, 0x40, 0x3c, 0xbf, 0x6e,
-	0x8e, 0x48, 0x6d, 0x51, 0x48, 0x1e, 0x0b, 0x81, 0xb1, 0x06, 0x53, 0x52, 0x1d, 0x62, 0xde, 0x24,
-	0xae, 0x39, 0x2a, 0xf5, 0x72, 0x47, 0x4d, 0x4a, 0x8c, 0xdb, 0x30, 0xdb, 0x1e, 0x8b, 0x14, 0xc9,
-	0x98, 0x04, 0xcd, 0xa4, 0x62, 0xc5, 0x74, 0x07, 0xe6, 0xda, 0x40, 0x4d, 0x37, 0x2e, 0x91, 0x6d,
-	0x02, 0xcd, 0x79, 0x03, 0x4a, 0xb9, 0xa9, 0x7b, 0xa2, 0x52, 0xa8, 0x8e, 0xd8, 0x53, 0x38, 0x33,
-	0x72, 0x57, 0x61, 0xce, 0xa3, 0xa4, 0x15, 0xb9, 0x0e, 0xa7, 0x2d, 0xde, 0x74, 0x02, 0xe4, 0x99,
-	0x93, 0x12, 0x36, 0xa3, 0xe4, 0x87, 0x42, 0xfc, 0x18, 0x79, 0x22, 0x82, 0xa4, 0xc7, 0x10, 0xf5,
-	0xcc, 0xa2, 0x8a, 0x40, 0x8b, 0xb6, 0xa9, 0x67, 0x2c, 0xc2, 0x58, 0x1c, 0x11, 0x1a, 0x9a, 0x50,
-	0x29, 0x54, 0x47, 0x6d, 0xb5, 0xe8, 0x1a, 0x91, 0xa6, 0xc4, 0xbe, 0x37, 0x34, 0x22, 0x7d, 0x06,
-	0xb3, 0xb1, 0x7e, 0x23, 0x93, 0xf3, 0x5d, 0x1a, 0x8e, 0x7e, 0x46, 0xf3, 0x25, 0xf7, 0x80, 0x0b,
-	0xf3, 0x89, 0x85, 0x34, 0xb9, 0xe6, 0xf4, 0x70, 0x36, 0xe6, 0x34, 0x63, 0x3a, 0xb0, 0x1a, 0xc7,
-	0x90, 0xc8, 0x9c, 0x06, 0xa1, 0xb8, 0x8e, 0x18, 0x37, 0x67, 0x86, 0x33, 0x92, 0x24, 0x66, 0x57,
-	0xf3, 0x19, 0x3f, 0x85, 0xa9, 0x86, 0xc3, 0x49, 0x80, 0xa9, 0x9c, 0x94, 0x66, 0x87, 0xa3, 0x87,
-	0xc6, 0x61, 0x42, 0x65, 0xdc, 0x82, 0x19, 0x01, 0x3a, 0x73, 0x22, 0xec, 0x21, 0xee, 0x9f, 0x62,
-	0x73, 0xae, 0x52, 0xa8, 0x4e, 0xda, 0xd3, 0x52, 0xfa, 0x44, 0x0b, 0xef, 0x97, 0xc4, 0xa1, 0x4c,
-	0x8e, 0xd2, 0xfa, 0x77, 0x61, 0xa5, 0xeb, 0xe4, 0x25, 0xe7, 0xd2, 0x58, 0x81, 0x49, 0x75, 0x9f,
-	0xfa, 0xae, 0x3c, 0x82, 0xa3, 0xf6, 0x84, 0x5c, 0xef, 0xb9, 0xeb, 0xbf, 0xb9, 0x0a, 0xd7, 0x6b,
-	0xcc, 0xdb, 0x8b, 0x18, 0xa6, 0x7c, 0xa7, 0x15, 0x9c, 0xe8, 0x4a, 0xed, 0xa3, 0x8b, 0x80, 0x20,
-	0xb7, 0xef, 0x45, 0xf2, 0x14, 0x96, 0x3a, 0xc6, 0x5e, 0xf5, 0x32, 0xe8, 0x7b, 0xe5, 0x46, 0xfe,
-	0x5e, 0xc9, 0xcf, 0xbe, 0xf2, 0x69, 0xb0, 0x17, 0x68, 0xb7, 0x30, 0xe7, 0xe9, 0x48, 0xce, 0x53,
-	0xe3, 0xb0, 0x6d, 0xf1, 0x14, 0x05, 0x2d, 0xec, 0x1c, 0xb7, 0x22, 0x37, 0xc0, 0x4c, 0xfe, 0x8e,
-	0x30, 0x75, 0xaf, 0xd2, 0xd3, 0xe2, 0x27, 0x02, 0xb9, 0x23, 0x81, 0xa9, 0xc1, 0x8c, 0xac, 0xe3,
-	0x6a, 0xbb, 0x05, 0x1b, 0x03, 0x72, 0x91, 0x5e, 0x73, 0xff, 0x28, 0x80, 0x95, 0xc3, 0xa9, 0x37,
-	0xf3, 0x55, 0x29, 0xbb, 0x03, 0x63, 0xd9, 0x14, 0x2d, 0xe4, 0x1d, 0x56, 0x49, 0x51, 0x88, 0x41,
-	0x69, 0x78, 0x02, 0x0b, 0xfa, 0xb3, 0x45, 0x5c, 0x93, 0x1d, 0x49, 0x28, 0xe7, 0x39, 0x95, 0x5f,
-	0x0f, 0x10, 0x47, 0x3a, 0x05, 0xf3, 0x67, 0x1d, 0x92, 0x8e, 0x04, 0xdc, 0x84, 0xf5, 0xfe, 0x81,
-	0xa5, 0xf1, 0xff, 0xad, 0x00, 0x53, 0x35, 0xe6, 0xd9, 0xf2, 0xd1, 0xc4, 0xb4, 0x6f, 0xc0, 0x65,
-	0x98, 0x0a, 0xfc, 0x63, 0x27, 0xbe, 0x17, 0x3b, 0x27, 0xf8, 0x42, 0xdf, 0xf0, 0xc5, 0xc0, 0x3f,
-	0xde, 0xbf, 0x17, 0x3f, 0xc2, 0x17, 0xe2, 0x95, 0x0d, 0x5b, 0x01, 0xf7, 0x1d, 0xe4, 0xba, 0x14,
-	0x33, 0xa6, 0x6f, 0xf9, 0x92, 0x14, 0x6e, 0x2b, 0x59, 0x2e, 0x15, 0xa3, 0xf9, 0x54, 0x2c, 0xc2,
-	0x18, 0x39, 0x8b, 0x30, 0xd5, 0x17, 0xbb, 0x5a, 0x88, 0x87, 0xc3, 0x6f, 0xcf, 0x27, 0xe3, 0xf2,
-	0xe8, 0x14, 0xfd, 0x64, 0x12, 0xc9, 0xc7, 0xbb, 0x07, 0x0b, 0x99, 0x40, 0xd2, 0xf3, 0x62, 0xc2,
-	0x04, 0x6b, 0xd5, 0xeb, 0xc2, 0xa5, 0x82, 0xdc, 0x9f, 0x2c, 0x85, 0x26, 0xc4, 0x8c, 0x21, 0x0f,
-	0xeb, 0x70, 0x92, 0xe5, 0xfa, 0x29, 0x2c, 0x49, 0xaa, 0x90, 0x9c, 0x62, 0x3b, 0x33, 0x4e, 0xf4,
-	0xcd, 0x4e, 0x36, 0xb0, 0xab, 0xf9, 0xc0, 0xf2, 0x21, 0x8c, 0x0c, 0x0c, 0xe1, 0x00, 0x56, 0x7b,
-	0xda, 0x1d, 0x2a, 0x98, 0xdf, 0xa9, 0x0a, 0x6f, 0xbb, 0xea, 0xcb, 0xf1, 0x75, 0x62, 0xf8, 0x18,
-	0xc6, 0x51, 0x48, 0x5a, 0x11, 0x57, 0x55, 0x7d, 0x8d, 0xa9, 0x4c, 0xef, 0xcf, 0x87, 0xbb, 0x24,
-	0x2b, 0x96, 0x38, 0x96, 0xb6, 0xe4, 0x1f, 0x0a, 0x52, 0x7e, 0xc0, 0x11, 0xe5, 0x76, 0xfb, 0x67,
-	0xb3, 0x6f, 0x91, 0xe3, 0xab, 0xf2, 0x9e, 0xed, 0x74, 0x30, 0x0d, 0xe0, 0x48, 0xb6, 0xcf, 0x87,
-	0x24, 0x6a, 0xf8, 0x34, 0x1c, 0x2e, 0x82, 0xbc, 0xdd, 0x35, 0xd9, 0x1f, 0xdd, 0xc4, 0xa9, 0xe5,
-	0xbf, 0x14, 0x60, 0xae, 0xc6, 0xbc, 0x07, 0x38, 0x10, 0x2f, 0xcb, 0xeb, 0xe7, 0xcd, 0x84, 0x89,
-	0x6c, 0xc7, 0x16, 0xed, 0x64, 0x99, 0xc9, 0xe8, 0xe8, 0x9b, 0xcc, 0xa8, 0x05, 0x66, 0xa7, 0xdf,
-	0x69, 0x50, 0x7f, 0x2d, 0x74, 0xa6, 0xfb, 0x72, 0xf1, 0x65, 0x82, 0xb8, 0x9a, 0x0f, 0x62, 0xc0,
-	0x95, 0xfc, 0x0d, 0xc5, 0xa7, 0x5e, 0xa3, 0x7e, 0x21, 0xa4, 0xa1, 0x5e, 0x64, 0x0b, 0x9c, 0x40,
-	0x86, 0x3c, 0x03, 0x7d, 0x6b, 0x99, 0xf7, 0xf0, 0x36, 0xdc, 0xea, 0xec, 0xad, 0xde, 0x3e, 0xfe,
-	0xbe, 0x00, 0xa5, 0x1a, 0xf3, 0x76, 0xc5, 0xfc, 0x2b, 0xbf, 0x09, 0xbe, 0x3d, 0xe7, 0x72, 0x19,
-	0x16, 0xb3, 0x9e, 0x65, 0x0e, 0xe4, 0xb2, 0xba, 0x68, 0x0e, 0xc9, 0x51, 0xd3, 0xe7, 0x38, 0xf0,
-	0x19, 0xdf, 0x76, 0x43, 0x3f, 0x1a, 0xd4, 0x3b, 0xc9, 0x43, 0xa6, 0x7b, 0x47, 0x2f, 0xf3, 0x06,
-	0x2b, 0x50, 0xee, 0x4d, 0x9c, 0x9a, 0xfe, 0x54, 0xf6, 0xae, 0xca, 0xe7, 0x2e, 0x25, 0xe1, 0x9b,
-	0xb5, 0xaf, 0xda, 0xaa, 0x1f, 0x7b, 0xea, 0x84, 0x72, 0x53, 0xfd, 0x3e, 0xd3, 0xbb, 0xa8, 0x54,
-	0x66, 0xa8, 0x07, 0xe2, 0x9b, 0xeb, 0xb8, 0x7b, 0xff, 0x29, 0xc1, 0x48, 0x8d, 0x79, 0xc6, 0x21,
-	0x94, 0x72, 0xdf, 0xbb, 0xab, 0xf9, 0xc1, 0xa7, 0xe3, 0x03, 0xd5, 0xba, 0x35, 0x50, 0x9d, 0x3e,
-	0x95, 0x2d, 0xb8, 0xd6, 0x6f, 0xa8, 0xab, 0x76, 0x31, 0xf4, 0x41, 0x5a, 0xef, 0x5d, 0x16, 0x99,
-	0x9a, 0x7d, 0x06, 0x33, 0x1d, 0x9f, 0xcc, 0x6b, 0x5d, 0x1c, 0x79, 0x80, 0x75, 0xfb, 0x15, 0x80,
-	0x94, 0xfb, 0x63, 0x98, 0x4c, 0xe7, 0xb4, 0x95, 0xae, 0x4d, 0x89, 0xca, 0xba, 0xd1, 0x57, 0x95,
-	0x32, 0x35, 0xc0, 0xe8, 0x31, 0xdd, 0x6c, 0xf4, 0xd8, 0xd8, 0x09, 0xb2, 0xfe, 0xef, 0x12, 0xa0,
-	0xd4, 0xce, 0x39, 0x98, 0x7d, 0xbf, 0x46, 0xee, 0x0c, 0xc8, 0x6d, 0x1e, 0x6a, 0xdd, 0xbd, 0x34,
-	0x34, 0x9b, 0xab, 0x74, 0xe2, 0xe9, 0xce, 0x55, 0xa2, 0xea, 0x91, 0xab, 0xce, 0x71, 0xc4, 0xf8,
-	0x0c, 0xe6, 0xba, 0x46, 0x91, 0xee, 0x6d, 0x9d, 0x10, 0xeb, 0xce, 0x2b, 0x21, 0xd9, 0x6a, 0xf4,
-	0x18, 0x16, 0xba, 0xab, 0xd1, 0x0d, 0xea, 0x51, 0x8d, 0xfe, 0xd3, 0x81, 0x71, 0x04, 0xd3, 0xf9,
-	0xb3, 0x5d, 0xee, 0xda, 0x9d, 0xd3, 0x5b, 0x6f, 0x0f, 0xd6, 0xa7, 0xc4, 0x3e, 0x2c, 0xf4, 0xba,
-	0x3a, 0x6e, 0xf6, 0x68, 0x95, 0x2e, 0x94, 0xf5, 0xff, 0x97, 0x41, 0x65, 0x3b, 0xaa, 0xef, 0x20,
-	0x30, 0x30, 0xe5, 0x79, 0xa3, 0x77, 0x2f, 0x0d, 0x4d, 0x2d, 0xff, 0x02, 0xac, 0xfe, 0xaf, 0xa3,
-	0xd1, 0xb7, 0x10, 0x3d, 0x5e, 0x71, 0xeb, 0xfd, 0xc1, 0x55, 0xeb, 0x6d, 0xff, 0x11, 0x14, 0xdb,
-	0x6f, 0xae, 0xd5, 0xc5, 0x90, 0xea, 0xac, 0xf5, 0xfe, 0xba, 0x6c, 0xc5, 0x7a, 0x3d, 0x87, 0x37,
-	0x7b, 0x1d, 0x87, 0x4e, 0x54, 0x8f, 0x8a, 0x0d, 0x78, 0x01, 0x45, 0xc5, 0xfa, 0x3e, 0x7f, 0x77,
-	0xfa, 0x5c, 0x26, 0xdd, 0xd0, 0x1e, 0x15, 0x7b, 0xd5, 0xb3, 0x67, 0x8d, 0xfd, 0x52, 0x8c, 0x0a,
-	0x3b, 0xf6, 0x17, 0x2f, 0xca, 0x85, 0x2f, 0x5f, 0x94, 0x0b, 0xff, 0x7e, 0x51, 0x2e, 0xfc, 0xf6,
-	0x65, 0xf9, 0xca, 0x97, 0x2f, 0xcb, 0x57, 0xfe, 0xf9, 0xb2, 0x7c, 0xe5, 0xd9, 0x07, 0x97, 0xfc,
-	0x69, 0xe7, 0x7c, 0xab, 0xfd, 0xc7, 0x1d, 0xf2, 0x8f, 0x48, 0x8e, 0xc7, 0xe5, 0x5f, 0x76, 0xbc,
-	0xff, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x62, 0x42, 0x3a, 0xfc, 0xc8, 0x22, 0x00, 0x00,
+	// 2404 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x5a, 0xcb, 0x6f, 0xdc, 0xc6,
+	0x19, 0xf7, 0x5a, 0xef, 0xd9, 0xb5, 0x2c, 0x51, 0x0f, 0x53, 0x8c, 0xb5, 0x92, 0x25, 0x39, 0x5e,
+	0xa7, 0x89, 0x14, 0x3b, 0x45, 0x1f, 0x69, 0x0f, 0x95, 0xa3, 0x28, 0x11, 0xec, 0x55, 0x55, 0x4a,
+	0x8e, 0x0a, 0x37, 0x00, 0x3b, 0x22, 0xbf, 0xe5, 0x12, 0x22, 0x39, 0xdb, 0x99, 0x59, 0x3d, 0x72,
+	0x28, 0x8a, 0x02, 0xbd, 0xf4, 0xd4, 0x5b, 0x7b, 0xeb, 0xb5, 0x87, 0x1e, 0x72, 0x28, 0x7a, 0xef,
+	0xa9, 0x39, 0x06, 0xbd, 0xb4, 0xe8, 0x21, 0x28, 0x6c, 0x14, 0xf9, 0x1b, 0x7a, 0x2b, 0xe6, 0x41,
+	0x2e, 0xb9, 0x2f, 0x0b, 0x66, 0x02, 0xe4, 0x62, 0x98, 0xf3, 0xfd, 0xe6, 0xf7, 0x3d, 0xe6, 0x9b,
+	0xef, 0xfb, 0x46, 0x58, 0xb4, 0x00, 0x51, 0xc0, 0x58, 0x40, 0x62, 0xb6, 0x75, 0xf6, 0x60, 0x8b,
+	0x5f, 0x6c, 0xb6, 0x28, 0xe1, 0xc4, 0xa8, 0xa4, 0xcb, 0x9b, 0x67, 0x0f, 0xac, 0x5b, 0x2e, 0x61,
+	0x11, 0x61, 0x5b, 0x11, 0xf3, 0x05, 0x2a, 0x62, 0xbe, 0x82, 0x59, 0xf3, 0x3e, 0xf1, 0x89, 0xfc,
+	0xef, 0x96, 0xf8, 0x9f, 0x5e, 0x9d, 0xc5, 0x51, 0x10, 0x93, 0x2d, 0xf9, 0xaf, 0x5e, 0x32, 0xf3,
+	0x6a, 0x2e, 0x5b, 0xc0, 0xb4, 0x64, 0x49, 0x71, 0x3b, 0x8a, 0x45, 0x7d, 0xf4, 0xdd, 0x14, 0x93,
+	0xd8, 0x05, 0x2d, 0xb1, 0x72, 0x12, 0x0a, 0xad, 0x36, 0x07, 0x9a, 0x10, 0xe6, 0x64, 0xe7, 0x84,
+	0x9e, 0x26, 0xa2, 0xb5, 0xff, 0x2d, 0xa1, 0xe9, 0x1f, 0xb7, 0x78, 0x40, 0x62, 0x1c, 0x1e, 0x60,
+	0x8a, 0x23, 0x66, 0x98, 0x68, 0xe2, 0x0c, 0xa8, 0x80, 0x9b, 0xa5, 0xd5, 0x91, 0xda, 0x94, 0x9d,
+	0x7c, 0x1a, 0xdf, 0x47, 0x4b, 0x11, 0xbe, 0x70, 0x18, 0xd0, 0x00, 0x87, 0xc1, 0x27, 0xe0, 0x39,
+	0x11, 0xf3, 0x9d, 0x10, 0x62, 0x9f, 0x37, 0xcd, 0xeb, 0xab, 0x23, 0xb5, 0x11, 0x7b, 0x31, 0xc2,
+	0x17, 0x87, 0xa9, 0xbc, 0xce, 0xfc, 0x27, 0x52, 0x6a, 0x60, 0x34, 0x13, 0x05, 0xb1, 0xc3, 0x49,
+	0x2b, 0x70, 0x9d, 0x73, 0x08, 0xfc, 0x26, 0x37, 0x47, 0x04, 0xfb, 0xa3, 0xef, 0x7e, 0xf6, 0xc5,
+	0xca, 0xb5, 0x7f, 0x7f, 0xb1, 0xb2, 0xe5, 0x07, 0xbc, 0xd9, 0x3e, 0xd9, 0x74, 0x49, 0xb4, 0x85,
+	0xc3, 0x90, 0x50, 0xfc, 0x56, 0x0c, 0x5c, 0x18, 0x9b, 0x7c, 0xba, 0x4d, 0x1c, 0xc4, 0x5b, 0x11,
+	0xe6, 0xcd, 0xcd, 0x1d, 0x70, 0xed, 0xe9, 0x28, 0x88, 0x8f, 0x04, 0xdf, 0xb1, 0xa4, 0x33, 0xb6,
+	0xd0, 0xbc, 0xb0, 0x4e, 0xaa, 0x60, 0x4e, 0x0b, 0xa8, 0x73, 0x12, 0x12, 0xf7, 0xd4, 0x1c, 0x5d,
+	0x1d, 0xa9, 0x8d, 0xda, 0xb3, 0x11, 0xbe, 0x90, 0x68, 0x76, 0x00, 0xf4, 0x91, 0x10, 0x18, 0x0d,
+	0xb4, 0x48, 0xe1, 0x17, 0xed, 0x80, 0x0a, 0x47, 0x82, 0x38, 0x88, 0xda, 0x91, 0xc3, 0x38, 0x3e,
+	0x05, 0x73, 0x4c, 0x5a, 0xf6, 0xb6, 0xb6, 0x6c, 0x41, 0x1d, 0x01, 0xf3, 0x4e, 0x37, 0x03, 0xa2,
+	0xf4, 0xef, 0xc5, 0xfc, 0x1f, 0x7f, 0x79, 0x0b, 0xe9, 0xb3, 0xd9, 0x8b, 0xf9, 0x9f, 0xbe, 0xfc,
+	0xf4, 0x8d, 0x92, 0x3d, 0x9f, 0xf0, 0xd5, 0x15, 0xdd, 0xa1, 0x60, 0x13, 0x61, 0xa3, 0x10, 0x91,
+	0x33, 0x50, 0xec, 0x8e, 0x07, 0x21, 0xbe, 0x74, 0xce, 0x83, 0xd8, 0x23, 0xe7, 0xe6, 0xb8, 0x0a,
+	0x9b, 0x02, 0x48, 0xfc, 0x8e, 0x10, 0x1f, 0x4b, 0xa9, 0x51, 0x53, 0x61, 0x83, 0x16, 0x71, 0x9b,
+	0x49, 0xa0, 0x27, 0xe4, 0x0e, 0xe1, 0xfd, 0xfb, 0x62, 0x59, 0x07, 0xf8, 0x19, 0xaa, 0x9c, 0x00,
+	0xc7, 0x0e, 0xc4, 0x9c, 0x92, 0xd6, 0xa5, 0x39, 0x59, 0x2c, 0xb8, 0x65, 0x41, 0xf6, 0xbe, 0xe2,
+	0x32, 0x3e, 0x46, 0x37, 0x42, 0xc0, 0x34, 0x0e, 0x62, 0xdf, 0xa1, 0x98, 0x83, 0x39, 0x55, 0x8c,
+	0xbc, 0x92, 0xb0, 0xd9, 0x98, 0x83, 0x11, 0x21, 0x91, 0x34, 0x8e, 0x4f, 0xb1, 0x17, 0x40, 0xcc,
+	0x1d, 0xde, 0xa4, 0xc0, 0x9a, 0x24, 0xf4, 0x4c, 0x54, 0x4c, 0x8d, 0x48, 0x87, 0x0f, 0x34, 0xeb,
+	0x51, 0x42, 0x6a, 0x00, 0x32, 0x44, 0x48, 0xd5, 0x51, 0x34, 0x28, 0x76, 0x45, 0xf2, 0x9b, 0xe5,
+	0x62, 0xaa, 0xc4, 0x29, 0xc9, 0xc3, 0xdb, 0xd5, 0x84, 0xc6, 0x4f, 0xd0, 0x04, 0xb4, 0x58, 0x10,
+	0x92, 0xd8, 0xac, 0x14, 0xe3, 0x4e, 0x78, 0x8c, 0xf7, 0xd1, 0x8a, 0x08, 0x54, 0x3b, 0x6e, 0xb4,
+	0xc3, 0x46, 0x10, 0x86, 0xe0, 0x39, 0xea, 0x2e, 0x3b, 0x22, 0xed, 0x80, 0x71, 0x66, 0xde, 0x90,
+	0xb9, 0x7e, 0x3b, 0xc2, 0x17, 0x4f, 0x3b, 0xa8, 0x63, 0x09, 0xb2, 0x35, 0xc6, 0xf8, 0x00, 0xad,
+	0x76, 0xd3, 0xe8, 0x72, 0xd1, 0xe1, 0x99, 0x96, 0x3c, 0xcb, 0x79, 0x1e, 0x5b, 0xa1, 0x52, 0xa2,
+	0x4f, 0xd0, 0xb2, 0xba, 0xcf, 0x14, 0xce, 0x31, 0xf5, 0x74, 0x48, 0x83, 0xa8, 0x45, 0x28, 0xc7,
+	0xb1, 0x0b, 0xe6, 0xcd, 0x62, 0x8e, 0x5b, 0x92, 0xdd, 0x96, 0xe4, 0x32, 0xb8, 0x7b, 0x29, 0xb5,
+	0xf1, 0x9b, 0x12, 0x5a, 0xcf, 0x29, 0x6f, 0x00, 0x38, 0x14, 0xce, 0x20, 0x6e, 0xe7, 0x4c, 0x98,
+	0x29, 0x66, 0xc2, 0x4a, 0xc6, 0x84, 0x5d, 0x00, 0x5b, 0x29, 0xc8, 0xd8, 0x01, 0xc8, 0xc8, 0x99,
+	0x81, 0xc3, 0x56, 0x13, 0x9b, 0xb3, 0x05, 0xb3, 0x29, 0xa3, 0x75, 0x5b, 0x10, 0x1a, 0x2e, 0x9a,
+	0xe5, 0x98, 0x9d, 0xe6, 0xb5, 0x18, 0xc5, 0xb4, 0xdc, 0x14, 0x8c, 0x59, 0x25, 0x22, 0xa6, 0x67,
+	0x38, 0x0c, 0x3c, 0xcc, 0x09, 0x65, 0xce, 0x19, 0x73, 0xd4, 0x46, 0x51, 0x4b, 0x5d, 0x71, 0x33,
+	0x95, 0x76, 0x73, 0xae, 0x60, 0x4c, 0x3b, 0x3a, 0x3e, 0x62, 0xdb, 0x12, 0x72, 0xa0, 0x14, 0x28,
+	0x63, 0x8c, 0x1f, 0xa2, 0xd7, 0x64, 0x9b, 0xc1, 0x51, 0x2b, 0x04, 0xe6, 0x70, 0xe2, 0x30, 0x17,
+	0x87, 0xe0, 0x30, 0x97, 0x50, 0x60, 0xe6, 0xbc, 0xcc, 0xcd, 0x5b, 0xa2, 0xd1, 0x28, 0xc4, 0x11,
+	0x39, 0x14, 0xf2, 0x43, 0x29, 0x36, 0xde, 0x45, 0x96, 0x6e, 0x03, 0x4e, 0x10, 0x37, 0x80, 0x02,
+	0x95, 0x14, 0xda, 0xf6, 0x05, 0xb9, 0x79, 0x51, 0x35, 0x83, 0x3d, 0x2d, 0x3f, 0x22, 0x5a, 0xf3,
+	0x8f, 0xd0, 0x72, 0xb2, 0xb7, 0x41, 0x28, 0xb8, 0x98, 0xf1, 0xfc, 0xf6, 0x45, 0xb9, 0x7d, 0x49,
+	0x6d, 0xdf, 0xed, 0x40, 0x52, 0x86, 0x8c, 0x76, 0x7d, 0xa9, 0xb2, 0xdb, 0x6f, 0x65, 0xb5, 0xeb,
+	0xeb, 0xd4, 0xd9, 0xfb, 0x0c, 0xcd, 0xb8, 0x14, 0x30, 0x07, 0xdd, 0x26, 0x1b, 0x00, 0xa6, 0xf9,
+	0x8a, 0x9d, 0x68, 0x5a, 0x31, 0xc9, 0x8e, 0xb7, 0x0b, 0x60, 0xfc, 0x00, 0x59, 0x69, 0x81, 0xf5,
+	0x80, 0xc9, 0xe3, 0x14, 0x86, 0x06, 0xc2, 0x02, 0x73, 0x49, 0x85, 0x34, 0x41, 0xec, 0x28, 0x40,
+	0x1d, 0x5f, 0xec, 0x09, 0xb1, 0xf1, 0x18, 0xad, 0x0b, 0x2c, 0x05, 0x4e, 0x03, 0x75, 0x20, 0xaa,
+	0x26, 0x38, 0x72, 0x00, 0x61, 0xba, 0x0a, 0x99, 0x96, 0x6c, 0x4c, 0xd5, 0x08, 0x5f, 0xd8, 0x0a,
+	0x79, 0x44, 0x76, 0x25, 0x6e, 0x5f, 0xc2, 0x54, 0x19, 0x32, 0xea, 0x68, 0x63, 0x28, 0x99, 0x0e,
+	0x9b, 0xf9, 0x9a, 0x64, 0x5b, 0x19, 0xc4, 0xa6, 0xa3, 0x67, 0xfc, 0x0c, 0xcd, 0x50, 0xf0, 0x03,
+	0xc6, 0x29, 0x16, 0x75, 0x57, 0x06, 0xed, 0xf6, 0x2b, 0x06, 0xed, 0x66, 0x96, 0x49, 0x44, 0xed,
+	0x4d, 0x64, 0x78, 0xd0, 0xc0, 0xed, 0x90, 0x3b, 0x2d, 0xec, 0x83, 0x13, 0x06, 0x51, 0xc0, 0xcd,
+	0x65, 0x19, 0xad, 0x19, 0x2d, 0x39, 0xc0, 0x3e, 0x3c, 0x11, 0xeb, 0xc6, 0x06, 0x9a, 0x16, 0x9e,
+	0x65, 0x90, 0x55, 0x89, 0xac, 0x44, 0xf8, 0xa2, 0x83, 0x12, 0x39, 0xd6, 0xd5, 0xd2, 0x1d, 0x0a,
+	0x2e, 0xa1, 0x9e, 0xde, 0xb4, 0x22, 0x1d, 0x5f, 0xca, 0xf7, 0x77, 0x5b, 0x22, 0x14, 0x43, 0x0d,
+	0xcd, 0xc8, 0xc9, 0x46, 0x0d, 0x39, 0x11, 0x89, 0x79, 0xd3, 0x5c, 0x95, 0x9a, 0xa6, 0xd5, 0xfa,
+	0x01, 0xd0, 0xba, 0x58, 0x15, 0xd5, 0xa9, 0x95, 0xd4, 0x0c, 0x75, 0x19, 0x44, 0x4d, 0xbc, 0x53,
+	0xb0, 0x3a, 0xb5, 0x54, 0xbe, 0xee, 0x25, 0x84, 0xa2, 0x3a, 0xa5, 0x6a, 0x92, 0x7b, 0x63, 0xae,
+	0x15, 0xac, 0x4e, 0x5a, 0x4b, 0x72, 0xc9, 0xc4, 0x04, 0x99, 0x2a, 0x49, 0x72, 0x64, 0xbd, 0xe0,
+	0x04, 0xa9, 0x75, 0x24, 0xb9, 0x04, 0xc8, 0x70, 0x7b, 0xc3, 0xb5, 0x51, 0x30, 0x5c, 0x6e, 0x9f,
+	0x70, 0xb9, 0x3d, 0xe1, 0xba, 0x5b, 0x30, 0x5c, 0x6e, 0x57, 0xb8, 0x7e, 0x8a, 0xca, 0x0d, 0x87,
+	0x93, 0x10, 0xa8, 0xec, 0x83, 0xaf, 0x17, 0xa3, 0x47, 0x8d, 0xa3, 0x84, 0xca, 0xd8, 0x47, 0xe3,
+	0xae, 0x13, 0x13, 0x1a, 0x99, 0xf7, 0x8a, 0x91, 0x8e, 0xb9, 0xfb, 0x84, 0x46, 0xc6, 0x39, 0xba,
+	0x9d, 0xd6, 0xbb, 0xb4, 0x85, 0x7b, 0xe0, 0xe2, 0x4b, 0x35, 0x6c, 0xd6, 0x8a, 0x69, 0x31, 0xb9,
+	0xae, 0x81, 0xba, 0x79, 0xef, 0x08, 0x66, 0x31, 0x78, 0xae, 0x85, 0xe8, 0x66, 0x9d, 0xf9, 0x4f,
+	0x5b, 0x1e, 0xe6, 0xa0, 0xdf, 0x3e, 0x8b, 0x68, 0x9c, 0x41, 0xec, 0x01, 0x35, 0x4b, 0xab, 0xa5,
+	0xda, 0x94, 0xad, 0xbf, 0x8c, 0x6f, 0xa3, 0xf1, 0x96, 0x44, 0x98, 0xd7, 0x57, 0x4b, 0xb5, 0xf2,
+	0xc3, 0xdb, 0x9b, 0xd9, 0xd7, 0xe0, 0x66, 0xfe, 0x05, 0x65, 0x6b, 0xec, 0xbb, 0xe5, 0x5f, 0x7f,
+	0xf9, 0xe9, 0x1b, 0x9a, 0x62, 0x6d, 0x09, 0xdd, 0xea, 0xd2, 0x66, 0x03, 0x6b, 0x91, 0x98, 0xc1,
+	0xda, 0x9f, 0x47, 0xd1, 0x6c, 0x9d, 0xf9, 0xef, 0xc9, 0x92, 0xbd, 0x0f, 0xe7, 0xb2, 0x6a, 0x8b,
+	0x77, 0x98, 0x2c, 0xe2, 0x24, 0x31, 0x26, 0xf9, 0x34, 0x2c, 0x34, 0x19, 0x01, 0xc7, 0x1e, 0xe6,
+	0x58, 0xda, 0x33, 0x65, 0xa7, 0xdf, 0xc6, 0x32, 0x42, 0x21, 0x61, 0xcc, 0x09, 0x89, 0x1f, 0xb8,
+	0xe6, 0x88, 0x94, 0x4e, 0x89, 0x95, 0x27, 0x62, 0xc1, 0x58, 0x41, 0x65, 0x29, 0x8e, 0x80, 0x37,
+	0x89, 0x67, 0x8e, 0x4a, 0xb9, 0xdc, 0x51, 0x97, 0x2b, 0xc6, 0x3d, 0x74, 0x33, 0x4d, 0x7d, 0x4d,
+	0x32, 0x26, 0x41, 0xd3, 0xe9, 0xb2, 0x62, 0xba, 0x8f, 0x66, 0x3a, 0x40, 0x4d, 0x37, 0x2e, 0x91,
+	0x1d, 0x02, 0xcd, 0x79, 0x07, 0x55, 0xba, 0x5e, 0x30, 0xa5, 0xda, 0x88, 0x5d, 0x86, 0xcc, 0xf3,
+	0xa5, 0x86, 0x66, 0x7c, 0x4a, 0xda, 0xb1, 0xe7, 0x70, 0xda, 0xe6, 0x4d, 0x27, 0xc4, 0xbe, 0x39,
+	0x29, 0x61, 0xd3, 0x6a, 0xfd, 0x48, 0x2c, 0x3f, 0xc1, 0xbe, 0xf0, 0x20, 0xa9, 0xc9, 0x98, 0xfa,
+	0xe6, 0x94, 0xf2, 0x40, 0x2f, 0x6d, 0x53, 0x5f, 0xe4, 0x67, 0x4b, 0xe5, 0x27, 0x12, 0xb2, 0x02,
+	0xf9, 0xd9, 0x92, 0xf9, 0xf9, 0x0c, 0x55, 0xe4, 0xbc, 0xe5, 0x50, 0xf0, 0x29, 0x70, 0xb3, 0x5c,
+	0x8c, 0xb5, 0x2c, 0xc9, 0x6c, 0xc9, 0x65, 0xdc, 0x45, 0xd3, 0x02, 0x75, 0xee, 0xc4, 0xe0, 0x63,
+	0x1e, 0x9c, 0x81, 0x59, 0x59, 0x2d, 0xd5, 0x26, 0xed, 0x1b, 0x72, 0x75, 0x5f, 0x2f, 0xbe, 0x5b,
+	0x11, 0x89, 0x94, 0x1c, 0xff, 0xda, 0x77, 0xd0, 0x52, 0x4f, 0xb6, 0x24, 0xb9, 0x64, 0x2c, 0xa1,
+	0x49, 0x75, 0x9b, 0x02, 0x4f, 0xa6, 0xcd, 0xa8, 0x3d, 0x21, 0xbf, 0xf7, 0xbc, 0xb5, 0xdf, 0x5e,
+	0x47, 0xaf, 0xd5, 0x99, 0xbf, 0x17, 0x33, 0xa0, 0xfc, 0x51, 0x3b, 0x3c, 0xd5, 0x75, 0xef, 0x00,
+	0x5f, 0x86, 0x04, 0x7b, 0x03, 0x93, 0xff, 0x29, 0x5a, 0xe8, 0x7a, 0x20, 0xa8, 0x5e, 0xad, 0xef,
+	0xc2, 0x9d, 0xfc, 0x5d, 0xc8, 0xbf, 0x12, 0x64, 0xb3, 0xb6, 0xe7, 0x68, 0xef, 0x62, 0xce, 0xd2,
+	0x91, 0x9c, 0xa5, 0xc6, 0x51, 0x47, 0xe3, 0x19, 0x0e, 0xdb, 0xe0, 0x9c, 0xb4, 0x63, 0x2f, 0x04,
+	0x26, 0xdf, 0xf2, 0xe5, 0x87, 0xab, 0x7d, 0x35, 0x7e, 0x24, 0x90, 0x8f, 0x24, 0x30, 0x55, 0x98,
+	0x59, 0xeb, 0xba, 0x8e, 0x77, 0xd1, 0xfa, 0x90, 0x58, 0xa4, 0x57, 0xf3, 0x9f, 0x25, 0x64, 0xe5,
+	0x70, 0x6a, 0x8a, 0x79, 0x59, 0xc8, 0xee, 0xa3, 0xb1, 0x6c, 0x88, 0xe6, 0xf2, 0x06, 0xab, 0xa0,
+	0x28, 0xc4, 0xb0, 0x30, 0xec, 0xa3, 0x39, 0xfd, 0xc0, 0x13, 0x57, 0xbb, 0x2b, 0x08, 0xd5, 0x3c,
+	0xa7, 0xb2, 0x6b, 0x07, 0x73, 0xac, 0x43, 0x30, 0x7b, 0xde, 0xb5, 0xd2, 0x15, 0x80, 0x0d, 0xb4,
+	0x36, 0xd8, 0xb1, 0xd4, 0xff, 0xbf, 0x97, 0x50, 0xb9, 0xce, 0x7c, 0x5b, 0x0e, 0x46, 0x40, 0x07,
+	0x3a, 0x5c, 0x45, 0xe5, 0x30, 0x38, 0x71, 0x5a, 0x0f, 0x5b, 0xce, 0x29, 0x5c, 0xea, 0xaa, 0x34,
+	0x15, 0x06, 0x27, 0x07, 0x0f, 0x5b, 0x8f, 0xe1, 0xd2, 0x58, 0x47, 0x37, 0xa2, 0x76, 0xc8, 0x03,
+	0x07, 0x7b, 0x1e, 0x05, 0xc6, 0x74, 0x65, 0xaa, 0xc8, 0xc5, 0x6d, 0xb5, 0x96, 0x0b, 0xc5, 0x68,
+	0x3e, 0x14, 0xf3, 0x68, 0x8c, 0x9c, 0xc7, 0x40, 0x75, 0x31, 0x52, 0x1f, 0xa2, 0xd8, 0x05, 0x9d,
+	0x89, 0x71, 0x5c, 0x5e, 0x9d, 0xa9, 0x20, 0x99, 0x0d, 0xf3, 0xfe, 0xee, 0xa1, 0xb9, 0x8c, 0x23,
+	0xe9, 0x7d, 0x31, 0xd1, 0x04, 0x6b, 0xbb, 0xae, 0x30, 0xa9, 0x24, 0xf7, 0x27, 0x9f, 0x42, 0x12,
+	0x01, 0x63, 0xd8, 0x07, 0xed, 0x4e, 0xf2, 0xb9, 0x76, 0x86, 0x16, 0x24, 0x55, 0x44, 0xce, 0xc0,
+	0xce, 0x8c, 0x8c, 0x03, 0xa3, 0x93, 0x75, 0xec, 0x7a, 0xde, 0xb1, 0xbc, 0x0b, 0x23, 0x43, 0x5d,
+	0x38, 0x44, 0xcb, 0x7d, 0xf5, 0x16, 0x72, 0xe6, 0xf7, 0xea, 0x84, 0xb7, 0x3d, 0xf5, 0xc6, 0x7e,
+	0x15, 0x1f, 0x3e, 0x44, 0xe3, 0x38, 0x22, 0xed, 0x98, 0xab, 0x53, 0x7d, 0x85, 0xc9, 0x5b, 0xef,
+	0xcf, 0xbb, 0xbb, 0x20, 0x4f, 0x2c, 0x31, 0x2c, 0x4d, 0xc9, 0x3f, 0x96, 0xe4, 0xfa, 0x21, 0xc7,
+	0x94, 0xdb, 0x9d, 0x3f, 0x9b, 0x7d, 0x83, 0x0c, 0x5f, 0x96, 0x75, 0xb6, 0xdb, 0xc0, 0xd4, 0x81,
+	0x63, 0x99, 0x3e, 0xef, 0x91, 0xb8, 0x11, 0xd0, 0xa8, 0x98, 0x07, 0x79, 0xbd, 0x2b, 0x32, 0x3f,
+	0x7a, 0x89, 0x53, 0xcd, 0x7f, 0x2d, 0xa1, 0x99, 0x3a, 0xf3, 0x77, 0x20, 0x14, 0x9d, 0xe5, 0xd5,
+	0xe3, 0x66, 0xa2, 0x89, 0x6c, 0xc6, 0x4e, 0xd9, 0xc9, 0x67, 0x26, 0xa2, 0xa3, 0x5f, 0x65, 0x44,
+	0x2d, 0x64, 0x76, 0xdb, 0x9d, 0x3a, 0xf5, 0xb7, 0x52, 0x77, 0xb8, 0xaf, 0xe6, 0x5f, 0xc6, 0x89,
+	0xeb, 0x79, 0x27, 0x86, 0x94, 0xe4, 0xaf, 0xc9, 0x3f, 0xd5, 0x8d, 0x06, 0xb9, 0x90, 0xba, 0x7a,
+	0x99, 0x3d, 0xe0, 0x04, 0x52, 0xf0, 0x0e, 0x0c, 0x3c, 0xcb, 0xbc, 0x85, 0xf7, 0xd0, 0xdd, 0xee,
+	0xdc, 0xea, 0x6f, 0xe3, 0x1f, 0x4a, 0xa8, 0x52, 0x67, 0xfe, 0xae, 0x98, 0xd9, 0xe4, 0x1c, 0xfb,
+	0xcd, 0xb9, 0x97, 0x8b, 0x68, 0x3e, 0x6b, 0x59, 0xe6, 0x42, 0x2e, 0xaa, 0x42, 0x73, 0x44, 0x8e,
+	0x9b, 0x01, 0x87, 0x30, 0x60, 0x7c, 0xdb, 0x8b, 0x82, 0x78, 0x58, 0xee, 0x24, 0x8d, 0x4c, 0xe7,
+	0x8e, 0xfe, 0xcc, 0x2b, 0x5c, 0x45, 0xd5, 0xfe, 0xc4, 0xa9, 0xea, 0x8f, 0x65, 0xee, 0xaa, 0x78,
+	0xee, 0x52, 0x12, 0x7d, 0xb5, 0xfa, 0x55, 0x5a, 0x0d, 0x62, 0x4f, 0x8d, 0x50, 0x66, 0xaa, 0x07,
+	0x64, 0xff, 0x43, 0xa5, 0x32, 0x42, 0x7d, 0x10, 0x5f, 0x5f, 0xc6, 0x3d, 0xfc, 0x6f, 0x05, 0x8d,
+	0xd4, 0x99, 0x6f, 0x1c, 0xa1, 0x4a, 0xee, 0x8d, 0xb6, 0x9c, 0x1f, 0x7c, 0xba, 0x1e, 0x55, 0xd6,
+	0xdd, 0xa1, 0xe2, 0xb4, 0x55, 0xb6, 0xd1, 0xad, 0x41, 0x43, 0x5d, 0xad, 0x87, 0x61, 0x00, 0xd2,
+	0x7a, 0xfb, 0xaa, 0xc8, 0x54, 0xed, 0x33, 0x34, 0xdd, 0xf5, 0xcc, 0x5b, 0xe9, 0xe1, 0xc8, 0x03,
+	0xac, 0x7b, 0x2f, 0x01, 0xa4, 0xdc, 0x1f, 0xa2, 0xc9, 0x74, 0x4e, 0x5b, 0xea, 0xd9, 0x94, 0x88,
+	0xac, 0x3b, 0x03, 0x45, 0x29, 0x53, 0x03, 0x19, 0x7d, 0xa6, 0x9b, 0xf5, 0x3e, 0x1b, 0xbb, 0x41,
+	0xd6, 0xb7, 0xae, 0x00, 0x4a, 0xf5, 0x5c, 0x20, 0x73, 0xe0, 0x6b, 0xe4, 0xfe, 0x90, 0xd8, 0xe6,
+	0xa1, 0xd6, 0x83, 0x2b, 0x43, 0xb3, 0xb1, 0x4a, 0x27, 0x9e, 0xde, 0x58, 0x25, 0xa2, 0x3e, 0xb1,
+	0xea, 0x1e, 0x47, 0x8c, 0x9f, 0xa3, 0x99, 0x9e, 0x51, 0xa4, 0x77, 0x5b, 0x37, 0xc4, 0xba, 0xff,
+	0x52, 0x48, 0xf6, 0x34, 0xfa, 0x0c, 0x0b, 0xbd, 0xa7, 0xd1, 0x0b, 0xea, 0x73, 0x1a, 0x83, 0xa7,
+	0x03, 0xe3, 0x18, 0xdd, 0xc8, 0xdf, 0xed, 0x6a, 0xcf, 0xee, 0x9c, 0xdc, 0x7a, 0x7d, 0xb8, 0x3c,
+	0x25, 0x0e, 0xd0, 0x5c, 0xbf, 0xd2, 0xb1, 0xd1, 0x27, 0x55, 0x7a, 0x50, 0xd6, 0x9b, 0x57, 0x41,
+	0x65, 0x33, 0x6a, 0xe0, 0x20, 0x30, 0x34, 0xe4, 0x79, 0xa5, 0x0f, 0xae, 0x0c, 0x4d, 0x35, 0xff,
+	0x12, 0x59, 0x83, 0xbb, 0xa3, 0x31, 0xf0, 0x20, 0xfa, 0x74, 0x71, 0xeb, 0x9d, 0xe1, 0xa7, 0xd6,
+	0x5f, 0xff, 0x63, 0x34, 0xd5, 0xe9, 0xb9, 0x56, 0x0f, 0x43, 0x2a, 0xb3, 0xd6, 0x06, 0xcb, 0xb2,
+	0x27, 0xd6, 0xaf, 0x1d, 0x6e, 0xf4, 0xbb, 0x0e, 0xdd, 0xa8, 0x3e, 0x27, 0x36, 0xa4, 0x03, 0x8a,
+	0x13, 0x1b, 0xd8, 0xfe, 0xee, 0x0f, 0x28, 0x26, 0xbd, 0xd0, 0x3e, 0x27, 0xf6, 0xb2, 0xb6, 0x67,
+	0x8d, 0xfd, 0x4a, 0x8c, 0x0a, 0x8f, 0xec, 0xcf, 0x9e, 0x57, 0x4b, 0x9f, 0x3f, 0xaf, 0x96, 0xfe,
+	0xf3, 0xbc, 0x5a, 0xfa, 0xdd, 0x8b, 0xea, 0xb5, 0xcf, 0x5f, 0x54, 0xaf, 0xfd, 0xeb, 0x45, 0xf5,
+	0xda, 0xb3, 0xef, 0x5d, 0xf1, 0x6f, 0x3b, 0x17, 0x5b, 0x9d, 0x1f, 0x58, 0xc8, 0x1f, 0x72, 0x9c,
+	0x8c, 0xcb, 0x5f, 0x57, 0xbc, 0xf3, 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x54, 0x11, 0x59, 0xd2,
+	0x4c, 0x22, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -2719,6 +2700,134 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.TopicFeeRevenueDecayRate) > 0 {
+		for iNdEx := len(m.TopicFeeRevenueDecayRate) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.TopicFeeRevenueDecayRate[iNdEx].Size()
+				i -= size
+				if _, err := m.TopicFeeRevenueDecayRate[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xc2
+		}
+	}
+	if len(m.CNorm) > 0 {
+		for iNdEx := len(m.CNorm) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.CNorm[iNdEx].Size()
+				i -= size
+				if _, err := m.CNorm[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xba
+		}
+	}
+	if len(m.FTolerance) > 0 {
+		for iNdEx := len(m.FTolerance) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.FTolerance[iNdEx].Size()
+				i -= size
+				if _, err := m.FTolerance[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xb2
+		}
+	}
+	if len(m.CRewardForecast) > 0 {
+		for iNdEx := len(m.CRewardForecast) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.CRewardForecast[iNdEx].Size()
+				i -= size
+				if _, err := m.CRewardForecast[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xaa
+		}
+	}
+	if len(m.CRewardInference) > 0 {
+		for iNdEx := len(m.CRewardInference) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.CRewardInference[iNdEx].Size()
+				i -= size
+				if _, err := m.CRewardInference[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xa2
+		}
+	}
+	if len(m.PRewardReputer) > 0 {
+		for iNdEx := len(m.PRewardReputer) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.PRewardReputer[iNdEx].Size()
+				i -= size
+				if _, err := m.PRewardReputer[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0x9a
+		}
+	}
+	if len(m.PRewardForecast) > 0 {
+		for iNdEx := len(m.PRewardForecast) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.PRewardForecast[iNdEx].Size()
+				i -= size
+				if _, err := m.PRewardForecast[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0x92
+		}
+	}
+	if len(m.PRewardInference) > 0 {
+		for iNdEx := len(m.PRewardInference) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.PRewardInference[iNdEx].Size()
+				i -= size
+				if _, err := m.PRewardInference[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0x8a
+		}
+	}
 	if len(m.BlocksPerMonth) > 0 {
 		dAtA2 := make([]byte, len(m.BlocksPerMonth)*10)
 		var j1 int
@@ -2737,7 +2846,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x2
 		i--
-		dAtA[i] = 0xba
+		dAtA[i] = 0x82
 	}
 	if len(m.MinEpochLengthRecordLimit) > 0 {
 		dAtA4 := make([]byte, len(m.MinEpochLengthRecordLimit)*10)
@@ -2756,14 +2865,14 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA4[:j3])
 		i = encodeVarintTx(dAtA, i, uint64(j3))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xb2
+		dAtA[i] = 0xfa
 	}
-	if len(m.MaxLimit) > 0 {
-		dAtA6 := make([]byte, len(m.MaxLimit)*10)
+	if len(m.MaxPageLimit) > 0 {
+		dAtA6 := make([]byte, len(m.MaxPageLimit)*10)
 		var j5 int
-		for _, num := range m.MaxLimit {
+		for _, num := range m.MaxPageLimit {
 			for num >= 1<<7 {
 				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2776,14 +2885,14 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA6[:j5])
 		i = encodeVarintTx(dAtA, i, uint64(j5))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xaa
+		dAtA[i] = 0xf2
 	}
-	if len(m.DefaultLimit) > 0 {
-		dAtA8 := make([]byte, len(m.DefaultLimit)*10)
+	if len(m.DefaultPageLimit) > 0 {
+		dAtA8 := make([]byte, len(m.DefaultPageLimit)*10)
 		var j7 int
-		for _, num := range m.DefaultLimit {
+		for _, num := range m.DefaultPageLimit {
 			for num >= 1<<7 {
 				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2796,9 +2905,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA8[:j7])
 		i = encodeVarintTx(dAtA, i, uint64(j7))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xa2
+		dAtA[i] = 0xea
 	}
 	if len(m.RegistrationFee) > 0 {
 		for iNdEx := len(m.RegistrationFee) - 1; iNdEx >= 0; iNdEx-- {
@@ -2811,15 +2920,16 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x2
+			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0x9a
+			dAtA[i] = 0xe2
 		}
 	}
-	if len(m.MaxTopicPages) > 0 {
-		dAtA10 := make([]byte, len(m.MaxTopicPages)*10)
+	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
+		dAtA10 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
 		var j9 int
-		for _, num := range m.MaxTopicPages {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
+			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA10[j9] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2832,14 +2942,15 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA10[:j9])
 		i = encodeVarintTx(dAtA, i, uint64(j9))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x92
+		dAtA[i] = 0xda
 	}
-	if len(m.TopicPageLimit) > 0 {
-		dAtA12 := make([]byte, len(m.TopicPageLimit)*10)
+	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
+		dAtA12 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
 		var j11 int
-		for _, num := range m.TopicPageLimit {
+		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
+			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA12[j11] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2852,15 +2963,14 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA12[:j11])
 		i = encodeVarintTx(dAtA, i, uint64(j11))
 		i--
-		dAtA[i] = 0x2
+		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0x8a
+		dAtA[i] = 0xd2
 	}
-	if len(m.MaxRetriesToFulfilNoncesReputer) > 0 {
-		dAtA14 := make([]byte, len(m.MaxRetriesToFulfilNoncesReputer)*10)
+	if len(m.GradientDescentMaxIters) > 0 {
+		dAtA14 := make([]byte, len(m.GradientDescentMaxIters)*10)
 		var j13 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesReputer {
-			num := uint64(num1)
+		for _, num := range m.GradientDescentMaxIters {
 			for num >= 1<<7 {
 				dAtA14[j13] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2873,82 +2983,9 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA14[:j13])
 		i = encodeVarintTx(dAtA, i, uint64(j13))
 		i--
-		dAtA[i] = 0x2
-		i--
-		dAtA[i] = 0x82
-	}
-	if len(m.MaxRetriesToFulfilNoncesWorker) > 0 {
-		dAtA16 := make([]byte, len(m.MaxRetriesToFulfilNoncesWorker)*10)
-		var j15 int
-		for _, num1 := range m.MaxRetriesToFulfilNoncesWorker {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j15++
-			}
-			dAtA16[j15] = uint8(num)
-			j15++
-		}
-		i -= j15
-		copy(dAtA[i:], dAtA16[:j15])
-		i = encodeVarintTx(dAtA, i, uint64(j15))
-		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xfa
-	}
-	if len(m.GradientDescentMaxIters) > 0 {
-		dAtA18 := make([]byte, len(m.GradientDescentMaxIters)*10)
-		var j17 int
-		for _, num := range m.GradientDescentMaxIters {
-			for num >= 1<<7 {
-				dAtA18[j17] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j17++
-			}
-			dAtA18[j17] = uint8(num)
-			j17++
-		}
-		i -= j17
-		copy(dAtA[i:], dAtA18[:j17])
-		i = encodeVarintTx(dAtA, i, uint64(j17))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xf2
-	}
-	if len(m.SigmoidB) > 0 {
-		for iNdEx := len(m.SigmoidB) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.SigmoidB[iNdEx].Size()
-				i -= size
-				if _, err := m.SigmoidB[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0xea
-		}
-	}
-	if len(m.SigmoidA) > 0 {
-		for iNdEx := len(m.SigmoidA) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.SigmoidA[iNdEx].Size()
-				i -= size
-				if _, err := m.SigmoidA[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0xe2
-		}
+		dAtA[i] = 0xca
 	}
 	if len(m.CreateTopicFee) > 0 {
 		for iNdEx := len(m.CreateTopicFee) - 1; iNdEx >= 0; iNdEx-- {
@@ -2963,13 +3000,53 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xda
+			dAtA[i] = 0xc2
 		}
 	}
 	if len(m.MaxTopReputersToReward) > 0 {
-		dAtA20 := make([]byte, len(m.MaxTopReputersToReward)*10)
-		var j19 int
+		dAtA16 := make([]byte, len(m.MaxTopReputersToReward)*10)
+		var j15 int
 		for _, num := range m.MaxTopReputersToReward {
+			for num >= 1<<7 {
+				dAtA16[j15] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j15++
+			}
+			dAtA16[j15] = uint8(num)
+			j15++
+		}
+		i -= j15
+		copy(dAtA[i:], dAtA16[:j15])
+		i = encodeVarintTx(dAtA, i, uint64(j15))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xba
+	}
+	if len(m.MaxTopForecastersToReward) > 0 {
+		dAtA18 := make([]byte, len(m.MaxTopForecastersToReward)*10)
+		var j17 int
+		for _, num := range m.MaxTopForecastersToReward {
+			for num >= 1<<7 {
+				dAtA18[j17] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j17++
+			}
+			dAtA18[j17] = uint8(num)
+			j17++
+		}
+		i -= j17
+		copy(dAtA[i:], dAtA18[:j17])
+		i = encodeVarintTx(dAtA, i, uint64(j17))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb2
+	}
+	if len(m.MaxTopInferersToReward) > 0 {
+		dAtA20 := make([]byte, len(m.MaxTopInferersToReward)*10)
+		var j19 int
+		for _, num := range m.MaxTopInferersToReward {
 			for num >= 1<<7 {
 				dAtA20[j19] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -2984,12 +3061,12 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xd2
+		dAtA[i] = 0xaa
 	}
-	if len(m.MaxTopWorkersToReward) > 0 {
-		dAtA22 := make([]byte, len(m.MaxTopWorkersToReward)*10)
+	if len(m.MaxSamplesToScaleScores) > 0 {
+		dAtA22 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
 		var j21 int
-		for _, num := range m.MaxTopWorkersToReward {
+		for _, num := range m.MaxSamplesToScaleScores {
 			for num >= 1<<7 {
 				dAtA22[j21] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3004,27 +3081,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1
 		i--
-		dAtA[i] = 0xca
-	}
-	if len(m.MaxSamplesToScaleScores) > 0 {
-		dAtA24 := make([]byte, len(m.MaxSamplesToScaleScores)*10)
-		var j23 int
-		for _, num := range m.MaxSamplesToScaleScores {
-			for num >= 1<<7 {
-				dAtA24[j23] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j23++
-			}
-			dAtA24[j23] = uint8(num)
-			j23++
-		}
-		i -= j23
-		copy(dAtA[i:], dAtA24[:j23])
-		i = encodeVarintTx(dAtA, i, uint64(j23))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0xc2
+		dAtA[i] = 0xa2
 	}
 	if len(m.ValidatorsVsAlloraPercentReward) > 0 {
 		for iNdEx := len(m.ValidatorsVsAlloraPercentReward) - 1; iNdEx >= 0; iNdEx-- {
@@ -3039,7 +3096,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xba
+			dAtA[i] = 0x9a
 		}
 	}
 	if len(m.TaskRewardAlpha) > 0 {
@@ -3055,7 +3112,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xb2
+			dAtA[i] = 0x92
 		}
 	}
 	if len(m.TopicRewardAlpha) > 0 {
@@ -3071,7 +3128,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xaa
+			dAtA[i] = 0x8a
 		}
 	}
 	if len(m.TopicRewardFeeRevenueImportance) > 0 {
@@ -3087,7 +3144,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i--
 			dAtA[i] = 0x1
 			i--
-			dAtA[i] = 0xa2
+			dAtA[i] = 0x82
 		}
 	}
 	if len(m.TopicRewardStakeImportance) > 0 {
@@ -3101,15 +3158,31 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x9a
+			dAtA[i] = 0x7a
 		}
 	}
 	if len(m.MaxUnfulfilledReputerRequests) > 0 {
-		dAtA26 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
-		var j25 int
+		dAtA24 := make([]byte, len(m.MaxUnfulfilledReputerRequests)*10)
+		var j23 int
 		for _, num := range m.MaxUnfulfilledReputerRequests {
+			for num >= 1<<7 {
+				dAtA24[j23] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j23++
+			}
+			dAtA24[j23] = uint8(num)
+			j23++
+		}
+		i -= j23
+		copy(dAtA[i:], dAtA24[:j23])
+		i = encodeVarintTx(dAtA, i, uint64(j23))
+		i--
+		dAtA[i] = 0x72
+	}
+	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
+		dAtA26 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
+		var j25 int
+		for _, num := range m.MaxUnfulfilledWorkerRequests {
 			for num >= 1<<7 {
 				dAtA26[j25] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -3122,73 +3195,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA26[:j25])
 		i = encodeVarintTx(dAtA, i, uint64(j25))
 		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x92
-	}
-	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
-		dAtA28 := make([]byte, len(m.MaxUnfulfilledWorkerRequests)*10)
-		var j27 int
-		for _, num := range m.MaxUnfulfilledWorkerRequests {
-			for num >= 1<<7 {
-				dAtA28[j27] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j27++
-			}
-			dAtA28[j27] = uint8(num)
-			j27++
-		}
-		i -= j27
-		copy(dAtA[i:], dAtA28[:j27])
-		i = encodeVarintTx(dAtA, i, uint64(j27))
-		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x8a
-	}
-	if len(m.AlphaRegret) > 0 {
-		for iNdEx := len(m.AlphaRegret) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.AlphaRegret[iNdEx].Size()
-				i -= size
-				if _, err := m.AlphaRegret[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x1
-			i--
-			dAtA[i] = 0x82
-		}
-	}
-	if len(m.PRewardSpread) > 0 {
-		for iNdEx := len(m.PRewardSpread) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.PRewardSpread[iNdEx].Size()
-				i -= size
-				if _, err := m.PRewardSpread[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x7a
-		}
-	}
-	if len(m.PInferenceSynthesis) > 0 {
-		for iNdEx := len(m.PInferenceSynthesis) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.PInferenceSynthesis[iNdEx].Size()
-				i -= size
-				if _, err := m.PInferenceSynthesis[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x72
-		}
+		dAtA[i] = 0x6a
 	}
 	if len(m.Epsilon) > 0 {
 		for iNdEx := len(m.Epsilon) - 1; iNdEx >= 0; iNdEx-- {
@@ -3201,7 +3208,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x6a
+			dAtA[i] = 0x62
 		}
 	}
 	if len(m.MinStakeFraction) > 0 {
@@ -3215,7 +3222,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x62
+			dAtA[i] = 0x5a
 		}
 	}
 	if len(m.MaxGradientThreshold) > 0 {
@@ -3229,7 +3236,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x5a
+			dAtA[i] = 0x52
 		}
 	}
 	if len(m.LearningRate) > 0 {
@@ -3243,7 +3250,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x52
+			dAtA[i] = 0x4a
 		}
 	}
 	if len(m.BetaEntropy) > 0 {
@@ -3257,13 +3264,32 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x4a
+			dAtA[i] = 0x42
 		}
 	}
 	if len(m.MinEpochLength) > 0 {
-		dAtA30 := make([]byte, len(m.MinEpochLength)*10)
-		var j29 int
+		dAtA28 := make([]byte, len(m.MinEpochLength)*10)
+		var j27 int
 		for _, num1 := range m.MinEpochLength {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA28[j27] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j27++
+			}
+			dAtA28[j27] = uint8(num)
+			j27++
+		}
+		i -= j27
+		copy(dAtA[i:], dAtA28[:j27])
+		i = encodeVarintTx(dAtA, i, uint64(j27))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.RemoveStakeDelayWindow) > 0 {
+		dAtA30 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
+		var j29 int
+		for _, num1 := range m.RemoveStakeDelayWindow {
 			num := uint64(num1)
 			for num >= 1<<7 {
 				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
@@ -3277,26 +3303,7 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], dAtA30[:j29])
 		i = encodeVarintTx(dAtA, i, uint64(j29))
 		i--
-		dAtA[i] = 0x42
-	}
-	if len(m.RemoveStakeDelayWindow) > 0 {
-		dAtA32 := make([]byte, len(m.RemoveStakeDelayWindow)*10)
-		var j31 int
-		for _, num1 := range m.RemoveStakeDelayWindow {
-			num := uint64(num1)
-			for num >= 1<<7 {
-				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j31++
-			}
-			dAtA32[j31] = uint8(num)
-			j31++
-		}
-		i -= j31
-		copy(dAtA[i:], dAtA32[:j31])
-		i = encodeVarintTx(dAtA, i, uint64(j31))
-		i--
-		dAtA[i] = 0x3a
+		dAtA[i] = 0x32
 	}
 	if len(m.RequiredMinimumStake) > 0 {
 		for iNdEx := len(m.RequiredMinimumStake) - 1; iNdEx >= 0; iNdEx-- {
@@ -3309,38 +3316,24 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTx(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x32
-		}
-	}
-	if len(m.MaxMissingInferencePercent) > 0 {
-		for iNdEx := len(m.MaxMissingInferencePercent) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size := m.MaxMissingInferencePercent[iNdEx].Size()
-				i -= size
-				if _, err := m.MaxMissingInferencePercent[iNdEx].MarshalTo(dAtA[i:]); err != nil {
-					return 0, err
-				}
-				i = encodeVarintTx(dAtA, i, uint64(size))
-			}
-			i--
 			dAtA[i] = 0x2a
 		}
 	}
 	if len(m.MaxTopicsPerBlock) > 0 {
-		dAtA34 := make([]byte, len(m.MaxTopicsPerBlock)*10)
-		var j33 int
+		dAtA32 := make([]byte, len(m.MaxTopicsPerBlock)*10)
+		var j31 int
 		for _, num := range m.MaxTopicsPerBlock {
 			for num >= 1<<7 {
-				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j33++
+				j31++
 			}
-			dAtA34[j33] = uint8(num)
-			j33++
+			dAtA32[j31] = uint8(num)
+			j31++
 		}
-		i -= j33
-		copy(dAtA[i:], dAtA34[:j33])
-		i = encodeVarintTx(dAtA, i, uint64(j33))
+		i -= j31
+		copy(dAtA[i:], dAtA32[:j31])
+		i = encodeVarintTx(dAtA, i, uint64(j31))
 		i--
 		dAtA[i] = 0x22
 	}
@@ -3359,21 +3352,21 @@ func (m *OptionalParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		}
 	}
 	if len(m.MaxSerializedMsgLength) > 0 {
-		dAtA36 := make([]byte, len(m.MaxSerializedMsgLength)*10)
-		var j35 int
+		dAtA34 := make([]byte, len(m.MaxSerializedMsgLength)*10)
+		var j33 int
 		for _, num1 := range m.MaxSerializedMsgLength {
 			num := uint64(num1)
 			for num >= 1<<7 {
-				dAtA36[j35] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j35++
+				j33++
 			}
-			dAtA36[j35] = uint8(num)
-			j35++
+			dAtA34[j33] = uint8(num)
+			j33++
 		}
-		i -= j35
-		copy(dAtA[i:], dAtA36[:j35])
-		i = encodeVarintTx(dAtA, i, uint64(j35))
+		i -= j33
+		copy(dAtA[i:], dAtA34[:j33])
+		i = encodeVarintTx(dAtA, i, uint64(j33))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -3482,50 +3475,8 @@ func (m *MsgCreateNewTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			dAtA[i] = 0
 		}
 		i--
-		dAtA[i] = 0x1
-		i--
-		dAtA[i] = 0x80
+		dAtA[i] = 0x60
 	}
-	{
-		size := m.FTolerance.Size()
-		i -= size
-		if _, err := m.FTolerance.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x7a
-	{
-		size := m.PrewardForecast.Size()
-		i -= size
-		if _, err := m.PrewardForecast.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x72
-	{
-		size := m.PrewardInference.Size()
-		i -= size
-		if _, err := m.PrewardInference.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x6a
-	{
-		size := m.PrewardReputer.Size()
-		i -= size
-		if _, err := m.PrewardReputer.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintTx(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x62
 	{
 		size := m.AlphaRegret.Size()
 		i -= size
@@ -3536,11 +3487,16 @@ func (m *MsgCreateNewTopic) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	}
 	i--
 	dAtA[i] = 0x5a
-	if m.Pnorm != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.Pnorm))
-		i--
-		dAtA[i] = 0x50
+	{
+		size := m.PNorm.Size()
+		i -= size
+		if _, err := m.PNorm.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x52
 	if len(m.DefaultArg) > 0 {
 		i -= len(m.DefaultArg)
 		copy(dAtA[i:], m.DefaultArg)
@@ -4695,12 +4651,6 @@ func (m *OptionalParams) Size() (n int) {
 		}
 		n += 1 + sovTx(uint64(l)) + l
 	}
-	if len(m.MaxMissingInferencePercent) > 0 {
-		for _, e := range m.MaxMissingInferencePercent {
-			l = e.Size()
-			n += 1 + l + sovTx(uint64(l))
-		}
-	}
 	if len(m.RequiredMinimumStake) > 0 {
 		for _, e := range m.RequiredMinimumStake {
 			l = e.Size()
@@ -4751,42 +4701,24 @@ func (m *OptionalParams) Size() (n int) {
 			n += 1 + l + sovTx(uint64(l))
 		}
 	}
-	if len(m.PInferenceSynthesis) > 0 {
-		for _, e := range m.PInferenceSynthesis {
-			l = e.Size()
-			n += 1 + l + sovTx(uint64(l))
-		}
-	}
-	if len(m.PRewardSpread) > 0 {
-		for _, e := range m.PRewardSpread {
-			l = e.Size()
-			n += 1 + l + sovTx(uint64(l))
-		}
-	}
-	if len(m.AlphaRegret) > 0 {
-		for _, e := range m.AlphaRegret {
-			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
-		}
-	}
 	if len(m.MaxUnfulfilledWorkerRequests) > 0 {
 		l = 0
 		for _, e := range m.MaxUnfulfilledWorkerRequests {
 			l += sovTx(uint64(e))
 		}
-		n += 2 + sovTx(uint64(l)) + l
+		n += 1 + sovTx(uint64(l)) + l
 	}
 	if len(m.MaxUnfulfilledReputerRequests) > 0 {
 		l = 0
 		for _, e := range m.MaxUnfulfilledReputerRequests {
 			l += sovTx(uint64(e))
 		}
-		n += 2 + sovTx(uint64(l)) + l
+		n += 1 + sovTx(uint64(l)) + l
 	}
 	if len(m.TopicRewardStakeImportance) > 0 {
 		for _, e := range m.TopicRewardStakeImportance {
 			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
+			n += 1 + l + sovTx(uint64(l))
 		}
 	}
 	if len(m.TopicRewardFeeRevenueImportance) > 0 {
@@ -4820,9 +4752,16 @@ func (m *OptionalParams) Size() (n int) {
 		}
 		n += 2 + sovTx(uint64(l)) + l
 	}
-	if len(m.MaxTopWorkersToReward) > 0 {
+	if len(m.MaxTopInferersToReward) > 0 {
 		l = 0
-		for _, e := range m.MaxTopWorkersToReward {
+		for _, e := range m.MaxTopInferersToReward {
+			l += sovTx(uint64(e))
+		}
+		n += 2 + sovTx(uint64(l)) + l
+	}
+	if len(m.MaxTopForecastersToReward) > 0 {
+		l = 0
+		for _, e := range m.MaxTopForecastersToReward {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
@@ -4836,18 +4775,6 @@ func (m *OptionalParams) Size() (n int) {
 	}
 	if len(m.CreateTopicFee) > 0 {
 		for _, e := range m.CreateTopicFee {
-			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
-		}
-	}
-	if len(m.SigmoidA) > 0 {
-		for _, e := range m.SigmoidA {
-			l = e.Size()
-			n += 2 + l + sovTx(uint64(l))
-		}
-	}
-	if len(m.SigmoidB) > 0 {
-		for _, e := range m.SigmoidB {
 			l = e.Size()
 			n += 2 + l + sovTx(uint64(l))
 		}
@@ -4873,36 +4800,22 @@ func (m *OptionalParams) Size() (n int) {
 		}
 		n += 2 + sovTx(uint64(l)) + l
 	}
-	if len(m.TopicPageLimit) > 0 {
-		l = 0
-		for _, e := range m.TopicPageLimit {
-			l += sovTx(uint64(e))
-		}
-		n += 2 + sovTx(uint64(l)) + l
-	}
-	if len(m.MaxTopicPages) > 0 {
-		l = 0
-		for _, e := range m.MaxTopicPages {
-			l += sovTx(uint64(e))
-		}
-		n += 2 + sovTx(uint64(l)) + l
-	}
 	if len(m.RegistrationFee) > 0 {
 		for _, e := range m.RegistrationFee {
 			l = e.Size()
 			n += 2 + l + sovTx(uint64(l))
 		}
 	}
-	if len(m.DefaultLimit) > 0 {
+	if len(m.DefaultPageLimit) > 0 {
 		l = 0
-		for _, e := range m.DefaultLimit {
+		for _, e := range m.DefaultPageLimit {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
 	}
-	if len(m.MaxLimit) > 0 {
+	if len(m.MaxPageLimit) > 0 {
 		l = 0
-		for _, e := range m.MaxLimit {
+		for _, e := range m.MaxPageLimit {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
@@ -4920,6 +4833,54 @@ func (m *OptionalParams) Size() (n int) {
 			l += sovTx(uint64(e))
 		}
 		n += 2 + sovTx(uint64(l)) + l
+	}
+	if len(m.PRewardInference) > 0 {
+		for _, e := range m.PRewardInference {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.PRewardForecast) > 0 {
+		for _, e := range m.PRewardForecast {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.PRewardReputer) > 0 {
+		for _, e := range m.PRewardReputer {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.CRewardInference) > 0 {
+		for _, e := range m.CRewardInference {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.CRewardForecast) > 0 {
+		for _, e := range m.CRewardForecast {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.FTolerance) > 0 {
+		for _, e := range m.FTolerance {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.CNorm) > 0 {
+		for _, e := range m.CNorm {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.TopicFeeRevenueDecayRate) > 0 {
+		for _, e := range m.TopicFeeRevenueDecayRate {
+			l = e.Size()
+			n += 2 + l + sovTx(uint64(l))
+		}
 	}
 	return n
 }
@@ -4990,21 +4951,12 @@ func (m *MsgCreateNewTopic) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.Pnorm != 0 {
-		n += 1 + sovTx(uint64(m.Pnorm))
-	}
+	l = m.PNorm.Size()
+	n += 1 + l + sovTx(uint64(l))
 	l = m.AlphaRegret.Size()
 	n += 1 + l + sovTx(uint64(l))
-	l = m.PrewardReputer.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = m.PrewardInference.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = m.PrewardForecast.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = m.FTolerance.Size()
-	n += 1 + l + sovTx(uint64(l))
 	if m.AllowNegative {
-		n += 3
+		n += 2
 	}
 	return n
 }
@@ -5708,42 +5660,6 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			}
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxMissingInferencePercent", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.MaxMissingInferencePercent = append(m.MaxMissingInferencePercent, v)
-			if err := m.MaxMissingInferencePercent[len(m.MaxMissingInferencePercent)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 6:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RequiredMinimumStake", wireType)
 			}
 			var stringLen uint64
@@ -5778,7 +5694,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 7:
+		case 6:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -5854,7 +5770,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field RemoveStakeDelayWindow", wireType)
 			}
-		case 8:
+		case 7:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -5930,7 +5846,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinEpochLength", wireType)
 			}
-		case 9:
+		case 8:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BetaEntropy", wireType)
 			}
@@ -5966,7 +5882,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 10:
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field LearningRate", wireType)
 			}
@@ -6002,7 +5918,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 11:
+		case 10:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxGradientThreshold", wireType)
 			}
@@ -6038,7 +5954,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 12:
+		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinStakeFraction", wireType)
 			}
@@ -6074,7 +5990,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 13:
+		case 12:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Epsilon", wireType)
 			}
@@ -6110,115 +6026,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 14:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PInferenceSynthesis", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.PInferenceSynthesis = append(m.PInferenceSynthesis, v)
-			if err := m.PInferenceSynthesis[len(m.PInferenceSynthesis)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 15:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PRewardSpread", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.PRewardSpread = append(m.PRewardSpread, v)
-			if err := m.PRewardSpread[len(m.PRewardSpread)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 16:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AlphaRegret", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.AlphaRegret = append(m.AlphaRegret, v)
-			if err := m.AlphaRegret[len(m.AlphaRegret)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 17:
+		case 13:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6294,7 +6102,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledWorkerRequests", wireType)
 			}
-		case 18:
+		case 14:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6370,7 +6178,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxUnfulfilledReputerRequests", wireType)
 			}
-		case 19:
+		case 15:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardStakeImportance", wireType)
 			}
@@ -6406,7 +6214,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 20:
+		case 16:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardFeeRevenueImportance", wireType)
 			}
@@ -6442,7 +6250,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 21:
+		case 17:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TopicRewardAlpha", wireType)
 			}
@@ -6478,7 +6286,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 22:
+		case 18:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TaskRewardAlpha", wireType)
 			}
@@ -6514,7 +6322,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 23:
+		case 19:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorsVsAlloraPercentReward", wireType)
 			}
@@ -6550,7 +6358,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 24:
+		case 20:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6626,7 +6434,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxSamplesToScaleScores", wireType)
 			}
-		case 25:
+		case 21:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6643,7 +6451,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.MaxTopWorkersToReward = append(m.MaxTopWorkersToReward, v)
+				m.MaxTopInferersToReward = append(m.MaxTopInferersToReward, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -6678,8 +6486,8 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.MaxTopWorkersToReward) == 0 {
-					m.MaxTopWorkersToReward = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.MaxTopInferersToReward) == 0 {
+					m.MaxTopInferersToReward = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -6697,12 +6505,88 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.MaxTopWorkersToReward = append(m.MaxTopWorkersToReward, v)
+					m.MaxTopInferersToReward = append(m.MaxTopInferersToReward, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopWorkersToReward", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopInferersToReward", wireType)
 			}
-		case 26:
+		case 22:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.MaxTopForecastersToReward = append(m.MaxTopForecastersToReward, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowTx
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthTx
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthTx
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.MaxTopForecastersToReward) == 0 {
+					m.MaxTopForecastersToReward = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowTx
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.MaxTopForecastersToReward = append(m.MaxTopForecastersToReward, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopForecastersToReward", wireType)
+			}
+		case 23:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6778,7 +6662,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopReputersToReward", wireType)
 			}
-		case 27:
+		case 24:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field CreateTopicFee", wireType)
 			}
@@ -6814,79 +6698,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 28:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SigmoidA", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.SigmoidA = append(m.SigmoidA, v)
-			if err := m.SigmoidA[len(m.SigmoidA)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 29:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SigmoidB", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			var v github_com_allora_network_allora_chain_math.Dec
-			m.SigmoidB = append(m.SigmoidB, v)
-			if err := m.SigmoidB[len(m.SigmoidB)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 30:
+		case 25:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -6962,7 +6774,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field GradientDescentMaxIters", wireType)
 			}
-		case 31:
+		case 26:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7038,7 +6850,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxRetriesToFulfilNoncesWorker", wireType)
 			}
-		case 32:
+		case 27:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7114,159 +6926,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxRetriesToFulfilNoncesReputer", wireType)
 			}
-		case 33:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.TopicPageLimit = append(m.TopicPageLimit, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.TopicPageLimit) == 0 {
-					m.TopicPageLimit = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.TopicPageLimit = append(m.TopicPageLimit, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field TopicPageLimit", wireType)
-			}
-		case 34:
-			if wireType == 0 {
-				var v uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.MaxTopicPages = append(m.MaxTopicPages, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowTx
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthTx
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthTx
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.MaxTopicPages) == 0 {
-					m.MaxTopicPages = make([]uint64, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowTx
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.MaxTopicPages = append(m.MaxTopicPages, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxTopicPages", wireType)
-			}
-		case 35:
+		case 28:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field RegistrationFee", wireType)
 			}
@@ -7302,7 +6962,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 36:
+		case 29:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7319,7 +6979,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.DefaultLimit = append(m.DefaultLimit, v)
+				m.DefaultPageLimit = append(m.DefaultPageLimit, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -7354,8 +7014,8 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.DefaultLimit) == 0 {
-					m.DefaultLimit = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.DefaultPageLimit) == 0 {
+					m.DefaultPageLimit = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -7373,12 +7033,12 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.DefaultLimit = append(m.DefaultLimit, v)
+					m.DefaultPageLimit = append(m.DefaultPageLimit, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field DefaultLimit", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field DefaultPageLimit", wireType)
 			}
-		case 37:
+		case 30:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7395,7 +7055,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 						break
 					}
 				}
-				m.MaxLimit = append(m.MaxLimit, v)
+				m.MaxPageLimit = append(m.MaxPageLimit, v)
 			} else if wireType == 2 {
 				var packedLen int
 				for shift := uint(0); ; shift += 7 {
@@ -7430,8 +7090,8 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.MaxLimit) == 0 {
-					m.MaxLimit = make([]uint64, 0, elementCount)
+				if elementCount != 0 && len(m.MaxPageLimit) == 0 {
+					m.MaxPageLimit = make([]uint64, 0, elementCount)
 				}
 				for iNdEx < postIndex {
 					var v uint64
@@ -7449,12 +7109,12 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 							break
 						}
 					}
-					m.MaxLimit = append(m.MaxLimit, v)
+					m.MaxPageLimit = append(m.MaxPageLimit, v)
 				}
 			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxLimit", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxPageLimit", wireType)
 			}
-		case 38:
+		case 31:
 			if wireType == 0 {
 				var v int64
 				for shift := uint(0); ; shift += 7 {
@@ -7530,7 +7190,7 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field MinEpochLengthRecordLimit", wireType)
 			}
-		case 39:
+		case 32:
 			if wireType == 0 {
 				var v uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7606,6 +7266,294 @@ func (m *OptionalParams) Unmarshal(dAtA []byte) error {
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field BlocksPerMonth", wireType)
 			}
+		case 33:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PRewardInference", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.PRewardInference = append(m.PRewardInference, v)
+			if err := m.PRewardInference[len(m.PRewardInference)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 34:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PRewardForecast", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.PRewardForecast = append(m.PRewardForecast, v)
+			if err := m.PRewardForecast[len(m.PRewardForecast)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 35:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PRewardReputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.PRewardReputer = append(m.PRewardReputer, v)
+			if err := m.PRewardReputer[len(m.PRewardReputer)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 36:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CRewardInference", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.CRewardInference = append(m.CRewardInference, v)
+			if err := m.CRewardInference[len(m.CRewardInference)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 37:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CRewardForecast", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.CRewardForecast = append(m.CRewardForecast, v)
+			if err := m.CRewardForecast[len(m.CRewardForecast)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 38:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FTolerance", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.FTolerance = append(m.FTolerance, v)
+			if err := m.FTolerance[len(m.FTolerance)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 39:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.CNorm = append(m.CNorm, v)
+			if err := m.CNorm[len(m.CNorm)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 40:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenueDecayRate", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			var v github_com_allora_network_allora_chain_math.Dec
+			m.TopicFeeRevenueDecayRate = append(m.TopicFeeRevenueDecayRate, v)
+			if err := m.TopicFeeRevenueDecayRate[len(m.TopicFeeRevenueDecayRate)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -8087,10 +8035,10 @@ func (m *MsgCreateNewTopic) Unmarshal(dAtA []byte) error {
 			m.DefaultArg = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 10:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pnorm", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PNorm", wireType)
 			}
-			m.Pnorm = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -8100,11 +8048,26 @@ func (m *MsgCreateNewTopic) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Pnorm |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.PNorm.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AlphaRegret", wireType)
@@ -8140,142 +8103,6 @@ func (m *MsgCreateNewTopic) Unmarshal(dAtA []byte) error {
 			}
 			iNdEx = postIndex
 		case 12:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrewardReputer", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.PrewardReputer.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 13:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrewardInference", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.PrewardInference.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 14:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PrewardForecast", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.PrewardForecast.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 15:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FTolerance", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.FTolerance.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 16:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field AllowNegative", wireType)
 			}

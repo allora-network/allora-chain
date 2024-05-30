@@ -140,12 +140,12 @@ func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target str
 	upperBound, err := targetDec.Mul(upperMultiplier)
 	require.NoError(err)
 
-	if lowerBound.Lt(upperBound) {
-		require.True(value.Gte(lowerBound))
-		require.True(value.Lte(upperBound))
-	} else {
-		require.True(value.Lte(lowerBound))
-		require.True(value.Gte(upperBound))
+	if lowerBound.Lt(upperBound) { // positive values, lower < value < upper
+		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
+	} else { // negative values, upper < value < lower
+		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
 	}
 }
 
@@ -157,9 +157,10 @@ func (s *InferenceSynthesisTestSuite) inEpsilon3(value alloraMath.Dec, target st
 	s.inEpsilon(value, target, "0.001")
 }
 
+/*unused
 func (s *InferenceSynthesisTestSuite) inEpsilon4(value alloraMath.Dec, target string) {
 	s.inEpsilon(value, target, "0.0001")
-}
+}*/
 
 func (s *InferenceSynthesisTestSuite) inEpsilon5(value alloraMath.Dec, target string) {
 	s.inEpsilon(value, target, "0.00001")

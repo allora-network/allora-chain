@@ -177,22 +177,19 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          creator.String(),
-		Metadata:         metadata,
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
+		Creator:         creator.String(),
+		Metadata:        metadata,
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
-	s.MintTokensToAddress(creator, types.DefaultParamsCreateTopicFee())
+	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
 
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
@@ -210,22 +207,19 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          creator.String(),
-		Metadata:         metadata,
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
+		Creator:         creator.String(),
+		Metadata:        metadata,
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
-	creatorInitialBalance := types.DefaultParamsCreateTopicFee().Mul(cosmosMath.NewInt(3))
+	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, creatorInitialBalance))
 
 	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)

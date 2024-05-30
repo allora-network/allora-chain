@@ -114,7 +114,8 @@ func (m *Nonces) GetNonces() []*Nonce {
 type ReputerRequestNonce struct {
 	// associated with the reputer request
 	ReputerNonce *Nonce `protobuf:"bytes,1,opt,name=reputer_nonce,json=reputerNonce,proto3" json:"reputer_nonce,omitempty"`
-	// the reputers should respond to the reputer request with losses for work found at this worker nonce
+	// the reputers should respond to the reputer request with losses for work
+	// found at this worker nonce
 	WorkerNonce *Nonce `protobuf:"bytes,2,opt,name=worker_nonce,json=workerNonce,proto3" json:"worker_nonce,omitempty"`
 }
 

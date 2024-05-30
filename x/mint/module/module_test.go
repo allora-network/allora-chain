@@ -192,8 +192,9 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	blocksPerMonth, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
+	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
+	blocksPerMonth := emissionsParams.BlocksPerMonth
 
 	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
 		s.ctx,
@@ -499,8 +500,9 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	)
 	s.Require().NoError(err)
 
-	blocksPerMonth, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
+	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
+	blocksPerMonth := emissionsParams.BlocksPerMonth
 	s.ctx = s.ctx.WithBlockHeight(int64(blocksPerMonth + 1))
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)

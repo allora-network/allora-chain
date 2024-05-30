@@ -112,11 +112,7 @@ func EmitRewards(ctx sdk.Context, k keeper.Keeper, blockHeight BlockHeight, weig
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
 			totalRewardToStakedReputers.String(),
 			len(topicRewards)))
-	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get blocks per month")
-	}
-	if !totalReward.IsZero() && uint64(blockHeight)%blocksPerMonth == 0 {
+	if !totalReward.IsZero() && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
 		// set the previous percentage reward to staked reputers
 		// for the mint module to be able to control the inflation rate to that actor
 		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
@@ -186,19 +182,14 @@ func GenerateRewardsDistributionByTopic(
 				if err != nil {
 					return nil, errors.Wrapf(err, "failed to add weight to sum")
 				}
-			} else {
-				// For topics that are active and top, they will get their rewards paid out this block.
-				// Everybody else doesn't. Therefore, for topics that have topicFeeRevenue but havent received rewards,
-				// we don't reset their topic fee revenue, effectively "double counting" their topic fee revenue
-				//  giving them a chance to earn rewards in future blocks as they accumulate more fees.
-				//
-				// This call must come after GetTopicFeeRevenue() is last called per topic in
-				// GetAndOptionallyUpdateActiveTopicWeights -> GetCurrentTopicWeight
-				// because otherwise the returned revenue would be zero
-				err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
-				if err != nil {
-					return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
-				}
+			}
+			// Applies an exponential decay to the topic's revenue, regardless it's top or not
+			// This call must come after GetTopicFeeRevenue() is last called per topic in
+			// GetAndOptionallyUpdateActiveTopicWeights -> GetCurrentTopicWeight
+			// because otherwise the returned revenue would be zero
+			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to reset topic fee revenue")
 			}
 		}
 		ctx.Logger().Debug("Topic ID: ", topicId, " is not in weightsOfActiveTopics")
@@ -246,8 +237,7 @@ func FilterAndInactivateTopicsUpdatingSums(
 	alloraMath.Dec,
 	error,
 ) {
-
-	minTopicWeight, err := k.GetParamsMinTopicWeight(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to get min topic weight")
 	}
@@ -272,14 +262,14 @@ func FilterAndInactivateTopicsUpdatingSums(
 		}
 
 		// Inactivate and skip the topic if its weight is below the globally-set minimum
-		if weight.Lt(minTopicWeight) {
+		if weight.Lt(moduleParams.MinTopicWeight) {
 			ctx.Logger().Warn(fmt.Sprintf("Topic weight is below the minimum: %d", topicId))
 			err = k.InactivateTopic(ctx, topicId)
 			if err != nil {
 				return nil, alloraMath.Dec{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
 
-			// This way we won't double count from this earlier epoch revenue the next time this topic is activated
+			// Applies an exponential decay to the topic's revenue
 			// This must come after GetTopicFeeRevenue() is last called per topic because otherwise the returned revenue will be zero
 			err = k.ResetTopicFeeRevenue(ctx, topicId, blockHeight)
 			if err != nil {
@@ -374,7 +364,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get reputer participants' addresses and reward fractions to be used in the reward round for topic
-	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardSpread, reputerScores)
+	reputers, reputersRewardFractions, err := GetReputersRewardFractions(ctx, k, topicId, moduleParams.PRewardReputer, reputerScores)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward round data")
 	}
@@ -399,7 +389,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		k,
 		topicId,
 		blockHeight,
-		moduleParams.PRewardSpread,
+		moduleParams.PRewardInference,
+		moduleParams.CRewardInference,
 		infererScores,
 	)
 	if err != nil {
@@ -426,7 +417,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		k,
 		topicId,
 		blockHeight,
-		moduleParams.PRewardSpread,
+		moduleParams.PRewardForecast,
+		moduleParams.CRewardForecast,
 		forecasterScores,
 	)
 	if err != nil {
@@ -472,8 +464,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		moduleParams.SigmoidA,
-		moduleParams.SigmoidB,
 	)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -487,8 +477,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		moduleParams.SigmoidA,
-		moduleParams.SigmoidB,
 	)
 	if err != nil {
 		return []TaskRewards{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")

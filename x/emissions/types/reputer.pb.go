@@ -132,12 +132,14 @@ type ValueBundle struct {
 	// R^-_im  || log10 L^-_im || I^-_i
 	NaiveValue github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,8,opt,name=naive_value,json=naiveValue,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"naive_value"`
 	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
-	// Note: forecast-implied inferences are recomputed for each left-out inference
+	// Note: forecast-implied inferences are recomputed for each left-out
+	// inference
 	OneOutInfererValues []*WithheldWorkerAttributedValue `protobuf:"bytes,9,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
 	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
 	OneOutForecasterValues []*WithheldWorkerAttributedValue `protobuf:"bytes,10,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3" json:"one_out_forecaster_values,omitempty"`
 	// R^+_ikm || log10 L^+_ikm || I^+_ik
-	// aka one_in_forecaster_values because equivalent to using only one forecast-implied inference
+	// aka one_in_forecaster_values because equivalent to using only one
+	// forecast-implied inference
 	OneInForecasterValues []*WorkerAttributedValue `protobuf:"bytes,11,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3" json:"one_in_forecaster_values,omitempty"`
 }
 
@@ -237,7 +239,8 @@ func (m *ValueBundle) GetOneInForecasterValues() []*WorkerAttributedValue {
 	return nil
 }
 
-// For when the bundle is computed on a per-reputer basis (ie.. if there is an index `m` in the above)
+// For when the bundle is computed on a per-reputer basis (ie.. if there is an
+// index `m` in the above)
 type ReputerValueBundle struct {
 	ValueBundle *ValueBundle `protobuf:"bytes,1,opt,name=value_bundle,json=valueBundle,proto3" json:"value_bundle,omitempty"`
 	Signature   []byte       `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
