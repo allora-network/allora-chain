@@ -588,12 +588,18 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
 	s.Require().True(
 		beforeRewardsTopic1FeeRevenue.Revenue.GT(afterRewardsTopic1FeeRevenue.Revenue),
-		"Topic 1 should have more fee revenue: %s > %s",
+		"Topic 1 should lose influence of their fee revenue: %s > %s",
 		beforeRewardsTopic1FeeRevenue.Revenue.String(),
 		afterRewardsTopic1FeeRevenue.Revenue.String(),
 	)
-	// Topic 2 should have the same revenue after rewards distribution -> no rewards distributed
-	s.Require().Equal(beforeRewardsTopic2FeeRevenue.Revenue, afterRewardsTopic2FeeRevenue.Revenue)
+	// Topic 2 should also have less revenue after rewards distribution as topic rewards
+	// are shared among all topics whose epoch lengths modulo the current block height are 0
+	s.Require().True(
+		beforeRewardsTopic2FeeRevenue.Revenue.GT(afterRewardsTopic2FeeRevenue.Revenue),
+		"Topic 2 should lose influence of their fee revenue: %s > %s",
+		beforeRewardsTopic2FeeRevenue.Revenue.String(),
+		afterRewardsTopic2FeeRevenue.Revenue.String(),
+	)
 }
 
 func (s *RewardsTestSuite) setUpTopic(
@@ -2236,89 +2242,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	s.Require().Equal(len(infererScores), int(params.GetMaxTopInferersToReward()), "Only few Top inferers can get reward")
 	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
-}
-
-func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
-	topic1Weight := alloraMath.NewDecFromInt64(100)
-	topic2Weight := alloraMath.NewDecFromInt64(10)
-	topic3Weight := alloraMath.NewDecFromInt64(500)
-	topic4Weight := alloraMath.NewDecFromInt64(600)
-
-	// Define topics with varying weights
-	weights := map[uint64]*alloraMath.Dec{
-		1: &topic1Weight, // Above the minimum weight
-		2: &topic2Weight, // Below the minimum weight, should be inactivated
-		3: &topic3Weight, // Above the minimum weight
-		4: &topic4Weight, // Above the minimum weight, but no reward nonce
-	}
-	sumWeight := alloraMath.NewDecFromInt64(1210)
-	sumRevenue := cosmosMath.NewInt(3000)
-	totalReward := alloraMath.NewDecFromInt64(1000)
-
-	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 2, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 3, 1)
-	s.Require().NoError(err)
-
-	topicRewards, err := rewards.GenerateRewardsDistributionByTopic(
-		s.ctx,
-		s.emissionsKeeper,
-		1, // assuming 1 topic per block
-		1,
-		totalReward,
-		weights,
-		[]uint64{1, 2, 3, 4},
-		sumWeight,
-		sumRevenue,
-	)
-	s.Require().NoError(err)
-	s.Require().NotNil(topicRewards)
-	s.Require().Equal(1, len(topicRewards))
-}
-
-func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
-	topic1Weight := alloraMath.NewDecFromInt64(100)
-	topic2Weight := alloraMath.NewDecFromInt64(10)
-	topic3Weight := alloraMath.NewDecFromInt64(500)
-	topic4Weight := alloraMath.NewDecFromInt64(600)
-
-	// Define topics with varying weights
-	weights := map[uint64]*alloraMath.Dec{
-		1: &topic1Weight, // Above the minimum weight
-		2: &topic2Weight, // Below the minimum weight, should be inactivated
-		3: &topic3Weight, // Above the minimum weight
-		4: &topic4Weight, // Above the minimum weight, but no reward nonce
-	}
-	sumWeight := alloraMath.NewDecFromInt64(1210)
-	totalReward := alloraMath.NewDecFromInt64(1000)
-
-	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 2, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 3, 1)
-	s.Require().NoError(err)
-
-	// Test execution
-	filteredWeights, _, err := rewards.FilterAndInactivateTopicsUpdatingSums(
-		s.ctx,
-		s.emissionsKeeper,
-		weights,
-		[]uint64{1, 2, 3, 4},
-		sumWeight,
-		totalReward,
-		1,
-	)
-
-	s.Require().NoError(err)
-	s.Require().NotNil(filteredWeights)
-
-	s.Require().Equal(len(filteredWeights), 2)
-	for topicId := range filteredWeights {
-		s.Require().NotEqual(topicId, uint64(2))
-	}
 }
 
 func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers() {

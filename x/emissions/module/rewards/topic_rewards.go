@@ -140,12 +140,10 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 // Iterates through every active topic, computes its target weight, then exponential moving average to get weight.
 // Returns the total sum of weight, topic revenue, map of all of the weights by topic.
 // Note that the outputted weights are not normalized => not dependent on pan-topic data.
-// updatePrevious is a flag to perform update of previous weight of the topic
-func GetAndOptionallyUpdateActiveTopicWeights(
+func GetAndUpdateActiveTopicWeightsOfBlock(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
-	updatePreviousWeights bool,
 ) (
 	weights map[TopicId]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
@@ -160,6 +158,7 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
+	nowInactiveTopics := make([]uint64, 0)
 	fn := func(ctx sdk.Context, topic *types.Topic) error {
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
@@ -175,14 +174,26 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 			return errors.Wrapf(err, "failed to get current topic weight")
 		}
 
-		totalRevenue = totalRevenue.Add(topicFeeRevenue)
-
-		if updatePreviousWeights {
-			err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
-			if err != nil {
-				return errors.Wrapf(err, "failed to set previous topic weight")
-			}
+		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
+		if err != nil {
+			return errors.Wrapf(err, "failed to set previous topic weight")
 		}
+
+		// This revenue will be paid to top active topics of this block (the churnable topics).
+		// This happens regardless of this topic's fate (inactivation or not)
+		// => the influence of this topic's revenue needs to be appropriately diminished.
+		err = k.DropTopicFeeRevenue(ctx, topic.Id, block)
+		if err != nil {
+			return errors.Wrapf(err, "failed to reset topic fee revenue")
+		}
+
+		// If the topic is inactive, add it to the list of inactive topics
+		if weight.Lt(moduleParams.MinTopicWeight) {
+			nowInactiveTopics = append(nowInactiveTopics, topic.Id)
+			return nil
+		}
+
+		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)
 		if err != nil {
@@ -195,7 +206,15 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 	// 1000 is excessive for the topic query
 	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all rewardable topics to get weights")
+	}
+
+	// Inactivate now-inactive topics and reset their revenue
+	for _, topicId := range nowInactiveTopics {
+		err = k.InactivateTopic(ctx, topicId)
+		if err != nil {
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+		}
 	}
 
 	return weights, sumWeight, totalRevenue, nil

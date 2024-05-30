@@ -1973,7 +1973,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	newTopic := types.Topic{Id: topicId}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
-	err = keeper.ResetTopicFeeRevenue(ctx, topicId, block)
+	err = keeper.DropTopicFeeRevenue(ctx, topicId, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue in the first epoch
@@ -2000,29 +2000,29 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 
 /// TOPIC CHURN
 
-func (s *KeeperTestSuite) TestChurnReadyTopics() {
+func (s *KeeperTestSuite) TestChurnableTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(123)
 	topicId2 := uint64(456)
 
-	err := keeper.AddChurnReadyTopic(ctx, topicId)
+	err := keeper.AddChurnableTopic(ctx, topicId)
 	s.Require().NoError(err)
 
-	err = keeper.AddChurnReadyTopic(ctx, topicId2)
+	err = keeper.AddChurnableTopic(ctx, topicId2)
 	s.Require().NoError(err)
 
 	// Ensure the first topic is retrieved
-	retrievedIds, err := keeper.GetChurnReadyTopics(ctx)
+	retrievedIds, err := keeper.GetChurnableTopics(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
 
 	// Reset the churn ready topics
-	err = keeper.ResetChurnReadyTopics(ctx)
+	err = keeper.ResetChurnableTopics(ctx)
 	s.Require().NoError(err)
 
 	// Ensure no topics remain
-	remainingIds, err := keeper.GetChurnReadyTopics(ctx)
+	remainingIds, err := keeper.GetChurnableTopics(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
 }

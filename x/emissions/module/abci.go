@@ -19,8 +19,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 			blockHeight))
 
-	// Get unnormalized weights of active topics
-	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight, true)
+	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
+	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeightsOfBlock(sdkCtx, am.keeper, blockHeight)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
@@ -34,13 +34,13 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	// Reset the churn ready topics
-	err = am.keeper.ResetChurnReadyTopics(ctx)
+	err = am.keeper.ResetChurnableTopics(ctx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error resetting churn ready topics: ", err)
 		return errors.Wrapf(err, "Resetting churn ready topics error")
 	}
 
-	// NONCE MGMT with churnReady weights
+	// NONCE MGMT with Churnable weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
 	fn := func(sdkCtx sdk.Context, topic *types.Topic) error {
@@ -70,7 +70,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
+				err = am.keeper.AddChurnableTopic(ctx, topic.Id)
 				if err != nil {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
 					return
@@ -108,7 +108,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		weights,
 	)
 	if err != nil {
-		sdkCtx.Logger().Error("Error applying function on all reward ready topics: ", err)
+		sdkCtx.Logger().Error("Error applying function on all rewardable topics: ", err)
 		return err
 	}
 	wg.Wait()

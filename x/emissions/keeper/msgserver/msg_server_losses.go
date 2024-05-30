@@ -211,6 +211,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	err = ms.k.AddRewardableTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
 }
 
