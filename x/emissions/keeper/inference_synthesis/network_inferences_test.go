@@ -151,135 +151,155 @@ func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWith
 	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalcWeightedInference() {
+func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
 	topicId := inference_synthesis.TopicId(1)
 
-	tests := []struct {
-		name                                  string
-		inferenceByWorker                     map[string]*emissionstypes.Inference
-		forecastImpliedInferenceByWorker      map[string]*emissionstypes.Inference
-		maxRegret                             inference_synthesis.Regret
-		epsilon                               alloraMath.Dec
-		pNorm                                 alloraMath.Dec
-		cNorm                                 alloraMath.Dec
-		expectedNetworkCombinedInferenceValue alloraMath.Dec
-		infererNetworkRegrets                 map[string]inference_synthesis.Regret
-		forecasterNetworkRegrets              map[string]inference_synthesis.Regret
-		expectedErr                           error
-	}{
-		{ // EPOCH 3
-			name: "normal operation 1",
-			inferenceByWorker: map[string]*emissionstypes.Inference{
-				"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
-				"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
-				"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
-			},
-			forecastImpliedInferenceByWorker: map[string]*emissionstypes.Inference{
-				"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
-				"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
-				"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
-			},
-			maxRegret: alloraMath.MustNewDecFromString("0.9871536722074480"),
-			epsilon:   alloraMath.MustNewDecFromString("0.0001"),
-			pNorm:     alloraMath.MustNewDecFromString("2"),
-			cNorm:     alloraMath.MustNewDecFromString("0.75"),
-			infererNetworkRegrets: map[string]inference_synthesis.Regret{
-				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
-				"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
-				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
-			},
-			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
-				"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
-				"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
-				"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
-			},
-			expectedNetworkCombinedInferenceValue: alloraMath.MustNewDecFromString("-0.06470631905627390"),
-			expectedErr:                           nil,
-		},
-		{ // EPOCH 4
-			name: "normal operation 2",
-			inferenceByWorker: map[string]*emissionstypes.Inference{
-				"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
-				"worker1": {Value: alloraMath.MustNewDecFromString("-0.23422685055675900")},
-				"worker2": {Value: alloraMath.MustNewDecFromString("-0.18201270373970600")},
-			},
-			forecastImpliedInferenceByWorker: map[string]*emissionstypes.Inference{
-				"worker3": {Value: alloraMath.MustNewDecFromString("-0.19840891048468800")},
-				"worker4": {Value: alloraMath.MustNewDecFromString("-0.19696044261177800")},
-				"worker5": {Value: alloraMath.MustNewDecFromString("-0.20289734770434400")},
-			},
-			maxRegret: alloraMath.MustNewDecFromString("0.9737035757621540"),
-			epsilon:   alloraMath.MustNewDecFromString("0.0001"),
-			pNorm:     alloraMath.NewDecFromInt64(2),
-			cNorm:     alloraMath.MustNewDecFromString("0.75"),
-			infererNetworkRegrets: map[string]inference_synthesis.Regret{
-				"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
-				"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
-				"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
-			},
-			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
-				"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
-				"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
-				"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
-			},
-			expectedNetworkCombinedInferenceValue: alloraMath.MustNewDecFromString("-0.19466636004515200"),
-			expectedErr:                           nil,
-		},
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
+		"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
+	}
+	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
+		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
+		"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
+	}
+	maxRegret := alloraMath.MustNewDecFromString("0.9871536722074480")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	infererNetworkRegrets := map[string]inference_synthesis.Regret{
+		"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
+		"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
+		"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+	}
+	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+		"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
+		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
+		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
+	}
+	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.06470631905627390")
+
+	for inferer, regret := range infererNetworkRegrets {
+		s.emissionsKeeper.SetInfererNetworkRegret(
+			s.ctx,
+			topicId,
+			inferer,
+			emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
+		)
 	}
 
-	for _, tc := range tests {
-		s.Run(tc.name, func() {
-			for inferer, regret := range tc.infererNetworkRegrets {
-				s.emissionsKeeper.SetInfererNetworkRegret(
-					s.ctx,
-					topicId,
-					inferer,
-					emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
-				)
-			}
-
-			for forecaster, regret := range tc.forecasterNetworkRegrets {
-				s.emissionsKeeper.SetForecasterNetworkRegret(
-					s.ctx,
-					topicId,
-					forecaster,
-					emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
-				)
-			}
-
-			networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
-				s.ctx,
-				s.emissionsKeeper,
-				topicId,
-				tc.inferenceByWorker,
-				alloraMath.GetSortedKeys(tc.inferenceByWorker),
-				tc.forecastImpliedInferenceByWorker,
-				alloraMath.GetSortedKeys(tc.forecastImpliedInferenceByWorker),
-				NewWorkersAreNew(false),
-				tc.maxRegret,
-				tc.epsilon,
-				tc.pNorm,
-				tc.cNorm,
-			)
-
-			if tc.expectedErr != nil {
-				s.Require().ErrorIs(err, tc.expectedErr)
-			} else {
-				s.Require().NoError(err)
-
-				s.Require().True(
-					alloraMath.InDelta(
-						tc.expectedNetworkCombinedInferenceValue,
-						networkCombinedInferenceValue,
-						alloraMath.MustNewDecFromString("0.00001"),
-					),
-					"Network combined inference value should match expected value within epsilon",
-					tc.expectedNetworkCombinedInferenceValue.String(),
-					networkCombinedInferenceValue.String(),
-				)
-			}
-		})
+	for forecaster, regret := range forecasterNetworkRegrets {
+		s.emissionsKeeper.SetForecasterNetworkRegret(
+			s.ctx,
+			topicId,
+			forecaster,
+			emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
+		)
 	}
+
+	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		inferenceByWorker,
+		alloraMath.GetSortedKeys(inferenceByWorker),
+		forecastImpliedInferenceByWorker,
+		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		NewWorkersAreNew(false),
+		maxRegret,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
+
+	s.Require().NoError(err)
+
+	s.Require().True(
+		alloraMath.InDelta(
+			expectedNetworkCombinedInferenceValue,
+			networkCombinedInferenceValue,
+			alloraMath.MustNewDecFromString("0.00001"),
+		),
+		"Network combined inference value should match expected value within epsilon",
+		expectedNetworkCombinedInferenceValue.String(),
+		networkCombinedInferenceValue.String(),
+	)
+}
+func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
+	topicId := inference_synthesis.TopicId(1)
+
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("-0.23422685055675900")},
+		"worker2": {Value: alloraMath.MustNewDecFromString("-0.18201270373970600")},
+	}
+	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker3": {Value: alloraMath.MustNewDecFromString("-0.19840891048468800")},
+		"worker4": {Value: alloraMath.MustNewDecFromString("-0.19696044261177800")},
+		"worker5": {Value: alloraMath.MustNewDecFromString("-0.20289734770434400")},
+	}
+	maxRegret := alloraMath.MustNewDecFromString("0.9737035757621540")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	pNorm := alloraMath.NewDecFromInt64(2)
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	infererNetworkRegrets := map[string]inference_synthesis.Regret{
+		"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
+		"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
+		"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
+	}
+	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+		"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
+		"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
+		"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
+	}
+	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.19486643996868595")
+
+	for inferer, regret := range infererNetworkRegrets {
+		s.emissionsKeeper.SetInfererNetworkRegret(
+			s.ctx,
+			topicId,
+			inferer,
+			emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
+		)
+	}
+
+	for forecaster, regret := range forecasterNetworkRegrets {
+		s.emissionsKeeper.SetForecasterNetworkRegret(
+			s.ctx,
+			topicId,
+			forecaster,
+			emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
+		)
+	}
+
+	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		inferenceByWorker,
+		alloraMath.GetSortedKeys(inferenceByWorker),
+		forecastImpliedInferenceByWorker,
+		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		NewWorkersAreNew(false),
+		maxRegret,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
+
+	s.Require().NoError(err)
+
+	s.Require().True(
+		alloraMath.InDelta(
+			expectedNetworkCombinedInferenceValue,
+			networkCombinedInferenceValue,
+			alloraMath.MustNewDecFromString("0.00001"),
+		),
+		"Network combined inference value should match expected value within epsilon",
+		expectedNetworkCombinedInferenceValue.String(),
+		networkCombinedInferenceValue.String(),
+	)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
