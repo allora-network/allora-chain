@@ -1,7 +1,7 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -24,7 +24,6 @@ func DefaultParams() Params {
 		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),  // gradient descent stops when gradient falls below this
 		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),    // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		Epsilon:                         alloraMath.MustNewDecFromString("0.0001"), // 0 threshold to prevent div by 0 and 0-approximation errors
-		PRewardSpread:                   alloraMath.NewDecFromInt64(1),             // fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
 		MaxUnfulfilledWorkerRequests:    uint64(100),                               // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		MaxUnfulfilledReputerRequests:   uint64(100),                               // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),    // importance of stake in determining rewards for a topic
@@ -37,16 +36,21 @@ func DefaultParams() Params {
 		MaxTopForecastersToReward:       uint64(6),                                 // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:          uint64(12),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
-		SigmoidA:                        alloraMath.NewDecFromInt64(8),             // sigmoid function parameter, a = 8
-		SigmoidB:                        alloraMath.MustNewDecFromString("0.5"),    // sigmoid function parameter, b = 0.5
 		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
 		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
-		DefaultPageLimit:                uint64(100),                               // default limit for pagination
+		DefaultPageLimit:                uint64(100),                               // how many topics to return per page during churn of requests
 		MaxPageLimit:                    uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:          int64(1000 * 1000),                        // maximum size of data to msg and query server in bytes
 		BlocksPerMonth:                  uint64(525960),                            // ~5 seconds block time, 6311520 per year, 525960 per month
+		PRewardInference:                alloraMath.NewDecFromInt64(1),             // fiducial value for rewards calculation
+		PRewardForecast:                 alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
+		PRewardReputer:                  alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
+		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
+		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
+		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),   // fiducial value for rewards calculation
+		CNorm:                           alloraMath.MustNewDecFromString("0.75"),   // fiducial value for inference synthesis
 		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"),  // rate at which topic fee revenue decays over time
 	}
 }
@@ -89,9 +93,6 @@ func (p Params) Validate() error {
 	if err := validateEpsilon(p.Epsilon); err != nil {
 		return err
 	}
-	if err := validatePRewardSpread(p.PRewardSpread); err != nil {
-		return err
-	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
 		return err
 	}
@@ -128,12 +129,6 @@ func (p Params) Validate() error {
 	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
 		return err
 	}
-	if err := validateSigmoidA(p.SigmoidA); err != nil {
-		return err
-	}
-	if err := validateSigmoidB(p.SigmoidB); err != nil {
-		return err
-	}
 	if err := validateMaxRetriesToFulfilNoncesWorker(p.MaxRetriesToFulfilNoncesWorker); err != nil {
 		return err
 	}
@@ -156,6 +151,27 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
+		return err
+	}
+	if err := validatePRewardInference(p.PRewardInference); err != nil {
+		return err
+	}
+	if err := validatePRewardForecast(p.PRewardForecast); err != nil {
+		return err
+	}
+	if err := validatePRewardReputer(p.PRewardReputer); err != nil {
+		return err
+	}
+	if err := validateCRewardInference(p.CRewardInference); err != nil {
+		return err
+	}
+	if err := validateCRewardForecast(p.CRewardForecast); err != nil {
+		return err
+	}
+	if err := validateFTolerance(p.FTolerance); err != nil {
+		return err
+	}
+	if err := validateCNorm(p.CNorm); err != nil {
 		return err
 	}
 	if err := validateTopicFeeRevenueDecayRate(p.TopicFeeRevenueDecayRate); err != nil {
@@ -274,9 +290,63 @@ func validateEpsilon(i alloraMath.Dec) error {
 	return nil
 }
 
-// fiducial value = 1; Exponent for W_i total reward allocated to reputers per timestep
+// fiducial value for rewards calculation
 // should be x > 0
-func validatePRewardSpread(i alloraMath.Dec) error {
+func validatePRewardInference(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validatePRewardForecast(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validatePRewardReputer(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateCRewardInference(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateCRewardForecast(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for rewards calculation
+// should be x > 0
+func validateFTolerance(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// fiducial value for inference synthesis
+// should be x > 0
+func validateCNorm(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -371,18 +441,6 @@ func validateCreateTopicFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
 		return ErrValidationMustBeNonNegative
 	}
-	return nil
-}
-
-// sigmoid function parameter, a = 8
-// should be ??? (positive number?)
-func validateSigmoidA(i alloraMath.Dec) error {
-	return nil
-}
-
-// sigmoid function parameter, b = 0.5
-// should be ??? (between zero and one always? positive number??)
-func validateSigmoidB(i alloraMath.Dec) error {
 	return nil
 }
 

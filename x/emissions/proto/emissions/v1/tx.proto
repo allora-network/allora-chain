@@ -81,48 +81,56 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string epsilon = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_spread = 13
+  repeated uint64 max_unfulfilled_worker_requests = 13;
+  repeated uint64 max_unfulfilled_reputer_requests = 14;
+  repeated string topic_reward_stake_importance = 15
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_unfulfilled_worker_requests = 14;
-  repeated uint64 max_unfulfilled_reputer_requests = 15;
-  repeated string topic_reward_stake_importance = 16
+  repeated string topic_reward_fee_revenue_importance = 16
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_fee_revenue_importance = 17
+  repeated string topic_reward_alpha = 17
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_reward_alpha = 18
+  repeated string task_reward_alpha = 18
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string task_reward_alpha = 19
+  repeated string validators_vs_allora_percent_reward = 19
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string validators_vs_allora_percent_reward = 20
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 max_samples_to_scale_scores = 21;
-  repeated uint64 max_top_inferers_to_reward = 22;
-  repeated uint64 max_top_forecasters_to_reward = 23;
-  repeated uint64 max_top_reputers_to_reward = 24;
-  repeated string create_topic_fee = 25 [
+  repeated uint64 max_samples_to_scale_scores = 20;
+  repeated uint64 max_top_inferers_to_reward = 21;
+  repeated uint64 max_top_forecasters_to_reward = 22;
+  repeated uint64 max_top_reputers_to_reward = 23;
+  repeated string create_topic_fee = 24 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated string sigmoid_a = 26
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string sigmoid_b = 27
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated uint64 gradient_descent_max_iters = 28;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 29;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 30;
-  repeated string registration_fee = 31 [
+  repeated uint64 gradient_descent_max_iters = 25;
+  repeated int64 max_retries_to_fulfil_nonces_worker = 26;
+  repeated int64 max_retries_to_fulfil_nonces_reputer = 27;
+  repeated string registration_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 default_page_limit = 32;
-  repeated uint64 max_page_limit = 33;
-  repeated int64 min_epoch_length_record_limit = 34;
-  repeated uint64 blocks_per_month = 35;
-  repeated string topic_fee_revenue_decay_rate = 36
+  repeated uint64 default_page_limit = 29;
+  repeated uint64 max_page_limit = 30;
+  repeated int64 min_epoch_length_record_limit = 31;
+  repeated uint64 blocks_per_month = 32;
+  repeated string p_reward_inference = 33
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string p_reward_forecast = 34
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string p_reward_reputer = 35
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string c_reward_inference = 36
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string c_reward_forecast = 37
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string f_tolerance = 38
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string c_norm = 39
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string topic_fee_revenue_decay_rate = 40
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
@@ -150,18 +158,11 @@ message MsgCreateNewTopic {
   int64 epoch_length = 7;
   int64 ground_truth_lag = 8;
   string default_arg = 9;
-  uint64 pnorm = 10;
+  string p_norm = 10
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   string alpha_regret = 11
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_reputer = 12
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_inference = 13
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string preward_forecast = 14
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string f_tolerance = 15
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bool allow_negative = 16;
+  bool allow_negative = 12;
 }
 
 message MsgCreateNewTopicResponse {

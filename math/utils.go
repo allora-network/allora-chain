@@ -111,3 +111,73 @@ func StdDev(data []Dec) (Dec, error) {
 	}
 	return sqrtSdOverLen, nil
 }
+
+// Implements the new gradient function phi prime
+// φ'_p(x) = p / (exp(p * (c - x)) + 1)
+func Gradient(p, c, x Dec) (Dec, error) {
+	// Calculate c - x
+	cMinusX, err := c.Sub(x)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate p * (c - x)
+	pTimesCMinusX, err := p.Mul(cMinusX)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate exp(p * (c - x))
+	eToThePtimesCMinusX, err := Exp(pTimesCMinusX)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate exp(p * (c - x)) + 1
+	onePlusEToThePtimesCMinusX, err := OneDec().Add(eToThePtimesCMinusX)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate p / (exp(p * (c - x)) + 1)
+	ret, err := p.Quo(onePlusEToThePtimesCMinusX)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	return ret, nil
+}
+
+// Implements the potential function phi for the module
+// ϕ_p(x) = ln(1 + e^(p * (x - c)))
+func Phi(p, c, x Dec) (Dec, error) {
+	// Calculate p * (x - c)
+	xMinusC, err := x.Sub(c)
+	if err != nil {
+		return Dec{}, err
+	}
+	pTimesXMinusC, err := p.Mul(xMinusC)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate e^(p * (x - c))
+	eToThePtimesXminusC, err := Exp(pTimesXMinusC)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate 1 + e^(p * (x - c))
+	onePlusEToThePtimesXminusC, err := OneDec().Add(eToThePtimesXminusC)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	// Calculate ln(1 + e^(p * (x - c)))
+	result, err := Ln(onePlusEToThePtimesXminusC)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	return result, nil
+}
