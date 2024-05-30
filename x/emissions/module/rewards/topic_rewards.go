@@ -183,7 +183,7 @@ func GetAndUpdateActiveTopicWeights(
 		// This revenue will be paid to top active topics of this block (the churnable topics).
 		// This happens regardless of this topic's fate (inactivation or not)
 		// => the influence of this topic's revenue needs to be appropriately diminished.
-		err = k.DropTopicFeeRevenue(ctx, topic.Id, block)
+		err = k.DripTopicFeeRevenue(ctx, topic.Id, block)
 		if err != nil {
 			return errors.Wrapf(err, "failed to reset topic fee revenue")
 		}

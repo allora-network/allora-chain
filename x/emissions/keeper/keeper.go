@@ -1391,7 +1391,7 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 }
 
 // Drop the fee revenue by the global Ecosystem bucket drip amount
-func (k *Keeper) DropTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
