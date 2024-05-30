@@ -829,28 +829,24 @@ func ExtractValues(bundle *types.ValueBundle) []alloraMath.Dec {
 	for _, v := range bundle.InfererValues {
 		values = append(values, v.Value)
 	}
-
 	sort.Slice(bundle.ForecasterValues, func(i, j int) bool {
 		return bundle.ForecasterValues[i].Worker < bundle.ForecasterValues[j].Worker
 	})
 	for _, v := range bundle.ForecasterValues {
 		values = append(values, v.Value)
 	}
-
 	sort.Slice(bundle.OneOutInfererValues, func(i, j int) bool {
 		return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker
 	})
 	for _, v := range bundle.OneOutInfererValues {
 		values = append(values, v.Value)
 	}
-
 	sort.Slice(bundle.OneOutForecasterValues, func(i, j int) bool {
 		return bundle.OneOutForecasterValues[i].Worker < bundle.OneOutForecasterValues[j].Worker
 	})
 	for _, v := range bundle.OneOutForecasterValues {
 		values = append(values, v.Value)
 	}
-
 	sort.Slice(bundle.OneInForecasterValues, func(i, j int) bool {
 		return bundle.OneInForecasterValues[i].Worker < bundle.OneInForecasterValues[j].Worker
 	})
