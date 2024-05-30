@@ -17,18 +17,18 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:          m.AliceAddr,
-		Metadata:         "ETH 24h Prediction",
-		LossLogic:        "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
-		LossMethod:       "loss-calculation-eth.wasm",
-		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
-		InferenceMethod:  "allora-inference-function.wasm",
-		EpochLength:      5,
-		GroundTruthLag:   20,
-		DefaultArg:       "ETH",
-		PNorm:            alloraMath.NewDecFromInt64(2),
-		AlphaRegret:      alloraMath.NewDecFromInt64(1),
-		AllowNegative:    true,
+		Creator:         m.AliceAddr,
+		Metadata:        "ETH 24h Prediction",
+		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
+		LossMethod:      "loss-calculation-eth.wasm",
+		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
+		InferenceMethod: "allora-inference-function.wasm",
+		EpochLength:     5,
+		GroundTruthLag:  20,
+		DefaultArg:      "ETH",
+		PNorm:           alloraMath.NewDecFromInt64(2),
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		AllowNegative:   true,
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

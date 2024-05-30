@@ -105,31 +105,31 @@ func Gradient(p, c, x Dec) (Dec, error) {
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	// Calculate p * (c - x)
 	pTimesCMinusX, err := p.Mul(cMinusX)
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	// Calculate exp(p * (c - x))
 	eToThePtimesCMinusX, err := Exp(pTimesCMinusX)
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	// Calculate exp(p * (c - x)) + 1
 	onePlusEToThePtimesCMinusX, err := OneDec().Add(eToThePtimesCMinusX)
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	// Calculate p / (exp(p * (c - x)) + 1)
 	ret, err := p.Quo(onePlusEToThePtimesCMinusX)
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	return ret, nil
 }
 
@@ -145,7 +145,7 @@ func Phi(p, c, x Dec) (Dec, error) {
 	if err != nil {
 		return Dec{}, err
 	}
-	
+
 	// Calculate e^(p * (x - c))
 	eToThePtimesXminusC, err := Exp(pTimesXMinusC)
 	if err != nil {

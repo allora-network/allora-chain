@@ -80,7 +80,7 @@ func TestPhiSimple(t *testing.T) {
 func TestGradient(t *testing.T) {
 	tests := []struct {
 		name        string
-		c 		    alloraMath.Dec
+		c           alloraMath.Dec
 		p           alloraMath.Dec
 		x           alloraMath.Dec
 		expected    alloraMath.Dec
@@ -134,4 +134,3 @@ func TestGradient(t *testing.T) {
 		})
 	}
 }
-
