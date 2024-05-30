@@ -2965,11 +2965,12 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 }
 
 func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipantDropsOut() {
-	/// SETUP
 	require := s.Require()
 
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
+
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -2985,7 +2986,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
 
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
