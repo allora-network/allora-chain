@@ -62,6 +62,106 @@ func AreAllWorkersNew(
 	}, nil
 }
 
+type NormalizedRegrets struct {
+	Regrets   map[string]Regret
+	MaxRegret Regret
+}
+
+func GetInfererNormalizedRegretsWithMax(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	sortedInferers []Worker,
+	fTolerance alloraMath.Dec,
+) (NormalizedRegrets, error) {
+	infererRegrets := make([]Regret, 0)
+	for _, inferer := range sortedInferers {
+		regret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
+		if err != nil {
+			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error getting inferer regret")
+		}
+		infererRegrets = append(infererRegrets, regret.Value)
+	}
+
+	// Calc std dev of regrets + f_tolerance
+	// σ(R_ijk) + ε
+	stdDevRegrets, err := alloraMath.StdDev(infererRegrets)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
+	}
+	// Add f_tolerance to standard deviation
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Add(fTolerance)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of inferer regrets")
+	}
+
+	// Normalize the regrets
+	normalizedRegrets := make(map[string]Regret)
+	maxRegret := alloraMath.ZeroDec()
+	for i, inferer := range sortedInferers {
+		regretFrac, err := infererRegrets[i].Quo(stdDevRegretsPlusEpsilon.Abs())
+		if err != nil {
+			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
+		}
+		normalizedRegrets[inferer] = regretFrac
+		if i == 0 || regretFrac.Gt(maxRegret) {
+			maxRegret = regretFrac
+		}
+	}
+
+	return NormalizedRegrets{
+		Regrets:   normalizedRegrets,
+		MaxRegret: maxRegret,
+	}, nil
+}
+
+func GetForecasterNormalizedRegretsWithMax(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	sortedForecasters []Worker,
+	fTolerance alloraMath.Dec,
+) (NormalizedRegrets, error) {
+	forecasterRegrets := make([]Regret, 0)
+	for _, forecaster := range sortedForecasters {
+		regret, _, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
+		if err != nil {
+			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
+		}
+		forecasterRegrets = append(forecasterRegrets, regret.Value)
+	}
+
+	// Calc std dev of regrets + f_tolerance
+	stdDevRegrets, err := alloraMath.StdDev(forecasterRegrets)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
+	}
+	// Add f_tolerance to standard deviation
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Add(fTolerance)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of forecaster regrets")
+	}
+
+	// Normalize the regrets
+	normalizedRegrets := make(map[string]Regret)
+	maxRegret := alloraMath.ZeroDec()
+	for i, forecaster := range sortedForecasters {
+		regretFrac, err := forecasterRegrets[i].Quo(stdDevRegretsPlusEpsilon.Abs())
+		if err != nil {
+			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
+		}
+		normalizedRegrets[forecaster] = regretFrac
+		if i == 0 || regretFrac.Gt(maxRegret) {
+			maxRegret = regretFrac
+		}
+	}
+
+	return NormalizedRegrets{
+		Regrets:   normalizedRegrets,
+		MaxRegret: maxRegret,
+	}, nil
+}
+
 type StdDevRegrets struct {
 	StdDevInferenceRegret     Regret
 	StdDevForecastRegret      Regret
@@ -149,7 +249,7 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 
 func accumulateNormalizedI_iAndSumWeights(
 	inference *emissions.Inference,
-	regret emissions.TimestampedValue,
+	normalizedRegret alloraMath.Dec,
 	noPriorRegret bool,
 	allWorkersAreNew bool,
 	maxRegret Regret,
@@ -179,15 +279,67 @@ func accumulateNormalizedI_iAndSumWeights(
 		}
 	} else {
 		// If at least one worker is not new, then we take a weighted average of all workers' inferences
-		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
-		regretFrac, err := regret.Value.Quo(maxRegret.Abs())
+
+		// Calculate the upper and lower bounds for regret normalization
+		// upper bound: c + 6.75 / p
+		v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
 		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating regret fraction")
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
 		}
-		weight, err := alloraMath.Gradient(pNorm, cNorm, regretFrac)
+		cPlus6Point75OverP, err := cNorm.Add(v6Point75OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
+		}
+
+		// lower bound: c - 8.25 / p
+		v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+		cMinus8Point25OverP, err := cNorm.Sub(v8Point25OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+
+		// threshold for zero weight: c - 17.25 / p
+		v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+		cMinus17Point25OverP, err := cNorm.Sub(v17Point25OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower threshold for zero weight")
+		}
+
+		// Cap the normalized regrets at an upper value
+		// normalizedRegret = min(normalizedRegret, c + 6.75 / p)
+		if normalizedRegret.Gt(cPlus6Point75OverP) {
+			normalizedRegret = cPlus6Point75OverP
+		}
+
+		// if max(normalizedRegret) < c - 8.25 / p, then normalizedRegret = normalizedRegret - max(normalizedRegret) + (c - 8.25 / p)
+		if normalizedRegret.Lt(cMinus8Point25OverP) {
+			normalizedRegret, err = normalizedRegret.Sub(maxRegret)
+			if err != nil {
+				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
+			}
+			normalizedRegret, err = normalizedRegret.Add(cMinus8Point25OverP)
+			if err != nil {
+				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adjusting anchored normalized regrets")
+			}
+		}
+
+		weight, err := alloraMath.Gradient(pNorm, cNorm, normalizedRegret)
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating gradient")
 		}
+
+		// Set weight to zero for low regrets
+		// if regretFrac < c - 17.25 / p, then weight = 0
+		if normalizedRegret.Lt(cMinus17Point25OverP) {
+			weight = alloraMath.ZeroDec()
+		}
+
 		if !weight.Equal(alloraMath.ZeroDec()) && inference != nil {
 			weightTimesInference, err := weight.Mul(inference.Value) // numerator of network combined inference calculation
 			if err != nil {
@@ -220,32 +372,32 @@ func CalcWeightedInference(
 	sortedInferers []Worker,
 	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
 	sortedForecasters []Worker,
+	infererNormalizedRegrets NormalizedRegrets,
+	forecasterNormalizedRegrets NormalizedRegrets,
 	allWorkersAreNew AllWorkersAreNew,
-	maxRegret Regret,
 	epsilon alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) (InferenceValue, error) {
-	if maxRegret.Lt(epsilon) {
-		maxRegret = epsilon
-	}
-
 	// Calculate the network combined inference and network worker regrets
 	unnormalizedNetworkInferece := alloraMath.ZeroDec()
 	sumWeights := alloraMath.ZeroDec()
 
 	for _, inferer := range sortedInferers {
 		// Get the regret of the inferer
-		regret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
+		_, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
+		// Get normalized regret of the inferer
+		normalizedRegret := infererNormalizedRegrets.Regrets[inferer]
+
 		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			inferenceByWorker[inferer],
-			regret,
+			normalizedRegret,
 			noPriorRegret,
 			allWorkersAreNew.AllInferersAreNew,
-			maxRegret,
+			infererNormalizedRegrets.MaxRegret,
 			pNorm,
 			cNorm,
 			unnormalizedNetworkInferece,
@@ -258,16 +410,19 @@ func CalcWeightedInference(
 
 	for _, forecaster := range sortedForecasters {
 		// Get the regret of the forecaster
-		regret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
+		_, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecaster)
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
+		// Get normalized regret of the forecaster
+		normalizedRegret := forecasterNormalizedRegrets.Regrets[forecaster]
+
 		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			forecastImpliedInferenceByWorker[forecaster],
-			regret,
+			normalizedRegret,
 			noPriorRegret,
 			allWorkersAreNew.AllForecastersAreNew,
-			maxRegret,
+			forecasterNormalizedRegrets.MaxRegret,
 			pNorm,
 			cNorm,
 			unnormalizedNetworkInferece,
@@ -303,7 +458,8 @@ func CalcOneOutInferences(
 	sortedForecasters []Worker,
 	forecasts *emissions.Forecasts,
 	allWorkersAreNew AllWorkersAreNew,
-	maxRegret Regret,
+	infererNormalizedRegrets NormalizedRegrets,
+	forecasterNormalizedRegrets NormalizedRegrets,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
 	pNorm alloraMath.Dec,
@@ -347,8 +503,9 @@ func CalcOneOutInferences(
 			sortedInferersWithoutWorker,
 			forecastImpliedInferencesWithoutWorkerByWorker,
 			sortedForecasters,
+			infererNormalizedRegrets,
+			forecasterNormalizedRegrets,
 			allWorkersAreNew,
-			maxRegret,
 			epsilon,
 			pNorm,
 			cNorm,
@@ -386,8 +543,9 @@ func CalcOneOutInferences(
 			sortedInferers,
 			impliedInferenceWithoutWorker,
 			sortedForecastersWithoutWorker,
+			infererNormalizedRegrets,
+			forecasterNormalizedRegrets,
 			allWorkersAreNew,
-			maxRegret,
 			epsilon,
 			pNorm,
 			cNorm,
@@ -444,7 +602,7 @@ func CalcOneInInferences(
 			cNorm,
 		)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err, "Error calculating one-in inference")
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating one-in inference")
 		}
 		oneInInferences = append(oneInInferences, &emissions.WorkerAttributedValue{
 			Worker: oneInForecaster,
@@ -473,7 +631,7 @@ func CalcNetworkInferences(
 
 	allWorkersAreNew, err := AreAllWorkersNew(ctx, k, topicId, sortedInferers, forecasts)
 	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error checking if all workers are new")
+		return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error checking if all workers are new")
 	}
 
 	// Calculate forecast-implied inferences I_ik
@@ -492,21 +650,17 @@ func CalcNetworkInferences(
 	}
 	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
 
-	// Calc the std dev of the regrets admitted by any worker for an inference or forecast task
-	stdDevRegrets, err := CalcTheStdDevOfRegretsAmongWorkersWithLosses(
-		ctx,
-		k,
-		topicId,
-		inferenceByWorker,
-		sortedInferers,
-		forecastImpliedInferenceByWorker,
-		sortedForecasters,
-		epsilon,
-	)
+	// Get Inferer normalized regrets and max regret
+	infererNormalizedRegrets, err := GetInfererNormalizedRegretsWithMax(ctx, k, topicId, sortedInferers, epsilon)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error finding max regret among workers with losses: %s", err.Error()))
+		ctx.Logger().Warn(fmt.Sprintf("Error getting inferer normalized regrets: %s", err.Error()))
 	}
-	maxStdDevCombinedRegret := alloraMath.Max(stdDevRegrets.StdDevInferenceRegret, stdDevRegrets.StdDevForecastRegret)
+
+	// Get Forecaster normalized regrets and max regret
+	forecastNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(ctx, k, topicId, sortedForecasters, epsilon)
+	if err != nil {
+		ctx.Logger().Warn(fmt.Sprintf("Error getting forecaster normalized regrets: %s", err.Error()))
+	}
 
 	// Calculate the combined network inference I_i
 	combinedNetworkInference, err := CalcWeightedInference(
@@ -517,8 +671,9 @@ func CalcNetworkInferences(
 		sortedInferers,
 		forecastImpliedInferenceByWorker,
 		sortedForecasters,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		allWorkersAreNew,
-		maxStdDevCombinedRegret,
 		epsilon,
 		pNorm,
 		cNorm,
@@ -536,8 +691,9 @@ func CalcNetworkInferences(
 		sortedInferers,
 		nil,
 		nil,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		allWorkersAreNew,
-		stdDevRegrets.StdDevInferenceRegret,
 		epsilon,
 		pNorm,
 		cNorm,
@@ -557,7 +713,8 @@ func CalcNetworkInferences(
 		sortedForecasters,
 		forecasts,
 		allWorkersAreNew,
-		maxStdDevCombinedRegret,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
 		pNorm,
@@ -633,7 +790,7 @@ func GetNetworkInferencesAtBlock(
 
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
+		return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
 	for _, infererence := range inferences.Inferences {
