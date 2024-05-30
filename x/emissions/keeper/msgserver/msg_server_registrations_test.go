@@ -323,19 +323,16 @@ func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          worker.String(),
-		Metadata:         "test",
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      epochLength,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
+		Creator:         worker.String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

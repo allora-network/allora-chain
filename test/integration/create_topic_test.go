@@ -17,22 +17,18 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:          m.AliceAddr,
-		Metadata:         "ETH 24h Prediction",
-		LossLogic:        "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
-		LossMethod:       "loss-calculation-eth.wasm",
-		InferenceLogic:   "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
-		InferenceMethod:  "allora-inference-function.wasm",
-		EpochLength:      5,
-		GroundTruthLag:   20,
-		DefaultArg:       "ETH",
-		Pnorm:            2,
-		AlphaRegret:      alloraMath.MustNewDecFromString("3.14"),
-		PrewardReputer:   alloraMath.MustNewDecFromString("6.2"),
-		PrewardInference: alloraMath.MustNewDecFromString("7.3"),
-		PrewardForecast:  alloraMath.MustNewDecFromString("8.4"),
-		FTolerance:       alloraMath.MustNewDecFromString("5.5"),
-		AllowNegative:    true,
+		Creator:         m.AliceAddr,
+		Metadata:        "ETH 24h Prediction",
+		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
+		LossMethod:      "loss-calculation-eth.wasm",
+		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
+		InferenceMethod: "allora-inference-function.wasm",
+		EpochLength:     5,
+		GroundTruthLag:  20,
+		DefaultArg:      "ETH",
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:   true,
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -66,12 +62,8 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Equal(m.T, createTopicRequest.EpochLength, storedTopic.EpochLength)
 	require.Equal(m.T, createTopicRequest.GroundTruthLag, storedTopic.GroundTruthLag)
 	require.Equal(m.T, createTopicRequest.DefaultArg, storedTopic.DefaultArg)
-	require.Equal(m.T, createTopicRequest.Pnorm, storedTopic.Pnorm)
+	require.Equal(m.T, createTopicRequest.PNorm, storedTopic.PNorm)
 	require.True(m.T, createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret), "Alpha Regret not equal %s != %s", createTopicRequest.AlphaRegret, storedTopic.AlphaRegret)
-	require.True(m.T, createTopicRequest.PrewardReputer.Equal(storedTopic.PrewardReputer), "Preward Reputer not equal %s != %s", createTopicRequest.PrewardReputer, storedTopic.PrewardReputer)
-	require.True(m.T, createTopicRequest.PrewardInference.Equal(storedTopic.PrewardInference), "Preward Inference not equal %s != %s", createTopicRequest.PrewardInference, storedTopic.PrewardInference)
-	require.True(m.T, createTopicRequest.PrewardForecast.Equal(storedTopic.PrewardForecast), "Preward Forecast not equal %s != %s", createTopicRequest.PrewardForecast, storedTopic.PrewardForecast)
-	require.True(m.T, createTopicRequest.FTolerance.Equal(storedTopic.FTolerance), "FTolerance not equal %s != %s", createTopicRequest.FTolerance, storedTopic.FTolerance)
 
 	return topicId
 }

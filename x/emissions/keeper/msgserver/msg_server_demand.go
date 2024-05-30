@@ -21,7 +21,7 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	}
 
 	// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
-	epsilon, err := ms.k.GetParamsEpsilon(ctx)
+	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	if err != nil {
 		return nil, err
 	}
-	if amountDec.Lte(epsilon) {
+	if amountDec.Lte(params.Epsilon) {
 		return nil, types.ErrFundAmountTooLow
 	}
 	// Check sender has funds to pay for the inference request

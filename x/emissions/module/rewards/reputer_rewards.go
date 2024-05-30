@@ -14,7 +14,7 @@ func GetReputersRewardFractions(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
-	pRewardSpread alloraMath.Dec,
+	pReward alloraMath.Dec,
 	scoresAtBlock []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
 
@@ -35,7 +35,7 @@ func GetReputersRewardFractions(
 		}
 	}
 
-	rewardFractions, err := CalculateReputerRewardFractions(stakes, scores, pRewardSpread)
+	rewardFractions, err := CalculateReputerRewardFractions(stakes, scores, pReward)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward fractions")
 	}

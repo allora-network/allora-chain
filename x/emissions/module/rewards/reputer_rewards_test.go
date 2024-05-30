@@ -496,19 +496,16 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string) (uint64, error) {
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          creator,
-		Metadata:         "test",
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.MustNewDecFromString("0.01"),
+		Creator:         creator,
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	if err != nil {
