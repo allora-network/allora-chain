@@ -1389,9 +1389,27 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 
 // Reset the fee revenue collected by a topic incurred at a block
 func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return err
+	}
 	newTopicFeeRevenue := types.TopicFeeRevenue{
 		Epoch:   block,
 		Revenue: cosmosMath.ZeroInt(),
+	}
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	epsilon := moduleParams.Epsilon
+	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
+	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
+	if topicFeeRevenueDec.Gt(epsilon) {
+		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
+		if err != nil {
+			return err
+		}
+		newTopicFeeRevenue.Revenue = val.SdkIntTrim()
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
