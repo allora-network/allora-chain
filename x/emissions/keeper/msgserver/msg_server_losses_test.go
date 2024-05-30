@@ -241,7 +241,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedWorkerNonceIs
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
-	reputerValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight = 123 /// workerNonce.BlockHeight + 2
+	reputerValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight = 123
 	// END MODIFICATION
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
@@ -280,7 +280,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNonceI
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
-	reputerValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight = 123 /// workerNonce.BlockHeight + 2
+	reputerValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight = 123
 	// END MODIFICATION
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
