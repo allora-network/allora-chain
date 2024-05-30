@@ -6,6 +6,7 @@ import (
 
 	math "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -46,17 +47,17 @@ func (mr *MockEmissionsKeeperMockRecorder) GetTotalStake(ctx interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalStake", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetTotalStake), ctx)
 }
 
-func (m *MockEmissionsKeeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
+func (m *MockEmissionsKeeper) GetParams(ctx context.Context) (emissionstypes.Params, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParamsValidatorsVsAlloraPercentReward", ctx)
-	ret0, _ := ret[0].(alloraMath.Dec)
+	ret := m.ctrl.Call(m, "GetParams", ctx)
+	ret0, _ := ret[0].(emissionstypes.Params)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (mr *MockEmissionsKeeperMockRecorder) GetParamsValidatorsVsAlloraPercentReward(ctx interface{}) *gomock.Call {
+func (mr *MockEmissionsKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParamsValidatorsVsAlloraPercentReward", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsValidatorsVsAlloraPercentReward), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParams), ctx)
 }
 
 func (mr *MockEmissionsKeeperMockRecorder) GetParamsBlocksPerMonth(ctx interface{}) *gomock.Call {

@@ -342,10 +342,11 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 	}
 	nonces.Nonces = append([]*types.Nonce{nonce}, nonces.Nonces...)
 
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledWorkerRequests(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
+	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledWorkerRequests
 
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
@@ -390,10 +391,11 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 
-	maxUnfulfilledRequests, err := k.GetParamsMaxUnfulfilledReputerRequests(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
+	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
 	lenNonces := uint64(len(nonces.Nonces))
 	if lenNonces > maxUnfulfilledRequests {
 		diff := uint64(len(nonces.Nonces)) - maxUnfulfilledRequests
@@ -508,7 +510,7 @@ func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
 }
 
-func (k *Keeper) GetParams(ctx context.Context) (types.Params, error) {
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	ret, err := k.params.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -517,166 +519,6 @@ func (k *Keeper) GetParams(ctx context.Context) (types.Params, error) {
 		return types.Params{}, err
 	}
 	return ret, nil
-}
-
-func (k *Keeper) GetParamsMaxTopicsPerBlock(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxTopicsPerBlock, nil
-}
-
-func (k *Keeper) GetParamsMinTopicWeight(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.MinTopicWeight, nil
-}
-
-func (k *Keeper) GetParamsRequiredMinimumStake(ctx context.Context) (cosmosMath.Int, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	return params.RequiredMinimumStake, nil
-}
-
-func (k *Keeper) GetParamsRemoveStakeDelayWindow(ctx context.Context) (BlockHeight, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.RemoveStakeDelayWindow, nil
-}
-
-func (k *Keeper) GetParamsMinEpochLength(ctx context.Context) (BlockHeight, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MinEpochLength, nil
-}
-
-func (k *Keeper) GetParamsEpsilon(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return types.DefaultParamsEpsilon(), err
-	}
-	return params.Epsilon, nil
-}
-
-func (k *Keeper) GetParamsMaxUnfulfilledWorkerRequests(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxUnfulfilledWorkerRequests, nil
-}
-
-func (k *Keeper) GetParamsMaxUnfulfilledReputerRequests(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxUnfulfilledReputerRequests, nil
-}
-
-func (k Keeper) GetParamsValidatorsVsAlloraPercentReward(ctx context.Context) (alloraMath.Dec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	return params.ValidatorsVsAlloraPercentReward, nil
-}
-
-func (k *Keeper) GetParamsMaxSamplesToScaleScores(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxSamplesToScaleScores, nil
-}
-
-func (k *Keeper) GetParamsMaxTopWorkersToReward(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxTopWorkersToReward, nil
-}
-
-func (k *Keeper) GetParamsTopicCreationFee(ctx context.Context) (cosmosMath.Int, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	return params.CreateTopicFee, nil
-}
-
-func (k *Keeper) GetParamsMaxRetriesToFulfilNoncesWorker(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxRetriesToFulfilNoncesWorker, nil
-}
-
-func (k *Keeper) GetParamsMaxRetriesToFulfilNoncesReputer(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.MaxRetriesToFulfilNoncesReputer, nil
-}
-
-func (k *Keeper) GetParamsRegistrationFee(ctx context.Context) (cosmosMath.Int, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return cosmosMath.Int{}, err
-	}
-	return params.RegistrationFee, nil
-}
-
-func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return params.BlocksPerMonth, nil
-}
-
-func (k *Keeper) GetParamsDefaultLimit(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return uint64(0), err
-	}
-	return params.DefaultLimit, nil
-}
-
-func (k *Keeper) GetParamsMaxLimit(ctx context.Context) (uint64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return uint64(0), err
-	}
-	return params.MaxLimit, nil
-}
-
-func (k *Keeper) GetMinEpochLengthRecordLimit(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return int64(0), err
-	}
-	return params.MinEpochLengthRecordLimit, nil
-}
-
-func (k *Keeper) GetMaxSerializedMsgLength(ctx context.Context) (int64, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return int64(0), err
-	}
-	return params.MaxSerializedMsgLength, nil
 }
 
 /// INFERENCES, FORECASTS
@@ -993,6 +835,9 @@ func (k *Keeper) RemoveStake(
 	// Set topic-reputer stake
 	if reputerStakeNew.IsZero() {
 		err = k.stakeByReputerAndTopicId.Remove(ctx, topicReputerKey)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Removing reputer stake in topic failed")
+		}
 	} else {
 		err = k.stakeByReputerAndTopicId.Set(ctx, topicReputerKey, reputerStakeNew)
 		if err != nil {
@@ -1003,6 +848,9 @@ func (k *Keeper) RemoveStake(
 	// Set topic stake
 	if topicStakeNew.IsZero() {
 		err = k.topicStake.Remove(ctx, topicId)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Removing topic to zero failed")
+		}
 	} else {
 		err = k.topicStake.Set(ctx, topicId, topicStakeNew)
 		if err != nil {
@@ -1541,9 +1389,27 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 
 // Reset the fee revenue collected by a topic incurred at a block
 func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	if err != nil {
+		return err
+	}
 	newTopicFeeRevenue := types.TopicFeeRevenue{
 		Epoch:   block,
 		Revenue: cosmosMath.ZeroInt(),
+	}
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	epsilon := moduleParams.Epsilon
+	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
+	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
+	if topicFeeRevenueDec.Gt(epsilon) {
+		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
+		if err != nil {
+			return err
+		}
+		newTopicFeeRevenue.Revenue = val.SdkIntTrim()
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
@@ -1577,23 +1443,7 @@ func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error 
 
 // ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
 func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
-	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return err
-		}
-
-		if err := k.churnReadyTopics.Remove(ctx, topicId); err != nil {
-			return err
-		}
-	}
-
+	k.churnReadyTopics.Clear(ctx, nil)
 	return nil
 }
 
@@ -1681,10 +1531,11 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -1709,10 +1560,11 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	}
 
 	// Get max number of time steps that should be retrieved
-	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	count := 0
 	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
@@ -1748,10 +1600,11 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -1776,10 +1629,11 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	}
 
 	// Get max number of time steps that should be retrieved
-	maxNumTimeSteps, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	count := 0
 	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
@@ -1815,10 +1669,11 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 	}
 	scores.Scores = append(scores.Scores, &score)
 
-	maxNumScores, err := k.GetParamsMaxSamplesToScaleScores(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
+	maxNumScores := moduleParams.MaxSamplesToScaleScores
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
 		diff := lenScores - maxNumScores
@@ -1999,11 +1854,11 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
-	defaultLimit, err := k.GetParamsDefaultLimit(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return uint64(0), uint64(0), err
 	}
-	limit := defaultLimit
+	limit := moduleParams.DefaultPageLimit
 	cursor := uint64(0)
 
 	if pagination != nil {
@@ -2013,12 +1868,8 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 		if pagination.Limit > 0 {
 			limit = pagination.Limit
 		}
-		maxLimit, err := k.GetParamsMaxLimit(ctx)
-		if err != nil {
-			return uint64(0), uint64(0), err
-		}
-		if limit > maxLimit {
-			limit = maxLimit
+		if limit > moduleParams.MaxPageLimit {
+			limit = moduleParams.MaxPageLimit
 		}
 	}
 
@@ -2055,111 +1906,19 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, 
 }
 
 func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allInferences.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allInferences.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allInferences.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allForecasts.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allForecasts.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allForecasts.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allLossBundles.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allLossBundles.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.networkLossBundles.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {

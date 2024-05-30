@@ -66,3 +66,77 @@ func TestStdDev(t *testing.T) {
 		})
 	}
 }
+
+func TestPhiSimple(t *testing.T) {
+	x := alloraMath.MustNewDecFromString("7.9997")
+	p := alloraMath.NewDecFromInt64(3)
+	c := alloraMath.MustNewDecFromString("0.75")
+	// we expect a value very very close to 64
+	result, err := alloraMath.Phi(p, c, x)
+	require.NoError(t, err)
+	require.False(t, alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001")))
+}
+
+// φ'_p(x) = p / (exp(p * (c - x)) + 1)
+func TestGradient(t *testing.T) {
+	tests := []struct {
+		name        string
+		c           alloraMath.Dec
+		p           alloraMath.Dec
+		x           alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			name: "normal operation 1",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("2"),
+			x:    alloraMath.MustNewDecFromString("1"),
+			// φ'_p(x) = 2 / (exp(2 * (0.75 - 1)) + 1)
+			// φ'_p(x) = 1.2449186624037092
+			expected:    alloraMath.MustNewDecFromString("1.2449186624037092"),
+			expectedErr: nil,
+		},
+		{
+			name: "normal operation 2",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("10"),
+			x:    alloraMath.MustNewDecFromString("3"),
+			// φ'_p(x) = 10 / (exp(10 * (0.75 - 3)) + 1)
+			// φ'_p(x) = 9.999999998308102
+			expected:    alloraMath.MustNewDecFromString("9.999999998308102"),
+			expectedErr: nil,
+		},
+		{
+			name: "normal operation 3",
+			c:    alloraMath.MustNewDecFromString("0.75"),
+			p:    alloraMath.MustNewDecFromString("9.2"),
+			x:    alloraMath.MustNewDecFromString("3.4"),
+			// φ'_p(x) = 9.2 / (exp(9.2 * (0.75 - 3.4)) + 1)
+			expected:    alloraMath.MustNewDecFromString("9.199999999762486"),
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := alloraMath.Gradient(tc.p, tc.c, tc.x)
+
+			if tc.expectedErr != nil {
+				require.ErrorIs(t, err, tc.expectedErr)
+			} else {
+				require.NoError(t, err)
+				require.True(
+					t,
+					alloraMath.InDelta(
+						tc.expected,
+						result,
+						alloraMath.MustNewDecFromString("0.00001")),
+					"result should match expected value within epsilon",
+					tc.expected.String(),
+					result.String(),
+				)
+			}
+		})
+	}
+}

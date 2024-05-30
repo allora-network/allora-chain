@@ -24,22 +24,19 @@ func (s *KeeperTestSuite) commonStakingSetup(
 
 	// Create Topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          reputerAddr.String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
+		Creator:         reputerAddr.String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
-	reputerInitialBalance := types.DefaultParamsCreateTopicFee().Add(cosmosMath.Int(reputerInitialBalanceUint))
+	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(cosmosMath.Int(reputerInitialBalanceUint))
 
 	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
 
@@ -182,8 +179,9 @@ func (s *KeeperTestSuite) TestConfirmRemoveStake() {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	startBlock := sdkCtx.BlockHeight()
 
-	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
 
 	s.MintTokensToAddress(senderAddr, cosmosMath.NewInt(1000))
 	s.MintTokensToModule(types.AlloraStakingAccountName, cosmosMath.NewInt(1000))
@@ -233,8 +231,9 @@ func (s *KeeperTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	startBlock := sdkCtx.BlockHeight()
 
-	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
 
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
@@ -268,8 +267,9 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
 	startBlock := sdkCtx.BlockHeight()
 
 	// Fetch the delay window for removing stake
-	removalDelay, err := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
 
 	// Simulate that sender has already staked the required amount
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
@@ -611,9 +611,11 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 	require.Error(err, types.ErrConfirmRemoveStakeTooEarly)
 
 	// Simulate passing of time to surpass the withdrawal delay
-	delayWindow, _ := keeper.GetParamsRemoveStakeDelayWindow(ctx)
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
 
-	ctx = ctx.WithBlockHeight(startBlock + delayWindow + 1)
+	ctx = ctx.WithBlockHeight(startBlock + removalDelay + 1)
 
 	// Try to confirm removal after delay window
 	response, err := s.msgServer.ConfirmRemoveDelegateStake(ctx, &types.MsgConfirmDelegateRemoveStake{

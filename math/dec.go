@@ -62,10 +62,13 @@ var dec128Context = apd.Context{
 	Traps:       apd.DefaultTraps,
 }
 
+// create a new Dec that represents NaN
 func NewNaN() Dec {
 	return Dec{apd.Decimal{}, true}
 }
 
+// NewDecFromString returns a new Dec from a given string. It returns an error if the string
+// cannot be parsed. The string should be in the format of `123.456`.
 func NewDecFromString(s string) (Dec, error) {
 	if s == "" {
 		s = "0"
@@ -83,6 +86,8 @@ func NewDecFromString(s string) (Dec, error) {
 	return d1, nil
 }
 
+// MustNewDecFromString returns a new Dec from a given string. It panics if the string
+// cannot be parsed. The string should be in the format of `123.456`.
 func MustNewDecFromString(s string) Dec {
 	ret, err := NewDecFromString(s)
 	if err != nil {
@@ -91,6 +96,9 @@ func MustNewDecFromString(s string) Dec {
 	return ret
 }
 
+// NewNonNegativeDecFromString returns a new Dec from a given string.
+// It returns an error if the string cannot be parsed or if the
+// decimal is negative. The string should be in the format of `123.456`.
 func NewNonNegativeDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
@@ -102,6 +110,11 @@ func NewNonNegativeDecFromString(s string) (Dec, error) {
 	return d, nil
 }
 
+// NewNonNegativeFixedDecFromString returns a new Dec from a given string and
+// an upper limit on the number of decimal places. It returns an error if the
+// string cannot be parsed, if the decimal is negative, or if the number of
+// decimal places exceeds the maximum. The string should be in the format of
+// `123.456`.
 func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 	d, err := NewNonNegativeDecFromString(s)
 	if err != nil {
@@ -113,6 +126,9 @@ func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 	return d, nil
 }
 
+// NewPositiveDecFromString returns a new Dec from a string,
+// returning an error if the string cannot be parsed or if the
+// decimal is not positive. The string should be in the format of `123.456`.
 func NewPositiveDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
@@ -124,6 +140,11 @@ func NewPositiveDecFromString(s string) (Dec, error) {
 	return d, nil
 }
 
+// NewPositiveFixedDecFromString takes a string
+// and an upper limit on the number of decimal places, returning
+// a Dec or error if the string cannot be parsed, if the decimal
+// is not positive, or if the number of decimal places exceeds the
+// maximum. The string should be in the format of `123.456`.
 func NewPositiveFixedDecFromString(s string, max uint32) (Dec, error) {
 	d, err := NewPositiveDecFromString(s)
 	if err != nil {
@@ -135,10 +156,19 @@ func NewPositiveFixedDecFromString(s string, max uint32) (Dec, error) {
 	return d, nil
 }
 
+// create a new dec from an int64 value
 func NewDecFromInt64(x int64) Dec {
 	var res Dec
 	res.dec.SetInt64(x)
 	return res
+}
+
+// create a new dec from a uint64 value
+// it converts via strings and throws an error if the string
+// is unable to be parsed
+func NewDecFromUint64(x uint64) (Dec, error) {
+	strRep := fmt.Sprintf("%d", x)
+	return NewDecFromString(strRep)
 }
 
 // NewDecFinite returns a decimal with a value of coeff * 10^exp.
