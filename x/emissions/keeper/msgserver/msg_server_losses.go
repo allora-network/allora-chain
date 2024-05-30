@@ -158,12 +158,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// sort by reputer score descending
 	sort.Slice(lossBundlesFromTopReputers, func(i, j int) bool {
-		if lossBundlesFromTopReputers[i] == nil || lossBundlesFromTopReputers[j] == nil ||
-			lossBundlesFromTopReputers[i].ValueBundle == nil || lossBundlesFromTopReputers[j].ValueBundle == nil {
-			return false
-		} else {
-			return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
-		}
+		return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
 	})
 
 	if len(lossBundlesFromTopReputers) == 0 {
@@ -221,6 +216,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
+// This also removes duplicate values of the same worker.
 func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	ctx context.Context,
 	topicId uint64,
@@ -260,15 +256,17 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 
 	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
-		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+		if notYetSeen, ok := acceptedInferersOfBatch[workerVal.Worker]; ok && notYetSeen {
 			acceptedInfererValues = append(acceptedInfererValues, workerVal)
+			acceptedInferersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
 		}
 	}
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
-		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
 			acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
+			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
 		}
 	}
 
@@ -276,23 +274,26 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	// If 1 or fewer inferers, there's no one-out inferer data to receive
 	if len(acceptedInfererValues) > 1 {
 		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
-			if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+			if notYetSeen, ok := acceptedInferersOfBatch[workerVal.Worker]; ok && notYetSeen {
 				acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+				acceptedInferersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
 			}
 		}
 	}
 
 	acceptedOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutForecasterValues {
-		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
 			acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
+			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
 		}
 	}
 
 	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
-		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
 			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
+			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
 		}
 	}
 
