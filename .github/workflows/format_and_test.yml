@@ -35,7 +35,7 @@ jobs:
     - name: Install golines tool
       run: go install github.com/segmentio/golines@latest
 
-    -name: Check code long line formatting using golines
+    - name: Check code long line formatting using golines
       run: bash ./scripts/golines.sh
 
     - name: Run clang-format style check for C/C++/Protobuf programs.
