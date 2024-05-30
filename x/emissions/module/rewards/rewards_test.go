@@ -3132,15 +3132,15 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, 1)
 
 	reputer0Values := []TestWorkerValue{
-		{Address: s.addrs[0], Value: "0.2"},
-		{Address: s.addrs[1], Value: "0.2"},
-		{Address: s.addrs[2], Value: "0.3"},
+		{Address: s.addrs[0], Value: "0.5"},
+		{Address: s.addrs[1], Value: "0.5"},
+		{Address: s.addrs[2], Value: "0.9"},
 	}
 
 	workerValues := []TestWorkerValue{
-		{Address: s.addrs[3], Value: "0.1"},
-		{Address: s.addrs[4], Value: "0.2"},
-		{Address: s.addrs[5], Value: "0.3"},
+		{Address: s.addrs[3], Value: "0.5"},
+		{Address: s.addrs[4], Value: "0.5"},
+		{Address: s.addrs[5], Value: "0.5"},
 	}
 
 	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
@@ -3203,15 +3203,15 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, 1)
 
 	reputerValues := []TestWorkerValue{
-		{Address: s.addrs[0], Value: "0.2"},
-		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[0], Value: "0.5"},
+		{Address: s.addrs[1], Value: "0.5"},
 		{Address: s.addrs[2], Value: "0.1"},
 	}
 
 	workerValues := []TestWorkerValue{
-		{Address: s.addrs[3], Value: "0.1"},
-		{Address: s.addrs[4], Value: "0.2"},
-		{Address: s.addrs[5], Value: "0.3"},
+		{Address: s.addrs[3], Value: "0.5"},
+		{Address: s.addrs[4], Value: "0.5"},
+		{Address: s.addrs[5], Value: "0.5"},
 	}
 
 	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
